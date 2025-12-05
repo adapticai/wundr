@@ -212,7 +212,7 @@ export default function NotificationsSettingsPage() {
         digestFrequency: value as typeof settings.digestFrequency,
       });
     },
-    [updateSettings, settings]
+    [updateSettings, settings],
   );
 
   const handleQuietHoursToggle = useCallback(async () => {
@@ -239,13 +239,13 @@ export default function NotificationsSettingsPage() {
         },
       });
     },
-    [settings, updateSettings]
+    [settings, updateSettings],
   );
 
   const handleTypeToggle = useCallback(
     async (
       type: NotificationType,
-      channel: 'enabled' | 'sound' | 'desktop'
+      channel: 'enabled' | 'sound' | 'desktop',
     ) => {
       if (!settings) {
         return;
@@ -262,7 +262,7 @@ export default function NotificationsSettingsPage() {
         },
       });
     },
-    [settings, updateSettings]
+    [settings, updateSettings],
   );
 
   const handleTestNotification = useCallback(async () => {
@@ -289,7 +289,7 @@ export default function NotificationsSettingsPage() {
 
   const toggleDay = (day: string) => {
     setSelectedDays(prev =>
-      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day],
     );
   };
 
@@ -360,7 +360,7 @@ export default function NotificationsSettingsPage() {
       if (!response.ok) {
         const error = await response.json();
         throw new Error(
-          error.error?.message || 'Failed to update email preferences'
+          error.error?.message || 'Failed to update email preferences',
         );
       }
 

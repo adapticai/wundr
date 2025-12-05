@@ -102,7 +102,7 @@ export interface UseTasksReturn {
  */
 export function useTasks(
   workspaceId: string,
-  options?: UseTasksOptions
+  options?: UseTasksOptions,
 ): UseTasksReturn {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [pagination, setPagination] =

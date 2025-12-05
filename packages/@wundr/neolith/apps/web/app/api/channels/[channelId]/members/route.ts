@@ -90,7 +90,7 @@ async function checkChannelAccess(channelId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -99,9 +99,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -112,9 +112,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid channel ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -124,9 +124,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -135,9 +135,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to private channel',
-          ORG_ERROR_CODES.FORBIDDEN
+          ORG_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -223,9 +223,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -242,7 +242,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -251,9 +251,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -264,9 +264,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid channel ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -276,9 +276,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -289,9 +289,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Channel Admin required.',
-          ORG_ERROR_CODES.FORBIDDEN
+          ORG_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -303,9 +303,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -327,9 +327,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'At least one userId is required',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -340,9 +340,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'All user IDs must be non-empty strings',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -358,19 +358,19 @@ export async function POST(
     });
 
     const workspaceMemberIds = new Set(
-      workspaceMemberships.map(wm => wm.userId)
+      workspaceMemberships.map(wm => wm.userId),
     );
     const nonWorkspaceMembers = userIds.filter(
-      (id: string) => !workspaceMemberIds.has(id)
+      (id: string) => !workspaceMemberIds.has(id),
     );
 
     if (nonWorkspaceMembers.length > 0) {
       return NextResponse.json(
         createErrorResponse(
           `Users must be workspace members to join the channel: ${nonWorkspaceMembers.join(', ')}`,
-          ORG_ERROR_CODES.USER_NOT_FOUND
+          ORG_ERROR_CODES.USER_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -384,16 +384,16 @@ export async function POST(
 
     const existingMemberIds = new Set(existingMemberships.map(m => m.userId));
     const newUserIds = userIds.filter(
-      (id: string) => !existingMemberIds.has(id)
+      (id: string) => !existingMemberIds.has(id),
     );
 
     if (newUserIds.length === 0) {
       return NextResponse.json(
         createErrorResponse(
           'All users are already members of this channel',
-          ORG_ERROR_CODES.ALREADY_MEMBER
+          ORG_ERROR_CODES.ALREADY_MEMBER,
         ),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -445,7 +445,7 @@ export async function POST(
       }).catch((err: unknown) => {
         console.error(
           '[POST /api/channels/:channelId/members] Failed to send channel invite notification:',
-          err
+          err,
         );
       });
     }
@@ -456,16 +456,16 @@ export async function POST(
         message: `${newMemberships.length} member(s) added to channel successfully`,
         skipped: existingMemberIds.size,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/channels/:channelId/members] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

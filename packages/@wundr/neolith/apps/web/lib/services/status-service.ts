@@ -68,7 +68,7 @@ class StatusServiceClass {
 
   async updateStatus(
     status: PresenceStatusType,
-    options?: StatusUpdateOptions
+    options?: StatusUpdateOptions,
   ): Promise<boolean> {
     this.currentStatus = status;
     if (options?.customStatus !== undefined) {
@@ -164,7 +164,7 @@ export async function getComponentStatus(componentId: string): Promise<any> {
  */
 export async function updateComponentStatus(
   componentId: string,
-  status: any
+  status: any,
 ): Promise<void> {
   console.log('[StatusService] updateComponentStatus called with:', {
     componentId,
@@ -187,7 +187,7 @@ export async function performHealthCheck(): Promise<any> {
  */
 export async function getStatusHistory(
   componentId: string,
-  timeRange?: any
+  timeRange?: any,
 ): Promise<any[]> {
   console.log('[StatusService] getStatusHistory called with:', {
     componentId,
@@ -202,7 +202,7 @@ export async function getStatusHistory(
  */
 export async function registerStatusListener(
   componentId: string,
-  callback: Function
+  callback: Function,
 ): Promise<void> {
   console.log('[StatusService] registerStatusListener called with:', {
     componentId,

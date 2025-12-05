@@ -76,7 +76,7 @@ interface AIConfigResponse {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse<{ data: AIConfigResponse } | { error: string }>> {
   try {
     // Verify authentication
@@ -98,7 +98,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -116,7 +116,7 @@ export async function GET(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -141,7 +141,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/ai-config] Error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -158,7 +158,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse<{ data: AIConfigResponse } | { error: string }>> {
   try {
     // Verify authentication
@@ -180,7 +180,7 @@ export async function PATCH(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -190,7 +190,7 @@ export async function PATCH(
         {
           error: 'Forbidden: Only workspace admins can update AI configuration',
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -215,7 +215,7 @@ export async function PATCH(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -275,7 +275,7 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/workspaces/:workspaceId/ai-config] Error:',
-      error
+      error,
     );
 
     // Handle Zod validation errors
@@ -284,13 +284,13 @@ export async function PATCH(
         {
           error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

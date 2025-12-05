@@ -177,7 +177,7 @@ function getDateRange(timeRange: TimeRange): Date | null {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -186,9 +186,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -199,9 +199,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid workspace ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -211,9 +211,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -223,7 +223,7 @@ export async function GET(
     const includeActivity = searchParams.get('includeActivity') !== 'false';
     const activityLimit = Math.min(
       Math.max(1, parseInt(searchParams.get('activityLimit') || '10', 10)),
-      50
+      50,
     );
 
     // Calculate date filters
@@ -366,7 +366,7 @@ export async function GET(
     // Process member statistics
     const totalMembers = membersData.length;
     const orchestratorCount = membersData.filter(
-      m => m.user.isOrchestrator
+      m => m.user.isOrchestrator,
     ).length;
     const humanCount = totalMembers - orchestratorCount;
 
@@ -381,7 +381,7 @@ export async function GET(
         acc.total += curr._count;
         return acc;
       },
-      { total: 0, publicCount: 0, privateCount: 0 }
+      { total: 0, publicCount: 0, privateCount: 0 },
     );
 
     // Process workflow statistics
@@ -399,7 +399,7 @@ export async function GET(
         acc.total += curr._count;
         return acc;
       },
-      { total: 0, active: 0, draft: 0, inactive: 0, archived: 0 }
+      { total: 0, active: 0, draft: 0, inactive: 0, archived: 0 },
     );
 
     // Process task statistics
@@ -415,7 +415,7 @@ export async function GET(
         acc.total += curr._count;
         return acc;
       },
-      { total: 0, completed: 0, inProgress: 0, todo: 0 }
+      { total: 0, completed: 0, inProgress: 0, todo: 0 },
     );
 
     const completionRate =
@@ -520,14 +520,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/dashboard/stats] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred while fetching dashboard statistics',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

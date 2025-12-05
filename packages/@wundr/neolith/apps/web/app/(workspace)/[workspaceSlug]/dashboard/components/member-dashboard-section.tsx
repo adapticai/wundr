@@ -74,7 +74,7 @@ export function MemberDashboardSection({
     const fetchMemberData = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/dashboard/member-info`
+          `/api/workspaces/${workspaceId}/dashboard/member-info`,
         );
 
         if (response.ok) {

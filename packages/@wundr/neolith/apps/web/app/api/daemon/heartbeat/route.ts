@@ -85,7 +85,7 @@ export type DaemonMetrics = NonNullable<HeartbeatInput['metrics']>;
  * Verify daemon token from Authorization header
  */
 async function verifyDaemonToken(
-  request: NextRequest
+  request: NextRequest,
 ): Promise<AccessTokenPayload> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: HEARTBEAT_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid heartbeat data',
           code: HEARTBEAT_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const now = new Date();
     const serverTime = now.toISOString();
     const nextHeartbeat = new Date(
-      now.getTime() + HEARTBEAT_INTERVAL_MS
+      now.getTime() + HEARTBEAT_INTERVAL_MS,
     ).toISOString();
 
     // Get Orchestrator info
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: HEARTBEAT_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       await redis.setex(
         heartbeatKey,
         HEARTBEAT_TTL_SECONDS,
-        JSON.stringify(heartbeatData)
+        JSON.stringify(heartbeatData),
       );
 
       // Store metrics history (last 100 heartbeats)
@@ -224,7 +224,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           JSON.stringify({
             ...metrics,
             timestamp: serverTime,
-          })
+          }),
         );
         await redis.ltrim(metricsKey, 0, 99);
         await redis.expire(metricsKey, 24 * 60 * 60); // 24 hours
@@ -243,7 +243,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               ...session,
               lastHeartbeat: serverTime,
               lastStatus: status,
-            })
+            }),
           );
         }
       }
@@ -256,7 +256,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           orchestratorId: token.orchestratorId,
           status,
           receivedAt: serverTime,
-        })
+        }),
       );
     } catch (redisError) {
       console.error('Redis heartbeat error:', redisError);
@@ -273,7 +273,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error('[POST /api/daemon/heartbeat] Error:', error);
     return NextResponse.json(
       { error: 'Heartbeat failed', code: HEARTBEAT_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

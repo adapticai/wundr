@@ -72,7 +72,7 @@ export default function ConversationalWorkflowCreationPage() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [generatedSpec, setGeneratedSpec] = React.useState<WorkflowSpec | null>(
-    null
+    null,
   );
   const [showReview, setShowReview] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
@@ -373,7 +373,7 @@ export default function ConversationalWorkflowCreationPage() {
                       ...action,
                       id: `preview-${index}` as ActionId,
                       order: index,
-                    }) as ActionConfig
+                    }) as ActionConfig,
                 )}
               />
             )}

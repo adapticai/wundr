@@ -63,7 +63,7 @@ export function DMAddPeopleModal({
   conversationName,
 }: DMAddPeopleModalProps) {
   const [activeTab, setActiveTab] = useState<'workspace' | 'email'>(
-    'workspace'
+    'workspace',
   );
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [emailInput, setEmailInput] = useState('');
@@ -90,7 +90,7 @@ export function DMAddPeopleModal({
     return users.filter(
       u =>
         !existingMemberIds.includes(u.id) &&
-        !selectedUsers.some(s => s.id === u.id)
+        !selectedUsers.some(s => s.id === u.id),
     );
   }, [users, existingMemberIds, selectedUsers]);
 
@@ -151,7 +151,7 @@ export function DMAddPeopleModal({
         handleAddEmail();
       }
     },
-    [handleAddEmail]
+    [handleAddEmail],
   );
 
   const handleSubmit = useCallback(async () => {

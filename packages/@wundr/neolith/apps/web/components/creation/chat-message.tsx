@@ -51,7 +51,7 @@ export function ChatMessage({
     <div
       className={cn(
         'flex w-full gap-3',
-        isUser ? 'flex-row-reverse' : 'flex-row'
+        isUser ? 'flex-row-reverse' : 'flex-row',
       )}
       role='article'
       aria-label={`${role} message`}
@@ -62,7 +62,7 @@ export function ChatMessage({
           className={cn(
             isUser
               ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground'
+              : 'bg-secondary text-secondary-foreground',
           )}
         >
           {isUser ? <User className='h-4 w-4' /> : <Bot className='h-4 w-4' />}
@@ -75,7 +75,7 @@ export function ChatMessage({
         <div
           className={cn(
             'mb-1 text-xs font-medium',
-            isUser ? 'text-right text-foreground/70' : 'text-foreground/70'
+            isUser ? 'text-right text-foreground/70' : 'text-foreground/70',
           )}
         >
           {isUser ? 'You' : 'AI Assistant'}
@@ -87,7 +87,7 @@ export function ChatMessage({
             'rounded-lg px-4 py-2.5 shadow-sm',
             isUser
               ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-foreground'
+              : 'bg-muted text-foreground',
           )}
         >
           <div className='whitespace-pre-wrap break-words text-sm leading-relaxed'>
@@ -105,7 +105,7 @@ export function ChatMessage({
           <div
             className={cn(
               'mt-1 text-xs text-muted-foreground',
-              isUser && 'text-right'
+              isUser && 'text-right',
             )}
           >
             {formatTimestamp(timestamp)}

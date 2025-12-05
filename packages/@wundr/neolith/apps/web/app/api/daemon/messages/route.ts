@@ -30,7 +30,7 @@ const sendMessageSchema = z.object({
         type: z.string(),
         url: z.string(),
         name: z.string().optional(),
-      })
+      }),
     )
     .optional(),
   metadata: z.record(z.unknown()).optional(),
@@ -70,7 +70,7 @@ interface AccessTokenPayload {
  * Verify daemon token from Authorization header
  */
 async function verifyDaemonToken(
-  request: NextRequest
+  request: NextRequest,
 ): Promise<AccessTokenPayload> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
@@ -92,7 +92,7 @@ async function verifyDaemonToken(
  */
 async function checkChannelAccess(
   orchestratorId: string,
-  channelId: string
+  channelId: string,
 ): Promise<boolean> {
   const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: MESSAGE_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -154,7 +154,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: 'Channel ID required',
           code: MESSAGE_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -166,7 +166,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: 'Channel access denied',
           code: MESSAGE_ERROR_CODES.CHANNEL_ACCESS_DENIED,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -245,7 +245,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: 'Failed to get messages',
         code: MESSAGE_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -281,7 +281,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: MESSAGE_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -294,7 +294,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Insufficient permissions',
           code: MESSAGE_ERROR_CODES.INSUFFICIENT_SCOPE,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -308,7 +308,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid JSON body',
           code: MESSAGE_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -320,7 +320,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Channel ID and content required',
           code: MESSAGE_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -335,7 +335,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Channel access denied',
           code: MESSAGE_ERROR_CODES.CHANNEL_ACCESS_DENIED,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -351,7 +351,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Orchestrator not found',
           code: MESSAGE_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -417,7 +417,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'Failed to send message',
         code: MESSAGE_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

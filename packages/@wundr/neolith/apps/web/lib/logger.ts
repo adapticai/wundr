@@ -50,7 +50,7 @@ class Logger {
   private formatMessage(
     level: LogLevel,
     message: string,
-    context?: LogContext
+    context?: LogContext,
   ): string {
     const parts: string[] = [];
 
@@ -71,7 +71,7 @@ class Logger {
   private writeLog(
     level: LogLevel,
     message: string,
-    context?: LogContext
+    context?: LogContext,
   ): void {
     if (!this.shouldLog(level)) {
       return;
@@ -144,7 +144,7 @@ class Logger {
     childLogger.writeLog = (
       level: LogLevel,
       message: string,
-      additionalContext?: LogContext
+      additionalContext?: LogContext,
     ) => {
       originalWriteLog(level, message, { ...context, ...additionalContext });
     };
@@ -215,7 +215,7 @@ export function error(message: string, context?: LogContext): void {
 export function log(
   level: LogLevel,
   message: string,
-  context?: LogContext
+  context?: LogContext,
 ): void {
   logger.log(level, message, context);
 }

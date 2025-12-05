@@ -47,7 +47,7 @@ export interface UseIntegrationsReturn {
  */
 export function useIntegrations(
   workspaceId: string,
-  options?: UseIntegrationsOptions
+  options?: UseIntegrationsOptions,
 ): UseIntegrationsReturn {
   const [integrations, setIntegrations] = useState<IntegrationConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,14 +73,14 @@ export function useIntegrations(
 
       const response = await fetch(
         `/api/workspaces/${workspaceId}/integrations?${params.toString()}`,
-        { signal: abortController.signal }
+        { signal: abortController.signal },
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
           errorData.message ||
-            `Failed to fetch integrations: ${response.status}`
+            `Failed to fetch integrations: ${response.status}`,
         );
       }
 
@@ -146,10 +146,10 @@ export interface UseIntegrationReturn {
  */
 export function useIntegration(
   workspaceId: string,
-  integrationId: string
+  integrationId: string,
 ): UseIntegrationReturn {
   const [integration, setIntegration] = useState<IntegrationConfig | null>(
-    null
+    null,
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -166,7 +166,7 @@ export function useIntegration(
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceId}/integrations/${integrationId}`,
-        { signal: abortController.signal }
+        { signal: abortController.signal },
       );
 
       if (!response.ok) {
@@ -176,7 +176,7 @@ export function useIntegration(
         }
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Failed to fetch integration: ${response.status}`
+          errorData.message || `Failed to fetch integration: ${response.status}`,
         );
       }
 
@@ -208,7 +208,7 @@ export function useIntegration(
         {
           method: 'POST',
           signal: abortController.signal,
-        }
+        },
       );
 
       if (!response.ok) {
@@ -241,13 +241,13 @@ export function useIntegration(
         {
           method: 'POST',
           signal: abortController.signal,
-        }
+        },
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Failed to sync integration: ${response.status}`
+          errorData.message || `Failed to sync integration: ${response.status}`,
         );
       }
 
@@ -258,7 +258,7 @@ export function useIntegration(
         return false;
       }
       setError(
-        err instanceof Error ? err : new Error('Failed to sync integration')
+        err instanceof Error ? err : new Error('Failed to sync integration'),
       );
       return false;
     }
@@ -266,7 +266,7 @@ export function useIntegration(
 
   const updateIntegration = useCallback(
     async (
-      input: UpdateIntegrationInput
+      input: UpdateIntegrationInput,
     ): Promise<IntegrationConfig | null> => {
       const abortController = new AbortController();
 
@@ -278,14 +278,14 @@ export function useIntegration(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(input),
             signal: abortController.signal,
-          }
+          },
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.message ||
-              `Failed to update integration: ${response.status}`
+              `Failed to update integration: ${response.status}`,
           );
         }
 
@@ -297,12 +297,12 @@ export function useIntegration(
           return null;
         }
         setError(
-          err instanceof Error ? err : new Error('Failed to update integration')
+          err instanceof Error ? err : new Error('Failed to update integration'),
         );
         return null;
       }
     },
-    [workspaceId, integrationId]
+    [workspaceId, integrationId],
   );
 
   const deleteIntegration = useCallback(async (): Promise<boolean> => {
@@ -314,14 +314,14 @@ export function useIntegration(
         {
           method: 'DELETE',
           signal: abortController.signal,
-        }
+        },
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
           errorData.message ||
-            `Failed to delete integration: ${response.status}`
+            `Failed to delete integration: ${response.status}`,
         );
       }
 
@@ -332,7 +332,7 @@ export function useIntegration(
         return false;
       }
       setError(
-        err instanceof Error ? err : new Error('Failed to delete integration')
+        err instanceof Error ? err : new Error('Failed to delete integration'),
       );
       return false;
     }
@@ -384,7 +384,7 @@ export function useIntegrationMutations(): UseIntegrationMutationsReturn {
   const createIntegration = useCallback(
     async (
       workspaceId: string,
-      input: CreateIntegrationInput
+      input: CreateIntegrationInput,
     ): Promise<IntegrationConfig | null> => {
       const abortController = new AbortController();
       setIsLoading(true);
@@ -398,14 +398,14 @@ export function useIntegrationMutations(): UseIntegrationMutationsReturn {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(input),
             signal: abortController.signal,
-          }
+          },
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.message ||
-              `Failed to create integration: ${response.status}`
+              `Failed to create integration: ${response.status}`,
           );
         }
 
@@ -416,20 +416,20 @@ export function useIntegrationMutations(): UseIntegrationMutationsReturn {
           return null;
         }
         setError(
-          err instanceof Error ? err : new Error('Failed to create integration')
+          err instanceof Error ? err : new Error('Failed to create integration'),
         );
         return null;
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const initiateOAuth = useCallback(
     async (
       workspaceId: string,
-      provider: IntegrationProvider
+      provider: IntegrationProvider,
     ): Promise<IntegrationOAuthResponse | null> => {
       const abortController = new AbortController();
       setIsLoading(true);
@@ -442,13 +442,13 @@ export function useIntegrationMutations(): UseIntegrationMutationsReturn {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             signal: abortController.signal,
-          }
+          },
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            errorData.message || `Failed to initiate OAuth: ${response.status}`
+            errorData.message || `Failed to initiate OAuth: ${response.status}`,
           );
         }
 
@@ -459,14 +459,14 @@ export function useIntegrationMutations(): UseIntegrationMutationsReturn {
           return null;
         }
         setError(
-          err instanceof Error ? err : new Error('Failed to initiate OAuth')
+          err instanceof Error ? err : new Error('Failed to initiate OAuth'),
         );
         return null;
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   return {
@@ -512,7 +512,7 @@ export interface UseWebhooksReturn {
  */
 export function useWebhooks(
   workspaceId: string,
-  options?: UseWebhooksOptions
+  options?: UseWebhooksOptions,
 ): UseWebhooksReturn {
   const [webhooks, setWebhooks] = useState<WebhookConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -538,13 +538,13 @@ export function useWebhooks(
 
       const response = await fetch(
         `/api/workspaces/${workspaceId}/webhooks?${params.toString()}`,
-        { signal: abortController.signal }
+        { signal: abortController.signal },
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Failed to fetch webhooks: ${response.status}`
+          errorData.message || `Failed to fetch webhooks: ${response.status}`,
         );
       }
 
@@ -576,13 +576,13 @@ export function useWebhooks(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(input),
             signal: abortController.signal,
-          }
+          },
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            errorData.message || `Failed to create webhook: ${response.status}`
+            errorData.message || `Failed to create webhook: ${response.status}`,
           );
         }
 
@@ -594,12 +594,12 @@ export function useWebhooks(
           return null;
         }
         setError(
-          err instanceof Error ? err : new Error('Failed to create webhook')
+          err instanceof Error ? err : new Error('Failed to create webhook'),
         );
         return null;
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   const refetch = useCallback(() => {
@@ -644,7 +644,7 @@ export interface UseWebhookReturn {
  */
 export function useWebhook(
   workspaceId: string,
-  webhookId: string
+  webhookId: string,
 ): UseWebhookReturn {
   const [webhook, setWebhook] = useState<WebhookConfig | null>(null);
   const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([]);
@@ -667,7 +667,7 @@ export function useWebhook(
         }),
         fetch(
           `/api/workspaces/${workspaceId}/webhooks/${webhookId}/deliveries?limit=10`,
-          { signal: abortController.signal }
+          { signal: abortController.signal },
         ),
       ]);
 
@@ -679,7 +679,7 @@ export function useWebhook(
         const errorData = await webhookResponse.json().catch(() => ({}));
         throw new Error(
           errorData.message ||
-            `Failed to fetch webhook: ${webhookResponse.status}`
+            `Failed to fetch webhook: ${webhookResponse.status}`,
         );
       }
 
@@ -716,13 +716,13 @@ export function useWebhook(
         {
           method: 'POST',
           signal: abortController.signal,
-        }
+        },
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Test delivery failed: ${response.status}`
+          errorData.message || `Test delivery failed: ${response.status}`,
         );
       }
 
@@ -751,13 +751,13 @@ export function useWebhook(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(input),
             signal: abortController.signal,
-          }
+          },
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            errorData.message || `Failed to update webhook: ${response.status}`
+            errorData.message || `Failed to update webhook: ${response.status}`,
           );
         }
 
@@ -769,12 +769,12 @@ export function useWebhook(
           return null;
         }
         setError(
-          err instanceof Error ? err : new Error('Failed to update webhook')
+          err instanceof Error ? err : new Error('Failed to update webhook'),
         );
         return null;
       }
     },
-    [workspaceId, webhookId]
+    [workspaceId, webhookId],
   );
 
   const deleteWebhook = useCallback(async (): Promise<boolean> => {
@@ -786,13 +786,13 @@ export function useWebhook(
         {
           method: 'DELETE',
           signal: abortController.signal,
-        }
+        },
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Failed to delete webhook: ${response.status}`
+          errorData.message || `Failed to delete webhook: ${response.status}`,
         );
       }
 
@@ -803,7 +803,7 @@ export function useWebhook(
         return false;
       }
       setError(
-        err instanceof Error ? err : new Error('Failed to delete webhook')
+        err instanceof Error ? err : new Error('Failed to delete webhook'),
       );
       return false;
     }
@@ -820,13 +820,13 @@ export function useWebhook(
         {
           method: 'POST',
           signal: abortController.signal,
-        }
+        },
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Failed to rotate secret: ${response.status}`
+          errorData.message || `Failed to rotate secret: ${response.status}`,
         );
       }
 
@@ -838,7 +838,7 @@ export function useWebhook(
         return null;
       }
       setError(
-        err instanceof Error ? err : new Error('Failed to rotate secret')
+        err instanceof Error ? err : new Error('Failed to rotate secret'),
       );
       return null;
     }
@@ -897,7 +897,7 @@ export interface UseWebhookDeliveriesReturn {
 export function useWebhookDeliveries(
   workspaceId: string,
   webhookId: string,
-  options?: UseWebhookDeliveriesOptions
+  options?: UseWebhookDeliveriesOptions,
 ): UseWebhookDeliveriesReturn {
   const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([]);
   const [total, setTotal] = useState(0);
@@ -927,14 +927,14 @@ export function useWebhookDeliveries(
 
         const response = await fetch(
           `/api/workspaces/${workspaceId}/webhooks/${webhookId}/deliveries?${params.toString()}`,
-          { signal: abortController.signal }
+          { signal: abortController.signal },
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.message ||
-              `Failed to fetch deliveries: ${response.status}`
+              `Failed to fetch deliveries: ${response.status}`,
           );
         }
 
@@ -961,7 +961,7 @@ export function useWebhookDeliveries(
         abortController.abort();
       };
     },
-    [workspaceId, webhookId, offset, limit, options?.status]
+    [workspaceId, webhookId, offset, limit, options?.status],
   );
 
   useEffect(() => {
@@ -986,13 +986,13 @@ export function useWebhookDeliveries(
           {
             method: 'POST',
             signal: abortController.signal,
-          }
+          },
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            errorData.message || `Failed to retry delivery: ${response.status}`
+            errorData.message || `Failed to retry delivery: ${response.status}`,
           );
         }
 
@@ -1007,12 +1007,12 @@ export function useWebhookDeliveries(
           return null;
         }
         setError(
-          err instanceof Error ? err : new Error('Failed to retry delivery')
+          err instanceof Error ? err : new Error('Failed to retry delivery'),
         );
         return null;
       }
     },
-    [workspaceId, webhookId]
+    [workspaceId, webhookId],
   );
 
   return {

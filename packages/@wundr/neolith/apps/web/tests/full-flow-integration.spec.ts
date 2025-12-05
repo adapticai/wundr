@@ -21,7 +21,7 @@ const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 const SCREENSHOTS_DIR = path.join(
   __dirname,
   'screenshots',
-  'full-flow-integration'
+  'full-flow-integration',
 );
 
 // Helper to capture errors
@@ -116,7 +116,7 @@ test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View Orch
     // Find and fill name field
     const nameInput = page
       .locator(
-        'input[name="name"], input[id="orchestrator-name"], input[placeholder*="name" i]'
+        'input[name="name"], input[id="orchestrator-name"], input[placeholder*="name" i]',
       )
       .first();
     await nameInput.fill(orchestratorName);
@@ -139,7 +139,7 @@ test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View Orch
     // Step 5: Submit form (stub - may not actually create)
     const submitButton = page
       .locator(
-        'button[type="submit"]:has-text("Create"), button:has-text("Create Orchestrator")'
+        'button[type="submit"]:has-text("Create"), button:has-text("Create Orchestrator")',
       )
       .last();
     await submitButton.click();
@@ -217,7 +217,7 @@ test.describe('Flow 2: Dashboard → Channels → Create Channel → Send Messag
     await page.fill('#channel-name, input[name="name"]', channelName);
     await page.fill(
       '#channel-description, textarea[name="description"]',
-      'Test channel for integration testing'
+      'Test channel for integration testing',
     );
 
     // Select channel type
@@ -289,7 +289,7 @@ test.describe('Flow 3: Dashboard → Workflows → Create Workflow → View Work
     // Step 3: Click Create Workflow button
     const createBtn = page
       .locator(
-        'button:has-text("Create Workflow"), button:has-text("New Workflow")'
+        'button:has-text("Create Workflow"), button:has-text("New Workflow")',
       )
       .first();
     await expect(createBtn).toBeVisible({ timeout: 5000 });
@@ -309,14 +309,14 @@ test.describe('Flow 3: Dashboard → Workflows → Create Workflow → View Work
 
     const nameInput = page
       .locator(
-        'input[name="name"], input[id="workflow-name"], input[placeholder*="name" i]'
+        'input[name="name"], input[id="workflow-name"], input[placeholder*="name" i]',
       )
       .first();
     await nameInput.fill(workflowName);
 
     const descInput = page
       .locator(
-        'textarea[name="description"], textarea[id="workflow-description"]'
+        'textarea[name="description"], textarea[id="workflow-description"]',
       )
       .first();
     if (await descInput.isVisible().catch(() => false)) {
@@ -402,7 +402,7 @@ test.describe('Flow 4: Dashboard → Agents → Create Agent → View Agent', ()
 
     const nameInput = page
       .locator(
-        'input[name="name"], input[id="agent-name"], input[placeholder*="name" i]'
+        'input[name="name"], input[id="agent-name"], input[placeholder*="name" i]',
       )
       .first();
     await nameInput.fill(agentName);
@@ -504,7 +504,7 @@ test.describe('Flow 5: Dashboard → Deployments → Create Deployment → View 
     await page.fill('input[id="name"], input[name="name"]', deploymentName);
     await page.fill(
       'textarea[id="description"], textarea[name="description"]',
-      'Test deployment for integration testing'
+      'Test deployment for integration testing',
     );
 
     // Select type
@@ -515,7 +515,7 @@ test.describe('Flow 5: Dashboard → Deployments → Create Deployment → View 
 
     // Select environment
     const envSelect = page.locator(
-      'select[id="environment"], select[name="environment"]'
+      'select[id="environment"], select[name="environment"]',
     );
     if (await envSelect.isVisible().catch(() => false)) {
       await envSelect.selectOption('development');
@@ -617,7 +617,7 @@ test.describe('Flow 6: Settings → Change Theme → Verify Persistence', () => 
     // Step 5: Toggle theme
     const themeToggle = page
       .locator(
-        'button[role="switch"], button:has-text("Dark"), button:has-text("Light")'
+        'button[role="switch"], button:has-text("Dark"), button:has-text("Light")',
       )
       .first();
     if (await themeToggle.isVisible().catch(() => false)) {

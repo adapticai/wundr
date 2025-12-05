@@ -74,7 +74,7 @@ async function checkWorkspaceMembership(workspaceId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -83,9 +83,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED
+          MESSAGE_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -97,9 +97,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid workspace ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -112,9 +112,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           MESSAGE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -123,15 +123,15 @@ export async function GET(
     // Check workspace membership
     const membership = await checkWorkspaceMembership(
       workspaceId,
-      session.user.id
+      session.user.id,
     );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          MESSAGE_ERROR_CODES.WORKSPACE_NOT_FOUND
+          MESSAGE_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -168,9 +168,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          MESSAGE_ERROR_CODES.CHANNEL_NOT_FOUND
+          MESSAGE_ERROR_CODES.CHANNEL_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -250,7 +250,7 @@ export async function GET(
       const regex = new RegExp(`(${escapeRegExp(filters.query!)})`, 'gi');
       const highlightedContent = message.content.replace(
         regex,
-        '<mark>$1</mark>'
+        '<mark>$1</mark>',
       );
       return {
         ...message,
@@ -273,14 +273,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/messages/search] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

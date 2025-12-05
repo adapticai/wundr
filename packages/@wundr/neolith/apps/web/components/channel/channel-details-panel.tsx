@@ -110,17 +110,17 @@ export function ChannelDetailsPanel({
       await onRemoveMember(userId);
       setMembers(prev => prev.filter(m => m.userId !== userId));
     },
-    [onRemoveMember]
+    [onRemoveMember],
   );
 
   const handleChangeRole = useCallback(
     async (userId: string, role: 'admin' | 'member') => {
       await onChangeMemberRole(userId, role);
       setMembers(prev =>
-        prev.map(m => (m.userId === userId ? { ...m, role } : m))
+        prev.map(m => (m.userId === userId ? { ...m, role } : m)),
       );
     },
-    [onChangeMemberRole]
+    [onChangeMemberRole],
   );
 
   if (!isOpen) {
@@ -192,7 +192,7 @@ export function ChannelDetailsPanel({
             'flex-1 border-b-2 px-4 py-3 text-sm font-medium transition-colors',
             activeTab === 'about'
               ? 'border-primary text-foreground'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
+              : 'border-transparent text-muted-foreground hover:text-foreground',
           )}
         >
           About
@@ -204,7 +204,7 @@ export function ChannelDetailsPanel({
             'flex-1 border-b-2 px-4 py-3 text-sm font-medium transition-colors',
             activeTab === 'members'
               ? 'border-primary text-foreground'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
+              : 'border-transparent text-muted-foreground hover:text-foreground',
           )}
         >
           <Users className='mr-2 inline h-4 w-4' />
@@ -316,7 +316,7 @@ export function ChannelDetailsPanel({
                                       onClick={() =>
                                         handleChangeRole(
                                           member.userId,
-                                          'member'
+                                          'member',
                                         )
                                       }
                                     >

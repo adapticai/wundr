@@ -103,14 +103,14 @@ export function DualModeEditor({
   storageKey = 'dual-mode-editor-draft',
 }: DualModeEditorProps) {
   const [activeMode, setActiveMode] = React.useState<'chat' | 'edit'>(
-    initialMode
+    initialMode,
   );
   const [data, setData] = React.useState<EntityData>(initialData as EntityData);
   const [conversationHistory, setConversationHistory] = React.useState<
     Message[]
   >([]);
   const [isAILoading, setIsAILoading] = React.useState<Record<string, boolean>>(
-    {}
+    {},
   );
   const [aiSuggestions, setAISuggestions] = React.useState<
     Record<string, string>
@@ -139,7 +139,7 @@ export function DualModeEditor({
           helpText: 'Provide a clear description of what this entity does',
         },
       ],
-    [fieldConfigs, entityType]
+    [fieldConfigs, entityType],
   );
 
   // Load draft from localStorage on mount
@@ -172,7 +172,7 @@ export function DualModeEditor({
       };
       localStorage.setItem(
         `${storageKey}-${entityType}`,
-        JSON.stringify(draft)
+        JSON.stringify(draft),
       );
       setLastSaved(new Date());
     }
@@ -268,7 +268,7 @@ export function DualModeEditor({
       const explanation = await onAskAI(
         `explain-${field}`,
         `What is the purpose of the "${fieldConfig?.label || field}" field for a ${entityType}?`,
-        data
+        data,
       );
 
       setAISuggestions(prev => ({
@@ -297,7 +297,7 @@ export function DualModeEditor({
       const improvements = await onAskAI(
         'improvements',
         `Review and suggest improvements for this ${entityType}: ${currentData}`,
-        data
+        data,
       );
 
       setAISuggestions(prev => ({ ...prev, improvements }));
@@ -482,7 +482,7 @@ export function DualModeEditor({
                         }
                         placeholder={field.placeholder}
                         className={cn(
-                          errors[field.key] && 'border-destructive'
+                          errors[field.key] && 'border-destructive',
                         )}
                         rows={4}
                       />
@@ -496,7 +496,7 @@ export function DualModeEditor({
                         }
                         placeholder={field.placeholder}
                         className={cn(
-                          errors[field.key] && 'border-destructive'
+                          errors[field.key] && 'border-destructive',
                         )}
                       />
                     )}
@@ -550,7 +550,7 @@ export function DualModeEditor({
                   .filter(
                     key =>
                       !defaultFieldConfigs.find(f => f.key === key) &&
-                      typeof data[key] === 'string'
+                      typeof data[key] === 'string',
                   )
                   .map(key => (
                     <div key={key} className='space-y-2'>

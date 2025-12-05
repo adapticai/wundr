@@ -64,7 +64,7 @@ export function MemberList({
         setActionMenuUserId(null);
       }
     },
-    [isProcessing, onChangeRole]
+    [isProcessing, onChangeRole],
   );
 
   const handleRemoveMember = useCallback(
@@ -80,7 +80,7 @@ export function MemberList({
         setActionMenuUserId(null);
       }
     },
-    [isProcessing, onRemoveMember]
+    [isProcessing, onRemoveMember],
   );
 
   if (!isOpen) {
@@ -92,7 +92,7 @@ export function MemberList({
       className={cn(
         'fixed inset-y-0 right-0 z-40 w-72 border-l bg-card shadow-lg transition-transform duration-200',
         isOpen ? 'translate-x-0' : 'translate-x-full',
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -127,7 +127,7 @@ export function MemberList({
                 showMenu={actionMenuUserId === member.userId}
                 onToggleMenu={() =>
                   setActionMenuUserId(
-                    actionMenuUserId === member.userId ? null : member.userId
+                    actionMenuUserId === member.userId ? null : member.userId,
                   )
                 }
                 onCloseMenu={() => setActionMenuUserId(null)}
@@ -155,7 +155,7 @@ export function MemberList({
                 showMenu={actionMenuUserId === member.userId}
                 onToggleMenu={() =>
                   setActionMenuUserId(
-                    actionMenuUserId === member.userId ? null : member.userId
+                    actionMenuUserId === member.userId ? null : member.userId,
                   )
                 }
                 onCloseMenu={() => setActionMenuUserId(null)}

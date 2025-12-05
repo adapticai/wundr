@@ -242,7 +242,7 @@ function StatCard({
       href={href}
       className={cn(
         'rounded-lg border bg-card p-6 transition-colors hover:bg-accent',
-        loading && 'pointer-events-none opacity-50'
+        loading && 'pointer-events-none opacity-50',
       )}
     >
       <div className='flex items-center justify-between'>

@@ -60,7 +60,7 @@ interface InvitationDetails {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const { inviteId: token } = await context.params;
@@ -69,9 +69,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Token is required',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR
+          ADMIN_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -110,9 +110,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Invitation not found',
-          ADMIN_ERROR_CODES.INVITE_NOT_FOUND
+          ADMIN_ERROR_CODES.INVITE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -168,9 +168,9 @@ export async function GET(
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to validate invitation',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR
+        ADMIN_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -188,7 +188,7 @@ export async function GET(
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -196,9 +196,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'You must be logged in to accept an invitation',
-          ADMIN_ERROR_CODES.UNAUTHORIZED
+          ADMIN_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -208,9 +208,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Token is required',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR
+          ADMIN_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -249,9 +249,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Invitation not found',
-          ADMIN_ERROR_CODES.INVITE_NOT_FOUND
+          ADMIN_ERROR_CODES.INVITE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -260,9 +260,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'This invitation has already been accepted',
-          ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED
+          ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -270,9 +270,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'This invitation has been revoked',
-          ADMIN_ERROR_CODES.INVITE_REVOKED
+          ADMIN_ERROR_CODES.INVITE_REVOKED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -281,9 +281,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'This invitation has expired',
-          ADMIN_ERROR_CODES.INVITE_EXPIRED
+          ADMIN_ERROR_CODES.INVITE_EXPIRED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -300,9 +300,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'This invitation was sent to a different email address',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR
+          ADMIN_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -315,9 +315,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'You are already a member of this workspace',
-          ADMIN_ERROR_CODES.EMAIL_ALREADY_MEMBER
+          ADMIN_ERROR_CODES.EMAIL_ALREADY_MEMBER,
         ),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -386,9 +386,9 @@ export async function POST(
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to accept invitation',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR
+        ADMIN_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

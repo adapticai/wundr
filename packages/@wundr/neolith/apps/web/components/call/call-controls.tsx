@@ -1,7 +1,6 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Mic,
   MicOff,
@@ -15,6 +14,7 @@ import {
   MessageSquare,
   LayoutGrid,
 } from 'lucide-react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 import type { MediaDevice } from '@/types/call';
 
@@ -105,7 +105,7 @@ function DeviceSelector({
         setIsOpen(!isOpen);
       }
     },
-    [isOpen]
+    [isOpen],
   );
 
   if (devices.length === 0) {
@@ -120,7 +120,7 @@ function DeviceSelector({
         className={clsx(
           'w-8 h-8 rounded-full flex items-center justify-center',
           'bg-muted hover:bg-muted/80 transition-colors',
-          'text-muted-foreground hover:text-foreground'
+          'text-muted-foreground hover:text-foreground',
         )}
         aria-label={`Select ${label}`}
         aria-expanded={isOpen}
@@ -135,7 +135,7 @@ function DeviceSelector({
             'absolute bottom-full mb-2 left-1/2 -translate-x-1/2',
             'min-w-[200px] max-w-[300px]',
             'bg-popover border border-border rounded-lg shadow-lg',
-            'py-1 z-50'
+            'py-1 z-50',
           )}
           role='listbox'
           aria-label={`${label} options`}
@@ -154,7 +154,7 @@ function DeviceSelector({
                 'w-full px-3 py-2 text-left text-sm',
                 'hover:bg-accent transition-colors',
                 selectedDevice === device.deviceId &&
-                  'bg-accent text-accent-foreground'
+                  'bg-accent text-accent-foreground',
               )}
               role='option'
               aria-selected={selectedDevice === device.deviceId}
@@ -210,7 +210,7 @@ function ControlButton({
           : isActive === false
             ? 'bg-red-500 hover:bg-red-600 text-white'
             : 'bg-muted hover:bg-muted/80 text-foreground',
-        disabled && 'opacity-50 cursor-not-allowed'
+        disabled && 'opacity-50 cursor-not-allowed',
       )}
       title={shortcut ? `${label} (${shortcut})` : label}
       aria-label={label}
@@ -257,7 +257,7 @@ function MoreOptionsMenu({
         className={clsx(
           'w-10 h-10 rounded-full flex items-center justify-center',
           'bg-muted hover:bg-muted/80 transition-colors',
-          'text-foreground'
+          'text-foreground',
         )}
         aria-label='More options'
         aria-expanded={isOpen}
@@ -272,7 +272,7 @@ function MoreOptionsMenu({
             'absolute bottom-full mb-2 right-0',
             'min-w-[180px]',
             'bg-popover border border-border rounded-lg shadow-lg',
-            'py-1 z-50'
+            'py-1 z-50',
           )}
           role='menu'
         >
@@ -399,7 +399,7 @@ export function CallControls({
         'flex items-center justify-center gap-2 p-4',
         'bg-background/95 backdrop-blur-sm',
         'rounded-xl border border-border',
-        className
+        className,
       )}
       role='toolbar'
       aria-label='Call controls'

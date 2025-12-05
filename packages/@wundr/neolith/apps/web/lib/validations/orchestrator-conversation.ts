@@ -82,7 +82,7 @@ export const conversationSummarySchema = z.object({
 export function createErrorResponse(
   message: string,
   code: OrchestratorConversationErrorCode,
-  extraData?: Record<string, unknown>
+  extraData?: Record<string, unknown>,
 ): { error: OrchestratorConversationErrorCode; message: string } & Record<
   string,
   unknown

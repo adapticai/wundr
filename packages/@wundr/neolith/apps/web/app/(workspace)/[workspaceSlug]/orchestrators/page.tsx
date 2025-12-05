@@ -8,9 +8,9 @@
  */
 'use client';
 
-import { Users, Plus } from 'lucide-react';
+import { Users, Plus, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 
 import { CreateOrchestratorDialog } from '@/components/orchestrator/create-orchestrator-dialog';
 import {
@@ -47,13 +47,16 @@ export default function OrchestratorsPage() {
   useEffect(() => {
     setPageHeader(
       'Orchestrators',
-      'AI-powered orchestrators managing your workspace operations'
+      'AI-powered orchestrators managing your workspace operations',
     );
   }, [setPageHeader]);
 
   // State
   const [filters, setFilters] = useState<OrchestratorFilters>({});
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout>();
 
   // Hooks
   const {
@@ -70,9 +73,49 @@ export default function OrchestratorsPage() {
     isLoading: isMutating,
   } = useOrchestratorMutations();
 
+  // Keyboard shortcut for search focus (Cmd/Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
   // Handlers
   const handleSearchChange = useCallback((value: string) => {
-    setFilters(prev => ({ ...prev, search: value || undefined }));
+    setSearchInput(value);
+
+    // Clear existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Debounce the filter update (300ms)
+    debounceTimerRef.current = setTimeout(() => {
+      setFilters(prev => ({ ...prev, search: value || undefined }));
+    }, 300);
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchInput('');
+    setFilters(prev => ({ ...prev, search: undefined }));
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
   }, []);
 
   const handleDisciplineChange = useCallback((value: string) => {
@@ -95,7 +138,7 @@ export default function OrchestratorsPage() {
       await createOrchestrator(input);
       refetch();
     },
-    [createOrchestrator, refetch]
+    [createOrchestrator, refetch],
   );
 
   const handleToggleStatus = useCallback(
@@ -103,14 +146,14 @@ export default function OrchestratorsPage() {
       await toggleOrchestratorStatus(orchestrator.id, orchestrator.status);
       refetch();
     },
-    [toggleOrchestratorStatus, refetch]
+    [toggleOrchestratorStatus, refetch],
   );
 
   const handleEditWithAI = useCallback(
     (orchestrator: Orchestrator) => {
       router.push(`/${workspaceSlug}/orchestrators/${orchestrator.id}/edit`);
     },
-    [router, workspaceSlug]
+    [router, workspaceSlug],
   );
 
   const handleNewOrchestrator = useCallback(() => {
@@ -131,6 +174,30 @@ export default function OrchestratorsPage() {
     }
     return count;
   }, [filters]);
+
+  // Highlight matching text helper
+  const highlightText = useCallback(
+    (text: string | null | undefined) => {
+      if (!text || !filters.search) {
+        return text || '';
+      }
+
+      const searchTerm = filters.search.toLowerCase();
+      const parts = text.split(new RegExp(`(${filters.search})`, 'gi'));
+
+      return parts.map((part, index) => {
+        if (part.toLowerCase() === searchTerm) {
+          return (
+            <mark key={index} className='bg-yellow-200 dark:bg-yellow-900/50'>
+              {part}
+            </mark>
+          );
+        }
+        return part;
+      });
+    },
+    [filters.search],
+  );
 
   // Group Orchestrators by status for stats
   const orchestratorStats = useMemo(() => {
@@ -207,12 +274,23 @@ export default function OrchestratorsPage() {
           <div className='relative flex-1'>
             <SearchIcon className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
             <input
+              ref={searchInputRef}
               type='text'
-              placeholder='Search orchestrators by name, discipline...'
-              value={filters.search || ''}
+              placeholder='Search orchestrators by name, description... (⌘K)'
+              value={searchInput}
               onChange={e => handleSearchChange(e.target.value)}
-              className='w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              className='w-full rounded-md border border-input bg-background py-2 pl-10 pr-10 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
             />
+            {searchInput && (
+              <button
+                type='button'
+                onClick={handleClearSearch}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+                aria-label='Clear search'
+              >
+                <X className='h-4 w-4' />
+              </button>
+            )}
           </div>
 
           {/* Discipline Filter */}
@@ -241,7 +319,7 @@ export default function OrchestratorsPage() {
                 <option key={status} value={status}>
                   {config.label}
                 </option>
-              )
+              ),
             )}
           </select>
 
@@ -303,12 +381,16 @@ export default function OrchestratorsPage() {
           icon={Users}
           title={
             activeFiltersCount > 0
-              ? 'No Orchestrators Found'
+              ? filters.search
+                ? `No orchestrators matching "${filters.search}"`
+                : 'No Orchestrators Found'
               : 'No Orchestrators Yet'
           }
           description={
             activeFiltersCount > 0
-              ? "Try adjusting your filters to find what you're looking for. No orchestrators match your current criteria."
+              ? filters.search
+                ? 'No orchestrators match your search query. Try different keywords or check your filters.'
+                : "Try adjusting your filters to find what you're looking for. No orchestrators match your current criteria."
               : 'Get started by creating your first orchestrator. Use the conversational wizard to define an AI-powered agent that can manage tasks and workflows.'
           }
           action={
@@ -336,6 +418,7 @@ export default function OrchestratorsPage() {
               workspaceId={workspaceSlug}
               onToggleStatus={handleToggleStatus}
               onEditWithAI={handleEditWithAI}
+              highlightText={highlightText}
             />
           ))}
         </div>

@@ -85,7 +85,7 @@ export function OrchestratorPresenceIndicator({
           <span
             className={cn(
               'absolute inline-flex h-full w-full animate-ping rounded-full opacity-75',
-              config.bgColor
+              config.bgColor,
             )}
           />
         )}
@@ -93,7 +93,7 @@ export function OrchestratorPresenceIndicator({
           className={cn(
             'relative inline-flex rounded-full',
             sizeClasses[size],
-            config.bgColor
+            config.bgColor,
           )}
           role='status'
           aria-label={config.label}
@@ -177,7 +177,7 @@ export function OrchestratorPresenceCard({
     <div
       className={cn(
         'flex items-start gap-3 rounded-lg border bg-card p-4',
-        className
+        className,
       )}
     >
       <OrchestratorPresenceIndicator status={status} size='md' />

@@ -94,7 +94,7 @@ async function checkChannelAdminAccess(channelId: string, userId: string) {
 
   // User must be channel admin or workspace admin/owner
   const isWorkspaceAdmin = ['ADMIN', 'OWNER', 'admin', 'owner'].includes(
-    workspaceMembership.role
+    workspaceMembership.role,
   );
   const isChannelAdmin = channelMembership?.role === 'ADMIN';
 
@@ -121,7 +121,7 @@ async function checkChannelAdminAccess(channelId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -129,9 +129,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED
+          ADMIN_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -143,9 +143,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Channel not found or admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN
+          ADMIN_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -176,9 +176,9 @@ export async function GET(
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to fetch invites',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR
+        ADMIN_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -203,7 +203,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -211,9 +211,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED
+          ADMIN_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -225,9 +225,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Channel not found or admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN
+          ADMIN_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -239,9 +239,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Invalid JSON body',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR
+          ADMIN_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -263,9 +263,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'At least one email or userId is required',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR
+          ADMIN_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -292,16 +292,16 @@ export async function POST(
 
       const workspaceMemberIds = new Set(workspaceMembers.map(wm => wm.userId));
       const nonWorkspaceMembers = userIds.filter(
-        id => !workspaceMemberIds.has(id)
+        id => !workspaceMemberIds.has(id),
       );
 
       if (nonWorkspaceMembers.length > 0) {
         return NextResponse.json(
           createAdminErrorResponse(
             `Users must be workspace members: ${nonWorkspaceMembers.join(', ')}`,
-            ADMIN_ERROR_CODES.MEMBER_NOT_FOUND
+            ADMIN_ERROR_CODES.MEMBER_NOT_FOUND,
           ),
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -374,9 +374,9 @@ export async function POST(
         return NextResponse.json(
           createAdminErrorResponse(
             'All emails are already workspace members. Use userIds to add them to the channel.',
-            ADMIN_ERROR_CODES.EMAIL_ALREADY_MEMBER
+            ADMIN_ERROR_CODES.EMAIL_ALREADY_MEMBER,
           ),
-          { status: 409 }
+          { status: 409 },
         );
       }
 
@@ -449,7 +449,7 @@ export async function POST(
                 channelDescription: access.channel.description || undefined,
                 invitationUrl,
                 message: invite.message || undefined,
-              }
+              },
             );
 
             emailResults.push({
@@ -461,13 +461,13 @@ export async function POST(
             if (!emailResult.success) {
               console.error(
                 `[Channel Invites] Failed to send email to ${invite.email}:`,
-                emailResult.error
+                emailResult.error,
               );
             }
           } catch (error) {
             console.error(
               `[Channel Invites] Exception sending email to ${invite.email}:`,
-              error
+              error,
             );
             emailResults.push({
               email: invite.email,
@@ -496,19 +496,19 @@ export async function POST(
           details: emailResults,
         },
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceSlug/channels/:channelId/invites] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to create invites',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR
+        ADMIN_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

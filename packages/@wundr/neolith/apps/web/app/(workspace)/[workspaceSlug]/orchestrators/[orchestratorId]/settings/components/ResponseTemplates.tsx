@@ -42,7 +42,7 @@ export function ResponseTemplates({
   disabled,
 }: ResponseTemplatesProps) {
   const [templates, setTemplates] = useState<Record<string, ResponseTemplate>>(
-    (config?.responseTemplates as Record<string, ResponseTemplate>) || {}
+    (config?.responseTemplates as Record<string, ResponseTemplate>) || {},
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] =

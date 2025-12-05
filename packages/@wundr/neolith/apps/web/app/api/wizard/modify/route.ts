@@ -96,7 +96,7 @@ interface ModifyResponse {
  */
 function buildSystemPrompt(
   entityType: EntityType,
-  currentData: EntityData
+  currentData: EntityData,
 ): string {
   return `You are an AI assistant helping users modify an existing ${entityType} in a collaborative AI platform.
 
@@ -184,7 +184,7 @@ function buildTools(entityType: EntityType) {
 async function callClaude(
   systemPrompt: string,
   messages: ChatMessage[],
-  tools: unknown[]
+  tools: unknown[],
 ): Promise<ModifyResponse> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -267,7 +267,7 @@ function extractQuestions(text: string): string[] {
 async function callOpenAI(
   systemPrompt: string,
   messages: ChatMessage[],
-  tools: unknown[]
+  tools: unknown[],
 ): Promise<ModifyResponse> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -322,7 +322,7 @@ async function callOpenAI(
   if (choice?.message?.function_call?.name === 'suggest_modifications') {
     try {
       suggestedChanges = JSON.parse(
-        choice.message.function_call.arguments
+        choice.message.function_call.arguments,
       ) as SuggestedChanges;
       needsMoreInfo = false;
     } catch {
@@ -348,7 +348,7 @@ async function callOpenAI(
  */
 function validateModifications(
   modifications: Modification[],
-  currentData: EntityData
+  currentData: EntityData,
 ): { valid: boolean; errors?: string[] } {
   const errors: string[] = [];
 
@@ -364,14 +364,14 @@ function validateModifications(
       JSON.stringify(currentData[mod.field]) !== JSON.stringify(mod.oldValue)
     ) {
       errors.push(
-        `Old value for '${mod.field}' does not match current value. Current: ${JSON.stringify(currentData[mod.field])}, Expected: ${JSON.stringify(mod.oldValue)}`
+        `Old value for '${mod.field}' does not match current value. Current: ${JSON.stringify(currentData[mod.field])}, Expected: ${JSON.stringify(mod.oldValue)}`,
       );
     }
 
     // Validate new value type matches old value type
     if (typeof mod.newValue !== typeof mod.oldValue && mod.oldValue !== null) {
       errors.push(
-        `Type mismatch for '${mod.field}'. Old type: ${typeof mod.oldValue}, New type: ${typeof mod.newValue}`
+        `Type mismatch for '${mod.field}'. Old type: ${typeof mod.oldValue}, New type: ${typeof mod.newValue}`,
       );
     }
   }
@@ -435,7 +435,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -446,7 +446,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: { message: 'Invalid JSON body' } },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -454,7 +454,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!body || typeof body !== 'object') {
       return NextResponse.json(
         { error: { message: 'Invalid request body' } },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -479,7 +479,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             message: `Invalid entityType. Must be one of: ${validEntityTypes.join(', ')}`,
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -487,14 +487,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!modifyReq.entityId || typeof modifyReq.entityId !== 'string') {
       return NextResponse.json(
         { error: { message: 'entityId is required and must be a string' } },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!modifyReq.currentData || typeof modifyReq.currentData !== 'object') {
       return NextResponse.json(
         { error: { message: 'currentData is required and must be an object' } },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -506,14 +506,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             message: 'messages array is required and must not be empty',
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Build system prompt and tools
     const systemPrompt = buildSystemPrompt(
       modifyReq.entityType,
-      modifyReq.currentData
+      modifyReq.currentData,
     );
     const tools = buildTools(modifyReq.entityType);
 
@@ -540,7 +540,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 'No LLM API key configured. Please set ANTHROPIC_API_KEY or OPENAI_API_KEY.',
             },
           },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -549,7 +549,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (response.suggestedChanges) {
       const validation = validateModifications(
         response.suggestedChanges.modifications,
-        modifyReq.currentData
+        modifyReq.currentData,
       );
 
       if (!validation.valid) {
@@ -561,7 +561,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               details: validation.errors,
             },
           },
-          { status: 422 }
+          { status: 422 },
         );
       }
     }
@@ -582,7 +582,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               : 'An internal error occurred',
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

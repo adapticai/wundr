@@ -130,7 +130,7 @@ const STUB_WORKSPACE: {
  */
 function createStubWorkspace(
   input: CreateWorkspaceInput,
-  userId: string
+  userId: string,
 ): typeof STUB_WORKSPACE {
   const slug =
     input.slug ?? input.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -185,7 +185,7 @@ export const workspaceResolvers = {
     workspace: async (
       _parent: unknown,
       args: WorkspaceQueryArgs,
-      context: GraphQLContext
+      context: GraphQLContext,
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -225,7 +225,7 @@ export const workspaceResolvers = {
     workspaceBySlug: async (
       _parent: unknown,
       args: WorkspaceBySlugArgs,
-      context: GraphQLContext
+      context: GraphQLContext,
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -261,7 +261,7 @@ export const workspaceResolvers = {
     myWorkspaces: async (
       _parent: unknown,
       args: MyWorkspacesArgs,
-      context: GraphQLContext
+      context: GraphQLContext,
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -304,7 +304,7 @@ export const workspaceResolvers = {
     createWorkspace: async (
       _parent: unknown,
       args: { input: CreateWorkspaceInput },
-      context: GraphQLContext
+      context: GraphQLContext,
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -347,7 +347,7 @@ export const workspaceResolvers = {
     updateWorkspace: async (
       _parent: unknown,
       args: UpdateWorkspaceArgs,
-      context: GraphQLContext
+      context: GraphQLContext,
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -399,7 +399,7 @@ export const workspaceResolvers = {
     updateWorkspaceSettings: async (
       _parent: unknown,
       args: UpdateWorkspaceSettingsArgs,
-      context: GraphQLContext
+      context: GraphQLContext,
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {
@@ -450,7 +450,7 @@ export const workspaceResolvers = {
     deleteWorkspace: async (
       _parent: unknown,
       args: DeleteWorkspaceArgs,
-      context: GraphQLContext
+      context: GraphQLContext,
     ) => {
       if (!isAuthenticated(context)) {
         throw new GraphQLError('Authentication required', {

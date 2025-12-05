@@ -230,7 +230,7 @@ export function ChannelHeader({
                 <Star
                   className={cn(
                     'mr-2 h-4 w-4',
-                    channel.isStarred && 'fill-yellow-400 text-yellow-400'
+                    channel.isStarred && 'fill-yellow-400 text-yellow-400',
                   )}
                 />
                 {channel.isStarred ? 'Unstar channel' : 'Star channel'}
@@ -312,7 +312,7 @@ export function ChannelHeader({
                 className={cn(
                   'h-8 gap-1.5',
                   hasActiveHuddle &&
-                    'bg-green-600 hover:bg-green-700 text-white'
+                    'bg-green-600 hover:bg-green-700 text-white',
                 )}
               >
                 <Headphones className='h-4 w-4' />

@@ -103,7 +103,7 @@ export function OnlineUsersList({
       <div
         className={cn(
           'flex flex-col items-center justify-center py-8',
-          className
+          className,
         )}
       >
         <UsersIcon className='h-12 w-12 text-stone-300 dark:text-stone-700' />
@@ -152,7 +152,7 @@ export function OnlineUsersList({
                 'flex w-full items-center gap-2 px-2 py-1.5 text-xs font-semibold uppercase tracking-wider',
                 'text-stone-500 dark:text-stone-500 font-heading',
                 collapsibleSections &&
-                  'hover:text-stone-900 dark:hover:text-stone-100 cursor-pointer'
+                  'hover:text-stone-900 dark:hover:text-stone-100 cursor-pointer',
               )}
               aria-expanded={!isCollapsed}
             >
@@ -160,7 +160,7 @@ export function OnlineUsersList({
                 <ChevronIcon
                   className={cn(
                     'h-3 w-3 transition-transform',
-                    isCollapsed && '-rotate-90'
+                    isCollapsed && '-rotate-90',
                   )}
                 />
               )}
@@ -221,7 +221,7 @@ function UserListItem({
         onClick={() => onClick?.(user.id)}
         className={cn(
           'flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left transition-colors',
-          'hover:bg-accent'
+          'hover:bg-accent',
         )}
       >
         {/* Avatar with presence indicator */}
@@ -267,7 +267,7 @@ function UserListItem({
             'absolute right-2 top-1/2 -translate-y-1/2',
             'rounded-md p-1.5 text-muted-foreground',
             'hover:bg-accent hover:text-foreground',
-            'opacity-0 group-hover:opacity-100 transition-opacity'
+            'opacity-0 group-hover:opacity-100 transition-opacity',
           )}
           aria-label={`Message ${user.name}`}
           title='Send direct message'

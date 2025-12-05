@@ -8,21 +8,6 @@ import { Actions } from '@/components/ai/actions';
 import { Conversation } from '@/components/ai/conversation';
 import { Loader, TypingIndicator } from '@/components/ai/loader';
 import { Message, MessageContent } from '@/components/ai/message';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
-import {
-  useAIWizardChat,
-  getMessageContent,
-  getToolInvocations,
-  type ToolInvocation,
-} from '@/hooks/use-ai-wizard-chat';
-import { Progress } from '@/components/ui/progress';
 import {
   PromptInputForm,
   PromptInputTextarea,
@@ -34,7 +19,22 @@ import { Response } from '@/components/ai/response';
 import { Suggestions, getEntitySuggestions } from '@/components/ai/suggestion';
 import { Tool } from '@/components/ai/tool';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { WorkspaceReviewForm } from '@/components/wizard/workspace-review-form';
+import {
+  useAIWizardChat,
+  getMessageContent,
+  getToolInvocations,
+  type ToolInvocation,
+} from '@/hooks/use-ai-wizard-chat';
 
 import type { WorkspaceReviewData } from '@/components/wizard/workspace-review-form';
 
@@ -97,7 +97,7 @@ export default function NewWorkspacePage() {
   const handleCreateWorkspace = async (data: WorkspaceReviewData) => {
     if (!organizationId) {
       toast.error(
-        'No organization found. Please create an organization first.'
+        'No organization found. Please create an organization first.',
       );
       return;
     }
@@ -268,7 +268,7 @@ export default function NewWorkspacePage() {
                 <Suggestions
                   suggestions={getEntitySuggestions(
                     'workspace',
-                    messages.filter(m => m.role === 'user').length
+                    messages.filter(m => m.role === 'user').length,
                   )}
                   onSelect={handleSuggestionSelect}
                 />

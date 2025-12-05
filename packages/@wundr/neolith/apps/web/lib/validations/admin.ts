@@ -45,7 +45,7 @@ export type AdminErrorCode =
 export function createAdminErrorResponse(
   message: string,
   code: AdminErrorCode,
-  extraData?: Record<string, unknown>
+  extraData?: Record<string, unknown>,
 ): { error: AdminErrorCode; message: string } & Record<string, unknown> {
   return { error: code, message, ...extraData };
 }
@@ -84,7 +84,7 @@ export const createRoleSchema = z.object({
       z.object({
         resource: z.string(),
         actions: z.array(z.string()),
-      })
+      }),
     )
     .min(1, 'At least one permission is required'),
   color: z.string().optional(),
@@ -103,7 +103,7 @@ export const updateRoleSchema = z.object({
       z.object({
         resource: z.string(),
         actions: z.array(z.string()),
-      })
+      }),
     )
     .optional(),
   color: z.string().optional(),
@@ -148,7 +148,7 @@ export const batchCreateInvitesSchema = z.object({
         roleId: z.string().optional(),
         expiresInDays: z.number().positive().max(90).optional(),
         message: z.string().max(500).optional(),
-      })
+      }),
     )
     .min(1)
     .max(50),
@@ -344,7 +344,7 @@ export const roleSchema = z.object({
     z.object({
       resource: z.string(),
       actions: z.array(z.string()),
-    })
+    }),
   ),
   isSystem: z.boolean(),
   color: z.string().nullable(),

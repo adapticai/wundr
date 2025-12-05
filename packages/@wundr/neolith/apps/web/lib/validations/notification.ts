@@ -125,7 +125,7 @@ export const incrementalSyncSchema = z.object({
   syncToken: z.string(),
   entities: z
     .array(
-      z.enum(['messages', 'channels', 'users', 'notifications', 'workspaces'])
+      z.enum(['messages', 'channels', 'users', 'notifications', 'workspaces']),
     )
     .optional(),
   workspaceId: z.string().optional(),
@@ -138,7 +138,7 @@ export const batchResolveConflictsSchema = z.object({
       conflictId: z.string(),
       resolution: z.enum(['CLIENT_WINS', 'SERVER_WINS', 'MERGE', 'MANUAL']),
       mergedData: z.record(z.unknown()).optional(),
-    })
+    }),
   ),
 });
 
@@ -202,7 +202,7 @@ export const pushWebhookSchema = z.object({
 export const createNotificationErrorResponse = (
   message: string,
   code: NotificationErrorCode,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) => ({
   error: {
     code,

@@ -51,11 +51,11 @@ interface TaskRetryMetadata {
  */
 export function calculateRetryDelay(
   attemptNumber: number,
-  config: RetryConfig = DEFAULT_RETRY_CONFIG
+  config: RetryConfig = DEFAULT_RETRY_CONFIG,
 ): number {
   const delay = Math.min(
     config.initialDelayMs * Math.pow(config.backoffMultiplier, attemptNumber),
-    config.maxDelayMs
+    config.maxDelayMs,
   );
   return delay;
 }
@@ -65,7 +65,7 @@ export function calculateRetryDelay(
  */
 export function calculateNextRetryTime(
   attemptNumber: number,
-  config: RetryConfig = DEFAULT_RETRY_CONFIG
+  config: RetryConfig = DEFAULT_RETRY_CONFIG,
 ): Date {
   const delayMs = calculateRetryDelay(attemptNumber, config);
   return new Date(Date.now() + delayMs);
@@ -82,7 +82,7 @@ export function calculateNextRetryTime(
 export async function recordTaskFailure(
   taskId: string,
   error: string,
-  config: RetryConfig = DEFAULT_RETRY_CONFIG
+  config: RetryConfig = DEFAULT_RETRY_CONFIG,
 ): Promise<{ shouldRetry: boolean; nextRetryAt?: Date; retryCount: number }> {
   // Get current task
   const task = await prisma.task.findUnique({
@@ -175,7 +175,7 @@ export async function isTaskReadyForRetry(taskId: string): Promise<boolean> {
  */
 export async function getTasksReadyForRetry(
   orchestratorId?: string,
-  workspaceId?: string
+  workspaceId?: string,
 ) {
   const where: Prisma.taskWhereInput = {
     status: 'TODO',
@@ -257,7 +257,7 @@ export async function resetTaskRetry(taskId: string): Promise<void> {
  */
 export async function blockTaskAfterMaxRetries(
   taskId: string,
-  reason?: string
+  reason?: string,
 ): Promise<void> {
   const task = await prisma.task.findUnique({
     where: { id: taskId },

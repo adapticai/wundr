@@ -18,7 +18,7 @@ const analyticsService = new AnalyticsServiceImpl({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> }
+  { params }: { params: Promise<{ workspaceSlug: string }> },
 ) {
   try {
     const session = await getServerSession();
@@ -34,7 +34,7 @@ export async function POST(
     if (!eventType) {
       return NextResponse.json(
         { error: 'Event type required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -62,7 +62,7 @@ export async function POST(
     console.error('Analytics track error:', error);
     return NextResponse.json(
       { error: 'Failed to track event' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

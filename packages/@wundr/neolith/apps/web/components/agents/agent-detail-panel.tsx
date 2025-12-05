@@ -44,7 +44,7 @@ export function AgentDetailPanel({
   const [temperature, setTemperature] = useState(agent.config.temperature);
   const [maxTokens, setMaxTokens] = useState(agent.config.maxTokens);
   const [selectedTools, setSelectedTools] = useState<AvailableTool[]>(
-    agent.tools
+    agent.tools,
   );
 
   const handleSave = async () => {
@@ -102,7 +102,7 @@ export function AgentDetailPanel({
 
   const handleToolToggle = (tool: AvailableTool) => {
     setSelectedTools(prev =>
-      prev.includes(tool) ? prev.filter(t => t !== tool) : [...prev, tool]
+      prev.includes(tool) ? prev.filter(t => t !== tool) : [...prev, tool],
     );
   };
 
@@ -388,7 +388,7 @@ export function AgentDetailPanel({
                         'rounded-md border px-3 py-2 text-sm transition-colors',
                         selectedTools.includes(tool)
                           ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border bg-background text-foreground hover:border-primary hover:bg-accent'
+                          : 'border-border bg-background text-foreground hover:border-primary hover:bg-accent',
                       )}
                     >
                       {tool.replace(/_/g, ' ')}

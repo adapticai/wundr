@@ -44,7 +44,7 @@ interface RouteContext {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -53,9 +53,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -66,9 +66,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid channel ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -84,9 +84,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -95,9 +95,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Cannot join archived channel',
-          ORG_ERROR_CODES.CHANNEL_ARCHIVED
+          ORG_ERROR_CODES.CHANNEL_ARCHIVED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -106,9 +106,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Cannot join private channel. Request an invite from a channel admin.',
-          ORG_ERROR_CODES.CANNOT_JOIN_PRIVATE
+          ORG_ERROR_CODES.CANNOT_JOIN_PRIVATE,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -126,9 +126,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to join channels',
-          ORG_ERROR_CODES.FORBIDDEN
+          ORG_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -146,9 +146,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You are already a member of this channel',
-          ORG_ERROR_CODES.ALREADY_MEMBER
+          ORG_ERROR_CODES.ALREADY_MEMBER,
         ),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -182,16 +182,16 @@ export async function POST(
 
     return NextResponse.json(
       { data: membership, message: 'Successfully joined channel' },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/channels/:channelId/join] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

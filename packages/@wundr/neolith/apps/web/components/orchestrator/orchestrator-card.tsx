@@ -19,6 +19,7 @@ interface OrchestratorCardProps {
   onEditWithAI?: (orchestrator: Orchestrator) => void;
   onToggleStatus?: (orchestrator: Orchestrator) => void;
   className?: string;
+  highlightText?: (text: string | null | undefined) => React.ReactNode;
 }
 
 export function OrchestratorCard({
@@ -28,6 +29,7 @@ export function OrchestratorCard({
   onEditWithAI,
   onToggleStatus,
   className,
+  highlightText,
 }: OrchestratorCardProps) {
   const lastActivityText = orchestrator.lastActivityAt
     ? formatRelativeTime(new Date(orchestrator.lastActivityAt))
@@ -37,7 +39,7 @@ export function OrchestratorCard({
     <div
       className={cn(
         'group relative flex flex-col rounded-lg border bg-card p-5 shadow-sm transition-all hover:border-primary/50 hover:shadow-md',
-        className
+        className,
       )}
     >
       {/* Header with Avatar and Status */}
@@ -67,11 +69,15 @@ export function OrchestratorCard({
           {/* Name and Discipline */}
           <div className='min-w-0 flex-1'>
             <h3 className='truncate font-heading font-semibold text-foreground'>
-              {orchestrator.title}
+              {highlightText
+                ? highlightText(orchestrator.title)
+                : orchestrator.title}
             </h3>
             {orchestrator.discipline && (
               <p className='truncate text-sm font-sans text-muted-foreground'>
-                {orchestrator.discipline}
+                {highlightText
+                  ? highlightText(orchestrator.discipline)
+                  : orchestrator.discipline}
               </p>
             )}
           </div>
@@ -88,7 +94,9 @@ export function OrchestratorCard({
       {/* Description */}
       {orchestrator.description && (
         <p className='mb-4 line-clamp-2 text-sm font-sans text-muted-foreground'>
-          {orchestrator.description}
+          {highlightText
+            ? highlightText(orchestrator.description)
+            : orchestrator.description}
         </p>
       )}
 
@@ -144,7 +152,7 @@ export function OrchestratorCard({
               'rounded-md border border-border bg-background p-1.5 transition-colors hover:bg-accent',
               orchestrator.status === 'ONLINE'
                 ? 'text-emerald-600 hover:text-rose-600 dark:text-emerald-400 dark:hover:text-rose-400'
-                : 'text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400'
+                : 'text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400',
             )}
             aria-label={
               orchestrator.status === 'ONLINE'

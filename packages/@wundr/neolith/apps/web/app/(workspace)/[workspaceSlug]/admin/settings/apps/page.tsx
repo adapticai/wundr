@@ -63,7 +63,7 @@ export default function InstalledAppsPage() {
     const loadApps = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/integrations`
+          `/api/workspaces/${workspaceSlug}/integrations`,
         );
         if (!response.ok) {
           throw new Error('Failed to load apps');
@@ -95,8 +95,8 @@ export default function InstalledAppsPage() {
         prev.map(app =>
           app.id === appId
             ? { ...app, status: newStatus as 'active' | 'inactive' }
-            : app
-        )
+            : app,
+        ),
       );
 
       try {
@@ -106,7 +106,7 @@ export default function InstalledAppsPage() {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus }),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -123,8 +123,8 @@ export default function InstalledAppsPage() {
           prev.map(app =>
             app.id === appId
               ? { ...app, status: currentStatus as 'active' | 'inactive' }
-              : app
-          )
+              : app,
+          ),
         );
 
         toast({
@@ -137,14 +137,14 @@ export default function InstalledAppsPage() {
         setProcessingAppId(null);
       }
     },
-    [workspaceSlug, toast]
+    [workspaceSlug, toast],
   );
 
   const handleRemoveApp = useCallback(
     async (appId: string, appName: string) => {
       if (
         !confirm(
-          `Are you sure you want to remove ${appName}? This action cannot be undone.`
+          `Are you sure you want to remove ${appName}? This action cannot be undone.`,
         )
       ) {
         return;
@@ -157,7 +157,7 @@ export default function InstalledAppsPage() {
           `/api/workspaces/${workspaceSlug}/integrations/${appId}`,
           {
             method: 'DELETE',
-          }
+          },
         );
 
         if (!response.ok) {
@@ -181,7 +181,7 @@ export default function InstalledAppsPage() {
         setProcessingAppId(null);
       }
     },
-    [workspaceSlug, toast]
+    [workspaceSlug, toast],
   );
 
   if (isLoading) {

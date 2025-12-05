@@ -39,7 +39,7 @@ interface RouteContext {
  */
 async function listUploadedParts(
   uploadId: string,
-  s3Key: string
+  s3Key: string,
 ): Promise<
   { partNumber: number; eTag: string; size: number; lastModified: Date }[]
 > {
@@ -62,7 +62,7 @@ async function listUploadedParts(
         Bucket: s3Bucket,
         Key: s3Key,
         UploadId: uploadId,
-      })
+      }),
     );
 
     return (response.Parts ?? []).map(part => ({
@@ -85,7 +85,7 @@ async function listUploadedParts(
  */
 async function abortMultipartUpload(
   uploadId: string,
-  s3Key: string
+  s3Key: string,
 ): Promise<void> {
   const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
   const region = process.env.MY_AWS_REGION ?? 'us-east-1';
@@ -106,7 +106,7 @@ async function abortMultipartUpload(
       Bucket: s3Bucket,
       Key: s3Key,
       UploadId: uploadId,
-    })
+    }),
   );
 }
 
@@ -122,7 +122,7 @@ async function abortMultipartUpload(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -131,9 +131,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          UPLOAD_ERROR_CODES.UNAUTHORIZED
+          UPLOAD_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -144,9 +144,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid upload ID format',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -165,9 +165,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Upload not found',
-          UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND
+          UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -175,7 +175,7 @@ export async function GET(
     if (file.uploadedById !== session.user.id) {
       return NextResponse.json(
         createErrorResponse('Access denied', UPLOAD_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -196,9 +196,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -215,7 +215,7 @@ export async function GET(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -224,9 +224,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          UPLOAD_ERROR_CODES.UNAUTHORIZED
+          UPLOAD_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -237,9 +237,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Invalid upload ID format',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -258,9 +258,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Upload not found',
-          UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND
+          UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -268,7 +268,7 @@ export async function DELETE(
     if (file.uploadedById !== session.user.id) {
       return NextResponse.json(
         createErrorResponse('Access denied', UPLOAD_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -296,9 +296,9 @@ export async function DELETE(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

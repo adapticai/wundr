@@ -189,7 +189,7 @@ export default function WorkflowDetailPage() {
             className={cn(
               'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium',
               statusConfig.bgColor,
-              statusConfig.color
+              statusConfig.color,
             )}
           >
             {statusConfig.label}
@@ -526,14 +526,14 @@ function ExecutionItem({ execution, onCancel }: ExecutionItemProps) {
             className={cn(
               'h-4 w-4',
               execution.status === 'running' && 'animate-spin',
-              statusConfig.color
+              statusConfig.color,
             )}
           />
           <span
             className={cn(
               'rounded-full px-2 py-0.5 text-xs font-medium',
               statusConfig.bgColor,
-              statusConfig.color
+              statusConfig.color,
             )}
           >
             {statusConfig.label}

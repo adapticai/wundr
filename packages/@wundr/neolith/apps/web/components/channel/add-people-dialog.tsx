@@ -87,7 +87,7 @@ export function AddPeopleDialog({
       setIsSearching(true);
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/search?q=${encodeURIComponent(searchQuery)}&types=users,orchestrators`
+          `/api/workspaces/${workspaceSlug}/search?q=${encodeURIComponent(searchQuery)}&types=users,orchestrators`,
         );
 
         if (response.ok) {
@@ -174,7 +174,7 @@ export function AddPeopleDialog({
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
         setHighlightedIndex(prev =>
-          Math.min(prev + 1, searchResults.length - 1)
+          Math.min(prev + 1, searchResults.length - 1),
         );
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
@@ -193,7 +193,7 @@ export function AddPeopleDialog({
       searchResults,
       highlightedIndex,
       handleSelectRecipient,
-    ]
+    ],
   );
 
   const handleProceedToConfirm = useCallback(() => {
@@ -226,7 +226,7 @@ export function AddPeopleDialog({
         setIsSubmitting(false);
       }
     },
-    [recipients, onAddPeople, onClose]
+    [recipients, onAddPeople, onClose],
   );
 
   const statusColors = {
@@ -241,7 +241,7 @@ export function AddPeopleDialog({
   const currentMemberCount = existingMemberIds.length;
   const remainingSlots = Math.max(
     0,
-    maxPeople - currentMemberCount - recipients.length
+    maxPeople - currentMemberCount - recipients.length,
   );
 
   return (
@@ -339,7 +339,7 @@ export function AddPeopleDialog({
                             'flex w-full items-center gap-3 px-3 py-2 text-left transition-colors',
                             index === highlightedIndex
                               ? 'bg-accent'
-                              : 'hover:bg-accent/50'
+                              : 'hover:bg-accent/50',
                           )}
                         >
                           <div className='relative'>
@@ -362,7 +362,7 @@ export function AddPeopleDialog({
                                   <span
                                     className={cn(
                                       'absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-popover',
-                                      statusColors[result.status]
+                                      statusColors[result.status],
                                     )}
                                   />
                                 )}

@@ -86,7 +86,7 @@ export default function AccountOverviewPage() {
   const completionPercentage = Math.round(
     (completionItems.filter(item => item.completed).length /
       completionItems.length) *
-      100
+      100,
   );
 
   if (isLoading) {

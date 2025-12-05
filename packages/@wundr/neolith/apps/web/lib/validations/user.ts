@@ -102,7 +102,7 @@ export const userPreferencesSchema = z
 export function createUserErrorResponse(
   message: string,
   code: UserErrorCode,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) {
   return {
     error: {

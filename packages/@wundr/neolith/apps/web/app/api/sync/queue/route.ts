@@ -37,7 +37,7 @@ import type { NextRequest } from 'next/server';
  */
 async function processQueueItem(
   item: OfflineQueueItem,
-  userId: string
+  userId: string,
 ): Promise<{
   success: boolean;
   entityId?: string;
@@ -75,7 +75,7 @@ async function processQueueItem(
  */
 async function processMessageOperation(
   item: OfflineQueueItem,
-  userId: string
+  userId: string,
 ): Promise<{
   success: boolean;
   entityId?: string;
@@ -100,7 +100,7 @@ async function processMessageOperation(
       const messageType = (payload.type as string) ?? 'TEXT';
       const validTypes = ['TEXT', 'FILE', 'SYSTEM', 'COMMAND'] as const;
       const safeType = validTypes.includes(
-        messageType as (typeof validTypes)[number]
+        messageType as (typeof validTypes)[number],
       )
         ? (messageType as (typeof validTypes)[number])
         : 'TEXT';
@@ -210,7 +210,7 @@ async function processMessageOperation(
  */
 async function processChannelOperation(
   item: OfflineQueueItem,
-  userId: string
+  userId: string,
 ): Promise<{
   success: boolean;
   entityId?: string;
@@ -303,7 +303,7 @@ async function processChannelOperation(
  */
 async function processNotificationOperation(
   item: OfflineQueueItem,
-  userId: string
+  userId: string,
 ): Promise<{
   success: boolean;
   entityId?: string;
@@ -423,9 +423,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createNotificationErrorResponse(
           'Authentication required',
-          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -437,9 +437,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createNotificationErrorResponse(
           'Invalid JSON body',
-          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -450,9 +450,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createNotificationErrorResponse(
           'Validation failed',
           NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -460,7 +460,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Sort items by queuedAt for sequential processing
     const sortedItems = [...input.items].sort(
-      (a, b) => a.queuedAt.getTime() - b.queuedAt.getTime()
+      (a, b) => a.queuedAt.getTime() - b.queuedAt.getTime(),
     );
 
     const results: QueueProcessingResult['results'] = [];
@@ -494,7 +494,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         sortedItems.map(async item => {
           const result = await processQueueItem(item, session.user.id);
           return { item, result };
-        })
+        }),
       );
 
       for (const { item, result } of processingResults) {
@@ -541,7 +541,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             JSON.stringify({
               ...currentPrefs,
               syncConflicts: [...existingConflicts, ...conflicts],
-            })
+            }),
           ) as Prisma.InputJsonValue,
         },
       });
@@ -560,9 +560,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

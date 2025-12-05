@@ -25,7 +25,7 @@ interface FilePreviewContextValue {
 }
 
 const FilePreviewContext = createContext<FilePreviewContextValue | undefined>(
-  undefined
+  undefined,
 );
 
 /**
@@ -53,7 +53,7 @@ export function FilePreviewProvider({ children }: { children: ReactNode }) {
       setFileList(files.length > 0 ? files : [file]);
       setIsOpen(true);
     },
-    []
+    [],
   );
 
   const closePreview = useCallback(() => {

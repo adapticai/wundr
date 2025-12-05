@@ -158,7 +158,7 @@ async function fetchMessageActivities(
   dateFrom: Date | undefined,
   dateTo: Date | undefined,
   userId: string | undefined,
-  limit: number
+  limit: number,
 ): Promise<ActivityEntry[]> {
   const where: Prisma.messageWhereInput = {
     channel: {
@@ -242,7 +242,7 @@ async function fetchTaskActivities(
   userId: string | undefined,
   dateFrom: Date | undefined,
   dateTo: Date | undefined,
-  limit: number
+  limit: number,
 ): Promise<ActivityEntry[]> {
   const where: Prisma.taskWhereInput = {
     workspaceId,
@@ -360,7 +360,7 @@ async function fetchWorkflowActivities(
   userId: string | undefined,
   dateFrom: Date | undefined,
   dateTo: Date | undefined,
-  limit: number
+  limit: number,
 ): Promise<ActivityEntry[]> {
   // Get recent workflow executions
   const executions = await prisma.workflowExecution.findMany({
@@ -442,7 +442,7 @@ async function fetchMemberActivities(
   userId: string | undefined,
   dateFrom: Date | undefined,
   dateTo: Date | undefined,
-  limit: number
+  limit: number,
 ): Promise<ActivityEntry[]> {
   const where: Prisma.workspaceMemberWhereInput = {
     workspaceId,
@@ -507,7 +507,7 @@ async function fetchFileActivities(
   userId: string | undefined,
   dateFrom: Date | undefined,
   dateTo: Date | undefined,
-  limit: number
+  limit: number,
 ): Promise<ActivityEntry[]> {
   const where: Prisma.fileWhereInput = {
     workspaceId,
@@ -571,7 +571,7 @@ async function fetchChannelActivities(
   userId: string | undefined,
   dateFrom: Date | undefined,
   dateTo: Date | undefined,
-  limit: number
+  limit: number,
 ): Promise<ActivityEntry[]> {
   const where: Prisma.channelWhereInput = {
     workspaceId,
@@ -655,7 +655,7 @@ async function fetchChannelActivities(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -672,7 +672,7 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -686,7 +686,7 @@ export async function GET(
           error: 'Validation failed',
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -717,42 +717,42 @@ export async function GET(
             dateFromFilter,
             effectiveDateTo,
             userId,
-            limit
+            limit,
           ),
           fetchTaskActivities(
             workspaceId,
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit
+            limit,
           ),
           fetchWorkflowActivities(
             workspaceId,
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit
+            limit,
           ),
           fetchMemberActivities(
             workspaceId,
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit
+            limit,
           ),
           fetchFileActivities(
             workspaceId,
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit
+            limit,
           ),
           fetchChannelActivities(
             workspaceId,
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit
+            limit,
           ),
         ]);
 
@@ -774,7 +774,7 @@ export async function GET(
             dateFromFilter,
             effectiveDateTo,
             userId,
-            limit
+            limit,
           );
           break;
         case 'task':
@@ -783,7 +783,7 @@ export async function GET(
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit
+            limit,
           );
           break;
         case 'workflow':
@@ -792,7 +792,7 @@ export async function GET(
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit
+            limit,
           );
           break;
         case 'member':
@@ -801,7 +801,7 @@ export async function GET(
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit
+            limit,
           );
           break;
         case 'file':
@@ -810,7 +810,7 @@ export async function GET(
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit
+            limit,
           );
           break;
         case 'channel':
@@ -819,7 +819,7 @@ export async function GET(
             userId,
             dateFromFilter,
             effectiveDateTo,
-            limit
+            limit,
           );
           break;
       }
@@ -853,11 +853,11 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/dashboard/activity] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       { error: 'Failed to fetch dashboard activity' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

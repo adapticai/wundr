@@ -141,7 +141,7 @@ export function SubagentCreate({
             ...formData,
             charterData: { name: formData.name, version: 1 },
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -298,7 +298,7 @@ export function SubagentCreate({
               </div>
               <div className='flex flex-wrap gap-1'>
                 {AVAILABLE_MCP_TOOLS.filter(
-                  t => !formData.mcpTools.includes(t)
+                  t => !formData.mcpTools.includes(t),
                 ).map(tool => (
                   <Badge
                     key={tool}

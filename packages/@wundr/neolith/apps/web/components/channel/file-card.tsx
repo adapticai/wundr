@@ -162,7 +162,7 @@ export function FileCard({
   const [showMenu, setShowMenu] = useState(false);
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [savedItemId, setSavedItemId] = useState<string | null>(
-    initialSavedItemId
+    initialSavedItemId,
   );
   const [isSaving, setIsSaving] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -259,7 +259,7 @@ export function FileCard({
         // Remove from saved
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/saved-items/${savedItemId}`,
-          { method: 'DELETE' }
+          { method: 'DELETE' },
         );
         if (response.ok) {
           setIsSaved(false);
@@ -277,7 +277,7 @@ export function FileCard({
               type: 'FILE',
               fileId: file.id,
             }),
-          }
+          },
         );
         if (response.ok) {
           const result = await response.json();
@@ -310,7 +310,7 @@ export function FileCard({
     <div
       className={cn(
         'group relative rounded-lg border bg-card p-3 sm:p-4 transition-shadow hover:shadow-md cursor-pointer',
-        className
+        className,
       )}
       onClick={handlePreview}
       role='button'
@@ -596,7 +596,7 @@ function DropdownMenu({
             'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent',
             canDelete
               ? 'text-destructive'
-              : 'text-muted-foreground cursor-not-allowed'
+              : 'text-muted-foreground cursor-not-allowed',
           )}
           onClick={onDelete}
           disabled={!canDelete}

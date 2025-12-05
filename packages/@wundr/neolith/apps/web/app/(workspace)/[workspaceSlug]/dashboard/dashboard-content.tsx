@@ -17,6 +17,14 @@ import { UserAvatar } from '@/components/ui/user-avatar';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useAuth } from '@/hooks/use-auth';
 
+import { AdminDashboardSection } from './components/admin-dashboard-section';
+import { ChannelsWidget } from './components/channels-widget';
+import { MemberDashboardSection } from './components/member-dashboard-section';
+import { QuickActionsWidget } from './components/quick-actions-widget';
+import { StatusWidget } from './components/status-widget';
+import { ThreadsWidget } from './components/threads-widget';
+import { WorkspaceSwitcherWidget } from './components/workspace-switcher-widget';
+
 interface DashboardContentProps {
   workspaceId: string;
 }
@@ -75,7 +83,7 @@ interface DashboardErrors {
 
 export function DashboardContent({ workspaceId }: DashboardContentProps) {
   const { setPageHeader } = usePageHeader();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [stats, setStats] = useState<WorkspaceStats | null>(null);
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -84,6 +92,9 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
   const [isLoadingChannels, setIsLoadingChannels] = useState(true);
   const [errors, setErrors] = useState<DashboardErrors>({});
   const [activityFilter, setActivityFilter] = useState<'all' | 'channels' | 'dms'>('all');
+
+  // Determine if user is admin
+  const isAdmin = role === 'OWNER' || role === 'ADMIN';
 
   // Get greeting based on time of day
   const getGreeting = () => {
@@ -105,11 +116,11 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
     const fetchActivities = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/dashboard/activity?limit=10&type=all`
+          `/api/workspaces/${workspaceId}/dashboard/activity?limit=10&type=all`,
         );
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch activities: ${response.status} ${response.statusText}`
+            `Failed to fetch activities: ${response.status} ${response.statusText}`,
           );
         }
         const result = await response.json();
@@ -133,11 +144,11 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
     const fetchStats = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/dashboard/stats?includeActivity=false`
+          `/api/workspaces/${workspaceId}/dashboard/stats?includeActivity=false`,
         );
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch stats: ${response.status} ${response.statusText}`
+            `Failed to fetch stats: ${response.status} ${response.statusText}`,
           );
         }
         const result = await response.json();
@@ -160,11 +171,11 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
     const fetchChannels = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/channels?limit=6`
+          `/api/workspaces/${workspaceId}/channels?limit=6`,
         );
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch channels: ${response.status} ${response.statusText}`
+            `Failed to fetch channels: ${response.status} ${response.statusText}`,
           );
         }
         const result = await response.json();
@@ -252,6 +263,15 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
           {/* Left Column - Main Content (2 columns wide on large screens) */}
           <div className='lg:col-span-2 space-y-6'>
+            {/* Quick Actions Widget - Top of dashboard */}
+            <QuickActionsWidget workspaceSlug={workspaceId} />
+
+            {/* Role-based sections */}
+            {isAdmin ? (
+              <AdminDashboardSection workspaceId={workspaceId} />
+            ) : (
+              <MemberDashboardSection workspaceId={workspaceId} />
+            )}
             {/* Recent Activity Feed */}
             <Card>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
@@ -357,116 +377,20 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
               </CardContent>
             </Card>
 
-            {/* Your Channels */}
-            <Card>
-              <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
-                <div>
-                  <CardTitle>Your Channels</CardTitle>
-                  <CardDescription>Frequently visited channels</CardDescription>
-                </div>
-                <Button variant='ghost' size='sm' asChild>
-                  <Link href={`/${workspaceId}/channels`}>See all</Link>
-                </Button>
-              </CardHeader>
-              <CardContent>
-                {errors.channels ? (
-                  <div className='rounded-md bg-destructive/10 p-4 text-sm text-destructive'>
-                    <p className='font-medium'>Error loading channels</p>
-                    <p className='mt-1 text-xs'>{errors.channels}</p>
-                  </div>
-                ) : channels.length > 0 ? (
-                  <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                    {channels.map(channel => (
-                      <Link
-                        key={channel.id}
-                        href={`/${workspaceId}/channels/${channel.id}`}
-                        className='flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent transition-colors'
-                      >
-                        <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10'>
-                          <HashIcon className='h-5 w-5 text-primary' />
-                        </div>
-                        <div className='flex-1 min-w-0'>
-                          <p className='text-sm font-medium truncate'>
-                            {channel.name}
-                          </p>
-                          <p className='text-xs text-muted-foreground truncate'>
-                            {channel.description || 'No description'}
-                          </p>
-                        </div>
-                        {channel.unreadCount && channel.unreadCount > 0 && (
-                          <Badge variant='default' className='ml-auto'>
-                            {channel.unreadCount}
-                          </Badge>
-                        )}
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className='flex flex-col items-center justify-center py-8 text-center'>
-                    <p className='text-sm text-muted-foreground'>
-                      No channels yet
-                    </p>
-                    <Button variant='link' size='sm' asChild className='mt-2'>
-                      <Link href={`/${workspaceId}/channels`}>
-                        Create your first channel
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {/* Channels Widget - Integrated starred/frequent channels */}
+            <ChannelsWidget workspaceSlug={workspaceId} limit={6} />
           </div>
 
           {/* Right Sidebar */}
           <div className='space-y-6'>
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader className='pb-4'>
-                <CardTitle className='text-base'>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-2'>
-                <Button
-                  variant='outline'
-                  className='w-full justify-start'
-                  asChild
-                >
-                  <Link href={`/${workspaceId}/channels/new`}>
-                    <PlusIcon className='mr-2 h-4 w-4' />
-                    New message
-                  </Link>
-                </Button>
-                <Button
-                  variant='outline'
-                  className='w-full justify-start'
-                  asChild
-                >
-                  <Link href={`/${workspaceId}/channels`}>
-                    <HashIcon className='mr-2 h-4 w-4' />
-                    Create channel
-                  </Link>
-                </Button>
-                <Button
-                  variant='outline'
-                  className='w-full justify-start'
-                  asChild
-                >
-                  <Link href={`/${workspaceId}/admin/members`}>
-                    <UsersIcon className='mr-2 h-4 w-4' />
-                    Invite teammate
-                  </Link>
-                </Button>
-                <Button
-                  variant='outline'
-                  className='w-full justify-start'
-                  asChild
-                >
-                  <Link href={`/${workspaceId}/orchestrators`}>
-                    <BotIcon className='mr-2 h-4 w-4' />
-                    Browse orchestrators
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Workspace Switcher Widget - Show if user has multiple workspaces */}
+            <WorkspaceSwitcherWidget currentWorkspaceSlug={workspaceId} />
+
+            {/* Status Widget */}
+            <StatusWidget workspaceSlug={workspaceId} />
+
+            {/* Threads & Mentions Widget */}
+            <ThreadsWidget workspaceSlug={workspaceId} limit={5} />
 
             {/* Workspace Stats */}
             {stats && (

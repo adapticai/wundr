@@ -45,7 +45,7 @@ export function CollapsedChannelIcons({
   const channelsUnreadCount = React.useMemo(() => {
     return channels.reduce(
       (sum, channel) => sum + (channel.unreadCount || 0),
-      0
+      0,
     );
   }, [channels]);
 
@@ -56,11 +56,11 @@ export function CollapsedChannelIcons({
   const starredUnreadCount = React.useMemo(() => {
     const channelUnread = starredChannels.reduce(
       (sum, channel) => sum + (channel.unreadCount || 0),
-      0
+      0,
     );
     const dmUnread = starredDMs.reduce(
       (sum, dm) => sum + (dm.unreadCount || 0),
-      0
+      0,
     );
     return channelUnread + dmUnread;
   }, [starredChannels, starredDMs]);
@@ -86,7 +86,7 @@ export function CollapsedChannelIcons({
             <Star
               className={cn(
                 'h-4 w-4',
-                starredUnreadCount > 0 && 'text-yellow-500'
+                starredUnreadCount > 0 && 'text-yellow-500',
               )}
             />
             <span className='sr-only'>Starred</span>

@@ -64,7 +64,7 @@ function isUserOnline(lastActiveAt: Date | null): boolean {
  * Get presence from user preferences
  */
 function getPresenceFromPreferences(
-  preferences: Prisma.JsonValue
+  preferences: Prisma.JsonValue,
 ): UserPreferences {
   if (
     typeof preferences === 'object' &&
@@ -82,7 +82,7 @@ function getPresenceFromPreferences(
 function mapUserStatusToPresence(
   status: UserStatus,
   prefs: UserPreferences,
-  isOnline: boolean
+  isOnline: boolean,
 ): 'online' | 'offline' | 'away' | 'busy' {
   if (!isOnline) {
     return 'offline';
@@ -177,9 +177,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createPresenceErrorResponse(
           'Authentication required',
-          PRESENCE_ERROR_CODES.UNAUTHORIZED
+          PRESENCE_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -191,9 +191,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createPresenceErrorResponse(
           'Invalid JSON body',
-          PRESENCE_ERROR_CODES.VALIDATION_ERROR
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -202,9 +202,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createPresenceErrorResponse(
           'Invalid request parameters',
-          PRESENCE_ERROR_CODES.VALIDATION_ERROR
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -246,9 +246,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

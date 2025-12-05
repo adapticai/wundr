@@ -14,13 +14,13 @@ import { prisma, Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { type TaskMetadata } from '@/lib/types/task-metadata';
 import { createErrorResponse } from '@/lib/validations/task';
 import {
   BACKLOG_ERROR_CODES,
   completeTaskSchema,
 } from '@/lib/validations/task-backlog';
 
+import type { TaskMetadata } from '@/lib/types/task-metadata';
 import type { CompleteTaskInput } from '@/lib/validations/task-backlog';
 import type { NextRequest } from 'next/server';
 
@@ -56,7 +56,7 @@ import type { NextRequest } from 'next/server';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; taskId: string }> }
+  { params }: { params: Promise<{ workspaceSlug: string; taskId: string }> },
 ): Promise<NextResponse> {
   try {
     // Authenticate user (can be Orchestrator or human)
@@ -65,9 +65,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          BACKLOG_ERROR_CODES.UNAUTHORIZED
+          BACKLOG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -79,9 +79,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid parameters',
-          BACKLOG_ERROR_CODES.VALIDATION_ERROR
+          BACKLOG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -136,9 +136,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Task not found in this workspace',
-          BACKLOG_ERROR_CODES.TASK_NOT_FOUND
+          BACKLOG_ERROR_CODES.TASK_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -147,9 +147,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Task is already completed',
-          BACKLOG_ERROR_CODES.ALREADY_COMPLETED
+          BACKLOG_ERROR_CODES.ALREADY_COMPLETED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -158,9 +158,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Cannot complete a cancelled task',
-          BACKLOG_ERROR_CODES.INVALID_STATE
+          BACKLOG_ERROR_CODES.INVALID_STATE,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -180,9 +180,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You do not have permission to complete this task',
-          BACKLOG_ERROR_CODES.FORBIDDEN
+          BACKLOG_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -194,9 +194,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          BACKLOG_ERROR_CODES.VALIDATION_ERROR
+          BACKLOG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -207,9 +207,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           BACKLOG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -258,7 +258,7 @@ export async function POST(
 
     // Log completion
     console.log(
-      `[Task Completion] Task ${taskId} "${task.title}" completed by ${session.user.name || session.user.email}`
+      `[Task Completion] Task ${taskId} "${task.title}" completed by ${session.user.name || session.user.email}`,
     );
 
     // If Orchestrator completed the task and there's a channel, post status message
@@ -280,7 +280,7 @@ export async function POST(
       } catch (error) {
         console.error(
           '[Task Completion] Failed to post channel message:',
-          error
+          error,
         );
         // Don't fail the completion if channel message fails
       }
@@ -324,7 +324,7 @@ export async function POST(
         });
 
         console.log(
-          `[Task Completion] Queued ${webhooks.length} webhook deliveries`
+          `[Task Completion] Queued ${webhooks.length} webhook deliveries`,
         );
       }
     } catch (error) {
@@ -345,7 +345,7 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/[workspaceId]/tasks/[taskId]/complete] Error:',
-      error
+      error,
     );
 
     // Handle Prisma errors
@@ -354,9 +354,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Task not found',
-            BACKLOG_ERROR_CODES.TASK_NOT_FOUND
+            BACKLOG_ERROR_CODES.TASK_NOT_FOUND,
           ),
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -364,9 +364,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        BACKLOG_ERROR_CODES.INTERNAL_ERROR
+        BACKLOG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

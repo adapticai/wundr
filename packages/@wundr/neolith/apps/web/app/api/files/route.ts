@@ -38,7 +38,7 @@ import type { NextRequest } from 'next/server';
  * @returns Prisma where clause for mimeType
  */
 function buildMimeTypeFilter(
-  type: 'image' | 'document' | 'audio' | 'video' | 'archive'
+  type: 'image' | 'document' | 'audio' | 'video' | 'archive',
 ): Prisma.StringFilter {
   const typeKey =
     type === 'image' ? 'images' : type === 'document' ? 'documents' : type;
@@ -72,9 +72,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          UPLOAD_ERROR_CODES.UNAUTHORIZED
+          UPLOAD_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -87,9 +87,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Invalid query parameters',
           UPLOAD_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -111,9 +111,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -209,9 +209,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -242,9 +242,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          UPLOAD_ERROR_CODES.UNAUTHORIZED
+          UPLOAD_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -256,9 +256,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid form data',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -270,9 +270,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'File is required',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -281,9 +281,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Workspace ID is required',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -292,9 +292,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           `File type '${file.type}' is not allowed`,
-          UPLOAD_ERROR_CODES.FILE_TYPE_NOT_ALLOWED
+          UPLOAD_ERROR_CODES.FILE_TYPE_NOT_ALLOWED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -305,9 +305,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'File too large for direct upload. Use multipart upload for files > 5MB.',
           UPLOAD_ERROR_CODES.FILE_TOO_LARGE,
-          { maxSize: maxDirectUploadSize, useMultipart: true }
+          { maxSize: maxDirectUploadSize, useMultipart: true },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -318,9 +318,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           `File size exceeds maximum allowed for ${getFileCategory(file.type)} files`,
           UPLOAD_ERROR_CODES.FILE_TOO_LARGE,
-          { maxSize }
+          { maxSize },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -338,9 +338,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -412,16 +412,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json(
       { data: { file: responseData }, message: 'File uploaded successfully' },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/files] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

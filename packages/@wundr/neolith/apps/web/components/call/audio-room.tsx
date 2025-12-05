@@ -75,7 +75,7 @@ function AudioRoomInner({
   // Get audio tracks
   const tracks = useTracks(
     [{ source: Track.Source.Microphone, withPlaceholder: true }],
-    { onlySubscribed: false }
+    { onlySubscribed: false },
   );
 
   // Get participants from tracks
@@ -175,7 +175,7 @@ function AudioRoomInner({
                     'w-2 bg-gradient-to-t from-stone-700 to-stone-500 dark:from-stone-400 dark:to-stone-200 rounded-full transition-all duration-200',
                     participants.some(p => p.isSpeaking)
                       ? 'animate-pulse'
-                      : 'opacity-30'
+                      : 'opacity-30',
                   )}
                   style={{
                     height: `${20 + Math.random() * 80}%`,
@@ -257,7 +257,7 @@ function AudioRoomInner({
                             'w-5 h-5',
                             participant.isSpeaking
                               ? 'text-green-500'
-                              : 'text-muted-foreground'
+                              : 'text-muted-foreground',
                           )}
                         >
                           <path d='M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z' />

@@ -87,7 +87,7 @@ export const tokenBudgetStatsSchema = z.object({
         operation: z.string(),
         tokens: z.number().nonnegative(),
         count: z.number().nonnegative(),
-      })
+      }),
     )
     .optional(),
 });
@@ -239,7 +239,7 @@ export const alertIdParamSchema = z.object({
 export const createErrorResponse = (
   code: string,
   message: string,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) => ({
   error: {
     code,

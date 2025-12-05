@@ -38,13 +38,13 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => (
     <div
       ref={ref}
       className={cn(
         'flex flex-1 items-center justify-center p-4 sm:p-6 md:p-8',
-        className
+        className,
       )}
       {...props}
     >
@@ -89,7 +89,7 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         )}
       </div>
     </div>
-  )
+  ),
 );
 
 EmptyState.displayName = 'EmptyState';

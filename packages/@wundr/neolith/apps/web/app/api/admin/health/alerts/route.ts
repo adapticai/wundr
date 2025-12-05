@@ -72,7 +72,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!adminMembership) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const acknowledgedFilter = searchParams.get('acknowledged');
     const limit = Math.min(
       200,
-      Math.max(1, parseInt(searchParams.get('limit') || '50', 10))
+      Math.max(1, parseInt(searchParams.get('limit') || '50', 10)),
     );
 
     // Build where clause for budget alerts
@@ -207,7 +207,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Apply filters
     if (severityFilter) {
       healthAlerts = healthAlerts.filter(
-        alert => alert.severity === severityFilter
+        alert => alert.severity === severityFilter,
       );
     }
 
@@ -226,7 +226,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.error('[GET /api/admin/health/alerts] Error:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -246,7 +246,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -261,7 +261,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!adminMembership) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -278,7 +278,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!Array.isArray(alertIds) || alertIds.length === 0) {
       return NextResponse.json(
         { error: 'alertIds must be a non-empty array' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -289,7 +289,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         typeof id === 'string' &&
         !id.includes('-') === false &&
         !id.startsWith('error-') &&
-        !id.startsWith('node-')
+        !id.startsWith('node-'),
     );
 
     if (budgetAlertIds.length === 0) {
@@ -298,7 +298,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error:
             'No acknowledgeable alerts found. System alerts are auto-generated and cannot be acknowledged.',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -323,7 +323,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error('[POST /api/admin/health/alerts] Error:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

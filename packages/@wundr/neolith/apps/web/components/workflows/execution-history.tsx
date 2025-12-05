@@ -27,7 +27,7 @@ export function ExecutionHistory({
   className,
 }: ExecutionHistoryProps) {
   const [statusFilter, setStatusFilter] = useState<ExecutionStatus | 'all'>(
-    'all'
+    'all',
   );
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -47,7 +47,7 @@ export function ExecutionHistory({
         const startOfDay = new Date(
           now.getFullYear(),
           now.getMonth(),
-          now.getDate()
+          now.getDate(),
         );
 
         switch (dateFilter) {
@@ -212,7 +212,7 @@ function ExecutionItem({
           execution.status === 'failed' && 'bg-red-500',
           execution.status === 'running' && 'bg-stone-500',
           execution.status === 'pending' && 'bg-stone-500',
-          execution.status === 'cancelled' && 'bg-gray-500'
+          execution.status === 'cancelled' && 'bg-gray-500',
         )}
       >
         {execution.status === 'running' && (
@@ -256,7 +256,7 @@ function ExecutionItem({
           <ChevronIcon
             className={cn(
               'h-5 w-5 text-muted-foreground transition-transform',
-              isExpanded && 'rotate-180'
+              isExpanded && 'rotate-180',
             )}
           />
         </button>
@@ -383,7 +383,7 @@ function ExecutionStatusBadge({
         'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
         config.bgColor,
         config.color,
-        className
+        className,
       )}
       role='status'
     >
@@ -418,7 +418,7 @@ function ActionStatusBadge({ status }: ActionStatusBadgeProps) {
     <span
       className={cn(
         'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium',
-        statusClasses[status]
+        statusClasses[status],
       )}
     >
       {status}

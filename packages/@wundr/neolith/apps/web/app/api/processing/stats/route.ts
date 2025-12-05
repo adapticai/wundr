@@ -44,9 +44,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           'Authentication required',
-          PROCESSING_ERROR_CODES.UNAUTHORIZED
+          PROCESSING_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -66,7 +66,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       select: { workspaceId: true },
     });
     const accessibleWorkspaceIds = new Set(
-      userWorkspaces.map(w => w.workspaceId)
+      userWorkspaces.map(w => w.workspaceId),
     );
 
     // Get all jobs (or filter by workspace for non-admins)
@@ -79,7 +79,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     const pending = relevantJobs.filter(j => j.status === 'pending').length;
     const queued = relevantJobs.filter(j => j.status === 'queued').length;
     const processing = relevantJobs.filter(
-      j => j.status === 'processing'
+      j => j.status === 'processing',
     ).length;
     const completed = relevantJobs.filter(j => j.status === 'completed').length;
     const failed = relevantJobs.filter(j => j.status === 'failed').length;
@@ -87,7 +87,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
 
     // Calculate average processing time for completed jobs
     const completedJobs = relevantJobs.filter(
-      j => j.status === 'completed' && j.startedAt && j.completedAt
+      j => j.status === 'completed' && j.startedAt && j.completedAt,
     );
     const avgProcessingTime =
       completedJobs.length > 0
@@ -102,7 +102,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const recentCompleted = relevantJobs.filter(
       j =>
-        j.status === 'completed' && j.completedAt && j.completedAt >= oneHourAgo
+        j.status === 'completed' && j.completedAt && j.completedAt >= oneHourAgo,
     ).length;
 
     // Find oldest pending job
@@ -191,9 +191,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',
-        PROCESSING_ERROR_CODES.INTERNAL_ERROR
+        PROCESSING_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -230,7 +230,7 @@ function getQueueHealthStatus(
   pending: number,
   queued: number,
   processing: number,
-  failed: number
+  failed: number,
 ): 'healthy' | 'degraded' | 'critical' {
   const backlog = pending + queued;
   const failureRate = (failed / (processing + failed + 1)) * 100;

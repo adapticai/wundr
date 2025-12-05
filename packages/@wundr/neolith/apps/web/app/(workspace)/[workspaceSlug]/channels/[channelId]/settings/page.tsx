@@ -90,7 +90,7 @@ export default function ChannelSettingsPage() {
         refetchMembers();
       }
     },
-    [channelId, inviteMembers, refetchMembers]
+    [channelId, inviteMembers, refetchMembers],
   );
 
   const handleInviteByEmail = useCallback(
@@ -109,7 +109,7 @@ export default function ChannelSettingsPage() {
           throw new Error(
             errorData.error ||
               errorData.message ||
-              'Failed to send email invites'
+              'Failed to send email invites',
           );
         }
 
@@ -119,7 +119,7 @@ export default function ChannelSettingsPage() {
         throw error;
       }
     },
-    [channelId, refetchMembers]
+    [channelId, refetchMembers],
   );
 
   const handleRemoveMember = useCallback(
@@ -129,7 +129,7 @@ export default function ChannelSettingsPage() {
         refetchMembers();
       }
     },
-    [channelId, removeMember, refetchMembers]
+    [channelId, removeMember, refetchMembers],
   );
 
   const handleChangeRole = useCallback(
@@ -139,7 +139,7 @@ export default function ChannelSettingsPage() {
         refetchMembers();
       }
     },
-    [channelId, changeMemberRole, refetchMembers]
+    [channelId, changeMemberRole, refetchMembers],
   );
 
   if (isLoading) {
@@ -189,7 +189,7 @@ export default function ChannelSettingsPage() {
                   'w-full rounded-md px-3 py-2 text-left text-sm font-medium transition-colors',
                   activeTab === tab.id
                     ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:bg-background/50 hover:text-foreground'
+                    : 'text-muted-foreground hover:bg-background/50 hover:text-foreground',
                 )}
               >
                 {tab.label}
@@ -295,7 +295,7 @@ function OverviewTab({
   const [description, setDescription] = useState(channel.description || '');
   const [hasChanges, setHasChanges] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; description?: string }>(
-    {}
+    {},
   );
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -310,7 +310,7 @@ function OverviewTab({
 
   useEffect(() => {
     setHasChanges(
-      name !== channel.name || description !== (channel.description || '')
+      name !== channel.name || description !== (channel.description || ''),
     );
     setSaveError(null);
     setSaveSuccess(false);
@@ -361,7 +361,7 @@ function OverviewTab({
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
       setSaveError(
-        error instanceof Error ? error.message : 'Failed to update channel'
+        error instanceof Error ? error.message : 'Failed to update channel',
       );
     }
   };
@@ -395,7 +395,7 @@ function OverviewTab({
               value={name}
               onChange={e => {
                 setName(
-                  e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '')
+                  e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ''),
                 );
                 setErrors({ ...errors, name: undefined });
               }}
@@ -404,7 +404,7 @@ function OverviewTab({
                 'w-full rounded-md border bg-background py-2 pl-7 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50',
                 errors.name
                   ? 'border-destructive focus:border-destructive focus:ring-destructive'
-                  : 'border-input focus:border-primary focus:ring-primary'
+                  : 'border-input focus:border-primary focus:ring-primary',
               )}
               maxLength={80}
               aria-invalid={!!errors.name}
@@ -442,7 +442,7 @@ function OverviewTab({
               'w-full rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50',
               errors.description
                 ? 'border-destructive focus:border-destructive focus:ring-destructive'
-                : 'border-input focus:border-primary focus:ring-primary'
+                : 'border-input focus:border-primary focus:ring-primary',
             )}
             maxLength={250}
             aria-invalid={!!errors.description}
@@ -585,7 +585,7 @@ function MembersTab({
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to update member role'
+        err instanceof Error ? err.message : 'Failed to update member role',
       );
     } finally {
       setProcessingUserId(null);
@@ -768,7 +768,7 @@ function MemberRow({
                     onClick={() => {
                       onChangeRole(
                         member.userId,
-                        member.role === 'admin' ? 'member' : 'admin'
+                        member.role === 'admin' ? 'member' : 'admin',
                       );
                       setShowMenu(false);
                     }}
@@ -930,7 +930,7 @@ function AdvancedTab({
       await onArchive();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to archive channel'
+        err instanceof Error ? err.message : 'Failed to archive channel',
       );
       setArchiving(false);
     }

@@ -45,7 +45,7 @@ async function completeMultipartUpload(
   uploadId: string,
   s3Key: string,
   s3Bucket: string,
-  parts: { partNumber: number; eTag: string }[]
+  parts: { partNumber: number; eTag: string }[],
 ): Promise<void> {
   const region = process.env.MY_AWS_REGION ?? 'us-east-1';
 
@@ -71,7 +71,7 @@ async function completeMultipartUpload(
           ETag: part.eTag,
         })),
       },
-    })
+    }),
   );
 }
 
@@ -129,7 +129,7 @@ async function checkWorkspaceMembership(workspaceId: string, userId: string) {
  */
 async function triggerFileProcessing(
   fileId: string,
-  mimeType: string
+  mimeType: string,
 ): Promise<void> {
   const category = getFileCategory(mimeType);
   const sqsQueueUrl = process.env.FILE_PROCESSING_QUEUE_URL;
@@ -165,7 +165,7 @@ async function triggerFileProcessing(
               category,
               action: 'PROCESS_FILE',
             }),
-          })
+          }),
         );
       } else {
         // SQS module not available, fall back to direct processing
@@ -219,7 +219,7 @@ async function triggerFileProcessing(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -228,9 +228,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          UPLOAD_ERROR_CODES.UNAUTHORIZED
+          UPLOAD_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -241,9 +241,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid upload ID format',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -255,9 +255,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -268,9 +268,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           UPLOAD_ERROR_CODES.VALIDATION_ERROR,
-          { errors: bodyResult.error.flatten().fieldErrors }
+          { errors: bodyResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -279,15 +279,15 @@ export async function POST(
     // Check workspace membership
     const membership = await checkWorkspaceMembership(
       input.workspaceId,
-      session.user.id
+      session.user.id,
     );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -307,9 +307,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Upload not found or already completed',
-          UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND
+          UPLOAD_ERROR_CODES.UPLOAD_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -317,7 +317,7 @@ export async function POST(
     if (pendingFile.uploadedById !== session.user.id) {
       return NextResponse.json(
         createErrorResponse('Access denied', UPLOAD_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -330,7 +330,7 @@ export async function POST(
 
     // Sort parts by part number
     const sortedParts = [...input.parts].sort(
-      (a, b) => a.partNumber - b.partNumber
+      (a, b) => a.partNumber - b.partNumber,
     );
 
     // Verify all parts are present
@@ -348,9 +348,9 @@ export async function POST(
         createErrorResponse(
           `Missing parts: ${missingParts.join(', ')}`,
           UPLOAD_ERROR_CODES.PART_MISSING,
-          { missingParts }
+          { missingParts },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -361,9 +361,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Upload has expired',
-            UPLOAD_ERROR_CODES.UPLOAD_EXPIRED
+            UPLOAD_ERROR_CODES.UPLOAD_EXPIRED,
           ),
-          { status: 410 }
+          { status: 410 },
         );
       }
     }
@@ -373,13 +373,13 @@ export async function POST(
       params.uploadId,
       pendingFile.s3Key,
       pendingFile.s3Bucket,
-      sortedParts
+      sortedParts,
     );
 
     // Generate thumbnail URL
     const thumbnailUrl = generateThumbnailUrl(
       pendingFile.s3Key,
-      pendingFile.mimeType
+      pendingFile.mimeType,
     );
 
     // Merge metadata
@@ -435,16 +435,16 @@ export async function POST(
         data: { file: responseData },
         message: 'Multipart upload completed successfully',
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (_error) {
     // Error handling - details in response
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

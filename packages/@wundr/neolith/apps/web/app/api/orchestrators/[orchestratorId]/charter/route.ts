@@ -59,7 +59,7 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
   }
 
   const membership = userOrganizations.find(
-    m => m.organizationId === orchestrator.organizationId
+    m => m.organizationId === orchestrator.organizationId,
   );
 
   return { orchestrator, role: membership?.role ?? null };
@@ -82,7 +82,7 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -91,9 +91,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.UNAUTHORIZED,
-          'Authentication required'
+          'Authentication required',
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -105,24 +105,24 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
-          'Orchestrator ID is required'
+          'Orchestrator ID is required',
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Check access
     const access = await checkOrchestratorAccess(
       orchestratorId,
-      session.user.id
+      session.user.id,
     );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
-          'Orchestrator not found or access denied'
+          'Orchestrator not found or access denied',
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -158,9 +158,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.NO_ACTIVE_VERSION,
-          'No active charter found for this orchestrator'
+          'No active charter found for this orchestrator',
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -168,14 +168,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/orchestrators/:orchestratorId/charter] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         CHARTER_ERROR_CODES.INTERNAL_ERROR,
-        'An internal error occurred'
+        'An internal error occurred',
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -217,7 +217,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -226,9 +226,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.UNAUTHORIZED,
-          'Authentication required'
+          'Authentication required',
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -240,9 +240,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
-          'Orchestrator ID is required'
+          'Orchestrator ID is required',
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -254,9 +254,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
-          'Invalid JSON body'
+          'Invalid JSON body',
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -268,7 +268,7 @@ export async function POST(
 
     // Validate input
     const parseResult = charterVersionCreateSchema.safeParse(
-      inputWithOrchestrator
+      inputWithOrchestrator,
     );
     if (!parseResult.success) {
       return NextResponse.json(
@@ -277,9 +277,9 @@ export async function POST(
           'Validation failed',
           {
             errors: parseResult.error.flatten().fieldErrors,
-          }
+          },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -288,15 +288,15 @@ export async function POST(
     // Check access and permissions
     const access = await checkOrchestratorAccess(
       orchestratorId,
-      session.user.id
+      session.user.id,
     );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
-          'Orchestrator not found or access denied'
+          'Orchestrator not found or access denied',
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -305,9 +305,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.FORBIDDEN,
-          'Insufficient permissions to create/update charter'
+          'Insufficient permissions to create/update charter',
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -371,12 +371,12 @@ export async function POST(
 
     return NextResponse.json(
       { data: newVersion, message: 'Charter created/updated successfully' },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error(
       '[POST /api/orchestrators/:orchestratorId/charter] Error:',
-      error
+      error,
     );
 
     // Handle unique constraint errors
@@ -387,18 +387,18 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.DUPLICATE_VERSION,
-          'A charter version with this number already exists'
+          'A charter version with this number already exists',
         ),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     return NextResponse.json(
       createErrorResponse(
         CHARTER_ERROR_CODES.INTERNAL_ERROR,
-        'An internal error occurred'
+        'An internal error occurred',
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

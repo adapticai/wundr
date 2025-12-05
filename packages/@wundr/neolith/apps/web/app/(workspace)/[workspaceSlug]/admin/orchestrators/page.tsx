@@ -34,13 +34,13 @@ export default function AdminOrchestratorsPage() {
 
   const { orchestrators, isLoading, error, refetch } = useOrchestrators(
     workspaceSlug,
-    filters
+    filters,
   );
 
   useEffect(() => {
     setPageHeader(
       'Orchestrator Management',
-      'Manage and monitor all workspace orchestrators'
+      'Manage and monitor all workspace orchestrators',
     );
   }, [setPageHeader]);
 
@@ -60,7 +60,7 @@ export default function AdminOrchestratorsPage() {
     (id: string) => {
       router.push(`/${workspaceSlug}/admin/orchestrators/${id}`);
     },
-    [router, workspaceSlug]
+    [router, workspaceSlug],
   );
 
   const handleAddNew = useCallback(() => {

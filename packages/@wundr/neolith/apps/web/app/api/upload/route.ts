@@ -55,7 +55,7 @@ async function generatePresignedPostUrl(
   s3Key: string,
   s3Bucket: string,
   contentType: string,
-  maxSize: number
+  maxSize: number,
 ): Promise<UploadInitResponse> {
   const region = process.env.MY_AWS_REGION ?? 'us-east-1';
   const expiresIn = 3600; // 1 hour
@@ -65,7 +65,7 @@ async function generatePresignedPostUrl(
     // Dynamic imports - modules may not be installed in all environments
     // eslint-disable-next-line import/no-unresolved
     const presignedModule = await import('@aws-sdk/s3-presigned-post').catch(
-      () => null
+      () => null,
     );
     const s3Module = await import('@aws-sdk/client-s3').catch(() => null);
 
@@ -193,9 +193,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          UPLOAD_ERROR_CODES.UNAUTHORIZED
+          UPLOAD_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -207,9 +207,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -220,9 +220,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           UPLOAD_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -231,15 +231,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Check workspace membership
     const membership = await checkWorkspaceMembership(
       input.workspaceId,
-      session.user.id
+      session.user.id,
     );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       s3Key,
       s3Bucket,
       input.contentType,
-      input.size
+      input.size,
     );
 
     // Create pending file record in database
@@ -284,9 +284,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

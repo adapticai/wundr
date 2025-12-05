@@ -66,7 +66,7 @@ function PasswordRequirements({ password }: { password: string }) {
  */
 function PasswordStrength({ password }: { password: string }) {
   const getStrength = (
-    pwd: string
+    pwd: string,
   ): { score: number; label: string; color: string } => {
     if (!pwd) {
       return { score: 0, label: '', color: '' };
@@ -213,7 +213,7 @@ function ResetPasswordContent() {
 
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
       setError(
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+        'Password must contain at least one uppercase letter, one lowercase letter, and one number',
       );
       return;
     }

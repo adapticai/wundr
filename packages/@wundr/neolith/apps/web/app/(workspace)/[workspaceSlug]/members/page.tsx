@@ -32,7 +32,7 @@ export default function MembersPage() {
     {
       status: filterStatus === 'all' ? undefined : filterStatus,
       search: searchQuery || undefined,
-    }
+    },
   );
 
   const {
@@ -65,7 +65,7 @@ export default function MembersPage() {
       await createInvites(emails, roleId);
       setShowInviteModal(false);
     },
-    [createInvites]
+    [createInvites],
   );
 
   const filterOptions: { value: FilterStatus; label: string }[] = [
@@ -90,7 +90,7 @@ export default function MembersPage() {
           onClick={() => setShowInviteModal(true)}
           className={cn(
             'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2',
-            'text-sm font-medium text-primary-foreground hover:bg-primary/90'
+            'text-sm font-medium text-primary-foreground hover:bg-primary/90',
           )}
         >
           <UserPlusIcon className='h-4 w-4' />
@@ -111,7 +111,7 @@ export default function MembersPage() {
                 'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
                 filterStatus === option.value
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground',
               )}
             >
               {option.label}
@@ -131,7 +131,7 @@ export default function MembersPage() {
               'w-full rounded-md border border-input bg-background py-2 pl-9 pr-4',
               'text-sm placeholder:text-muted-foreground',
               'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'sm:w-64'
+              'sm:w-64',
             )}
           />
         </div>
@@ -329,7 +329,7 @@ function StatusBadge({ status }: { status: MemberStatus }) {
     <span
       className={cn(
         'rounded-full px-2.5 py-0.5 text-xs font-medium',
-        className
+        className,
       )}
     >
       {label}
@@ -439,7 +439,7 @@ function InviteModal({
               className={cn(
                 'mt-1 block w-full rounded-md border border-input bg-background',
                 'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
               )}
             />
           </div>
@@ -458,7 +458,7 @@ function InviteModal({
               className={cn(
                 'mt-1 block w-full rounded-md border border-input bg-background',
                 'px-3 py-2 text-sm',
-                'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
               )}
             >
               {roles.map(role => (
@@ -482,7 +482,7 @@ function InviteModal({
               disabled={isLoading || !emails.trim()}
               className={cn(
                 'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-                'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+                'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
               )}
             >
               {isLoading ? 'Sending...' : 'Send Invites'}

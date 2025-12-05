@@ -73,7 +73,7 @@ export function UsageChart({
   previousPeriodData,
 }: UsageChartProps) {
   const [zoomDomain, setZoomDomain] = React.useState<[number, number] | null>(
-    null
+    null,
   );
   const [hoveredSeries, setHoveredSeries] = React.useState<string | null>(null);
 
@@ -102,7 +102,7 @@ export function UsageChart({
     const inputTotal = data.reduce((sum, point) => sum + point.inputTokens, 0);
     const outputTotal = data.reduce(
       (sum, point) => sum + point.outputTokens,
-      0
+      0,
     );
     const avg = data.length > 0 ? total / data.length : 0;
     const max = Math.max(...data.map(point => point.totalTokens));
@@ -160,7 +160,7 @@ export function UsageChart({
                   key={key}
                   className={cn(
                     'flex items-center gap-2 transition-opacity',
-                    hoveredSeries && hoveredSeries !== key && 'opacity-40'
+                    hoveredSeries && hoveredSeries !== key && 'opacity-40',
                   )}
                   onMouseEnter={() => setHoveredSeries(key)}
                   onMouseLeave={() => setHoveredSeries(null)}
@@ -210,7 +210,7 @@ export function UsageChart({
                     <ChartTooltipContent
                       labelFormatter={value => {
                         const point = chartData.find(
-                          d => d.timestampFormatted === value
+                          d => d.timestampFormatted === value,
                         );
                         return point
                           ? new Date(point.timestamp).toLocaleString('en-US', {

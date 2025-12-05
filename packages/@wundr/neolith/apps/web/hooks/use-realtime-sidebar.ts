@@ -130,7 +130,7 @@ function transformChannelUpdate(update: ChannelUpdate): Channel {
  * Map status string to valid User status type
  */
 function mapStatus(
-  status: string
+  status: string,
 ): 'online' | 'offline' | 'away' | 'busy' | undefined {
   if (
     status === 'online' ||
@@ -205,7 +205,7 @@ export function useRealtimeSidebar({
 }: UseRealtimeSidebarOptions): UseRealtimeSidebarReturn {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [directMessages, setDirectMessages] = useState<DirectMessageChannel[]>(
-    []
+    [],
   );
   const [starredChannels, setStarredChannels] = useState<Channel[]>([]);
   const [starredDMs, setStarredDMs] = useState<DirectMessageChannel[]>([]);
@@ -271,7 +271,7 @@ export function useRealtimeSidebar({
       // Exponential backoff for reconnection (max 30 seconds)
       const delay = Math.min(
         1000 * Math.pow(2, reconnectAttemptRef.current),
-        30000
+        30000,
       );
       reconnectAttemptRef.current++;
 
@@ -373,7 +373,7 @@ export function useRealtimeSidebar({
             return prev;
           }
           const updated = [...prev, newChannel].sort((a, b) =>
-            a.name.localeCompare(b.name)
+            a.name.localeCompare(b.name),
           );
           onChannelsUpdateRef.current?.(updated);
           return updated;
@@ -482,7 +482,7 @@ export function useRealtimeSidebar({
                 return prev.map(c => (c.id === id ? updatedChannel : c));
               }
               return [...prev, updatedChannel].sort((a, b) =>
-                a.name.localeCompare(b.name)
+                a.name.localeCompare(b.name),
               );
             });
           } else {
@@ -491,7 +491,7 @@ export function useRealtimeSidebar({
           }
           // Also update the channel in the channels list
           setChannels(prev =>
-            prev.map(c => (c.id === id ? { ...c, isStarred } : c))
+            prev.map(c => (c.id === id ? { ...c, isStarred } : c)),
           );
         } else if (type === 'dm' && data.dm) {
           const updatedDM = transformDMUpdate(data.dm);
@@ -509,7 +509,7 @@ export function useRealtimeSidebar({
           }
           // Also update the DM in the directMessages list
           setDirectMessages(prev =>
-            prev.map(d => (d.id === id ? { ...d, isStarred } : d))
+            prev.map(d => (d.id === id ? { ...d, isStarred } : d)),
           );
         }
       } catch (e) {
@@ -554,11 +554,11 @@ export function useRealtimeSidebar({
         setStarredChannels(prev => {
           console.log(
             '[useRealtimeSidebar] Adding to starred, prev count:',
-            prev.length
+            prev.length,
           );
           if (prev.some(c => c.id === channelId)) {
             console.log(
-              '[useRealtimeSidebar] Channel already starred, skipping'
+              '[useRealtimeSidebar] Channel already starred, skipping',
             );
             return prev;
           }
@@ -567,7 +567,7 @@ export function useRealtimeSidebar({
             channel || channels.find(c => c.id === channelId);
           console.log(
             '[useRealtimeSidebar] Channel to add:',
-            channelToAdd?.name
+            channelToAdd?.name,
           );
           if (channelToAdd) {
             const newList = [
@@ -576,7 +576,7 @@ export function useRealtimeSidebar({
             ].sort((a, b) => a.name.localeCompare(b.name));
             console.log(
               '[useRealtimeSidebar] New starred count:',
-              newList.length
+              newList.length,
             );
             return newList;
           }
@@ -588,22 +588,22 @@ export function useRealtimeSidebar({
         setStarredChannels(prev => {
           console.log(
             '[useRealtimeSidebar] Removing from starred, prev count:',
-            prev.length
+            prev.length,
           );
           const newList = prev.filter(c => c.id !== channelId);
           console.log(
             '[useRealtimeSidebar] New starred count after removal:',
-            newList.length
+            newList.length,
           );
           return newList;
         });
       }
       // Also update the channel in the channels list
       setChannels(prev =>
-        prev.map(c => (c.id === channelId ? { ...c, isStarred } : c))
+        prev.map(c => (c.id === channelId ? { ...c, isStarred } : c)),
       );
     },
-    [channels]
+    [channels],
   );
 
   // Optimistic update for DM star status
@@ -628,10 +628,10 @@ export function useRealtimeSidebar({
       }
       // Also update the DM in the directMessages list
       setDirectMessages(prev =>
-        prev.map(d => (d.id === dmId ? { ...d, isStarred } : d))
+        prev.map(d => (d.id === dmId ? { ...d, isStarred } : d)),
       );
     },
-    [directMessages]
+    [directMessages],
   );
 
   // Connect on mount

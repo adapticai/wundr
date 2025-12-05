@@ -81,7 +81,7 @@ export function Message({
           <span
             className={cn(
               'text-xs text-muted-foreground px-1',
-              from === 'user' ? 'text-right' : 'text-left'
+              from === 'user' ? 'text-right' : 'text-left',
             )}
           >
             {formatTimestamp(timestamp)}

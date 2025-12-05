@@ -54,7 +54,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!adminMembership) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.min(
       100,
-      Math.max(1, parseInt(searchParams.get('limit') || '20', 10))
+      Math.max(1, parseInt(searchParams.get('limit') || '20', 10)),
     );
     const sortBy = (searchParams.get('sortBy') || 'lastActivity') as SortField;
     const sortOrder = (searchParams.get('sortOrder') || 'desc') as SortOrder;
@@ -176,11 +176,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       tokenUsageByOrchestrator.map(t => [
         t.orchestratorId,
         t._sum.totalTokens || 0,
-      ])
+      ]),
     );
 
     const errorCountMap = new Map(
-      errorCountsByOrchestrator.map(e => [e.actorId, e._count])
+      errorCountsByOrchestrator.map(e => [e.actorId, e._count]),
     );
 
     // Transform to health status objects
@@ -232,7 +232,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           responseTime: 0, // TODO: Implement actual response time tracking
           errorCount: errorCountMap.get(orchestrator.id) || 0,
         };
-      }
+      },
     );
 
     // Apply sorting
@@ -240,17 +240,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       healthStatuses.sort((a, b) =>
         sortOrder === 'asc'
           ? a.errorCount - b.errorCount
-          : b.errorCount - a.errorCount
+          : b.errorCount - a.errorCount,
       );
     } else if (sortBy === 'sessions') {
       healthStatuses.sort((a, b) =>
-        sortOrder === 'asc' ? a.sessions - b.sessions : b.sessions - a.sessions
+        sortOrder === 'asc' ? a.sessions - b.sessions : b.sessions - a.sessions,
       );
     } else if (sortBy === 'tokenUsage') {
       healthStatuses.sort((a, b) =>
         sortOrder === 'asc'
           ? a.tokenBudget.percent - b.tokenBudget.percent
-          : b.tokenBudget.percent - a.tokenBudget.percent
+          : b.tokenBudget.percent - a.tokenBudget.percent,
       );
     }
     // lastActivity is already sorted by updatedAt in the query
@@ -275,7 +275,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.error('[GET /api/admin/health/orchestrators] Error:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -110,7 +110,7 @@ export interface UseAgentMutationsReturn {
  */
 export function useAgents(
   workspaceId: string,
-  filters?: AgentFilters
+  filters?: AgentFilters,
 ): UseAgentsReturn {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -175,7 +175,7 @@ export function useAgents(
       filters?.search,
       filters?.page,
       filters?.limit,
-    ]
+    ],
   );
 
   useEffect(() => {
@@ -201,7 +201,7 @@ export function useAgents(
         agent =>
           agent.name.toLowerCase().includes(searchLower) ||
           agent.description?.toLowerCase().includes(searchLower) ||
-          agent.type?.toLowerCase().includes(searchLower)
+          agent.type?.toLowerCase().includes(searchLower),
       );
     }
 
@@ -274,7 +274,7 @@ export function useAgent(workspaceId: string, agentId: string): UseAgentReturn {
       try {
         const response = await fetch(
           `/api/workspaces/${workspaceId}/agents/${agentId}`,
-          { signal }
+          { signal },
         );
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -293,7 +293,7 @@ export function useAgent(workspaceId: string, agentId: string): UseAgentReturn {
         setIsLoading(false);
       }
     },
-    [workspaceId, agentId]
+    [workspaceId, agentId],
   );
 
   useEffect(() => {
@@ -350,7 +350,7 @@ export function useAgent(workspaceId: string, agentId: string): UseAgentReturn {
  * ```
  */
 export function useAgentMutations(
-  workspaceId: string
+  workspaceId: string,
 ): UseAgentMutationsReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -382,7 +382,7 @@ export function useAgentMutations(
         setIsLoading(false);
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   const updateAgent = useCallback(
@@ -397,7 +397,7 @@ export function useAgentMutations(
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(input),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -415,7 +415,7 @@ export function useAgentMutations(
         setIsLoading(false);
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   const deleteAgent = useCallback(
@@ -428,7 +428,7 @@ export function useAgentMutations(
           `/api/workspaces/${workspaceId}/agents/${id}`,
           {
             method: 'DELETE',
-          }
+          },
         );
 
         if (!response.ok) {
@@ -445,21 +445,21 @@ export function useAgentMutations(
         setIsLoading(false);
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   const pauseAgent = useCallback(
     async (id: string): Promise<Agent | null> => {
       return updateAgent(id, { status: 'paused' });
     },
-    [updateAgent]
+    [updateAgent],
   );
 
   const resumeAgent = useCallback(
     async (id: string): Promise<Agent | null> => {
       return updateAgent(id, { status: 'active' });
     },
-    [updateAgent]
+    [updateAgent],
   );
 
   return {

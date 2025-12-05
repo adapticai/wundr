@@ -44,7 +44,7 @@ interface RouteContext {
  */
 async function getOrchestratorWithAdminCheck(
   orchestratorId: string,
-  userId: string
+  userId: string,
 ) {
   // Get user's organization memberships
   const userOrganizations = await prisma.organizationMember.findMany({
@@ -83,7 +83,7 @@ async function getOrchestratorWithAdminCheck(
 
   // Find user's role in the orchestrator's organization
   const membership = userOrganizations.find(
-    m => m.organizationId === orchestrator.organizationId
+    m => m.organizationId === orchestrator.organizationId,
   );
 
   return { orchestrator, role: membership?.role ?? null };
@@ -132,7 +132,7 @@ function getTimeWindowBounds(window: TimeWindow): { start: Date; end: Date } {
 async function calculateWindowUsage(
   orchestratorId: string,
   window: TimeWindow,
-  limit: number | null
+  limit: number | null,
 ): Promise<BudgetStatus | null> {
   if (!limit) {
     return null;
@@ -190,7 +190,7 @@ async function calculateWindowUsage(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -199,9 +199,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          BUDGET_ERROR_CODES.UNAUTHORIZED
+          BUDGET_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -212,25 +212,25 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid orchestrator ID format',
-          BUDGET_ERROR_CODES.VALIDATION_ERROR
+          BUDGET_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Get orchestrator with access check (any member can view budget)
     const result = await getOrchestratorWithAdminCheck(
       params.orchestratorId,
-      session.user.id
+      session.user.id,
     );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -264,7 +264,7 @@ export async function GET(
         const status = await calculateWindowUsage(
           orchestrator.id,
           window,
-          limit
+          limit,
         );
         if (status) {
           budgetStatuses[window] = status;
@@ -284,14 +284,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/orchestrators/:orchestratorId/budget] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        BUDGET_ERROR_CODES.INTERNAL_ERROR
+        BUDGET_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -308,7 +308,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -317,9 +317,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          BUDGET_ERROR_CODES.UNAUTHORIZED
+          BUDGET_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -330,9 +330,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid orchestrator ID format',
-          BUDGET_ERROR_CODES.VALIDATION_ERROR
+          BUDGET_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -344,9 +344,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          BUDGET_ERROR_CODES.VALIDATION_ERROR
+          BUDGET_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -357,9 +357,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           BUDGET_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -368,16 +368,16 @@ export async function PATCH(
     // Get orchestrator with admin access check
     const result = await getOrchestratorWithAdminCheck(
       params.orchestratorId,
-      session.user.id
+      session.user.id,
     );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -388,9 +388,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to update budget limits',
-          BUDGET_ERROR_CODES.FORBIDDEN
+          BUDGET_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -473,14 +473,14 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/orchestrators/:orchestratorId/budget] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        BUDGET_ERROR_CODES.INTERNAL_ERROR
+        BUDGET_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

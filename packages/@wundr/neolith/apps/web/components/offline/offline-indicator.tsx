@@ -56,7 +56,7 @@ export function OfflineIndicator({
       className={cn(
         'fixed top-0 left-0 right-0 z-50',
         'transition-all duration-300',
-        className
+        className,
       )}
     >
       {showBackOnline ? (
@@ -168,7 +168,7 @@ export function FloatingOfflineIndicator({
         'flex items-center gap-2 rounded-full bg-destructive px-4 py-2 shadow-lg',
         'text-destructive-foreground',
         'animate-in slide-in-from-bottom-4 fade-in-0 duration-300',
-        className
+        className,
       )}
     >
       <OfflineIcon className='h-4 w-4' />

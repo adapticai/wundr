@@ -162,7 +162,7 @@ async function fetcher<T>(url: string): Promise<T> {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
       errorData.error?.message ||
-        `Request failed: ${response.status} ${response.statusText}`
+        `Request failed: ${response.status} ${response.statusText}`,
     );
   }
 
@@ -272,7 +272,7 @@ export function useBudget(orchestratorId: string): UseBudgetReturn {
   const { data, error, isLoading, isValidating, mutate } = useSWR<BudgetStatus>(
     url,
     fetcher,
-    DEFAULT_SWR_CONFIG
+    DEFAULT_SWR_CONFIG,
   );
 
   const refetch = useCallback(() => {
@@ -334,7 +334,7 @@ export interface UseUsageHistoryReturn {
  */
 export function useUsageHistory(
   orchestratorId: string,
-  params: HistoryParams = {}
+  params: HistoryParams = {},
 ): UseUsageHistoryReturn {
   const shouldFetch = Boolean(orchestratorId);
 
@@ -422,7 +422,7 @@ export function useBudgetAlerts(orchestratorId: string): UseBudgetAlertsReturn {
   const { data, error, isLoading, mutate } = useSWR<BudgetAlert[]>(
     url,
     fetcher,
-    DEFAULT_SWR_CONFIG
+    DEFAULT_SWR_CONFIG,
   );
 
   // Mutation for acknowledging an alert
@@ -437,12 +437,12 @@ export function useBudgetAlerts(orchestratorId: string): UseBudgetAlertsReturn {
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            errorData.error?.message || 'Failed to acknowledge alert'
+            errorData.error?.message || 'Failed to acknowledge alert',
           );
         }
 
         return response.json();
-      }
+      },
     );
 
   // Mutation for configuring alerts
@@ -461,12 +461,12 @@ export function useBudgetAlerts(orchestratorId: string): UseBudgetAlertsReturn {
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            errorData.error?.message || 'Failed to update alert configuration'
+            errorData.error?.message || 'Failed to update alert configuration',
           );
         }
 
         return response.json();
-      }
+      },
     );
 
   const acknowledge = useCallback(
@@ -478,12 +478,12 @@ export function useBudgetAlerts(orchestratorId: string): UseBudgetAlertsReturn {
           currentData?.map(alert =>
             alert.id === alertId
               ? { ...alert, acknowledged: true, acknowledgedAt: new Date() }
-              : alert
+              : alert,
           ),
-        { revalidate: true }
+        { revalidate: true },
       );
     },
-    [triggerAcknowledge, mutate]
+    [triggerAcknowledge, mutate],
   );
 
   const configureAlerts = useCallback(
@@ -492,7 +492,7 @@ export function useBudgetAlerts(orchestratorId: string): UseBudgetAlertsReturn {
       // Revalidate alerts after configuration change
       void mutate();
     },
-    [triggerConfigure, mutate]
+    [triggerConfigure, mutate],
   );
 
   return {
@@ -555,7 +555,7 @@ export interface UseBudgetMutationsReturn {
  * ```
  */
 export function useBudgetMutations(
-  orchestratorId: string
+  orchestratorId: string,
 ): UseBudgetMutationsReturn {
   const budgetUrl = `/api/orchestrators/${orchestratorId}/budget`;
 
@@ -576,13 +576,13 @@ export function useBudgetMutations(
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error?.message || 'Failed to update budget limits'
+          errorData.error?.message || 'Failed to update budget limits',
         );
       }
 
       const result: ApiResponse<BudgetStatus> = await response.json();
       return result.data;
-    }
+    },
   );
 
   // Mutation for setting auto-pause
@@ -602,27 +602,27 @@ export function useBudgetMutations(
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error?.message || 'Failed to update auto-pause setting'
+          errorData.error?.message || 'Failed to update auto-pause setting',
         );
       }
 
       const result: ApiResponse<BudgetStatus> = await response.json();
       return result.data;
-    }
+    },
   );
 
   const updateBudget = useCallback(
     async (limits: BudgetLimits): Promise<void> => {
       await triggerUpdateBudget(limits);
     },
-    [triggerUpdateBudget]
+    [triggerUpdateBudget],
   );
 
   const setAutoPause = useCallback(
     async (enabled: boolean): Promise<void> => {
       await triggerSetAutoPause({ enabled });
     },
-    [triggerSetAutoPause]
+    [triggerSetAutoPause],
   );
 
   return {

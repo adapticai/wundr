@@ -129,7 +129,7 @@ export function WebhookDeliveryLog({
     const success = deliveries.filter(d => d.status === 'success').length;
     const failed = deliveries.filter(d => d.status === 'failed').length;
     const pending = deliveries.filter(
-      d => d.status === 'pending' || d.status === 'retrying'
+      d => d.status === 'pending' || d.status === 'retrying',
     ).length;
     const successRate = total > 0 ? (success / total) * 100 : 0;
 
@@ -180,7 +180,7 @@ export function WebhookDeliveryLog({
                 ? 'text-green-600'
                 : stats.successRate >= 80
                   ? 'text-yellow-600'
-                  : 'text-red-600'
+                  : 'text-red-600',
             )}
           >
             {stats.successRate.toFixed(1)}% success rate
@@ -290,7 +290,7 @@ function DeliveryItem({
       <div
         className={cn(
           'absolute left-3 top-4 flex h-4 w-4 items-center justify-center rounded-full border-2 border-card',
-          statusConfig.bgColor
+          statusConfig.bgColor,
         )}
       >
         <StatusIcon className={cn('h-2.5 w-2.5', statusConfig.color)} />
@@ -330,7 +330,7 @@ function DeliveryItem({
                   delivery.response.statusCode >= 200 &&
                     delivery.response.statusCode < 300
                     ? 'text-green-600'
-                    : 'text-red-600'
+                    : 'text-red-600',
                 )}
               >
                 {delivery.response.statusCode}
@@ -344,7 +344,7 @@ function DeliveryItem({
               className={cn(
                 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
                 statusConfig.bgColor,
-                statusConfig.color
+                statusConfig.color,
               )}
             >
               {statusConfig.label}
@@ -352,7 +352,7 @@ function DeliveryItem({
             <ChevronIcon
               className={cn(
                 'h-4 w-4 text-muted-foreground transition-transform',
-                isExpanded && 'rotate-90'
+                isExpanded && 'rotate-90',
               )}
             />
           </div>
@@ -396,7 +396,7 @@ function DeliveryItem({
                       delivery.response.statusCode >= 200 &&
                         delivery.response.statusCode < 300
                         ? 'text-green-600'
-                        : 'text-red-600'
+                        : 'text-red-600',
                     )}
                   >
                     HTTP {delivery.response.statusCode}

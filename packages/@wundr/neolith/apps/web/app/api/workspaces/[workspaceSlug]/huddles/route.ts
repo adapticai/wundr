@@ -45,7 +45,7 @@ interface RouteContext {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -53,9 +53,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -73,9 +73,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -92,7 +92,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         createErrorResponse('Access denied', ORG_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -107,9 +107,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -128,7 +128,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -136,9 +136,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -156,9 +156,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -175,7 +175,7 @@ export async function POST(
     if (!membership) {
       return NextResponse.json(
         createErrorResponse('Access denied', ORG_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -195,7 +195,7 @@ export async function POST(
     if (!user) {
       return NextResponse.json(
         createErrorResponse('User not found', ORG_ERROR_CODES.INTERNAL_ERROR),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -208,9 +208,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Huddle name is required',
-              ORG_ERROR_CODES.VALIDATION_ERROR
+              ORG_ERROR_CODES.VALIDATION_ERROR,
             ),
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -225,7 +225,7 @@ export async function POST(
             isVideoEnabled: false,
             isSpeaking: false,
             isHandRaised: false,
-          }
+          },
         );
 
         return NextResponse.json({ data: huddle }, { status: 201 });
@@ -236,9 +236,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Huddle ID is required',
-              ORG_ERROR_CODES.VALIDATION_ERROR
+              ORG_ERROR_CODES.VALIDATION_ERROR,
             ),
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -247,9 +247,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Huddle not found',
-              ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+              ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
             ),
-            { status: 404 }
+            { status: 404 },
           );
         }
 
@@ -257,9 +257,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Huddle not in this workspace',
-              ORG_ERROR_CODES.FORBIDDEN
+              ORG_ERROR_CODES.FORBIDDEN,
             ),
-            { status: 403 }
+            { status: 403 },
           );
         }
 
@@ -277,9 +277,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Failed to join huddle',
-              ORG_ERROR_CODES.INTERNAL_ERROR
+              ORG_ERROR_CODES.INTERNAL_ERROR,
             ),
-            { status: 500 }
+            { status: 500 },
           );
         }
 
@@ -293,9 +293,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Huddle ID is required',
-              ORG_ERROR_CODES.VALIDATION_ERROR
+              ORG_ERROR_CODES.VALIDATION_ERROR,
             ),
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -304,9 +304,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Failed to leave huddle',
-              ORG_ERROR_CODES.INTERNAL_ERROR
+              ORG_ERROR_CODES.INTERNAL_ERROR,
             ),
-            { status: 500 }
+            { status: 500 },
           );
         }
 
@@ -318,9 +318,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Huddle ID is required',
-              ORG_ERROR_CODES.VALIDATION_ERROR
+              ORG_ERROR_CODES.VALIDATION_ERROR,
             ),
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -329,23 +329,23 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Huddle not found',
-              ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+              ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
             ),
-            { status: 404 }
+            { status: 404 },
           );
         }
 
         // Only allow ending by participants
         const isParticipant = huddle.participants.some(
-          p => p.id === session.user.id
+          p => p.id === session.user.id,
         );
         if (!isParticipant) {
           return NextResponse.json(
             createErrorResponse(
               'Only participants can end a huddle',
-              ORG_ERROR_CODES.FORBIDDEN
+              ORG_ERROR_CODES.FORBIDDEN,
             ),
-            { status: 403 }
+            { status: 403 },
           );
         }
 
@@ -354,9 +354,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Failed to end huddle',
-              ORG_ERROR_CODES.INTERNAL_ERROR
+              ORG_ERROR_CODES.INTERNAL_ERROR,
             ),
-            { status: 500 }
+            { status: 500 },
           );
         }
 
@@ -368,9 +368,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Huddle ID is required',
-              ORG_ERROR_CODES.VALIDATION_ERROR
+              ORG_ERROR_CODES.VALIDATION_ERROR,
             ),
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -379,9 +379,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Failed to toggle mute',
-              ORG_ERROR_CODES.INTERNAL_ERROR
+              ORG_ERROR_CODES.INTERNAL_ERROR,
             ),
-            { status: 500 }
+            { status: 500 },
           );
         }
 
@@ -396,9 +396,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Huddle ID is required',
-              ORG_ERROR_CODES.VALIDATION_ERROR
+              ORG_ERROR_CODES.VALIDATION_ERROR,
             ),
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -407,9 +407,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'Failed to update speaking status',
-              ORG_ERROR_CODES.INTERNAL_ERROR
+              ORG_ERROR_CODES.INTERNAL_ERROR,
             ),
-            { status: 500 }
+            { status: 500 },
           );
         }
 
@@ -420,22 +420,22 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Invalid action. Must be: create, join, leave, end, mute, or speaking',
-            ORG_ERROR_CODES.VALIDATION_ERROR
+            ORG_ERROR_CODES.VALIDATION_ERROR,
           ),
-          { status: 400 }
+          { status: 400 },
         );
     }
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceSlug/huddles] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

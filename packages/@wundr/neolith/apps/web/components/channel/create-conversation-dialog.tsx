@@ -101,14 +101,14 @@ export function CreateConversationDialog({
           body: JSON.stringify({
             invites: [{ email: userSearch.trim(), role: 'MEMBER' }],
           }),
-        }
+        },
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         if (response.status === 403) {
           throw new Error(
-            'You do not have permission to invite users to this workspace'
+            'You do not have permission to invite users to this workspace',
           );
         }
         throw new Error(errorData.error?.message || 'Failed to send invite');
@@ -119,7 +119,7 @@ export function CreateConversationDialog({
     } catch (err) {
       console.error('Failed to send invite:', err);
       setError(
-        err instanceof Error ? err.message : 'Failed to send invitation'
+        err instanceof Error ? err.message : 'Failed to send invitation',
       );
     } finally {
       setIsInviting(false);
@@ -153,7 +153,7 @@ export function CreateConversationDialog({
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error?.message || 'Failed to create conversation'
+          errorData.error?.message || 'Failed to create conversation',
         );
       }
 
@@ -173,7 +173,7 @@ export function CreateConversationDialog({
     } catch (err) {
       console.error('Failed to create DM:', err);
       setError(
-        err instanceof Error ? err.message : 'Failed to create conversation'
+        err instanceof Error ? err.message : 'Failed to create conversation',
       );
     } finally {
       setIsSubmitting(false);
@@ -281,7 +281,7 @@ export function CreateConversationDialog({
                           'bg-gray-400': selectedUser.status === 'offline',
                           'bg-yellow-500': selectedUser.status === 'away',
                           'bg-red-500': selectedUser.status === 'busy',
-                        }
+                        },
                       )}
                     />
                   )}
@@ -367,7 +367,7 @@ export function CreateConversationDialog({
                                 'bg-gray-400': user.status === 'offline',
                                 'bg-yellow-500': user.status === 'away',
                                 'bg-red-500': user.status === 'busy',
-                              }
+                              },
                             )}
                           />
                         )}

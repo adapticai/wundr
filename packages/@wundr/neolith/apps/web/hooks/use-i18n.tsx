@@ -61,7 +61,7 @@ export function I18nProvider({
   initialLocale?: SupportedLocale;
 }) {
   const [locale, setLocaleState] = useState<SupportedLocale>(
-    initialLocale || detectBrowserLocale()
+    initialLocale || detectBrowserLocale(),
   );
 
   const setLocale = useCallback((newLocale: SupportedLocale) => {
@@ -76,7 +76,7 @@ export function I18nProvider({
     (key: string, values?: Record<string, string | number>) => {
       return translate(key, values);
     },
-    [locale]
+    [locale],
   );
 
   const value: I18nContextValue = {

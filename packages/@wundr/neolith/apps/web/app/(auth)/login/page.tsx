@@ -1,11 +1,11 @@
 'use client';
 
 import { Button, Input, Label } from '@neolith/ui';
+import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Suspense, useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
 
 import { GitHubIcon, GoogleIcon } from '../../../components/icons';
 

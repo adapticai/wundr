@@ -71,7 +71,7 @@ export function SuggestionItem({
       className={cn(
         'shrink-0 rounded-full whitespace-nowrap',
         size === 'sm' ? 'h-8 px-4 text-xs' : 'h-9 px-5 text-sm',
-        className
+        className,
       )}
       onClick={onClick}
       {...props}
@@ -109,7 +109,7 @@ export const SESSION_MANAGER_SUGGESTIONS = [
 // Context-aware suggestion generator
 export function getEntitySuggestions(
   entityType: string,
-  conversationLength: number
+  conversationLength: number,
 ): string[] {
   if (conversationLength === 0) {
     switch (entityType) {

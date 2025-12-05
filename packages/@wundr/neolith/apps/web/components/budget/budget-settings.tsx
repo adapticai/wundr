@@ -55,7 +55,7 @@ const formatTokens = (tokens: number): string => {
 };
 
 const validateConfig = (
-  config: BudgetConfiguration
+  config: BudgetConfiguration,
 ): { valid: boolean; errors: string[] } => {
   const errors: string[] = [];
 
@@ -126,7 +126,7 @@ export function BudgetSettings({
 
   const updateConfig = (
     key: keyof BudgetConfiguration,
-    value: number | boolean
+    value: number | boolean,
   ) => {
     setLocalConfig(prev => ({ ...prev, [key]: value }));
   };

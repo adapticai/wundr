@@ -55,7 +55,7 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ orchestratorId: string }> }
+  { params }: { params: Promise<{ orchestratorId: string }> },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -64,9 +64,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          TASK_ERROR_CODES.UNAUTHORIZED
+          TASK_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -79,9 +79,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid OrchestratorID',
-          TASK_ERROR_CODES.VALIDATION_ERROR
+          TASK_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -95,9 +95,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found',
-          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -114,7 +114,7 @@ export async function GET(
       if (!workspaceMember) {
         return NextResponse.json(
           createErrorResponse('Access denied', TASK_ERROR_CODES.FORBIDDEN),
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -171,9 +171,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           TASK_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -300,9 +300,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        TASK_ERROR_CODES.INTERNAL_ERROR
+        TASK_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -343,7 +343,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ orchestratorId: string }> }
+  { params }: { params: Promise<{ orchestratorId: string }> },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -352,9 +352,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          TASK_ERROR_CODES.UNAUTHORIZED
+          TASK_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -367,9 +367,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid OrchestratorID',
-          TASK_ERROR_CODES.VALIDATION_ERROR
+          TASK_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -381,9 +381,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          TASK_ERROR_CODES.VALIDATION_ERROR
+          TASK_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -394,9 +394,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           TASK_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -412,9 +412,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found',
-          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -430,7 +430,7 @@ export async function POST(
       if (!workspaceMember) {
         return NextResponse.json(
           createErrorResponse('Access denied', TASK_ERROR_CODES.FORBIDDEN),
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -446,9 +446,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Assignee not found',
-            TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND
+            TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND,
           ),
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -493,7 +493,7 @@ export async function POST(
         data: task,
         message: 'Backlog item created successfully',
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/orchestrators/[id]/backlog] Error:', error);
@@ -504,18 +504,18 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Required resource not found',
-            TASK_ERROR_CODES.NOT_FOUND
+            TASK_ERROR_CODES.NOT_FOUND,
           ),
-          { status: 404 }
+          { status: 404 },
         );
       }
       if (error.code === 'P2003') {
         return NextResponse.json(
           createErrorResponse(
             'Invalid foreign key reference',
-            TASK_ERROR_CODES.VALIDATION_ERROR
+            TASK_ERROR_CODES.VALIDATION_ERROR,
           ),
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -523,9 +523,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        TASK_ERROR_CODES.INTERNAL_ERROR
+        TASK_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

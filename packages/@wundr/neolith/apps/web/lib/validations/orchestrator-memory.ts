@@ -29,7 +29,7 @@ export const MEMORY_ERROR_CODES = ORCHESTRATOR_MEMORY_ERROR_CODES;
 export function createErrorResponse(
   message: string,
   code: OrchestratorMemoryErrorCode,
-  extraData?: Record<string, unknown>
+  extraData?: Record<string, unknown>,
 ): { error: OrchestratorMemoryErrorCode; message: string } & Record<
   string,
   unknown

@@ -135,7 +135,7 @@ describe('Search API Routes', () => {
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/search?q=test'
+        'http://localhost/api/workspaces/ws-1/search?q=test',
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -151,7 +151,7 @@ describe('Search API Routes', () => {
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/search'
+        'http://localhost/api/workspaces/ws-1/search',
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -168,7 +168,7 @@ describe('Search API Routes', () => {
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/search?q=test'
+        'http://localhost/api/workspaces/ws-1/search?q=test',
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -193,7 +193,7 @@ describe('Search API Routes', () => {
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/search?q=test'
+        'http://localhost/api/workspaces/ws-1/search?q=test',
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -221,7 +221,7 @@ describe('Search API Routes', () => {
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/search?q=test'
+        'http://localhost/api/workspaces/ws-1/search?q=test',
       );
       await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -229,7 +229,7 @@ describe('Search API Routes', () => {
 
       expect(mockSearchService.saveRecentSearch).toHaveBeenCalledWith(
         'user-123',
-        'test'
+        'test',
       );
     });
 
@@ -247,7 +247,7 @@ describe('Search API Routes', () => {
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/search?q=test&types=message,file&channels=ch-1,ch-2&limit=10'
+        'http://localhost/api/workspaces/ws-1/search?q=test&types=message,file&channels=ch-1,ch-2&limit=10',
       );
       await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -264,7 +264,7 @@ describe('Search API Routes', () => {
           pagination: expect.objectContaining({
             limit: 10,
           }),
-        })
+        }),
       );
     });
 
@@ -284,7 +284,7 @@ describe('Search API Routes', () => {
       const fromDate = '2024-01-01T00:00:00Z';
       const toDate = '2024-12-31T23:59:59Z';
       const request = new NextRequest(
-        `http://localhost/api/workspaces/ws-1/search?q=test&from=${fromDate}&to=${toDate}`
+        `http://localhost/api/workspaces/ws-1/search?q=test&from=${fromDate}&to=${toDate}`,
       );
       await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -298,7 +298,7 @@ describe('Search API Routes', () => {
               end: expect.any(Date),
             }),
           }),
-        })
+        }),
       );
     });
   });

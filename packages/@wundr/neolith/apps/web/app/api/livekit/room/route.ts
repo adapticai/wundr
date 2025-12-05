@@ -35,9 +35,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED
+          CALL_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -49,9 +49,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          CALL_ERROR_CODES.VALIDATION_ERROR
+          CALL_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -67,9 +67,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Room name is required',
-          CALL_ERROR_CODES.VALIDATION_ERROR
+          CALL_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         },
         message: 'Room created successfully',
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/livekit/room] Error:', error);
@@ -106,18 +106,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             error.message,
-            CALL_ERROR_CODES.ROOM_ALREADY_EXISTS
+            CALL_ERROR_CODES.ROOM_ALREADY_EXISTS,
           ),
-          { status: 409 }
+          { status: 409 },
         );
       }
       if (error.name === 'LiveKitConfigError') {
         return NextResponse.json(
           createErrorResponse(
             'LiveKit not configured',
-            CALL_ERROR_CODES.LIVEKIT_CONFIG_ERROR
+            CALL_ERROR_CODES.LIVEKIT_CONFIG_ERROR,
           ),
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -125,9 +125,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR
+        CALL_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -148,9 +148,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED
+          CALL_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -176,9 +176,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR
+        CALL_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

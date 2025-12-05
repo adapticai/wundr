@@ -80,7 +80,7 @@ export function InviteManager({
     setError(null);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/admin/invites`
+        `/api/workspaces/${workspaceId}/admin/invites`,
       );
       if (!response.ok) {
         throw new Error('Failed to fetch invites');
@@ -126,7 +126,7 @@ export function InviteManager({
             role: selectedRole,
             message: message || undefined,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -145,7 +145,7 @@ export function InviteManager({
           .join(', ');
         console.warn(`Some invitation emails failed: ${failedEmails}`);
         toast.warning(
-          `${succeeded} invitation${succeeded !== 1 ? 's' : ''} sent, ${failed} failed`
+          `${succeeded} invitation${succeeded !== 1 ? 's' : ''} sent, ${failed} failed`,
         );
       } else {
         // All succeeded
@@ -179,7 +179,7 @@ export function InviteManager({
         `/api/workspaces/${workspaceId}/admin/invites/${inviteId}/resend`,
         {
           method: 'POST',
-        }
+        },
       );
       if (!response.ok) {
         throw new Error('Failed to resend invite');
@@ -206,7 +206,7 @@ export function InviteManager({
         `/api/workspaces/${workspaceId}/admin/invites/${inviteId}`,
         {
           method: 'DELETE',
-        }
+        },
       );
       if (!response.ok) {
         throw new Error('Failed to revoke invite');
@@ -237,7 +237,7 @@ export function InviteManager({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: selectedRole }),
-        }
+        },
       );
       if (!response.ok) {
         throw new Error('Failed to generate invite link');

@@ -102,7 +102,7 @@ function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
   headers?: Record<string, string>,
-  searchParams?: Record<string, string>
+  searchParams?: Record<string, string>,
 ): NextRequest {
   let url = 'http://localhost:3000/api/notifications';
   if (searchParams) {
@@ -263,7 +263,7 @@ describe('Notification API Routes', () => {
 
       expect(result.data).toHaveLength(2);
       expect(result.data.every((n: { isRead: boolean }) => !n.isRead)).toBe(
-        true
+        true,
       );
     });
 
@@ -322,7 +322,7 @@ describe('Notification API Routes', () => {
       expect(mockNotificationService.listNotifications).toHaveBeenCalledWith(
         expect.objectContaining({
           cursor: 'prev-cursor',
-        })
+        }),
       );
     });
   });
@@ -339,7 +339,7 @@ describe('Notification API Routes', () => {
       mockNotificationService.getUnreadCount.mockResolvedValue(15);
 
       const count = await mockNotificationService.getUnreadCount(
-        session.user.id
+        session.user.id,
       );
 
       expect(count).toBe(15);
@@ -352,7 +352,7 @@ describe('Notification API Routes', () => {
       mockNotificationService.getUnreadCount.mockResolvedValue(0);
 
       const count = await mockNotificationService.getUnreadCount(
-        session.user.id
+        session.user.id,
       );
 
       expect(count).toBe(0);
@@ -377,7 +377,7 @@ describe('Notification API Routes', () => {
 
       const result = await mockNotificationService.markAsRead(
         'notif-123',
-        session.user.id
+        session.user.id,
       );
 
       expect(result.isRead).toBe(true);
@@ -394,11 +394,11 @@ describe('Notification API Routes', () => {
       });
 
       await expect(
-        mockNotificationService.markAsRead('non-existent', session.user.id)
+        mockNotificationService.markAsRead('non-existent', session.user.id),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_FOUND',
-        })
+        }),
       );
     });
 
@@ -412,11 +412,11 @@ describe('Notification API Routes', () => {
       });
 
       await expect(
-        mockNotificationService.markAsRead('other-user-notif', session.user.id)
+        mockNotificationService.markAsRead('other-user-notif', session.user.id),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        })
+        }),
       );
     });
   });
@@ -433,7 +433,7 @@ describe('Notification API Routes', () => {
       mockNotificationService.markAllAsRead.mockResolvedValue({ count: 10 });
 
       const result = await mockNotificationService.markAllAsRead(
-        session.user.id
+        session.user.id,
       );
 
       expect(result.count).toBe(10);
@@ -446,7 +446,7 @@ describe('Notification API Routes', () => {
       mockNotificationService.markAllAsRead.mockResolvedValue({ count: 0 });
 
       const result = await mockNotificationService.markAllAsRead(
-        session.user.id
+        session.user.id,
       );
 
       expect(result.count).toBe(0);
@@ -468,7 +468,7 @@ describe('Notification API Routes', () => {
 
       const result = await mockNotificationService.deleteNotification(
         'notif-123',
-        session.user.id
+        session.user.id,
       );
 
       expect(result.success).toBe(true);
@@ -486,12 +486,12 @@ describe('Notification API Routes', () => {
       await expect(
         mockNotificationService.deleteNotification(
           'non-existent',
-          session.user.id
-        )
+          session.user.id,
+        ),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_FOUND',
-        })
+        }),
       );
     });
   });
@@ -509,7 +509,7 @@ describe('Notification API Routes', () => {
       mockNotificationService.getPreferences.mockResolvedValue(preferences);
 
       const result = await mockNotificationService.getPreferences(
-        session.user.id
+        session.user.id,
       );
 
       expect(result.userId).toBe(session.user.id);
@@ -526,7 +526,7 @@ describe('Notification API Routes', () => {
         userId: 'new-user',
       });
       mockNotificationService.getPreferences.mockResolvedValue(
-        defaultPreferences
+        defaultPreferences,
       );
 
       const result = await mockNotificationService.getPreferences('new-user');
@@ -554,7 +554,7 @@ describe('Notification API Routes', () => {
       });
 
       mockNotificationService.updatePreferences.mockResolvedValue(
-        updatedPreferences
+        updatedPreferences,
       );
 
       const result = await mockNotificationService.updatePreferences(
@@ -565,7 +565,7 @@ describe('Notification API Routes', () => {
           quietHoursStart: '22:00',
           quietHoursEnd: '08:00',
           quietHoursTimezone: 'America/New_York',
-        }
+        },
       );
 
       expect(result.pushEnabled).toBe(false);
@@ -586,11 +586,11 @@ describe('Notification API Routes', () => {
         mockNotificationService.updatePreferences(session.user.id, {
           quietHoursEnabled: true,
           // Missing quietHoursStart, quietHoursEnd, quietHoursTimezone
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'VALIDATION_ERROR',
-        })
+        }),
       );
     });
   });
@@ -615,7 +615,7 @@ describe('Notification API Routes', () => {
           endpoint: 'https://fcm.googleapis.com/fcm/send/endpoint',
           p256dh: 'BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQ',
           auth: 'tBHItJI5svbpez7KI4CCXg',
-        }
+        },
       );
 
       expect(result.platform).toBe('WEB');
@@ -639,7 +639,7 @@ describe('Notification API Routes', () => {
         {
           platform: 'IOS',
           token: 'fcm_ios_token',
-        }
+        },
       );
 
       expect(result.platform).toBe('IOS');
@@ -659,11 +659,11 @@ describe('Notification API Routes', () => {
           platform: 'WEB',
           token: 'web_push_token',
           // Missing endpoint, p256dh, auth
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'VALIDATION_ERROR',
-        })
+        }),
       );
     });
 
@@ -684,7 +684,7 @@ describe('Notification API Routes', () => {
           endpoint: 'https://fcm.googleapis.com/fcm/send/endpoint',
           p256dh: 'BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQ',
           auth: 'tBHItJI5svbpez7KI4CCXg',
-        }
+        },
       );
 
       expect(result.isActive).toBe(true);
@@ -706,7 +706,7 @@ describe('Notification API Routes', () => {
 
       const result = await mockNotificationService.unregisterDevice(
         session.user.id,
-        'device-123'
+        'device-123',
       );
 
       expect(result.success).toBe(true);
@@ -724,12 +724,12 @@ describe('Notification API Routes', () => {
       await expect(
         mockNotificationService.unregisterDevice(
           session.user.id,
-          'non-existent'
-        )
+          'non-existent',
+        ),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_FOUND',
-        })
+        }),
       );
     });
 
@@ -745,12 +745,12 @@ describe('Notification API Routes', () => {
       await expect(
         mockNotificationService.unregisterDevice(
           session.user.id,
-          'other-user-device'
-        )
+          'other-user-device',
+        ),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        })
+        }),
       );
     });
   });
@@ -800,7 +800,7 @@ describe('Notification API Routes', () => {
       expect(mockSyncService.performSync).toHaveBeenCalledWith(
         expect.objectContaining({
           syncToken: 'previous-sync-token',
-        })
+        }),
       );
     });
 
@@ -892,7 +892,7 @@ describe('Notification API Routes', () => {
       expect(result.processed).toBe(3);
       expect(result.failed).toBe(2);
       expect(
-        result.results.filter((r: { success: boolean }) => !r.success)
+        result.results.filter((r: { success: boolean }) => !r.success),
       ).toHaveLength(2);
     });
 
@@ -933,7 +933,7 @@ describe('Notification API Routes', () => {
       });
 
       expect(
-        result.results.map((r: { actionId: string }) => r.actionId)
+        result.results.map((r: { actionId: string }) => r.actionId),
       ).toEqual(['action-1', 'action-2', 'action-3']);
     });
   });
@@ -996,11 +996,11 @@ describe('Notification API Routes', () => {
           userId: session.user.id,
           conflictId: 'non-existent',
           resolution: 'SERVER_WINS',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_FOUND',
-        })
+        }),
       );
     });
 
@@ -1018,11 +1018,11 @@ describe('Notification API Routes', () => {
           userId: session.user.id,
           conflictId: 'already-resolved',
           resolution: 'SERVER_WINS',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'ALREADY_RESOLVED',
-        })
+        }),
       );
     });
   });

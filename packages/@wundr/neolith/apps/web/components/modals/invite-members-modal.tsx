@@ -141,7 +141,7 @@ export function InviteMembersModal({
 }: InviteMembersModalProps) {
   // Tab state
   const [activeTab, setActiveTab] = useState<'workspace' | 'email'>(
-    'workspace'
+    'workspace',
   );
 
   // Workspace members state
@@ -190,7 +190,7 @@ export function InviteMembersModal({
         }
 
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/users?${params.toString()}`
+          `/api/workspaces/${workspaceId}/users?${params.toString()}`,
         );
 
         if (!response.ok) {
@@ -206,7 +206,7 @@ export function InviteMembersModal({
         setIsSearching(false);
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   // Search users when query changes
@@ -223,7 +223,7 @@ export function InviteMembersModal({
   const availableUsers = workspaceUsers.filter(
     u =>
       !existingMemberIds.includes(u.id) &&
-      !selectedUsers.some(s => s.id === u.id)
+      !selectedUsers.some(s => s.id === u.id),
   );
 
   // Handle adding a user to selection
@@ -263,7 +263,7 @@ export function InviteMembersModal({
     try {
       await onInviteMembers(
         selectedUsers.map(u => u.id),
-        selectedRole
+        selectedRole,
       );
       onOpenChange(false);
     } catch (err) {

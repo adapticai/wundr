@@ -110,7 +110,7 @@ export default function AccessibilitySettingsPage() {
 
   const applyAccessibilitySettings = (
     key: keyof typeof settings,
-    value: boolean
+    value: boolean,
   ) => {
     const root = document.documentElement;
 

@@ -1,10 +1,10 @@
 'use client';
 
 import { Button, Input } from '@neolith/ui';
+import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { Eye, EyeOff } from 'lucide-react';
 import { Suspense, useState } from 'react';
 
 import { GitHubIcon, GoogleIcon } from '../../../components/icons';
@@ -108,7 +108,7 @@ function RegisterForm() {
     // Validate password strength - must match backend requirements
     if (!validatePassword(password)) {
       setError(
-        'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number'
+        'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number',
       );
       return;
     }

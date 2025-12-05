@@ -60,7 +60,7 @@ const idParamSchema = z.object({
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -69,9 +69,9 @@ export async function GET(
       return NextResponse.json(
         createPresenceErrorResponse(
           'Authentication required',
-          PRESENCE_ERROR_CODES.UNAUTHORIZED
+          PRESENCE_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -82,9 +82,9 @@ export async function GET(
       return NextResponse.json(
         createPresenceErrorResponse(
           'Invalid user ID format',
-          PRESENCE_ERROR_CODES.VALIDATION_ERROR
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -103,9 +103,9 @@ export async function GET(
       return NextResponse.json(
         createPresenceErrorResponse(
           'User not found',
-          PRESENCE_ERROR_CODES.USER_NOT_FOUND
+          PRESENCE_ERROR_CODES.USER_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -137,9 +137,9 @@ export async function GET(
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

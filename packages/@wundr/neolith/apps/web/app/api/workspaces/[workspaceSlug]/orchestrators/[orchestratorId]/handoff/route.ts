@@ -35,7 +35,7 @@ interface RouteContext {
  */
 async function verifyWorkspaceAccess(
   workspaceId: string,
-  userId: string
+  userId: string,
 ): Promise<{ success: boolean; organizationId?: string; error?: string }> {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -82,7 +82,7 @@ async function verifyWorkspaceAccess(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -91,9 +91,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -104,15 +104,15 @@ export async function POST(
     // Validate workspace access
     const accessCheck = await verifyWorkspaceAccess(
       workspaceId,
-      session.user.id
+      session.user.id,
     );
     if (!accessCheck.success) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           accessCheck.error || 'Access denied',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -124,9 +124,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -137,9 +137,9 @@ export async function POST(
         createCoordinationErrorResponse(
           'Validation failed',
           ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -170,9 +170,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Source Orchestrator not found or not accessible',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -195,9 +195,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Target Orchestrator not found or not in same organization',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -207,9 +207,9 @@ export async function POST(
         createCoordinationErrorResponse(
           'Target Orchestrator is currently offline',
           ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
-          { targetOrchestratorStatus: targetOrchestrator.status }
+          { targetOrchestratorStatus: targetOrchestrator.status },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -232,9 +232,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Task not found',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.TASK_NOT_FOUND
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.TASK_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -242,9 +242,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Task does not belong to source Orchestrator',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.INVALID_OWNERSHIP
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.INVALID_OWNERSHIP,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -265,16 +265,16 @@ export async function POST(
       orchestratorId,
       toOrchestratorId,
       taskId,
-      fullHandoffContext
+      fullHandoffContext,
     );
 
     if (!result.success) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           result.error || 'Handoff failed',
-          ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
+          ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR,
         ),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -361,14 +361,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/handoff] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createCoordinationErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR
+        ORCHESTRATOR_COORDINATION_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

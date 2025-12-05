@@ -28,7 +28,7 @@ import type { NextRequest } from 'next/server';
  * This wraps the raw Redis client to match the RedisClient interface.
  */
 function createRedisClientAdapter(
-  rawRedis: ReturnType<typeof getRedisClient>
+  rawRedis: ReturnType<typeof getRedisClient>,
 ): RedisClient {
   return {
     async get(key: string) {
@@ -75,7 +75,7 @@ function createRedisClientAdapter(
     async zrangebyscore(
       key: string,
       min: number | string,
-      max: number | string
+      max: number | string,
     ) {
       return rawRedis.zrangebyscore(key, min, max);
     },
@@ -130,7 +130,7 @@ function getHealthDetailsFromStatus(status: string): string {
 function createErrorResponse(
   message: string,
   code: string,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) {
   return {
     error: {
@@ -180,7 +180,7 @@ function createErrorResponse(
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ orchestratorId: string }> }
+  { params }: { params: Promise<{ orchestratorId: string }> },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -189,9 +189,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          HEALTH_ERROR_CODES.UNAUTHORIZED
+          HEALTH_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -223,9 +223,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found',
-          HEALTH_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+          HEALTH_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -241,9 +241,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to this Orchestrator',
-          HEALTH_ERROR_CODES.FORBIDDEN
+          HEALTH_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -351,9 +351,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        HEALTH_ERROR_CODES.INTERNAL_ERROR
+        HEALTH_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

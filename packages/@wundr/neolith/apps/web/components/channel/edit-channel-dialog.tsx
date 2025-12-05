@@ -103,7 +103,7 @@ export function EditChannelDialog({
                 className={cn(
                   'w-full rounded-md border bg-background px-3 py-2 pl-7 text-sm outline-none',
                   'focus:border-primary focus:ring-1 focus:ring-primary',
-                  error && 'border-destructive'
+                  error && 'border-destructive',
                 )}
                 placeholder='channel-name'
                 maxLength={80}
@@ -130,7 +130,7 @@ export function EditChannelDialog({
               onChange={e => setDescription(e.target.value)}
               className={cn(
                 'w-full rounded-md border bg-background px-3 py-2 text-sm outline-none resize-none',
-                'focus:border-primary focus:ring-1 focus:ring-primary'
+                'focus:border-primary focus:ring-1 focus:ring-primary',
               )}
               placeholder="What's this channel about?"
               rows={3}

@@ -95,7 +95,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -104,9 +104,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -120,9 +120,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -135,9 +135,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -200,7 +200,7 @@ export async function GET(
 
       // Map database status to frontend status
       const mapStatus = (
-        dbStatus: string
+        dbStatus: string,
       ): 'active' | 'inactive' | 'draft' | 'error' => {
         const statusMap: Record<
           string,
@@ -244,9 +244,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -275,7 +275,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -284,9 +284,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -300,9 +300,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -311,9 +311,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to create workflows',
-          WORKFLOW_ERROR_CODES.FORBIDDEN
+          WORKFLOW_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -325,9 +325,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -338,9 +338,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -373,7 +373,7 @@ export async function POST(
 
     // Map database status to frontend status
     const mapStatus = (
-      dbStatus: string
+      dbStatus: string,
     ): 'active' | 'inactive' | 'draft' | 'error' => {
       const statusMap: Record<
         string,
@@ -406,7 +406,7 @@ export async function POST(
 
     return NextResponse.json(
       { workflow: enhancedWorkflow, message: 'Workflow created successfully' },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     // Handle Prisma unique constraint errors
@@ -417,22 +417,22 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'A workflow with this name already exists in the workspace',
-          WORKFLOW_ERROR_CODES.WORKFLOW_ALREADY_EXISTS
+          WORKFLOW_ERROR_CODES.WORKFLOW_ALREADY_EXISTS,
         ),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     console.error(
       '[POST /api/workspaces/:workspaceId/workflows] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

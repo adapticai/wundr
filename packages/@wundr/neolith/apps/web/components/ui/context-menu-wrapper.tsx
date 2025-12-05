@@ -48,7 +48,7 @@ interface ContextMenuWrapperProps {
 }
 
 function isContextMenuGroup(
-  item: ContextMenuAction | ContextMenuGroup
+  item: ContextMenuAction | ContextMenuGroup,
 ): item is ContextMenuGroup {
   return 'actions' in item;
 }
@@ -137,7 +137,7 @@ function renderMenuItem(action: ContextMenuAction, index: number) {
         </ContextMenuSubTrigger>
         <ContextMenuSubContent>
           {action.children.map((child, childIndex) =>
-            renderMenuItem(child, childIndex)
+            renderMenuItem(child, childIndex),
           )}
         </ContextMenuSubContent>
       </ContextMenuSub>
@@ -195,7 +195,7 @@ export function ContextMenuWrapper({
                   <ContextMenuLabel>{item.label}</ContextMenuLabel>
                 )}
                 {item.actions.map((action, actionIndex) =>
-                  renderMenuItem(action, actionIndex)
+                  renderMenuItem(action, actionIndex),
                 )}
               </React.Fragment>
             );

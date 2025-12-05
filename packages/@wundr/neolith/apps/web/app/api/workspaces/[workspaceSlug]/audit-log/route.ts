@@ -106,7 +106,7 @@ function getSeverity(action: string): 'info' | 'warning' | 'critical' {
  * Determine actor type from user data
  */
 function getActorType(
-  user: { isOrchestrator: boolean } | null
+  user: { isOrchestrator: boolean } | null,
 ): 'user' | 'orchestrator' | 'system' {
   if (!user) {
     return 'system';
@@ -118,7 +118,7 @@ function getActorType(
  * Format changes from JSON to frontend structure
  */
 function formatChanges(
-  changes: unknown
+  changes: unknown,
 ): Array<{ field: string; oldValue: unknown; newValue: unknown }> | undefined {
   if (!changes || typeof changes !== 'object') {
     return undefined;
@@ -179,7 +179,7 @@ function formatChanges(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse<AuditLogResponse | { error: string; code?: string }>> {
   try {
     // Authentication check
@@ -187,7 +187,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -204,7 +204,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied', code: 'FORBIDDEN' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -213,7 +213,7 @@ export async function GET(
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const pageSize = Math.min(
       100,
-      Math.max(1, parseInt(searchParams.get('pageSize') || '50', 10))
+      Math.max(1, parseInt(searchParams.get('pageSize') || '50', 10)),
     );
     const action = searchParams.get('action') || undefined;
     const actorId = searchParams.get('actorId') || undefined;
@@ -230,7 +230,7 @@ export async function GET(
       if (isNaN(startDate.getTime())) {
         return NextResponse.json(
           { error: 'Invalid startDate format', code: 'VALIDATION_ERROR' },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -240,7 +240,7 @@ export async function GET(
       if (isNaN(endDate.getTime())) {
         return NextResponse.json(
           { error: 'Invalid endDate format', code: 'VALIDATION_ERROR' },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -353,7 +353,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/audit-log] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch audit log', code: 'INTERNAL_ERROR' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

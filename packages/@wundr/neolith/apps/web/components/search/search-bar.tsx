@@ -49,7 +49,7 @@ export function SearchBar({
       setIsLoadingSuggestions(true);
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/search/suggestions?q=${encodeURIComponent(query)}`
+          `/api/workspaces/${workspaceId}/search/suggestions?q=${encodeURIComponent(query)}`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -76,7 +76,7 @@ export function SearchBar({
         }
       }
     },
-    [query, onSearch, router, workspaceId]
+    [query, onSearch, router, workspaceId],
   );
 
   const handleSuggestionClick = useCallback(
@@ -86,12 +86,12 @@ export function SearchBar({
         onSearch(suggestion);
       } else {
         router.push(
-          `/${workspaceId}/search?q=${encodeURIComponent(suggestion)}`
+          `/${workspaceId}/search?q=${encodeURIComponent(suggestion)}`,
         );
       }
       setSuggestions([]);
     },
-    [onSearch, router, workspaceId]
+    [onSearch, router, workspaceId],
   );
 
   // Keyboard shortcut (Cmd/Ctrl + K)
@@ -156,7 +156,7 @@ export function SearchBar({
           className={cn(
             'absolute top-full left-0 right-0 mt-1 z-50',
             'bg-card border border-border rounded-lg shadow-lg',
-            'max-h-64 overflow-auto'
+            'max-h-64 overflow-auto',
           )}
         >
           {isLoadingSuggestions ? (
@@ -171,7 +171,7 @@ export function SearchBar({
                 className={cn(
                   'w-full px-4 py-2 text-left',
                   'flex items-center gap-3',
-                  'hover:bg-accent transition-colors'
+                  'hover:bg-accent transition-colors',
                 )}
               >
                 <span className='text-xs text-muted-foreground uppercase font-heading'>

@@ -13,7 +13,7 @@ import type { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> }
+  { params }: { params: Promise<{ workspaceSlug: string }> },
 ) {
   try {
     const session = await getServerSession();
@@ -45,7 +45,7 @@ export async function GET(
     });
     const report = await analyticsService.generateInsightReport(
       workspaceId,
-      period
+      period,
     );
 
     return NextResponse.json(report);
@@ -53,7 +53,7 @@ export async function GET(
     console.error('Analytics insights error:', error);
     return NextResponse.json(
       { error: 'Failed to generate insights' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

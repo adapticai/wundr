@@ -21,10 +21,11 @@ import { openai } from '@ai-sdk/openai';
 import { convertToModelMessages, streamText, tool, zodSchema } from 'ai';
 import { z } from 'zod';
 
-import type { UIMessage } from '@ai-sdk/react';
 
 import { getEntityPrompt, type EntityType } from '@/lib/ai';
 import { auth } from '@/lib/auth';
+
+import type { UIMessage } from '@ai-sdk/react';
 
 /**
  * Tool definitions for each entity type
@@ -41,7 +42,7 @@ const workspaceExtractTool = tool({
         .optional()
         .describe('Team size category'),
       purpose: z.string().optional().describe('Mission or primary goal'),
-    })
+    }),
   ),
 });
 
@@ -58,7 +59,7 @@ const orchestratorExtractTool = tool({
         .optional()
         .describe('List of capabilities'),
       communicationStyle: z.string().optional().describe('Communication style'),
-    })
+    }),
   ),
 });
 
@@ -75,7 +76,7 @@ const sessionManagerExtractTool = tool({
         .array(z.string())
         .optional()
         .describe('When to escalate'),
-    })
+    }),
   ),
 });
 
@@ -101,10 +102,10 @@ const workflowExtractTool = tool({
           z.object({
             action: z.string().describe('Action type'),
             description: z.string().describe('What this action does'),
-          })
+          }),
         )
         .describe('Workflow actions'),
-    })
+    }),
   ),
 });
 
@@ -172,7 +173,7 @@ export async function POST(req: Request) {
         JSON.stringify({
           error: `Invalid entityType. Must be one of: ${validEntityTypes.join(', ')}`,
         }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
@@ -182,7 +183,7 @@ export async function POST(req: Request) {
         JSON.stringify({
           error: 'messages array is required and must not be empty',
         }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
@@ -205,14 +206,14 @@ export async function POST(req: Request) {
       console.error('[POST /api/wizard/chat] OPENAI_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'OpenAI API key not configured' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
+        { status: 500, headers: { 'Content-Type': 'application/json' } },
       );
     }
     if (provider !== 'openai' && !process.env.ANTHROPIC_API_KEY) {
       console.error('[POST /api/wizard/chat] ANTHROPIC_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'Anthropic API key not configured' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
+        { status: 500, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
@@ -240,7 +241,7 @@ export async function POST(req: Request) {
         error:
           error instanceof Error ? error.message : 'An internal error occurred',
       }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }
 }

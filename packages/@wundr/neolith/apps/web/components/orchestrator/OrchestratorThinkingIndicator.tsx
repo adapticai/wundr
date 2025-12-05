@@ -50,7 +50,7 @@ export function OrchestratorThinkingIndicator({
       className={cn(
         'inline-flex items-center rounded-full bg-primary/10',
         sizes.container,
-        className
+        className,
       )}
       role='status'
       aria-live='polite'
@@ -109,13 +109,13 @@ function PulsingDot({ size }: { size: 'sm' | 'md' | 'lg' }) {
       <span
         className={cn(
           'absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75',
-          sizes.dot
+          sizes.dot,
         )}
       />
       <span
         className={cn(
           'relative inline-flex rounded-full bg-primary',
-          sizes.dot
+          sizes.dot,
         )}
       />
     </span>
@@ -134,7 +134,7 @@ export function InlineThinkingIndicator({
     <div
       className={cn(
         'inline-flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2',
-        className
+        className,
       )}
     >
       <Bot className='h-4 w-4 text-muted-foreground' />
@@ -169,7 +169,7 @@ export function TypingIndicator({
     <div
       className={cn(
         'inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2',
-        className
+        className,
       )}
     >
       <Bot className='h-4 w-4 text-primary' />
@@ -199,7 +199,7 @@ export function ProcessingBanner({
     <div
       className={cn(
         'flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 p-3',
-        className
+        className,
       )}
     >
       <div className='flex items-center gap-3'>

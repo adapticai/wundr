@@ -99,7 +99,7 @@ export function AuditLogEntry({ event, compact = false }: AuditLogEntryProps) {
 
   const formatMetadata = (
     metadata: Record<string, unknown>,
-    indent = 0
+    indent = 0,
   ): React.ReactNode => {
     return (
       <div className='space-y-1'>

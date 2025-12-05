@@ -143,7 +143,7 @@ interface UseActivityReturn {
  */
 export function useActivity(
   workspaceId: string,
-  options: UseActivityOptions = {}
+  options: UseActivityOptions = {},
 ): UseActivityReturn {
   const {
     type = 'all',
@@ -190,7 +190,7 @@ export function useActivity(
 
       return `/api/workspaces/${workspaceId}/dashboard/activity?${params.toString()}`;
     },
-    [workspaceId, limit, type, dateFrom, dateTo, channelId, userId]
+    [workspaceId, limit, type, dateFrom, dateTo, channelId, userId],
   );
 
   /**
@@ -206,7 +206,7 @@ export function useActivity(
             : raw.timestamp.toISOString(),
       };
     },
-    []
+    [],
   );
 
   /**
@@ -241,7 +241,7 @@ export function useActivity(
 
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch activities: ${response.status} ${response.statusText}`
+            `Failed to fetch activities: ${response.status} ${response.statusText}`,
           );
         }
 
@@ -281,7 +281,7 @@ export function useActivity(
         }
       }
     },
-    [enabled, buildUrl, normalizeActivity]
+    [enabled, buildUrl, normalizeActivity],
   );
 
   /**

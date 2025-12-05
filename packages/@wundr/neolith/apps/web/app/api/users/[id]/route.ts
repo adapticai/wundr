@@ -55,7 +55,7 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -64,9 +64,9 @@ export async function GET(
       return NextResponse.json(
         createUserErrorResponse(
           'Authentication required',
-          USER_ERROR_CODES.UNAUTHORIZED
+          USER_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -77,9 +77,9 @@ export async function GET(
       return NextResponse.json(
         createUserErrorResponse(
           'Invalid user ID',
-          USER_ERROR_CODES.VALIDATION_ERROR
+          USER_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -104,7 +104,7 @@ export async function GET(
     if (!user) {
       return NextResponse.json(
         createUserErrorResponse('User not found', USER_ERROR_CODES.NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -137,9 +137,9 @@ export async function GET(
     return NextResponse.json(
       createUserErrorResponse(
         'An internal error occurred',
-        USER_ERROR_CODES.INTERNAL_ERROR
+        USER_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

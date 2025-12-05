@@ -61,7 +61,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
     (auth as jest.Mock).mockResolvedValue(null);
 
     const request = new NextRequest(
-      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=test`
+      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=test`,
     );
     const context = { params: Promise.resolve({ workspaceSlug: workspaceId }) };
 
@@ -77,7 +77,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
     (auth as jest.Mock).mockResolvedValue(mockSession);
 
     const request = new NextRequest(
-      `http://localhost:3000/api/workspaces/${workspaceId}/search`
+      `http://localhost:3000/api/workspaces/${workspaceId}/search`,
     );
     const context = { params: Promise.resolve({ workspaceSlug: workspaceId }) };
 
@@ -94,7 +94,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
     (prisma.workspaceMember.findUnique as jest.Mock).mockResolvedValue(null);
 
     const request = new NextRequest(
-      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=test`
+      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=test`,
     );
     const context = { params: Promise.resolve({ workspaceSlug: workspaceId }) };
 
@@ -154,7 +154,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
     (prisma.file.count as jest.Mock).mockResolvedValue(0);
 
     const request = new NextRequest(
-      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=test&type=messages`
+      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=test&type=messages`,
     );
     const context = { params: Promise.resolve({ workspaceSlug: workspaceId }) };
 
@@ -215,7 +215,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
     (prisma.file.count as jest.Mock).mockResolvedValue(0);
 
     const request = new NextRequest(
-      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=search&type=messages&highlight=true`
+      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=search&type=messages&highlight=true`,
     );
     const context = { params: Promise.resolve({ workspaceSlug: workspaceId }) };
 
@@ -231,7 +231,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
     (auth as jest.Mock).mockResolvedValue(mockSession);
 
     const request = new NextRequest(
-      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=test&type=invalid`
+      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=test&type=invalid`,
     );
     const context = { params: Promise.resolve({ workspaceSlug: workspaceId }) };
 
@@ -281,7 +281,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
     }));
 
     (prisma.message.findMany as jest.Mock).mockResolvedValue(
-      mockMessages.slice(0, 5)
+      mockMessages.slice(0, 5),
     );
     (prisma.message.count as jest.Mock).mockResolvedValue(100);
     (prisma.channel.count as jest.Mock).mockResolvedValue(0);
@@ -289,7 +289,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
     (prisma.file.count as jest.Mock).mockResolvedValue(0);
 
     const request = new NextRequest(
-      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=test&type=messages&limit=5&offset=0`
+      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=test&type=messages&limit=5&offset=0`,
     );
     const context = { params: Promise.resolve({ workspaceSlug: workspaceId }) };
 
@@ -325,7 +325,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
     (prisma.file.count as jest.Mock).mockResolvedValue(0);
 
     const request = new NextRequest(
-      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=test&channelId=ch_1`
+      `http://localhost:3000/api/workspaces/${workspaceId}/search?q=test&channelId=ch_1`,
     );
     const context = { params: Promise.resolve({ workspaceSlug: workspaceId }) };
 
@@ -337,7 +337,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
         where: expect.objectContaining({
           channelId: 'ch_1',
         }),
-      })
+      }),
     );
   });
 });

@@ -34,7 +34,7 @@ export function WorkflowCard({
       <div
         className={cn(
           'group flex items-center gap-4 rounded-lg border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-sm',
-          isLoading && 'pointer-events-none opacity-60'
+          isLoading && 'pointer-events-none opacity-60',
         )}
       >
         {/* Trigger Icon */}
@@ -105,7 +105,7 @@ export function WorkflowCard({
     <div
       className={cn(
         'group relative flex flex-col rounded-lg border bg-card p-5 shadow-sm transition-all hover:border-primary/50 hover:shadow-md',
-        isLoading && 'pointer-events-none opacity-60'
+        isLoading && 'pointer-events-none opacity-60',
       )}
     >
       {/* Header */}
@@ -291,7 +291,7 @@ export function WorkflowStatusBadge({
         config.bgColor,
         config.color,
         size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs',
-        className
+        className,
       )}
       role='status'
       aria-label={`Status: ${config.label}`}
@@ -345,20 +345,20 @@ function ToggleSwitch({
       disabled={disabled}
       className={cn(
         'group inline-flex items-center gap-2',
-        disabled && 'cursor-not-allowed opacity-50'
+        disabled && 'cursor-not-allowed opacity-50',
       )}
     >
       <span
         className={cn(
           'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors',
           checked ? 'bg-primary' : 'bg-muted',
-          disabled && 'cursor-not-allowed'
+          disabled && 'cursor-not-allowed',
         )}
       >
         <span
           className={cn(
             'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform',
-            checked ? 'translate-x-5' : 'translate-x-0'
+            checked ? 'translate-x-5' : 'translate-x-0',
           )}
         />
       </span>

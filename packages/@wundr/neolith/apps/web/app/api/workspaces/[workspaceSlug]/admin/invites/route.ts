@@ -53,7 +53,7 @@ function generateInviteToken(): string {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -61,9 +61,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED
+          ADMIN_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -81,9 +81,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Workspace not found',
-          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -101,9 +101,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN
+          ADMIN_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -120,9 +120,9 @@ export async function GET(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -155,9 +155,9 @@ export async function GET(
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to fetch invites',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR
+        ADMIN_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -173,7 +173,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -181,9 +181,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED
+          ADMIN_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -201,9 +201,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Workspace not found',
-          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -225,9 +225,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN
+          ADMIN_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -239,9 +239,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Invalid JSON body',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR
+          ADMIN_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -252,9 +252,9 @@ export async function POST(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -277,9 +277,9 @@ export async function POST(
         createAdminErrorResponse(
           'Some emails are already members',
           ADMIN_ERROR_CODES.EMAIL_ALREADY_MEMBER,
-          { existingEmails }
+          { existingEmails },
         ),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -366,13 +366,13 @@ export async function POST(
         if (!emailResult.success) {
           console.error(
             `[Admin Invites] Failed to send email to ${invite.email}:`,
-            emailResult.error
+            emailResult.error,
           );
         }
       } catch (error) {
         console.error(
           `[Admin Invites] Exception sending email to ${invite.email}:`,
-          error
+          error,
         );
         emailResults.push({
           email: invite.email,
@@ -405,15 +405,15 @@ export async function POST(
           details: emailResults,
         },
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (_error) {
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to create invites',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR
+        ADMIN_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

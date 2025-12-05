@@ -50,7 +50,7 @@ interface RouteContext {
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user (or Orchestrator daemon)
@@ -59,9 +59,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORK_SESSION_ERROR_CODES.UNAUTHORIZED
+          WORK_SESSION_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -79,9 +79,9 @@ export async function PATCH(
           WORK_SESSION_ERROR_CODES.VALIDATION_ERROR,
           {
             errors: validationResult.error.errors,
-          }
+          },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -96,9 +96,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          WORK_SESSION_ERROR_CODES.FORBIDDEN
+          WORK_SESSION_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -122,9 +122,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Task not found',
-          WORK_SESSION_ERROR_CODES.TASK_NOT_FOUND
+          WORK_SESSION_ERROR_CODES.TASK_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -137,16 +137,16 @@ export async function PATCH(
           {
             currentStatus: task.status,
             requestedStatus: status,
-          }
+          },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Check if transition is allowed based on dependencies
     const canTransition = await canTransitionToStatus(
       taskId,
-      status as TaskStatus
+      status as TaskStatus,
     );
     if (!canTransition.allowed) {
       return NextResponse.json(
@@ -157,9 +157,9 @@ export async function PATCH(
             currentStatus: task.status,
             requestedStatus: status,
             reason: canTransition.reason,
-          }
+          },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -267,9 +267,9 @@ export async function PATCH(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORK_SESSION_ERROR_CODES.INTERNAL_ERROR
+        WORK_SESSION_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

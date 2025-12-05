@@ -52,7 +52,7 @@ export function IntegrationList({
     IntegrationProvider | 'all'
   >('all');
   const [statusFilter, setStatusFilter] = useState<IntegrationStatus | 'all'>(
-    'all'
+    'all',
   );
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
@@ -181,7 +181,7 @@ export function IntegrationList({
               'px-3 py-2 text-sm transition-colors',
               viewMode === 'grid'
                 ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent'
+                : 'text-muted-foreground hover:bg-accent',
             )}
             aria-label='Grid view'
           >
@@ -194,7 +194,7 @@ export function IntegrationList({
               'px-3 py-2 text-sm transition-colors',
               viewMode === 'list'
                 ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent'
+                : 'text-muted-foreground hover:bg-accent',
             )}
             aria-label='List view'
           >
@@ -244,7 +244,7 @@ export function IntegrationList({
           className={cn(
             viewMode === 'grid'
               ? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
-              : 'flex flex-col gap-3'
+              : 'flex flex-col gap-3',
           )}
         >
           {filteredIntegrations.map(integration => (

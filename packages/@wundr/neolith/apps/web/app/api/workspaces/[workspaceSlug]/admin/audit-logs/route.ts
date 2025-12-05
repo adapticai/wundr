@@ -48,7 +48,7 @@ interface RouteContext {
  */
 export async function GET(
   request: Request,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -112,18 +112,18 @@ export async function GET(
               | 'action',
             direction: (searchParams.get('order') || 'desc') as 'asc' | 'desc',
           }
-        : undefined
+        : undefined,
     );
 
     return NextResponse.json(result);
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/admin/audit-logs] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       { error: 'Failed to fetch audit logs' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

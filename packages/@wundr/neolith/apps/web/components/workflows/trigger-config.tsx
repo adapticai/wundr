@@ -79,7 +79,7 @@ export function TriggerConfigPanel({
         <ChevronIcon
           className={cn(
             'h-5 w-5 text-muted-foreground transition-transform',
-            isExpanded && 'rotate-180'
+            isExpanded && 'rotate-180',
           )}
         />
       </button>
@@ -102,7 +102,7 @@ export function TriggerConfigPanel({
                     'flex items-center gap-2 rounded-md border p-3 text-left text-sm transition-colors',
                     trigger.type === type
                       ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50 hover:bg-accent'
+                      : 'border-border hover:border-primary/50 hover:bg-accent',
                   )}
                 >
                   <TriggerIcon type={type} className='h-4 w-4 shrink-0' />
@@ -227,7 +227,7 @@ function ScheduleConfig({ schedule, onChange }: ScheduleConfigProps) {
             'flex-1 px-3 py-2 text-sm font-medium transition-colors',
             scheduleType === 'simple'
               ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:bg-accent'
+              : 'text-muted-foreground hover:bg-accent',
           )}
         >
           Simple
@@ -239,7 +239,7 @@ function ScheduleConfig({ schedule, onChange }: ScheduleConfigProps) {
             'flex-1 px-3 py-2 text-sm font-medium transition-colors',
             scheduleType === 'cron'
               ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:bg-accent'
+              : 'text-muted-foreground hover:bg-accent',
           )}
         >
           Cron Expression

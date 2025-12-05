@@ -40,7 +40,7 @@ interface RouteContext {
  */
 export async function POST(
   _request: Request,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -48,9 +48,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED
+          ADMIN_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -73,9 +73,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Workspace not found',
-          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -96,9 +96,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN
+          ADMIN_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -111,9 +111,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Invite not found',
-          ADMIN_ERROR_CODES.INVITE_NOT_FOUND
+          ADMIN_ERROR_CODES.INVITE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -124,9 +124,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Invite has already been accepted',
-          ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED
+          ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -134,9 +134,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Invite has been revoked',
-          ADMIN_ERROR_CODES.INVITE_REVOKED
+          ADMIN_ERROR_CODES.INVITE_REVOKED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -153,7 +153,7 @@ export async function POST(
       };
 
       const updatedInvites = invites.map(i =>
-        i.id === inviteId ? updatedInvite : i
+        i.id === inviteId ? updatedInvite : i,
       );
 
       await prisma.workspace.update({
@@ -187,29 +187,29 @@ export async function POST(
       if (!emailResult.success) {
         console.error(
           `[Resend Invite] Failed to send email to ${updatedInvite.email}:`,
-          emailResult.error
+          emailResult.error,
         );
         return NextResponse.json(
           createAdminErrorResponse(
             'Failed to send invitation email',
             ADMIN_ERROR_CODES.INTERNAL_ERROR,
-            { emailError: emailResult.error }
+            { emailError: emailResult.error },
           ),
-          { status: 500 }
+          { status: 500 },
         );
       }
     } catch (error) {
       console.error(
         `[Resend Invite] Exception sending email to ${updatedInvite.email}:`,
-        error
+        error,
       );
       return NextResponse.json(
         createAdminErrorResponse(
           'Failed to send invitation email',
           ADMIN_ERROR_CODES.INTERNAL_ERROR,
-          { error: error instanceof Error ? error.message : 'Unknown error' }
+          { error: error instanceof Error ? error.message : 'Unknown error' },
         ),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -230,14 +230,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/admin/invites/:inviteId/resend] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to resend invite',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR
+        ADMIN_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

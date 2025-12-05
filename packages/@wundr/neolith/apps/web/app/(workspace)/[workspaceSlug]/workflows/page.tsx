@@ -1,8 +1,8 @@
 'use client';
 
-import { Workflow as WorkflowLucideIcon } from 'lucide-react';
+import { Workflow as WorkflowLucideIcon, Search } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 
 import { EmptyState } from '@/components/ui/empty-state';
 import { usePageHeader } from '@/contexts/page-header-context';
@@ -70,27 +70,74 @@ export default function WorkflowsPage() {
 
   // State
   const [statusFilter, setStatusFilter] = useState<WorkflowStatus | 'all'>(
-    'all'
+    'all',
   );
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [showBuilder, setShowBuilder] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(
-    null
+    null,
   );
   const [showHistory, setShowHistory] = useState(false);
   const [historyWorkflowId, setHistoryWorkflowId] = useState<string | null>(
-    null
+    null,
   );
   const [showTemplates, setShowTemplates] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Hooks
   const { workflows, isLoading, error, createWorkflow, mutate } = useWorkflows(
     workspaceSlug,
     {
       status: statusFilter === 'all' ? undefined : statusFilter,
-    }
+    },
   );
   const { templates, isLoading: templatesLoading } =
     useWorkflowTemplates(workspaceSlug);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Keyboard shortcut (Cmd/Ctrl+K) to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Filter workflows by search query
+  const filteredWorkflows = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) {
+      return workflows;
+    }
+    const query = debouncedSearchQuery.toLowerCase();
+    return workflows.filter(workflow => {
+      // Search by name
+      if (workflow.name.toLowerCase().includes(query)) {
+        return true;
+      }
+      // Search by description
+      if (workflow.description?.toLowerCase().includes(query)) {
+        return true;
+      }
+      // Search by trigger type
+      const triggerLabel = TRIGGER_TYPE_CONFIG[workflow.trigger.type]?.label.toLowerCase();
+      if (triggerLabel?.includes(query)) {
+        return true;
+      }
+      return false;
+    });
+  }, [workflows, debouncedSearchQuery]);
 
   // Stats
   const workflowStats = useMemo(() => {
@@ -112,7 +159,7 @@ export default function WorkflowsPage() {
         mutate();
       }
     },
-    [createWorkflow, mutate]
+    [createWorkflow, mutate],
   );
 
   const handleEditWorkflow = useCallback((workflow: Workflow) => {
@@ -151,7 +198,7 @@ export default function WorkflowsPage() {
         } as TriggerConfig,
         actions: template.actions.map(
           (a, i) =>
-            ({ ...a, id: `temp_${i}` as ActionId, order: i }) as ActionConfig
+            ({ ...a, id: `temp_${i}` as ActionId, order: i }) as ActionConfig,
         ),
         variables:
           template.variables?.map(v => ({ ...v, source: 'custom' as const })) ??
@@ -165,13 +212,38 @@ export default function WorkflowsPage() {
       setShowTemplates(false);
       setShowBuilder(true);
     },
-    [workspaceSlug]
+    [workspaceSlug],
   );
 
   return (
     <div className='space-y-6'>
-      {/* Actions */}
-      <div className='flex justify-end gap-2'>
+      {/* Search and Actions */}
+      <div className='flex items-center gap-3'>
+        <div className='relative flex-1'>
+          <Search
+            className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground'
+            aria-hidden='true'
+          />
+          <input
+            ref={searchInputRef}
+            type='text'
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder='Search workflows by name, description, or trigger type... (⌘K)'
+            className='w-full rounded-md border border-input bg-background py-2 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+            aria-label='Search workflows'
+          />
+          {searchQuery && (
+            <button
+              type='button'
+              onClick={() => setSearchQuery('')}
+              className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+              aria-label='Clear search'
+            >
+              <XIcon className='h-4 w-4' />
+            </button>
+          )}
+        </div>
         <button
           type='button'
           onClick={() => setShowTemplates(true)}
@@ -211,7 +283,7 @@ export default function WorkflowsPage() {
                 'whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition-colors',
                 statusFilter === tab
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
+                  : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
               )}
             >
               {tab === 'all' ? 'All' : WORKFLOW_STATUS_CONFIG[tab].label}
@@ -220,7 +292,7 @@ export default function WorkflowsPage() {
                   'ml-2 rounded-full px-2 py-0.5 text-xs',
                   statusFilter === tab
                     ? 'bg-primary/10 text-primary'
-                    : 'bg-muted text-muted-foreground'
+                    : 'bg-muted text-muted-foreground',
                 )}
                 aria-label={`${workflowStats[tab]} workflows`}
               >
@@ -270,7 +342,7 @@ export default function WorkflowsPage() {
         </div>
       )}
 
-      {/* Empty State */}
+      {/* Empty State - No workflows at all */}
       {!isLoading && !error && workflows.length === 0 && (
         <EmptyState
           icon={WorkflowLucideIcon}
@@ -300,10 +372,27 @@ export default function WorkflowsPage() {
         />
       )}
 
+      {/* Empty State - No search results */}
+      {!isLoading &&
+        !error &&
+        workflows.length > 0 &&
+        filteredWorkflows.length === 0 && (
+          <EmptyState
+            icon={Search}
+            title='No Workflows Found'
+            description={`No workflows match "${searchQuery}". Try adjusting your search or create a new workflow.`}
+            action={{
+              label: 'Clear Search',
+              onClick: () => setSearchQuery(''),
+              variant: 'outline' as const,
+            }}
+          />
+        )}
+
       {/* Workflow Grid */}
-      {!isLoading && !error && workflows.length > 0 && (
+      {!isLoading && !error && filteredWorkflows.length > 0 && (
         <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {workflows.map(workflow => (
+          {filteredWorkflows.map(workflow => (
             <WorkflowCard
               key={workflow.id}
               workflow={workflow}
@@ -373,7 +462,7 @@ function WorkflowCard({ workflow, onEdit, onViewHistory }: WorkflowCardProps) {
           className={cn(
             'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
             statusConfig.bgColor,
-            statusConfig.color
+            statusConfig.color,
           )}
         >
           {statusConfig.label}
@@ -630,7 +719,7 @@ function TriggerSelector({ value, onChange }: TriggerSelectorProps) {
             'rounded-lg border p-3 text-left transition-colors hover:border-primary',
             value?.type === type
               ? 'border-primary bg-primary/5'
-              : 'border-border'
+              : 'border-border',
           )}
         >
           <p className='font-medium text-sm'>{config.label}</p>
@@ -756,7 +845,7 @@ function TemplateSelectionModal({
               'rounded-full px-3 py-1 text-sm transition-colors',
               categoryFilter === 'all'
                 ? 'bg-primary text-primary-foreground'
-                : 'bg-muted hover:bg-muted/80'
+                : 'bg-muted hover:bg-muted/80',
             )}
           >
             All
@@ -770,7 +859,7 @@ function TemplateSelectionModal({
                 'rounded-full px-3 py-1 text-sm transition-colors',
                 categoryFilter === key
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted hover:bg-muted/80'
+                  : 'bg-muted hover:bg-muted/80',
               )}
             >
               {config.label}
@@ -882,7 +971,7 @@ function ExecutionHistoryDrawer({
                       className={cn(
                         'rounded-full px-2 py-0.5 text-xs font-medium',
                         statusConfig.bgColor,
-                        statusConfig.color
+                        statusConfig.color,
                       )}
                     >
                       {statusConfig.label}

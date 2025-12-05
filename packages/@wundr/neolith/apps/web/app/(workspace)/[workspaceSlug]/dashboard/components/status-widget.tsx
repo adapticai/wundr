@@ -234,7 +234,7 @@ function PresetButton({
         'flex items-center gap-2 px-3 py-2 rounded-lg border text-left',
         'hover:bg-accent hover:text-accent-foreground transition-colors',
         'disabled:opacity-50 disabled:cursor-not-allowed',
-        isActive && 'bg-accent border-primary'
+        isActive && 'bg-accent border-primary',
       )}
     >
       <span className='text-lg'>{preset.emoji}</span>

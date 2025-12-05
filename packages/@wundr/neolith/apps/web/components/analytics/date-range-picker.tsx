@@ -2,6 +2,7 @@
 
 import { clsx } from 'clsx';
 import { useState, useRef, useEffect } from 'react';
+
 import { useToast } from '@/hooks/use-toast';
 
 export interface DateRangePickerProps {
@@ -96,7 +97,7 @@ export function DateRangePicker({
         className={clsx(
           'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2',
           'bg-muted text-muted-foreground hover:bg-muted/80',
-          (from || to) && 'bg-primary/10 text-primary'
+          (from || to) && 'bg-primary/10 text-primary',
         )}
       >
         <CalendarIcon />

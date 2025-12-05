@@ -2,6 +2,7 @@
 
 import {
   Activity,
+  ArrowUp,
   Calendar,
   CheckCircle,
   FileText,
@@ -11,10 +12,21 @@ import {
   Workflow as WorkflowIcon,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 
 import { EmptyState } from '@/components/ui/empty-state';
+import {
+  Timeline,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDescription,
+  TimelineDot,
+  TimelineItem,
+  TimelineTime,
+  TimelineTitle,
+} from '@/components/ui/timeline';
 import { useActivity } from '@/hooks/use-activity';
+import { useRealtimeActivity } from '@/hooks/use-realtime-activity';
 import { cn } from '@/lib/utils';
 
 import type { ActivityEntry, ActivityType } from '@/hooks/use-activity';
@@ -22,8 +34,8 @@ import type { ActivityEntry, ActivityType } from '@/hooks/use-activity';
 /**
  * Activity Feed Page
  *
- * Displays a chronological feed of workspace activities with filtering
- * and pagination capabilities.
+ * Displays a chronological feed of workspace activities with filtering,
+ * pagination, and real-time updates.
  */
 export default function ActivityPage() {
   const params = useParams();
@@ -34,6 +46,8 @@ export default function ActivityPage() {
   const [dateRange, setDateRange] = useState<
     'today' | 'week' | 'month' | 'all'
   >('all');
+  const [isScrolledDown, setIsScrolledDown] = useState(false);
+  const activityListRef = useRef<HTMLDivElement>(null);
 
   // Calculate date range
   const dateFilter = useMemo(() => {
@@ -58,12 +72,28 @@ export default function ActivityPage() {
   }, [dateRange]);
 
   // Fetch activities
-  const { activities, isLoading, error, loadMore, hasMore, refresh } =
+  const { activities: baseActivities, isLoading, error, loadMore, hasMore, refresh } =
     useActivity(workspaceId, {
       type: typeFilter,
       dateFrom: dateFilter,
       limit: 20,
     });
+
+  // Real-time activity updates
+  const {
+    activities,
+    newActivityCount,
+    isPolling,
+    clearNewActivities,
+    pollNow,
+  } = useRealtimeActivity({
+    workspaceId,
+    initialActivities: baseActivities,
+    typeFilter,
+    dateFilter,
+    enabled: true,
+    pollingInterval: 30000, // 30 seconds
+  });
 
   // Activity type counts
   const activityCounts = useMemo(() => {
@@ -86,25 +116,79 @@ export default function ActivityPage() {
     return counts;
   }, [activities]);
 
+  // Scroll to top handler
+  const scrollToTop = useCallback(() => {
+    activityListRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+    clearNewActivities();
+  }, [clearNewActivities]);
+
+  // Track scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      if (activityListRef.current) {
+        const rect = activityListRef.current.getBoundingClientRect();
+        setIsScrolledDown(rect.top < -100);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className='space-y-6'>
+      {/* New Activity Indicator */}
+      {newActivityCount > 0 && isScrolledDown && (
+        <div className='fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top'>
+          <button
+            type='button'
+            onClick={scrollToTop}
+            className='inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl'
+          >
+            <ArrowUp className='h-4 w-4' />
+            {newActivityCount} new {newActivityCount === 1 ? 'activity' : 'activities'}
+          </button>
+        </div>
+      )}
+
       {/* Page Header */}
-      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between' ref={activityListRef}>
         <div>
           <h1 className='text-2xl font-bold text-foreground'>Activity Feed</h1>
           <p className='text-sm text-muted-foreground'>
             Track all workspace activities in one place
+            {isPolling && (
+              <span className='ml-2 inline-flex items-center gap-1 text-xs text-primary'>
+                <span className='inline-block h-2 w-2 rounded-full bg-primary animate-pulse' />
+                Live
+              </span>
+            )}
           </p>
         </div>
-        <button
-          type='button'
-          onClick={refresh}
-          disabled={isLoading}
-          className='inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50'
-        >
-          <RefreshIcon className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-          Refresh
-        </button>
+        <div className='flex gap-2'>
+          <button
+            type='button'
+            onClick={pollNow}
+            disabled={isLoading}
+            className='inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50'
+            title='Check for new activities'
+          >
+            <RefreshIcon className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+            Check Now
+          </button>
+          <button
+            type='button'
+            onClick={refresh}
+            disabled={isLoading}
+            className='inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50'
+          >
+            <RefreshIcon className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -133,7 +217,7 @@ export default function ActivityPage() {
                 'inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 typeFilter === key
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80',
               )}
             >
               <Icon className='h-3.5 w-3.5' />
@@ -143,7 +227,7 @@ export default function ActivityPage() {
                   'ml-1 rounded-full px-1.5 py-0.5 text-xs',
                   typeFilter === key
                     ? 'bg-primary-foreground/20 text-primary-foreground'
-                    : 'bg-background text-muted-foreground'
+                    : 'bg-background text-muted-foreground',
                 )}
               >
                 {activityCounts[key]}
@@ -173,7 +257,7 @@ export default function ActivityPage() {
                 'inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 dateRange === key
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80',
               )}
             >
               <Calendar className='h-3.5 w-3.5' />
@@ -235,14 +319,92 @@ export default function ActivityPage() {
 
       {/* Activity List */}
       {!isLoading && !error && activities.length > 0 && (
-        <div className='space-y-4'>
-          {activities.map(activity => (
-            <ActivityCard key={activity.id} activity={activity} />
-          ))}
+        <div className='relative'>
+          <Timeline>
+            {activities.map((activity, index) => (
+              <TimelineItem key={activity.id}>
+                <TimelineDot
+                  variant={getActivityVariant(activity)}
+                  icon={getActivityIconComponent(activity.type)}
+                />
+                {index < activities.length - 1 && <TimelineConnector />}
+                <TimelineContent>
+                  <div className='flex items-start justify-between gap-2'>
+                    <TimelineTitle>
+                      <div className='flex items-center gap-2'>
+                        {activity.actor.avatarUrl ? (
+                          <img
+                            src={activity.actor.avatarUrl}
+                            alt={
+                              activity.actor.displayName ||
+                              activity.actor.name ||
+                              'User'
+                            }
+                            className='h-6 w-6 rounded-full object-cover'
+                          />
+                        ) : (
+                          <div className='flex h-6 w-6 items-center justify-center rounded-full bg-muted'>
+                            <span className='text-xs font-medium text-muted-foreground'>
+                              {(
+                                activity.actor.displayName ||
+                                activity.actor.name ||
+                                '?'
+                              )[0].toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <span>
+                          {activity.actor.displayName ||
+                            activity.actor.name ||
+                            'Unknown user'}
+                        </span>
+                        {activity.actor.isOrchestrator && (
+                          <span className='rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'>
+                            AI
+                          </span>
+                        )}
+                      </div>
+                    </TimelineTitle>
+                    <TimelineTime>
+                      <time dateTime={activity.timestamp}>
+                        {formatRelativeTime(activity.timestamp)}
+                      </time>
+                    </TimelineTime>
+                  </div>
+                  <TimelineDescription>
+                    <span className='text-muted-foreground'>
+                      {activity.action}{' '}
+                    </span>
+                    {activity.target && (
+                      <>
+                        <span className='text-muted-foreground'>
+                          {getTargetTypeLabel(activity.target.type)}
+                        </span>
+                        <span className='font-medium'>
+                          {' '}
+                          {activity.target.name}
+                        </span>
+                      </>
+                    )}
+                  </TimelineDescription>
+                  {activity.content && (
+                    <p className='mt-2 text-sm text-muted-foreground line-clamp-2'>
+                      {activity.content}
+                    </p>
+                  )}
+                  {Object.keys(activity.metadata).length > 0 && (
+                    <div className='mt-3 flex flex-wrap gap-2'>
+                      {renderMetadataTags(activity)}
+                    </div>
+                  )}
+                </TimelineContent>
+              </TimelineItem>
+            ))}
+          </Timeline>
 
           {/* Load More Button */}
           {hasMore && (
-            <div className='flex justify-center pt-4'>
+            <div className='flex justify-center pt-8'>
               <button
                 type='button'
                 onClick={loadMore}
@@ -259,179 +421,73 @@ export default function ActivityPage() {
 }
 
 /**
- * Activity Card Component
+ * Get timeline variant based on activity action
  */
-interface ActivityCardProps {
-  activity: ActivityEntry;
-}
+function getActivityVariant(
+  activity: ActivityEntry,
+): 'success' | 'info' | 'warning' | 'error' | 'default' {
+  const action = activity.action.toLowerCase();
 
-function ActivityCard({ activity }: ActivityCardProps) {
-  const icon = getActivityIcon(activity.type);
-  const Icon = icon.component;
+  if (action.includes('create') || action.includes('add')) {
+    return 'success';
+  }
+  if (
+    action.includes('update') ||
+    action.includes('edit') ||
+    action.includes('change')
+  ) {
+    return 'info';
+  }
+  if (action.includes('delete') || action.includes('remove')) {
+    return 'warning';
+  }
+  if (action.includes('fail') || action.includes('error')) {
+    return 'error';
+  }
 
-  return (
-    <div className='rounded-lg border bg-card p-4 transition-shadow hover:shadow-md'>
-      <div className='flex gap-4'>
-        {/* Icon & Avatar */}
-        <div className='flex flex-col items-center gap-2'>
-          <div
-            className={cn(
-              'flex h-10 w-10 items-center justify-center rounded-full',
-              icon.bgColor
-            )}
-          >
-            <Icon className={cn('h-5 w-5', icon.color)} />
-          </div>
-          {activity.actor.avatarUrl ? (
-            <img
-              src={activity.actor.avatarUrl}
-              alt={activity.actor.displayName || activity.actor.name || 'User'}
-              className='h-8 w-8 rounded-lg object-cover'
-            />
-          ) : (
-            <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-muted'>
-              <span className='text-xs font-medium text-muted-foreground'>
-                {(activity.actor.displayName ||
-                  activity.actor.name ||
-                  '?')[0].toUpperCase()}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Content */}
-        <div className='flex-1 min-w-0'>
-          {/* Header */}
-          <div className='flex items-start justify-between gap-2'>
-            <div className='flex-1 min-w-0'>
-              <p className='text-sm'>
-                <span className='font-semibold'>
-                  {activity.actor.displayName ||
-                    activity.actor.name ||
-                    'Unknown user'}
-                </span>
-                {activity.actor.isOrchestrator && (
-                  <span className='ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'>
-                    AI
-                  </span>
-                )}
-                <span className='text-muted-foreground'>
-                  {' '}
-                  {activity.action}{' '}
-                </span>
-                {activity.target && (
-                  <>
-                    <span className='text-muted-foreground'>
-                      {getTargetTypeLabel(activity.target.type)}
-                    </span>
-                    <span className='font-medium'> {activity.target.name}</span>
-                  </>
-                )}
-              </p>
-            </div>
-            <time
-              className='whitespace-nowrap text-xs text-muted-foreground'
-              dateTime={activity.timestamp}
-            >
-              {formatRelativeTime(activity.timestamp)}
-            </time>
-          </div>
-
-          {/* Content Preview */}
-          {activity.content && (
-            <p className='mt-2 text-sm text-muted-foreground line-clamp-2'>
-              {activity.content}
-            </p>
-          )}
-
-          {/* Metadata Tags */}
-          {Object.keys(activity.metadata).length > 0 && (
-            <div className='mt-3 flex flex-wrap gap-2'>
-              {renderMetadataTags(activity)}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  return 'default';
 }
 
 /**
- * Activity Card Skeleton
+ * Get icon component based on activity type
+ */
+function getActivityIconComponent(
+  type: ActivityType,
+): React.ReactElement | undefined {
+  const iconMap: Record<ActivityType, React.ComponentType<any>> = {
+    message: MessageSquare,
+    task: CheckCircle,
+    workflow: WorkflowIcon,
+    member: UserPlus,
+    file: FileText,
+    channel: Hash,
+    all: Activity,
+  };
+
+  const IconComponent = iconMap[type] || Activity;
+  return <IconComponent className='h-4 w-4' />;
+}
+
+/**
+ * Activity Timeline Skeleton
  */
 function ActivityCardSkeleton() {
   return (
-    <div className='animate-pulse rounded-lg border bg-card p-4'>
-      <div className='flex gap-4'>
-        <div className='flex flex-col items-center gap-2'>
-          <div className='h-10 w-10 rounded-full bg-muted' />
-          <div className='h-8 w-8 rounded-full bg-muted' />
-        </div>
-        <div className='flex-1 space-y-3'>
-          <div className='h-4 w-3/4 rounded bg-muted' />
-          <div className='h-3 w-full rounded bg-muted' />
+    <TimelineItem>
+      <div className='h-8 w-8 shrink-0 animate-pulse rounded-full bg-muted' />
+      <TimelineConnector />
+      <TimelineContent>
+        <div className='space-y-2'>
+          <div className='h-4 w-3/4 animate-pulse rounded bg-muted' />
+          <div className='h-3 w-full animate-pulse rounded bg-muted' />
           <div className='flex gap-2'>
-            <div className='h-5 w-16 rounded-full bg-muted' />
-            <div className='h-5 w-16 rounded-full bg-muted' />
+            <div className='h-5 w-16 animate-pulse rounded-full bg-muted' />
+            <div className='h-5 w-16 animate-pulse rounded-full bg-muted' />
           </div>
         </div>
-      </div>
-    </div>
+      </TimelineContent>
+    </TimelineItem>
   );
-}
-
-/**
- * Get activity icon configuration
- */
-function getActivityIcon(type: ActivityType): {
-  component: React.ComponentType<{ className?: string }>;
-  color: string;
-  bgColor: string;
-} {
-  switch (type) {
-    case 'message':
-      return {
-        component: MessageSquare,
-        color: 'text-blue-600 dark:text-blue-400',
-        bgColor: 'bg-blue-100 dark:bg-blue-900/20',
-      };
-    case 'task':
-      return {
-        component: CheckCircle,
-        color: 'text-green-600 dark:text-green-400',
-        bgColor: 'bg-green-100 dark:bg-green-900/20',
-      };
-    case 'workflow':
-      return {
-        component: WorkflowIcon,
-        color: 'text-purple-600 dark:text-purple-400',
-        bgColor: 'bg-purple-100 dark:bg-purple-900/20',
-      };
-    case 'member':
-      return {
-        component: UserPlus,
-        color: 'text-orange-600 dark:text-orange-400',
-        bgColor: 'bg-orange-100 dark:bg-orange-900/20',
-      };
-    case 'file':
-      return {
-        component: FileText,
-        color: 'text-indigo-600 dark:text-indigo-400',
-        bgColor: 'bg-indigo-100 dark:bg-indigo-900/20',
-      };
-    case 'channel':
-      return {
-        component: Hash,
-        color: 'text-teal-600 dark:text-teal-400',
-        bgColor: 'bg-teal-100 dark:bg-teal-900/20',
-      };
-    default:
-      return {
-        component: Activity,
-        color: 'text-gray-600 dark:text-gray-400',
-        bgColor: 'bg-gray-100 dark:bg-gray-900/20',
-      };
-  }
 }
 
 /**
@@ -494,7 +550,7 @@ function renderMetadataTags(activity: ActivityEntry): React.ReactNode {
           className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium'
         >
           {String(activity.metadata.priority).toUpperCase()}
-        </span>
+        </span>,
       );
     }
     if (activity.metadata.status) {
@@ -504,7 +560,7 @@ function renderMetadataTags(activity: ActivityEntry): React.ReactNode {
           className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium'
         >
           {String(activity.metadata.status)}
-        </span>
+        </span>,
       );
     }
   }
@@ -519,11 +575,11 @@ function renderMetadataTags(activity: ActivityEntry): React.ReactNode {
             'rounded-full px-2 py-0.5 text-xs font-medium',
             activity.metadata.status === 'COMPLETED'
               ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300'
-              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300'
+              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300',
           )}
         >
           {String(activity.metadata.status)}
-        </span>
+        </span>,
       );
     }
   }
@@ -540,7 +596,7 @@ function renderMetadataTags(activity: ActivityEntry): React.ReactNode {
           className='rounded-full bg-muted px-2 py-0.5 text-xs'
         >
           {activity.metadata.replyCount} replies
-        </span>
+        </span>,
       );
     }
   }

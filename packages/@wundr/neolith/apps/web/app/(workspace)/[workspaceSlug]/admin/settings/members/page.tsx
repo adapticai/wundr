@@ -50,7 +50,7 @@ export default function MembersSettingsPage() {
   useEffect(() => {
     setPageHeader(
       'Members & Permissions',
-      'Configure workspace member settings and access controls'
+      'Configure workspace member settings and access controls',
     );
   }, [setPageHeader]);
 
@@ -71,7 +71,7 @@ export default function MembersSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [inviteLink] = useState(
-    `https://app.wundr.ai/invite/${workspaceSlug}/abc123`
+    `https://app.wundr.ai/invite/${workspaceSlug}/abc123`,
   ); // Mock link
 
   // Load settings
@@ -79,7 +79,7 @@ export default function MembersSettingsPage() {
     const loadSettings = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/admin/settings/members`
+          `/api/workspaces/${workspaceSlug}/admin/settings/members`,
         );
         if (!response.ok) {
           throw new Error('Failed to load settings');
@@ -118,7 +118,7 @@ export default function MembersSettingsPage() {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ [key]: newValue }),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -143,7 +143,7 @@ export default function MembersSettingsPage() {
         setIsSaving(false);
       }
     },
-    [settings, workspaceSlug, toast]
+    [settings, workspaceSlug, toast],
   );
 
   const handleSelectChange = useCallback(
@@ -160,7 +160,7 @@ export default function MembersSettingsPage() {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ [key]: value }),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -184,7 +184,7 @@ export default function MembersSettingsPage() {
         setIsSaving(false);
       }
     },
-    [settings, workspaceSlug, toast]
+    [settings, workspaceSlug, toast],
   );
 
   const copyInviteLink = useCallback(() => {
@@ -202,7 +202,7 @@ export default function MembersSettingsPage() {
         `/api/workspaces/${workspaceSlug}/admin/invite-link/regenerate`,
         {
           method: 'POST',
-        }
+        },
       );
 
       if (!response.ok) {
@@ -278,7 +278,7 @@ export default function MembersSettingsPage() {
                     'block w-full rounded-md border border-input bg-background',
                     'px-3 py-2 text-sm',
                     'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-                    'disabled:cursor-not-allowed disabled:opacity-50'
+                    'disabled:cursor-not-allowed disabled:opacity-50',
                   )}
                 >
                   <option value='everyone'>
@@ -446,7 +446,7 @@ export default function MembersSettingsPage() {
                 className={cn(
                   'block w-full rounded-md border border-input bg-background',
                   'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
                 )}
               />
             </div>
@@ -484,7 +484,7 @@ export default function MembersSettingsPage() {
                 'block w-full rounded-md border border-input bg-background',
                 'px-3 py-2 text-sm',
                 'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-                'disabled:cursor-not-allowed disabled:opacity-50'
+                'disabled:cursor-not-allowed disabled:opacity-50',
               )}
             >
               <option value=''>Member (default)</option>
@@ -539,7 +539,7 @@ export default function MembersSettingsPage() {
                     'block w-full rounded-md border border-input bg-background',
                     'px-3 py-2 text-sm',
                     'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-                    'disabled:cursor-not-allowed disabled:opacity-50'
+                    'disabled:cursor-not-allowed disabled:opacity-50',
                   )}
                 >
                   <option value='none'>No channels (invite only)</option>
@@ -558,7 +558,7 @@ export default function MembersSettingsPage() {
                   onChange={e =>
                     handleSelectChange(
                       'guestAccountExpiration',
-                      Number(e.target.value)
+                      Number(e.target.value),
                     )
                   }
                   disabled={isSaving}
@@ -566,7 +566,7 @@ export default function MembersSettingsPage() {
                     'block w-full rounded-md border border-input bg-background',
                     'px-3 py-2 text-sm',
                     'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-                    'disabled:cursor-not-allowed disabled:opacity-50'
+                    'disabled:cursor-not-allowed disabled:opacity-50',
                   )}
                 >
                   <option value={7}>7 days</option>
@@ -614,7 +614,7 @@ export default function MembersSettingsPage() {
                   <div
                     className={cn(
                       'h-full transition-all',
-                      nearLimit ? 'bg-yellow-500' : 'bg-primary'
+                      nearLimit ? 'bg-yellow-500' : 'bg-primary',
                     )}
                     style={{
                       width: `${Math.min(memberLimitPercentage, 100)}%`,
@@ -673,13 +673,13 @@ function ToggleSwitch({
       className={cn(
         'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
         checked ? 'bg-primary' : 'bg-muted-foreground/30',
-        disabled && 'cursor-not-allowed opacity-50'
+        disabled && 'cursor-not-allowed opacity-50',
       )}
     >
       <span
         className={cn(
           'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-          checked ? 'translate-x-6' : 'translate-x-1'
+          checked ? 'translate-x-6' : 'translate-x-1',
         )}
       />
     </button>

@@ -59,7 +59,7 @@ export function HuddleBar({
         'fixed bottom-0 left-0 right-0 z-50',
         'bg-background/95 backdrop-blur-sm border-t shadow-lg',
         'flex items-center justify-between gap-4 px-4 py-3',
-        className
+        className,
       )}
     >
       {/* Left: Huddle info and participants */}
@@ -81,7 +81,7 @@ export function HuddleBar({
                 className={cn(
                   'relative flex h-8 w-8 items-center justify-center',
                   'rounded-full border-2 border-background bg-muted',
-                  'text-xs font-medium'
+                  'text-xs font-medium',
                 )}
                 style={{ zIndex: 5 - index }}
                 title={
@@ -97,7 +97,7 @@ export function HuddleBar({
                   />
                 ) : (
                   getInitials(
-                    participant.displayName ?? participant.user?.name ?? '?'
+                    participant.displayName ?? participant.user?.name ?? '?',
                   )
                 )}
                 {!participant.isAudioEnabled && (
@@ -112,7 +112,7 @@ export function HuddleBar({
                 className={cn(
                   'flex h-8 w-8 items-center justify-center',
                   'rounded-full border-2 border-background bg-muted',
-                  'text-xs font-medium'
+                  'text-xs font-medium',
                 )}
               >
                 +{activeParticipants.length - 5}

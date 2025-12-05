@@ -168,13 +168,21 @@ export default function ProfileSettingsPage() {
 
           // Build preferences object for fields that go into preferences JSON
           const preferencesToUpdate: UserPreferences = {};
-          if (fullName !== undefined) preferencesToUpdate.fullName = fullName;
-          if (title !== undefined) preferencesToUpdate.title = title;
-          if (pronouns !== undefined) preferencesToUpdate.pronouns = pronouns;
-          if (customPronouns !== undefined)
-            preferencesToUpdate.customPronouns = customPronouns;
-          if (statusMessage !== undefined)
-            preferencesToUpdate.statusMessage = statusMessage;
+          if (fullName !== undefined) {
+preferencesToUpdate.fullName = fullName;
+}
+          if (title !== undefined) {
+preferencesToUpdate.title = title;
+}
+          if (pronouns !== undefined) {
+preferencesToUpdate.pronouns = pronouns;
+}
+          if (customPronouns !== undefined) {
+preferencesToUpdate.customPronouns = customPronouns;
+}
+          if (statusMessage !== undefined) {
+preferencesToUpdate.statusMessage = statusMessage;
+}
 
           // If we have preferences to update, add them to the payload
           if (Object.keys(preferencesToUpdate).length > 0) {
@@ -203,7 +211,7 @@ export default function ProfileSettingsPage() {
         }
       }, 1000); // 1 second debounce
     },
-    [session?.user?.id, updateSession, toast]
+    [session?.user?.id, updateSession, toast],
   );
 
   // Handle field changes with auto-save
@@ -215,7 +223,7 @@ export default function ProfileSettingsPage() {
         return updated;
       });
     },
-    [debouncedSave]
+    [debouncedSave],
   );
 
   const validateFile = (file: File): string | null => {
@@ -301,7 +309,7 @@ export default function ProfileSettingsPage() {
   };
 
   const handleAvatarChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -354,7 +362,7 @@ export default function ProfileSettingsPage() {
         });
       }
     },
-    [uploadAvatar, toast]
+    [uploadAvatar, toast],
   );
 
   const getInitials = (name: string) => {

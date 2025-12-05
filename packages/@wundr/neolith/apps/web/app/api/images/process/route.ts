@@ -49,7 +49,7 @@ async function processImage(
   s3Bucket: string,
   operations: ImageOperation[],
   outputFormat: string | undefined,
-  _quality: number | undefined
+  _quality: number | undefined,
 ): Promise<ImageVariant> {
   // In production, this would:
   // 1. Download the image from S3
@@ -72,7 +72,7 @@ async function processImage(
   // Generate variant key
   const variantKey = s3Key.replace(
     /\.[^.]+$/,
-    `-${width}x${height}-${randomId}.${format}`
+    `-${width}x${height}-${randomId}.${format}`,
   );
 
   const cdnDomain = process.env.CDN_DOMAIN;
@@ -131,9 +131,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          UPLOAD_ERROR_CODES.UNAUTHORIZED
+          UPLOAD_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -145,9 +145,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -158,9 +158,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           UPLOAD_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!file) {
       return NextResponse.json(
         createErrorResponse('File not found', UPLOAD_ERROR_CODES.NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -193,9 +193,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Only image files can be processed',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -205,9 +205,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'File is not ready for processing',
           UPLOAD_ERROR_CODES.NOT_FOUND,
-          { status: file.status }
+          { status: file.status },
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -225,9 +225,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -237,7 +237,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       file.s3Bucket,
       input.operations as ImageOperation[],
       input.outputFormat,
-      input.quality
+      input.quality,
     );
 
     // Store variant metadata in the file record
@@ -266,9 +266,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

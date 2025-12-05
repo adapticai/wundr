@@ -28,7 +28,7 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> }
+  { params }: { params: Promise<{ workspaceSlug: string }> },
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -43,7 +43,7 @@ export async function GET(
     const status = searchParams.get('status') || undefined;
     const limit = Math.min(
       parseInt(searchParams.get('limit') || '20', 10),
-      100
+      100,
     );
     const offset = parseInt(searchParams.get('offset') || '0', 10);
 
@@ -58,7 +58,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -88,7 +88,7 @@ export async function GET(
       let duration: number | null = null;
       if (job.startedAt && job.completedAt) {
         duration = Math.floor(
-          (job.completedAt.getTime() - job.startedAt.getTime()) / 1000
+          (job.completedAt.getTime() - job.startedAt.getTime()) / 1000,
         );
       }
 
@@ -127,7 +127,7 @@ export async function GET(
     console.error('Export jobs list error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch export jobs' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

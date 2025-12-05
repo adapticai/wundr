@@ -60,7 +60,7 @@ export default function AdminOrchestratorDetailPage() {
     if (orchestrator) {
       setPageHeader(
         orchestrator.title,
-        'Manage orchestrator configuration and monitor activity'
+        'Manage orchestrator configuration and monitor activity',
       );
     }
   }, [orchestrator, setPageHeader]);
@@ -94,7 +94,7 @@ export default function AdminOrchestratorDetailPage() {
       await updateOrchestrator(orchestrator.id, updateInput);
       refetch();
     },
-    [orchestrator, updateOrchestrator, refetch]
+    [orchestrator, updateOrchestrator, refetch],
   );
 
   const handleDelete = useCallback(async () => {
@@ -277,7 +277,7 @@ export default function AdminOrchestratorDetailPage() {
                   <p className='text-sm'>
                     {orchestrator.lastActivityAt
                       ? new Date(
-                          orchestrator.lastActivityAt
+                          orchestrator.lastActivityAt,
                         ).toLocaleDateString()
                       : 'Never'}
                   </p>

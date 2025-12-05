@@ -37,7 +37,7 @@ export function OrgChartToolbar({
     <div
       className={cn(
         'flex flex-col sm:flex-row gap-4 items-start sm:items-center',
-        className
+        className,
       )}
     >
       <OrgChartSearch

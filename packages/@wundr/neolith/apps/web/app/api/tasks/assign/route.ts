@@ -60,9 +60,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          TASK_ERROR_CODES.UNAUTHORIZED
+          TASK_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -74,9 +74,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          TASK_ERROR_CODES.VALIDATION_ERROR
+          TASK_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -87,9 +87,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           TASK_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -105,9 +105,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Assignee not found',
-          TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND
+          TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (tasks.length === 0) {
       return NextResponse.json(
         createErrorResponse('No valid tasks found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -142,16 +142,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Access denied to one or more workspaces',
-          TASK_ERROR_CODES.FORBIDDEN
+          TASK_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     // Check if not found tasks exist
     const foundTaskIds = tasks.map(t => t.id);
     const notFoundIds = input.taskIds.filter(
-      (id: string) => !foundTaskIds.includes(id)
+      (id: string) => !foundTaskIds.includes(id),
     );
 
     // Assign tasks in a transaction
@@ -232,11 +232,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           input.assigneeId,
           result.taskId,
           taskTitle,
-          assignerName
+          assignerName,
         ).catch((err: Error) => {
           console.error(
             `[POST /api/tasks/assign] Failed to send notification for task ${result.taskId}:`,
-            err
+            err,
           );
         });
       }
@@ -262,7 +262,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
       {
         status: failureCount > 0 || notFoundIds.length > 0 ? 207 : 200,
-      }
+      },
     );
   } catch (error) {
     console.error('[POST /api/tasks/assign] Error:', error);
@@ -272,9 +272,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'One or more tasks not found',
-            TASK_ERROR_CODES.NOT_FOUND
+            TASK_ERROR_CODES.NOT_FOUND,
           ),
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -282,9 +282,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        TASK_ERROR_CODES.INTERNAL_ERROR
+        TASK_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

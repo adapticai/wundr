@@ -43,7 +43,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -70,14 +70,14 @@ export async function GET(
       query,
       workspaceId,
       session.user.id,
-      parseInt(searchParams.get('limit') || '5')
+      parseInt(searchParams.get('limit') || '5'),
     );
 
     return NextResponse.json({ suggestions });
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/search/suggestions] Error:',
-      error
+      error,
     );
     return NextResponse.json({ suggestions: [] });
   }

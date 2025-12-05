@@ -50,7 +50,7 @@ async function generateLiveKitToken(
   roomName: string,
   identity: string,
   name: string,
-  audioOnly: boolean = false
+  audioOnly: boolean = false,
 ): Promise<string> {
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
@@ -80,7 +80,7 @@ async function generateLiveKitToken(
   // Simplified JWT generation for development
   // IMPORTANT: Replace with livekit-server-sdk in production
   const header = Buffer.from(
-    JSON.stringify({ alg: 'HS256', typ: 'JWT' })
+    JSON.stringify({ alg: 'HS256', typ: 'JWT' }),
   ).toString('base64url');
   const now = Math.floor(Date.now() / 1000);
   const exp = now + 6 * 60 * 60; // 6 hours
@@ -103,7 +103,7 @@ async function generateLiveKitToken(
           ? ['microphone']
           : ['camera', 'microphone', 'screen_share'],
       },
-    })
+    }),
   ).toString('base64url');
 
   // Note: This is a simplified signature - use proper HMAC-SHA256 in production
@@ -127,7 +127,7 @@ async function generateLiveKitToken(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -136,9 +136,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED
+          CALL_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -149,9 +149,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid call ID format',
-          CALL_ERROR_CODES.VALIDATION_ERROR
+          CALL_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -172,9 +172,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -250,7 +250,7 @@ export async function POST(
     if (!call) {
       return NextResponse.json(
         createErrorResponse('Call not found', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -259,9 +259,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Call has already ended',
-          CALL_ERROR_CODES.CALL_ALREADY_ENDED
+          CALL_ERROR_CODES.CALL_ALREADY_ENDED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -275,9 +275,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found',
-          CALL_ERROR_CODES.CHANNEL_NOT_FOUND
+          CALL_ERROR_CODES.CHANNEL_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -293,7 +293,7 @@ export async function POST(
     if (!orgMembership) {
       return NextResponse.json(
         createErrorResponse('Access denied', CALL_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -311,9 +311,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Access denied to private channel',
-            CALL_ERROR_CODES.FORBIDDEN
+            CALL_ERROR_CODES.FORBIDDEN,
           ),
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -338,19 +338,19 @@ export async function POST(
         call.roomName,
         participantIdentity,
         participantName,
-        isAudioOnly
+        isAudioOnly,
       );
     } catch (error) {
       console.error(
         '[POST /api/calls/:callId/join] LiveKit token error:',
-        error
+        error,
       );
       return NextResponse.json(
         createErrorResponse(
           'Failed to generate access token',
-          CALL_ERROR_CODES.LIVEKIT_TOKEN_ERROR
+          CALL_ERROR_CODES.LIVEKIT_TOKEN_ERROR,
         ),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -376,7 +376,7 @@ export async function POST(
     } catch (participantError) {
       console.error(
         '[POST /api/calls/:callId/join] Participant tracking not available:',
-        participantError
+        participantError,
       );
       // Participant tracking table may not exist
     }
@@ -392,7 +392,7 @@ export async function POST(
       } catch (updateError) {
         console.error(
           '[POST /api/calls/:callId/join] Error updating call status, trying channel settings:',
-          updateError
+          updateError,
         );
         // Try channel settings
         try {
@@ -417,7 +417,7 @@ export async function POST(
         } catch (settingsError) {
           console.error(
             '[POST /api/calls/:callId/join] Error updating channel settings:',
-            settingsError
+            settingsError,
           );
         }
       }
@@ -442,9 +442,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR
+        CALL_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -167,7 +167,7 @@ export default function RolesSettingsPage() {
     const loadRoles = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/admin/roles`
+          `/api/workspaces/${workspaceSlug}/admin/roles`,
         );
         if (!response.ok) {
           throw new Error('Failed to load roles');
@@ -228,7 +228,7 @@ export default function RolesSettingsPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -282,7 +282,7 @@ export default function RolesSettingsPage() {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -314,14 +314,14 @@ export default function RolesSettingsPage() {
         setIsSaving(false);
       }
     },
-    [formData, workspaceSlug, toast]
+    [formData, workspaceSlug, toast],
   );
 
   const handleDeleteRole = useCallback(
     async (roleId: string) => {
       if (
         !confirm(
-          'Are you sure you want to delete this role? Members with this role will be reassigned.'
+          'Are you sure you want to delete this role? Members with this role will be reassigned.',
         )
       ) {
         return;
@@ -333,7 +333,7 @@ export default function RolesSettingsPage() {
           `/api/workspaces/${workspaceSlug}/admin/roles/${roleId}`,
           {
             method: 'DELETE',
-          }
+          },
         );
 
         if (!response.ok) {
@@ -357,7 +357,7 @@ export default function RolesSettingsPage() {
         setIsSaving(false);
       }
     },
-    [workspaceSlug, toast]
+    [workspaceSlug, toast],
   );
 
   const handlePriorityChange = useCallback(
@@ -378,7 +378,7 @@ export default function RolesSettingsPage() {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ priority: newPriority }),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -389,7 +389,7 @@ export default function RolesSettingsPage() {
         setRoles(prev =>
           prev
             .map(r => (r.id === roleId ? updatedRole : r))
-            .sort((a, b) => b.priority - a.priority)
+            .sort((a, b) => b.priority - a.priority),
         );
 
         toast({
@@ -409,7 +409,7 @@ export default function RolesSettingsPage() {
         setIsSaving(false);
       }
     },
-    [roles, workspaceSlug, toast]
+    [roles, workspaceSlug, toast],
   );
 
   const cancelEdit = useCallback(() => {
@@ -706,7 +706,7 @@ function RoleForm({
         {Object.entries(PERMISSION_CATEGORIES).map(
           ([category, categoryName]) => {
             const categoryPermissions = DEFAULT_PERMISSIONS.filter(
-              p => p.category === category
+              p => p.category === category,
             );
 
             return (
@@ -732,7 +732,7 @@ function RoleForm({
                             'h-4 w-4 rounded border-2 transition-colors flex items-center justify-center',
                             formData.permissions.includes(permission.id)
                               ? 'bg-primary border-primary'
-                              : 'border-muted-foreground/50'
+                              : 'border-muted-foreground/50',
                           )}
                         >
                           {formData.permissions.includes(permission.id) && (
@@ -753,7 +753,7 @@ function RoleForm({
                 </div>
               </div>
             );
-          }
+          },
         )}
       </div>
     </>
@@ -762,7 +762,7 @@ function RoleForm({
 
 function PermissionsList({ permissions }: { permissions: string[] }) {
   const groupedPermissions = DEFAULT_PERMISSIONS.filter(p =>
-    permissions.includes(p.id)
+    permissions.includes(p.id),
   ).reduce(
     (acc, permission) => {
       if (!acc[permission.category]) {
@@ -771,7 +771,7 @@ function PermissionsList({ permissions }: { permissions: string[] }) {
       acc[permission.category].push(permission);
       return acc;
     },
-    {} as Record<string, Permission[]>
+    {} as Record<string, Permission[]>,
   );
 
   return (

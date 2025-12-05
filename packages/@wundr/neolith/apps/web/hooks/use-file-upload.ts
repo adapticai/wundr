@@ -57,7 +57,7 @@ export function useFileUpload({
 
       return null;
     },
-    [maxFileSize, allowedTypes]
+    [maxFileSize, allowedTypes],
   );
 
   const addFiles = useCallback(
@@ -83,7 +83,7 @@ export function useFileUpload({
       setUploads(newUploads);
       return addedIds;
     },
-    [uploads, validateFile]
+    [uploads, validateFile],
   );
 
   const removeFile = useCallback(
@@ -92,7 +92,7 @@ export function useFileUpload({
       newUploads.delete(id);
       setUploads(newUploads);
     },
-    [uploads]
+    [uploads],
   );
 
   const uploadFile = useCallback(
@@ -185,7 +185,7 @@ export function useFileUpload({
         return null;
       }
     },
-    [uploads, workspaceId, channelId, onUploadComplete, onUploadError]
+    [uploads, workspaceId, channelId, onUploadComplete, onUploadError],
   );
 
   const uploadAll = useCallback(async (): Promise<UploadResult[]> => {

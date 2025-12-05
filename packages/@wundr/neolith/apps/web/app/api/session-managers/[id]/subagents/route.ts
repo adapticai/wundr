@@ -43,7 +43,7 @@ const SUBAGENT_ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: (typeof SUBAGENT_ERROR_CODES)[keyof typeof SUBAGENT_ERROR_CODES],
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) {
   return {
     error: {
@@ -71,7 +71,7 @@ function createErrorResponse(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -80,9 +80,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          SUBAGENT_ERROR_CODES.UNAUTHORIZED
+          SUBAGENT_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -112,9 +112,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Session Manager not found',
-          SUBAGENT_ERROR_CODES.SESSION_MANAGER_NOT_FOUND
+          SUBAGENT_ERROR_CODES.SESSION_MANAGER_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -130,9 +130,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to this session manager',
-          SUBAGENT_ERROR_CODES.FORBIDDEN
+          SUBAGENT_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -176,9 +176,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SUBAGENT_ERROR_CODES.INTERNAL_ERROR
+        SUBAGENT_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -214,7 +214,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -223,9 +223,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          SUBAGENT_ERROR_CODES.UNAUTHORIZED
+          SUBAGENT_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -240,9 +240,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          SUBAGENT_ERROR_CODES.VALIDATION_ERROR
+          SUBAGENT_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -265,9 +265,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Missing required fields: name, charterId, charterData',
-          SUBAGENT_ERROR_CODES.VALIDATION_ERROR
+          SUBAGENT_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -287,9 +287,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Session Manager not found',
-          SUBAGENT_ERROR_CODES.SESSION_MANAGER_NOT_FOUND
+          SUBAGENT_ERROR_CODES.SESSION_MANAGER_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -305,9 +305,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to this session manager',
-          SUBAGENT_ERROR_CODES.FORBIDDEN
+          SUBAGENT_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -323,9 +323,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'A subagent with this name already exists in the session manager',
-          SUBAGENT_ERROR_CODES.SUBAGENT_NAME_EXISTS
+          SUBAGENT_ERROR_CODES.SUBAGENT_NAME_EXISTS,
         ),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -358,16 +358,16 @@ export async function POST(
 
     return NextResponse.json(
       { data: subagent, message: 'Subagent created successfully' },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/session-managers/:id/subagents] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SUBAGENT_ERROR_CODES.INTERNAL_ERROR
+        SUBAGENT_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

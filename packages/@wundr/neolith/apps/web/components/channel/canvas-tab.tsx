@@ -110,7 +110,7 @@ export function CanvasTab({
       <div
         className={cn(
           'flex flex-1 flex-col items-center justify-center p-8',
-          className
+          className,
         )}
       >
         <div className='mb-8 rounded-full bg-muted p-6'>

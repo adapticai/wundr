@@ -117,12 +117,12 @@ export function MessageInput({
     async (query: string) => {
       try {
         const response = await fetch(
-          `/api/channels/${channelId}/members?search=${encodeURIComponent(query)}`
+          `/api/channels/${channelId}/members?search=${encodeURIComponent(query)}`,
         );
         if (response.ok) {
           const data = await response.json();
           const filteredMembers = (data.members || []).filter(
-            (member: User) => member.id !== currentUser.id
+            (member: User) => member.id !== currentUser.id,
           );
           setMentionUsers(filteredMembers);
         } else {
@@ -136,7 +136,7 @@ export function MessageInput({
         setMentionUsers([]);
       }
     },
-    [channelId, currentUser.id]
+    [channelId, currentUser.id],
   );
 
   // Handle content change
@@ -161,7 +161,7 @@ export function MessageInput({
         }
       }
     },
-    [maxLength, handleTyping, fetchMentionSuggestions]
+    [maxLength, handleTyping, fetchMentionSuggestions],
   );
 
   // Insert mention
@@ -180,7 +180,7 @@ export function MessageInput({
       if (mentionMatch) {
         const beforeMention = textBeforeCursor.slice(
           0,
-          -mentionMatch[0].length
+          -mentionMatch[0].length,
         );
         const newContent = `${beforeMention}@${user.name} ${textAfterCursor}`;
         setContent(newContent);
@@ -195,7 +195,7 @@ export function MessageInput({
 
       setShowMentions(false);
     },
-    [content]
+    [content],
   );
 
   // Apply formatting to selected text
@@ -268,13 +268,13 @@ export function MessageInput({
         } else {
           textarea.setSelectionRange(
             start + cursorOffset,
-            start + cursorOffset
+            start + cursorOffset,
           );
         }
         textarea.focus();
       }, 0);
     },
-    [content]
+    [content],
   );
 
   // Handle send - defined before handleKeyDown to avoid circular dependency
@@ -283,7 +283,7 @@ export function MessageInput({
     console.log(
       '[MessageInput.handleSend] attachments:',
       attachments.length,
-      attachments.map(f => f.name)
+      attachments.map(f => f.name),
     );
     if (!trimmedContent && attachments.length === 0) {
       return;
@@ -294,7 +294,7 @@ export function MessageInput({
 
     console.log(
       '[MessageInput.handleSend] calling onSend with attachments:',
-      attachments.length
+      attachments.length,
     );
     onSend(trimmedContent, mentions, attachments);
     setContent('');
@@ -315,7 +315,7 @@ export function MessageInput({
         if (e.key === 'ArrowDown') {
           e.preventDefault();
           setSelectedMentionIndex(prev =>
-            prev < mentionUsers.length - 1 ? prev + 1 : prev
+            prev < mentionUsers.length - 1 ? prev + 1 : prev,
           );
           return;
         }
@@ -347,7 +347,7 @@ export function MessageInput({
       selectedMentionIndex,
       insertMention,
       handleSend,
-    ]
+    ],
   );
 
   // Handle scheduled send
@@ -407,7 +407,7 @@ export function MessageInput({
         fileInputRef.current.value = '';
       }
     },
-    [validateFile]
+    [validateFile],
   );
 
   const removeAttachment = useCallback((index: number) => {
@@ -456,7 +456,7 @@ export function MessageInput({
       setUploadErrors(errors);
       setAttachments(prev => [...prev, ...validFiles]);
     },
-    [validateFile]
+    [validateFile],
   );
 
   // Handle emoji insert
@@ -480,7 +480,7 @@ export function MessageInput({
         textarea.focus();
       }, 0);
     },
-    [content]
+    [content],
   );
 
   // Trigger @ mention
@@ -566,7 +566,7 @@ export function MessageInput({
         className={cn(
           'mx-4 mb-4 border rounded-lg bg-background transition-colors',
           attachments.length > 0 ? 'rounded-t-none border-t-0' : '',
-          isDraggingOver && 'border-primary border-2'
+          isDraggingOver && 'border-primary border-2',
         )}
       >
         {/* Formatting toolbar */}
@@ -640,7 +640,7 @@ export function MessageInput({
                     'flex w-full items-center gap-3 px-4 py-2 text-left',
                     selectedMentionIndex === index
                       ? 'bg-accent'
-                      : 'hover:bg-accent/50'
+                      : 'hover:bg-accent/50',
                   )}
                 >
                   {/* Avatar */}
@@ -702,7 +702,7 @@ export function MessageInput({
             aria-invalid={content.length > maxLength}
             aria-describedby={showCharCount ? 'char-count' : undefined}
             className={cn(
-              'max-h-[200px] min-h-[24px] w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50'
+              'max-h-[200px] min-h-[24px] w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
             )}
           />
         </div>
@@ -782,7 +782,7 @@ export function MessageInput({
                 id='char-count'
                 className={cn(
                   'mr-2 text-xs',
-                  isNearLimit ? 'text-destructive' : 'text-muted-foreground'
+                  isNearLimit ? 'text-destructive' : 'text-muted-foreground',
                 )}
                 aria-live='polite'
               >
@@ -800,7 +800,7 @@ export function MessageInput({
                     'flex items-center justify-center h-8 px-2 rounded-l-md transition-colors',
                     canSend
                       ? 'bg-emerald-700 text-white hover:bg-emerald-600'
-                      : 'bg-muted text-muted-foreground cursor-not-allowed'
+                      : 'bg-muted text-muted-foreground cursor-not-allowed',
                   )}
                   title='Send message (Enter)'
                 >
@@ -815,7 +815,7 @@ export function MessageInput({
                     'flex items-center justify-center h-8 px-1.5 rounded-r-md border-l border-white/20 transition-colors',
                     canSend
                       ? 'bg-emerald-700 text-white hover:bg-emerald-600'
-                      : 'bg-muted text-muted-foreground cursor-not-allowed'
+                      : 'bg-muted text-muted-foreground cursor-not-allowed',
                   )}
                   title='Schedule message'
                 >
@@ -1135,7 +1135,7 @@ function ToolButton({
       disabled={disabled}
       className={cn(
         'p-1.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 transition-colors',
-        active && 'bg-accent text-foreground'
+        active && 'bg-accent text-foreground',
       )}
       title={title}
     >

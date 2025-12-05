@@ -98,7 +98,7 @@ export function AppearanceSettings() {
 
   const updatePreference = <K extends keyof AppearancePreferences>(
     key: K,
-    value: AppearancePreferences[K]
+    value: AppearancePreferences[K],
   ) => {
     setPreferences(prev => {
       const updated = { ...prev, [key]: value };
@@ -208,7 +208,7 @@ export function AppearanceSettings() {
                 key={value}
                 className={cn(
                   'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors',
-                  theme === value && 'border-primary bg-primary/5'
+                  theme === value && 'border-primary bg-primary/5',
                 )}
               >
                 <RadioGroupItem value={value} className='sr-only' />

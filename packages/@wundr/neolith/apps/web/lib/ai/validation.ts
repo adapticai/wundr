@@ -41,7 +41,7 @@ export const ENTITY_SCHEMAS = {
         z.object({
           action: z.string(),
           description: z.string(),
-        })
+        }),
       )
       .min(1, 'At least one step is required'),
   }),
@@ -62,7 +62,7 @@ export const ENTITY_SCHEMAS = {
 
 export function validateEntityData<T extends EntityType>(
   entityType: T,
-  data: unknown
+  data: unknown,
 ):
   | { success: true; data: z.infer<(typeof ENTITY_SCHEMAS)[T]> }
   | { success: false; errors: z.ZodError } {

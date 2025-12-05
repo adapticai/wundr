@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
           'Content-Type': 'application/json',
           Upgrade: 'websocket',
         },
-      }
+      },
     );
   }
 
@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
         headers: {
           'Content-Type': 'application/json',
         },
-      }
+      },
     );
   }
 
@@ -143,7 +143,7 @@ export async function GET(req: NextRequest) {
         headers: {
           'Content-Type': 'application/json',
         },
-      }
+      },
     );
   }
 }
@@ -163,7 +163,7 @@ export async function POST() {
         'Content-Type': 'application/json',
         Allow: 'GET',
       },
-    }
+    },
   );
 }
 

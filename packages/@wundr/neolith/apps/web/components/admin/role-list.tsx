@@ -43,7 +43,7 @@ export function RoleList({
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/admin/roles`
+        `/api/workspaces/${workspaceId}/admin/roles`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -63,7 +63,7 @@ export function RoleList({
   const handleDelete = async (roleId: string) => {
     if (
       !confirm(
-        'Are you sure you want to delete this role? Members with this role will be assigned the default role.'
+        'Are you sure you want to delete this role? Members with this role will be assigned the default role.',
       )
     ) {
       return;

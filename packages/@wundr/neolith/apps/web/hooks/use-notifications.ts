@@ -105,7 +105,7 @@ export interface UseNotificationsReturn {
  * ```
  */
 export function useNotifications(
-  options: UseNotificationsOptions = {}
+  options: UseNotificationsOptions = {},
 ): UseNotificationsReturn {
   const { enabled = true, pollInterval = 30000 } = options;
 
@@ -120,21 +120,21 @@ export function useNotifications(
 
   const unreadCount = useMemo(
     () => notifications.filter(n => !n.read).length,
-    [notifications]
+    [notifications],
   );
 
   // Type guard for notification type
   const isValidNotificationType = (
-    type: string
+    type: string,
   ): type is AppNotification['type'] => {
     return ['message', 'mention', 'reaction', 'system'].includes(
-      type.toLowerCase()
+      type.toLowerCase(),
     );
   };
 
   // Type guard for notification priority
   const isValidNotificationPriority = (
-    priority: string
+    priority: string,
   ): priority is AppNotification['priority'] => {
     return ['low', 'normal', 'high', 'urgent'].includes(priority.toLowerCase());
   };
@@ -167,7 +167,7 @@ export function useNotifications(
           `/api/notifications?${params.toString()}`,
           {
             signal: abortControllerRef.current.signal,
-          }
+          },
         );
 
         if (!response.ok) {
@@ -193,7 +193,7 @@ export function useNotifications(
                 : 'normal',
               createdAt: new Date(n.createdAt),
             };
-          }
+          },
         );
 
         if (refresh) {
@@ -206,7 +206,7 @@ export function useNotifications(
         const pagination = result.pagination;
         if (pagination) {
           setCursor(
-            pagination.hasNextPage ? String(pagination.page + 1) : null
+            pagination.hasNextPage ? String(pagination.page + 1) : null,
           );
           setHasMore(pagination.hasNextPage);
         } else {
@@ -223,7 +223,7 @@ export function useNotifications(
         setIsLoading(false);
       }
     },
-    [enabled, cursor]
+    [enabled, cursor],
   );
 
   // Initial fetch and polling
@@ -262,7 +262,7 @@ export function useNotifications(
       }
 
       setNotifications(prev =>
-        prev.map(n => (n.id === id ? { ...n, read: true } : n))
+        prev.map(n => (n.id === id ? { ...n, read: true } : n)),
       );
     } catch (err) {
       console.error('Error marking notification as read:', err);
@@ -389,7 +389,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   const [isSupported, setIsSupported] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission | null>(
-    null
+    null,
   );
 
   // Check support on mount
@@ -595,7 +595,7 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
           parsed.map((a: QueuedAction) => ({
             ...a,
             createdAt: new Date(a.createdAt),
-          }))
+          })),
         );
       }
     } catch {
@@ -721,7 +721,7 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
         void forceSync();
       }
     },
-    [isOnline, forceSync]
+    [isOnline, forceSync],
   );
 
   // Resolve a conflict
@@ -759,7 +759,7 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
         throw err;
       }
     },
-    [conflicts]
+    [conflicts],
   );
 
   return {
@@ -889,7 +889,7 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
         throw err;
       }
     },
-    [settings]
+    [settings],
   );
 
   // Mute channel
@@ -902,7 +902,7 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
       const newMuted = [...settings.mutedChannels, channelId];
       await updateSettings({ mutedChannels: newMuted });
     },
-    [settings, updateSettings]
+    [settings, updateSettings],
   );
 
   // Unmute channel
@@ -915,7 +915,7 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
       const newMuted = settings.mutedChannels.filter(id => id !== channelId);
       await updateSettings({ mutedChannels: newMuted });
     },
-    [settings, updateSettings]
+    [settings, updateSettings],
   );
 
   // Send test notification

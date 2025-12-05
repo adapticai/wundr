@@ -122,8 +122,8 @@ export function DragDropUploadExample() {
 
         setFiles(prevFiles =>
           prevFiles.map(f =>
-            f.id === uploadedFile.id ? { ...f, progress } : f
-          )
+            f.id === uploadedFile.id ? { ...f, progress } : f,
+          ),
         );
       }, 200);
     });

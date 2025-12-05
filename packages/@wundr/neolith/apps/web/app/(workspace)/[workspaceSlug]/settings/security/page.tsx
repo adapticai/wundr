@@ -97,7 +97,7 @@ export default function SecuritySettingsPage() {
 
   const handleSelectChange = async (
     key: keyof typeof settings,
-    value: string
+    value: string,
   ) => {
     setSettings(prev => ({
       ...prev,
@@ -185,7 +185,7 @@ export default function SecuritySettingsPage() {
 
   const handlePasswordChange = async (
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
   ) => {
     const response = await fetch('/api/user/password', {
       method: 'PATCH',

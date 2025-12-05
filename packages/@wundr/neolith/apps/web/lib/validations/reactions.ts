@@ -56,7 +56,7 @@ export const reactionSummarySchema = z.object({
     z.object({
       count: z.number().nonnegative(),
       users: z.array(z.string()),
-    })
+    }),
   ),
   totalReactions: z.number().nonnegative(),
 });

@@ -301,7 +301,7 @@ export function CharterConstraints({
     reader.onload = e => {
       try {
         const imported = JSON.parse(
-          e.target?.result as string
+          e.target?.result as string,
         ) as CharterConstraints;
         // Validate structure
         if (

@@ -116,7 +116,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: 'UNAUTHORIZED',
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -170,7 +170,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
           joinedAt: membership.joinedAt,
         },
         _count: membership.workspace._count,
-      })
+      }),
     );
 
     // Check for pending workspace invites via notifications
@@ -205,7 +205,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
           invitedBy: metadata.invitedBy || null,
           invitedAt: notification.createdAt,
         };
-      })
+      }),
     );
 
     return NextResponse.json({
@@ -221,7 +221,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: 'INTERNAL_ERROR',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -135,7 +135,7 @@ export function StatusSelector({
         <ChevronDownIcon
           className={cn(
             'h-4 w-4 text-muted-foreground transition-transform',
-            isOpen && 'rotate-180'
+            isOpen && 'rotate-180',
           )}
         />
       </Button>
@@ -145,7 +145,7 @@ export function StatusSelector({
         <div
           className={cn(
             'absolute left-0 top-full z-50 mt-2 w-72 rounded-lg border bg-card shadow-lg',
-            'animate-in fade-in-0 zoom-in-95'
+            'animate-in fade-in-0 zoom-in-95',
           )}
           role='listbox'
           aria-label='Select status'
@@ -166,7 +166,7 @@ export function StatusSelector({
                       'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors',
                       isSelected
                         ? 'bg-primary/10 text-primary'
-                        : 'text-foreground hover:bg-accent'
+                        : 'text-foreground hover:bg-accent',
                     )}
                     role='option'
                     aria-selected={isSelected}
@@ -239,7 +239,7 @@ export function StatusSelector({
                 onClick={() => setShowCustomInput(true)}
                 className={cn(
                   'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors',
-                  'text-foreground hover:bg-accent'
+                  'text-foreground hover:bg-accent',
                 )}
               >
                 <EditIcon className='h-4 w-4 text-muted-foreground' />
@@ -258,7 +258,7 @@ export function StatusSelector({
                 onClick={handleClearStatus}
                 className={cn(
                   'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors',
-                  'text-destructive hover:bg-destructive/10'
+                  'text-destructive hover:bg-destructive/10',
                 )}
               >
                 <XIcon className='h-4 w-4' />

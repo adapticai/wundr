@@ -65,9 +65,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createCreationErrorResponse(
           'Authentication required',
-          CREATION_ERROR_CODES.UNAUTHORIZED
+          CREATION_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -79,9 +79,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createCreationErrorResponse(
           'Invalid JSON body',
-          CREATION_ERROR_CODES.VALIDATION_ERROR
+          CREATION_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -94,9 +94,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           CREATION_ERROR_CODES.VALIDATION_ERROR,
           {
             errors: requestParseResult.error.flatten().fieldErrors,
-          }
+          },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           // Add warnings for optional fields
           if (!parseResult.data.discipline) {
             warnings.push(
-              'No discipline specified. Consider adding one for better organization.'
+              'No discipline specified. Consider adding one for better organization.',
             );
           }
           if (
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             parseResult.data.channels.length === 0
           ) {
             warnings.push(
-              'No channels specified. Orchestrator will not monitor any channels initially.'
+              'No channels specified. Orchestrator will not monitor any channels initially.',
             );
           }
           if (!parseResult.data.escalationRules) {
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         if (parseResult.success) {
           if (!parseResult.data.description) {
             warnings.push(
-              'No description provided. Consider adding one for clarity.'
+              'No description provided. Consider adding one for clarity.',
             );
           }
           if (
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             parseResult.data.initialOrchestrators.length === 0
           ) {
             warnings.push(
-              'No initial orchestrators specified. You can add them later.'
+              'No initial orchestrators specified. You can add them later.',
             );
           }
           if (
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             parseResult.data.initialChannels.length === 0
           ) {
             warnings.push(
-              'No initial channels specified. You can add them later.'
+              'No initial channels specified. You can add them later.',
             );
           }
         }
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         if (parseResult.success) {
           if (!parseResult.data.channelId) {
             warnings.push(
-              'No channel specified. Session manager will not be bound to a specific channel.'
+              'No channel specified. Session manager will not be bound to a specific channel.',
             );
           }
           if (
@@ -217,9 +217,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createCreationErrorResponse(
             `Unsupported entity type: ${entityType}`,
-            CREATION_ERROR_CODES.VALIDATION_ERROR
+            CREATION_ERROR_CODES.VALIDATION_ERROR,
           ),
-          { status: 400 }
+          { status: 400 },
         );
     }
 
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           errors: parseResult.error.flatten().fieldErrors,
           message: 'Specification validation failed',
         },
-        { status: 422 }
+        { status: 422 },
       );
     }
 
@@ -247,9 +247,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createCreationErrorResponse(
         'An internal error occurred',
-        CREATION_ERROR_CODES.INTERNAL_ERROR
+        CREATION_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

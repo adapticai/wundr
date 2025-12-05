@@ -65,8 +65,8 @@ export function SettingsNav({
     new Set(
       sections
         ?.filter(section => section.defaultCollapsed)
-        .map(section => section.label) || []
-    )
+        .map(section => section.label) || [],
+    ),
   );
 
   const defaultSections: NavSection[] = [
@@ -184,7 +184,7 @@ export function SettingsNav({
                         'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                         isActive
                           ? 'bg-primary text-primary-foreground'
-                          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                          : 'text-muted-foreground hover:bg-accent hover:text-foreground',
                       )}
                     >
                       <Icon className='h-4 w-4' />
@@ -195,7 +195,7 @@ export function SettingsNav({
                             'rounded-full px-2 py-0.5 text-xs',
                             isActive
                               ? 'bg-primary-foreground/20 text-primary-foreground'
-                              : 'bg-primary/10 text-primary'
+                              : 'bg-primary/10 text-primary',
                           )}
                         >
                           {item.badge}
@@ -286,7 +286,7 @@ export function MobileSettingsNav({
     <nav
       className={cn(
         'flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent',
-        className
+        className,
       )}
     >
       {allItems.map(item => {
@@ -318,7 +318,7 @@ export function MobileSettingsNav({
               'relative flex shrink-0 flex-col items-center gap-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
               isActive
                 ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground',
             )}
           >
             <Icon className='h-5 w-5' />
@@ -329,7 +329,7 @@ export function MobileSettingsNav({
                   'absolute right-2 top-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px]',
                   isActive
                     ? 'bg-primary-foreground/20 text-primary-foreground'
-                    : 'bg-primary/10 text-primary'
+                    : 'bg-primary/10 text-primary',
                 )}
               >
                 {item.badge}

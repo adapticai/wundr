@@ -47,7 +47,7 @@ export function IntegrationCard({
     <div
       className={cn(
         'group relative flex flex-col rounded-lg border bg-card p-5 shadow-sm transition-all hover:border-primary/50 hover:shadow-md',
-        isLoading && 'pointer-events-none opacity-60'
+        isLoading && 'pointer-events-none opacity-60',
       )}
     >
       {/* Header with Icon and Status */}
@@ -189,7 +189,7 @@ export function IntegrationStatusBadge({
         'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium',
         config.bgColor,
         config.color,
-        className
+        className,
       )}
       role='status'
       aria-label={`Status: ${config.label}`}
@@ -233,7 +233,7 @@ function ProviderIcon({ provider, className }: ProviderIconProps) {
     <div
       className={cn(
         'flex items-center justify-center rounded-lg bg-primary/10 text-lg font-semibold text-primary',
-        className
+        className,
       )}
     >
       {config.icon}

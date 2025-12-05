@@ -45,7 +45,7 @@ test.describe('Deployments Page', () => {
   test('displays page header and description', async ({ page }) => {
     await expect(page.locator('h1')).toContainText('Deployments');
     await expect(
-      page.getByText('Monitor and manage your deployed services')
+      page.getByText('Monitor and manage your deployed services'),
     ).toBeVisible();
   });
 
@@ -139,11 +139,11 @@ test.describe('Deployments Page', () => {
   test('displays environment filter buttons', async ({ page }) => {
     await expect(page.getByRole('button', { name: 'All' })).toBeVisible();
     await expect(
-      page.getByRole('button', { name: 'Production' })
+      page.getByRole('button', { name: 'Production' }),
     ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Staging' })).toBeVisible();
     await expect(
-      page.getByRole('button', { name: 'Development' })
+      page.getByRole('button', { name: 'Development' }),
     ).toBeVisible();
   });
 
@@ -182,7 +182,7 @@ test.describe('Deployments Page', () => {
     // Check that form shows validation (browser native validation)
     const nameInput = page.locator('input[id="name"]');
     const isInvalid = await nameInput.evaluate(
-      el => !(el as HTMLInputElement).validity.valid
+      el => !(el as HTMLInputElement).validity.valid,
     );
     expect(isInvalid).toBe(true);
   });
@@ -201,10 +201,10 @@ test.describe('Deployments Page', () => {
 
     // Check values
     await expect(page.locator('input[id="name"]')).toHaveValue(
-      'Test Deployment'
+      'Test Deployment',
     );
     await expect(page.locator('textarea[id="description"]')).toHaveValue(
-      'This is a test deployment'
+      'This is a test deployment',
     );
   });
 
@@ -265,7 +265,7 @@ test.describe('Deployments Page', () => {
 
     page.on('requestfailed', request => {
       failedRequests.push(
-        `${request.method()} ${request.url()} - ${request.failure()?.errorText}`
+        `${request.method()} ${request.url()} - ${request.failure()?.errorText}`,
       );
     });
 

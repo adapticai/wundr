@@ -86,7 +86,7 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -95,9 +95,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -115,9 +115,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid workspace ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -125,9 +125,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid channel ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -137,9 +137,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -147,9 +147,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Only workspace admins can archive channels',
-          ORG_ERROR_CODES.FORBIDDEN
+          ORG_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -176,9 +176,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -187,9 +187,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'DM channels cannot be archived',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -198,9 +198,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Channel is already archived',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -258,14 +258,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/channels/:channelId/archive] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -289,7 +289,7 @@ export async function POST(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -298,9 +298,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -318,9 +318,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Invalid workspace ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -328,9 +328,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Invalid channel ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -340,9 +340,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -350,9 +350,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Only workspace admins can unarchive channels',
-          ORG_ERROR_CODES.FORBIDDEN
+          ORG_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -379,9 +379,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -390,9 +390,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Channel is not archived',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -450,14 +450,14 @@ export async function DELETE(
   } catch (error) {
     console.error(
       '[DELETE /api/workspaces/:workspaceId/channels/:channelId/archive] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

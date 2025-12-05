@@ -50,7 +50,7 @@ interface SendCallInviteParams {
  * @param params - Call invite parameters
  */
 async function sendCallInviteNotifications(
-  params: SendCallInviteParams
+  params: SendCallInviteParams,
 ): Promise<void> {
   const {
     callId,
@@ -99,7 +99,7 @@ async function sendCallInviteNotifications(
         // Log error but don't fail the entire operation
         console.error(
           `[sendCallInviteNotifications] Failed to notify user ${userId}:`,
-          error
+          error,
         );
       }
     });
@@ -166,7 +166,7 @@ interface ChannelAccessResult {
  */
 async function verifyChannelAccess(
   channelId: string,
-  userId: string
+  userId: string,
 ): Promise<ChannelAccessResult | null> {
   const channel = await prisma.channel.findUnique({
     where: { id: channelId },
@@ -227,9 +227,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED
+          CALL_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -241,9 +241,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          CALL_ERROR_CODES.VALIDATION_ERROR
+          CALL_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -253,9 +253,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -267,9 +267,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          CALL_ERROR_CODES.CHANNEL_NOT_FOUND
+          CALL_ERROR_CODES.CHANNEL_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -291,9 +291,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'An active call already exists in this channel',
-          CALL_ERROR_CODES.ALREADY_IN_CALL
+          CALL_ERROR_CODES.ALREADY_IN_CALL,
         ),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -320,7 +320,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch (callsTableError) {
       console.error(
         '[POST /api/calls] Calls table not available, using channel settings:',
-        callsTableError
+        callsTableError,
       );
       // If calls table doesn't exist, store in channel settings temporarily
       await prisma.channel.update({
@@ -349,7 +349,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch (participantError) {
       console.error(
         '[POST /api/calls] Participant tracking not available:',
-        participantError
+        participantError,
       );
       // Table may not exist yet
     }
@@ -388,16 +388,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         data: response,
         message: 'Call created successfully',
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/calls] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR
+        CALL_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -418,9 +418,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -432,9 +432,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Invalid query parameters',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -603,9 +603,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR
+        CALL_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

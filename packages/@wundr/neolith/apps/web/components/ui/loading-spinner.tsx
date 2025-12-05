@@ -23,7 +23,7 @@ export function LoadingSpinner({
         className={cn(
           'animate-spin text-primary',
           sizeClasses[size],
-          className
+          className,
         )}
         xmlns='http://www.w3.org/2000/svg'
         fill='none'

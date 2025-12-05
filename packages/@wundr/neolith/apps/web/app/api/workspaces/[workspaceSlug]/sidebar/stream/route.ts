@@ -56,7 +56,7 @@ function formatSSEMessage(event: string, data: unknown): string {
 function createSSEErrorResponse(
   error: string,
   code: string,
-  status: number
+  status: number,
 ): Response {
   const encoder = new TextEncoder();
   const errorMessage = formatSSEMessage('error', { error, code, status });
@@ -87,7 +87,7 @@ function transformChannel(
     _count?: { messages: number };
     channelMembers?: Array<{ isStarred: boolean }>;
   },
-  isStarred?: boolean
+  isStarred?: boolean,
 ) {
   return {
     id: channel.id,
@@ -136,7 +136,7 @@ function transformDM(
     }>;
   },
   currentUserId: string,
-  isStarred?: boolean
+  isStarred?: boolean,
 ) {
   const participants = dm.channelMembers.map(m => ({
     id: m.userId,
@@ -170,7 +170,7 @@ function transformDM(
 
   // Get isStarred from current user's membership
   const currentUserMembership = dm.channelMembers.find(
-    m => m.userId === currentUserId
+    m => m.userId === currentUserId,
   );
   const starred = isStarred ?? currentUserMembership?.isStarred ?? false;
 
@@ -198,7 +198,7 @@ function transformDM(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<Response> {
   try {
     // Authenticate user
@@ -207,7 +207,7 @@ export async function GET(
       return createSSEErrorResponse(
         'Authentication required',
         ORG_ERROR_CODES.UNAUTHORIZED,
-        401
+        401,
       );
     }
 
@@ -221,7 +221,7 @@ export async function GET(
       return createSSEErrorResponse(
         'Workspace slug is required',
         ORG_ERROR_CODES.VALIDATION_ERROR,
-        400
+        400,
       );
     }
 
@@ -236,7 +236,7 @@ export async function GET(
       return createSSEErrorResponse(
         'Workspace not found',
         ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
-        404
+        404,
       );
     }
 
@@ -254,7 +254,7 @@ export async function GET(
       return createSSEErrorResponse(
         'Access denied',
         ORG_ERROR_CODES.FORBIDDEN,
-        403
+        403,
       );
     }
 
@@ -280,8 +280,8 @@ export async function GET(
               workspaceId: workspace.id,
               workspaceSlug,
               timestamp: new Date().toISOString(),
-            })
-          )
+            }),
+          ),
         );
 
         // Fetch and send initial sidebar state
@@ -329,12 +329,12 @@ export async function GET(
             });
 
             return { channelId: channel.id, unreadCount };
-          })
+          }),
         );
 
         // Create unread count map
         const unreadMap = new Map(
-          channelUnreadCounts.map(c => [c.channelId, c.unreadCount])
+          channelUnreadCounts.map(c => [c.channelId, c.unreadCount]),
         );
 
         // Send initial channels with unread counts
@@ -347,8 +347,8 @@ export async function GET(
           encoder.encode(
             formatSSEMessage('sidebar:init', {
               channels: channelsWithUnread,
-            })
-          )
+            }),
+          ),
         );
 
         // Store initial channel state
@@ -427,11 +427,11 @@ export async function GET(
             });
 
             return { dmId: dm.id, unreadCount };
-          })
+          }),
         );
 
         const dmUnreadMap = new Map(
-          dmUnreadCounts.map(d => [d.dmId, d.unreadCount])
+          dmUnreadCounts.map(d => [d.dmId, d.unreadCount]),
         );
 
         const dmsWithUnread = initialDMs.map(dm => ({
@@ -443,8 +443,8 @@ export async function GET(
           encoder.encode(
             formatSSEMessage('dms:init', {
               directMessages: dmsWithUnread,
-            })
-          )
+            }),
+          ),
         );
 
         // Store initial DM state
@@ -467,8 +467,8 @@ export async function GET(
             formatSSEMessage('starred:init', {
               starredChannels,
               starredDMs,
-            })
-          )
+            }),
+          ),
         );
 
         // Set up polling interval for sidebar changes
@@ -518,11 +518,11 @@ export async function GET(
                 });
 
                 return { channelId: channel.id, unreadCount };
-              })
+              }),
             );
 
             const currentUnreadMap = new Map(
-              currentUnreadCounts.map(c => [c.channelId, c.unreadCount])
+              currentUnreadCounts.map(c => [c.channelId, c.unreadCount]),
             );
 
             // Check for new channels and starred changes
@@ -541,8 +541,8 @@ export async function GET(
                         ...transformChannel(channel),
                         unreadCount: currentUnread,
                       },
-                    })
-                  )
+                    }),
+                  ),
                 );
                 previousChannelState.set(channel.id, {
                   updatedAt: channel.updatedAt.toISOString(),
@@ -564,8 +564,8 @@ export async function GET(
                           ...transformChannel(channel),
                           unreadCount: currentUnread,
                         },
-                      })
-                    )
+                      }),
+                    ),
                   );
 
                   // Also emit starred:update if starred status changed
@@ -580,8 +580,8 @@ export async function GET(
                             ...transformChannel(channel),
                             unreadCount: currentUnread,
                           },
-                        })
-                      )
+                        }),
+                      ),
                     );
                   }
 
@@ -600,8 +600,8 @@ export async function GET(
               if (!currentChannelIds.has(channelId)) {
                 controller.enqueue(
                   encoder.encode(
-                    formatSSEMessage('channel:deleted', { channelId })
-                  )
+                    formatSSEMessage('channel:deleted', { channelId }),
+                  ),
                 );
                 previousChannelState.delete(channelId);
               }
@@ -673,11 +673,11 @@ export async function GET(
                 });
 
                 return { dmId: dm.id, unreadCount };
-              })
+              }),
             );
 
             const currentDMUnreadMap = new Map(
-              currentDMUnreadCounts.map(d => [d.dmId, d.unreadCount])
+              currentDMUnreadCounts.map(d => [d.dmId, d.unreadCount]),
             );
 
             for (const dm of currentDMs) {
@@ -685,7 +685,7 @@ export async function GET(
               const currentLastMessageId = dm.messages[0]?.id ?? null;
               const currentUnread = currentDMUnreadMap.get(dm.id) ?? 0;
               const currentUserMembership = dm.channelMembers.find(
-                m => m.userId === userId
+                m => m.userId === userId,
               );
               const currentIsStarred =
                 currentUserMembership?.isStarred ?? false;
@@ -699,8 +699,8 @@ export async function GET(
                         ...transformDM(dm, userId),
                         unreadCount: currentUnread,
                       },
-                    })
-                  )
+                    }),
+                  ),
                 );
                 previousDMState.set(dm.id, {
                   updatedAt: dm.updatedAt.toISOString(),
@@ -722,8 +722,8 @@ export async function GET(
                           ...transformDM(dm, userId),
                           unreadCount: currentUnread,
                         },
-                      })
-                    )
+                      }),
+                    ),
                   );
 
                   // Also emit starred:update if starred status changed
@@ -738,8 +738,8 @@ export async function GET(
                             ...transformDM(dm, userId),
                             unreadCount: currentUnread,
                           },
-                        })
-                      )
+                        }),
+                      ),
                     );
                   }
 
@@ -763,8 +763,8 @@ export async function GET(
               encoder.encode(
                 formatSSEMessage('heartbeat', {
                   timestamp: new Date().toISOString(),
-                })
-              )
+                }),
+              ),
             );
           } catch {
             // Connection closed, intervals will be cleaned up
@@ -792,12 +792,12 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/sidebar/stream] Error:',
-      error
+      error,
     );
     return createSSEErrorResponse(
       'An internal error occurred',
       ORG_ERROR_CODES.INTERNAL_ERROR,
-      500
+      500,
     );
   }
 }

@@ -55,7 +55,7 @@ function formatSSEMessage(event: string, data: unknown): string {
 function createSSEErrorResponse(
   error: string,
   code: string,
-  status: number
+  status: number,
 ): Response {
   const encoder = new TextEncoder();
   const errorMessage = formatSSEMessage('error', { error, code, status });
@@ -151,7 +151,7 @@ function transformMessage(
       replies: number;
     };
   },
-  currentUserId: string
+  currentUserId: string,
 ) {
   // Group reactions by emoji
   const reactionMap = new Map<
@@ -237,7 +237,7 @@ function transformMessage(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<Response> {
   try {
     // Authenticate user
@@ -246,7 +246,7 @@ export async function GET(
       return createSSEErrorResponse(
         'Authentication required',
         ORG_ERROR_CODES.UNAUTHORIZED,
-        401
+        401,
       );
     }
 
@@ -257,7 +257,7 @@ export async function GET(
       return createSSEErrorResponse(
         'Invalid channel ID format',
         ORG_ERROR_CODES.VALIDATION_ERROR,
-        400
+        400,
       );
     }
 
@@ -269,7 +269,7 @@ export async function GET(
       return createSSEErrorResponse(
         'Channel not found or access denied',
         ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
-        404
+        404,
       );
     }
 
@@ -300,8 +300,8 @@ export async function GET(
             formatSSEMessage('connected', {
               channelId,
               timestamp: new Date().toISOString(),
-            })
-          )
+            }),
+          ),
         );
 
         // Set up polling interval for new messages
@@ -362,8 +362,8 @@ export async function GET(
                   formatSSEMessage('new_message', {
                     type: 'new_message',
                     message: transformMessage(message, session.user.id),
-                  })
-                )
+                  }),
+                ),
               );
 
               lastMessageId = message.id;
@@ -415,8 +415,8 @@ export async function GET(
                   formatSSEMessage('message_updated', {
                     type: 'message_updated',
                     message: transformMessage(message, session.user.id),
-                  })
-                )
+                  }),
+                ),
               );
             }
 
@@ -436,8 +436,8 @@ export async function GET(
                   formatSSEMessage('message_deleted', {
                     type: 'message_deleted',
                     messageId: message.id,
-                  })
-                )
+                  }),
+                ),
               );
             }
           } catch {
@@ -452,8 +452,8 @@ export async function GET(
               encoder.encode(
                 formatSSEMessage('heartbeat', {
                   timestamp: new Date().toISOString(),
-                })
-              )
+                }),
+              ),
             );
           } catch {
             // Connection closed, intervals will be cleaned up
@@ -483,7 +483,7 @@ export async function GET(
     return createSSEErrorResponse(
       'An internal error occurred',
       ORG_ERROR_CODES.INTERNAL_ERROR,
-      500
+      500,
     );
   }
 }

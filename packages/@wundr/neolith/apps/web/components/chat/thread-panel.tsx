@@ -64,7 +64,7 @@ export function ThreadPanel({
     (content: string, mentions: string[], attachments: File[]) => {
       onSendReply(content, mentions, attachments);
     },
-    [onSendReply]
+    [onSendReply],
   );
 
   if (!isOpen) {
@@ -75,7 +75,7 @@ export function ThreadPanel({
     <div
       className={cn(
         'fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l bg-background shadow-lg sm:w-96 lg:relative lg:shadow-none',
-        className
+        className,
       )}
     >
       {/* Header */}

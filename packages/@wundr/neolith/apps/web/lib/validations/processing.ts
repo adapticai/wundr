@@ -186,7 +186,7 @@ export type ProcessingType = z.infer<typeof processingTypeSchema>;
 export const createProcessingErrorResponse = (
   message: string,
   code: ProcessingErrorCode,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) => ({
   error: {
     code,
@@ -212,7 +212,7 @@ const TEXT_EXTRACTION_TYPES = [
   'text/markdown',
 ];
 const CONVERSION_SUPPORTED_TYPES = Array.from(
-  new Set([...OCR_SUPPORTED_TYPES, ...TEXT_EXTRACTION_TYPES])
+  new Set([...OCR_SUPPORTED_TYPES, ...TEXT_EXTRACTION_TYPES]),
 );
 
 export const supportsOCR = (mimeType: string): boolean => {

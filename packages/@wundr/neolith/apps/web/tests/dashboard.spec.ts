@@ -66,7 +66,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         cookie =>
           cookie.name.includes('next-auth') ||
           cookie.name.includes('session') ||
-          cookie.name.includes('authjs')
+          cookie.name.includes('authjs'),
       );
 
       expect(hasSessionCookie).toBe(true);
@@ -211,7 +211,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       // Should show skeleton during loading
       // Note: Specific selector depends on DashboardSkeleton implementation
       const skeleton = page.locator(
-        '[class*="skeleton"], [data-testid="dashboard-skeleton"]'
+        '[class*="skeleton"], [data-testid="dashboard-skeleton"]',
       );
       await expect(skeleton).toBeVisible({ timeout: 1000 });
     });
@@ -230,7 +230,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
       // Should show error message
       await expect(
-        page.locator('text=/Error loading statistics/i')
+        page.locator('text=/Error loading statistics/i'),
       ).toBeVisible();
 
       // Should still show fallback zeros
@@ -261,7 +261,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
   test.describe('Recent Activity Widget', () => {
     test('should display Recent Activity heading', async ({ page }) => {
       await expect(
-        page.locator('h3:has-text("Recent Activity")')
+        page.locator('h3:has-text("Recent Activity")'),
       ).toBeVisible();
     });
 
@@ -298,7 +298,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
               },
             }),
           });
-        }
+        },
       );
 
       await page.reload();
@@ -308,7 +308,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         .locator('h3:has-text("Recent Activity")')
         .locator('..');
       const activityItems = activityWidget.locator(
-        '[class*="space-y-3"] > div'
+        '[class*="space-y-3"] > div',
       );
 
       await expect(activityItems).toHaveCount(2);
@@ -331,7 +331,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
               },
             }),
           });
-        }
+        },
       );
 
       await page.reload();
@@ -339,7 +339,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
       await expect(page.locator('text=/No recent activity/i')).toBeVisible();
       await expect(
-        page.locator('text=/Activity will appear here/i')
+        page.locator('text=/Activity will appear here/i'),
       ).toBeVisible();
     });
 
@@ -348,7 +348,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         .locator('h3:has-text("Recent Activity")')
         .locator('..');
       const timestamps = activityWidget.locator(
-        '.text-xs.text-muted-foreground.whitespace-nowrap'
+        '.text-xs.text-muted-foreground.whitespace-nowrap',
       );
 
       if ((await timestamps.count()) > 0) {
@@ -356,7 +356,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
         // Should match patterns like "2 hours ago", "Just now", "3 days ago"
         expect(firstTimestamp?.toLowerCase()).toMatch(
-          /just now|minute|hour|day|ago/i
+          /just now|minute|hour|day|ago/i,
         );
       }
     });
@@ -387,7 +387,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
               },
             }),
           });
-        }
+        },
       );
 
       await page.reload();
@@ -397,7 +397,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         .locator('h3:has-text("Recent Activity")')
         .locator('..');
       const activityItems = activityWidget.locator(
-        '[class*="space-y-3"] > div'
+        '[class*="space-y-3"] > div',
       );
 
       const count = await activityItems.count();
@@ -413,14 +413,14 @@ test.describe('Dashboard Page - Full Test Suite', () => {
             contentType: 'application/json',
             body: JSON.stringify({ error: 'Failed to fetch activities' }),
           });
-        }
+        },
       );
 
       await page.reload();
       await page.waitForLoadState('networkidle');
 
       await expect(
-        page.locator('text=/Error loading activity/i')
+        page.locator('text=/Error loading activity/i'),
       ).toBeVisible();
     });
 
@@ -429,7 +429,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         .locator('h3:has-text("Recent Activity")')
         .locator('..');
       const activityItems = activityWidget.locator(
-        '[class*="space-y-3"] > div'
+        '[class*="space-y-3"] > div',
       );
 
       if ((await activityItems.count()) > 0) {
@@ -440,7 +440,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
         // Should have description with user name
         await expect(
-          firstItem.locator('.text-xs.text-muted-foreground').first()
+          firstItem.locator('.text-xs.text-muted-foreground').first(),
         ).toBeVisible();
       }
     });
@@ -457,7 +457,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         .locator('..');
 
       await expect(
-        actionsWidget.locator('text=Invite Team Member')
+        actionsWidget.locator('text=Invite Team Member'),
       ).toBeVisible();
       await expect(actionsWidget.locator('text=Create Channel')).toBeVisible();
       await expect(actionsWidget.locator('text=New Workflow')).toBeVisible();
@@ -590,7 +590,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       // Should show user name and email
       await expect(userSection.locator('.text-sm.font-medium')).toBeVisible();
       await expect(
-        userSection.locator('.text-xs.text-stone-400')
+        userSection.locator('.text-xs.text-stone-400'),
       ).toBeVisible();
     });
 
@@ -642,7 +642,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     test('should display theme toggle button', async ({ page }) => {
       // Look for theme toggle button (usually in header or user menu)
       const themeToggle = page.locator(
-        'button[aria-label*="theme"], button[aria-label*="Theme"]'
+        'button[aria-label*="theme"], button[aria-label*="Theme"]',
       );
 
       // Theme toggle might be in a dropdown or directly visible
@@ -652,7 +652,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         // Try to open settings/user menu first
         const settingsButton = page
           .locator(
-            'button[aria-label*="settings"], button[aria-label*="Settings"]'
+            'button[aria-label*="settings"], button[aria-label*="Settings"]',
           )
           .first();
         if (await settingsButton.isVisible().catch(() => false)) {
@@ -717,7 +717,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       // User menu is typically in header or sidebar
       const userMenuButton = page
         .locator(
-          'button:has-text("User"), button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
+          'button:has-text("User"), button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]',
         )
         .first();
 
@@ -738,7 +738,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       // Find user menu button
       const userMenuButton = page
         .locator(
-          'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"], button[aria-label*="profile"]'
+          'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"], button[aria-label*="profile"]',
         )
         .first();
 
@@ -756,7 +756,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       // Try to open user menu
       const userMenuButton = page
         .locator(
-          'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
+          'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]',
         )
         .first();
 
@@ -777,7 +777,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     test('should have sign out option in user menu', async ({ page }) => {
       const userMenuButton = page
         .locator(
-          'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
+          'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]',
         )
         .first();
 
@@ -794,7 +794,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     test('should navigate to settings from user menu', async ({ page }) => {
       const userMenuButton = page
         .locator(
-          'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
+          'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]',
         )
         .first();
 
@@ -821,7 +821,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       // Workspace switcher is typically in sidebar header
       const workspaceSwitcher = page
         .locator(
-          'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
+          'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]',
         )
         .first();
 
@@ -858,7 +858,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     }) => {
       const workspaceSwitcher = page
         .locator(
-          'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
+          'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]',
         )
         .first();
 
@@ -868,7 +868,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
         // Should show dropdown with workspace list
         const dropdown = page.locator(
-          '[role="menu"], [role="listbox"], [role="dialog"]'
+          '[role="menu"], [role="listbox"], [role="dialog"]',
         );
         await expect(dropdown).toBeVisible({ timeout: 2000 });
       }
@@ -877,7 +877,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
     test('should list available workspaces in switcher', async ({ page }) => {
       const workspaceSwitcher = page
         .locator(
-          'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
+          'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]',
         )
         .first();
 
@@ -887,7 +887,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
         // Look for workspace items in dropdown
         const workspaceItems = page.locator(
-          '[role="menuitem"], [role="option"]'
+          '[role="menuitem"], [role="option"]',
         );
         const count = await workspaceItems.count();
 
@@ -904,7 +904,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
       const workspaceSwitcher = page
         .locator(
-          'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
+          'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]',
         )
         .first();
 
@@ -913,7 +913,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         await page.waitForTimeout(300);
 
         const workspaceItems = page.locator(
-          '[role="menuitem"], [role="option"]'
+          '[role="menuitem"], [role="option"]',
         );
         const count = await workspaceItems.count();
 
@@ -952,7 +952,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         err =>
           !err.includes('favicon') &&
           !err.includes('Extension') &&
-          !err.includes('chrome-extension')
+          !err.includes('chrome-extension'),
       );
 
       expect(criticalErrors).toHaveLength(0);
@@ -1057,7 +1057,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
         expect(
           hasHorizontalScroll,
-          `Horizontal scroll at ${viewport.width}x${viewport.height}`
+          `Horizontal scroll at ${viewport.width}x${viewport.height}`,
         ).toBe(false);
       }
     });

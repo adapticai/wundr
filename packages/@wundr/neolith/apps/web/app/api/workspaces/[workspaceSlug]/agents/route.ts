@@ -75,7 +75,7 @@ const createAgentSchema = z.object({
         'text_analysis',
         'translation',
         'summarization',
-      ])
+      ]),
     )
     .optional(),
 });
@@ -104,7 +104,7 @@ const querySchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -112,7 +112,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -121,7 +121,7 @@ export async function GET(
 
     // Parse and validate query parameters
     const searchParams = Object.fromEntries(
-      request.nextUrl.searchParams.entries()
+      request.nextUrl.searchParams.entries(),
     );
     const queryResult = querySchema.safeParse(searchParams);
 
@@ -133,7 +133,7 @@ export async function GET(
             errors: queryResult.error.flatten(),
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -207,7 +207,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/agents] Error:', error);
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -223,7 +223,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -231,7 +231,7 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -245,7 +245,7 @@ export async function POST(
     } catch {
       return NextResponse.json(
         { error: { message: 'Invalid JSON body' } },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -259,7 +259,7 @@ export async function POST(
             errors: parseResult.error.flatten().fieldErrors,
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -338,13 +338,13 @@ export async function POST(
         data: newAgent,
         message: 'Agent created successfully',
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/workspaces/:workspaceId/agents] Error:', error);
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

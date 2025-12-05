@@ -125,7 +125,7 @@ export function FullPageLoader({
     <div
       className={cn(
         'flex flex-col items-center justify-center gap-4 py-12',
-        className
+        className,
       )}
     >
       <Loader size={32} variant='spinner' />

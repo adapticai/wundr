@@ -109,7 +109,7 @@ export function EntityTypeSelector({
 }: EntityTypeSelectorProps) {
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLButtonElement>,
-    entityType: EntityType
+    entityType: EntityType,
   ) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -176,7 +176,7 @@ function EntityTypeCard({
       className={cn(
         'cursor-pointer transition-all hover:shadow-md',
         selected && 'ring-2 ring-primary',
-        disabled && 'cursor-not-allowed opacity-50'
+        disabled && 'cursor-not-allowed opacity-50',
       )}
       onClick={() => !disabled && onSelect(type.id)}
       role='listitem'
@@ -195,7 +195,7 @@ function EntityTypeCard({
           <div
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-lg bg-muted',
-              selected && 'bg-primary/10'
+              selected && 'bg-primary/10',
             )}
           >
             <Icon className={cn('h-5 w-5', type.color)} />
@@ -248,7 +248,7 @@ function EntityTypeButton({
       <Icon
         className={cn(
           'h-5 w-5',
-          selected ? 'text-primary-foreground' : type.color
+          selected ? 'text-primary-foreground' : type.color,
         )}
       />
       <div className='flex flex-col items-start gap-0.5'>
@@ -256,7 +256,7 @@ function EntityTypeButton({
         <span
           className={cn(
             'text-xs',
-            selected ? 'text-primary-foreground/80' : 'text-muted-foreground'
+            selected ? 'text-primary-foreground/80' : 'text-muted-foreground',
           )}
         >
           {type.description}
@@ -270,7 +270,7 @@ function EntityTypeButton({
  * Get entity type info by ID
  */
 export function getEntityTypeInfo(
-  entityType: EntityType
+  entityType: EntityType,
 ): EntityTypeInfo | undefined {
   return ENTITY_TYPES.find(t => t.id === entityType);
 }

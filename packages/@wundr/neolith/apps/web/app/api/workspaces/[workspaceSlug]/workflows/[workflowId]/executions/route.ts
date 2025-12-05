@@ -46,7 +46,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -55,9 +55,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -74,9 +74,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -93,9 +93,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -111,9 +111,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workflow not found',
-          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
+          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -126,9 +126,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -169,14 +169,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/workflows/:workflowId/executions] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

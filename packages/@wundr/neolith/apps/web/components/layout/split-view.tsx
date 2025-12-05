@@ -94,7 +94,7 @@ export function SplitView({
       <div
         className={cn(
           'flex-shrink-0 border-r border-border overflow-y-auto transition-all duration-300',
-          'bg-background'
+          'bg-background',
         )}
         style={{ width: `${leftWidth}%` }}
       >
@@ -156,7 +156,7 @@ export function SplitViewListItem({
         selected
           ? 'bg-primary/10 border-l-4 border-l-primary'
           : 'hover:bg-muted/50',
-        className
+        className,
       )}
     >
       {children}
@@ -179,7 +179,7 @@ export function SplitViewHeader({
       className={cn(
         'sticky top-0 z-10 bg-background border-b border-border px-4 py-3',
         'min-h-[56px] flex items-center',
-        className
+        className,
       )}
     >
       {children}

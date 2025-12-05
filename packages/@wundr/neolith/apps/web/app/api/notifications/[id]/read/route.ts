@@ -35,7 +35,7 @@ interface RouteParams {
  */
 export async function POST(
   _request: NextRequest,
-  { params }: RouteParams
+  { params }: RouteParams,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -44,9 +44,9 @@ export async function POST(
       return NextResponse.json(
         createNotificationErrorResponse(
           'Authentication required',
-          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -58,9 +58,9 @@ export async function POST(
         createNotificationErrorResponse(
           'Invalid notification ID',
           NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -74,9 +74,9 @@ export async function POST(
       return NextResponse.json(
         createNotificationErrorResponse(
           'Notification not found',
-          NOTIFICATION_ERROR_CODES.NOT_FOUND
+          NOTIFICATION_ERROR_CODES.NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -84,9 +84,9 @@ export async function POST(
       return NextResponse.json(
         createNotificationErrorResponse(
           'Access denied',
-          NOTIFICATION_ERROR_CODES.FORBIDDEN
+          NOTIFICATION_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -114,9 +114,9 @@ export async function POST(
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

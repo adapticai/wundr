@@ -64,7 +64,7 @@ export default function IntegrationsPage() {
   const [selectedIntegration, setSelectedIntegration] =
     useState<IntegrationConfig | null>(null);
   const [selectedWebhook, setSelectedWebhook] = useState<WebhookConfig | null>(
-    null
+    null,
   );
   const [apiTokens] = useState<string[]>([]);
 
@@ -96,7 +96,7 @@ export default function IntegrationsPage() {
         window.location.href = result.authUrl;
       }
     },
-    [workspaceId, initiateOAuth]
+    [workspaceId, initiateOAuth],
   );
 
   const handleCreateWebhook = useCallback(
@@ -107,15 +107,15 @@ export default function IntegrationsPage() {
         refetchWebhooks();
       }
     },
-    [createWebhook, refetchWebhooks]
+    [createWebhook, refetchWebhooks],
   );
 
   // Separate integrations by type
   const connectedAccounts = integrations.filter(i =>
-    OAUTH_PROVIDERS.includes(i.provider)
+    OAUTH_PROVIDERS.includes(i.provider),
   );
   const installedApps = integrations.filter(i =>
-    APP_PROVIDERS.includes(i.provider)
+    APP_PROVIDERS.includes(i.provider),
   );
 
   const isLoading = integrationsLoading || webhooksLoading;
@@ -488,7 +488,7 @@ function AccountCard({ integration, onClick }: AccountCardProps) {
             className={cn(
               'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
               statusConfig.bgColor,
-              statusConfig.color
+              statusConfig.color,
             )}
           >
             {statusConfig.label}
@@ -545,7 +545,7 @@ function AppCard({ integration, onClick }: AppCardProps) {
             className={cn(
               'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
               statusConfig.bgColor,
-              statusConfig.color
+              statusConfig.color,
             )}
           >
             {statusConfig.label}
@@ -652,7 +652,7 @@ function IntegrationConnectModal({
   }
 
   const providerEntries = providers.map(
-    id => [id, INTEGRATION_PROVIDERS[id]] as const
+    id => [id, INTEGRATION_PROVIDERS[id]] as const,
   );
 
   return (
@@ -731,7 +731,7 @@ function WebhookFormModal({
 
   const toggleEvent = (event: WebhookEventType) => {
     setSelectedEvents(prev =>
-      prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event]
+      prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event],
     );
   };
 
@@ -901,7 +901,7 @@ function IntegrationDetailModal({
                 className={cn(
                   'rounded-full px-2 py-0.5 text-xs font-medium',
                   statusConfig.bgColor,
-                  statusConfig.color
+                  statusConfig.color,
                 )}
               >
                 {statusConfig.label}
@@ -1017,7 +1017,7 @@ function WebhookDetailModal({
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-xs font-medium',
-                statusColor
+                statusColor,
               )}
             >
               {webhook.status}

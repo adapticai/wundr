@@ -52,7 +52,7 @@ function isUserOnline(lastActiveAt: Date | null): boolean {
  * Get presence from user preferences
  */
 function getPresenceFromPreferences(
-  preferences: Prisma.JsonValue
+  preferences: Prisma.JsonValue,
 ): UserPreferences {
   if (
     typeof preferences === 'object' &&
@@ -69,7 +69,7 @@ function getPresenceFromPreferences(
  */
 function mapUserStatusToPresence(
   status: UserStatus,
-  prefs: UserPreferences
+  prefs: UserPreferences,
 ): UserPresenceResponse['status'] {
   // Check for explicit presence status in preferences
   if (prefs.presenceStatus) {
@@ -139,9 +139,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createPresenceErrorResponse(
           'Authentication required',
-          PRESENCE_ERROR_CODES.UNAUTHORIZED
+          PRESENCE_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -160,9 +160,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createPresenceErrorResponse(
           'User not found',
-          PRESENCE_ERROR_CODES.USER_NOT_FOUND
+          PRESENCE_ERROR_CODES.USER_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -174,9 +174,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -221,9 +221,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createPresenceErrorResponse(
           'Authentication required',
-          PRESENCE_ERROR_CODES.UNAUTHORIZED
+          PRESENCE_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -235,9 +235,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createPresenceErrorResponse(
           'Invalid JSON body',
-          PRESENCE_ERROR_CODES.VALIDATION_ERROR
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -248,9 +248,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         createPresenceErrorResponse(
           'Validation failed',
           PRESENCE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -263,7 +263,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     });
 
     const currentPrefs = getPresenceFromPreferences(
-      currentUser?.preferences ?? {}
+      currentUser?.preferences ?? {},
     );
 
     // Update user status and preferences
@@ -295,9 +295,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

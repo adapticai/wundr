@@ -144,7 +144,7 @@ test.describe('Channels Page Tests', () => {
 
       // Check dialog appears
       const dialogTitle = page.locator(
-        '[role="dialog"] h2:has-text("Create Channel")'
+        '[role="dialog"] h2:has-text("Create Channel")',
       );
       await expect(dialogTitle).toBeVisible({ timeout: 10000 });
 
@@ -233,7 +233,7 @@ test.describe('Channels Page Tests', () => {
 
       // Try to submit empty form
       const submitButton = page.locator(
-        'button[type="submit"]:has-text("Create Channel")'
+        'button[type="submit"]:has-text("Create Channel")',
       );
       await submitButton.click();
       await page.waitForTimeout(500);
@@ -272,7 +272,7 @@ test.describe('Channels Page Tests', () => {
       // Fill in description
       await page.fill(
         '#channel-description',
-        'This is a test channel description'
+        'This is a test channel description',
       );
 
       // Select private type
@@ -311,7 +311,7 @@ test.describe('Channels Page Tests', () => {
       const pageContent = await page.textContent('body');
       console.log('✓ Channel detail page navigation attempted');
       console.log(
-        `  Page loaded with content length: ${pageContent?.length || 0}`
+        `  Page loaded with content length: ${pageContent?.length || 0}`,
       );
     } catch (error) {
       console.error('✗ Channel detail page navigation failed:', error);
@@ -331,7 +331,7 @@ test.describe('Channels Page Tests', () => {
       error =>
         !error.includes('Download the React DevTools') &&
         !error.includes('favicon') &&
-        !error.includes('sourcemap')
+        !error.includes('sourcemap'),
     );
 
     console.log('\n=== Console Errors Report ===');
@@ -429,14 +429,14 @@ test.describe('Channels Page Tests', () => {
       console.log('Test Results:');
       console.log(`  ${report.pageLoaded ? '✓' : '✗'} Page Loaded`);
       console.log(
-        `  ${report.createButtonVisible ? '✓' : '✗'} Create Button Visible`
+        `  ${report.createButtonVisible ? '✓' : '✗'} Create Button Visible`,
       );
       console.log(`  ${report.dialogOpens ? '✓' : '✗'} Dialog Opens`);
       console.log(
-        `  ${report.formFieldsPresent ? '✓' : '✗'} Form Fields Present`
+        `  ${report.formFieldsPresent ? '✓' : '✗'} Form Fields Present`,
       );
       console.log(
-        `  ${report.channelTypeToggle ? '✓' : '✗'} Channel Type Toggle Works`
+        `  ${report.channelTypeToggle ? '✓' : '✗'} Channel Type Toggle Works`,
       );
       console.log(`\nConsole Errors: ${report.consoleErrors.length}`);
 
@@ -444,7 +444,7 @@ test.describe('Channels Page Tests', () => {
         console.log('\nError Details:');
         report.consoleErrors.forEach((error, i) => {
           console.log(
-            `  ${i + 1}. ${error.substring(0, 100)}${error.length > 100 ? '...' : ''}`
+            `  ${i + 1}. ${error.substring(0, 100)}${error.length > 100 ? '...' : ''}`,
           );
         });
       }

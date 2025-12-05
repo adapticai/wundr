@@ -131,10 +131,10 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
 function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
-  searchParams?: Record<string, string>
+  searchParams?: Record<string, string>,
 ): NextRequest {
   const url = new URL(
-    'http://localhost:3000/api/workspaces/ws-123/integrations'
+    'http://localhost:3000/api/workspaces/ws-123/integrations',
   );
 
   if (searchParams) {
@@ -157,7 +157,7 @@ function _createMockRequest(
 // =============================================================================
 
 const createMockIntegration = (
-  overrides: Partial<IntegrationConfig> = {}
+  overrides: Partial<IntegrationConfig> = {},
 ): IntegrationConfig =>
   ({
     id: 'int_test123',
@@ -180,7 +180,7 @@ const createMockIntegration = (
   }) as unknown as IntegrationConfig;
 
 const createMockWebhook = (
-  overrides: Partial<WebhookConfig> = {}
+  overrides: Partial<WebhookConfig> = {},
 ): WebhookConfig => ({
   id: 'wh_test123',
   workspaceId: 'ws_test',
@@ -205,7 +205,7 @@ const createMockWebhook = (
 });
 
 const createMockWebhookDelivery = (
-  overrides: Partial<WebhookDelivery> = {}
+  overrides: Partial<WebhookDelivery> = {},
 ): WebhookDelivery =>
   ({
     id: 'del_test123',
@@ -253,7 +253,7 @@ describe('Integrations API Routes', () => {
 
       const mockIntegration = createMockIntegration();
       mockIntegrationService.createIntegration.mockResolvedValue(
-        mockIntegration
+        mockIntegration,
       );
 
       const requestBody = {
@@ -273,7 +273,7 @@ describe('Integrations API Routes', () => {
 
       expect(result).toEqual(mockIntegration);
       expect(mockIntegrationService.createIntegration).toHaveBeenCalledWith(
-        requestBody
+        requestBody,
       );
     });
 
@@ -316,11 +316,11 @@ describe('Integrations API Routes', () => {
       };
 
       mockIntegrationService.createIntegration.mockRejectedValue(
-        new Error('Invalid integration provider')
+        new Error('Invalid integration provider'),
       );
 
       await expect(
-        mockIntegrationService.createIntegration(invalidRequestBody)
+        mockIntegrationService.createIntegration(invalidRequestBody),
       ).rejects.toThrow('Invalid integration provider');
     });
 
@@ -334,11 +334,11 @@ describe('Integrations API Routes', () => {
       };
 
       mockIntegrationService.createIntegration.mockRejectedValue(
-        new Error('Name must be 100 characters or less')
+        new Error('Name must be 100 characters or less'),
       );
 
       await expect(
-        mockIntegrationService.createIntegration(requestBody)
+        mockIntegrationService.createIntegration(requestBody),
       ).rejects.toThrow('Name must be 100 characters or less');
     });
   });
@@ -450,7 +450,7 @@ describe('Integrations API Routes', () => {
 
       const result = await mockIntegrationService.initiateOAuth(
         'ws-123',
-        'slack'
+        'slack',
       );
 
       expect(result.authUrl).toContain('slack.com/oauth');
@@ -462,11 +462,11 @@ describe('Integrations API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       mockIntegrationService.initiateOAuth.mockRejectedValue(
-        new Error('Provider does not support OAuth')
+        new Error('Provider does not support OAuth'),
       );
 
       await expect(
-        mockIntegrationService.initiateOAuth('ws-123', 'custom')
+        mockIntegrationService.initiateOAuth('ws-123', 'custom'),
       ).rejects.toThrow('Provider does not support OAuth');
     });
   });
@@ -516,14 +516,14 @@ describe('Integrations API Routes', () => {
       });
 
       mockIntegrationService.updateIntegration.mockResolvedValue(
-        updatedIntegration
+        updatedIntegration,
       );
 
       const result = await mockIntegrationService.updateIntegration(
         'int_test123',
         {
           name: 'Updated Integration Name',
-        }
+        },
       );
 
       expect(result.name).toBe('Updated Integration Name');
@@ -538,14 +538,14 @@ describe('Integrations API Routes', () => {
       });
 
       mockIntegrationService.updateIntegration.mockResolvedValue(
-        inactiveIntegration
+        inactiveIntegration,
       );
 
       const result = await mockIntegrationService.updateIntegration(
         'int_test123',
         {
           status: 'inactive',
-        }
+        },
       );
 
       expect(result.status).toBe('inactive');
@@ -556,13 +556,13 @@ describe('Integrations API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       mockIntegrationService.updateIntegration.mockRejectedValue(
-        new Error('Integration not found')
+        new Error('Integration not found'),
       );
 
       await expect(
         mockIntegrationService.updateIntegration('non-existent', {
           name: 'New Name',
-        })
+        }),
       ).rejects.toThrow('Integration not found');
     });
   });
@@ -579,10 +579,10 @@ describe('Integrations API Routes', () => {
       mockIntegrationService.deleteIntegration.mockResolvedValue(undefined);
 
       await expect(
-        mockIntegrationService.deleteIntegration('int_test123')
+        mockIntegrationService.deleteIntegration('int_test123'),
       ).resolves.toBeUndefined();
       expect(mockIntegrationService.deleteIntegration).toHaveBeenCalledWith(
-        'int_test123'
+        'int_test123',
       );
     });
 
@@ -591,11 +591,11 @@ describe('Integrations API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       mockIntegrationService.deleteIntegration.mockRejectedValue(
-        new Error('Integration not found')
+        new Error('Integration not found'),
       );
 
       await expect(
-        mockIntegrationService.deleteIntegration('non-existent')
+        mockIntegrationService.deleteIntegration('non-existent'),
       ).rejects.toThrow('Integration not found');
     });
   });
@@ -652,7 +652,7 @@ describe('Integrations API Routes', () => {
       });
 
       mockIntegrationService.syncIntegration.mockResolvedValue(
-        syncedIntegration
+        syncedIntegration,
       );
 
       const result =
@@ -696,7 +696,7 @@ describe('Webhooks API Routes', () => {
 
       const result = await mockWebhookService.createWebhook(
         'ws-123',
-        requestBody
+        requestBody,
       );
 
       expect(result).toEqual(mockWebhook);
@@ -722,11 +722,11 @@ describe('Webhooks API Routes', () => {
       };
 
       mockWebhookService.createWebhook.mockRejectedValue(
-        new Error('Invalid webhook URL')
+        new Error('Invalid webhook URL'),
       );
 
       await expect(
-        mockWebhookService.createWebhook('ws-123', invalidRequestBody)
+        mockWebhookService.createWebhook('ws-123', invalidRequestBody),
       ).rejects.toThrow('Invalid webhook URL');
     });
 
@@ -741,11 +741,11 @@ describe('Webhooks API Routes', () => {
       };
 
       mockWebhookService.createWebhook.mockRejectedValue(
-        new Error('Webhook URL must use HTTPS')
+        new Error('Webhook URL must use HTTPS'),
       );
 
       await expect(
-        mockWebhookService.createWebhook('ws-123', httpUrl)
+        mockWebhookService.createWebhook('ws-123', httpUrl),
       ).rejects.toThrow('Webhook URL must use HTTPS');
     });
 
@@ -760,11 +760,11 @@ describe('Webhooks API Routes', () => {
       };
 
       mockWebhookService.createWebhook.mockRejectedValue(
-        new Error('Invalid event type: invalid.event')
+        new Error('Invalid event type: invalid.event'),
       );
 
       await expect(
-        mockWebhookService.createWebhook('ws-123', invalidEvents)
+        mockWebhookService.createWebhook('ws-123', invalidEvents),
       ).rejects.toThrow('Invalid event type');
     });
 
@@ -779,11 +779,11 @@ describe('Webhooks API Routes', () => {
       };
 
       mockWebhookService.createWebhook.mockRejectedValue(
-        new Error('At least one event is required')
+        new Error('At least one event is required'),
       );
 
       await expect(
-        mockWebhookService.createWebhook('ws-123', noEvents)
+        mockWebhookService.createWebhook('ws-123', noEvents),
       ).rejects.toThrow('At least one event is required');
     });
 
@@ -985,10 +985,10 @@ describe('Webhooks API Routes', () => {
       mockWebhookService.deleteWebhook.mockResolvedValue(undefined);
 
       await expect(
-        mockWebhookService.deleteWebhook('wh_test123')
+        mockWebhookService.deleteWebhook('wh_test123'),
       ).resolves.toBeUndefined();
       expect(mockWebhookService.deleteWebhook).toHaveBeenCalledWith(
-        'wh_test123'
+        'wh_test123',
       );
     });
 
@@ -997,11 +997,11 @@ describe('Webhooks API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       mockWebhookService.deleteWebhook.mockRejectedValue(
-        new Error('Webhook not found')
+        new Error('Webhook not found'),
       );
 
       await expect(
-        mockWebhookService.deleteWebhook('non-existent')
+        mockWebhookService.deleteWebhook('non-existent'),
       ).rejects.toThrow('Webhook not found');
     });
   });
@@ -1146,7 +1146,7 @@ describe('Webhooks API Routes', () => {
 
       const result = await mockWebhookService.retryDelivery(
         'wh_test123',
-        'del_test123'
+        'del_test123',
       );
 
       expect(result.status).toBe('retrying');
@@ -1158,11 +1158,11 @@ describe('Webhooks API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       mockWebhookService.retryDelivery.mockRejectedValue(
-        new Error('Maximum retry attempts exceeded')
+        new Error('Maximum retry attempts exceeded'),
       );
 
       await expect(
-        mockWebhookService.retryDelivery('wh_test123', 'del_test123')
+        mockWebhookService.retryDelivery('wh_test123', 'del_test123'),
       ).rejects.toThrow('Maximum retry attempts exceeded');
     });
 
@@ -1171,11 +1171,11 @@ describe('Webhooks API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       mockWebhookService.retryDelivery.mockRejectedValue(
-        new Error('Cannot retry successful delivery')
+        new Error('Cannot retry successful delivery'),
       );
 
       await expect(
-        mockWebhookService.retryDelivery('wh_test123', 'del_success')
+        mockWebhookService.retryDelivery('wh_test123', 'del_success'),
       ).rejects.toThrow('Cannot retry successful delivery');
     });
   });
@@ -1201,7 +1201,7 @@ describe('Webhooks API Routes', () => {
           name: 'Test',
           url: 'https://example.com/webhook',
           events: ['message.created'],
-        })
+        }),
       ).rejects.toMatchObject({
         status: 429,
         message: 'Rate limit exceeded',
@@ -1219,11 +1219,11 @@ describe('Webhooks API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       mockIntegrationService.listIntegrations.mockRejectedValue(
-        new Error('Database connection failed')
+        new Error('Database connection failed'),
       );
 
       await expect(
-        mockIntegrationService.listIntegrations('ws-123')
+        mockIntegrationService.listIntegrations('ws-123'),
       ).rejects.toThrow('Database connection failed');
     });
 
@@ -1232,11 +1232,11 @@ describe('Webhooks API Routes', () => {
       mockGetServerSession.mockResolvedValue(session);
 
       mockWebhookService.testWebhook.mockRejectedValue(
-        new Error('Request timeout')
+        new Error('Request timeout'),
       );
 
       await expect(
-        mockWebhookService.testWebhook('wh_test123')
+        mockWebhookService.testWebhook('wh_test123'),
       ).rejects.toThrow('Request timeout');
     });
   });

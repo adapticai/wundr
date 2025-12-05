@@ -90,7 +90,7 @@ export function BottomTabNavigation({
         'border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80',
         // Safe area for iOS notch
         'pb-safe',
-        className
+        className,
       )}
       role='navigation'
       aria-label='Bottom navigation'
@@ -119,7 +119,7 @@ export function BottomTabNavigation({
                 // Active state colors
                 isActive
                   ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
               aria-label={tab.label}
               aria-current={isActive ? 'page' : undefined}
@@ -129,7 +129,7 @@ export function BottomTabNavigation({
                   className={cn(
                     'h-6 w-6',
                     isActive ? 'scale-110' : 'scale-100',
-                    'transition-transform duration-200'
+                    'transition-transform duration-200',
                   )}
                   aria-hidden='true'
                 />
@@ -140,7 +140,7 @@ export function BottomTabNavigation({
                       'flex items-center justify-center',
                       'min-w-[16px] h-4 px-1',
                       'text-[10px] font-bold text-white',
-                      'bg-destructive rounded-full'
+                      'bg-destructive rounded-full',
                     )}
                     aria-label={`${tab.badge} notifications`}
                   >
@@ -155,7 +155,7 @@ export function BottomTabNavigation({
                   className={cn(
                     'text-xs mt-1',
                     'transition-all duration-200',
-                    isActive ? 'font-semibold' : 'font-medium'
+                    isActive ? 'font-semibold' : 'font-medium',
                   )}
                 >
                   {tab.label}
@@ -193,7 +193,7 @@ export function BottomTabNavigationSpacer({
         'h-16',
         // Mobile-only (hidden on desktop)
         'md:hidden',
-        className
+        className,
       )}
       aria-hidden='true'
     />

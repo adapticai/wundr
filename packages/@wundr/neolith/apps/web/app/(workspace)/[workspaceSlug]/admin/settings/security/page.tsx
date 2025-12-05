@@ -27,7 +27,7 @@ export default function SecurityCompliancePage() {
   useEffect(() => {
     setPageHeader(
       'Security & Compliance',
-      'Configure workspace security policies and compliance settings'
+      'Configure workspace security policies and compliance settings',
     );
   }, [setPageHeader]);
 
@@ -51,7 +51,7 @@ export default function SecurityCompliancePage() {
         setIsSaving(false);
       }
     },
-    [updateSettings]
+    [updateSettings],
   );
 
   return (
@@ -176,12 +176,12 @@ function AuthenticationSection({
   isSaving,
 }: SettingsSectionProps) {
   const [twoFactorRequired, setTwoFactorRequired] = useState(
-    settings?.twoFactorRequired ?? false
+    settings?.twoFactorRequired ?? false,
   );
   const [ssoEnabled, setSsoEnabled] = useState(settings?.ssoEnabled ?? false);
   const [ssoProvider, setSsoProvider] = useState(settings?.ssoProvider ?? null);
   const [allowedAuthMethods, setAllowedAuthMethods] = useState(
-    settings?.allowedAuthMethods ?? ['email', 'google', 'github']
+    settings?.allowedAuthMethods ?? ['email', 'google', 'github'],
   );
 
   useEffect(() => {
@@ -209,12 +209,12 @@ function AuthenticationSection({
         allowedAuthMethods,
       });
     },
-    [twoFactorRequired, ssoEnabled, ssoProvider, allowedAuthMethods, onSave]
+    [twoFactorRequired, ssoEnabled, ssoProvider, allowedAuthMethods, onSave],
   );
 
   const toggleAuthMethod = (method: string) => {
     setAllowedAuthMethods(prev =>
-      prev.includes(method) ? prev.filter(m => m !== method) : [...prev, method]
+      prev.includes(method) ? prev.filter(m => m !== method) : [...prev, method],
     );
   };
 
@@ -280,7 +280,7 @@ function AuthenticationSection({
                 className={cn(
                   'block w-full rounded-md border border-input bg-background',
                   'px-3 py-2 text-sm',
-                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
                 )}
               >
                 <option value=''>Select Provider</option>
@@ -327,7 +327,7 @@ function AuthenticationSection({
           disabled={isSaving}
           className={cn(
             'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
           )}
         >
           {isSaving ? 'Saving...' : 'Save Authentication Settings'}
@@ -344,13 +344,13 @@ function SessionPoliciesSection({
   isSaving,
 }: SettingsSectionProps) {
   const [sessionTimeout, setSessionTimeout] = useState(
-    settings?.sessionTimeout ?? 30
+    settings?.sessionTimeout ?? 30,
   );
   const [requireReauthForSensitive, setRequireReauthForSensitive] = useState(
-    settings?.requireReauthForSensitive ?? true
+    settings?.requireReauthForSensitive ?? true,
   );
   const [maxConcurrentSessions, setMaxConcurrentSessions] = useState(
-    settings?.maxConcurrentSessions ?? 5
+    settings?.maxConcurrentSessions ?? 5,
   );
 
   useEffect(() => {
@@ -374,7 +374,7 @@ function SessionPoliciesSection({
         maxConcurrentSessions,
       });
     },
-    [sessionTimeout, requireReauthForSensitive, maxConcurrentSessions, onSave]
+    [sessionTimeout, requireReauthForSensitive, maxConcurrentSessions, onSave],
   );
 
   return (
@@ -405,7 +405,7 @@ function SessionPoliciesSection({
             className={cn(
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           >
             <option value={7}>7 days</option>
@@ -450,7 +450,7 @@ function SessionPoliciesSection({
             className={cn(
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           >
             <option value={1}>1 session (most secure)</option>
@@ -468,7 +468,7 @@ function SessionPoliciesSection({
           disabled={isSaving}
           className={cn(
             'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
           )}
         >
           {isSaving ? 'Saving...' : 'Save Session Settings'}
@@ -485,13 +485,13 @@ function DomainEmailSection({
   isSaving,
 }: SettingsSectionProps) {
   const [allowedEmailDomains, setAllowedEmailDomains] = useState(
-    settings?.allowedEmailDomains?.join(', ') ?? ''
+    settings?.allowedEmailDomains?.join(', ') ?? '',
   );
   const [blockedEmailDomains, setBlockedEmailDomains] = useState(
-    settings?.blockedEmailDomains?.join(', ') ?? ''
+    settings?.blockedEmailDomains?.join(', ') ?? '',
   );
   const [emailVerificationRequired, setEmailVerificationRequired] = useState(
-    settings?.emailVerificationRequired ?? true
+    settings?.emailVerificationRequired ?? true,
   );
 
   useEffect(() => {
@@ -526,7 +526,7 @@ function DomainEmailSection({
       blockedEmailDomains,
       emailVerificationRequired,
       onSave,
-    ]
+    ],
   );
 
   return (
@@ -559,7 +559,7 @@ function DomainEmailSection({
             className={cn(
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm placeholder:text-muted-foreground',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
             placeholder='example.com, company.org'
           />
@@ -584,7 +584,7 @@ function DomainEmailSection({
             className={cn(
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm placeholder:text-muted-foreground',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
             placeholder='competitor.com, spam-domain.net'
           />
@@ -614,7 +614,7 @@ function DomainEmailSection({
           disabled={isSaving}
           className={cn(
             'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
           )}
         >
           {isSaving ? 'Saving...' : 'Save Domain Settings'}
@@ -631,19 +631,19 @@ function DataPrivacySection({
   isSaving,
 }: SettingsSectionProps) {
   const [dataRetentionDays, setDataRetentionDays] = useState(
-    settings?.dataRetentionDays ?? 365
+    settings?.dataRetentionDays ?? 365,
   );
   const [messageEditWindow, setMessageEditWindow] = useState(
-    settings?.messageEditWindow ?? 15
+    settings?.messageEditWindow ?? 15,
   );
   const [messageDeleteWindow, setMessageDeleteWindow] = useState(
-    settings?.messageDeleteWindow ?? 60
+    settings?.messageDeleteWindow ?? 60,
   );
   const [fileRetentionDays, setFileRetentionDays] = useState(
-    settings?.fileRetentionDays ?? 365
+    settings?.fileRetentionDays ?? 365,
   );
   const [dataExportEnabled, setDataExportEnabled] = useState(
-    settings?.dataExportEnabled ?? true
+    settings?.dataExportEnabled ?? true,
   );
 
   useEffect(() => {
@@ -682,7 +682,7 @@ function DataPrivacySection({
       fileRetentionDays,
       dataExportEnabled,
       onSave,
-    ]
+    ],
   );
 
   return (
@@ -713,7 +713,7 @@ function DataPrivacySection({
             className={cn(
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           >
             <option value={30}>30 days</option>
@@ -745,7 +745,7 @@ function DataPrivacySection({
             className={cn(
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           >
             <option value={0}>Disabled</option>
@@ -775,7 +775,7 @@ function DataPrivacySection({
             className={cn(
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           >
             <option value={0}>Disabled</option>
@@ -805,7 +805,7 @@ function DataPrivacySection({
             className={cn(
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           >
             <option value={30}>30 days</option>
@@ -838,7 +838,7 @@ function DataPrivacySection({
           disabled={isSaving}
           className={cn(
             'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
           )}
         >
           {isSaving ? 'Saving...' : 'Save Privacy Settings'}
@@ -855,13 +855,13 @@ function AuditComplianceSection({
   isSaving,
 }: SettingsSectionProps) {
   const [activityLogRetentionDays, setActivityLogRetentionDays] = useState(
-    settings?.activityLogRetentionDays ?? 90
+    settings?.activityLogRetentionDays ?? 90,
   );
   const [auditLogsEnabled, setAuditLogsEnabled] = useState(
-    settings?.auditLogsEnabled ?? true
+    settings?.auditLogsEnabled ?? true,
   );
   const [complianceMode, setComplianceMode] = useState<ComplianceMode>(
-    settings?.complianceMode ?? 'none'
+    settings?.complianceMode ?? 'none',
   );
 
   useEffect(() => {
@@ -885,7 +885,7 @@ function AuditComplianceSection({
         complianceMode: complianceMode === 'none' ? null : complianceMode,
       });
     },
-    [activityLogRetentionDays, auditLogsEnabled, complianceMode, onSave]
+    [activityLogRetentionDays, auditLogsEnabled, complianceMode, onSave],
   );
 
   return (
@@ -930,7 +930,7 @@ function AuditComplianceSection({
             className={cn(
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           >
             <option value={30}>30 days</option>
@@ -966,7 +966,7 @@ function AuditComplianceSection({
             className={cn(
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           >
             <option value='none'>None</option>
@@ -997,7 +997,7 @@ function AuditComplianceSection({
           disabled={isSaving}
           className={cn(
             'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
           )}
         >
           {isSaving ? 'Saving...' : 'Save Compliance Settings'}
@@ -1014,13 +1014,13 @@ function ApiIntegrationsSection({
   isSaving,
 }: SettingsSectionProps) {
   const [apiRateLimit, setApiRateLimit] = useState(
-    settings?.apiRateLimit ?? 1000
+    settings?.apiRateLimit ?? 1000,
   );
   const [allowedOAuthScopes, setAllowedOAuthScopes] = useState(
-    settings?.allowedOAuthScopes ?? ['read', 'write']
+    settings?.allowedOAuthScopes ?? ['read', 'write'],
   );
   const [webhookSignatureRequired, setWebhookSignatureRequired] = useState(
-    settings?.webhookSignatureRequired ?? true
+    settings?.webhookSignatureRequired ?? true,
   );
 
   useEffect(() => {
@@ -1044,12 +1044,12 @@ function ApiIntegrationsSection({
         webhookSignatureRequired,
       });
     },
-    [apiRateLimit, allowedOAuthScopes, webhookSignatureRequired, onSave]
+    [apiRateLimit, allowedOAuthScopes, webhookSignatureRequired, onSave],
   );
 
   const toggleOAuthScope = (scope: string) => {
     setAllowedOAuthScopes(prev =>
-      prev.includes(scope) ? prev.filter(s => s !== scope) : [...prev, scope]
+      prev.includes(scope) ? prev.filter(s => s !== scope) : [...prev, scope],
     );
   };
 
@@ -1085,7 +1085,7 @@ function ApiIntegrationsSection({
             className={cn(
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           />
         </div>
@@ -1141,7 +1141,7 @@ function ApiIntegrationsSection({
           disabled={isSaving}
           className={cn(
             'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
           )}
         >
           {isSaving ? 'Saving...' : 'Save API Settings'}
@@ -1167,13 +1167,13 @@ function ToggleSwitch({
       onClick={() => onChange(!checked)}
       className={cn(
         'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-        checked ? 'bg-primary' : 'bg-muted'
+        checked ? 'bg-primary' : 'bg-muted',
       )}
     >
       <span
         className={cn(
           'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-          checked ? 'translate-x-6' : 'translate-x-1'
+          checked ? 'translate-x-6' : 'translate-x-1',
         )}
       />
     </button>

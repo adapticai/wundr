@@ -31,7 +31,7 @@ export type TaskErrorCode =
 export function createErrorResponse(
   message: string,
   code: TaskErrorCode | string,
-  extraData?: Record<string, unknown>
+  extraData?: Record<string, unknown>,
 ): { error: TaskErrorCode | string; message: string } & Record<
   string,
   unknown

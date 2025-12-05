@@ -45,7 +45,7 @@ async function checkAccess(
   workspaceId: string,
   channelId: string,
   messageId: string,
-  userId: string
+  userId: string,
 ) {
   // Get workspace with organization
   const workspace = await prisma.workspace.findUnique({
@@ -124,7 +124,7 @@ async function checkAccess(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -133,9 +133,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          REACTION_ERROR_CODES.UNAUTHORIZED
+          REACTION_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -153,9 +153,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           REACTION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: queryResult.error.flatten().fieldErrors }
+          { errors: queryResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -166,16 +166,16 @@ export async function GET(
       workspaceId,
       params.channelId,
       params.messageId,
-      session.user.id
+      session.user.id,
     );
 
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Access denied or resources not found',
-          REACTION_ERROR_CODES.FORBIDDEN
+          REACTION_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -233,7 +233,7 @@ export async function GET(
             users: unknown[];
             hasReacted: boolean;
           }
-        >
+        >,
       );
 
       return NextResponse.json({
@@ -250,14 +250,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/channels/:channelId/messages/:messageId/reactions] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        REACTION_ERROR_CODES.INTERNAL_ERROR
+        REACTION_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -273,7 +273,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -282,9 +282,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          REACTION_ERROR_CODES.UNAUTHORIZED
+          REACTION_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -297,16 +297,16 @@ export async function POST(
       workspaceId,
       params.channelId,
       params.messageId,
-      session.user.id
+      session.user.id,
     );
 
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Access denied or resources not found',
-          REACTION_ERROR_CODES.FORBIDDEN
+          REACTION_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -318,9 +318,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          REACTION_ERROR_CODES.VALIDATION_ERROR
+          REACTION_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -331,9 +331,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           REACTION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -354,9 +354,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You have already reacted with this emoji',
-          REACTION_ERROR_CODES.ALREADY_REACTED
+          REACTION_ERROR_CODES.ALREADY_REACTED,
         ),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -385,19 +385,19 @@ export async function POST(
         data: reaction,
         message: 'Reaction added successfully',
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/channels/:channelId/messages/:messageId/reactions] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        REACTION_ERROR_CODES.INTERNAL_ERROR
+        REACTION_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -414,7 +414,7 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -423,9 +423,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          REACTION_ERROR_CODES.UNAUTHORIZED
+          REACTION_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -439,9 +439,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Emoji parameter is required',
-          REACTION_ERROR_CODES.VALIDATION_ERROR
+          REACTION_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -450,16 +450,16 @@ export async function DELETE(
       workspaceId,
       params.channelId,
       params.messageId,
-      session.user.id
+      session.user.id,
     );
 
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Access denied or resources not found',
-          REACTION_ERROR_CODES.FORBIDDEN
+          REACTION_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -476,9 +476,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Reaction not found',
-          REACTION_ERROR_CODES.NOT_FOUND
+          REACTION_ERROR_CODES.NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -488,14 +488,14 @@ export async function DELETE(
   } catch (error) {
     console.error(
       '[DELETE /api/workspaces/:workspaceId/channels/:channelId/messages/:messageId/reactions] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        REACTION_ERROR_CODES.INTERNAL_ERROR
+        REACTION_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

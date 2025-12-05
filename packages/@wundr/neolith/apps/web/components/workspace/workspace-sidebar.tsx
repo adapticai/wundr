@@ -181,7 +181,7 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
       const channel = allChannels.find(c => c.id === channelId);
       updateChannelStarStatus(channelId, isStarred, channel);
     },
-    [allChannels, updateChannelStarStatus]
+    [allChannels, updateChannelStarStatus],
   );
 
   // Handle DM star toggle with optimistic updates
@@ -194,7 +194,7 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
       const dm = directMessages.find(d => d.id === dmId);
       updateDMStarStatus(dmId, isStarred, dm);
     },
-    [directMessages, updateDMStarStatus]
+    [directMessages, updateDMStarStatus],
   );
 
   // Dialog states
@@ -218,7 +218,7 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
       await refetchChannels();
       setIsCreateChannelDialogOpen(false);
     },
-    [workspaceId, createChannel, refetchChannels]
+    [workspaceId, createChannel, refetchChannels],
   );
 
   const handleRetry = React.useCallback(async () => {

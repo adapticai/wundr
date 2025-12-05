@@ -264,7 +264,7 @@ function AdminSettingsNavItem({ item }: AdminSettingsNavItemProps) {
         'hover:bg-accent hover:text-accent-foreground',
         isActive
           ? 'bg-accent text-accent-foreground shadow-sm'
-          : 'text-muted-foreground'
+          : 'text-muted-foreground',
       )}
     >
       <Icon className={cn('h-4 w-4', isActive && 'text-primary')} />

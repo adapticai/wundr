@@ -67,7 +67,7 @@ const DEFAULT_SETTINGS: WorkspaceSettings = {
  */
 export async function POST(
   request: Request,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -75,9 +75,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED
+          ADMIN_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -96,9 +96,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN
+          ADMIN_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -120,9 +120,9 @@ export async function POST(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -148,7 +148,7 @@ export async function POST(
       where: { id: workspaceId },
       data: {
         settings: JSON.parse(
-          JSON.stringify(newSettings)
+          JSON.stringify(newSettings),
         ) as Prisma.InputJsonValue,
       },
     });
@@ -168,14 +168,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/admin/settings/reset] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to reset settings',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR
+        ADMIN_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

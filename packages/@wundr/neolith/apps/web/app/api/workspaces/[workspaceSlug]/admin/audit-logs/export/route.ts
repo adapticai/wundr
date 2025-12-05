@@ -47,7 +47,7 @@ interface RouteContext {
  */
 export async function POST(
   request: Request,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -80,18 +80,18 @@ export async function POST(
       workspaceId,
       session.user.id,
       body.filters || { workspaceId },
-      body.format || 'csv'
+      body.format || 'csv',
     );
 
     return NextResponse.json(exportResult);
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/admin/audit-logs/export] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       { error: 'Failed to create export' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -112,7 +112,7 @@ export async function POST(
  */
 export async function GET(
   request: Request,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -127,7 +127,7 @@ export async function GET(
     if (!exportId) {
       return NextResponse.json(
         { error: 'Export ID required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -158,11 +158,11 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/admin/audit-logs/export] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       { error: 'Failed to get export status' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

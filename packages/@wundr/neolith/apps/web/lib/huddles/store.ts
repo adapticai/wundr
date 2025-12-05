@@ -144,23 +144,23 @@ class Store {
       console.log('[HuddleStore] Removing participant:', participantId);
       this.setState({
         participants: this.state.participants.filter(
-          p => p.id !== participantId
+          p => p.id !== participantId,
         ),
       });
     },
 
     updateParticipant: (
       participantId: string,
-      updates: Partial<Participant>
+      updates: Partial<Participant>,
     ) => {
       console.log(
         '[HuddleStore] Updating participant:',
         participantId,
-        updates
+        updates,
       );
       this.setState({
         participants: this.state.participants.map(p =>
-          p.id === participantId ? { ...p, ...updates } : p
+          p.id === participantId ? { ...p, ...updates } : p,
         ),
       });
     },
@@ -186,7 +186,7 @@ const store = new Store();
 export function useHuddleStore(): HuddleStore;
 export function useHuddleStore<T>(selector: (state: HuddleState) => T): T;
 export function useHuddleStore<T>(
-  selector?: (state: HuddleState) => T
+  selector?: (state: HuddleState) => T,
 ): HuddleStore | T {
   if (selector) {
     return selector(store.getState());
@@ -242,7 +242,7 @@ const subscribersStore = new Map<string, Set<string>>();
 export function createHuddle(
   workspaceId: string,
   channelId: string,
-  initiator: Participant
+  initiator: Participant,
 ): { id: string; participants: Participant[] } {
   const huddleId = `huddle_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   const huddle = {
@@ -270,7 +270,7 @@ export function getHuddle(huddleId: string) {
  */
 export function getWorkspaceHuddles(workspaceId: string) {
   return Array.from(huddlesStore.values()).filter(
-    h => h.workspaceId === workspaceId
+    h => h.workspaceId === workspaceId,
   );
 }
 
@@ -294,7 +294,7 @@ export function endHuddle(huddleId: string): boolean {
  */
 export function joinHuddle(
   huddleId: string,
-  participant: Participant
+  participant: Participant,
 ): boolean {
   const huddle = huddlesStore.get(huddleId);
   if (!huddle || huddle.status !== 'active') {
@@ -306,7 +306,7 @@ export function joinHuddle(
     console.log(
       '[HuddleStore] Participant joined huddle:',
       huddleId,
-      participant.id
+      participant.id,
     );
   }
   return true;
@@ -325,7 +325,7 @@ export function leaveHuddle(huddleId: string, participantId: string): boolean {
   console.log(
     '[HuddleStore] Participant left huddle:',
     huddleId,
-    participantId
+    participantId,
   );
   // End huddle if no participants left
   if (huddle.participants.length === 0) {
@@ -352,7 +352,7 @@ export function toggleMute(huddleId: string, participantId: string): boolean {
     '[HuddleStore] Toggle mute:',
     huddleId,
     participantId,
-    participant.isMuted
+    participant.isMuted,
   );
   return true;
 }
@@ -363,7 +363,7 @@ export function toggleMute(huddleId: string, participantId: string): boolean {
 export function updateSpeaking(
   huddleId: string,
   participantId: string,
-  isSpeaking: boolean
+  isSpeaking: boolean,
 ): boolean {
   const huddle = huddlesStore.get(huddleId);
   if (!huddle) {

@@ -565,7 +565,7 @@ function EntityDataDisplay({
           <div
             className={cn(
               'mt-0.5',
-              highlightChanges && 'font-medium text-primary'
+              highlightChanges && 'font-medium text-primary',
             )}
           >
             {typeof data[field] === 'string' || typeof data[field] === 'number'

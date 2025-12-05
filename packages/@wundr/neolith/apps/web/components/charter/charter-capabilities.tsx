@@ -94,7 +94,7 @@ export function CharterCapabilities({
       return capabilities.some(
         cap =>
           cap.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          cap.description.toLowerCase().includes(searchQuery.toLowerCase())
+          cap.description.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     });
   }, [searchQuery, selectedCategory]);
@@ -110,7 +110,7 @@ export function CharterCapabilities({
     return capabilities.filter(
       cap =>
         cap.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        cap.description.toLowerCase().includes(searchQuery.toLowerCase())
+        cap.description.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   };
 
@@ -123,8 +123,8 @@ export function CharterCapabilities({
         // Update existing capability
         onChange(
           value.map(cap =>
-            cap.id === capabilityId ? { ...cap, enabled: true } : cap
-          )
+            cap.id === capabilityId ? { ...cap, enabled: true } : cap,
+          ),
         );
       } else {
         // Create new capability from definition
@@ -142,8 +142,8 @@ export function CharterCapabilities({
       // Disable capability
       onChange(
         value.map(cap =>
-          cap.id === capabilityId ? { ...cap, enabled: false } : cap
-        )
+          cap.id === capabilityId ? { ...cap, enabled: false } : cap,
+        ),
       );
     }
   };
@@ -151,12 +151,12 @@ export function CharterCapabilities({
   // Update permission level
   const handlePermissionChange = (
     capabilityId: string,
-    permissionLevel: PermissionLevel
+    permissionLevel: PermissionLevel,
   ) => {
     onChange(
       value.map(cap =>
-        cap.id === capabilityId ? { ...cap, permissionLevel } : cap
-      )
+        cap.id === capabilityId ? { ...cap, permissionLevel } : cap,
+      ),
     );
   };
 
@@ -164,7 +164,7 @@ export function CharterCapabilities({
   const handleRateLimitChange = (
     capabilityId: string,
     field: 'maxPerHour' | 'maxPerDay' | 'maxPerMinute',
-    valueStr: string
+    valueStr: string,
   ) => {
     const numValue = valueStr ? Number(valueStr) : undefined;
 
@@ -180,7 +180,7 @@ export function CharterCapabilities({
           };
         }
         return cap;
-      })
+      }),
     );
   };
 
@@ -246,7 +246,7 @@ export function CharterCapabilities({
               const categoryConfig = CATEGORY_CONFIG[category];
               const capabilities = getFilteredCapabilities(category);
               const enabledInCategory = capabilities.filter(
-                cap => capabilityMap.get(cap.id)?.enabled
+                cap => capabilityMap.get(cap.id)?.enabled,
               ).length;
 
               return (
@@ -330,7 +330,7 @@ export function CharterCapabilities({
                                           onValueChange={level =>
                                             handlePermissionChange(
                                               capDef.id,
-                                              level as PermissionLevel
+                                              level as PermissionLevel,
                                             )
                                           }
                                           disabled={disabled}
@@ -386,7 +386,7 @@ export function CharterCapabilities({
                                               handleRateLimitChange(
                                                 capDef.id,
                                                 'maxPerMinute',
-                                                e.target.value
+                                                e.target.value,
                                               )
                                             }
                                             placeholder='No limit'
@@ -413,7 +413,7 @@ export function CharterCapabilities({
                                               handleRateLimitChange(
                                                 capDef.id,
                                                 'maxPerHour',
-                                                e.target.value
+                                                e.target.value,
                                               )
                                             }
                                             placeholder='No limit'
@@ -440,7 +440,7 @@ export function CharterCapabilities({
                                               handleRateLimitChange(
                                                 capDef.id,
                                                 'maxPerDay',
-                                                e.target.value
+                                                e.target.value,
                                               )
                                             }
                                             placeholder='No limit'

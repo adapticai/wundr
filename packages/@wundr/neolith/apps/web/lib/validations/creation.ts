@@ -178,7 +178,7 @@ export const channelSpecSchema = z.object({
     .max(80, 'Channel name must be less than 80 characters')
     .regex(
       /^[a-z0-9-_]+$/,
-      'Channel name must contain only lowercase letters, numbers, hyphens, and underscores'
+      'Channel name must contain only lowercase letters, numbers, hyphens, and underscores',
     ),
   displayName: z.string().optional(),
   type: z.enum(['PUBLIC', 'PRIVATE']).default('PUBLIC'),
@@ -320,7 +320,7 @@ export const CREATION_ERROR_CODES = {
 export function createCreationErrorResponse(
   message: string,
   code: (typeof CREATION_ERROR_CODES)[keyof typeof CREATION_ERROR_CODES],
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) {
   return {
     error: {

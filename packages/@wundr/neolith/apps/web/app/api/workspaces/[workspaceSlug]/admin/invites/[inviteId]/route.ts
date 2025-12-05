@@ -38,7 +38,7 @@ interface RouteContext {
  */
 export async function DELETE(
   _request: Request,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -46,9 +46,9 @@ export async function DELETE(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED
+          ADMIN_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -66,9 +66,9 @@ export async function DELETE(
       return NextResponse.json(
         createAdminErrorResponse(
           'Workspace not found',
-          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -86,9 +86,9 @@ export async function DELETE(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN
+          ADMIN_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -101,9 +101,9 @@ export async function DELETE(
       return NextResponse.json(
         createAdminErrorResponse(
           'Invite not found',
-          ADMIN_ERROR_CODES.INVITE_NOT_FOUND
+          ADMIN_ERROR_CODES.INVITE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -114,9 +114,9 @@ export async function DELETE(
       return NextResponse.json(
         createAdminErrorResponse(
           'Invite has already been accepted',
-          ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED
+          ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -124,9 +124,9 @@ export async function DELETE(
       return NextResponse.json(
         createAdminErrorResponse(
           'Invite has already been revoked',
-          ADMIN_ERROR_CODES.INVITE_REVOKED
+          ADMIN_ERROR_CODES.INVITE_REVOKED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -167,15 +167,15 @@ export async function DELETE(
     const errorStack = error instanceof Error ? error.stack : '';
     console.error(
       '[DELETE /api/workspaces/:workspaceId/admin/invites/:inviteId] Error:',
-      errorMessage
+      errorMessage,
     );
     console.error('Stack:', errorStack);
     return NextResponse.json(
       createAdminErrorResponse(
         `Failed to revoke invite: ${errorMessage}`,
-        ADMIN_ERROR_CODES.INTERNAL_ERROR
+        ADMIN_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

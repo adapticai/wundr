@@ -39,7 +39,7 @@ interface RouteContext {
 async function verifyOrchestratorAccess(
   workspaceId: string,
   orchestratorId: string,
-  userId: string
+  userId: string,
 ): Promise<boolean> {
   // Check user has access to workspace
   const workspaceMember = await prisma.workspaceMember.findFirst({
@@ -91,7 +91,7 @@ async function verifyOrchestratorAccess(
  */
 export async function GET(
   request: NextRequest,
-  { params }: RouteContext
+  { params }: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -100,9 +100,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MEMORY_ERROR_CODES.UNAUTHORIZED
+          MEMORY_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -113,15 +113,15 @@ export async function GET(
     const hasAccess = await verifyOrchestratorAccess(
       workspaceId,
       orchestratorId,
-      session.user.id
+      session.user.id,
     );
     if (!hasAccess) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          MEMORY_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+          MEMORY_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -140,9 +140,9 @@ export async function GET(
         createErrorResponse(
           'Invalid search parameters',
           MEMORY_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -182,14 +182,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/memory/search] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MEMORY_ERROR_CODES.INTERNAL_ERROR
+        MEMORY_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

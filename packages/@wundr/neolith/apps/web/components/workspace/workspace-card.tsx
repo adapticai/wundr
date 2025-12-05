@@ -28,7 +28,7 @@ export function WorkspaceCard({ workspace, onClick }: WorkspaceCardProps) {
     <Card
       className={cn(
         'cursor-pointer transition-all hover:border-primary hover:shadow-md',
-        'group'
+        'group',
       )}
       onClick={onClick}
     >

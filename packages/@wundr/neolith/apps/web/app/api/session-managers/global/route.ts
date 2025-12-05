@@ -27,7 +27,7 @@ const SESSION_MANAGER_ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: (typeof SESSION_MANAGER_ERROR_CODES)[keyof typeof SESSION_MANAGER_ERROR_CODES],
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) {
   return {
     error: {
@@ -61,9 +61,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED
+          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -130,9 +130,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR
+        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

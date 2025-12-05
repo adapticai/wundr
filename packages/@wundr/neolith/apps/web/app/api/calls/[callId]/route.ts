@@ -48,7 +48,7 @@ async function closeLiveKitRoom(roomName: string): Promise<void> {
     // The call can still be marked as ended even if LiveKit room deletion fails
     console.error(
       `[closeLiveKitRoom] Failed to close room ${roomName}:`,
-      error
+      error,
     );
   }
 }
@@ -105,7 +105,7 @@ interface CallWithAccess {
  */
 async function getCallWithAccess(
   callId: string,
-  userId: string
+  userId: string,
 ): Promise<CallWithAccess | null> {
   // Try to get call from dedicated table first
   try {
@@ -262,7 +262,7 @@ async function getCallWithAccess(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -271,9 +271,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED
+          CALL_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -284,9 +284,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid call ID format',
-          CALL_ERROR_CODES.VALIDATION_ERROR
+          CALL_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -296,9 +296,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Call not found or access denied',
-          CALL_ERROR_CODES.CALL_NOT_FOUND
+          CALL_ERROR_CODES.CALL_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -394,9 +394,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR
+        CALL_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -412,7 +412,7 @@ export async function GET(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -421,9 +421,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED
+          CALL_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -434,9 +434,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Invalid call ID format',
-          CALL_ERROR_CODES.VALIDATION_ERROR
+          CALL_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -446,9 +446,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Call not found or access denied',
-          CALL_ERROR_CODES.CALL_NOT_FOUND
+          CALL_ERROR_CODES.CALL_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -457,9 +457,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Call has already ended',
-          CALL_ERROR_CODES.CALL_ALREADY_ENDED
+          CALL_ERROR_CODES.CALL_ALREADY_ENDED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -485,9 +485,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Only the call creator or an admin can end this call',
-          CALL_ERROR_CODES.FORBIDDEN
+          CALL_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -515,7 +515,7 @@ export async function DELETE(
       } catch (updateError) {
         console.error(
           '[DELETE /api/calls/:callId] Error updating call status:',
-          updateError
+          updateError,
         );
       }
 
@@ -529,7 +529,7 @@ export async function DELETE(
       } catch (participantError) {
         console.error(
           '[DELETE /api/calls/:callId] Error updating participants:',
-          participantError
+          participantError,
         );
       }
     }
@@ -550,9 +550,9 @@ export async function DELETE(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR
+        CALL_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

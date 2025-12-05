@@ -41,7 +41,7 @@ interface RouteContext {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -50,9 +50,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED
+          CALL_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -63,9 +63,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid call ID',
-          CALL_ERROR_CODES.VALIDATION_ERROR
+          CALL_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -108,7 +108,7 @@ export async function GET(
     if (calls.length === 0) {
       return NextResponse.json(
         createErrorResponse('Call not found', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -128,9 +128,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Not authorized to view this call',
-          CALL_ERROR_CODES.FORBIDDEN
+          CALL_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -159,9 +159,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR
+        CALL_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

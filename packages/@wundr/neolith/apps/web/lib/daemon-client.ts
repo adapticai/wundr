@@ -242,7 +242,7 @@ export class DaemonClient {
     console.error('[DaemonClient] WebSocket error:', error);
     this.emit(
       'error',
-      error instanceof Error ? error : new Error('WebSocket error')
+      error instanceof Error ? error : new Error('WebSocket error'),
     );
   }
 
@@ -257,7 +257,7 @@ export class DaemonClient {
       this.reconnectAttempts++;
       const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
       console.log(
-        `[DaemonClient] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`
+        `[DaemonClient] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`,
       );
       this.emit('reconnecting', this.reconnectAttempts);
       this.reconnectTimer = setTimeout(() => this.connect(), delay);

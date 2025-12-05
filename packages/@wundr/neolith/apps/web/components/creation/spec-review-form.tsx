@@ -401,7 +401,7 @@ function PreviewField({
         className={cn(
           'mt-1 text-sm',
           multiline && 'whitespace-pre-wrap',
-          !value.trim() && 'italic text-muted-foreground'
+          !value.trim() && 'italic text-muted-foreground',
         )}
       >
         {value}

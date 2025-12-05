@@ -95,7 +95,7 @@ export function AuditLogViewer({
       }
 
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/admin/audit-logs?${params.toString()}`
+        `/api/workspaces/${workspaceId}/admin/audit-logs?${params.toString()}`,
       );
 
       if (!response.ok) {
@@ -107,7 +107,7 @@ export function AuditLogViewer({
       setTotal(data.total || 0);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load audit logs'
+        err instanceof Error ? err.message : 'Failed to load audit logs',
       );
       console.error('Failed to fetch audit logs:', err);
     } finally {
@@ -127,7 +127,7 @@ export function AuditLogViewer({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ format: 'csv', filters }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -140,7 +140,7 @@ export function AuditLogViewer({
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to export audit logs'
+        err instanceof Error ? err.message : 'Failed to export audit logs',
       );
       console.error('Failed to export audit logs:', err);
     }

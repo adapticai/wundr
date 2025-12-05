@@ -125,7 +125,7 @@ export function BudgetOverview({
                   'px-3 py-1 text-xs font-medium rounded-md transition-colors',
                   selectedView === view
                     ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
                 )}
               >
                 {view.charAt(0).toUpperCase() + view.slice(1)}
@@ -154,7 +154,7 @@ export function BudgetOverview({
             <div
               className={cn(
                 'absolute top-0 left-0 h-3 rounded-full transition-all',
-                progressColorClass
+                progressColorClass,
               )}
               style={{ width: `${Math.min(usagePercentage, 100)}%` }}
             />
@@ -222,7 +222,7 @@ export function BudgetOverview({
                     ? 'bg-destructive'
                     : usagePercentage >= 75
                       ? 'bg-yellow-500'
-                      : 'bg-green-500'
+                      : 'bg-green-500',
                 )}
               />
               <p className='text-sm font-medium'>

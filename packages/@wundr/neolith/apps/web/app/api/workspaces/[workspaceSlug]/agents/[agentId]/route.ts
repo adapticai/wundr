@@ -69,7 +69,7 @@ const updateAgentSchema = z.object({
         'text_analysis',
         'translation',
         'summarization',
-      ])
+      ]),
     )
     .optional(),
 });
@@ -85,7 +85,7 @@ const updateAgentSchema = z.object({
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -93,7 +93,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -111,7 +111,7 @@ export async function GET(
     if (!dbAgent) {
       return NextResponse.json(
         { error: { message: 'Agent not found' } },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -149,11 +149,11 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/agents/:agentId] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -169,7 +169,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -177,7 +177,7 @@ export async function PATCH(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -191,7 +191,7 @@ export async function PATCH(
     } catch {
       return NextResponse.json(
         { error: { message: 'Invalid JSON body' } },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -205,7 +205,7 @@ export async function PATCH(
             errors: parseResult.error.flatten().fieldErrors,
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -222,7 +222,7 @@ export async function PATCH(
     if (!existingAgent) {
       return NextResponse.json(
         { error: { message: 'Agent not found' } },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -321,11 +321,11 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/workspaces/:workspaceId/agents/:agentId] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -341,7 +341,7 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -349,7 +349,7 @@ export async function DELETE(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -367,7 +367,7 @@ export async function DELETE(
     if (!existingAgent) {
       return NextResponse.json(
         { error: { message: 'Agent not found' } },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -383,11 +383,11 @@ export async function DELETE(
   } catch (error) {
     console.error(
       '[DELETE /api/workspaces/:workspaceId/agents/:agentId] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

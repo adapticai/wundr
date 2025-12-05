@@ -30,7 +30,7 @@ export async function GET(): Promise<NextResponse> {
     if (!session?.user?.id || !session.user.email) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -81,7 +81,7 @@ export async function GET(): Promise<NextResponse> {
 
       // Filter invites for this user that are still pending
       const pendingInvites = invites.filter(
-        invite => invite.email === userEmail && invite.status === 'PENDING'
+        invite => invite.email === userEmail && invite.status === 'PENDING',
       );
 
       // Add workspace context to each invite
@@ -108,7 +108,7 @@ export async function GET(): Promise<NextResponse> {
     console.error('[GET /api/user/invites] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch invites', code: 'INTERNAL_ERROR' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -307,7 +307,7 @@ export function WizardProvider({
     (data: Partial<ExtractedEntityData>) => {
       dispatch({ type: 'UPDATE_EXTRACTED_DATA', payload: data });
     },
-    []
+    [],
   );
 
   const switchMode = useCallback((mode: WizardMode) => {

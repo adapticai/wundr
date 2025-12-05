@@ -84,7 +84,7 @@ export function WorkspaceSwitcher() {
   // Match workspace by slug (URL param) or fall back to id for compatibility
   const activeWorkspace =
     workspaces.find(
-      w => w.slug === currentWorkspaceSlug || w.id === currentWorkspaceSlug
+      w => w.slug === currentWorkspaceSlug || w.id === currentWorkspaceSlug,
     ) || workspaces[0];
 
   // Keyboard shortcuts for workspace switching (Cmd+1, Cmd+2, etc.)

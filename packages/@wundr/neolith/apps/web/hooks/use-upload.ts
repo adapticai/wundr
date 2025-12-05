@@ -92,7 +92,7 @@ function generateUploadId(): string {
  * Hook for managing file uploads with progress tracking, cancellation, and retry support
  */
 export function useFileUpload(
-  options: UploadOptions = {}
+  options: UploadOptions = {},
 ): UseFileUploadReturn {
   const {
     channelId,
@@ -110,14 +110,14 @@ export function useFileUpload(
 
   const isUploading = useMemo(
     () => uploads.some(u => u.status === 'uploading'),
-    [uploads]
+    [uploads],
   );
   const progress = useMemo(
     () =>
       uploads.length > 0
         ? uploads.reduce((acc, u) => acc + u.progress, 0) / uploads.length
         : 0,
-    [uploads]
+    [uploads],
   );
 
   /**
@@ -145,7 +145,7 @@ export function useFileUpload(
 
       return null;
     },
-    [maxSize, accept]
+    [maxSize, accept],
   );
 
   /**
@@ -162,8 +162,8 @@ export function useFileUpload(
           prev.map(u =>
             u.id === uploadState.id
               ? { ...u, status: 'uploading' as const, abortController }
-              : u
-          )
+              : u,
+          ),
         );
 
         // Simulate getting a signed URL (replace with actual API call)
@@ -183,14 +183,14 @@ export function useFileUpload(
           xhr.upload.onprogress = event => {
             if (event.lengthComputable) {
               const percentComplete = Math.round(
-                (event.loaded / event.total) * 100
+                (event.loaded / event.total) * 100,
               );
               setUploads(prev =>
                 prev.map(u =>
                   u.id === uploadState.id
                     ? { ...u, progress: percentComplete }
-                    : u
-                )
+                    : u,
+                ),
               );
               onProgress?.(uploadState.id, percentComplete);
             }
@@ -237,8 +237,8 @@ export function useFileUpload(
           prev.map(u =>
             u.id === uploadState.id
               ? { ...u, status: 'completed' as const, progress: 100, url }
-              : u
-          )
+              : u,
+          ),
         );
 
         onComplete?.(uploadState.id, url);
@@ -251,16 +251,16 @@ export function useFileUpload(
             prev.map(u =>
               u.id === uploadState.id
                 ? { ...u, status: 'cancelled' as const }
-                : u
-            )
+                : u,
+            ),
           );
         } else {
           setUploads(prev =>
             prev.map(u =>
               u.id === uploadState.id
                 ? { ...u, status: 'error' as const, error: errorMessage }
-                : u
-            )
+                : u,
+            ),
           );
           onError?.(uploadState.id, errorMessage);
         }
@@ -268,7 +268,7 @@ export function useFileUpload(
         uploadQueueRef.current.delete(uploadState.id);
       }
     },
-    [channelId, onProgress, onComplete, onError]
+    [channelId, onProgress, onComplete, onError],
   );
 
   /**
@@ -305,7 +305,7 @@ export function useFileUpload(
           });
       }
     },
-    [maxFiles, validateFile, isPaused, uploadFile]
+    [maxFiles, validateFile, isPaused, uploadFile],
   );
 
   /**
@@ -318,8 +318,8 @@ export function useFileUpload(
     }
     setUploads(prev =>
       prev.map(u =>
-        u.id === fileId ? { ...u, status: 'cancelled' as const } : u
-      )
+        u.id === fileId ? { ...u, status: 'cancelled' as const } : u,
+      ),
     );
   }, []);
 
@@ -334,8 +334,8 @@ export function useFileUpload(
       prev.map(u =>
         u.status === 'uploading' || u.status === 'pending'
           ? { ...u, status: 'cancelled' as const }
-          : u
-      )
+          : u,
+      ),
     );
   }, []);
 
@@ -351,7 +351,7 @@ export function useFileUpload(
       return prev.map(u =>
         u.status === 'error'
           ? { ...u, status: 'pending' as const, progress: 0, error: undefined }
-          : u
+          : u,
       );
     });
   }, [uploadFile]);
@@ -373,13 +373,13 @@ export function useFileUpload(
                   progress: 0,
                   error: undefined,
                 }
-              : u
+              : u,
           );
         }
         return prev;
       });
     },
-    [uploadFile]
+    [uploadFile],
   );
 
   /**
@@ -398,7 +398,7 @@ export function useFileUpload(
    */
   const clearCompleted = useCallback(() => {
     setUploads(prev =>
-      prev.filter(u => u.status === 'uploading' || u.status === 'pending')
+      prev.filter(u => u.status === 'uploading' || u.status === 'pending'),
     );
   }, []);
 
@@ -412,8 +412,8 @@ export function useFileUpload(
     });
     setUploads(prev =>
       prev.map(u =>
-        u.status === 'uploading' ? { ...u, status: 'pending' as const } : u
-      )
+        u.status === 'uploading' ? { ...u, status: 'pending' as const } : u,
+      ),
     );
   }, []);
 
@@ -519,7 +519,7 @@ export function useSignedUpload(channelId: string): UseSignedUploadReturn {
         setIsLoading(false);
       }
     },
-    [channelId]
+    [channelId],
   );
 
   // Cleanup on unmount
@@ -611,7 +611,7 @@ export function useChannelFiles(channelId: string): UseChannelFilesReturn {
         setIsLoading(false);
       }
     },
-    [channelId, cursor, hasMore]
+    [channelId, cursor, hasMore],
   );
 
   const loadMore = useCallback(() => {

@@ -51,7 +51,7 @@ const AUTH_ERROR_CODES = {
 function generateTokens(
   orchestratorId: string,
   daemonId: string,
-  scopes: string[]
+  scopes: string[],
 ): {
   accessToken: string;
   refreshToken: string;
@@ -68,7 +68,7 @@ function generateTokens(
       type: 'access',
     },
     JWT_SECRET,
-    { expiresIn: ACCESS_TOKEN_EXPIRY }
+    { expiresIn: ACCESS_TOKEN_EXPIRY },
   );
 
   const refreshToken = jwt.sign(
@@ -78,7 +78,7 @@ function generateTokens(
       type: 'refresh',
     },
     JWT_SECRET,
-    { expiresIn: REFRESH_TOKEN_EXPIRY }
+    { expiresIn: REFRESH_TOKEN_EXPIRY },
   );
 
   return { accessToken, refreshToken, expiresAt };
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON body', code: AUTH_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'API key and secret required',
           code: AUTH_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid credentials',
           code: AUTH_ERROR_CODES.INVALID_CREDENTIALS,
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -173,7 +173,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid credentials',
           code: AUTH_ERROR_CODES.INVALID_CREDENTIALS,
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (orchestrator.status === 'OFFLINE') {
       return NextResponse.json(
         { error: 'Daemon is disabled', code: AUTH_ERROR_CODES.DAEMON_DISABLED },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             error: 'Invalid credentials',
             code: AUTH_ERROR_CODES.INVALID_CREDENTIALS,
           },
-          { status: 401 }
+          { status: 401 },
         );
       }
     }
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { accessToken, refreshToken, expiresAt } = generateTokens(
       orchestratorId,
       sessionId,
-      scopes
+      scopes,
     );
 
     // Store session in Redis
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           refreshToken: await hashAPIKey(refreshToken),
           createdAt: new Date().toISOString(),
           lastHeartbeat: new Date().toISOString(),
-        })
+        }),
       );
     } catch (redisError) {
       console.error('Redis session storage error:', redisError);
@@ -254,7 +254,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error('[POST /api/daemon/auth] Error:', error);
     return NextResponse.json(
       { error: 'Authentication failed', code: AUTH_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

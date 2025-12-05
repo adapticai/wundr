@@ -65,7 +65,7 @@ export function QuickActionsWidget({
     } else {
       // Focus global search input if available
       const searchInput = document.querySelector<HTMLInputElement>(
-        '[data-global-search]'
+        '[data-global-search]',
       );
       if (searchInput) {
         searchInput.focus();

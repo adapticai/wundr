@@ -57,7 +57,7 @@ export function PromptInput({
       textarea.style.height = 'auto';
       const newHeight = Math.min(
         Math.max(textarea.scrollHeight, minHeight),
-        maxHeight
+        maxHeight,
       );
       textarea.style.height = `${newHeight}px`;
     }
@@ -114,7 +114,7 @@ export function PromptInputForm({
     <form
       className={cn(
         'flex flex-col gap-2 border rounded-lg p-2 bg-background',
-        className
+        className,
       )}
       {...props}
     >
@@ -136,7 +136,7 @@ export const PromptInputTextarea = React.forwardRef<
       className={cn(
         'resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent',
         'overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent',
-        className
+        className,
       )}
       {...props}
     />
@@ -156,7 +156,7 @@ export function PromptInputToolbar({
     <div
       className={cn(
         'flex items-center justify-between pt-2 border-t',
-        className
+        className,
       )}
       {...props}
     >

@@ -31,7 +31,7 @@ export interface UseReactionsReturn {
 export function useReactions(
   workspaceId: string,
   channelId: string,
-  messageId: string
+  messageId: string,
 ): UseReactionsReturn {
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +48,7 @@ export function useReactions(
     try {
       const url = new URL(
         `/api/workspaces/${workspaceId}/channels/${channelId}/messages/${messageId}/reactions`,
-        window.location.origin
+        window.location.origin,
       );
       url.searchParams.set('grouped', 'true');
       url.searchParams.set('includeUsers', 'true');
@@ -77,7 +77,7 @@ export function useReactions(
 
       // Find existing reaction
       const existingReaction = reactions.find(
-        r => r.emoji === emoji && r.hasReacted
+        r => r.emoji === emoji && r.hasReacted,
       );
 
       try {
@@ -87,7 +87,7 @@ export function useReactions(
             `/api/workspaces/${workspaceId}/channels/${channelId}/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`,
             {
               method: 'DELETE',
-            }
+            },
           );
 
           if (!response.ok) {
@@ -109,7 +109,7 @@ export function useReactions(
                   }
                   return r;
                 })
-                .filter(r => r.count > 0) // Remove if count is 0
+                .filter(r => r.count > 0), // Remove if count is 0
           );
         } else {
           // Add reaction
@@ -121,7 +121,7 @@ export function useReactions(
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({ emoji }),
-            }
+            },
           );
 
           if (!response.ok) {
@@ -162,7 +162,7 @@ export function useReactions(
         await fetchReactions();
       }
     },
-    [workspaceId, channelId, messageId, reactions, fetchReactions]
+    [workspaceId, channelId, messageId, reactions, fetchReactions],
   );
 
   // Fetch on mount

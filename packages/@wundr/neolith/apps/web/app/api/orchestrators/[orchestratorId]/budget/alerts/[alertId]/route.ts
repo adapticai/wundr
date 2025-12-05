@@ -37,7 +37,7 @@ interface RouteContext {
  */
 async function getOrchestratorWithAccessCheck(
   orchestratorId: string,
-  userId: string
+  userId: string,
 ) {
   const userOrganizations = await prisma.organizationMember.findMany({
     where: { userId },
@@ -72,7 +72,7 @@ async function getOrchestratorWithAccessCheck(
   }
 
   const membership = userOrganizations.find(
-    m => m.organizationId === orchestrator.organizationId
+    m => m.organizationId === orchestrator.organizationId,
   );
 
   return { orchestrator, role: membership?.role ?? null };
@@ -90,7 +90,7 @@ async function getOrchestratorWithAccessCheck(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -99,9 +99,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          BUDGET_ERROR_CODES.UNAUTHORIZED
+          BUDGET_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -118,9 +118,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid parameter format',
-          BUDGET_ERROR_CODES.VALIDATION_ERROR
+          BUDGET_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -132,9 +132,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          BUDGET_ERROR_CODES.VALIDATION_ERROR
+          BUDGET_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -145,9 +145,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           BUDGET_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -156,16 +156,16 @@ export async function PATCH(
     // Get orchestrator with access check
     const result = await getOrchestratorWithAccessCheck(
       params.orchestratorId,
-      session.user.id
+      session.user.id,
     );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -193,9 +193,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Alert not found',
-          BUDGET_ERROR_CODES.ALERT_NOT_FOUND
+          BUDGET_ERROR_CODES.ALERT_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -209,9 +209,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Alert has already been acknowledged or resolved',
-          BUDGET_ERROR_CODES.VALIDATION_ERROR
+          BUDGET_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -225,7 +225,7 @@ export async function PATCH(
             suppressionDurationMinutes: input.suppressionDurationMinutes,
             suppressUntil: new Date(
               now.getTime() +
-                (input.suppressionDurationMinutes ?? 60) * 60 * 1000
+                (input.suppressionDurationMinutes ?? 60) * 60 * 1000,
             ).toISOString(),
           }),
         }
@@ -286,14 +286,14 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/orchestrators/:orchestratorId/budget/alerts/:alertId] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        BUDGET_ERROR_CODES.INTERNAL_ERROR
+        BUDGET_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

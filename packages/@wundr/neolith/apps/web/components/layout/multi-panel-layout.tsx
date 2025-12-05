@@ -60,16 +60,16 @@ export function MultiPanelLayout({
   storageKey = 'multi-panel-layout',
 }: MultiPanelLayoutProps) {
   const [leftCollapsed, setLeftCollapsed] = React.useState(
-    leftPanel?.defaultCollapsed ?? false
+    leftPanel?.defaultCollapsed ?? false,
   );
   const [rightCollapsed, setRightCollapsed] = React.useState(
-    rightPanel?.defaultCollapsed ?? false
+    rightPanel?.defaultCollapsed ?? false,
   );
   const [bottomCollapsed, setBottomCollapsed] = React.useState(
-    bottomPanel?.defaultCollapsed ?? false
+    bottomPanel?.defaultCollapsed ?? false,
   );
   const [bottomSize, setBottomSize] = React.useState(
-    bottomPanel?.defaultSize ?? 300
+    bottomPanel?.defaultSize ?? 300,
   );
 
   // Load collapsed states from localStorage
@@ -109,7 +109,7 @@ export function MultiPanelLayout({
           left: leftCollapsed,
           right: rightCollapsed,
           bottom: bottomCollapsed,
-        })
+        }),
       );
     }
   }, [storageKey, leftCollapsed, rightCollapsed, bottomCollapsed]);
@@ -254,7 +254,7 @@ export function MultiPanelLayout({
                     const deltaY = startY - e.clientY;
                     const newSize = Math.max(
                       bottomPanel.minSize ?? 100,
-                      Math.min(bottomPanel.maxSize ?? 600, startSize + deltaY)
+                      Math.min(bottomPanel.maxSize ?? 600, startSize + deltaY),
                     );
                     setBottomSize(newSize);
                   };

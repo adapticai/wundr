@@ -37,7 +37,7 @@ interface RouteContext {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -46,9 +46,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED
+          CALL_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -60,9 +60,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid room ID',
-          CALL_ERROR_CODES.VALIDATION_ERROR
+          CALL_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -73,7 +73,7 @@ export async function GET(
     if (!room) {
       return NextResponse.json(
         createErrorResponse('Room not found', CALL_ERROR_CODES.ROOM_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -95,9 +95,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR
+        CALL_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -113,7 +113,7 @@ export async function GET(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -122,9 +122,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED
+          CALL_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -136,9 +136,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Invalid room ID',
-          CALL_ERROR_CODES.VALIDATION_ERROR
+          CALL_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -155,16 +155,16 @@ export async function DELETE(
     if (error instanceof Error && error.name === 'RoomNotFoundError') {
       return NextResponse.json(
         createErrorResponse(error.message, CALL_ERROR_CODES.ROOM_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR
+        CALL_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

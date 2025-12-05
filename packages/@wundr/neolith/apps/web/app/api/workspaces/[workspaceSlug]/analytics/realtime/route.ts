@@ -11,7 +11,7 @@ import { getServerSession } from '@/lib/auth';
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ workspaceSlug: string }> }
+  { params }: { params: Promise<{ workspaceSlug: string }> },
 ) {
   try {
     const session = await getServerSession();
@@ -40,7 +40,7 @@ export async function GET(
     console.error('Real-time analytics error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch real-time stats' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

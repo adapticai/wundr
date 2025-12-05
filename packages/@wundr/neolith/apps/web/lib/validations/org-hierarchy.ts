@@ -115,7 +115,7 @@ export const orgHierarchyNodeSchema: z.ZodType<{
 
     /** Additional node-specific data */
     data: z.union([vpNodeDataSchema, workspaceNodeDataSchema]).optional(),
-  })
+  }),
 );
 
 export type OrgHierarchyNode = z.infer<typeof orgHierarchyNodeSchema>;

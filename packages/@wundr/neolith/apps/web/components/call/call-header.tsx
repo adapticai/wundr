@@ -48,7 +48,7 @@ export function CallHeader({
         action();
       }
     },
-    []
+    [],
   );
 
   return (
@@ -58,7 +58,7 @@ export function CallHeader({
         'px-4 py-3',
         'bg-background/95 backdrop-blur-sm',
         'border-b border-border',
-        className
+        className,
       )}
       role='banner'
     >
@@ -80,7 +80,7 @@ export function CallHeader({
             className={clsx(
               'flex items-center gap-1.5 px-2 py-1',
               'bg-red-500/10 text-red-500 rounded-full',
-              'text-xs font-medium'
+              'text-xs font-medium',
             )}
             role='status'
             aria-live='polite'
@@ -97,7 +97,7 @@ export function CallHeader({
           className={clsx(
             'px-3 py-1 rounded-full',
             'bg-muted text-foreground',
-            'text-sm font-mono tabular-nums'
+            'text-sm font-mono tabular-nums',
           )}
           role='timer'
           aria-label={`Call duration: ${duration}`}
@@ -117,7 +117,7 @@ export function CallHeader({
             'rounded-lg',
             'bg-muted hover:bg-muted/80',
             'text-sm text-foreground',
-            'transition-colors'
+            'transition-colors',
           )}
           aria-label={`${participantCount} participants. Click to view list.`}
         >
@@ -149,7 +149,7 @@ export function CallHeader({
               'flex items-center justify-center',
               'bg-muted hover:bg-muted/80',
               'text-muted-foreground hover:text-foreground',
-              'transition-colors'
+              'transition-colors',
             )}
             aria-label='Open settings'
           >
@@ -179,7 +179,7 @@ export function CallHeader({
               'flex items-center justify-center',
               'bg-muted hover:bg-muted/80',
               'text-muted-foreground hover:text-foreground',
-              'transition-colors'
+              'transition-colors',
             )}
             aria-label='Minimize call'
           >

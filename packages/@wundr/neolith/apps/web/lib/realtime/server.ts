@@ -58,7 +58,7 @@ export function initWebSocketServer(port?: number): WebSocketServer {
       JSON.stringify({
         event: 'connected',
         timestamp: Date.now(),
-      })
+      }),
     );
   });
 

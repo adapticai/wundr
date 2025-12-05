@@ -1,12 +1,22 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckSquare } from 'lucide-react';
+import { CheckSquare, Edit2, Trash2, ArrowUpDown } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -27,6 +37,15 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import {
   Select,
   SelectContent,
@@ -131,6 +150,16 @@ const PRIORITY_CONFIG = {
   LOW: { label: 'Low', color: 'text-green-600', icon: '!' },
 } as const;
 
+const SORT_OPTIONS = [
+  { value: 'dueDate-asc', label: 'Due Date (Earliest First)', sortBy: 'dueDate' as const, sortOrder: 'asc' as const },
+  { value: 'dueDate-desc', label: 'Due Date (Latest First)', sortBy: 'dueDate' as const, sortOrder: 'desc' as const },
+  { value: 'priority-desc', label: 'Priority (High to Low)', sortBy: 'priority' as const, sortOrder: 'desc' as const },
+  { value: 'priority-asc', label: 'Priority (Low to High)', sortBy: 'priority' as const, sortOrder: 'asc' as const },
+  { value: 'updatedAt-desc', label: 'Recently Updated', sortBy: 'updatedAt' as const, sortOrder: 'desc' as const },
+  { value: 'title-asc', label: 'Alphabetical (A-Z)', sortBy: 'title' as const, sortOrder: 'asc' as const },
+  { value: 'title-desc', label: 'Alphabetical (Z-A)', sortBy: 'title' as const, sortOrder: 'desc' as const },
+] as const;
+
 // =============================================================================
 // Main Page Component
 // =============================================================================
@@ -141,21 +170,34 @@ export default function TasksPage() {
 
   // State
   const [statusFilter, setStatusFilter] = useState<TaskStatusType | 'all'>(
-    'all'
+    'all',
   );
   const [priorityFilter, setPriorityFilter] = useState<
     TaskPriorityType | 'all'
   >('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+  const [sortValue, setSortValue] = useState('updatedAt-desc');
+
+  // Get sort parameters from selected value
+  const currentSortOption = SORT_OPTIONS.find(opt => opt.value === sortValue) || SORT_OPTIONS[4];
 
   // Hooks
-  const { tasks, isLoading, error, refetch } = useTasks(workspaceSlug, {
-    status: statusFilter === 'all' ? undefined : statusFilter,
-    priority: priorityFilter === 'all' ? undefined : priorityFilter,
-    search: searchQuery || undefined,
-    includeCompleted: false,
-  });
+  const { tasks, isLoading, error, refetch, pagination } = useTasks(
+    workspaceSlug,
+    {
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      priority: priorityFilter === 'all' ? undefined : priorityFilter,
+      search: searchQuery || undefined,
+      includeCompleted: false,
+      page: currentPage,
+      limit: pageSize,
+      sortBy: currentSortOption.sortBy,
+      sortOrder: currentSortOption.sortOrder,
+    },
+  );
 
   // Stats
   const taskStats = useMemo(() => {
@@ -188,12 +230,25 @@ export default function TasksPage() {
   // Handlers
   const handleSearchChange = useCallback((value: string) => {
     setSearchQuery(value);
+    setCurrentPage(1); // Reset to first page when search changes
   }, []);
 
   const handleClearFilters = useCallback(() => {
     setStatusFilter('all');
     setPriorityFilter('all');
     setSearchQuery('');
+    setSortValue('updatedAt-desc');
+    setCurrentPage(1); // Reset to first page when clearing filters
+  }, []);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handlePageSizeChange = useCallback((size: string) => {
+    setPageSize(Number(size));
+    setCurrentPage(1); // Reset to first page when page size changes
   }, []);
 
   // Active filters count
@@ -308,6 +363,23 @@ export default function TasksPage() {
             ))}
           </select>
 
+          {/* Sort Dropdown */}
+          <Select value={sortValue} onValueChange={setSortValue}>
+            <SelectTrigger className='w-[200px]'>
+              <div className='flex items-center gap-2'>
+                <ArrowUpDown className='h-4 w-4' />
+                <SelectValue placeholder='Sort by...' />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {SORT_OPTIONS.map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           {/* Clear Filters */}
           {activeFiltersCount > 0 && (
             <button
@@ -394,6 +466,97 @@ export default function TasksPage() {
         </div>
       )}
 
+
+      {/* Pagination */}
+      {!isLoading && !error && pagination && pagination.totalPages > 1 && (
+        <div className='space-y-4'>
+          {/* Pagination Info and Page Size Selector */}
+          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='text-sm text-muted-foreground'>
+              Showing {(pagination.page - 1) * pagination.limit + 1}-
+              {Math.min(pagination.page * pagination.limit, pagination.totalCount)} of{' '}
+              {pagination.totalCount} tasks
+            </div>
+            <div className='flex items-center gap-2'>
+              <span className='text-sm text-muted-foreground'>Items per page:</span>
+              <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                <SelectTrigger className='w-[80px]'>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='10'>10</SelectItem>
+                  <SelectItem value='12'>12</SelectItem>
+                  <SelectItem value='25'>25</SelectItem>
+                  <SelectItem value='50'>50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Pagination Controls */}
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => pagination.hasPreviousPage && handlePageChange(currentPage - 1)}
+                  className={cn(
+                    !pagination.hasPreviousPage && 'pointer-events-none opacity-50',
+                    'cursor-pointer',
+                  )}
+                />
+              </PaginationItem>
+
+              {/* Page Numbers */}
+              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => {
+                // Show first page, last page, current page, and pages around current
+                const showPage =
+                  page === 1 ||
+                  page === pagination.totalPages ||
+                  (page >= currentPage - 1 && page <= currentPage + 1);
+
+                // Show ellipsis
+                const showEllipsisBefore = page === currentPage - 2 && currentPage > 3;
+                const showEllipsisAfter =
+                  page === currentPage + 2 && currentPage < pagination.totalPages - 2;
+
+                if (showEllipsisBefore || showEllipsisAfter) {
+                  return (
+                    <PaginationItem key={page}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  );
+                }
+
+                if (!showPage) {
+                  return null;
+                }
+
+                return (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      onClick={() => handlePageChange(page)}
+                      isActive={currentPage === page}
+                      className='cursor-pointer'
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => pagination.hasNextPage && handlePageChange(currentPage + 1)}
+                  className={cn(
+                    !pagination.hasNextPage && 'pointer-events-none opacity-50',
+                    'cursor-pointer',
+                  )}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
       {/* Create Task Dialog */}
       <CreateTaskDialog
         open={isCreateDialogOpen}
@@ -508,7 +671,7 @@ function CreateTaskDialog({
       console.error('Failed to create task:', error);
       // You could add toast notification here
       alert(
-        error instanceof Error ? error.message : 'Failed to create task'
+        error instanceof Error ? error.message : 'Failed to create task',
       );
     } finally {
       setIsSubmitting(false);
@@ -590,7 +753,7 @@ function CreateTaskDialog({
                             <SelectItem key={value} value={value}>
                               {config.label}
                             </SelectItem>
-                          )
+                          ),
                         )}
                       </SelectContent>
                     </Select>
@@ -622,7 +785,7 @@ function CreateTaskDialog({
                             <SelectItem key={value} value={value}>
                               {config.label}
                             </SelectItem>
-                          )
+                          ),
                         )}
                       </SelectContent>
                     </Select>
@@ -797,7 +960,7 @@ function TaskCard({ task }: TaskCardProps) {
           className={cn(
             'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
             statusConfig.bgColor,
-            statusConfig.color
+            statusConfig.color,
           )}
         >
           {statusConfig.label}

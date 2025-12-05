@@ -46,13 +46,13 @@ export function IntegrationSettings({
   const [name, setName] = useState(integration.name);
   const [description, setDescription] = useState(integration.description || '');
   const [channelMappings, setChannelMappings] = useState<ChannelMapping[]>(
-    integration.config.channelMappings || []
+    integration.config.channelMappings || [],
   );
   const [notificationsEnabled, setNotificationsEnabled] = useState(
-    integration.config.notificationPreferences?.enabled ?? true
+    integration.config.notificationPreferences?.enabled ?? true,
   );
   const [selectedEvents, setSelectedEvents] = useState<WebhookEventType[]>(
-    integration.config.notificationPreferences?.events || []
+    integration.config.notificationPreferences?.events || [],
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -108,7 +108,7 @@ export function IntegrationSettings({
       onClose();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to disconnect integration'
+        err instanceof Error ? err.message : 'Failed to disconnect integration',
       );
     } finally {
       setIsDisconnecting(false);
@@ -118,7 +118,7 @@ export function IntegrationSettings({
 
   const handleEventToggle = useCallback((event: WebhookEventType) => {
     setSelectedEvents(prev =>
-      prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event]
+      prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event],
     );
   }, []);
 
@@ -143,7 +143,7 @@ export function IntegrationSettings({
       <div
         className={cn(
           'relative z-10 w-full max-w-2xl rounded-lg border bg-card shadow-xl',
-          className
+          className,
         )}
         role='dialog'
         aria-modal='true'
@@ -171,7 +171,7 @@ export function IntegrationSettings({
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium',
                 statusConfig.bgColor,
-                statusConfig.color
+                statusConfig.color,
               )}
             >
               {statusConfig.label}
@@ -200,7 +200,7 @@ export function IntegrationSettings({
                   activeTab === tab
                     ? 'text-foreground'
                     : 'text-muted-foreground hover:text-foreground',
-                  tab === 'danger' && 'text-red-500 hover:text-red-600'
+                  tab === 'danger' && 'text-red-500 hover:text-red-600',
                 )}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -208,7 +208,7 @@ export function IntegrationSettings({
                   <span className='absolute bottom-0 left-0 right-0 h-0.5 bg-primary' />
                 )}
               </button>
-            )
+            ),
           )}
         </div>
 
@@ -356,13 +356,13 @@ export function IntegrationSettings({
                   onClick={() => setNotificationsEnabled(!notificationsEnabled)}
                   className={cn(
                     'relative h-6 w-11 rounded-full transition-colors',
-                    notificationsEnabled ? 'bg-primary' : 'bg-muted'
+                    notificationsEnabled ? 'bg-primary' : 'bg-muted',
                   )}
                 >
                   <span
                     className={cn(
                       'absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform',
-                      notificationsEnabled && 'translate-x-5'
+                      notificationsEnabled && 'translate-x-5',
                     )}
                   />
                 </button>
@@ -530,7 +530,7 @@ function ProviderIcon({ provider, className }: ProviderIconProps) {
     <div
       className={cn(
         'flex items-center justify-center rounded-lg bg-primary/10 text-lg font-semibold text-primary',
-        className
+        className,
       )}
     >
       {config?.icon || 'IN'}

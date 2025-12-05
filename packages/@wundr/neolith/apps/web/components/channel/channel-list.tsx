@@ -64,7 +64,7 @@ type ParticipantStructure = DirectMessageParticipant | FlatParticipant;
  * Type guard to check if participant has nested user structure
  */
 function hasNestedUser(
-  participant: ParticipantStructure
+  participant: ParticipantStructure,
 ): participant is DirectMessageParticipant {
   return (
     'user' in participant &&
@@ -192,7 +192,7 @@ export function ChannelList({
       setIsSearchingMessages(true);
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/messages/search?q=${encodeURIComponent(searchQuery)}&limit=5`
+          `/api/workspaces/${workspaceId}/messages/search?q=${encodeURIComponent(searchQuery)}&limit=5`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -206,7 +206,7 @@ export function ChannelList({
               authorName:
                 msg.author?.displayName || msg.author?.name || 'Unknown',
               createdAt: new Date(msg.createdAt),
-            })
+            }),
           );
           setMessageSearchResults(results);
         }
@@ -239,7 +239,7 @@ export function ChannelList({
         console.error('Failed to create DM:', error);
       }
     },
-    [workspaceId, router]
+    [workspaceId, router],
   );
 
   const toggleSection = useCallback(
@@ -249,7 +249,7 @@ export function ChannelList({
         [section]: !prev[section],
       }));
     },
-    []
+    [],
   );
 
   // Check if we're in search mode (has query or focused with results)
@@ -264,7 +264,7 @@ export function ChannelList({
     return channels.filter(
       c =>
         c.name.toLowerCase().includes(query) ||
-        c.description?.toLowerCase().includes(query)
+        c.description?.toLowerCase().includes(query),
     );
   }, [channels, searchQuery]);
 
@@ -276,7 +276,7 @@ export function ChannelList({
     return starredChannels.filter(
       c =>
         c.name.toLowerCase().includes(query) ||
-        c.description?.toLowerCase().includes(query)
+        c.description?.toLowerCase().includes(query),
     );
   }, [starredChannels, searchQuery]);
 
@@ -287,7 +287,7 @@ export function ChannelList({
     }
     const query = searchQuery.toLowerCase();
     return starredDMs.filter(dm =>
-      dm.participants.some(p => p.user?.name?.toLowerCase().includes(query))
+      dm.participants.some(p => p.user?.name?.toLowerCase().includes(query)),
     );
   }, [starredDMs, searchQuery]);
 
@@ -330,7 +330,7 @@ export function ChannelList({
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = sorted.filter(dm =>
-        dm.participants.some(p => p.user?.name?.toLowerCase().includes(query))
+        dm.participants.some(p => p.user?.name?.toLowerCase().includes(query)),
       );
     }
 
@@ -341,8 +341,8 @@ export function ChannelList({
   const usersWithoutDM = useMemo(() => {
     const dmUserIds = new Set(
       directMessages.flatMap(dm =>
-        dm.participants.filter(p => p.user).map(p => p.user.id)
-      )
+        dm.participants.filter(p => p.user).map(p => p.user.id),
+      ),
     );
     return workspaceUsers.filter(user => !dmUserIds.has(user.id));
   }, [workspaceUsers, directMessages]);
@@ -362,7 +362,7 @@ export function ChannelList({
         // Keep dialog open on error so user can retry
       }
     },
-    [onCreateChannel]
+    [onCreateChannel],
   );
 
   if (isLoading) {
@@ -375,7 +375,7 @@ export function ChannelList({
       <div
         className={cn(
           'flex flex-col items-center justify-center p-6',
-          className
+          className,
         )}
       >
         <AlertCircleIcon className='h-10 w-10 text-muted-foreground mb-3' />
@@ -701,7 +701,7 @@ function ChannelSection({
           <ChevronIcon
             className={cn(
               'h-3 w-3 transition-transform',
-              isExpanded ? 'rotate-90' : ''
+              isExpanded ? 'rotate-90' : '',
             )}
           />
           {icon}
@@ -810,7 +810,7 @@ function ChannelItem({
             isActive
               ? 'bg-accent text-foreground'
               : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-            hasUnread && !isActive && 'font-semibold text-foreground'
+            hasUnread && !isActive && 'font-semibold text-foreground',
           )}
           title={`${channel.name}${channel.description ? ` - ${channel.description}` : ''}`}
         >
@@ -861,7 +861,7 @@ function ChannelItem({
             className={cn(
               'mr-2 h-4 w-4',
               (isStarred || channel.isStarred) &&
-                'fill-yellow-500 text-yellow-500'
+                'fill-yellow-500 text-yellow-500',
             )}
           />
           {isStarred || channel.isStarred ? 'Unstar channel' : 'Star channel'}
@@ -1087,7 +1087,7 @@ function DirectMessageItem({
             isActive
               ? 'bg-accent text-foreground'
               : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-            hasUnread && !isActive && 'font-semibold text-foreground'
+            hasUnread && !isActive && 'font-semibold text-foreground',
           )}
           title={
             otherParticipants.map(p => getParticipantInfo(p).name).join(', ') ||
@@ -1215,7 +1215,7 @@ function DirectMessageItem({
           <Star
             className={cn(
               'mr-2 h-4 w-4',
-              isStarred && 'fill-yellow-500 text-yellow-500'
+              isStarred && 'fill-yellow-500 text-yellow-500',
             )}
           />
           {isStarred ? 'Unstar conversation' : 'Star conversation'}

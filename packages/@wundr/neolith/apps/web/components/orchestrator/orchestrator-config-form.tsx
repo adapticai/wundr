@@ -27,10 +27,10 @@ export function OrchestratorConfigForm({
   className,
 }: OrchestratorConfigFormProps) {
   const [systemPrompt, setSystemPrompt] = useState(
-    orchestrator.systemPrompt || ''
+    orchestrator.systemPrompt || '',
   );
   const [selectedTraits, setSelectedTraits] = useState<PersonalityTrait[]>(
-    (orchestrator.charter?.personality?.traits as PersonalityTrait[]) || []
+    (orchestrator.charter?.personality?.traits as PersonalityTrait[]) || [],
   );
   const [expertise, setExpertise] = useState<string[]>([
     ...(orchestrator.charter?.expertise || []),
@@ -42,16 +42,16 @@ export function OrchestratorConfigForm({
   const [responseLength, setResponseLength] = useState<
     'concise' | 'detailed' | 'balanced'
   >(
-    orchestrator.charter?.communicationPreferences?.responseLength || 'balanced'
+    orchestrator.charter?.communicationPreferences?.responseLength || 'balanced',
   );
   const [useEmoji, setUseEmoji] = useState(
-    orchestrator.charter?.communicationPreferences?.useEmoji || false
+    orchestrator.charter?.communicationPreferences?.useEmoji || false,
   );
   const [isDirty, setIsDirty] = useState(false);
 
   const handleTraitToggle = useCallback((trait: PersonalityTrait) => {
     setSelectedTraits(prev =>
-      prev.includes(trait) ? prev.filter(t => t !== trait) : [...prev, trait]
+      prev.includes(trait) ? prev.filter(t => t !== trait) : [...prev, trait],
     );
     setIsDirty(true);
   }, []);
@@ -112,18 +112,18 @@ export function OrchestratorConfigForm({
   const handleReset = useCallback(() => {
     setSystemPrompt(orchestrator.systemPrompt || '');
     setSelectedTraits(
-      (orchestrator.charter?.personality?.traits as PersonalityTrait[]) || []
+      (orchestrator.charter?.personality?.traits as PersonalityTrait[]) || [],
     );
     setExpertise([...(orchestrator.charter?.expertise || [])]);
     setCommunicationTone(
-      orchestrator.charter?.communicationPreferences?.tone || 'professional'
+      orchestrator.charter?.communicationPreferences?.tone || 'professional',
     );
     setResponseLength(
       orchestrator.charter?.communicationPreferences?.responseLength ||
-        'balanced'
+        'balanced',
     );
     setUseEmoji(
-      orchestrator.charter?.communicationPreferences?.useEmoji || false
+      orchestrator.charter?.communicationPreferences?.useEmoji || false,
     );
     setIsDirty(false);
     onReset?.();
@@ -172,7 +172,7 @@ export function OrchestratorConfigForm({
                 'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
                 selectedTraits.includes(trait)
                   ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground'
+                  : 'border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground',
               )}
             >
               {trait}
@@ -260,7 +260,7 @@ export function OrchestratorConfigForm({
                     | 'formal'
                     | 'casual'
                     | 'professional'
-                    | 'friendly'
+                    | 'friendly',
                 );
                 setIsDirty(true);
               }}
@@ -287,7 +287,7 @@ export function OrchestratorConfigForm({
               value={responseLength}
               onChange={e => {
                 setResponseLength(
-                  e.target.value as 'concise' | 'detailed' | 'balanced'
+                  e.target.value as 'concise' | 'detailed' | 'balanced',
                 );
                 setIsDirty(true);
               }}

@@ -120,7 +120,7 @@ export function setFallbackLocale(locale: Locale): void {
  */
 export function addTranslations(
   locale: Locale,
-  translations: Translations
+  translations: Translations,
 ): void {
   i18nStore.addTranslations(locale, translations);
 }
@@ -147,7 +147,7 @@ export function hasTranslation(key: TranslationKey, locale?: Locale): boolean {
  */
 export function formatNumber(
   value: number,
-  options?: Intl.NumberFormatOptions
+  options?: Intl.NumberFormatOptions,
 ): string {
   const locale = getLocale();
   console.log('[i18n] Formatting number:', value, locale);
@@ -161,7 +161,7 @@ export function formatNumber(
  */
 export function formatDate(
   date: Date | string,
-  options?: Intl.DateTimeFormatOptions
+  options?: Intl.DateTimeFormatOptions,
 ): string {
   const locale = getLocale();
   console.log('[i18n] Formatting date:', date, locale);
@@ -176,7 +176,7 @@ export function formatDate(
 export function formatCurrency(
   value: number,
   currency = 'USD',
-  options?: Intl.NumberFormatOptions
+  options?: Intl.NumberFormatOptions,
 ): string {
   const locale = getLocale();
   console.log('[i18n] Formatting currency:', value, currency, locale);
@@ -194,7 +194,7 @@ export function formatCurrency(
  */
 export function translate(
   key: TranslationKey,
-  params?: TranslationParams
+  params?: TranslationParams,
 ): string {
   return t(key, params);
 }
@@ -204,7 +204,7 @@ export function translate(
  */
 export function formatTime(
   date: Date | string,
-  options?: Intl.DateTimeFormatOptions
+  options?: Intl.DateTimeFormatOptions,
 ): string {
   const locale = getLocale();
   const timeOptions: Intl.DateTimeFormatOptions = {
@@ -223,12 +223,12 @@ export function formatTime(
  */
 export function formatRelativeTime(
   date: Date | string,
-  baseDate: Date = new Date()
+  baseDate: Date = new Date(),
 ): string {
   const locale = getLocale();
   const targetDate = new Date(date);
   const diffInSeconds = Math.floor(
-    (targetDate.getTime() - baseDate.getTime()) / 1000
+    (targetDate.getTime() - baseDate.getTime()) / 1000,
   );
 
   console.log('[i18n] Formatting relative time:', date, locale);

@@ -147,7 +147,7 @@ export function useUserPresence(userId: string): UseUserPresenceReturn {
     void fetchPresence();
     const interval = setInterval(
       () => void fetchPresence(),
-      PRESENCE_POLL_INTERVAL
+      PRESENCE_POLL_INTERVAL,
     );
 
     return () => {
@@ -166,10 +166,10 @@ export function useUserPresence(userId: string): UseUserPresenceReturn {
  * @returns A map of user IDs to their presence data
  */
 export function useMultiplePresence(
-  userIds: string[]
+  userIds: string[],
 ): UseMultiplePresenceReturn {
   const [presenceMap, setPresenceMap] = useState<Map<string, UserPresence>>(
-    new Map()
+    new Map(),
   );
   const userIdsKey = useMemo(() => userIds.sort().join(','), [userIds]);
 
@@ -219,7 +219,7 @@ export function useMultiplePresence(
     void fetchPresence();
     const interval = setInterval(
       () => void fetchPresence(),
-      PRESENCE_POLL_INTERVAL
+      PRESENCE_POLL_INTERVAL,
     );
 
     return () => {
@@ -238,7 +238,7 @@ export function useMultiplePresence(
  * @returns Array of presence data for all users in the channel
  */
 export function useChannelPresence(
-  channelId: string
+  channelId: string,
 ): UseChannelPresenceReturn {
   const [presenceList, setPresenceList] = useState<UserPresence[]>([]);
 
@@ -265,13 +265,13 @@ export function useChannelPresence(
           setPresenceList(
             data.presence.map(
               (
-                item: UserPresence & { lastSeen: string; updatedAt: string }
+                item: UserPresence & { lastSeen: string; updatedAt: string },
               ) => ({
                 ...item,
                 lastSeen: item.lastSeen ? new Date(item.lastSeen) : null,
                 updatedAt: new Date(item.updatedAt),
-              })
-            )
+              }),
+            ),
           );
         }
       } catch (error) {
@@ -285,7 +285,7 @@ export function useChannelPresence(
     void fetchPresence();
     const interval = setInterval(
       () => void fetchPresence(),
-      PRESENCE_POLL_INTERVAL
+      PRESENCE_POLL_INTERVAL,
     );
 
     return () => {
@@ -321,7 +321,7 @@ export function useSetStatus(): UseSetStatusReturn {
       setIsUpdating(true);
       const timeoutId = setTimeout(
         () => abortControllerRef.current?.abort(),
-        FETCH_TIMEOUT
+        FETCH_TIMEOUT,
       );
 
       try {
@@ -343,7 +343,7 @@ export function useSetStatus(): UseSetStatusReturn {
         setIsUpdating(false);
       }
     },
-    []
+    [],
   );
 
   const clearStatus = useCallback(async (): Promise<boolean> => {
@@ -354,7 +354,7 @@ export function useSetStatus(): UseSetStatusReturn {
     setIsUpdating(true);
     const timeoutId = setTimeout(
       () => abortControllerRef.current?.abort(),
-      FETCH_TIMEOUT
+      FETCH_TIMEOUT,
     );
 
     try {
@@ -384,7 +384,7 @@ export function useSetStatus(): UseSetStatusReturn {
  * @returns The Orchestrator health status or null if not available
  */
 export function useOrchestratorHealth(
-  orchestratorId: string
+  orchestratorId: string,
 ): UseOrchestratorHealthReturn {
   const [health, setHealth] = useState<OrchestratorHealthStatus | null>(null);
 
@@ -404,7 +404,7 @@ export function useOrchestratorHealth(
           `/api/orchestrators/${orchestratorId}/health`,
           {
             signal: abortController.signal,
-          }
+          },
         );
 
         clearTimeout(timeoutId);
@@ -429,7 +429,7 @@ export function useOrchestratorHealth(
     void fetchHealth();
     const interval = setInterval(
       () => void fetchHealth(),
-      ORCHESTRATOR_HEALTH_POLL_INTERVAL
+      ORCHESTRATOR_HEALTH_POLL_INTERVAL,
     );
 
     return () => {
@@ -448,7 +448,7 @@ export function useOrchestratorHealth(
  * @returns List of Orchestrator health statuses with loading state and refetch method
  */
 export function useWorkspaceOrchestratorHealthList(
-  workspaceId: string
+  workspaceId: string,
 ): UseWorkspaceOrchestratorHealthListReturn {
   const [orchestratorList, setOrchestratorList] = useState<
     OrchestratorHealthStatus[]
@@ -467,7 +467,7 @@ export function useWorkspaceOrchestratorHealthList(
 
     const timeoutId = setTimeout(
       () => abortControllerRef.current?.abort(),
-      FETCH_TIMEOUT
+      FETCH_TIMEOUT,
     );
 
     try {
@@ -475,7 +475,7 @@ export function useWorkspaceOrchestratorHealthList(
         `/api/workspaces/${workspaceId}/orchestrators/health`,
         {
           signal: abortControllerRef.current.signal,
-        }
+        },
       );
 
       clearTimeout(timeoutId);
@@ -487,14 +487,14 @@ export function useWorkspaceOrchestratorHealthList(
             (
               orchestrator: OrchestratorHealthStatus & {
                 lastHeartbeat: string | null;
-              }
+              },
             ) => ({
               ...orchestrator,
               lastHeartbeat: orchestrator.lastHeartbeat
                 ? new Date(orchestrator.lastHeartbeat)
                 : null,
-            })
-          )
+            }),
+          ),
         );
       }
     } catch (error) {
@@ -502,7 +502,7 @@ export function useWorkspaceOrchestratorHealthList(
       if (error instanceof Error && error.name !== 'AbortError') {
         console.debug(
           'Failed to fetch orchestrator health list:',
-          error.message
+          error.message,
         );
       }
     } finally {
@@ -514,7 +514,7 @@ export function useWorkspaceOrchestratorHealthList(
     void fetchHealth();
     const interval = setInterval(
       () => void fetchHealth(),
-      ORCHESTRATOR_HEALTH_POLL_INTERVAL
+      ORCHESTRATOR_HEALTH_POLL_INTERVAL,
     );
 
     return () => {
@@ -553,7 +553,7 @@ export function usePresenceHeartbeat(enabled: boolean = true): void {
 
       const timeoutId = setTimeout(
         () => abortControllerRef.current?.abort(),
-        FETCH_TIMEOUT
+        FETCH_TIMEOUT,
       );
 
       try {
@@ -576,7 +576,7 @@ export function usePresenceHeartbeat(enabled: boolean = true): void {
     // Set up interval
     const interval = setInterval(
       () => void sendHeartbeat(),
-      HEARTBEAT_INTERVAL
+      HEARTBEAT_INTERVAL,
     );
 
     // Handle visibility change
@@ -604,7 +604,7 @@ export function usePresenceHeartbeat(enabled: boolean = true): void {
  */
 export function usePresenceSubscription(
   channelId: string,
-  onPresenceUpdate?: (presence: UserPresence) => void
+  onPresenceUpdate?: (presence: UserPresence) => void,
 ): UsePresenceSubscriptionReturn {
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<Error | null>(null);
@@ -635,7 +635,7 @@ export function usePresenceSubscription(
       }
 
       const eventSource = new EventSource(
-        `/api/presence/stream?channelIds=${encodeURIComponent(channelId)}`
+        `/api/presence/stream?channelIds=${encodeURIComponent(channelId)}`,
       );
 
       eventSource.onopen = () => {

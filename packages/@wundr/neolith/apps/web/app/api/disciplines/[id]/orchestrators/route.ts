@@ -44,7 +44,7 @@ interface RouteContext {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -53,9 +53,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -66,9 +66,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid discipline ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -81,9 +81,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Discipline not found',
-          ORG_ERROR_CODES.DISCIPLINE_NOT_FOUND
+          ORG_ERROR_CODES.DISCIPLINE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -101,9 +101,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to this organization',
-          ORG_ERROR_CODES.FORBIDDEN
+          ORG_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -137,9 +137,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

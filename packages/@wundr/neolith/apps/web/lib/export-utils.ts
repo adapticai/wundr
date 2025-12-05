@@ -27,7 +27,7 @@ export type PDFExportOptions = ExportOptions & {
  */
 export async function exportToCSV<T extends Record<string, unknown>>(
   data: T[],
-  options: CSVExportOptions = {}
+  options: CSVExportOptions = {},
 ): Promise<void> {
   const {
     filename = 'export.csv',
@@ -58,7 +58,7 @@ export async function exportToCSV<T extends Record<string, unknown>>(
  */
 export async function exportToPDF<T extends Record<string, unknown>>(
   data: T[],
-  options: PDFExportOptions = {}
+  options: PDFExportOptions = {},
 ): Promise<void> {
   const {
     filename = 'export.pdf',
@@ -87,7 +87,7 @@ export async function exportToPDF<T extends Record<string, unknown>>(
  */
 export async function exportToJSON<T>(
   data: T,
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): Promise<void> {
   const { filename = 'export.json' } = options;
 
@@ -106,7 +106,7 @@ export async function exportToJSON<T>(
  */
 export async function exportToXLSX<T extends Record<string, unknown>>(
   data: T[],
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): Promise<void> {
   const { filename = 'export.xlsx', columns } = options;
 
@@ -129,7 +129,7 @@ export async function exportToXLSX<T extends Record<string, unknown>>(
 export async function exportData<T extends Record<string, unknown>>(
   data: T[],
   format: ExportFormat,
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): Promise<void> {
   console.log('[ExportUtils] Exporting data:', { format, rows: data.length });
 
@@ -168,7 +168,7 @@ function downloadBlob(blob: Blob, filename: string): void {
  */
 export function formatDateForExport(
   date: Date | string,
-  format = 'YYYY-MM-DD HH:mm:ss'
+  format = 'YYYY-MM-DD HH:mm:ss',
 ): string {
   console.log('[ExportUtils] Formatting date:', date, format);
   // TODO: Implement date formatting
@@ -184,7 +184,7 @@ export function convertToCSV<T extends Record<string, unknown>>(
     delimiter?: string;
     includeHeaders?: boolean;
     columns?: string[];
-  } = {}
+  } = {},
 ): string {
   const { delimiter = ',', includeHeaders = true, columns } = options;
 
@@ -230,7 +230,7 @@ export function convertToCSV<T extends Record<string, unknown>>(
  */
 export function flattenData<T extends Record<string, unknown>>(
   data: T[],
-  options: { maxDepth?: number; separator?: string } = {}
+  options: { maxDepth?: number; separator?: string } = {},
 ): Record<string, unknown>[] {
   const { maxDepth = 3, separator = '.' } = options;
 
@@ -242,7 +242,7 @@ export function flattenData<T extends Record<string, unknown>>(
   function flatten(
     obj: unknown,
     prefix = '',
-    depth = 0
+    depth = 0,
   ): Record<string, unknown> {
     if (depth >= maxDepth || obj === null || typeof obj !== 'object') {
       return prefix ? { [prefix]: obj } : (obj as Record<string, unknown>);
@@ -277,7 +277,7 @@ export function generateExportFilename(
   workspaceId: string,
   type: string,
   format: ExportFormat,
-  options: { includeTimestamp?: boolean } = {}
+  options: { includeTimestamp?: boolean } = {},
 ): string {
   const { includeTimestamp = true } = options;
 
@@ -317,7 +317,7 @@ export function getExportContentType(format: ExportFormat): string {
  */
 export function shouldUseAsyncExport(
   dataSize: number,
-  options: { threshold?: number } = {}
+  options: { threshold?: number } = {},
 ): boolean {
   const { threshold = 1000 } = options;
 

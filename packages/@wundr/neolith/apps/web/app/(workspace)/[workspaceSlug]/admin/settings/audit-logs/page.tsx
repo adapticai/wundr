@@ -98,7 +98,7 @@ export default function AuditLogsPage() {
         });
 
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/audit-logs?${params}`
+          `/api/workspaces/${workspaceSlug}/audit-logs?${params}`,
         );
         if (!response.ok) {
           throw new Error('Failed to fetch audit logs');
@@ -145,7 +145,7 @@ export default function AuditLogsPage() {
       });
 
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/audit-logs?${params}`
+        `/api/workspaces/${workspaceSlug}/audit-logs?${params}`,
       );
       if (!response.ok) {
         throw new Error('Failed to export audit logs');
@@ -402,7 +402,7 @@ export default function AuditLogsPage() {
                             <span
                               className={cn(
                                 'inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-medium',
-                                getActionBadgeColor(log.actionType)
+                                getActionBadgeColor(log.actionType),
                               )}
                             >
                               {log.actionType}
@@ -430,7 +430,7 @@ export default function AuditLogsPage() {
                           <span
                             className={cn(
                               'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
-                              getStatusBadgeColor(log.status)
+                              getStatusBadgeColor(log.status),
                             )}
                           >
                             {log.status}

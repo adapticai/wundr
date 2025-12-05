@@ -84,7 +84,7 @@ async function checkWorkspaceAccess(workspaceSlug: string, userId: string) {
  */
 async function getUnreadCount(
   channelId: string,
-  userId: string
+  userId: string,
 ): Promise<number> {
   try {
     // Get user's last read timestamp for this channel
@@ -144,7 +144,7 @@ async function getUnreadCount(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -153,9 +153,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -166,9 +166,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid workspace ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -178,9 +178,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -310,7 +310,7 @@ export async function GET(
             isOrchestrator: otherParticipant.user.isOrchestrator,
           },
         };
-      })
+      }),
     );
 
     // Filter out any null entries
@@ -325,9 +325,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -354,7 +354,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -363,9 +363,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -376,9 +376,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid workspace ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -388,9 +388,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -405,9 +405,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -423,9 +423,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -460,9 +460,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Target user is not a member of this workspace',
-          ORG_ERROR_CODES.USER_NOT_FOUND
+          ORG_ERROR_CODES.USER_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -520,7 +520,7 @@ export async function POST(
 
       // Get the other participant
       const otherParticipant = existingDM.channelMembers.find(
-        m => m.userId !== session.user.id
+        m => m.userId !== session.user.id,
       );
 
       // Get last message
@@ -618,15 +618,15 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Failed to create DM channel',
-          ORG_ERROR_CODES.INTERNAL_ERROR
+          ORG_ERROR_CODES.INTERNAL_ERROR,
         ),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     // Get the other participant
     const otherParticipant = dmChannel.channelMembers.find(
-      m => m.userId !== session.user.id
+      m => m.userId !== session.user.id,
     );
 
     return NextResponse.json(
@@ -653,16 +653,16 @@ export async function POST(
         isNew: true,
         message: 'DM channel created successfully',
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/workspaces/:workspaceId/dm] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

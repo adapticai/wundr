@@ -45,7 +45,7 @@ async function verifyMemoryAccess(
   workspaceId: string,
   orchestratorId: string,
   memoryId: string,
-  userId: string
+  userId: string,
 ): Promise<MemoryAccessResponse> {
   // Check user has access to workspace
   const workspaceMember = await prisma.workspaceMember.findFirst({
@@ -109,7 +109,7 @@ async function verifyMemoryAccess(
  */
 export async function GET(
   _request: NextRequest,
-  { params }: RouteContext
+  { params }: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -118,9 +118,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MEMORY_ERROR_CODES.UNAUTHORIZED
+          MEMORY_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -137,9 +137,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid memory ID format',
-          MEMORY_ERROR_CODES.VALIDATION_ERROR
+          MEMORY_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -148,15 +148,15 @@ export async function GET(
       workspaceId,
       orchestratorId,
       memoryId,
-      session.user.id
+      session.user.id,
     );
     if (!access.allowed) {
       return NextResponse.json(
         createErrorResponse(
           'Memory not found or access denied',
-          MEMORY_ERROR_CODES.NOT_FOUND
+          MEMORY_ERROR_CODES.NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -164,14 +164,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/memory/[memoryId]] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MEMORY_ERROR_CODES.INTERNAL_ERROR
+        MEMORY_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -194,7 +194,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: RouteContext
+  { params }: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -203,9 +203,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MEMORY_ERROR_CODES.UNAUTHORIZED
+          MEMORY_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -222,9 +222,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid memory ID format',
-          MEMORY_ERROR_CODES.VALIDATION_ERROR
+          MEMORY_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -233,15 +233,15 @@ export async function PATCH(
       workspaceId,
       orchestratorId,
       memoryId,
-      session.user.id
+      session.user.id,
     );
     if (!access.allowed) {
       return NextResponse.json(
         createErrorResponse(
           'Memory not found or access denied',
-          MEMORY_ERROR_CODES.NOT_FOUND
+          MEMORY_ERROR_CODES.NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -253,9 +253,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          MEMORY_ERROR_CODES.VALIDATION_ERROR
+          MEMORY_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -266,9 +266,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           MEMORY_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -299,7 +299,7 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/memory/[memoryId]] Error:',
-      error
+      error,
     );
 
     // Handle Prisma errors
@@ -307,7 +307,7 @@ export async function PATCH(
       if (error.code === 'P2025') {
         return NextResponse.json(
           createErrorResponse('Memory not found', MEMORY_ERROR_CODES.NOT_FOUND),
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -315,9 +315,9 @@ export async function PATCH(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MEMORY_ERROR_CODES.INTERNAL_ERROR
+        MEMORY_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -333,7 +333,7 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  { params }: RouteContext
+  { params }: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -342,9 +342,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MEMORY_ERROR_CODES.UNAUTHORIZED
+          MEMORY_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -361,9 +361,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Invalid memory ID format',
-          MEMORY_ERROR_CODES.VALIDATION_ERROR
+          MEMORY_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -372,15 +372,15 @@ export async function DELETE(
       workspaceId,
       orchestratorId,
       memoryId,
-      session.user.id
+      session.user.id,
     );
     if (!access.allowed) {
       return NextResponse.json(
         createErrorResponse(
           'Memory not found or access denied',
-          MEMORY_ERROR_CODES.NOT_FOUND
+          MEMORY_ERROR_CODES.NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -391,9 +391,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Failed to delete memory',
-          MEMORY_ERROR_CODES.INTERNAL_ERROR
+          MEMORY_ERROR_CODES.INTERNAL_ERROR,
         ),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -404,7 +404,7 @@ export async function DELETE(
   } catch (error) {
     console.error(
       '[DELETE /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/memory/[memoryId]] Error:',
-      error
+      error,
     );
 
     // Handle Prisma errors
@@ -412,7 +412,7 @@ export async function DELETE(
       if (error.code === 'P2025') {
         return NextResponse.json(
           createErrorResponse('Memory not found', MEMORY_ERROR_CODES.NOT_FOUND),
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -420,9 +420,9 @@ export async function DELETE(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MEMORY_ERROR_CODES.INTERNAL_ERROR
+        MEMORY_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

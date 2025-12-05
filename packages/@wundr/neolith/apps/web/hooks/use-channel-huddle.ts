@@ -92,7 +92,7 @@ export function useChannelHuddle({
             headers: {
               'Content-Type': 'application/json',
             },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -114,7 +114,7 @@ export function useChannelHuddle({
         setIsLoading(false);
       }
     },
-    [channelId]
+    [channelId],
   );
 
   /**
@@ -152,7 +152,7 @@ export function useChannelHuddle({
         setIsLoading(false);
       }
     },
-    [channelId, refreshStatus]
+    [channelId, refreshStatus],
   );
 
   /**

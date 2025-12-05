@@ -134,7 +134,7 @@ function WorkspaceItem({ workspace, isCurrent }: WorkspaceItemProps) {
       <div
         className={cn(
           'flex items-center gap-3 p-3 rounded-lg border',
-          'bg-accent'
+          'bg-accent',
         )}
       >
         {content}
@@ -147,7 +147,7 @@ function WorkspaceItem({ workspace, isCurrent }: WorkspaceItemProps) {
       href={`/${workspace.slug}/dashboard`}
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg border',
-        'hover:bg-accent transition-colors'
+        'hover:bg-accent transition-colors',
       )}
     >
       {content}

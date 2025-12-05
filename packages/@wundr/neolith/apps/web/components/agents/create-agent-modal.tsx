@@ -89,7 +89,7 @@ export function CreateAgentModal({
 
   const handleToolToggle = useCallback((tool: AvailableTool) => {
     setSelectedTools(prev =>
-      prev.includes(tool) ? prev.filter(t => t !== tool) : [...prev, tool]
+      prev.includes(tool) ? prev.filter(t => t !== tool) : [...prev, tool],
     );
   }, []);
 
@@ -349,7 +349,7 @@ export function CreateAgentModal({
                       'rounded-md border px-3 py-2 text-sm transition-colors',
                       selectedTools.includes(tool)
                         ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-border bg-background text-foreground hover:border-primary hover:bg-accent'
+                        : 'border-border bg-background text-foreground hover:border-primary hover:bg-accent',
                     )}
                   >
                     {tool.replace(/_/g, ' ')}

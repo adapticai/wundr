@@ -64,7 +64,7 @@ const handler = startServerAndCreateNextHandler<NextRequest, GraphQLContext>(
   server,
   {
     context: async req => createContext({ req }),
-  }
+  },
 );
 
 /**

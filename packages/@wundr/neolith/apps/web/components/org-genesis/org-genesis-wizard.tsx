@@ -184,7 +184,7 @@ export function OrgGenesisWizard() {
           <Badge variant='outline'>
             Step{' '}
             {['basic', 'description', 'config', 'preview'].indexOf(
-              currentStep
+              currentStep,
             ) + 1}{' '}
             of 4
           </Badge>
@@ -448,7 +448,7 @@ function ConfigStep({
   const handleRemoveAsset = (asset: string) => {
     form.setValue(
       'assets',
-      assets.filter(a => a !== asset)
+      assets.filter(a => a !== asset),
     );
   };
 

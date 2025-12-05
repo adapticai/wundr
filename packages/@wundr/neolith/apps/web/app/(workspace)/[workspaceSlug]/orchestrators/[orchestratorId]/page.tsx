@@ -44,22 +44,21 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { usePageHeader } from '@/contexts/page-header-context';
-
-import {
-  useOrchestrator,
-  useOrchestratorMutations,
-} from '@/hooks/use-orchestrator';
-import { cn } from '@/lib/utils';
-import { ORCHESTRATOR_STATUS_CONFIG } from '@/types/orchestrator';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePageHeader } from '@/contexts/page-header-context';
+import {
+  useOrchestrator,
+  useOrchestratorMutations,
+} from '@/hooks/use-orchestrator';
+import { cn } from '@/lib/utils';
+import { ORCHESTRATOR_STATUS_CONFIG } from '@/types/orchestrator';
 
 import type {
   UpdateOrchestratorInput,
@@ -98,7 +97,7 @@ export default function OrchestratorDetailPage() {
     if (orchestrator) {
       setPageHeader(
         orchestrator.title,
-        orchestrator.description || 'Orchestrator details and configuration'
+        orchestrator.description || 'Orchestrator details and configuration',
       );
     }
   }, [orchestrator, setPageHeader]);
@@ -120,7 +119,7 @@ export default function OrchestratorDetailPage() {
   const handleEditWithAI = useCallback(() => {
     // TODO: Implement DualModeEditor integration
     alert(
-      'AI-powered editing coming soon! This will open a conversational editor.'
+      'AI-powered editing coming soon! This will open a conversational editor.',
     );
   }, []);
 
@@ -191,7 +190,7 @@ export default function OrchestratorDetailPage() {
       setIsCharterEditorOpen(false);
       refetch();
     },
-    [orchestrator, updateOrchestrator, refetch]
+    [orchestrator, updateOrchestrator, refetch],
   );
 
   // Fetch charter versions
@@ -202,7 +201,7 @@ export default function OrchestratorDetailPage() {
 
     try {
       const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/charter/versions`
+        `/api/orchestrators/${orchestratorId}/charter/versions`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -221,7 +220,7 @@ export default function OrchestratorDetailPage() {
       }
 
       const confirmRollback = window.confirm(
-        `Are you sure you want to rollback to version ${version}? This will create a new version with the previous charter.`
+        `Are you sure you want to rollback to version ${version}? This will create a new version with the previous charter.`,
       );
 
       if (!confirmRollback) {
@@ -245,7 +244,7 @@ export default function OrchestratorDetailPage() {
       updateOrchestrator,
       refetch,
       fetchCharterVersions,
-    ]
+    ],
   );
 
   // Load charter versions when on charter tab
@@ -543,7 +542,7 @@ export default function OrchestratorDetailPage() {
                   value={
                     orchestrator.lastActivityAt
                       ? new Date(
-                          orchestrator.lastActivityAt
+                          orchestrator.lastActivityAt,
                         ).toLocaleDateString()
                       : 'Never'
                   }
@@ -916,7 +915,7 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
         }
 
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/activity?${params.toString()}`
+          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/activity?${params.toString()}`,
         );
 
         if (!response.ok) {
@@ -945,7 +944,7 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
         setIsLoadingMore(false);
       }
     },
-    [workspaceSlug, orchestratorId, cursor]
+    [workspaceSlug, orchestratorId, cursor],
   );
 
   /**
@@ -1046,7 +1045,7 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
               <div
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-full shrink-0',
-                  config.bgColor
+                  config.bgColor,
                 )}
               >
                 <IconComponent className={cn('h-4 w-4', config.color)} />
@@ -1560,7 +1559,7 @@ function CharterTab({
                   key={versionData.version}
                   className={cn(
                     'flex items-center justify-between p-3 rounded-lg border',
-                    index === 0 ? 'bg-primary/5 border-primary/20' : 'bg-card'
+                    index === 0 ? 'bg-primary/5 border-primary/20' : 'bg-card',
                   )}
                 >
                   <div className='flex items-center gap-3'>
@@ -1621,7 +1620,7 @@ function CharterTab({
           <CardContent>
             {(() => {
               const oldVersion = versions.find(
-                v => v.version === compareVersion
+                v => v.version === compareVersion,
               );
               if (!oldVersion) {
                 return (

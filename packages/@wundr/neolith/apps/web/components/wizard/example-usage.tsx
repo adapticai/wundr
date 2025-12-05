@@ -49,7 +49,7 @@ export function CustomLLMWizardExample() {
 
   const handleSendMessage = async (
     message: string,
-    history: Message[]
+    history: Message[],
   ): Promise<{ response: string; extractedData?: EntityData }> => {
     try {
       // Call your LLM API endpoint
@@ -260,7 +260,7 @@ export function StandaloneWizardExample() {
 export function MultiStepWizardExample() {
   const [step, setStep] = React.useState(1);
   const [workspaceData, setWorkspaceData] = React.useState<EntityData | null>(
-    null
+    null,
   );
 
   if (step === 1) {

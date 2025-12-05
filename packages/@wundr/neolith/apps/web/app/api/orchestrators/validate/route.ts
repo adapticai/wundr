@@ -75,9 +75,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -88,9 +88,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -101,9 +101,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid API key format',
-          ORCHESTRATOR_ERROR_CODES.INVALID_API_KEY
+          ORCHESTRATOR_ERROR_CODES.INVALID_API_KEY,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -164,9 +164,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid API key',
-          ORCHESTRATOR_ERROR_CODES.INVALID_API_KEY
+          ORCHESTRATOR_ERROR_CODES.INVALID_API_KEY,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -177,9 +177,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'API key has expired',
-            ORCHESTRATOR_ERROR_CODES.API_KEY_EXPIRED
+            ORCHESTRATOR_ERROR_CODES.API_KEY_EXPIRED,
           ),
-          { status: 401 }
+          { status: 401 },
         );
       }
     }
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (matchedVP.status === 'OFFLINE') {
       // Allow validation but include status in response
       console.warn(
-        `[OrchestratorValidate] API key validated for offline Orchestrator ${matchedVP.id}`
+        `[OrchestratorValidate] API key validated for offline Orchestrator ${matchedVP.id}`,
       );
     }
 
@@ -197,9 +197,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator user account is not active',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -249,9 +249,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

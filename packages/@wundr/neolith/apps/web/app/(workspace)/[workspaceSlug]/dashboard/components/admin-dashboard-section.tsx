@@ -52,7 +52,7 @@ export function AdminDashboardSection({
       try {
         // Fetch admin-specific stats
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/dashboard/admin-stats`
+          `/api/workspaces/${workspaceId}/dashboard/admin-stats`,
         );
 
         if (response.ok) {

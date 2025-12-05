@@ -85,7 +85,7 @@ async function checkWorkspaceAccess(workspaceIdOrSlug: string, userId: string) {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<
   NextResponse<
     { data: OrgHierarchyResponse } | { error: string; message: string }
@@ -98,9 +98,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_HIERARCHY_ERROR_CODES.UNAUTHORIZED
+          ORG_HIERARCHY_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -112,9 +112,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid workspace identifier',
-          ORG_HIERARCHY_ERROR_CODES.VALIDATION_ERROR
+          ORG_HIERARCHY_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -124,9 +124,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_HIERARCHY_ERROR_CODES.WORKSPACE_NOT_FOUND
+          ORG_HIERARCHY_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -154,9 +154,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Organization not found',
-          ORG_HIERARCHY_ERROR_CODES.ORGANIZATION_NOT_FOUND
+          ORG_HIERARCHY_ERROR_CODES.ORGANIZATION_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -204,10 +204,10 @@ export async function GET(
     });
 
     const orchestratorTasksResults = await Promise.all(
-      orchestratorTasksPromises
+      orchestratorTasksPromises,
     );
     const orchestratorTasksMap = new Map(
-      orchestratorTasksResults.map(r => [r.orchestratorId, r.currentTask])
+      orchestratorTasksResults.map(r => [r.orchestratorId, r.currentTask]),
     );
 
     // Build hierarchy tree
@@ -337,12 +337,12 @@ export async function GET(
     // Calculate statistics
     const totalOrchestrators = orchestrators.length;
     const onlineOrchestrators = orchestrators.filter(
-      orchestrator => orchestrator.status === 'ONLINE'
+      orchestrator => orchestrator.status === 'ONLINE',
     ).length;
     const totalWorkspaces = organization.workspaces.length;
     const totalChannels = organization.workspaces.reduce(
       (sum, ws) => sum + ws._count.channels,
-      0
+      0,
     );
 
     const stats: OrgHierarchyStats = {
@@ -367,14 +367,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/org-hierarchy] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

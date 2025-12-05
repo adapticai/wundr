@@ -120,7 +120,7 @@ export function ConversationDetailsDialog({
                     key={member.id}
                     className={cn(
                       'absolute h-10 w-10 border-2 border-background',
-                      index === 0 ? 'top-0 left-0 z-10' : 'bottom-0 right-0'
+                      index === 0 ? 'top-0 left-0 z-10' : 'bottom-0 right-0',
                     )}
                   >
                     <AvatarImage
@@ -161,7 +161,7 @@ export function ConversationDetailsDialog({
                   <span
                     className={cn(
                       'absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-background',
-                      statusColors[members[0].status]
+                      statusColors[members[0].status],
                     )}
                   />
                 )}
@@ -355,7 +355,7 @@ export function ConversationDetailsDialog({
                           <span
                             className={cn(
                               'absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background',
-                              statusColors[member.status]
+                              statusColors[member.status],
                             )}
                           />
                         )}

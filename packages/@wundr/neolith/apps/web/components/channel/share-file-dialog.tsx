@@ -174,7 +174,7 @@ export function ShareFileDialog({
         });
 
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/search?${params.toString()}`
+          `/api/workspaces/${workspaceSlug}/search?${params.toString()}`,
         );
 
         if (!response.ok) {
@@ -203,7 +203,7 @@ export function ShareFileDialog({
         setIsSearching(false);
       }
     },
-    [workspaceSlug, currentUserId]
+    [workspaceSlug, currentUserId],
   );
 
   // Debounced search
@@ -219,7 +219,7 @@ export function ShareFileDialog({
         performSearch(value);
       }, 300);
     },
-    [performSearch]
+    [performSearch],
   );
 
   // Handle selecting a destination (add to list if not already selected)
@@ -227,7 +227,7 @@ export function ShareFileDialog({
     setSelectedDestinations(prev => {
       // Check if already selected
       const isAlreadySelected = prev.some(
-        d => d.type === result.type && d.id === result.id
+        d => d.type === result.type && d.id === result.id,
       );
       if (isAlreadySelected) {
         return prev;
@@ -242,7 +242,7 @@ export function ShareFileDialog({
   // Handle removing a destination from selection
   const handleRemoveDestination = useCallback((result: SearchResult) => {
     setSelectedDestinations(prev =>
-      prev.filter(d => !(d.type === result.type && d.id === result.id))
+      prev.filter(d => !(d.type === result.type && d.id === result.id)),
     );
     setTimeout(() => searchInputRef.current?.focus(), 50);
   }, []);
@@ -305,12 +305,12 @@ export function ShareFileDialog({
               body: JSON.stringify({
                 participantIds: [destination.id],
               }),
-            }
+            },
           );
 
           if (!dmResponse.ok) {
             throw new Error(
-              `Failed to create conversation with ${destination.displayName || destination.name}`
+              `Failed to create conversation with ${destination.displayName || destination.name}`,
             );
           }
 
@@ -337,7 +337,7 @@ export function ShareFileDialog({
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            errorData.error || `Failed to share file to ${destinationName}`
+            errorData.error || `Failed to share file to ${destinationName}`,
           );
         }
 
@@ -359,7 +359,7 @@ export function ShareFileDialog({
       setError(
         err instanceof Error
           ? err.message
-          : 'Failed to share file. Please try again.'
+          : 'Failed to share file. Please try again.',
       );
     } finally {
       setIsSharing(false);

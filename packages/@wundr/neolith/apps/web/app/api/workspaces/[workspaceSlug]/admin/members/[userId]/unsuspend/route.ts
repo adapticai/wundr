@@ -36,7 +36,7 @@ interface RouteContext {
  */
 export async function POST(
   _request: Request,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -44,9 +44,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED
+          ADMIN_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -64,9 +64,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN
+          ADMIN_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -82,9 +82,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Member not found',
-          ADMIN_ERROR_CODES.MEMBER_NOT_FOUND
+          ADMIN_ERROR_CODES.MEMBER_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -93,9 +93,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Member is not suspended',
-          ADMIN_ERROR_CODES.MEMBER_NOT_SUSPENDED
+          ADMIN_ERROR_CODES.MEMBER_NOT_SUSPENDED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -121,14 +121,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/admin/members/:userId/unsuspend] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to unsuspend member',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR
+        ADMIN_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

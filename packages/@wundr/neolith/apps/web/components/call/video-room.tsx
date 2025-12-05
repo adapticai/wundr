@@ -74,7 +74,7 @@ function VideoRoomInner({
 }) {
   const room = useRoomContext();
   const [pinnedParticipantId, setPinnedParticipantId] = useState<string | null>(
-    null
+    null,
   );
   const [showParticipantList, setShowParticipantList] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -102,18 +102,18 @@ function VideoRoomInner({
       { source: Track.Source.Camera, withPlaceholder: true },
       { source: Track.Source.ScreenShare, withPlaceholder: false },
     ],
-    { onlySubscribed: false }
+    { onlySubscribed: false },
   );
 
   // Separate camera and screen share tracks
   const cameraTracks = useMemo(
     () => tracks.filter(t => t.source === Track.Source.Camera),
-    [tracks]
+    [tracks],
   );
 
   const screenShareTracks = useMemo(
     () => tracks.filter(t => t.source === Track.Source.ScreenShare),
-    [tracks]
+    [tracks],
   );
 
   // Get participants
@@ -159,7 +159,7 @@ function VideoRoomInner({
   // Handle pin
   const handlePin = useCallback((participantId: string) => {
     setPinnedParticipantId(prev =>
-      prev === participantId ? null : participantId
+      prev === participantId ? null : participantId,
     );
   }, []);
 
@@ -202,7 +202,7 @@ function VideoRoomInner({
   // Get pinned participant
   const pinnedParticipant = useMemo(
     () => participants.find(p => p.participant?.sid === pinnedParticipantId),
-    [participants, pinnedParticipantId]
+    [participants, pinnedParticipantId],
   );
 
   // Get featured participant (pinned, screen sharer, or active speaker)
@@ -250,7 +250,7 @@ function VideoRoomInner({
         throw error;
       }
     },
-    [callId]
+    [callId],
   );
 
   // Handle mute participant (host only)
@@ -276,7 +276,7 @@ function VideoRoomInner({
         console.error('Error muting participant:', error);
       }
     },
-    [isHost, room, callId]
+    [isHost, room, callId],
   );
 
   // Handle kick participant (host only)
@@ -300,7 +300,7 @@ function VideoRoomInner({
         console.error('Error kicking participant:', error);
       }
     },
-    [isHost, callId]
+    [isHost, callId],
   );
 
   // Render grid layout
@@ -384,7 +384,7 @@ function VideoRoomInner({
               'p-2 rounded transition-colors',
               layout === 'grid'
                 ? 'bg-stone-700 dark:bg-stone-600 text-white'
-                : 'hover:bg-muted'
+                : 'hover:bg-muted',
             )}
             aria-label='Grid layout'
             aria-pressed={layout === 'grid'}
@@ -411,7 +411,7 @@ function VideoRoomInner({
               'p-2 rounded transition-colors',
               layout === 'spotlight'
                 ? 'bg-stone-700 dark:bg-stone-600 text-white'
-                : 'hover:bg-muted'
+                : 'hover:bg-muted',
             )}
             aria-label='Spotlight layout'
             aria-pressed={layout === 'spotlight'}
@@ -486,7 +486,7 @@ function VideoRoomInner({
             'bg-background/80 backdrop-blur-sm border border-border',
             'flex items-center justify-center',
             'hover:bg-muted transition-colors',
-            'shadow-lg'
+            'shadow-lg',
           )}
           aria-label={
             showParticipantList ? 'Hide participants' : 'Show participants'

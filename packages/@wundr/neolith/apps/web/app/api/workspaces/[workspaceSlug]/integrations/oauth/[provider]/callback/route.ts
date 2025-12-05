@@ -67,7 +67,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Get parameters
@@ -78,9 +78,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace ID and provider are required',
-          INTEGRATION_ERROR_CODES.INVALID_PROVIDER
+          INTEGRATION_ERROR_CODES.INVALID_PROVIDER,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -92,9 +92,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           `Unsupported provider: ${providerLower}`,
-          INTEGRATION_ERROR_CODES.INVALID_PROVIDER
+          INTEGRATION_ERROR_CODES.INVALID_PROVIDER,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -113,7 +113,7 @@ export async function GET(
       logger.error(`OAuth error for ${provider}`, { error, errorDescription });
       const baseUrl = process.env.NEXTAUTH_URL ?? request.nextUrl.origin;
       return NextResponse.redirect(
-        `${baseUrl}/workspace/${workspaceId}/settings/integrations?error=${encodeURIComponent(error)}&message=${encodeURIComponent(errorDescription ?? '')}`
+        `${baseUrl}/workspace/${workspaceId}/settings/integrations?error=${encodeURIComponent(error)}&message=${encodeURIComponent(errorDescription ?? '')}`,
       );
     }
 
@@ -122,9 +122,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Missing authorization code or state',
-          INTEGRATION_ERROR_CODES.AUTH_FAILED
+          INTEGRATION_ERROR_CODES.AUTH_FAILED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -134,9 +134,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid or expired state parameter',
-          INTEGRATION_ERROR_CODES.AUTH_FAILED
+          INTEGRATION_ERROR_CODES.AUTH_FAILED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -149,9 +149,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          INTEGRATION_ERROR_CODES.AUTH_FAILED
+          INTEGRATION_ERROR_CODES.AUTH_FAILED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -161,9 +161,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          INTEGRATION_ERROR_CODES.INVALID_PROVIDER
+          INTEGRATION_ERROR_CODES.INVALID_PROVIDER,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -171,9 +171,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Admin permission required to connect integrations',
-          INTEGRATION_ERROR_CODES.AUTH_FAILED
+          INTEGRATION_ERROR_CODES.AUTH_FAILED,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -190,9 +190,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           `OAuth credentials not configured for ${provider}`,
-          INTEGRATION_ERROR_CODES.MISSING_CREDENTIALS
+          INTEGRATION_ERROR_CODES.MISSING_CREDENTIALS,
         ),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -202,15 +202,15 @@ export async function GET(
       code,
       clientId,
       clientSecret,
-      redirectUri
+      redirectUri,
     );
     if (!tokens) {
       return NextResponse.json(
         createErrorResponse(
           'Failed to exchange authorization code',
-          INTEGRATION_ERROR_CODES.INTEGRATION_OAUTH_FAILED
+          INTEGRATION_ERROR_CODES.INTEGRATION_OAUTH_FAILED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -256,7 +256,7 @@ export async function GET(
             connectedBy: session.user.id,
           },
         },
-        session.user.id
+        session.user.id,
       );
 
       // Update status to active after successful OAuth
@@ -269,7 +269,7 @@ export async function GET(
 
     // Redirect to integrations page
     return NextResponse.redirect(
-      `${baseUrl}/workspace/${workspaceId}/settings/integrations?success=true&provider=${provider}`
+      `${baseUrl}/workspace/${workspaceId}/settings/integrations?success=true&provider=${provider}`,
     );
   } catch (error) {
     logger.error('OAuth callback failed', {
@@ -282,7 +282,7 @@ export async function GET(
     const { workspaceSlug: workspaceId } = params;
     const baseUrl = process.env.NEXTAUTH_URL ?? request.nextUrl.origin;
     return NextResponse.redirect(
-      `${baseUrl}/workspace/${workspaceId}/settings/integrations?error=callback_failed`
+      `${baseUrl}/workspace/${workspaceId}/settings/integrations?error=callback_failed`,
     );
   }
 }

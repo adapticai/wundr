@@ -110,10 +110,10 @@ export function AnalyticsDashboard({
       const [metricsRes, messagesTrend, tasksTrend] = await Promise.all([
         fetch(`/api/workspaces/${workspaceId}/analytics?${queryParams}`),
         fetch(
-          `/api/workspaces/${workspaceId}/analytics/trends?metric=messages&period=${granularity}`
+          `/api/workspaces/${workspaceId}/analytics/trends?metric=messages&period=${granularity}`,
         ),
         fetch(
-          `/api/workspaces/${workspaceId}/analytics/trends?metric=tasks&period=${granularity}`
+          `/api/workspaces/${workspaceId}/analytics/trends?metric=tasks&period=${granularity}`,
         ),
       ]);
 
@@ -169,7 +169,7 @@ export function AnalyticsDashboard({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ granularity, format }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -298,7 +298,7 @@ export function AnalyticsDashboard({
                   granularity === g
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground hover:bg-muted/80',
-                  'disabled:opacity-50 disabled:cursor-not-allowed'
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
                 )}
               >
                 {g.charAt(0).toUpperCase() + g.slice(1)}
@@ -322,7 +322,7 @@ export function AnalyticsDashboard({
             className={clsx(
               'px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
               'bg-primary text-primary-foreground hover:bg-primary/90',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             {isExporting ? (
@@ -526,7 +526,7 @@ export function AnalyticsDashboard({
                     ([status, count]) => ({
                       label: status,
                       value: count,
-                    })
+                    }),
                   ) || []
                 }
               />

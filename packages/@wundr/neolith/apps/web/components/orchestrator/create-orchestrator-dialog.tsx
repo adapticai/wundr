@@ -83,7 +83,7 @@ export function CreateOrchestratorDialog({
 
   const handleTraitToggle = useCallback((trait: PersonalityTrait) => {
     setSelectedTraits(prev =>
-      prev.includes(trait) ? prev.filter(t => t !== trait) : [...prev, trait]
+      prev.includes(trait) ? prev.filter(t => t !== trait) : [...prev, trait],
     );
   }, []);
 
@@ -224,7 +224,7 @@ export function CreateOrchestratorDialog({
                       className={cn(
                         'h-0.5 flex-1',
                         index === 0 ? 'invisible' : '',
-                        isComplete || isCurrent ? 'bg-primary' : 'bg-border'
+                        isComplete || isCurrent ? 'bg-primary' : 'bg-border',
                       )}
                     />
                     <div
@@ -234,7 +234,7 @@ export function CreateOrchestratorDialog({
                           ? 'bg-primary text-primary-foreground'
                           : isCurrent
                             ? 'border-2 border-primary bg-background text-primary'
-                            : 'border border-border bg-background text-muted-foreground'
+                            : 'border border-border bg-background text-muted-foreground',
                       )}
                     >
                       {isComplete ? (
@@ -247,7 +247,7 @@ export function CreateOrchestratorDialog({
                       className={cn(
                         'h-0.5 flex-1',
                         index === STEPS.length - 1 ? 'invisible' : '',
-                        isComplete ? 'bg-primary' : 'bg-border'
+                        isComplete ? 'bg-primary' : 'bg-border',
                       )}
                     />
                   </div>
@@ -256,7 +256,7 @@ export function CreateOrchestratorDialog({
                       'text-xs',
                       isCurrent
                         ? 'font-medium text-foreground'
-                        : 'text-muted-foreground'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {step.title}
@@ -351,7 +351,7 @@ export function CreateOrchestratorDialog({
                         'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
                         selectedTraits.includes(trait)
                           ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground'
+                          : 'border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground',
                       )}
                     >
                       {trait}

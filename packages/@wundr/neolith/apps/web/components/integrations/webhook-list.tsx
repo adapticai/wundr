@@ -189,7 +189,7 @@ function WebhookItem({ webhook, onTest, onEdit, onDelete }: WebhookItemProps) {
             <ChevronIcon
               className={cn(
                 'h-4 w-4 transition-transform',
-                isExpanded && 'rotate-90'
+                isExpanded && 'rotate-90',
               )}
             />
           </button>
@@ -214,7 +214,7 @@ function WebhookItem({ webhook, onTest, onEdit, onDelete }: WebhookItemProps) {
             className={cn(
               'shrink-0 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium',
               statusConfig.bgColor,
-              statusConfig.color
+              statusConfig.color,
             )}
           >
             {webhook.status === 'active' && (
@@ -235,7 +235,7 @@ function WebhookItem({ webhook, onTest, onEdit, onDelete }: WebhookItemProps) {
                   ? 'text-green-600'
                   : webhook.deliverySuccessRate >= 80
                     ? 'text-yellow-600'
-                    : 'text-red-600'
+                    : 'text-red-600',
               )}
             >
               {webhook.deliverySuccessRate.toFixed(1)}%

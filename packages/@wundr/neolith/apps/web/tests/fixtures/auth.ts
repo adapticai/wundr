@@ -64,7 +64,7 @@ export const ORCHESTRATOR_USER = {
  * Creates a session cookie for NextAuth.js
  */
 function createSessionToken(
-  user: typeof TEST_USER | typeof ADMIN_USER | typeof ORCHESTRATOR_USER
+  user: typeof TEST_USER | typeof ADMIN_USER | typeof ORCHESTRATOR_USER,
 ) {
   // In production, this would be a proper JWT token
   // For testing, we create a mock session token
@@ -92,7 +92,7 @@ export async function authenticatePage(
   user:
     | typeof TEST_USER
     | typeof ADMIN_USER
-    | typeof ORCHESTRATOR_USER = TEST_USER
+    | typeof ORCHESTRATOR_USER = TEST_USER,
 ) {
   const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
@@ -131,7 +131,7 @@ export async function authenticatePage(
  */
 export async function loginViaUI(
   page: Page,
-  credentials: { email: string; password: string } = TEST_USER
+  credentials: { email: string; password: string } = TEST_USER,
 ) {
   const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
@@ -206,7 +206,7 @@ export const test = base.extend<{
       user:
         | typeof TEST_USER
         | typeof ADMIN_USER
-        | typeof ORCHESTRATOR_USER = TEST_USER
+        | typeof ORCHESTRATOR_USER = TEST_USER,
     ) => {
       await authenticatePage(page, user);
     };
@@ -323,7 +323,7 @@ export async function setupAuthMocks(
     registerSucceeds?: boolean;
     forgotPasswordSucceeds?: boolean;
     resetPasswordSucceeds?: boolean;
-  } = {}
+  } = {},
 ) {
   const {
     loginSucceeds = true,

@@ -86,9 +86,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -100,9 +100,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -113,9 +113,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Create a map for quick lookup
     const vpMap = new Map(
-      orchestrators.map(orchestrator => [orchestrator.id, orchestrator])
+      orchestrators.map(orchestrator => [orchestrator.id, orchestrator]),
     );
 
     // Process each Orchestrator
@@ -165,9 +165,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           `Bulk action '${input.action}' is not yet implemented`,
-          ORCHESTRATOR_ERROR_CODES.INVALID_REQUEST
+          ORCHESTRATOR_ERROR_CODES.INVALID_REQUEST,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -256,7 +256,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const successCount = results.filter(r => r.success).length;
     const failureCount = results.filter(r => !r.success).length;
     const skippedCount = results.filter(
-      r => r.success && r.previousStatus === r.newStatus
+      r => r.success && r.previousStatus === r.newStatus,
     ).length;
 
     // Determine response status
@@ -296,7 +296,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           ...response,
           code: ORCHESTRATOR_ERROR_CODES.BULK_OPERATION_PARTIAL,
         },
-        { status: 207 } // Multi-Status
+        { status: 207 }, // Multi-Status
       );
     }
 
@@ -306,9 +306,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

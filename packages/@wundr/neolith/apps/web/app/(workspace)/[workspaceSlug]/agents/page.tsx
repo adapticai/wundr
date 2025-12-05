@@ -73,7 +73,7 @@ export default function AgentsPage() {
         });
       }
     },
-    [createAgent, refetch, toast]
+    [createAgent, refetch, toast],
   );
 
   const handleUpdateAgent = useCallback(
@@ -94,7 +94,7 @@ export default function AgentsPage() {
         });
       }
     },
-    [updateAgent, refetch, toast]
+    [updateAgent, refetch, toast],
   );
 
   const handleDeleteAgent = useCallback(
@@ -115,7 +115,7 @@ export default function AgentsPage() {
         });
       }
     },
-    [deleteAgent, refetch, toast]
+    [deleteAgent, refetch, toast],
   );
 
   const handlePauseAgent = useCallback(
@@ -135,7 +135,7 @@ export default function AgentsPage() {
         });
       }
     },
-    [pauseAgent, refetch, toast]
+    [pauseAgent, refetch, toast],
   );
 
   const handleResumeAgent = useCallback(
@@ -155,7 +155,7 @@ export default function AgentsPage() {
         });
       }
     },
-    [resumeAgent, refetch, toast]
+    [resumeAgent, refetch, toast],
   );
 
   if (error) {

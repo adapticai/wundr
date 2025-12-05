@@ -149,7 +149,7 @@ export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
         }
 
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/admin/activity?${params.toString()}`
+          `/api/workspaces/${workspaceId}/admin/activity?${params.toString()}`,
         );
 
         if (!response.ok) {
@@ -178,7 +178,7 @@ export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
             details: action.metadata || {},
             timestamp: action.createdAt,
             ipAddress: action.ipAddress,
-          })
+          }),
         );
 
         if (append) {
@@ -189,7 +189,7 @@ export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
         setTotal(data.total || 0);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : 'Failed to fetch activities'
+          err instanceof Error ? err.message : 'Failed to fetch activities',
         );
         console.error('Failed to fetch activities:', err);
       } finally {
@@ -197,7 +197,7 @@ export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
         setIsLoadingMore(false);
       }
     },
-    [workspaceId, page, filters]
+    [workspaceId, page, filters],
   );
 
   // Infer action type from action string
@@ -304,7 +304,7 @@ export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
       groups[date].push(activity);
       return groups;
     },
-    {} as Record<string, AdminActivity[]>
+    {} as Record<string, AdminActivity[]>,
   );
 
   return (
@@ -423,7 +423,7 @@ export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
                         <div
                           className={cn(
                             'w-8 h-8 rounded-full flex items-center justify-center',
-                            config.color
+                            config.color,
                           )}
                         >
                           <IconComponent className='h-4 w-4 text-white' />
@@ -467,7 +467,7 @@ export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
                                         ? JSON.stringify(value)
                                         : String(value)}
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             )}

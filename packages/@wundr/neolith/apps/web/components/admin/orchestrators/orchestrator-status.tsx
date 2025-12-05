@@ -35,7 +35,7 @@ export function OrchestratorStatusBadge({
         config.bgColor,
         config.color,
         sizeClasses[size],
-        className
+        className,
       )}
     >
       <span className={cn('h-2 w-2 rounded-full', getStatusDotColor(status))} />

@@ -79,7 +79,7 @@ export function GridView({
 
   const layout = useMemo(
     () => getGridLayout(participants.length),
-    [participants.length]
+    [participants.length],
   );
 
   // Determine tile size based on grid
@@ -114,7 +114,7 @@ export function GridView({
         layout.cols,
         layout.rows,
         'auto-rows-fr',
-        className
+        className,
       )}
       role='region'
       aria-label='Video grid'

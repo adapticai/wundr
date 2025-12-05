@@ -3,7 +3,6 @@
 import { useParams, useSearchParams } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 
-import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 import {
   ResponsiveModal,
   ResponsiveModalContent,
@@ -104,7 +104,7 @@ export default function AdminMembersPage() {
       await createInvites(emails, roleId);
       setShowInviteModal(false);
     },
-    [createInvites]
+    [createInvites],
   );
 
   const handleUpdateRole = useCallback(
@@ -112,21 +112,21 @@ export default function AdminMembersPage() {
       await updateMember(memberId, { roleId });
       setEditingMember(null);
     },
-    [updateMember]
+    [updateMember],
   );
 
   const handleSuspend = useCallback(
     async (memberId: string) => {
       await suspendMember(memberId);
     },
-    [suspendMember]
+    [suspendMember],
   );
 
   const handleRemove = useCallback(
     async (memberId: string) => {
       setMemberToRemove(memberId);
     },
-    []
+    [],
   );
 
   const confirmRemove = useCallback(async () => {
@@ -155,7 +155,7 @@ export default function AdminMembersPage() {
           onClick={() => setShowInviteModal(true)}
           className={cn(
             'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2',
-            'text-sm font-medium text-primary-foreground hover:bg-primary/90'
+            'text-sm font-medium text-primary-foreground hover:bg-primary/90',
           )}
         >
           <UserPlusIcon className='h-4 w-4' />
@@ -176,7 +176,7 @@ export default function AdminMembersPage() {
                 'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
                 filterStatus === option.value
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground',
               )}
             >
               {option.label}
@@ -196,7 +196,7 @@ export default function AdminMembersPage() {
               'w-full rounded-md border border-input bg-background py-2 pl-9 pr-4',
               'text-sm placeholder:text-muted-foreground',
               'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'sm:w-64'
+              'sm:w-64',
             )}
           />
         </div>
@@ -533,7 +533,7 @@ function StatusBadge({ status }: { status: MemberStatus }) {
     <span
       className={cn(
         'rounded-full px-2.5 py-0.5 text-xs font-medium',
-        className
+        className,
       )}
     >
       {label}
@@ -649,7 +649,7 @@ function InviteModal({
               className={cn(
                 'block w-full rounded-md border border-input bg-background',
                 'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                'focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+                'focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
               )}
             />
           </div>

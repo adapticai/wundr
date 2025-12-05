@@ -41,7 +41,7 @@ export function DashboardStatsCard({
       className={cn(
         'transition-colors',
         href && 'cursor-pointer hover:bg-accent/50',
-        className
+        className,
       )}
     >
       <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
@@ -66,7 +66,7 @@ export function DashboardStatsCard({
                 'text-xs font-medium',
                 trend.direction === 'up' && 'text-green-600',
                 trend.direction === 'down' && 'text-red-600',
-                trend.direction === 'neutral' && 'text-muted-foreground'
+                trend.direction === 'neutral' && 'text-muted-foreground',
               )}
             >
               {trend.value}

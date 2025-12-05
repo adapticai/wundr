@@ -42,7 +42,7 @@ const APP_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
  */
 export async function sendWelcomeEmail(
   email: string,
-  name: string
+  name: string,
 ): Promise<EmailResponse> {
   console.log(`[Email] Would send welcome email to ${email} (${name})`);
   // TODO: Implement actual email sending
@@ -54,7 +54,7 @@ export async function sendWelcomeEmail(
  */
 export async function sendVerificationEmail(
   email: string,
-  token: string
+  token: string,
 ): Promise<EmailResponse> {
   const verificationUrl = `${APP_URL}/auth/verify-email?token=${token}`;
   console.log(`[Email] Would send verification email to ${email}`);
@@ -68,7 +68,7 @@ export async function sendVerificationEmail(
  */
 export async function sendPasswordResetEmail(
   email: string,
-  token: string
+  token: string,
 ): Promise<EmailResponse> {
   const resetUrl = `${APP_URL}/auth/reset-password?token=${token}`;
   console.log(`[Email] Would send password reset email to ${email}`);
@@ -81,7 +81,7 @@ export async function sendPasswordResetEmail(
  * Send password changed confirmation email
  */
 export async function sendPasswordChangedEmail(
-  email: string
+  email: string,
 ): Promise<EmailResponse> {
   console.log(`[Email] Would send password changed notification to ${email}`);
   // TODO: Implement actual email sending
@@ -101,7 +101,7 @@ export async function sendInvitationEmail(params: {
 }): Promise<EmailResponse> {
   console.log(`[Email] Would send invitation email to ${params.email}`);
   console.log(
-    `[Email] Inviter: ${params.inviterName}, Workspace: ${params.workspaceName}`
+    `[Email] Inviter: ${params.inviterName}, Workspace: ${params.workspaceName}`,
   );
   console.log(`[Email] Invite URL: ${params.invitationUrl}`);
   console.log(`[Email] Role: ${params.role}, Message: ${params.message}`);
@@ -125,13 +125,13 @@ export async function sendChannelInvitationEmail(params: {
 }): Promise<EmailResponse> {
   console.log(`[Email] Would send channel invitation email to ${params.email}`);
   console.log(
-    `[Email] Inviter: ${params.inviterName} (${params.inviterEmail})`
+    `[Email] Inviter: ${params.inviterName} (${params.inviterEmail})`,
   );
   console.log(
-    `[Email] Channel: ${params.channelName}, Workspace: ${params.workspaceName}`
+    `[Email] Channel: ${params.channelName}, Workspace: ${params.workspaceName}`,
   );
   console.log(
-    `[Email] Channel Type: ${params.channelType}, Description: ${params.channelDescription}`
+    `[Email] Channel Type: ${params.channelType}, Description: ${params.channelDescription}`,
   );
   console.log(`[Email] Invite URL: ${params.invitationUrl}`);
   console.log(`[Email] Message: ${params.message}`);
@@ -145,7 +145,7 @@ export async function sendChannelInvitationEmail(params: {
 export async function sendNotificationEmail(
   email: string,
   subject: string,
-  body: string
+  body: string,
 ): Promise<EmailResponse> {
   console.log(`[Email] Would send notification to ${email}: ${subject}`);
   // TODO: Implement actual email sending
@@ -157,7 +157,7 @@ export async function sendNotificationEmail(
  */
 export function generateUnsubscribeUrl(
   userId: string,
-  emailType: EmailType
+  emailType: EmailType,
 ): string {
   const token = generateUnsubscribeToken(userId, emailType);
   return `${APP_URL}/api/unsubscribe?token=${token}`;
@@ -168,7 +168,7 @@ export function generateUnsubscribeUrl(
  */
 function generateUnsubscribeToken(
   userId: string,
-  emailType: EmailType
+  emailType: EmailType,
 ): string {
   const secret = process.env.AUTH_SECRET || 'development-secret';
   const payload = `${userId}:${emailType}:${Date.now()}`;
@@ -182,7 +182,7 @@ function generateUnsubscribeToken(
  * Verify unsubscribe token
  */
 export function verifyUnsubscribeToken(
-  token: string
+  token: string,
 ): { userId: string; emailType: EmailType } | null {
   try {
     const decoded = Buffer.from(token, 'base64url').toString();
@@ -219,11 +219,11 @@ export function verifyUnsubscribeToken(
  */
 export async function isUnsubscribed(
   userId: string,
-  emailType: EmailType
+  emailType: EmailType,
 ): Promise<boolean> {
   // TODO: Implement database check for unsubscribe preferences
   console.log(
-    `[Email] Checking unsubscribe status for ${userId}, type: ${emailType}`
+    `[Email] Checking unsubscribe status for ${userId}, type: ${emailType}`,
   );
   return false;
 }
@@ -232,7 +232,7 @@ export async function isUnsubscribed(
  * Get unsubscribe status for all email types
  */
 export async function getUnsubscribeStatus(
-  userId: string
+  userId: string,
 ): Promise<Record<EmailType, boolean>> {
   // TODO: Implement database lookup for unsubscribe preferences
   console.log(`[Email] Getting unsubscribe status for ${userId}`);
@@ -253,7 +253,7 @@ export async function getUnsubscribeStatus(
  */
 export async function sendTestEmail(
   to: string,
-  emailType: EmailType
+  emailType: EmailType,
 ): Promise<EmailResponse> {
   console.log(`[Email] Would send test ${emailType} email to ${to}`);
   // TODO: Implement actual email sending

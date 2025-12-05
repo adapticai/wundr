@@ -34,10 +34,10 @@ export function WorkflowList({
 }: WorkflowListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<WorkflowStatus | 'all'>(
-    'all'
+    'all',
   );
   const [triggerFilter, setTriggerFilter] = useState<TriggerType | 'all'>(
-    'all'
+    'all',
   );
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
@@ -165,7 +165,7 @@ export function WorkflowList({
               'px-3 py-2 text-sm transition-colors',
               viewMode === 'grid'
                 ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent'
+                : 'text-muted-foreground hover:bg-accent',
             )}
             aria-label='Grid view'
             aria-pressed={viewMode === 'grid'}
@@ -179,7 +179,7 @@ export function WorkflowList({
               'px-3 py-2 text-sm transition-colors',
               viewMode === 'list'
                 ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent'
+                : 'text-muted-foreground hover:bg-accent',
             )}
             aria-label='List view'
             aria-pressed={viewMode === 'list'}
@@ -229,7 +229,7 @@ export function WorkflowList({
           className={cn(
             viewMode === 'grid'
               ? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
-              : 'flex flex-col gap-3'
+              : 'flex flex-col gap-3',
           )}
         >
           {filteredWorkflows.map(workflow => (

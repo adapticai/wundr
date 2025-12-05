@@ -67,7 +67,7 @@ export function SessionManagerCreate({
             ...formData,
             charterData: { name: formData.name, version: 1 }, // Basic charter
           }),
-        }
+        },
       );
 
       if (!response.ok) {

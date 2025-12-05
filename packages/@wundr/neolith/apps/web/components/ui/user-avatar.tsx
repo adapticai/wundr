@@ -212,7 +212,7 @@ export function UserAvatar({
             shapeClass,
             text,
             'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-medium',
-            fallbackClassName
+            fallbackClassName,
           )}
         >
           {initials}
@@ -227,7 +227,7 @@ export function UserAvatar({
             statusSizeConfig_final.border,
             statusColors[currentStatus],
             // Add pulse animation for online status
-            currentStatus === 'online' && 'animate-pulse-subtle'
+            currentStatus === 'online' && 'animate-pulse-subtle',
           )}
           aria-label={`Status: ${currentStatus}`}
         >
@@ -294,7 +294,7 @@ export function GroupAvatar({
             text,
             'flex items-center justify-center rounded-lg',
             'bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-300',
-            'ring-2 ring-background font-medium'
+            'ring-2 ring-background font-medium',
           )}
         >
           +{remainingCount}

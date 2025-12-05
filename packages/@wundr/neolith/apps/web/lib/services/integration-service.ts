@@ -30,7 +30,7 @@ export const OAUTH_PROVIDERS = {
  */
 export async function initializeIntegration(
   integrationId: string,
-  config: any
+  config: any,
 ): Promise<any> {
   console.log('[IntegrationService] initializeIntegration called with:', {
     integrationId,
@@ -45,7 +45,7 @@ export async function initializeIntegration(
  */
 export async function connectToService(
   serviceName: string,
-  credentials: any
+  credentials: any,
 ): Promise<any> {
   console.log('[IntegrationService] connectToService called with:', {
     serviceName,
@@ -59,7 +59,7 @@ export async function connectToService(
  * Disconnect from an external service
  */
 export async function disconnectFromService(
-  serviceName: string
+  serviceName: string,
 ): Promise<void> {
   console.log('[IntegrationService] disconnectFromService called with:', {
     serviceName,
@@ -71,7 +71,7 @@ export async function disconnectFromService(
  * Get integration status
  */
 export async function getIntegrationStatus(
-  integrationId: string
+  integrationId: string,
 ): Promise<any> {
   console.log('[IntegrationService] getIntegrationStatus called with:', {
     integrationId,
@@ -85,7 +85,7 @@ export async function getIntegrationStatus(
  */
 export async function listIntegrations(
   workspaceId: string,
-  filters?: any
+  filters?: any,
 ): Promise<{ integrations: any[]; total: number }> {
   console.log('[IntegrationService] listIntegrations called with:', {
     workspaceId,
@@ -100,7 +100,7 @@ export async function listIntegrations(
  */
 export async function updateIntegrationConfig(
   integrationId: string,
-  config: any
+  config: any,
 ): Promise<any> {
   console.log('[IntegrationService] updateIntegrationConfig called with:', {
     integrationId,
@@ -115,7 +115,7 @@ export async function updateIntegrationConfig(
  */
 export async function checkWorkspaceAccess(
   workspaceId: string,
-  userId: string
+  userId: string,
 ): Promise<{ hasAccess: boolean; role?: string; isAdmin?: boolean } | null> {
   console.log('[IntegrationService] checkWorkspaceAccess called with:', {
     workspaceId,
@@ -131,7 +131,7 @@ export async function checkWorkspaceAccess(
 export async function sendTestWebhook(
   workspaceId: string,
   webhookId: string,
-  payload?: Record<string, unknown>
+  payload?: Record<string, unknown>,
 ): Promise<{ success: boolean; status: string; errorMessage?: string } | null> {
   console.log('[IntegrationService] sendTestWebhook called with:', {
     workspaceId,
@@ -147,7 +147,7 @@ export async function sendTestWebhook(
  */
 export async function getWebhook(
   workspaceId: string,
-  webhookId: string
+  webhookId: string,
 ): Promise<any> {
   console.log('[IntegrationService] getWebhook called with:', {
     workspaceId,
@@ -163,7 +163,7 @@ export async function getWebhook(
 export async function updateWebhook(
   workspaceId: string,
   webhookId: string,
-  updates: any
+  updates: any,
 ): Promise<any> {
   console.log('[IntegrationService] updateWebhook called with:', {
     workspaceId,
@@ -179,7 +179,7 @@ export async function updateWebhook(
  */
 export async function deleteWebhook(
   workspaceId: string,
-  webhookId: string
+  webhookId: string,
 ): Promise<boolean> {
   console.log('[IntegrationService] deleteWebhook called with:', {
     workspaceId,
@@ -194,7 +194,7 @@ export async function deleteWebhook(
  */
 export async function listWebhooks(
   workspaceId: string,
-  filters?: any
+  filters?: any,
 ): Promise<{ webhooks: any[]; total: number }> {
   console.log('[IntegrationService] listWebhooks called with:', {
     workspaceId,
@@ -210,7 +210,7 @@ export async function listWebhooks(
 export async function createWebhook(
   workspaceId: string,
   webhookData: any,
-  userId: string
+  userId: string,
 ): Promise<{ webhook: any; secret: string }> {
   console.log('[IntegrationService] createWebhook called with:', {
     workspaceId,
@@ -236,7 +236,7 @@ export async function createWebhook(
 export async function listWebhookDeliveries(
   workspaceId: string,
   webhookId: string,
-  filters?: any
+  filters?: any,
 ): Promise<{ deliveries: any[]; total: number }> {
   console.log('[IntegrationService] listWebhookDeliveries called with:', {
     workspaceId,
@@ -252,7 +252,7 @@ export async function listWebhookDeliveries(
  */
 export async function rotateWebhookSecret(
   workspaceId: string,
-  webhookId: string
+  webhookId: string,
 ): Promise<{ webhook: any; newSecret: string } | null> {
   console.log('[IntegrationService] rotateWebhookSecret called with:', {
     workspaceId,
@@ -293,7 +293,7 @@ export function buildOAuthAuthorizationUrl(
   provider: keyof typeof OAUTH_PROVIDERS,
   clientId: string,
   redirectUri: string,
-  state: string
+  state: string,
 ): string {
   console.log('[IntegrationService] buildOAuthAuthorizationUrl called with:', {
     provider,
@@ -326,7 +326,7 @@ export async function exchangeOAuthCode(
   code: string,
   clientId: string,
   clientSecret: string,
-  redirectUri: string
+  redirectUri: string,
 ): Promise<any> {
   console.log('[IntegrationService] exchangeOAuthCode called with:', {
     provider,
@@ -348,7 +348,7 @@ export async function exchangeOAuthCode(
 export async function createIntegration(
   workspaceId: string,
   integrationData: any,
-  userId: string
+  userId: string,
 ): Promise<any> {
   console.log('[IntegrationService] createIntegration called with:', {
     workspaceId,
@@ -370,7 +370,7 @@ export async function createIntegration(
  */
 export async function getIntegration(
   workspaceId: string,
-  integrationId: string
+  integrationId: string,
 ): Promise<any> {
   console.log('[IntegrationService] getIntegration called with:', {
     workspaceId,
@@ -386,7 +386,7 @@ export async function getIntegration(
 export async function updateIntegration(
   workspaceId: string,
   integrationId: string,
-  updates: any
+  updates: any,
 ): Promise<any> {
   console.log('[IntegrationService] updateIntegration called with:', {
     workspaceId,
@@ -406,7 +406,7 @@ export async function updateIntegration(
  */
 export async function deleteIntegration(
   workspaceId: string,
-  integrationId: string
+  integrationId: string,
 ): Promise<boolean> {
   console.log('[IntegrationService] deleteIntegration called with:', {
     workspaceId,
@@ -420,7 +420,7 @@ export async function deleteIntegration(
  * Test integration connection
  */
 export async function testIntegration(
-  integrationId: string
+  integrationId: string,
 ): Promise<{ success: boolean; error?: string }> {
   console.log('[IntegrationService] testIntegration called with:', {
     integrationId,
@@ -433,7 +433,7 @@ export async function testIntegration(
  * Sync integration data
  */
 export async function syncIntegration(
-  integrationId: string
+  integrationId: string,
 ): Promise<{ success: boolean; syncedAt: string; errors?: string[] }> {
   console.log('[IntegrationService] syncIntegration called with:', {
     integrationId,
@@ -452,7 +452,7 @@ export async function syncIntegration(
 export function verifyGitHubSignature(
   payload: string,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean {
   console.log('[IntegrationService] verifyGitHubSignature called');
   // TODO: Implement actual GitHub signature verification using HMAC-SHA256
@@ -466,7 +466,7 @@ export function verifySlackSignature(
   timestamp: string,
   body: string,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean {
   console.log('[IntegrationService] verifySlackSignature called');
   // TODO: Implement actual Slack signature verification

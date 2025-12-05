@@ -114,11 +114,11 @@ function charterToYAML(charter: OrchestratorCharter): string {
   });
   yaml.push(`  communicationStyle: ${charter.personality.communicationStyle}`);
   yaml.push(
-    `  decisionMakingStyle: ${charter.personality.decisionMakingStyle}`
+    `  decisionMakingStyle: ${charter.personality.decisionMakingStyle}`,
   );
   yaml.push(
     '  background: |\n    ' +
-      charter.personality.background.replace(/\n/g, '\n    ')
+      charter.personality.background.replace(/\n/g, '\n    '),
   );
 
   // Expertise
@@ -131,7 +131,7 @@ function charterToYAML(charter: OrchestratorCharter): string {
   yaml.push('\ncommunicationPreferences:');
   yaml.push(`  tone: ${charter.communicationPreferences.tone}`);
   yaml.push(
-    `  responseLength: ${charter.communicationPreferences.responseLength}`
+    `  responseLength: ${charter.communicationPreferences.responseLength}`,
   );
   yaml.push(`  formality: ${charter.communicationPreferences.formality}`);
   yaml.push(`  useEmoji: ${charter.communicationPreferences.useEmoji}`);
@@ -143,11 +143,11 @@ function charterToYAML(charter: OrchestratorCharter): string {
   yaml.push(`    end: "${charter.operationalSettings.workHours.end}"`);
   yaml.push(`    timezone: ${charter.operationalSettings.workHours.timezone}`);
   yaml.push(
-    `  responseTimeTarget: ${charter.operationalSettings.responseTimeTarget}`
+    `  responseTimeTarget: ${charter.operationalSettings.responseTimeTarget}`,
   );
   yaml.push(`  autoEscalation: ${charter.operationalSettings.autoEscalation}`);
   yaml.push(
-    `  escalationThreshold: ${charter.operationalSettings.escalationThreshold}`
+    `  escalationThreshold: ${charter.operationalSettings.escalationThreshold}`,
   );
 
   return yaml.join('\n');
@@ -275,7 +275,7 @@ export function CharterPreview({
   className,
 }: CharterPreviewProps) {
   const [activeFormat, setActiveFormat] = React.useState<'yaml' | 'json'>(
-    format
+    format,
   );
   const validation = React.useMemo(() => validateCharter(charter), [charter]);
 

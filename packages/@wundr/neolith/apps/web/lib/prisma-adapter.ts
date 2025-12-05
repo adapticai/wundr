@@ -111,7 +111,7 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
      * This is where we need to transform snake_case to camelCase
      */
     async linkAccount(
-      data: AdapterAccount
+      data: AdapterAccount,
     ): Promise<AdapterAccount | null | undefined> {
       // Transform snake_case fields from Auth.js to camelCase for Prisma
       await prisma.account.create({

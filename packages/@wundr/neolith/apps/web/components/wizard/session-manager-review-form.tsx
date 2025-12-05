@@ -111,7 +111,7 @@ export function SessionManagerReviewForm({
     async function fetchOrchestrators() {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/orchestrators`
+          `/api/workspaces/${workspaceSlug}/orchestrators`,
         );
         if (response.ok) {
           const data = await response.json();

@@ -80,7 +80,7 @@ function ConnectionQualityBadge({ participant }: { participant: Participant }) {
           key={bar}
           className={clsx(
             'w-0.5 rounded-full transition-colors',
-            bar <= getQualityBars() ? getQualityColor() : 'bg-muted'
+            bar <= getQualityBars() ? getQualityColor() : 'bg-muted',
           )}
           style={{ height: `${bar * 3}px` }}
         />
@@ -135,22 +135,22 @@ export function ParticipantTile({
       { source: Track.Source.Camera, withPlaceholder: true },
       { source: Track.Source.Microphone, withPlaceholder: false },
     ],
-    { onlySubscribed: false }
+    { onlySubscribed: false },
   );
 
   // Filter tracks for this participant
   const participantTracks = useMemo(() => {
     return tracks.filter(
       (track): track is TrackReferenceOrPlaceholder =>
-        track.participant?.sid === participant.sid
+        track.participant?.sid === participant.sid,
     );
   }, [tracks, participant.sid]);
 
   const cameraTrack = participantTracks.find(
-    t => t.source === Track.Source.Camera
+    t => t.source === Track.Source.Camera,
   );
   const microphoneTrack = participantTracks.find(
-    t => t.source === Track.Source.Microphone
+    t => t.source === Track.Source.Microphone,
   );
 
   const hasVideo =
@@ -165,7 +165,7 @@ export function ParticipantTile({
         onPin(participant.sid);
       }
     },
-    [onPin, participant.sid]
+    [onPin, participant.sid],
   );
 
   // Size classes
@@ -185,7 +185,7 @@ export function ParticipantTile({
           : 'border-transparent',
         isSpeaking && !isMuted && 'ring-2 ring-green-500/50',
         sizeClasses[size],
-        className
+        className,
       )}
       onKeyDown={handleKeyDown}
       tabIndex={0}
@@ -204,7 +204,7 @@ export function ParticipantTile({
           }
           className={clsx(
             'w-full h-full object-cover',
-            isLocal && 'transform scale-x-[-1]' // Mirror local video
+            isLocal && 'transform scale-x-[-1]', // Mirror local video
           )}
           ref={videoRef}
         />
@@ -214,7 +214,7 @@ export function ParticipantTile({
           <div
             className={clsx(
               'rounded-full bg-stone-500/10 flex items-center justify-center text-stone-700 dark:text-stone-300 font-semibold',
-              size === 'small' ? 'w-12 h-12 text-lg' : 'w-20 h-20 text-2xl'
+              size === 'small' ? 'w-12 h-12 text-lg' : 'w-20 h-20 text-2xl',
             )}
           >
             {getInitials(participant.name || participant.identity)}
@@ -240,7 +240,7 @@ export function ParticipantTile({
         className={clsx(
           'absolute bottom-0 left-0 right-0',
           'bg-gradient-to-t from-black/70 to-transparent',
-          'p-2 flex items-end justify-between'
+          'p-2 flex items-end justify-between',
         )}
       >
         <div className='flex items-center gap-2 min-w-0'>
@@ -297,7 +297,7 @@ export function ParticipantTile({
             isPinned
               ? 'bg-stone-700 dark:bg-stone-600 text-white'
               : 'bg-black/50 text-white hover:bg-black/70',
-            'opacity-0 group-hover:opacity-100 focus:opacity-100'
+            'opacity-0 group-hover:opacity-100 focus:opacity-100',
           )}
           title={isPinned ? 'Unpin' : 'Pin'}
           aria-label={isPinned ? 'Unpin participant' : 'Pin participant'}

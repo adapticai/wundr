@@ -159,7 +159,7 @@ export function OrgPreview({
         <TabsContent value='details' className='space-y-4 mt-6'>
           {orchestrators.map((orch: any) => {
             const orchDisciplines = disciplines.filter(
-              (d: any) => d.orchestratorId === orch.id
+              (d: any) => d.orchestratorId === orch.id,
             );
 
             return (
@@ -211,7 +211,7 @@ export function OrgPreview({
                       <div className='space-y-3'>
                         {orchDisciplines.map((discipline: any) => {
                           const disciplineAgents = agents.filter(
-                            (a: any) => a.disciplineId === discipline.id
+                            (a: any) => a.disciplineId === discipline.id,
                           );
 
                           return (
@@ -248,7 +248,7 @@ export function OrgPreview({
                                       >
                                         {cap}
                                       </span>
-                                    )
+                                    ),
                                   )}
                                 </div>
                               )}

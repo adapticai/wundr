@@ -236,7 +236,7 @@ export type CoordinationErrorCode =
 export function createCoordinationErrorResponse(
   message: string,
   code: CoordinationErrorCode,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) {
   return {
     success: false,

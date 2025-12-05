@@ -33,7 +33,7 @@ export function IntegrationSettings({
   disabled,
 }: IntegrationSettingsProps) {
   const [webhookUrls, setWebhookUrls] = useState<string[]>(
-    (config?.webhookUrls as string[]) || []
+    (config?.webhookUrls as string[]) || [],
   );
   const [newWebhook, setNewWebhook] = useState('');
   const [isSaving, setIsSaving] = useState(false);

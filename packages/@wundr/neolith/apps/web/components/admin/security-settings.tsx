@@ -94,7 +94,7 @@ export function SecuritySettings({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['password', 'session', 'mfa'])
+    new Set(['password', 'session', 'mfa']),
   );
   const [newDomain, setNewDomain] = useState('');
   const [newIp, setNewIp] = useState('');
@@ -104,7 +104,7 @@ export function SecuritySettings({
     setError(null);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/admin/security`
+        `/api/workspaces/${workspaceId}/admin/security`,
       );
       if (!response.ok) {
         throw new Error('Failed to fetch security settings');
@@ -113,7 +113,7 @@ export function SecuritySettings({
       setConfig({ ...DEFAULT_CONFIG, ...data });
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load security settings'
+        err instanceof Error ? err.message : 'Failed to load security settings',
       );
       console.error('Failed to fetch security settings:', err);
     } finally {
@@ -135,7 +135,7 @@ export function SecuritySettings({
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(config),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -143,7 +143,7 @@ export function SecuritySettings({
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to save security settings'
+        err instanceof Error ? err.message : 'Failed to save security settings',
       );
       console.error('Failed to save security settings:', err);
     } finally {
@@ -188,7 +188,7 @@ export function SecuritySettings({
       domainRestrictions: {
         ...prev.domainRestrictions,
         allowedDomains: prev.domainRestrictions.allowedDomains.filter(
-          d => d !== domain
+          d => d !== domain,
         ),
       },
     }));
@@ -477,13 +477,13 @@ export function SecuritySettings({
                       <input
                         type='checkbox'
                         checked={config.mfaConfig.allowedMethods.includes(
-                          method
+                          method,
                         )}
                         onChange={e => {
                           const methods = e.target.checked
                             ? [...config.mfaConfig.allowedMethods, method]
                             : config.mfaConfig.allowedMethods.filter(
-                                m => m !== method
+                                m => m !== method,
                               );
                           setConfig(prev => ({
                             ...prev,
@@ -776,7 +776,7 @@ export function SecuritySettings({
           className={cn(
             'px-6 py-2 rounded-lg text-sm font-medium',
             'bg-primary text-primary-foreground hover:bg-primary/90',
-            'disabled:opacity-50 disabled:cursor-not-allowed'
+            'disabled:opacity-50 disabled:cursor-not-allowed',
           )}
         >
           {isSaving ? 'Saving...' : 'Save Security Settings'}
@@ -826,7 +826,7 @@ function Section({
         <ChevronIcon
           className={cn(
             'h-5 w-5 text-muted-foreground transition-transform',
-            expanded ? '' : '-rotate-90'
+            expanded ? '' : '-rotate-90',
           )}
         />
       </button>
@@ -868,7 +868,7 @@ function Toggle({ label, description, checked, onChange }: ToggleProps) {
         onClick={() => onChange(!checked)}
         className={cn(
           'relative w-11 h-6 rounded-full transition-colors',
-          checked ? 'bg-primary' : 'bg-muted'
+          checked ? 'bg-primary' : 'bg-muted',
         )}
         role='switch'
         aria-checked={checked}
@@ -876,7 +876,7 @@ function Toggle({ label, description, checked, onChange }: ToggleProps) {
         <span
           className={cn(
             'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform',
-            checked ? 'translate-x-5' : 'translate-x-0'
+            checked ? 'translate-x-5' : 'translate-x-0',
           )}
         />
       </button>

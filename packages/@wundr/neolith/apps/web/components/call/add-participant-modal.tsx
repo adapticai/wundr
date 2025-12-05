@@ -67,7 +67,7 @@ export function AddParticipantModal({
       setIsSearching(true);
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/members/search?q=${encodeURIComponent(query)}`
+          `/api/workspaces/${workspaceId}/members/search?q=${encodeURIComponent(query)}`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -79,7 +79,7 @@ export function AddParticipantModal({
         setIsSearching(false);
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   // Debounced search
@@ -98,7 +98,7 @@ export function AddParticipantModal({
       setSearchQuery(query);
       debouncedSearch(query);
     },
-    [debouncedSearch]
+    [debouncedSearch],
   );
 
   // Toggle user selection
@@ -159,7 +159,7 @@ export function AddParticipantModal({
           'relative w-full max-w-md mx-4',
           'bg-card border border-border rounded-lg shadow-lg',
           'flex flex-col max-h-[80vh]',
-          className
+          className,
         )}
       >
         {/* Header */}
@@ -199,7 +199,7 @@ export function AddParticipantModal({
               className={clsx(
                 'w-full pl-10 pr-4 py-2 rounded-lg',
                 'bg-muted border border-border',
-                'focus:outline-none focus:ring-2 focus:ring-stone-700 dark:focus:ring-stone-600'
+                'focus:outline-none focus:ring-2 focus:ring-stone-700 dark:focus:ring-stone-600',
               )}
               aria-label='Search users'
             />
@@ -235,7 +235,7 @@ export function AddParticipantModal({
                     'w-full flex items-center gap-3 p-3 rounded-lg transition-colors',
                     selectedUsers.has(user.id)
                       ? 'bg-stone-700/10 dark:bg-stone-600/10'
-                      : 'hover:bg-muted'
+                      : 'hover:bg-muted',
                   )}
                 >
                   {/* Checkbox */}
@@ -244,7 +244,7 @@ export function AddParticipantModal({
                       'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
                       selectedUsers.has(user.id)
                         ? 'bg-stone-700 dark:bg-stone-600 border-stone-700 dark:border-stone-600'
-                        : 'border-border'
+                        : 'border-border',
                     )}
                   >
                     {selectedUsers.has(user.id) && (
@@ -305,7 +305,7 @@ export function AddParticipantModal({
                 'w-full px-3 py-2 rounded-lg resize-none',
                 'bg-muted border border-border',
                 'focus:outline-none focus:ring-2 focus:ring-stone-700 dark:focus:ring-stone-600',
-                'text-sm'
+                'text-sm',
               )}
               maxLength={500}
             />
@@ -331,7 +331,7 @@ export function AddParticipantModal({
                 'px-4 py-2 text-sm rounded-lg transition-colors',
                 'bg-stone-700 dark:bg-stone-600 text-white',
                 'hover:bg-stone-800 dark:hover:bg-stone-700',
-                'disabled:opacity-50 disabled:cursor-not-allowed'
+                'disabled:opacity-50 disabled:cursor-not-allowed',
               )}
             >
               {isLoading ? 'Inviting...' : 'Invite'}

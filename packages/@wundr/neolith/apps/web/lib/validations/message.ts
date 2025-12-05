@@ -73,7 +73,7 @@ export const messageIdParamSchema = z.object({
 export function createMessageErrorResponse(
   code: MessageErrorCode,
   message: string,
-  status: number = 400
+  status: number = 400,
 ): Response {
   return new Response(JSON.stringify({ error: code, message }), {
     status,
@@ -91,7 +91,7 @@ export function createMessageErrorResponse(
 export function createErrorResponse(
   message: string,
   codeOrStatus: MessageErrorCode | string | number = 400,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ):
   | { error: string; message: string; details?: Record<string, unknown> }
   | { error: string } {

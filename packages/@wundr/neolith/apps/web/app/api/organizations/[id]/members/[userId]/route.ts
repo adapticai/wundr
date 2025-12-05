@@ -58,7 +58,7 @@ async function checkOrganizationAccess(orgId: string, userId: string) {
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -67,9 +67,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -86,24 +86,24 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid parameter format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Check requester's membership and permission
     const requesterMembership = await checkOrganizationAccess(
       params.id,
-      session.user.id
+      session.user.id,
     );
     if (!requesterMembership) {
       return NextResponse.json(
         createErrorResponse(
           'Organization not found or access denied',
-          ORG_ERROR_CODES.ORG_NOT_FOUND
+          ORG_ERROR_CODES.ORG_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -111,24 +111,24 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Admin or Owner role required.',
-          ORG_ERROR_CODES.FORBIDDEN
+          ORG_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     // Get target member
     const targetMembership = await checkOrganizationAccess(
       params.id,
-      params.userId
+      params.userId,
     );
     if (!targetMembership) {
       return NextResponse.json(
         createErrorResponse(
           'Member not found in this organization',
-          ORG_ERROR_CODES.MEMBER_NOT_FOUND
+          ORG_ERROR_CODES.MEMBER_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -137,9 +137,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Cannot modify the organization owner',
-          ORG_ERROR_CODES.CANNOT_MODIFY_OWNER
+          ORG_ERROR_CODES.CANNOT_MODIFY_OWNER,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -151,9 +151,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -164,9 +164,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -177,9 +177,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Cannot assign OWNER role. Use transfer ownership instead.',
-          ORG_ERROR_CODES.FORBIDDEN
+          ORG_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -213,14 +213,14 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/organizations/:id/members/:userId] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -237,7 +237,7 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -246,9 +246,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -265,24 +265,24 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Invalid parameter format',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Check requester's membership and permission
     const requesterMembership = await checkOrganizationAccess(
       params.id,
-      session.user.id
+      session.user.id,
     );
     if (!requesterMembership) {
       return NextResponse.json(
         createErrorResponse(
           'Organization not found or access denied',
-          ORG_ERROR_CODES.ORG_NOT_FOUND
+          ORG_ERROR_CODES.ORG_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -294,24 +294,24 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions',
-          ORG_ERROR_CODES.FORBIDDEN
+          ORG_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     // Get target member
     const targetMembership = await checkOrganizationAccess(
       params.id,
-      params.userId
+      params.userId,
     );
     if (!targetMembership) {
       return NextResponse.json(
         createErrorResponse(
           'Member not found in this organization',
-          ORG_ERROR_CODES.MEMBER_NOT_FOUND
+          ORG_ERROR_CODES.MEMBER_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -320,9 +320,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Cannot remove the organization owner. Transfer ownership first.',
-          ORG_ERROR_CODES.CANNOT_REMOVE_SELF
+          ORG_ERROR_CODES.CANNOT_REMOVE_SELF,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -342,14 +342,14 @@ export async function DELETE(
   } catch (error) {
     console.error(
       '[DELETE /api/organizations/:id/members/:userId] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

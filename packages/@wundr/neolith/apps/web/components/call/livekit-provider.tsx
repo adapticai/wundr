@@ -28,7 +28,7 @@ interface LiveKitContextValue {
  * LiveKit context
  */
 const LiveKitContext = createContext<LiveKitContextValue | undefined>(
-  undefined
+  undefined,
 );
 
 /**

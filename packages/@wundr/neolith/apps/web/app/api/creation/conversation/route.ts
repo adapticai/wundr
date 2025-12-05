@@ -73,7 +73,7 @@ interface ConversationRequest {
  */
 function buildSystemPrompt(
   entityType: EntityType,
-  context?: WorkspaceContext
+  context?: WorkspaceContext,
 ): string {
   const basePrompt = `You are an AI assistant helping users create organizational entities in a collaborative AI platform. Your role is to guide users through providing necessary details for creating a ${entityType}.
 
@@ -240,7 +240,7 @@ async function callClaudeStreaming(
   systemPrompt: string,
   messages: ChatMessage[],
   controller: ReadableStreamDefaultController<Uint8Array>,
-  encoder: TextEncoder
+  encoder: TextEncoder,
 ): Promise<void> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -308,18 +308,18 @@ async function callClaudeStreaming(
               // Send text chunk to client
               controller.enqueue(
                 encoder.encode(
-                  `data: ${JSON.stringify({ text: parsed.delta.text })}\n\n`
-                )
+                  `data: ${JSON.stringify({ text: parsed.delta.text })}\n\n`,
+                ),
               );
             }
           } else if (parsed.type === 'message_stop') {
             // Message complete
             controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`)
+              encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`),
             );
           } else if (parsed.type === 'error') {
             throw new Error(
-              parsed.error?.message || 'Unknown error from Claude'
+              parsed.error?.message || 'Unknown error from Claude',
             );
           }
         } catch (parseError) {
@@ -340,7 +340,7 @@ async function callOpenAIStreaming(
   systemPrompt: string,
   messages: ChatMessage[],
   controller: ReadableStreamDefaultController<Uint8Array>,
-  encoder: TextEncoder
+  encoder: TextEncoder,
 ): Promise<void> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -398,7 +398,7 @@ async function callOpenAIStreaming(
         const data = line.slice(6);
         if (data === '[DONE]') {
           controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`)
+            encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`),
           );
           continue;
         }
@@ -409,7 +409,7 @@ async function callOpenAIStreaming(
 
           if (content) {
             controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ text: content })}\n\n`)
+              encoder.encode(`data: ${JSON.stringify({ text: content })}\n\n`),
             );
           }
         } catch (parseError) {
@@ -455,7 +455,7 @@ async function callOpenAIStreaming(
  * ```
  */
 export async function POST(
-  request: NextRequest
+  request: NextRequest,
 ): Promise<NextResponse | Response> {
   try {
     // Authenticate user
@@ -464,9 +464,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED
+          ORG_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -478,9 +478,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -489,9 +489,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid request body',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -513,9 +513,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           `Invalid entityType. Must be one of: ${validEntityTypes.join(', ')}`,
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -527,9 +527,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'messages array is required and must not be empty',
-          ORG_ERROR_CODES.VALIDATION_ERROR
+          ORG_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -539,18 +539,18 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Each message must have role and content',
-            ORG_ERROR_CODES.VALIDATION_ERROR
+            ORG_ERROR_CODES.VALIDATION_ERROR,
           ),
-          { status: 400 }
+          { status: 400 },
         );
       }
       if (msg.role !== 'user' && msg.role !== 'assistant') {
         return NextResponse.json(
           createErrorResponse(
             'Message role must be "user" or "assistant"',
-            ORG_ERROR_CODES.VALIDATION_ERROR
+            ORG_ERROR_CODES.VALIDATION_ERROR,
           ),
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -558,7 +558,7 @@ export async function POST(
     // Build system prompt
     const systemPrompt = buildSystemPrompt(
       conversationReq.entityType,
-      conversationReq.workspaceContext
+      conversationReq.workspaceContext,
     );
 
     // Determine which LLM provider to use (OpenAI default)
@@ -578,8 +578,8 @@ export async function POST(
                 entityType: conversationReq.entityType,
                 provider,
                 timestamp: new Date().toISOString(),
-              })}\n\n`
-            )
+              })}\n\n`,
+            ),
           );
 
           // Call appropriate LLM API
@@ -588,14 +588,14 @@ export async function POST(
               systemPrompt,
               conversationReq.messages,
               controller,
-              encoder
+              encoder,
             );
           } else if (provider === 'openai' && process.env.OPENAI_API_KEY) {
             await callOpenAIStreaming(
               systemPrompt,
               conversationReq.messages,
               controller,
-              encoder
+              encoder,
             );
           } else {
             // Fallback: try both
@@ -604,14 +604,14 @@ export async function POST(
                 systemPrompt,
                 conversationReq.messages,
                 controller,
-                encoder
+                encoder,
               );
             } else if (process.env.OPENAI_API_KEY) {
               await callOpenAIStreaming(
                 systemPrompt,
                 conversationReq.messages,
                 controller,
-                encoder
+                encoder,
               );
             } else {
               controller.enqueue(
@@ -619,8 +619,8 @@ export async function POST(
                   `data: ${JSON.stringify({
                     error:
                       'No LLM API key configured. Please set ANTHROPIC_API_KEY or OPENAI_API_KEY.',
-                  })}\n\n`
-                )
+                  })}\n\n`,
+                ),
               );
             }
           }
@@ -629,7 +629,7 @@ export async function POST(
         } catch (error) {
           console.error(
             '[POST /api/creation/conversation] Streaming error:',
-            error
+            error,
           );
           controller.enqueue(
             encoder.encode(
@@ -638,8 +638,8 @@ export async function POST(
                   error instanceof Error
                     ? error.message
                     : 'Unknown streaming error',
-              })}\n\n`
-            )
+              })}\n\n`,
+            ),
           );
           controller.close();
         }
@@ -660,9 +660,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR
+        ORG_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

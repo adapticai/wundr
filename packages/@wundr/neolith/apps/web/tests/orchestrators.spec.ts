@@ -123,12 +123,12 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       // Apply filters
       if (status) {
         filteredOrchestrators = filteredOrchestrators.filter(
-          orch => orch.status === status
+          orch => orch.status === status,
         );
       }
       if (discipline) {
         filteredOrchestrators = filteredOrchestrators.filter(
-          orch => orch.discipline === discipline
+          orch => orch.discipline === discipline,
         );
       }
       if (search) {
@@ -137,7 +137,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
           orch =>
             orch.title.toLowerCase().includes(searchLower) ||
             orch.discipline?.toLowerCase().includes(searchLower) ||
-            orch.description?.toLowerCase().includes(searchLower)
+            orch.description?.toLowerCase().includes(searchLower),
         );
       }
 
@@ -164,7 +164,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
     const currentUrl = page.url();
     if (!currentUrl.includes('/orchestrators')) {
       const workspaceId = currentUrl.match(
-        /\/([^\/]+)\/(dashboard|orchestrators)/
+        /\/([^\/]+)\/(dashboard|orchestrators)/,
       )?.[1];
       if (workspaceId) {
         await page.goto(`${BASE_URL}/${workspaceId}/orchestrators`);
@@ -187,7 +187,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
     test('should display Create Orchestrator button', async ({ page }) => {
       const createButton = page.locator(
-        'button:has-text("Create Orchestrator")'
+        'button:has-text("Create Orchestrator")',
       );
       await expect(createButton).toBeVisible();
       await expect(createButton).toBeEnabled();
@@ -229,11 +229,11 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
         .locator('..');
 
       await expect(firstCard.locator('h3')).toContainText(
-        'Head of Engineering'
+        'Head of Engineering',
       );
       await expect(firstCard.locator('text=Engineering')).toBeVisible();
       await expect(
-        firstCard.locator('text=Technical leadership')
+        firstCard.locator('text=Technical leadership'),
       ).toBeVisible();
     });
 
@@ -302,7 +302,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       page,
     }) => {
       const createButton = page.locator(
-        'button:has-text("Create Your First Orchestrator")'
+        'button:has-text("Create Your First Orchestrator")',
       );
       await expect(createButton).toBeVisible();
     });
@@ -312,7 +312,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
         .locator('button:has-text("Create Your First Orchestrator")')
         .click();
       await expect(
-        page.locator('h2:has-text("Create New Orchestrator")')
+        page.locator('h2:has-text("Create New Orchestrator")'),
       ).toBeVisible();
     });
   });
@@ -330,7 +330,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       const orchestratorCards = page.locator('h3:has-text("Head of")');
       await expect(orchestratorCards).toHaveCount(1);
       await expect(
-        page.locator('h3:has-text("Head of Engineering")')
+        page.locator('h3:has-text("Head of Engineering")'),
       ).toBeVisible();
     });
 
@@ -344,7 +344,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Should only show 1 Busy Orchestrator
       await expect(
-        page.locator('h3:has-text("Head of Product")')
+        page.locator('h3:has-text("Head of Product")'),
       ).toBeVisible();
     });
 
@@ -378,7 +378,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.waitForLoadState('networkidle');
 
       await expect(
-        page.locator('text=Showing 1 of 3 Orchestrators')
+        page.locator('text=Showing 1 of 3 Orchestrators'),
       ).toBeVisible();
     });
   });
@@ -386,17 +386,17 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
   test.describe('Search Filter', () => {
     test('should filter Orchestrators by name search', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]'
+        'input[placeholder*="Search Orchestrators"]',
       );
 
       await searchInput.fill('Engineering');
       await page.waitForLoadState('networkidle');
 
       await expect(
-        page.locator('h3:has-text("Head of Engineering")')
+        page.locator('h3:has-text("Head of Engineering")'),
       ).toBeVisible();
       await expect(
-        page.locator('h3:has-text("Head of Product")')
+        page.locator('h3:has-text("Head of Product")'),
       ).not.toBeVisible();
     });
 
@@ -404,27 +404,27 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       page,
     }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]'
+        'input[placeholder*="Search Orchestrators"]',
       );
 
       await searchInput.fill('Product');
       await page.waitForLoadState('networkidle');
 
       await expect(
-        page.locator('h3:has-text("Head of Product")')
+        page.locator('h3:has-text("Head of Product")'),
       ).toBeVisible();
     });
 
     test('should be case insensitive', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]'
+        'input[placeholder*="Search Orchestrators"]',
       );
 
       await searchInput.fill('engineering');
       await page.waitForLoadState('networkidle');
 
       await expect(
-        page.locator('h3:has-text("Head of Engineering")')
+        page.locator('h3:has-text("Head of Engineering")'),
       ).toBeVisible();
     });
 
@@ -432,7 +432,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       page,
     }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]'
+        'input[placeholder*="Search Orchestrators"]',
       );
 
       await searchInput.fill('NonexistentOrchestrator');
@@ -443,7 +443,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
     test('should clear search when input is cleared', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]'
+        'input[placeholder*="Search Orchestrators"]',
       );
 
       await searchInput.fill('Engineering');
@@ -468,10 +468,10 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.waitForLoadState('networkidle');
 
       await expect(
-        page.locator('h3:has-text("Head of Engineering")')
+        page.locator('h3:has-text("Head of Engineering")'),
       ).toBeVisible();
       await expect(
-        page.locator('h3:has-text("Head of Product")')
+        page.locator('h3:has-text("Head of Product")'),
       ).not.toBeVisible();
     });
 
@@ -481,13 +481,13 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       });
 
       await expect(
-        disciplineSelect.locator('option:has-text("Engineering")')
+        disciplineSelect.locator('option:has-text("Engineering")'),
       ).toBeVisible();
       await expect(
-        disciplineSelect.locator('option:has-text("Product")')
+        disciplineSelect.locator('option:has-text("Product")'),
       ).toBeVisible();
       await expect(
-        disciplineSelect.locator('option:has-text("Design")')
+        disciplineSelect.locator('option:has-text("Design")'),
       ).toBeVisible();
     });
   });
@@ -502,7 +502,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Set search filter
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]'
+        'input[placeholder*="Search Orchestrators"]',
       );
       await searchInput.fill('Engineering');
 
@@ -510,16 +510,16 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Should only show Engineering Orchestrator that is Online
       await expect(
-        page.locator('h3:has-text("Head of Engineering")')
+        page.locator('h3:has-text("Head of Engineering")'),
       ).toBeVisible();
       await expect(
-        page.locator('text=Showing 1 of 3 Orchestrators')
+        page.locator('text=Showing 1 of 3 Orchestrators'),
       ).toBeVisible();
     });
 
     test('should show active filter count', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]'
+        'input[placeholder*="Search Orchestrators"]',
       );
       await searchInput.fill('Engineering');
 
@@ -529,7 +529,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
     test('should clear all filters', async ({ page }) => {
       // Apply filters
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]'
+        'input[placeholder*="Search Orchestrators"]',
       );
       await searchInput.fill('Engineering');
 
@@ -555,7 +555,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
     test('should open create Orchestrator dialog', async ({ page }) => {
       await page.locator('button:has-text("Create Orchestrator")').click();
       await expect(
-        page.locator('h2:has-text("Create New Orchestrator")')
+        page.locator('h2:has-text("Create New Orchestrator")'),
       ).toBeVisible();
     });
 
@@ -563,7 +563,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.locator('button:has-text("Create Orchestrator")').click();
       await page.locator('button[aria-label="Close dialog"]').click();
       await expect(
-        page.locator('h2:has-text("Create New Orchestrator")')
+        page.locator('h2:has-text("Create New Orchestrator")'),
       ).not.toBeVisible();
     });
 
@@ -571,7 +571,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.locator('button:has-text("Create Orchestrator")').click();
       await page.locator('button:has-text("Cancel")').click();
       await expect(
-        page.locator('h2:has-text("Create New Orchestrator")')
+        page.locator('h2:has-text("Create New Orchestrator")'),
       ).not.toBeVisible();
     });
 
@@ -660,7 +660,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Add expertise
       const expertiseInput = page.locator(
-        'input[placeholder*="Add expertise"]'
+        'input[placeholder*="Add expertise"]',
       );
       await expertiseInput.fill('Scalability');
       await page.locator('button:has-text("Add")').click();
@@ -686,7 +686,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Add expertise
       const expertiseInput = page.locator(
-        'input[placeholder*="Add expertise"]'
+        'input[placeholder*="Add expertise"]',
       );
       await expertiseInput.fill('Scalability');
       await page.locator('button:has-text("Add")').click();
@@ -789,7 +789,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.locator('button:has-text("Next")').click();
 
       const createButton = page.locator(
-        'button:has-text("Create Orchestrator")'
+        'button:has-text("Create Orchestrator")',
       );
       await expect(createButton).toBeVisible();
       await expect(createButton).toBeEnabled();
@@ -810,7 +810,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
       // Should see step 1 content
       await expect(page.locator('input#orchestrator-title')).toHaveValue(
-        'Test Orchestrator'
+        'Test Orchestrator',
       );
     });
 
@@ -878,7 +878,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
             contentType: 'application/json',
             body: JSON.stringify({ data: mockOrchestrators[0] }),
           });
-        }
+        },
       );
 
       // Mock Orchestrator tasks API
@@ -909,7 +909,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
     test('should load Orchestrator detail page', async ({ page }) => {
       await expect(page).toHaveURL(/\/orchestrators\/orch_001$/);
       await expect(
-        page.locator('h1:has-text("Head of Engineering")')
+        page.locator('h1:has-text("Head of Engineering")'),
       ).toBeVisible();
     });
 
@@ -920,7 +920,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
     test('should display Orchestrator information', async ({ page }) => {
       await expect(
-        page.locator('h1:has-text("Head of Engineering")')
+        page.locator('h1:has-text("Head of Engineering")'),
       ).toBeVisible();
       await expect(page.locator('text=Engineering')).toBeVisible();
       await expect(page.locator('text=Technical leadership')).toBeVisible();
@@ -929,25 +929,25 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
     test('should display all tabs', async ({ page }) => {
       await expect(
-        page.locator('button[role="tab"]:has-text("Overview")')
+        page.locator('button[role="tab"]:has-text("Overview")'),
       ).toBeVisible();
       await expect(
-        page.locator('button[role="tab"]:has-text("Tasks")')
+        page.locator('button[role="tab"]:has-text("Tasks")'),
       ).toBeVisible();
       await expect(
-        page.locator('button[role="tab"]:has-text("Configuration")')
+        page.locator('button[role="tab"]:has-text("Configuration")'),
       ).toBeVisible();
       await expect(
-        page.locator('button[role="tab"]:has-text("Activity")')
+        page.locator('button[role="tab"]:has-text("Activity")'),
       ).toBeVisible();
       await expect(
-        page.locator('button[role="tab"]:has-text("Agents")')
+        page.locator('button[role="tab"]:has-text("Agents")'),
       ).toBeVisible();
     });
 
     test('should show Overview tab by default', async ({ page }) => {
       const overviewTab = page.locator(
-        'button[role="tab"]:has-text("Overview")'
+        'button[role="tab"]:has-text("Overview")',
       );
       expect(await overviewTab.getAttribute('aria-selected')).toBe('true');
     });
@@ -971,7 +971,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
     test('should display charter summary', async ({ page }) => {
       await expect(
-        page.locator('h3:has-text("Charter Summary")')
+        page.locator('h3:has-text("Charter Summary")'),
       ).toBeVisible();
       await expect(page.locator('text=Personality')).toBeVisible();
       await expect(page.locator('text=Analytical')).toBeVisible();
@@ -1005,7 +1005,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
             contentType: 'application/json',
             body: JSON.stringify({ data: mockOrchestrators[0] }),
           });
-        }
+        },
       );
 
       // Mock Orchestrator tasks API
@@ -1064,7 +1064,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
             contentType: 'application/json',
             body: JSON.stringify({ data: mockOrchestrators[0] }),
           });
-        }
+        },
       );
 
       // Mock Orchestrator tasks API
@@ -1145,7 +1145,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.waitForLoadState('networkidle');
 
       await expect(
-        page.locator('text=Failed to load Orchestrators')
+        page.locator('text=Failed to load Orchestrators'),
       ).toBeVisible();
     });
 
@@ -1175,7 +1175,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
             contentType: 'application/json',
             body: JSON.stringify({ error: 'Orchestrator not found' }),
           });
-        }
+        },
       );
 
       const currentUrl = page.url();
@@ -1187,7 +1187,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
         await expect(page.locator('text=Orchestrator not found')).toBeVisible();
         await expect(
-          page.locator('a:has-text("Back to Orchestrators")')
+          page.locator('a:has-text("Back to Orchestrators")'),
         ).toBeVisible();
       }
     });
@@ -1209,7 +1209,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
       await page.setViewportSize({ width: 768, height: 1024 });
 
       const searchInput = page.locator(
-        'input[placeholder*="Search Orchestrators"]'
+        'input[placeholder*="Search Orchestrators"]',
       );
       await expect(searchInput).toBeVisible();
     });
@@ -1233,7 +1233,7 @@ test.describe('Orchestrators Page - Full Test Suite', () => {
 
         expect(
           hasHorizontalScroll,
-          `Horizontal scroll at ${viewport.width}x${viewport.height}`
+          `Horizontal scroll at ${viewport.width}x${viewport.height}`,
         ).toBe(false);
       }
     });

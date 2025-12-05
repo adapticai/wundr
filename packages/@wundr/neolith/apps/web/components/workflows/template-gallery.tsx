@@ -71,7 +71,7 @@ export function TemplateGallery({
       setPreviewTemplate(null);
       onUseTemplate(template);
     },
-    [onUseTemplate]
+    [onUseTemplate],
   );
 
   if (isLoading) {
@@ -133,7 +133,7 @@ export function TemplateGallery({
             'shrink-0 rounded-md px-4 py-2 text-sm font-medium transition-colors',
             selectedCategory === 'all'
               ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80',
           )}
         >
           All Templates
@@ -147,7 +147,7 @@ export function TemplateGallery({
               'flex shrink-0 items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors',
               selectedCategory === category
                 ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80',
             )}
           >
             <CategoryIcon category={category} className='h-4 w-4' />

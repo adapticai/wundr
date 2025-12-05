@@ -9,7 +9,7 @@
  */
 export async function storeState(
   orchestratorId: string,
-  state: any
+  state: any,
 ): Promise<void> {
   console.log('[OrchestratorMemoryService] storeState called with:', {
     orchestratorId,
@@ -45,7 +45,7 @@ export async function clearMemory(orchestratorId: string): Promise<void> {
 export async function storeContext(
   orchestratorId: string,
   contextKey: string,
-  contextData: any
+  contextData: any,
 ): Promise<void> {
   console.log('[OrchestratorMemoryService] storeContext called with:', {
     orchestratorId,
@@ -60,7 +60,7 @@ export async function storeContext(
  */
 export async function retrieveContext(
   orchestratorId: string,
-  contextKey: string
+  contextKey: string,
 ): Promise<any> {
   console.log('[OrchestratorMemoryService] retrieveContext called with:', {
     orchestratorId,
@@ -86,7 +86,7 @@ export async function getMemoryStats(orchestratorId: string): Promise<any> {
  */
 export async function compressMemory(
   orchestratorId: string,
-  compressionConfig?: any
+  compressionConfig?: any,
 ): Promise<void> {
   console.log('[OrchestratorMemoryService] compressMemory called with:', {
     orchestratorId,
@@ -110,7 +110,7 @@ export async function storeMemory(
     type?: string;
     tags?: string[];
     ttl?: number;
-  }
+  },
 ): Promise<{ key: string; storedAt: Date }> {
   console.log('[OrchestratorMemoryService] storeMemory called with:', {
     orchestratorId,
@@ -129,7 +129,7 @@ export async function storeMemory(
  */
 export async function deleteMemory(
   orchestratorId: string,
-  memoryKey: string
+  memoryKey: string,
 ): Promise<{ deleted: boolean }> {
   console.log('[OrchestratorMemoryService] deleteMemory called with:', {
     orchestratorId,

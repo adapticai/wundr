@@ -124,7 +124,7 @@ const PLAN_LIMITS: Record<
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -132,9 +132,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED
+          ADMIN_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -150,9 +150,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Only workspace owner can manage billing',
-          ADMIN_ERROR_CODES.FORBIDDEN
+          ADMIN_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -164,9 +164,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Invalid JSON body',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR
+          ADMIN_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -177,9 +177,9 @@ export async function POST(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -199,9 +199,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Can only upgrade to a higher plan. Contact support for downgrades.',
-          ADMIN_ERROR_CODES.PLAN_DOWNGRADE_NOT_ALLOWED
+          ADMIN_ERROR_CODES.PLAN_DOWNGRADE_NOT_ALLOWED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -279,14 +279,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/admin/billing/upgrade] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to upgrade plan',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR
+        ADMIN_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

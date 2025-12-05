@@ -68,6 +68,6 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
 export async function POST(_request: NextRequest): Promise<NextResponse> {
   return NextResponse.json(
     { error: 'Method not allowed. Use WebSocket connection instead.' },
-    { status: 405 }
+    { status: 405 },
   );
 }

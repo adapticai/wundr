@@ -58,7 +58,7 @@ function isUserOnline(lastActiveAt: Date | null): boolean {
  * Get presence from user preferences
  */
 function getPresenceFromPreferences(
-  preferences: Prisma.JsonValue
+  preferences: Prisma.JsonValue,
 ): UserPreferences {
   if (
     typeof preferences === 'object' &&
@@ -75,7 +75,7 @@ function getPresenceFromPreferences(
  */
 function mapUserStatusToPresence(
   status: UserStatus,
-  prefs: UserPreferences
+  prefs: UserPreferences,
 ): UserPresenceResponse['status'] {
   if (prefs.presenceStatus) {
     return prefs.presenceStatus;
@@ -146,7 +146,7 @@ function buildPresenceResponse(user: {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -155,9 +155,9 @@ export async function GET(
       return NextResponse.json(
         createPresenceErrorResponse(
           'Authentication required',
-          PRESENCE_ERROR_CODES.UNAUTHORIZED
+          PRESENCE_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -168,9 +168,9 @@ export async function GET(
       return NextResponse.json(
         createPresenceErrorResponse(
           'Invalid channel ID format',
-          PRESENCE_ERROR_CODES.VALIDATION_ERROR
+          PRESENCE_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -197,15 +197,15 @@ export async function GET(
       return NextResponse.json(
         createPresenceErrorResponse(
           'Channel not found',
-          PRESENCE_ERROR_CODES.CHANNEL_NOT_FOUND
+          PRESENCE_ERROR_CODES.CHANNEL_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Check if user is a member of the channel
     const isMember = channel.channelMembers.some(
-      m => m.userId === session.user.id
+      m => m.userId === session.user.id,
     );
 
     // For private channels, only members can see presence
@@ -213,9 +213,9 @@ export async function GET(
       return NextResponse.json(
         createPresenceErrorResponse(
           'Access denied to this channel',
-          PRESENCE_ERROR_CODES.FORBIDDEN
+          PRESENCE_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -238,9 +238,9 @@ export async function GET(
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

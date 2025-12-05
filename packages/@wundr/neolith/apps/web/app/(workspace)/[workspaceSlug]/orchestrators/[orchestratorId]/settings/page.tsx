@@ -93,7 +93,7 @@ export default async function OrchestratorSettingsPage({ params }: PageProps) {
   const resolvedParams = await params;
   const data = await getOrchestratorData(
     resolvedParams.orchestratorId,
-    session.user.id
+    session.user.id,
   );
 
   if (!data) {

@@ -141,7 +141,7 @@ export function BillingOverview({
       setHistory(historyData.invoices || []);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load billing data'
+        err instanceof Error ? err.message : 'Failed to load billing data',
       );
       console.error('Failed to fetch billing data:', err);
     } finally {
@@ -163,7 +163,7 @@ export function BillingOverview({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ planId }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -335,7 +335,7 @@ export function BillingOverview({
                             ? 'bg-green-500/10 text-green-500'
                             : item.status === 'pending'
                               ? 'bg-yellow-500/10 text-yellow-500'
-                              : 'bg-red-500/10 text-red-500'
+                              : 'bg-red-500/10 text-red-500',
                         )}
                       >
                         {item.status}

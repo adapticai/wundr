@@ -376,7 +376,7 @@ export type OrchestratorListResponse = PaginatedResponse<Orchestrator>;
  * @returns {boolean} True if value is a valid OrchestratorStatus
  */
 export function isOrchestratorStatus(
-  value: unknown
+  value: unknown,
 ): value is OrchestratorStatus {
   return (
     typeof value === 'string' &&
@@ -391,7 +391,7 @@ export function isOrchestratorStatus(
  * @returns {boolean} True if value is a valid OrchestratorDiscipline
  */
 export function isOrchestratorDiscipline(
-  value: unknown
+  value: unknown,
 ): value is OrchestratorDiscipline {
   return (
     typeof value === 'string' &&

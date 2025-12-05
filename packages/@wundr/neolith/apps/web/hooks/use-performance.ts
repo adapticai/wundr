@@ -170,7 +170,7 @@ export function useRenderMetrics(_componentName: string): RenderMetrics {
   const renderCount = useRef(0);
   const renderTimes = useRef<number[]>([]);
   const lastRenderStart = useRef(
-    typeof performance !== 'undefined' ? performance.now() : Date.now()
+    typeof performance !== 'undefined' ? performance.now() : Date.now(),
   );
 
   useEffect(() => {
@@ -257,7 +257,7 @@ export function useWebVitals(): UseWebVitalsReturn {
       }
       return getPerformanceRating(metric, value) as PerformanceRating;
     },
-    [vitals]
+    [vitals],
   );
 
   return { vitals, loading, getRating };
@@ -290,7 +290,7 @@ export function useWebVitals(): UseWebVitalsReturn {
  */
 export function useConnectionAware(): UseConnectionAwareReturn {
   const [connection, setConnection] = useState<ConnectionInfo>(
-    () => getConnectionInfo() as ConnectionInfo
+    () => getConnectionInfo() as ConnectionInfo,
   );
   const [reducedMotion, setReducedMotion] = useState(false);
   const [reducedData, setReducedData] = useState(false);
@@ -371,7 +371,7 @@ export function useConnectionAware(): UseConnectionAwareReturn {
  */
 export function useLazyLoad<T extends HTMLElement>(
   onVisible: () => void,
-  options: IntersectionObserverInit = {}
+  options: IntersectionObserverInit = {},
 ): UseLazyLoadReturn<T> {
   const ref = useRef<T>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -446,7 +446,7 @@ export interface UseDeferredLoadOptions {
  */
 export function useDeferredLoad<T>(
   loader: () => Promise<T>,
-  options: UseDeferredLoadOptions = {}
+  options: UseDeferredLoadOptions = {},
 ): UseDeferredLoadReturn<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -484,7 +484,7 @@ export function useDeferredLoad<T>(
             load();
           }
         },
-        { timeout: options.delay ?? 2000 }
+        { timeout: options.delay ?? 2000 },
       );
 
       return () => {
@@ -693,7 +693,7 @@ type ThrottledFunction = (...args: any[]) => void;
  */
 export function useThrottledCallback<T extends ThrottledFunction>(
   callback: T,
-  delay: number
+  delay: number,
 ): T {
   const lastCall = useRef(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -719,7 +719,7 @@ export function useThrottledCallback<T extends ThrottledFunction>(
         }, remaining);
       }
     }) as T,
-    [callback, delay]
+    [callback, delay],
   );
 }
 
@@ -776,7 +776,7 @@ export interface UseVirtualizedDataOptions {
  */
 export function useVirtualizedData<T>(
   items: T[],
-  options: UseVirtualizedDataOptions
+  options: UseVirtualizedDataOptions,
 ): UseVirtualizedDataReturn<T> {
   const [scrollTop, setScrollTop] = useState(0);
   const { itemHeight, containerHeight, overscan = 3 } = options;
@@ -785,7 +785,7 @@ export function useVirtualizedData<T>(
   const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
   const endIndex = Math.min(
     items.length,
-    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
+    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan,
   );
 
   const visibleItems = items.slice(startIndex, endIndex).map((item, index) => ({

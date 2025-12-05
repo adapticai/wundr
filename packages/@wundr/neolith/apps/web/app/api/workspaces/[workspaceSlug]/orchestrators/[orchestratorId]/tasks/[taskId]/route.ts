@@ -115,7 +115,7 @@ export async function GET(
       orchestratorId: string;
       taskId: string;
     }>;
-  }
+  },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -124,9 +124,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          TASK_ERROR_CODES.UNAUTHORIZED
+          TASK_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -143,9 +143,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid route parameters',
-          TASK_ERROR_CODES.VALIDATION_ERROR
+          TASK_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -161,9 +161,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to workspace',
-          TASK_ERROR_CODES.FORBIDDEN
+          TASK_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -210,7 +210,7 @@ export async function GET(
     if (!task) {
       return NextResponse.json(
         createErrorResponse('Task not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -222,9 +222,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Task does not belong to specified Orchestrator/workspace',
-          TASK_ERROR_CODES.FORBIDDEN
+          TASK_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -291,14 +291,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/tasks/[taskId]] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        TASK_ERROR_CODES.INTERNAL_ERROR
+        TASK_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -351,7 +351,7 @@ export async function PATCH(
       orchestratorId: string;
       taskId: string;
     }>;
-  }
+  },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -360,9 +360,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          TASK_ERROR_CODES.UNAUTHORIZED
+          TASK_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -379,9 +379,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid route parameters',
-          TASK_ERROR_CODES.VALIDATION_ERROR
+          TASK_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -397,9 +397,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to workspace',
-          TASK_ERROR_CODES.FORBIDDEN
+          TASK_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -417,9 +417,9 @@ export async function PATCH(
         createErrorResponse(
           'Invalid update data',
           TASK_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -431,7 +431,7 @@ export async function PATCH(
     if (!existingTask) {
       return NextResponse.json(
         createErrorResponse('Task not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -443,9 +443,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Task does not belong to specified Orchestrator/workspace',
-          TASK_ERROR_CODES.FORBIDDEN
+          TASK_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -469,9 +469,9 @@ export async function PATCH(
             createErrorResponse(
               `Invalid status transition from ${currentStatus} to ${newStatus}`,
               TASK_ERROR_CODES.INVALID_STATE_TRANSITION,
-              { allowedTransitions: allowed }
+              { allowedTransitions: allowed },
             ),
-            { status: 400 }
+            { status: 400 },
           );
         }
       }
@@ -490,9 +490,9 @@ export async function PATCH(
         return NextResponse.json(
           createErrorResponse(
             'Assignee not found',
-            TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND
+            TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND,
           ),
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -523,7 +523,7 @@ export async function PATCH(
       if (typeof progressUpdate.percentComplete === 'number') {
         updatedMetadata.percentComplete = Math.max(
           0,
-          Math.min(100, progressUpdate.percentComplete)
+          Math.min(100, progressUpdate.percentComplete),
         );
       }
     }
@@ -589,14 +589,14 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/tasks/[taskId]] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        TASK_ERROR_CODES.INTERNAL_ERROR
+        TASK_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -631,7 +631,7 @@ export async function DELETE(
       orchestratorId: string;
       taskId: string;
     }>;
-  }
+  },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -640,9 +640,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          TASK_ERROR_CODES.UNAUTHORIZED
+          TASK_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -659,9 +659,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Invalid route parameters',
-          TASK_ERROR_CODES.VALIDATION_ERROR
+          TASK_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -682,9 +682,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to workspace',
-          TASK_ERROR_CODES.FORBIDDEN
+          TASK_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -693,9 +693,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Only admins can permanently delete tasks',
-          TASK_ERROR_CODES.FORBIDDEN
+          TASK_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -707,7 +707,7 @@ export async function DELETE(
     if (!task) {
       return NextResponse.json(
         createErrorResponse('Task not found', TASK_ERROR_CODES.NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -719,9 +719,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Task does not belong to specified Orchestrator/workspace',
-          TASK_ERROR_CODES.FORBIDDEN
+          TASK_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -762,14 +762,14 @@ export async function DELETE(
   } catch (error) {
     console.error(
       '[DELETE /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/tasks/[taskId]] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        TASK_ERROR_CODES.INTERNAL_ERROR
+        TASK_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

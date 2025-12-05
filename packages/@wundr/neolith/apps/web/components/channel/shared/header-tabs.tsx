@@ -116,7 +116,7 @@ export function HeaderTabs({
             'flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors relative',
             activeTab === tab.id
               ? 'text-foreground'
-              : 'text-muted-foreground hover:text-foreground'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
           {tab.icon}

@@ -43,7 +43,7 @@ function generateUnsubscribeHTML(
   success: boolean,
   emailType?: EmailType,
   userEmail?: string,
-  errorMessage?: string
+  errorMessage?: string,
 ): string {
   const appName = process.env.NEXT_PUBLIC_APP_NAME || 'Neolith';
   const appUrl =
@@ -326,12 +326,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           false,
           undefined,
           undefined,
-          'Missing unsubscribe token'
+          'Missing unsubscribe token',
         ),
         {
           status: 400,
           headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        }
+        },
       );
     }
 
@@ -344,12 +344,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           false,
           undefined,
           undefined,
-          'This unsubscribe link is invalid or has expired. Unsubscribe links are valid for 90 days.'
+          'This unsubscribe link is invalid or has expired. Unsubscribe links are valid for 90 days.',
         ),
         {
           status: 400,
           headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        }
+        },
       );
     }
 
@@ -372,12 +372,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           false,
           undefined,
           undefined,
-          'User account not found'
+          'User account not found',
         ),
         {
           status: 404,
           headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        }
+        },
       );
     }
 
@@ -415,7 +415,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     console.log(
-      `[GET /api/unsubscribe] User ${user.email} (${userId}) unsubscribed from ${emailType} emails`
+      `[GET /api/unsubscribe] User ${user.email} (${userId}) unsubscribed from ${emailType} emails`,
     );
 
     // Return success HTML page
@@ -424,7 +424,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       {
         status: 200,
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      }
+      },
     );
   } catch (error) {
     // Log error but don't expose details to user
@@ -439,12 +439,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         false,
         undefined,
         undefined,
-        'An unexpected error occurred. Please try again later or contact support.'
+        'An unexpected error occurred. Please try again later or contact support.',
       ),
       {
         status: 500,
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      }
+      },
     );
   }
 }

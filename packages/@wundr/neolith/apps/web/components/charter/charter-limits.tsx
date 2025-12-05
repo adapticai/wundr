@@ -106,7 +106,7 @@ export function CharterLimits({
 
   const handleSliderChange = (
     field: keyof CharterResourceLimits,
-    newValue: number[]
+    newValue: number[],
   ) => {
     const updatedValues = { ...localValues, [field]: newValue[0] };
     setLocalValues(updatedValues);
@@ -115,7 +115,7 @@ export function CharterLimits({
 
   const handleInputChange = (
     field: keyof CharterResourceLimits,
-    inputValue: string
+    inputValue: string,
   ) => {
     const numValue = parseInt(inputValue, 10);
     if (isNaN(numValue)) {

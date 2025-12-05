@@ -118,7 +118,7 @@ async function getParentMessageWithAccess(messageId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -127,9 +127,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED
+          MESSAGE_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -140,9 +140,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid message ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -155,9 +155,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           MESSAGE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -171,9 +171,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Parent message not found',
-          MESSAGE_ERROR_CODES.NOT_FOUND
+          MESSAGE_ERROR_CODES.NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -181,9 +181,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -192,9 +192,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Parent message has been deleted',
-          MESSAGE_ERROR_CODES.MESSAGE_DELETED
+          MESSAGE_ERROR_CODES.MESSAGE_DELETED,
         ),
-        { status: 410 }
+        { status: 410 },
       );
     }
 
@@ -203,9 +203,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'This message is a reply, not a thread parent',
-          MESSAGE_ERROR_CODES.INVALID_PARENT
+          MESSAGE_ERROR_CODES.INVALID_PARENT,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -292,7 +292,7 @@ export async function GET(
 
     // Helper to transform messageAttachments (convert BigInt size to Number)
     const transformAttachments = (
-      attachments: typeof parentMessage.messageAttachments
+      attachments: typeof parentMessage.messageAttachments,
     ) => {
       return attachments.map(ma => ({
         ...ma,
@@ -326,7 +326,7 @@ export async function GET(
           reactions: parentMessage.reactions,
           replyCount: totalCount,
           messageAttachments: transformAttachments(
-            parentMessage.messageAttachments
+            parentMessage.messageAttachments,
           ),
         },
         replies: transformedReplies,
@@ -347,16 +347,16 @@ export async function GET(
     if (error instanceof Error) {
       console.error(
         '[GET /api/messages/:id/thread] Error message:',
-        error.message
+        error.message,
       );
       console.error('[GET /api/messages/:id/thread] Error stack:', error.stack);
     }
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -383,7 +383,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -392,9 +392,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED
+          MESSAGE_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -405,9 +405,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid message ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -419,9 +419,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -432,9 +432,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           MESSAGE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -448,9 +448,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Parent message not found',
-          MESSAGE_ERROR_CODES.NOT_FOUND
+          MESSAGE_ERROR_CODES.NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -458,9 +458,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -469,9 +469,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Cannot reply to a deleted message',
-          MESSAGE_ERROR_CODES.MESSAGE_DELETED
+          MESSAGE_ERROR_CODES.MESSAGE_DELETED,
         ),
-        { status: 410 }
+        { status: 410 },
       );
     }
 
@@ -480,9 +480,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Cannot create nested threads - reply to the original message instead',
-          MESSAGE_ERROR_CODES.INVALID_PARENT
+          MESSAGE_ERROR_CODES.INVALID_PARENT,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -528,16 +528,16 @@ export async function POST(
 
     return NextResponse.json(
       { data: reply, message: 'Reply sent successfully' },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/messages/:id/thread] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

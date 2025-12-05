@@ -44,7 +44,7 @@ function generateStandardVariants(
   s3Key: string,
   s3Bucket: string,
   originalWidth: number,
-  originalHeight: number
+  originalHeight: number,
 ): ImageVariant[] {
   const cdnDomain = process.env.CDN_DOMAIN;
   const region = process.env.MY_AWS_REGION ?? 'us-east-1';
@@ -127,7 +127,7 @@ function generateStandardVariants(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -136,9 +136,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          UPLOAD_ERROR_CODES.UNAUTHORIZED
+          UPLOAD_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -149,9 +149,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid image ID format',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -172,7 +172,7 @@ export async function GET(
     if (!file) {
       return NextResponse.json(
         createErrorResponse('Image not found', UPLOAD_ERROR_CODES.NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -182,9 +182,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'File is not an image',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -194,9 +194,9 @@ export async function GET(
         createErrorResponse(
           'Image is not ready',
           UPLOAD_ERROR_CODES.NOT_FOUND,
-          { status: file.status }
+          { status: file.status },
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -214,9 +214,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this workspace',
-          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -238,7 +238,7 @@ export async function GET(
       file.s3Key,
       file.s3Bucket,
       originalWidth,
-      originalHeight
+      originalHeight,
     );
 
     // Merge custom variants with standard variants (custom takes precedence)
@@ -267,9 +267,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

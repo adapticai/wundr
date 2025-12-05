@@ -63,7 +63,7 @@ export default function ConversationDemo() {
                   setTimeout(() => {
                     addMessage(
                       'This is a simulated response to: ' + text,
-                      'assistant'
+                      'assistant',
                     );
                   }, 1000);
                 }}
@@ -184,7 +184,7 @@ function ControlledConversation({ messages }: { messages: any[] }) {
           onClick={() => {
             // Manual scroll using ref
             const container = scrollRef.current?.querySelector(
-              '[data-radix-scroll-area-viewport]'
+              '[data-radix-scroll-area-viewport]',
             );
             if (container) {
               container.scrollTop = 0;
@@ -198,7 +198,7 @@ function ControlledConversation({ messages }: { messages: any[] }) {
           variant='outline'
           onClick={() => {
             const container = scrollRef.current?.querySelector(
-              '[data-radix-scroll-area-viewport]'
+              '[data-radix-scroll-area-viewport]',
             );
             if (container) {
               container.scrollTop = container.scrollHeight;

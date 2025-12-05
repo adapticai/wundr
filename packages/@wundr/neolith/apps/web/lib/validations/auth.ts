@@ -44,7 +44,7 @@ export type AuthErrorCode =
 export function createAuthErrorResponse(
   message: string,
   code: AuthErrorCode,
-  extraData?: Record<string, unknown>
+  extraData?: Record<string, unknown>,
 ): { error: AuthErrorCode; message: string } & Record<string, unknown> {
   return {
     error: code,

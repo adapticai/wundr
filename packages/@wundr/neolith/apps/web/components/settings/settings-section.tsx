@@ -179,7 +179,7 @@ export function SettingsRow({
     <div
       className={cn(
         'flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between',
-        className
+        className,
       )}
     >
       {/* Label and description on the left */}

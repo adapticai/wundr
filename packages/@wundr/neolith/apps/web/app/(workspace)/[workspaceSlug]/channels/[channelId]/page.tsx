@@ -18,6 +18,7 @@ import {
 } from '@/components/chat';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/use-auth';
+import { useChannelPermissions } from '@/hooks/use-channel';
 import {
   useMessages,
   useSendMessage,
@@ -25,7 +26,6 @@ import {
   useTypingIndicator,
   useThread,
 } from '@/hooks/use-chat';
-import { useChannelPermissions } from '@/hooks/use-channel';
 import { useToast } from '@/hooks/use-toast';
 
 import type { ConversationTab } from '@/components/channel/shared';
@@ -113,7 +113,7 @@ export default function ChannelPage() {
   // Typing indicator
   const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
     channelId,
-    currentUser?.id || ''
+    currentUser?.id || '',
   );
 
   // Thread state
@@ -229,7 +229,7 @@ export default function ChannelPage() {
         // Send message with file IDs
         const { message } = await sendMessage(
           { content, channelId, mentions, attachmentIds: uploadedFileIds },
-          currentUser
+          currentUser,
         );
 
         // Replace optimistic message with real one
@@ -267,7 +267,7 @@ export default function ChannelPage() {
       updateOptimisticMessage,
       removeOptimisticMessage,
       toast,
-    ]
+    ],
   );
 
   // Handle send thread reply
@@ -363,7 +363,7 @@ export default function ChannelPage() {
             mentions,
             attachmentIds: uploadedFileIds,
           },
-          currentUser
+          currentUser,
         );
 
         // Cleanup temporary blob URLs
@@ -378,7 +378,7 @@ export default function ChannelPage() {
         updateOptimisticMessage(activeThreadId, {
           replyCount: Math.max(
             0,
-            (messages.find(m => m.id === activeThreadId)?.replyCount || 1) - 1
+            (messages.find(m => m.id === activeThreadId)?.replyCount || 1) - 1,
           ),
         });
         toast({
@@ -399,7 +399,7 @@ export default function ChannelPage() {
       updateOptimisticMessage,
       messages,
       toast,
-    ]
+    ],
   );
 
   // Handle edit message
@@ -412,7 +412,7 @@ export default function ChannelPage() {
         updateOptimisticMessage(message.id, result);
       }
     },
-    [editMessage, updateOptimisticMessage]
+    [editMessage, updateOptimisticMessage],
   );
 
   // Handle delete message
@@ -423,7 +423,7 @@ export default function ChannelPage() {
         removeOptimisticMessage(messageId);
       }
     },
-    [deleteMessage, removeOptimisticMessage]
+    [deleteMessage, removeOptimisticMessage],
   );
 
   // Handle reaction toggle
@@ -455,10 +455,10 @@ export default function ChannelPage() {
                     count: r.count - 1,
                     hasReacted: false,
                     userIds: (r.userIds || []).filter(
-                      id => id !== currentUser.id
+                      id => id !== currentUser.id,
                     ),
                   }
-                : r
+                : r,
             );
           }
         } else {
@@ -471,7 +471,7 @@ export default function ChannelPage() {
                   hasReacted: true,
                   userIds: [...(r.userIds || []), currentUser.id],
                 }
-              : r
+              : r,
           );
         }
       } else {
@@ -495,7 +495,7 @@ export default function ChannelPage() {
             `/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`,
             {
               method: 'DELETE',
-            }
+            },
           );
         } else {
           response = await fetch(`/api/messages/${messageId}/reactions`, {
@@ -514,7 +514,7 @@ export default function ChannelPage() {
         updateOptimisticMessage(messageId, { reactions: message.reactions });
       }
     },
-    [currentUser, messages, updateOptimisticMessage]
+    [currentUser, messages, updateOptimisticMessage],
   );
 
   // Handle reply (open thread)
@@ -530,7 +530,7 @@ export default function ChannelPage() {
       'replyCount:',
       message.replyCount,
       'content:',
-      message.content?.slice(0, 50)
+      message.content?.slice(0, 50),
     );
     setActiveThreadId(message.id);
   }, []);
@@ -593,7 +593,7 @@ export default function ChannelPage() {
       // Refetch channel data
       await refetchChannel();
     },
-    [channelId, refetchChannel]
+    [channelId, refetchChannel],
   );
 
   // Remove member handler - must be before conditional returns
@@ -603,13 +603,13 @@ export default function ChannelPage() {
         `/api/channels/${channelId}/members/${userId}`,
         {
           method: 'DELETE',
-        }
+        },
       );
       if (!response.ok) {
         throw new Error('Failed to remove member');
       }
     },
-    [channelId]
+    [channelId],
   );
 
   // Change member role handler - must be before conditional returns
@@ -621,13 +621,13 @@ export default function ChannelPage() {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: role.toUpperCase() }),
-        }
+        },
       );
       if (!response.ok) {
         throw new Error('Failed to change member role');
       }
     },
-    [channelId]
+    [channelId],
   );
 
   // Invite members handler - must be before conditional returns
@@ -666,7 +666,7 @@ export default function ChannelPage() {
         throw error;
       }
     },
-    [channelId, refetchChannel, toast]
+    [channelId, refetchChannel, toast],
   );
 
   // Invite members by email handler - must be before conditional returns
@@ -704,7 +704,7 @@ export default function ChannelPage() {
         throw error;
       }
     },
-    [channelId, toast]
+    [channelId, toast],
   );
 
   // Tab change handler - filter to only supported tabs for channels

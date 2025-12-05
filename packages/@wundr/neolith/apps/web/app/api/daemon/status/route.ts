@@ -60,7 +60,7 @@ interface AccessTokenPayload {
  * Verify daemon token from Authorization header
  */
 async function verifyDaemonToken(
-  request: NextRequest
+  request: NextRequest,
 ): Promise<AccessTokenPayload> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
@@ -107,7 +107,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: STATUS_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -121,7 +121,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid JSON body',
           code: STATUS_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -133,7 +133,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid status. Must be one of: active, paused, error',
           code: STATUS_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -152,7 +152,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: STATUS_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -189,7 +189,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       await redis.setex(
         statusKey,
         10 * 60, // 10 minutes TTL
-        JSON.stringify(statusData)
+        JSON.stringify(statusData),
       );
 
       // Publish status update for monitoring dashboards
@@ -199,7 +199,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           type: 'orchestrator_status_update',
           orchestratorId: token.orchestratorId,
           ...statusData,
-        })
+        }),
       );
     } catch (redisError) {
       console.error('Redis status update error:', redisError);
@@ -214,7 +214,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         error: 'Failed to update status',
         code: STATUS_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

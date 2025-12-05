@@ -35,7 +35,7 @@ import type { NextRequest } from 'next/server';
 function verifyWebhookSignature(
   payload: string,
   signature: string | null,
-  secret: string
+  secret: string,
 ): boolean {
   if (!signature || !secret) {
     return false;
@@ -111,9 +111,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createNotificationErrorResponse(
             'Invalid webhook signature',
-            NOTIFICATION_ERROR_CODES.WEBHOOK_ERROR
+            NOTIFICATION_ERROR_CODES.WEBHOOK_ERROR,
           ),
-          { status: 401 }
+          { status: 401 },
         );
       }
     }
@@ -129,9 +129,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           createNotificationErrorResponse(
             'Invalid webhook payload',
             NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
-            { errors: parseResult.error.flatten().fieldErrors }
+            { errors: parseResult.error.flatten().fieldErrors },
           ),
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -140,9 +140,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createNotificationErrorResponse(
           'Invalid JSON payload',
-          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -151,9 +151,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createNotificationErrorResponse(
           'Missing required webhook fields (token, status, notificationId)',
-          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -230,9 +230,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

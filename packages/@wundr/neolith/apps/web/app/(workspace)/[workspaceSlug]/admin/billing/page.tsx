@@ -23,7 +23,7 @@ export default function AdminBillingPage() {
   useEffect(() => {
     setPageHeader(
       'Billing & Plans',
-      'Manage your subscription and billing information'
+      'Manage your subscription and billing information',
     );
   }, [setPageHeader]);
 
@@ -44,7 +44,7 @@ export default function AdminBillingPage() {
         setIsUpgrading(false);
       }
     },
-    [updatePlan]
+    [updatePlan],
   );
 
   const plans: Plan[] = [
@@ -205,7 +205,7 @@ export default function AdminBillingPage() {
             'rounded-md px-4 py-2 text-sm font-medium',
             billingInterval === 'monthly'
               ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
           Monthly
@@ -217,7 +217,7 @@ export default function AdminBillingPage() {
             'rounded-md px-4 py-2 text-sm font-medium',
             billingInterval === 'yearly'
               ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
           Yearly
@@ -302,7 +302,7 @@ export default function AdminBillingPage() {
                       'rounded-full px-2 py-0.5 text-xs font-medium',
                       invoice.status === 'paid'
                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
                     )}
                   >
                     {invoice.status}
@@ -391,7 +391,7 @@ function UsageCard({
                 ? 'bg-red-500'
                 : percentage > 70
                   ? 'bg-yellow-500'
-                  : 'bg-primary'
+                  : 'bg-primary',
             )}
             style={{ width: `${percentage}%` }}
           />
@@ -424,7 +424,7 @@ function PlanCard({
     <div
       className={cn(
         'relative rounded-lg border bg-card p-6',
-        plan.popular && 'border-primary ring-1 ring-primary'
+        plan.popular && 'border-primary ring-1 ring-primary',
       )}
     >
       {plan.popular && (
@@ -468,7 +468,7 @@ function PlanCard({
             ? 'cursor-not-allowed bg-muted text-muted-foreground'
             : plan.popular
               ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-              : 'border border-input hover:bg-muted'
+              : 'border border-input hover:bg-muted',
         )}
       >
         {isCurrentPlan ? 'Current Plan' : 'Select Plan'}
@@ -521,7 +521,7 @@ function UpgradeModal({
             disabled={isUpgrading}
             className={cn(
               'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-              'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+              'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
             )}
           >
             {isUpgrading ? 'Processing...' : 'Confirm Upgrade'}

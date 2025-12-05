@@ -57,7 +57,7 @@ export function IntegrationConnect({
   const [selectedProvider, setSelectedProvider] =
     useState<IntegrationProvider | null>(null);
   const [connectMethod, setConnectMethod] = useState<'oauth' | 'apikey'>(
-    'oauth'
+    'oauth',
   );
   const [apiKey, setApiKey] = useState('');
   const [integrationName, setIntegrationName] = useState('');
@@ -78,7 +78,7 @@ export function IntegrationConnect({
     return allProviders.filter(
       ([, config]) =>
         config.name.toLowerCase().includes(query) ||
-        config.description.toLowerCase().includes(query)
+        config.description.toLowerCase().includes(query),
     );
   }, [allProviders, searchQuery]);
 
@@ -112,7 +112,7 @@ export function IntegrationConnect({
       onClose();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to connect integration'
+        err instanceof Error ? err.message : 'Failed to connect integration',
       );
     } finally {
       setIsConnecting(false);
@@ -152,7 +152,7 @@ export function IntegrationConnect({
       <div
         className={cn(
           'relative z-10 w-full max-w-2xl rounded-lg border bg-card shadow-xl',
-          className
+          className,
         )}
         role='dialog'
         aria-modal='true'
@@ -310,7 +310,7 @@ export function IntegrationConnect({
                       'flex-1 rounded-lg border p-4 text-left transition-colors',
                       connectMethod === 'oauth'
                         ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
+                        : 'border-border hover:border-primary/50',
                     )}
                   >
                     <div className='flex items-center gap-2'>
@@ -328,7 +328,7 @@ export function IntegrationConnect({
                       'flex-1 rounded-lg border p-4 text-left transition-colors',
                       connectMethod === 'apikey'
                         ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
+                        : 'border-border hover:border-primary/50',
                     )}
                   >
                     <div className='flex items-center gap-2'>
@@ -467,7 +467,7 @@ function ProviderIcon({ provider, className }: ProviderIconProps) {
     <div
       className={cn(
         'flex items-center justify-center rounded-lg bg-primary/10 text-lg font-semibold text-primary',
-        className
+        className,
       )}
     >
       {config.icon}

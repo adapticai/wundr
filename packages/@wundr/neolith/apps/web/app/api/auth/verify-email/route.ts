@@ -203,7 +203,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Log success (audit trail)
     if (process.env.NODE_ENV === 'development') {
       console.log(
-        `[GET /api/auth/verify-email] Email verified for user: ${user.email}`
+        `[GET /api/auth/verify-email] Email verified for user: ${user.email}`,
       );
     } else {
       console.log('[GET /api/auth/verify-email] Email verification successful');
@@ -276,9 +276,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'You must be logged in to resend verification email',
-          AUTH_ERROR_CODES.UNAUTHORIZED
+          AUTH_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -295,9 +295,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'User not found',
-          AUTH_ERROR_CODES.UNAUTHORIZED
+          AUTH_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -307,7 +307,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         {
           message: 'Your email is already verified.',
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
@@ -321,7 +321,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           AUTH_ERROR_CODES.RATE_LIMITED,
           {
             resetAt: resetDate.toISOString(),
-          }
+          },
         ),
         {
           status: 429,
@@ -330,14 +330,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': resetDate.toISOString(),
           },
-        }
+        },
       );
     }
 
     // Generate new verification token
     const token = generateToken();
     const expiresAt = new Date(
-      Date.now() + TOKEN_EXPIRATION_HOURS * 60 * 60 * 1000
+      Date.now() + TOKEN_EXPIRATION_HOURS * 60 * 60 * 1000,
     );
 
     // Delete any existing verification tokens for this user
@@ -363,7 +363,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Send verification email
     const emailResult = await sendVerificationEmail(
       user.email,
-      verificationUrl
+      verificationUrl,
     );
 
     if (!emailResult.success) {
@@ -371,7 +371,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (process.env.NODE_ENV === 'development') {
         console.error(
           '[POST /api/auth/verify-email] Failed to send email:',
-          emailResult.error
+          emailResult.error,
         );
       } else {
         console.error('[POST /api/auth/verify-email] Email delivery failed');
@@ -380,16 +380,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'Failed to send verification email. Please try again later.',
-          AUTH_ERROR_CODES.INTERNAL_ERROR
+          AUTH_ERROR_CODES.INTERNAL_ERROR,
         ),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     // Log success
     if (process.env.NODE_ENV === 'development') {
       console.log(
-        `[POST /api/auth/verify-email] Verification email sent to: ${user.email}`
+        `[POST /api/auth/verify-email] Verification email sent to: ${user.email}`,
       );
     } else {
       console.log('[POST /api/auth/verify-email] Verification email sent');
@@ -408,7 +408,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           'X-RateLimit-Remaining': rateLimit.remaining.toString(),
           'X-RateLimit-Reset': new Date(rateLimit.resetAt).toISOString(),
         },
-      }
+      },
     );
   } catch (error) {
     // Log error
@@ -421,9 +421,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createAuthErrorResponse(
         'An internal error occurred',
-        AUTH_ERROR_CODES.INTERNAL_ERROR
+        AUTH_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

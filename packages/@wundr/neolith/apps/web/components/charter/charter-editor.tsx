@@ -94,7 +94,7 @@ export function CharterEditor({
 
   // Values
   const [values, setValues] = React.useState<string[]>(
-    initialCharter?.values ? [...initialCharter.values] : []
+    initialCharter?.values ? [...initialCharter.values] : [],
   );
   const [newValue, setNewValue] = React.useState('');
 
@@ -104,57 +104,57 @@ export function CharterEditor({
   >(
     initialCharter?.personality?.traits
       ? [...(initialCharter.personality.traits as PersonalityTrait[])]
-      : []
+      : [],
   );
   const [communicationStyle, setCommunicationStyle] = React.useState(
-    initialCharter?.personality?.communicationStyle || ''
+    initialCharter?.personality?.communicationStyle || '',
   );
   const [decisionMakingStyle, setDecisionMakingStyle] = React.useState(
-    initialCharter?.personality?.decisionMakingStyle || ''
+    initialCharter?.personality?.decisionMakingStyle || '',
   );
   const [background, setBackground] = React.useState(
-    initialCharter?.personality?.background || ''
+    initialCharter?.personality?.background || '',
   );
 
   // Expertise
   const [expertise, setExpertise] = React.useState<string[]>(
-    initialCharter?.expertise ? [...initialCharter.expertise] : []
+    initialCharter?.expertise ? [...initialCharter.expertise] : [],
   );
   const [newExpertise, setNewExpertise] = React.useState('');
 
   // Communication Preferences
   const [tone, setTone] = React.useState<CommunicationTone>(
-    initialCharter?.communicationPreferences?.tone || 'professional'
+    initialCharter?.communicationPreferences?.tone || 'professional',
   );
   const [responseLength, setResponseLength] = React.useState<ResponseLength>(
-    initialCharter?.communicationPreferences?.responseLength || 'balanced'
+    initialCharter?.communicationPreferences?.responseLength || 'balanced',
   );
   const [formality, setFormality] = React.useState<FormalityLevel>(
-    initialCharter?.communicationPreferences?.formality || 'medium'
+    initialCharter?.communicationPreferences?.formality || 'medium',
   );
   const [useEmoji, setUseEmoji] = React.useState(
-    initialCharter?.communicationPreferences?.useEmoji || false
+    initialCharter?.communicationPreferences?.useEmoji || false,
   );
 
   // Operational Settings
   const [workHoursStart, setWorkHoursStart] = React.useState(
-    initialCharter?.operationalSettings?.workHours?.start || '09:00'
+    initialCharter?.operationalSettings?.workHours?.start || '09:00',
   );
   const [workHoursEnd, setWorkHoursEnd] = React.useState(
-    initialCharter?.operationalSettings?.workHours?.end || '17:00'
+    initialCharter?.operationalSettings?.workHours?.end || '17:00',
   );
   const [timezone, setTimezone] = React.useState(
     initialCharter?.operationalSettings?.workHours?.timezone ||
-      'America/New_York'
+      'America/New_York',
   );
   const [responseTimeTarget, setResponseTimeTarget] = React.useState(
-    initialCharter?.operationalSettings?.responseTimeTarget || 30
+    initialCharter?.operationalSettings?.responseTimeTarget || 30,
   );
   const [autoEscalation, setAutoEscalation] = React.useState(
-    initialCharter?.operationalSettings?.autoEscalation || false
+    initialCharter?.operationalSettings?.autoEscalation || false,
   );
   const [escalationThreshold, setEscalationThreshold] = React.useState(
-    initialCharter?.operationalSettings?.escalationThreshold || 60
+    initialCharter?.operationalSettings?.escalationThreshold || 60,
   );
 
   const isLoading = externalLoading || isSaving;
@@ -196,7 +196,7 @@ export function CharterEditor({
 
     localStorage.setItem(
       `charter-draft-${orchestratorId}`,
-      JSON.stringify(draft)
+      JSON.stringify(draft),
     );
     setLastSaved(new Date());
   }, [
@@ -238,23 +238,23 @@ export function CharterEditor({
         setExpertise(draft.expertise || []);
         setTone(draft.communicationPreferences?.tone || 'professional');
         setResponseLength(
-          draft.communicationPreferences?.responseLength || 'balanced'
+          draft.communicationPreferences?.responseLength || 'balanced',
         );
         setFormality(draft.communicationPreferences?.formality || 'medium');
         setUseEmoji(draft.communicationPreferences?.useEmoji || false);
         setWorkHoursStart(
-          draft.operationalSettings?.workHours?.start || '09:00'
+          draft.operationalSettings?.workHours?.start || '09:00',
         );
         setWorkHoursEnd(draft.operationalSettings?.workHours?.end || '17:00');
         setTimezone(
-          draft.operationalSettings?.workHours?.timezone || 'America/New_York'
+          draft.operationalSettings?.workHours?.timezone || 'America/New_York',
         );
         setResponseTimeTarget(
-          draft.operationalSettings?.responseTimeTarget || 30
+          draft.operationalSettings?.responseTimeTarget || 30,
         );
         setAutoEscalation(draft.operationalSettings?.autoEscalation || false);
         setEscalationThreshold(
-          draft.operationalSettings?.escalationThreshold || 60
+          draft.operationalSettings?.escalationThreshold || 60,
         );
       } catch (error) {
         console.error('Failed to load draft:', error);
@@ -286,7 +286,7 @@ export function CharterEditor({
    */
   const handleTraitToggle = React.useCallback((trait: PersonalityTrait) => {
     setSelectedTraits(prev =>
-      prev.includes(trait) ? prev.filter(t => t !== trait) : [...prev, trait]
+      prev.includes(trait) ? prev.filter(t => t !== trait) : [...prev, trait],
     );
     setIsDirty(true);
   }, []);
@@ -437,7 +437,7 @@ export function CharterEditor({
   const handleCancel = React.useCallback(() => {
     if (isDirty) {
       const confirmCancel = window.confirm(
-        'You have unsaved changes. Are you sure you want to cancel?'
+        'You have unsaved changes. Are you sure you want to cancel?',
       );
       if (!confirmCancel) {
         return;
@@ -643,7 +643,7 @@ export function CharterEditor({
                         'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
                         selectedTraits.includes(trait)
                           ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground'
+                          : 'border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground',
                       )}
                     >
                       {trait}

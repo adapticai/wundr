@@ -59,7 +59,7 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -68,9 +68,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Authentication required',
-          PROCESSING_ERROR_CODES.UNAUTHORIZED
+          PROCESSING_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -81,9 +81,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Invalid file ID format',
-          PROCESSING_ERROR_CODES.VALIDATION_ERROR
+          PROCESSING_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -95,9 +95,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Request body is required with format specification',
-          PROCESSING_ERROR_CODES.VALIDATION_ERROR
+          PROCESSING_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -107,9 +107,9 @@ export async function POST(
         createProcessingErrorResponse(
           'Invalid conversion options',
           PROCESSING_ERROR_CODES.VALIDATION_ERROR,
-          { errors: optionsResult.error.flatten().fieldErrors }
+          { errors: optionsResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -132,9 +132,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           'File not found',
-          PROCESSING_ERROR_CODES.FILE_NOT_FOUND
+          PROCESSING_ERROR_CODES.FILE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -152,9 +152,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Not a member of this workspace',
-          PROCESSING_ERROR_CODES.NOT_WORKSPACE_MEMBER
+          PROCESSING_ERROR_CODES.NOT_WORKSPACE_MEMBER,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -163,9 +163,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           `Document conversion is not supported for file type '${file.mimeType}'`,
-          PROCESSING_ERROR_CODES.UNSUPPORTED_FILE_TYPE
+          PROCESSING_ERROR_CODES.UNSUPPORTED_FILE_TYPE,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -174,9 +174,9 @@ export async function POST(
       return NextResponse.json(
         createProcessingErrorResponse(
           `File is not ready for processing. Current status: ${file.status}`,
-          PROCESSING_ERROR_CODES.VALIDATION_ERROR
+          PROCESSING_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -241,16 +241,16 @@ export async function POST(
         },
         message: 'Document conversion job created successfully',
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/files/:id/convert] Error:', error);
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',
-        PROCESSING_ERROR_CODES.INTERNAL_ERROR
+        PROCESSING_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

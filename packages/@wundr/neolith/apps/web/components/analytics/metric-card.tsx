@@ -140,7 +140,7 @@ export function MetricCard({
                 change.trend === 'up' &&
                   'text-emerald-600 dark:text-emerald-400',
                 change.trend === 'down' && 'text-rose-600 dark:text-rose-400',
-                change.trend === 'stable' && 'text-muted-foreground'
+                change.trend === 'stable' && 'text-muted-foreground',
               )}
               aria-label={`${change.trend === 'up' ? 'Increased' : change.trend === 'down' ? 'Decreased' : 'No change'} by ${Math.abs(change.percent).toFixed(1)}%`}
             >

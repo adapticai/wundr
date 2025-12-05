@@ -61,7 +61,7 @@ interface FilePreviewModalProps {
  * Get file type category from MIME type
  */
 function getFileCategory(
-  mimeType: string
+  mimeType: string,
 ):
   | 'image'
   | 'video'
@@ -232,7 +232,7 @@ function ImageViewer({ file }: { file: PreviewFile }) {
             alt={file.originalName}
             className={cn(
               'max-w-full max-h-full object-contain transition-transform duration-200',
-              isLoading && 'opacity-0'
+              isLoading && 'opacity-0',
             )}
             style={{
               transform: `scale(${zoom}) rotate(${rotation}deg)`,

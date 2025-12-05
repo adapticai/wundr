@@ -9,7 +9,7 @@
  */
 export async function initializeStore(
   storeId: string,
-  config: any
+  config: any,
 ): Promise<any> {
   console.log('[ProcessingStores] initializeStore called with:', {
     storeId,
@@ -25,7 +25,7 @@ export async function initializeStore(
 export async function storeData(
   storeId: string,
   key: string,
-  data: any
+  data: any,
 ): Promise<void> {
   console.log('[ProcessingStores] storeData called with:', {
     storeId,
@@ -63,7 +63,7 @@ export async function deleteData(storeId: string, key: string): Promise<void> {
  */
 export async function listKeys(
   storeId: string,
-  prefix?: string
+  prefix?: string,
 ): Promise<string[]> {
   console.log('[ProcessingStores] listKeys called with:', {
     storeId,
@@ -99,7 +99,7 @@ export async function getStoreStats(storeId: string): Promise<any> {
  */
 export async function backupStore(
   storeId: string,
-  backupLocation: string
+  backupLocation: string,
 ): Promise<any> {
   console.log('[ProcessingStores] backupStore called with:', {
     storeId,
@@ -183,7 +183,7 @@ export const processingJobs = {
   },
 
   create(
-    data: Omit<ProcessingJob, 'id' | 'createdAt' | 'updatedAt'>
+    data: Omit<ProcessingJob, 'id' | 'createdAt' | 'updatedAt'>,
   ): ProcessingJob {
     const job: ProcessingJob = {
       ...data,
@@ -197,7 +197,7 @@ export const processingJobs = {
 
   update(
     jobId: string,
-    updates: Partial<ProcessingJob>
+    updates: Partial<ProcessingJob>,
   ): ProcessingJob | undefined {
     const job = jobsStore.get(jobId);
     if (!job) {

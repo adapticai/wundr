@@ -79,9 +79,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createPresenceErrorResponse(
           'Authentication required',
-          PRESENCE_ERROR_CODES.UNAUTHORIZED
+          PRESENCE_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -94,9 +94,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createPresenceErrorResponse(
           'organizationId query parameter is required',
           PRESENCE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -116,9 +116,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createPresenceErrorResponse(
           'Access denied to this organization',
-          PRESENCE_ERROR_CODES.FORBIDDEN
+          PRESENCE_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Get message counts for all Orchestrators
     const orchestratorUserIds = orchestrators.map(
-      orchestrator => orchestrator.userId
+      orchestrator => orchestrator.userId,
     );
     const messageCounts = await prisma.message.groupBy({
       by: ['authorId'],
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     const messageCountMap = new Map(
-      messageCounts.map(mc => [mc.authorId, mc._count?.id ?? 0])
+      messageCounts.map(mc => [mc.authorId, mc._count?.id ?? 0]),
     );
 
     // Build Orchestrator presence responses
@@ -160,7 +160,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           orchestrator.status === 'ONLINE' &&
           isUserOnline(orchestrator.user.lastActiveAt),
         messageCount: messageCountMap.get(orchestrator.userId) ?? 0,
-      })
+      }),
     );
 
     return NextResponse.json({
@@ -171,9 +171,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

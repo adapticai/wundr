@@ -110,7 +110,7 @@ export interface UseWorkflowsReturn {
  */
 export function useWorkflows(
   workspaceId: string,
-  options?: UseWorkflowsOptions
+  options?: UseWorkflowsOptions,
 ): UseWorkflowsReturn {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -182,7 +182,7 @@ export function useWorkflows(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(input),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -202,7 +202,7 @@ export function useWorkflows(
         return null;
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   return {
@@ -278,7 +278,7 @@ export interface UseWorkflowReturn {
  */
 export function useWorkflow(
   workspaceId: string,
-  workflowId: string
+  workflowId: string,
 ): UseWorkflowReturn {
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -298,7 +298,7 @@ export function useWorkflow(
         `/api/workspaces/${workspaceId}/workflows/${workflowId}`,
         {
           signal: abortController.signal,
-        }
+        },
       );
       if (!response.ok) {
         if (response.status === 404) {
@@ -342,7 +342,7 @@ export function useWorkflow(
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(input),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -362,7 +362,7 @@ export function useWorkflow(
         return null;
       }
     },
-    [workspaceId, workflowId]
+    [workspaceId, workflowId],
   );
 
   const deleteWorkflow = useCallback(async (): Promise<boolean> => {
@@ -371,7 +371,7 @@ export function useWorkflow(
         `/api/workspaces/${workspaceId}/workflows/${workflowId}`,
         {
           method: 'DELETE',
-        }
+        },
       );
 
       if (!response.ok) {
@@ -394,7 +394,7 @@ export function useWorkflow(
         `/api/workspaces/${workspaceId}/workflows/${workflowId}/activate`,
         {
           method: 'POST',
-        }
+        },
       );
 
       if (!response.ok) {
@@ -421,7 +421,7 @@ export function useWorkflow(
         `/api/workspaces/${workspaceId}/workflows/${workflowId}/deactivate`,
         {
           method: 'POST',
-        }
+        },
       );
 
       if (!response.ok) {
@@ -451,7 +451,7 @@ export function useWorkflow(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ testMode }),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -470,7 +470,7 @@ export function useWorkflow(
         return null;
       }
     },
-    [workspaceId, workflowId]
+    [workspaceId, workflowId],
   );
 
   const testWorkflow =
@@ -558,7 +558,7 @@ export interface UseWorkflowExecutionsReturn {
 export function useWorkflowExecutions(
   workspaceId: string,
   workflowId: string,
-  options?: UseWorkflowExecutionsOptions
+  options?: UseWorkflowExecutionsOptions,
 ): UseWorkflowExecutionsReturn {
   const [executions, setExecutions] = useState<WorkflowExecution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -611,7 +611,7 @@ export function useWorkflowExecutions(
 
         setHasMore(
           (loadMore ? offset + newExecutions.length : newExecutions.length) <
-            data.total
+            data.total,
         );
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
@@ -624,7 +624,7 @@ export function useWorkflowExecutions(
 
       return () => abortController.abort();
     },
-    [workspaceId, workflowId, options?.status, options?.limit, offset]
+    [workspaceId, workflowId, options?.status, options?.limit, offset],
   );
 
   useEffect(() => {
@@ -644,7 +644,7 @@ export function useWorkflowExecutions(
       try {
         const response = await fetch(
           `/api/workspaces/${workspaceId}/workflows/${workflowId}/executions/${executionId}/cancel`,
-          { method: 'POST' }
+          { method: 'POST' },
         );
 
         if (!response.ok) {
@@ -656,8 +656,8 @@ export function useWorkflowExecutions(
           prev.map(e =>
             e.id === executionId
               ? { ...e, status: 'cancelled' as ExecutionStatus }
-              : e
-          )
+              : e,
+          ),
         );
         return true;
       } catch (err) {
@@ -665,7 +665,7 @@ export function useWorkflowExecutions(
         return false;
       }
     },
-    [workspaceId, workflowId]
+    [workspaceId, workflowId],
   );
 
   return {
@@ -729,7 +729,7 @@ export interface UseWorkflowTemplatesReturn {
  */
 export function useWorkflowTemplates(
   workspaceId?: string,
-  category?: WorkflowTemplateCategory
+  category?: WorkflowTemplateCategory,
 ): UseWorkflowTemplatesReturn {
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -787,7 +787,7 @@ export function useWorkflowTemplates(
     async (
       templateId: string,
       workspaceId: string,
-      overrides?: Partial<CreateWorkflowInput>
+      overrides?: Partial<CreateWorkflowInput>,
     ): Promise<Workflow | null> => {
       try {
         const response = await fetch(
@@ -796,13 +796,13 @@ export function useWorkflowTemplates(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ templateId, ...overrides }),
-          }
+          },
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            errorData.message || 'Failed to create workflow from template'
+            errorData.message || 'Failed to create workflow from template',
           );
         }
 
@@ -816,7 +816,7 @@ export function useWorkflowTemplates(
         return null;
       }
     },
-    []
+    [],
   );
 
   return {
@@ -870,7 +870,7 @@ type BuilderAction =
  */
 function builderReducer(
   state: BuilderState,
-  action: BuilderAction
+  action: BuilderAction,
 ): BuilderState {
   switch (action.type) {
     case 'SET_TRIGGER':
@@ -889,7 +889,7 @@ function builderReducer(
         actions: state.actions.map(a =>
           a.id === action.payload.id
             ? ({ ...a, ...action.payload.config } as ActionConfig)
-            : a
+            : a,
         ),
       };
     case 'REMOVE_ACTION':
@@ -1000,7 +1000,7 @@ export interface UseWorkflowBuilderReturn {
  * ```
  */
 export function useWorkflowBuilder(
-  initialWorkflow?: Partial<Workflow>
+  initialWorkflow?: Partial<Workflow>,
 ): UseWorkflowBuilderReturn {
   const [state, dispatch] = useReducer(builderReducer, {
     trigger: initialWorkflow?.trigger ?? null,
@@ -1017,14 +1017,14 @@ export function useWorkflowBuilder(
     (action: Omit<ActionConfig, 'id' | 'order'>) => {
       dispatch({ type: 'ADD_ACTION', payload: action });
     },
-    []
+    [],
   );
 
   const updateAction = useCallback(
     (id: string, config: Partial<ActionConfig>) => {
       dispatch({ type: 'UPDATE_ACTION', payload: { id, config } });
     },
-    []
+    [],
   );
 
   const removeAction = useCallback((id: string) => {

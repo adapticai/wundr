@@ -74,7 +74,7 @@ interface ActivityDetails {
 async function getOrchestratorWithWorkspaceAccess(
   workspaceId: string,
   orchestratorId: string,
-  userId: string
+  userId: string,
 ) {
   // First, verify workspace exists and user has access
   const workspace = await prisma.workspace.findUnique({
@@ -176,7 +176,7 @@ function getMemoryTypeForActivity(activityType: ActivityType): string {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -185,9 +185,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -200,9 +200,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid parameters',
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -210,16 +210,16 @@ export async function GET(
     const result = await getOrchestratorWithWorkspaceAccess(
       workspaceId,
       orchestratorId,
-      session.user.id
+      session.user.id,
     );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -227,7 +227,7 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const limit = Math.min(
       parseInt(searchParams.get('limit') || '50', 10),
-      100
+      100,
     );
     const cursor = searchParams.get('cursor') || undefined;
     const activityTypes = searchParams.get('type')?.split(',') || undefined;
@@ -246,8 +246,8 @@ export async function GET(
       // Map activity types to memory types
       const memoryTypes = new Set(
         activityTypes.map(type =>
-          getMemoryTypeForActivity(type as ActivityType)
-        )
+          getMemoryTypeForActivity(type as ActivityType),
+        ),
       );
       where.memoryType = { in: Array.from(memoryTypes) };
     }
@@ -358,14 +358,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/activity] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -392,7 +392,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -401,9 +401,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -416,9 +416,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid parameters',
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -430,9 +430,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -446,9 +446,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Missing required fields: type and description',
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -466,16 +466,16 @@ export async function POST(
     const result = await getOrchestratorWithWorkspaceAccess(
       workspaceId,
       orchestratorId,
-      session.user.id
+      session.user.id,
     );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -489,9 +489,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to log activity for this Orchestrator',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -500,9 +500,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           `Invalid activity type. Must be one of: ${Object.values(ACTIVITY_TYPES).join(', ')}`,
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -594,19 +594,19 @@ export async function POST(
         data: formattedActivity,
         message: 'Activity logged successfully',
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/activity] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

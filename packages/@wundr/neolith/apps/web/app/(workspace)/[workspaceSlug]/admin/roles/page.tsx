@@ -23,7 +23,7 @@ export default function AdminRolesPage() {
   useEffect(() => {
     setPageHeader(
       'Roles & Permissions',
-      'Define custom roles and permissions for your team'
+      'Define custom roles and permissions for your team',
     );
   }, [setPageHeader]);
 
@@ -37,7 +37,7 @@ export default function AdminRolesPage() {
       await createRole(data);
       setShowCreateModal(false);
     },
-    [createRole]
+    [createRole],
   );
 
   const handleUpdate = useCallback(
@@ -45,20 +45,20 @@ export default function AdminRolesPage() {
       await updateRole(roleId, data);
       setEditingRole(null);
     },
-    [updateRole]
+    [updateRole],
   );
 
   const handleDelete = useCallback(
     async (roleId: string) => {
       if (
         window.confirm(
-          'Are you sure you want to delete this role? Members with this role will be assigned the default member role.'
+          'Are you sure you want to delete this role? Members with this role will be assigned the default member role.',
         )
       ) {
         await deleteRole(roleId);
       }
     },
-    [deleteRole]
+    [deleteRole],
   );
 
   // Define available permissions
@@ -149,7 +149,7 @@ export default function AdminRolesPage() {
           onClick={() => setShowCreateModal(true)}
           className={cn(
             'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2',
-            'text-sm font-medium text-primary-foreground hover:bg-primary/90'
+            'text-sm font-medium text-primary-foreground hover:bg-primary/90',
           )}
         >
           <PlusIcon className='h-4 w-4' />
@@ -390,7 +390,7 @@ function RoleEditorModal({
   const [color, setColor] = useState(role?.color ?? '#6366f1');
   // Store permissions in the API format: { resource, actions }[]
   const [permissions, setPermissions] = useState<RolePermission[]>(
-    role?.permissions ?? []
+    role?.permissions ?? [],
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -465,7 +465,7 @@ function RoleEditorModal({
                 className={cn(
                   'mt-1 block w-full rounded-md border border-input bg-background',
                   'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
                 )}
                 placeholder='e.g., Moderator'
                 required
@@ -488,7 +488,7 @@ function RoleEditorModal({
                 className={cn(
                   'mt-1 block w-full rounded-md border border-input bg-background',
                   'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
                 )}
                 placeholder='Describe what this role is for...'
               />
@@ -509,7 +509,7 @@ function RoleEditorModal({
                       'h-8 w-8 rounded-full border-2',
                       color === c
                         ? 'border-foreground ring-2 ring-offset-2 ring-offset-background'
-                        : 'border-transparent'
+                        : 'border-transparent',
                     )}
                     style={{ backgroundColor: c }}
                   />
@@ -564,7 +564,7 @@ function RoleEditorModal({
               disabled={isSubmitting || !name.trim()}
               className={cn(
                 'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-                'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+                'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
               )}
             >
               {isSubmitting

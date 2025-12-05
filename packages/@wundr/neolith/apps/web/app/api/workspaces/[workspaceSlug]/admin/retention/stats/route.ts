@@ -46,7 +46,7 @@ interface RouteContext {
  */
 export async function GET(
   _request: Request,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -79,11 +79,11 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/admin/retention/stats] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       { error: 'Failed to fetch stats' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

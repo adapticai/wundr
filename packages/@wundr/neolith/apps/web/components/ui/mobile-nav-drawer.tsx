@@ -69,7 +69,7 @@ export function MobileNavDrawer({
         setIsOpen(newOpen);
       }
     },
-    [onOpenChange]
+    [onOpenChange],
   );
 
   const handleItemClick = React.useCallback(
@@ -82,7 +82,7 @@ export function MobileNavDrawer({
         item.onClick();
       }
     },
-    [handleOpenChange]
+    [handleOpenChange],
   );
 
   const isControlled = open !== undefined;
@@ -134,7 +134,7 @@ export function MobileNavDrawer({
                 'flex items-center gap-3 rounded-lg px-3 py-3',
                 'text-sm font-medium transition-colors',
                 'hover:bg-accent hover:text-accent-foreground',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               )}
             >
               {item.icon && (
@@ -177,7 +177,7 @@ export function MobileNavDrawerItem({
         'text-sm font-medium transition-colors text-left',
         'hover:bg-accent hover:text-accent-foreground',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        className
+        className,
       )}
     >
       {children}

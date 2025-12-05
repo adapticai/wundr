@@ -194,9 +194,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createGenesisErrorResponse(
           'Authentication required',
-          GENESIS_ERROR_CODES.UNAUTHORIZED
+          GENESIS_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -210,9 +210,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createGenesisErrorResponse(
           'Invalid JSON body',
-          GENESIS_ERROR_CODES.VALIDATION_ERROR
+          GENESIS_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -224,9 +224,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           GENESIS_ERROR_CODES.VALIDATION_ERROR,
           {
             errors: parseResult.error.flatten().fieldErrors,
-          }
+          },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -282,9 +282,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createGenesisErrorResponse(
             'An organization with this name already exists. Please choose a different name.',
-            GENESIS_ERROR_CODES.ORG_NOT_FOUND
+            GENESIS_ERROR_CODES.ORG_NOT_FOUND,
           ),
-          { status: 409 }
+          { status: 409 },
         );
       }
 
@@ -292,9 +292,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createGenesisErrorResponse(
             'Insufficient permissions. Admin or Owner role required.',
-            GENESIS_ERROR_CODES.FORBIDDEN
+            GENESIS_ERROR_CODES.FORBIDDEN,
           ),
-          { status: 403 }
+          { status: 403 },
         );
       }
     } else {
@@ -329,9 +329,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createGenesisErrorResponse(
           'A workspace with this slug already exists in the organization',
-          GENESIS_ERROR_CODES.WORKSPACE_SLUG_EXISTS
+          GENESIS_ERROR_CODES.WORKSPACE_SLUG_EXISTS,
         ),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -357,7 +357,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           size: input.teamSize as any,
           customContext: `Risk tolerance: ${input.riskTolerance}. Team size preference: ${input.teamSize}.`,
           dryRun: input.dryRun,
-        }
+        },
       );
 
       console.log('[generate-org] Genesis generation complete:', {
@@ -374,9 +374,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           GENESIS_ERROR_CODES.GENERATION_FAILED,
           {
             error: error instanceof Error ? error.message : 'Unknown error',
-          }
+          },
         ),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -412,7 +412,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             traits: [],
           },
           kpis: [],
-        })
+        }),
       ),
       disciplines: genesisResult.disciplines.map(
         (discipline: DisciplineApiResponse) => ({
@@ -425,7 +425,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             discipline.claudeMd?.objectives?.[0] || discipline.description,
           activities: discipline.hooks?.map(h => h.description) || [],
           capabilities: discipline.agentIds || [],
-        })
+        }),
       ),
       agents: genesisResult.agents.map((agent: AgentApiResponse) => ({
         id: agent.id,
@@ -471,9 +471,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           GENESIS_ERROR_CODES.MIGRATION_FAILED,
           {
             error: error instanceof Error ? error.message : 'Unknown error',
-          }
+          },
         ),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -534,7 +534,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           // Find discipline ID for this Orchestrator
           const orchestratorDisciplines = neolithResult.disciplines.filter(
             (d: DisciplineApiResponse) =>
-              orchestrator.disciplines.includes(d.id)
+              orchestrator.disciplines.includes(d.id),
           );
           const primaryDisciplineId = orchestratorDisciplines[0]
             ? disciplineMap.get(orchestratorDisciplines[0].id)
@@ -626,7 +626,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
           // 8.6. Auto-assign Orchestrator to Discipline Channel
           const orchestratorUserId = orchestratorMap.get(
-            discipline.orchestratorId
+            discipline.orchestratorId,
           );
           if (orchestratorUserId) {
             await tx.channelMember.create({
@@ -715,7 +715,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       {
         maxWait: 30000, // 30 seconds
         timeout: 60000, // 60 seconds
-      }
+      },
     );
 
     // =========================================================================
@@ -749,7 +749,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         message: 'Workspace created successfully with organizational structure',
         durationMs: duration,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/workspaces/generate-org] Error:', error);
@@ -762,9 +762,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createGenesisErrorResponse(
           'A resource with this identifier already exists',
-          GENESIS_ERROR_CODES.WORKSPACE_SLUG_EXISTS
+          GENESIS_ERROR_CODES.WORKSPACE_SLUG_EXISTS,
         ),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -774,9 +774,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         GENESIS_ERROR_CODES.INTERNAL_ERROR,
         {
           error: error instanceof Error ? error.message : 'Unknown error',
-        }
+        },
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

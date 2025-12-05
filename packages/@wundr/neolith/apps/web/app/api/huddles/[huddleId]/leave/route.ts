@@ -47,7 +47,7 @@ interface RouteContext {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -56,9 +56,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED
+          CALL_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -69,9 +69,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid huddle ID format',
-          CALL_ERROR_CODES.VALIDATION_ERROR
+          CALL_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -118,7 +118,7 @@ export async function POST(
           huddles?: HuddleResponse[];
         } | null;
         const foundHuddle = settings?.huddles?.find(
-          h => h.id === params.huddleId
+          h => h.id === params.huddleId,
         );
 
         if (foundHuddle) {
@@ -137,9 +137,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Huddle not found',
-          CALL_ERROR_CODES.HUDDLE_NOT_FOUND
+          CALL_ERROR_CODES.HUDDLE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -148,9 +148,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Huddle has already ended',
-          CALL_ERROR_CODES.HUDDLE_ALREADY_ENDED
+          CALL_ERROR_CODES.HUDDLE_ALREADY_ENDED,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -176,9 +176,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You are not in this huddle',
-          CALL_ERROR_CODES.NOT_IN_HUDDLE
+          CALL_ERROR_CODES.NOT_IN_HUDDLE,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -218,7 +218,7 @@ export async function POST(
           const updatedHuddles = settings.huddles.map(h =>
             h.id === params.huddleId
               ? { ...h, status: 'ended' as const, endedAt: now.toISOString() }
-              : h
+              : h,
           );
 
           await prisma.workspace.update({
@@ -251,9 +251,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR
+        CALL_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

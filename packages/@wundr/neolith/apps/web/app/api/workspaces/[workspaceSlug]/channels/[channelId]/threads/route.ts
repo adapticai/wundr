@@ -38,7 +38,7 @@ interface RouteContext {
 async function checkAccess(
   workspaceId: string,
   channelId: string,
-  userId: string
+  userId: string,
 ) {
   // Get workspace with organization
   const workspace = await prisma.workspace.findUnique({
@@ -108,7 +108,7 @@ async function checkAccess(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -117,9 +117,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          THREAD_ERROR_CODES.UNAUTHORIZED
+          THREAD_ERROR_CODES.UNAUTHORIZED,
         ),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -138,9 +138,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           THREAD_ERROR_CODES.VALIDATION_ERROR,
-          { errors: queryResult.error.flatten().fieldErrors }
+          { errors: queryResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -150,16 +150,16 @@ export async function GET(
     const access = await checkAccess(
       workspaceId,
       params.channelId,
-      session.user.id
+      session.user.id,
     );
 
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Access denied or resources not found',
-          THREAD_ERROR_CODES.FORBIDDEN
+          THREAD_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -292,13 +292,13 @@ export async function GET(
           ...thread,
           lastReplyAt: lastReply?.createdAt || thread.createdAt,
         };
-      })
+      }),
     );
 
     // Sort by last reply timestamp
     threadsWithLastReply.sort(
       (a, b) =>
-        new Date(b.lastReplyAt).getTime() - new Date(a.lastReplyAt).getTime()
+        new Date(b.lastReplyAt).getTime() - new Date(a.lastReplyAt).getTime(),
     );
 
     // Check if there are more threads
@@ -332,14 +332,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/channels/:channelId/threads] Error:',
-      error
+      error,
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        THREAD_ERROR_CODES.INTERNAL_ERROR
+        THREAD_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

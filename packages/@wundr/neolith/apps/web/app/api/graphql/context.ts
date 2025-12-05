@@ -125,7 +125,7 @@ async function extractUser(req: NextRequest): Promise<ContextUser | null> {
  * ```
  */
 export async function createContext(
-  options: CreateContextOptions
+  options: CreateContextOptions,
 ): Promise<GraphQLContext> {
   const { req } = options;
 
@@ -162,7 +162,7 @@ export async function createContext(
  * ```
  */
 export function isAuthenticated(
-  context: GraphQLContext
+  context: GraphQLContext,
 ): context is GraphQLContext & { user: ContextUser } {
   return context.user !== null;
 }
@@ -174,7 +174,7 @@ export function isAuthenticated(
  * @returns True if the user is an authenticated admin
  */
 export function isAdmin(
-  context: GraphQLContext
+  context: GraphQLContext,
 ): context is GraphQLContext & { user: ContextUser } {
   return context.user !== null && context.user.role === 'ADMIN';
 }

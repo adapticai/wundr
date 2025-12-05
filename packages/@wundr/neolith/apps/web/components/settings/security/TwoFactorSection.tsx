@@ -190,7 +190,7 @@ export function TwoFactorSection({ enabled, onToggle }: TwoFactorSectionProps) {
                   value={verificationCode}
                   onChange={e =>
                     setVerificationCode(
-                      e.target.value.replace(/\D/g, '').slice(0, 6)
+                      e.target.value.replace(/\D/g, '').slice(0, 6),
                     )
                   }
                   placeholder='000000'

@@ -99,7 +99,7 @@ export function OrchestratorActivity({
                   <div
                     className={cn(
                       'flex h-8 w-8 items-center justify-center rounded-full bg-muted shrink-0',
-                      iconColor
+                      iconColor,
                     )}
                   >
                     <Icon className='h-4 w-4' />
