@@ -21,11 +21,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 
+import { BudgetManagement } from './BudgetManagement';
 import { CapabilitySettings } from './CapabilitySettings';
+import { CharterSettings } from './CharterSettings';
 import { GeneralSettings } from './GeneralSettings';
 import { IntegrationSettings } from './IntegrationSettings';
 import { ModelSelector } from './ModelSelector';
 import { ResponseTemplates } from './ResponseTemplates';
+import { ScheduleSettings } from './ScheduleSettings';
 import { TriggerSettings } from './TriggerSettings';
 
 import type { Prisma } from '@neolith/database';
@@ -62,6 +65,7 @@ interface OrchestratorSettingsFormProps {
 export function OrchestratorSettingsForm({
   orchestrator,
   isAdmin,
+  workspaceSlug,
 }: OrchestratorSettingsFormProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -136,13 +140,16 @@ export function OrchestratorSettingsForm({
         onValueChange={setActiveTab}
         className='space-y-6'
       >
-        <TabsList className='grid w-full grid-cols-6 lg:w-auto'>
+        <TabsList className='grid w-full grid-cols-9 lg:w-auto'>
           <TabsTrigger value='general'>General</TabsTrigger>
+          <TabsTrigger value='charter'>Charter</TabsTrigger>
           <TabsTrigger value='capabilities'>Capabilities</TabsTrigger>
           <TabsTrigger value='triggers'>Triggers</TabsTrigger>
           <TabsTrigger value='templates'>Templates</TabsTrigger>
           <TabsTrigger value='model'>Model</TabsTrigger>
           <TabsTrigger value='integrations'>Integrations</TabsTrigger>
+          <TabsTrigger value='schedule'>Schedule</TabsTrigger>
+          <TabsTrigger value='budget'>Budget</TabsTrigger>
         </TabsList>
 
         <TabsContent value='general' className='space-y-4'>
@@ -150,6 +157,14 @@ export function OrchestratorSettingsForm({
             config={orchestrator.config}
             user={orchestrator.user}
             onSave={data => handleSave('General', data)}
+            disabled={isLocked || isPending}
+          />
+        </TabsContent>
+
+        <TabsContent value='charter' className='space-y-4'>
+          <CharterSettings
+            orchestratorId={orchestrator.id}
+            charterId={(orchestrator.config as any)?.charterId as string | undefined}
             disabled={isLocked || isPending}
           />
         </TabsContent>
@@ -192,6 +207,21 @@ export function OrchestratorSettingsForm({
           <IntegrationSettings
             config={orchestrator.config}
             onSave={data => handleSave('Integrations', data)}
+            disabled={isLocked || isPending}
+          />
+        </TabsContent>
+
+        <TabsContent value='schedule' className='space-y-4'>
+          <ScheduleSettings
+            orchestratorId={orchestrator.id}
+            workspaceSlug={workspaceSlug}
+            disabled={isLocked || isPending}
+          />
+        </TabsContent>
+
+        <TabsContent value='budget' className='space-y-4'>
+          <BudgetManagement
+            orchestratorId={orchestrator.id}
             disabled={isLocked || isPending}
           />
         </TabsContent>

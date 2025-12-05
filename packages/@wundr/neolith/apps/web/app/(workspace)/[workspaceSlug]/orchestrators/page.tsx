@@ -8,7 +8,7 @@
  */
 'use client';
 
-import { Users, Plus, X } from 'lucide-react';
+import { Users, Plus, X, Search, AlertCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 
@@ -272,7 +272,7 @@ export default function OrchestratorsPage() {
         <div className='flex flex-col gap-4 sm:flex-row sm:items-center'>
           {/* Search */}
           <div className='relative flex-1'>
-            <SearchIcon className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+            <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
             <input
               ref={searchInputRef}
               type='text'
@@ -330,7 +330,7 @@ export default function OrchestratorsPage() {
               onClick={handleClearFilters}
               className='inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground'
             >
-              <XIcon className='h-4 w-4' />
+              <X className='h-4 w-4' />
               Clear ({activeFiltersCount})
             </button>
           )}
@@ -352,7 +352,7 @@ export default function OrchestratorsPage() {
       {error && (
         <div className='rounded-lg border border-red-200 bg-red-50 p-4'>
           <div className='flex items-center gap-2 text-red-800'>
-            <AlertIcon className='h-5 w-5' />
+            <AlertCircle className='h-5 w-5' />
             <p className='text-sm font-medium'>Failed to load orchestrators</p>
           </div>
           <p className='mt-1 text-sm text-red-600'>{error.message}</p>
@@ -452,61 +452,5 @@ function StatCard({
       <p className='text-sm font-medium text-muted-foreground'>{label}</p>
       <p className={cn('text-2xl font-bold', color)}>{value}</p>
     </div>
-  );
-}
-
-// Icons
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='11' cy='11' r='8' />
-      <path d='m21 21-4.3-4.3' />
-    </svg>
-  );
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M18 6 6 18' />
-      <path d='m6 6 12 12' />
-    </svg>
-  );
-}
-
-function AlertIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='12' cy='12' r='10' />
-      <line x1='12' x2='12' y1='8' y2='12' />
-      <line x1='12' x2='12.01' y1='16' y2='16' />
-    </svg>
   );
 }

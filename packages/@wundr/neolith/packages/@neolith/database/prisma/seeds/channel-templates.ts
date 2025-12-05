@@ -16,7 +16,8 @@ const prisma = new PrismaClient();
 const DEFAULT_TEMPLATES = [
   {
     name: 'Daily Standup',
-    description: 'Standard daily standup format with yesterday, today, and blockers',
+    description:
+      'Standard daily standup format with yesterday, today, and blockers',
     content: `**Daily Standup - {date}**
 
 **Yesterday:**
@@ -276,7 +277,7 @@ async function main() {
 
 // Run the seed
 main()
-  .catch((error) => {
+  .catch(error => {
     console.error('Seed failed:', error);
     process.exit(1);
   })

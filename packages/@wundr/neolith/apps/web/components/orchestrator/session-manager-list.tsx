@@ -7,6 +7,7 @@
 'use client';
 
 import { Plus, Settings, Play, Pause, Users } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +54,10 @@ export function SessionManagerList({
   onCreateNew,
   className,
 }: SessionManagerListProps) {
+  const router = useRouter();
+  const params = useParams();
+  const workspaceSlug = params.workspaceSlug as string;
+
   const [sessionManagers, setSessionManagers] = useState<SessionManager[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -157,7 +162,16 @@ export function SessionManagerList({
                 'cursor-pointer hover:border-primary/50 hover:shadow-md transition-all',
                 className,
               )}
-              onClick={() => onSelect?.(sm)}
+              onClick={() => {
+                if (onSelect) {
+                  onSelect(sm);
+                } else {
+                  // Navigate to detail page
+                  router.push(
+                    `/${workspaceSlug}/orchestrators/${orchestratorId}/session-managers/${sm.id}`,
+                  );
+                }
+              }}
             >
               <CardHeader className='pb-3'>
                 <div className='flex justify-between items-start'>

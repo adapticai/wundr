@@ -140,8 +140,13 @@ export interface AdminActivityApiResponse {
 
 /**
  * Orchestrator status enum
+ *
+ * Represents the operational status of an orchestrator.
+ * Must match the enum defined in types/orchestrator.ts
+ *
+ * @see {@link ../types/orchestrator.ts#OrchestratorStatus}
  */
-export type OrchestratorStatus = 'active' | 'inactive' | 'archived' | 'draft';
+export type OrchestratorStatus = 'ONLINE' | 'OFFLINE' | 'BUSY' | 'AWAY';
 
 /**
  * Orchestrator identity information
@@ -554,14 +559,41 @@ export function isChartDataPoint(value: unknown): value is ChartDataPoint {
 }
 
 /**
+ * Type guard to check if a value is a valid OrchestratorStatus
+ *
+ * @param value - Value to check
+ * @returns True if value is a valid OrchestratorStatus
+ */
+export function isOrchestratorStatus(
+  value: unknown,
+): value is OrchestratorStatus {
+  return (
+    typeof value === 'string' &&
+    ['ONLINE', 'OFFLINE', 'BUSY', 'AWAY'].includes(value)
+  );
+}
+
+/**
  * Type guard to check if a value is a valid OrchestratorApiResponse
  */
 export function isOrchestratorApiResponse(
   value: unknown,
 ): value is OrchestratorApiResponse {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    ('title' in value || 'role' in value || 'id' in value)
-  );
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const obj = value as Record<string, unknown>;
+
+  // Must have at least one of: title, role, or id
+  if (!('title' in obj || 'role' in obj || 'id' in obj)) {
+    return false;
+  }
+
+  // If status exists, it must be valid
+  if ('status' in obj && obj.status !== undefined) {
+    return isOrchestratorStatus(obj.status);
+  }
+
+  return true;
 }

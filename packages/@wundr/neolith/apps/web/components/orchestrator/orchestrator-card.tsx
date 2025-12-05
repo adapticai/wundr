@@ -1,6 +1,6 @@
 'use client';
 
-import { Sparkles } from 'lucide-react';
+import { Sparkles, MessageSquare, Bot, Clock, Edit, Play, Pause } from 'lucide-react';
 import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
@@ -103,15 +103,15 @@ export function OrchestratorCard({
       {/* Stats */}
       <div className='mb-4 flex items-center gap-4 text-sm font-sans text-muted-foreground'>
         <span className='flex items-center gap-1.5'>
-          <MessageIcon className='h-4 w-4' />
+          <MessageSquare className='h-4 w-4' />
           {orchestrator.messageCount.toLocaleString()}
         </span>
         <span className='flex items-center gap-1.5'>
-          <AgentIcon className='h-4 w-4' />
+          <Bot className='h-4 w-4' />
           {orchestrator.agentCount}
         </span>
         <span className='flex items-center gap-1.5'>
-          <ClockIcon className='h-4 w-4' />
+          <Clock className='h-4 w-4' />
           {lastActivityText}
         </span>
       </div>
@@ -141,7 +141,7 @@ export function OrchestratorCard({
             className='rounded-md border border-border bg-background p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
             aria-label={`Edit ${orchestrator.title}`}
           >
-            <EditIcon className='h-4 w-4' />
+            <Edit className='h-4 w-4' />
           </button>
         )}
         {onToggleStatus && (
@@ -161,9 +161,9 @@ export function OrchestratorCard({
             }
           >
             {orchestrator.status === 'ONLINE' ? (
-              <PauseIcon className='h-4 w-4' />
+              <Pause className='h-4 w-4' />
             ) : (
-              <PlayIcon className='h-4 w-4' />
+              <Play className='h-4 w-4' />
             )}
           </button>
         )}
@@ -245,115 +245,4 @@ function formatRelativeTime(date: Date): string {
     return `${diffDays}d ago`;
   }
   return date.toLocaleDateString();
-}
-
-// Icons
-function MessageIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M7.9 20A9 9 0 1 0 4 16.1L2 22Z' />
-    </svg>
-  );
-}
-
-function AgentIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M12 8V4H8' />
-      <rect width='16' height='12' x='4' y='8' rx='2' />
-      <path d='M2 14h2' />
-      <path d='M20 14h2' />
-      <path d='M15 13v2' />
-      <path d='M9 13v2' />
-    </svg>
-  );
-}
-
-function ClockIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='12' cy='12' r='10' />
-      <polyline points='12 6 12 12 16 14' />
-    </svg>
-  );
-}
-
-function EditIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z' />
-      <path d='m15 5 4 4' />
-    </svg>
-  );
-}
-
-function PlayIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <polygon points='6 3 20 12 6 21 6 3' />
-    </svg>
-  );
-}
-
-function PauseIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <rect x='14' y='4' width='4' height='16' rx='1' />
-      <rect x='6' y='4' width='4' height='16' rx='1' />
-    </svg>
-  );
 }

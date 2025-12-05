@@ -5,6 +5,8 @@
 
 import { z } from 'zod';
 
+import { ORCHESTRATOR_STATUS_VALUES } from '@/types/orchestrator';
+
 export const ORCHESTRATOR_ERROR_CODES = {
   INVALID_REQUEST: 'ORCHESTRATOR_INVALID_REQUEST',
   AGENT_NOT_FOUND: 'ORCHESTRATOR_AGENT_NOT_FOUND',
@@ -41,15 +43,24 @@ export function createErrorResponse(
   return { error: code, message, ...extraData };
 }
 
-export const orchestratorStatusEnum = z.enum([
-  'ONLINE',
-  'OFFLINE',
-  'BUSY',
-  'AWAY',
-]);
+/**
+ * Orchestrator status Zod enum schema
+ *
+ * Use this for validating orchestrator status in API routes and forms.
+ * Values are imported from @/types/orchestrator to ensure consistency.
+ */
+export const orchestratorStatusEnum = z.enum(ORCHESTRATOR_STATUS_VALUES);
 
+/**
+ * @deprecated Use orchestratorStatusEnum directly
+ */
 export const orchestratorStatusSchema = orchestratorStatusEnum;
 
+/**
+ * TypeScript type inferred from the orchestrator status enum
+ *
+ * This should match the OrchestratorStatus type in types/orchestrator.ts
+ */
 export type OrchestratorStatusType = z.infer<typeof orchestratorStatusEnum>;
 
 export const orchestratorRequestSchema = z.object({

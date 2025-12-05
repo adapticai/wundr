@@ -13,6 +13,7 @@
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
+import { checkOrchestratorAccess } from '@/lib/api/orchestrator-helpers';
 import { auth } from '@/lib/auth';
 import {
   orchestratorIdParamSchema,
@@ -33,47 +34,6 @@ import type { NextRequest } from 'next/server';
  */
 interface RouteContext {
   params: Promise<{ orchestratorId: string }>;
-}
-
-/**
- * Helper function to check if user has access to orchestrator
- */
-async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
-  const orchestrator = await prisma.orchestrator.findUnique({
-    where: { id: orchestratorId },
-    include: {
-      user: {
-        select: { id: true },
-      },
-      organization: {
-        select: { id: true },
-      },
-    },
-  });
-
-  if (!orchestrator) {
-    return { hasAccess: false, isOwner: false, orchestrator: null };
-  }
-
-  const isOwner = orchestrator.userId === userId;
-
-  const orgMember = await prisma.organizationMember.findUnique({
-    where: {
-      organizationId_userId: {
-        organizationId: orchestrator.organizationId,
-        userId,
-      },
-    },
-  });
-
-  const isAdmin = orgMember?.role === 'ADMIN' || orgMember?.role === 'OWNER';
-
-  return {
-    hasAccess: isOwner || isAdmin,
-    isOwner,
-    isAdmin,
-    orchestrator,
-  };
 }
 
 /**
@@ -267,7 +227,7 @@ export async function PUT(
       );
     }
 
-    // Update capabilities
+    // Update capabilities (already in Record format from schema)
     const defaultConfig = createDefaultOrchestratorConfig();
     const updatedConfig = await prisma.orchestratorConfig.upsert({
       where: { orchestratorId: params.orchestratorId },

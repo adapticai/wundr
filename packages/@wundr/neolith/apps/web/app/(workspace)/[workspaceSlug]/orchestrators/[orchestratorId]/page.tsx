@@ -26,15 +26,26 @@ import {
   FileText,
   History,
   RotateCcw,
+  AlertCircle,
+  ListTodo,
+  GitBranch,
+  Database,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useCallback, useEffect } from 'react';
 
 import { CharterEditor, CharterDiff } from '@/components/charter';
+import { OrchestratorActivityFeed } from '@/components/orchestrator/activity-feed';
+import { BacklogList } from '@/components/orchestrator/backlog-list';
+import { DelegationDialog } from '@/components/orchestrator/delegation-dialog';
+import { DelegationHistory } from '@/components/orchestrator/delegation-history';
+import { DelegationRules } from '@/components/orchestrator/delegation-rules';
+import { MemoryManagement } from '@/components/orchestrator/memory-management';
 import { SessionManagerCreate } from '@/components/orchestrator/session-manager-create';
 import { SessionManagerList } from '@/components/orchestrator/session-manager-list';
 import { SubagentCreate } from '@/components/orchestrator/subagent-create';
 import { SubagentList } from '@/components/orchestrator/subagent-list';
+import { OrchestratorChat } from '@/components/orchestrators/orchestrator-chat';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -82,6 +93,9 @@ export default function OrchestratorDetailPage() {
     Array<{ version: number; charter: OrchestratorCharter; createdAt: string }>
   >([]);
   const [compareVersion, setCompareVersion] = useState<number | null>(null);
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [isDelegationDialogOpen, setIsDelegationDialogOpen] = useState(false);
+  const [delegationRefreshTrigger, setDelegationRefreshTrigger] = useState(0);
 
   // Hooks
   const { orchestrator, isLoading, error, refetch } =
@@ -117,10 +131,7 @@ export default function OrchestratorDetailPage() {
 
   // Handlers
   const handleEditWithAI = useCallback(() => {
-    // TODO: Implement DualModeEditor integration
-    alert(
-      'AI-powered editing coming soon! This will open a conversational editor.',
-    );
+    setIsAIChatOpen(true);
   }, []);
 
   const handleToggleEditMode = useCallback(() => {
@@ -269,7 +280,7 @@ export default function OrchestratorDetailPage() {
       <div className='flex flex-col items-center justify-center py-12'>
         <div className='rounded-lg border border-red-200 bg-red-50 p-6 max-w-md'>
           <div className='flex items-center gap-2 text-red-800'>
-            <AlertIcon className='h-5 w-5' />
+            <AlertCircle className='h-5 w-5' />
             <h3 className='text-lg font-semibold'>
               Failed to load orchestrator
             </h3>
@@ -291,7 +302,9 @@ export default function OrchestratorDetailPage() {
   const statusConfig = ORCHESTRATOR_STATUS_CONFIG[orchestrator.status];
 
   return (
-    <div className='space-y-6'>
+    <div className='flex gap-6'>
+      {/* Main Content */}
+      <div className='flex-1 space-y-6'>
       {/* Breadcrumbs */}
       <nav className='flex items-center gap-2 text-sm text-muted-foreground'>
         <button
@@ -472,10 +485,18 @@ export default function OrchestratorDetailPage() {
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className='grid w-full grid-cols-7'>
+        <TabsList className='grid w-full grid-cols-9'>
           <TabsTrigger value='overview'>
             <Activity className='h-4 w-4 mr-2' />
             Overview
+          </TabsTrigger>
+          <TabsTrigger value='backlog'>
+            <ListTodo className='h-4 w-4 mr-2' />
+            Backlog
+          </TabsTrigger>
+          <TabsTrigger value='delegation'>
+            <GitBranch className='h-4 w-4 mr-2' />
+            Delegation
           </TabsTrigger>
           <TabsTrigger value='charter'>
             <FileText className='h-4 w-4 mr-2' />
@@ -502,6 +523,18 @@ export default function OrchestratorDetailPage() {
             Capabilities
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value='backlog' className='space-y-4 mt-6'>
+          <BacklogList orchestratorId={orchestrator.id} />
+        </TabsContent>
+
+        <TabsContent value='delegation' className='space-y-4 mt-6'>
+          <DelegationTab
+            orchestratorId={orchestrator.id}
+            onOpenDelegationDialog={() => setIsDelegationDialogOpen(true)}
+            refreshTrigger={delegationRefreshTrigger}
+          />
+        </TabsContent>
 
         <TabsContent value='charter' className='space-y-4 mt-6'>
           <CharterTab
@@ -679,11 +712,16 @@ export default function OrchestratorDetailPage() {
             <CardHeader>
               <CardTitle>Activity History</CardTitle>
               <CardDescription>
-                Recent actions and events for this orchestrator
+                Recent actions and events for this orchestrator with real-time updates
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ActivityLog orchestratorId={orchestrator.id} />
+              <OrchestratorActivityFeed
+                orchestratorId={orchestrator.id}
+                workspaceSlug={workspaceSlug}
+                autoRefresh={orchestrator.status === 'ONLINE'}
+                refreshInterval={30000}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -717,20 +755,44 @@ export default function OrchestratorDetailPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Charter Editor Dialog */}
-      <Dialog open={isCharterEditorOpen} onOpenChange={setIsCharterEditorOpen}>
-        <DialogContent className='max-w-5xl max-h-[90vh] overflow-hidden'>
-          <DialogHeader>
-            <DialogTitle>Edit Charter</DialogTitle>
-          </DialogHeader>
-          <CharterEditor
-            orchestratorId={orchestrator.id}
-            initialCharter={orchestrator.charter || undefined}
-            onSave={handleSaveCharter}
-            onCancel={handleCloseCharterEditor}
-          />
-        </DialogContent>
-      </Dialog>
+        {/* Charter Editor Dialog */}
+        <Dialog
+          open={isCharterEditorOpen}
+          onOpenChange={setIsCharterEditorOpen}
+        >
+          <DialogContent className='max-w-5xl max-h-[90vh] overflow-hidden'>
+            <DialogHeader>
+              <DialogTitle>Edit Charter</DialogTitle>
+            </DialogHeader>
+            <CharterEditor
+              orchestratorId={orchestrator.id}
+              initialCharter={orchestrator.charter || undefined}
+              onSave={handleSaveCharter}
+              onCancel={handleCloseCharterEditor}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Delegation Dialog */}
+        <DelegationDialog
+          open={isDelegationDialogOpen}
+          onOpenChange={setIsDelegationDialogOpen}
+          orchestratorId={orchestrator.id}
+          onDelegationSuccess={() => {
+            setDelegationRefreshTrigger(prev => prev + 1);
+            refetch();
+          }}
+        />
+      </div>
+
+      {/* AI Chat Sidebar */}
+      {isAIChatOpen && (
+        <OrchestratorChat
+          orchestrator={orchestrator}
+          isOpen={isAIChatOpen}
+          onClose={() => setIsAIChatOpen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -809,7 +871,7 @@ const ACTIVITY_TYPE_CONFIG: Record<
     bgColor: 'bg-red-100',
   },
   ERROR_OCCURRED: {
-    icon: AlertIcon,
+    icon: AlertCircle,
     color: 'text-red-600',
     bgColor: 'bg-red-100',
   },
@@ -995,7 +1057,7 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
     return (
       <div className='flex flex-col items-center justify-center py-8'>
         <div className='rounded-lg border border-red-200 bg-red-50 p-4 max-w-sm text-center'>
-          <AlertIcon className='h-6 w-6 text-red-600 mx-auto mb-2' />
+          <AlertCircle className='h-6 w-6 text-red-600 mx-auto mb-2' />
           <p className='text-sm text-red-800 font-medium'>
             Failed to load activity
           </p>
@@ -1263,6 +1325,61 @@ function SubagentsTab() {
           </Card>
         )}
       </div>
+    </>
+  );
+}
+
+/**
+ * Delegation Tab Component
+ *
+ * Displays delegation history, delegation form, and delegation rules
+ */
+interface DelegationTabProps {
+  orchestratorId: string;
+  onOpenDelegationDialog: () => void;
+  refreshTrigger: number;
+}
+
+function DelegationTab({
+  orchestratorId,
+  onOpenDelegationDialog,
+  refreshTrigger,
+}: DelegationTabProps) {
+  return (
+    <>
+      {/* Delegation Actions Card */}
+      <Card>
+        <CardHeader>
+          <div className='flex items-start justify-between'>
+            <div>
+              <CardTitle>Task Delegation</CardTitle>
+              <CardDescription>
+                Delegate tasks to other orchestrators for distributed execution
+              </CardDescription>
+            </div>
+            <Button onClick={onOpenDelegationDialog}>
+              <GitBranch className='h-4 w-4 mr-2' />
+              New Delegation
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className='grid grid-cols-3 gap-4'>
+            <MetricCard label='Total Delegations' value='0' />
+            <MetricCard label='Active Delegations' value='0' />
+            <MetricCard label='Success Rate' value='0%' />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Delegation History */}
+      <DelegationHistory
+        orchestratorId={orchestratorId}
+        refreshTrigger={refreshTrigger}
+      />
+
+      {/* Delegation Rules */}
+      <DelegationRules orchestratorId={orchestratorId} />
     </>
   );
 }
@@ -1645,22 +1762,3 @@ function CharterTab({
   );
 }
 
-// Icons
-function AlertIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='12' cy='12' r='10' />
-      <line x1='12' x2='12' y1='8' y2='12' />
-      <line x1='12' x2='12.01' y1='16' y2='16' />
-    </svg>
-  );
-}

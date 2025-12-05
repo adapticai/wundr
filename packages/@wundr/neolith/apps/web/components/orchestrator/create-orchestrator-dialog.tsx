@@ -1,5 +1,6 @@
 'use client';
 
+import { X, Check } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -203,7 +204,7 @@ export function CreateOrchestratorDialog({
               className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
               aria-label='Close dialog'
             >
-              <XIcon className='h-5 w-5' />
+              <X className='h-5 w-5' />
             </button>
           </div>
 
@@ -238,7 +239,7 @@ export function CreateOrchestratorDialog({
                       )}
                     >
                       {isComplete ? (
-                        <CheckIcon className='h-4 w-4' />
+                        <Check className='h-4 w-4' />
                       ) : (
                         index + 1
                       )}
@@ -407,7 +408,7 @@ export function CreateOrchestratorDialog({
                           className='ml-1 rounded-full p-0.5 hover:bg-secondary-foreground/10'
                           aria-label={`Remove ${item}`}
                         >
-                          <XIcon className='h-3 w-3' />
+                          <X className='h-3 w-3' />
                         </button>
                       </span>
                     ))}
@@ -672,40 +673,5 @@ export function CreateOrchestratorDialog({
         </div>
       </div>
     </div>
-  );
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M18 6 6 18' />
-      <path d='m6 6 12 12' />
-    </svg>
-  );
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <polyline points='20 6 9 17 4 12' />
-    </svg>
   );
 }

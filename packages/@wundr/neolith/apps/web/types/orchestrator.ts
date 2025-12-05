@@ -8,6 +8,18 @@
  */
 
 /**
+ * Orchestrator status values
+ *
+ * @constant
+ */
+export const ORCHESTRATOR_STATUS_VALUES = [
+  'ONLINE',
+  'OFFLINE',
+  'BUSY',
+  'AWAY',
+] as const;
+
+/**
  * Orchestrator availability status
  *
  * Maps to database schema statuses and provides frontend-friendly display values.
@@ -18,7 +30,7 @@
  * - BUSY: Orchestrator is engaged in active work
  * - AWAY: Orchestrator is temporarily unavailable
  */
-export type OrchestratorStatus = 'ONLINE' | 'OFFLINE' | 'BUSY' | 'AWAY';
+export type OrchestratorStatus = (typeof ORCHESTRATOR_STATUS_VALUES)[number];
 
 /**
  * Core Orchestrator entity
@@ -374,13 +386,22 @@ export type OrchestratorListResponse = PaginatedResponse<Orchestrator>;
  *
  * @param {unknown} value - Value to check
  * @returns {boolean} True if value is a valid OrchestratorStatus
+ *
+ * @example
+ * ```typescript
+ * const status = apiResponse.status;
+ * if (isOrchestratorStatus(status)) {
+ *   // TypeScript now knows status is OrchestratorStatus
+ *   console.log(`Status is ${status}`);
+ * }
+ * ```
  */
 export function isOrchestratorStatus(
   value: unknown,
 ): value is OrchestratorStatus {
   return (
     typeof value === 'string' &&
-    ['ONLINE', 'OFFLINE', 'BUSY', 'AWAY'].includes(value)
+    (ORCHESTRATOR_STATUS_VALUES as readonly string[]).includes(value)
   );
 }
 

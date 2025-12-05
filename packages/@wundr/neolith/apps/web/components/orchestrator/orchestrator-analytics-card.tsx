@@ -1,5 +1,6 @@
 'use client';
 
+import { Check, Target, Clock, Timer, TrendingUp, TrendingDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -107,7 +108,7 @@ export function OrchestratorAnalyticsCard({
         <MetricItem
           label='Completed'
           value={metrics.tasksCompleted}
-          icon={<CheckIcon className='h-4 w-4' />}
+          icon={<Check className='h-4 w-4' />}
           color='text-green-600 dark:text-green-400'
         />
 
@@ -115,7 +116,7 @@ export function OrchestratorAnalyticsCard({
         <MetricItem
           label='Success Rate'
           value={`${metrics.successRate.toFixed(1)}%`}
-          icon={<TargetIcon className='h-4 w-4' />}
+          icon={<Target className='h-4 w-4' />}
           color='text-blue-600 dark:text-blue-400'
         />
 
@@ -123,7 +124,7 @@ export function OrchestratorAnalyticsCard({
         <MetricItem
           label='In Progress'
           value={metrics.tasksInProgress}
-          icon={<ClockIcon className='h-4 w-4' />}
+          icon={<Clock className='h-4 w-4' />}
           color='text-yellow-600 dark:text-yellow-400'
         />
 
@@ -135,7 +136,7 @@ export function OrchestratorAnalyticsCard({
               ? formatDuration(metrics.avgDurationMinutes)
               : 'N/A'
           }
-          icon={<TimerIcon className='h-4 w-4' />}
+          icon={<Timer className='h-4 w-4' />}
           color='text-purple-600 dark:text-purple-400'
         />
       </div>
@@ -168,9 +169,9 @@ export function OrchestratorAnalyticsCard({
       {analytics.summary.trendDirection !== 'stable' && (
         <div className='mt-4 flex items-center gap-2 rounded-md bg-muted/50 p-2'>
           {analytics.summary.trendDirection === 'up' ? (
-            <TrendUpIcon className='h-4 w-4 text-green-600 dark:text-green-400' />
+            <TrendingUp className='h-4 w-4 text-green-600 dark:text-green-400' />
           ) : (
-            <TrendDownIcon className='h-4 w-4 text-red-600 dark:text-red-400' />
+            <TrendingDown className='h-4 w-4 text-red-600 dark:text-red-400' />
           )}
           <span className='text-xs font-sans text-muted-foreground'>
             Performance trending{' '}
@@ -262,115 +263,4 @@ function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-}
-
-// Icons
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <polyline points='20 6 9 17 4 12' />
-    </svg>
-  );
-}
-
-function TargetIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='12' cy='12' r='10' />
-      <circle cx='12' cy='12' r='6' />
-      <circle cx='12' cy='12' r='2' />
-    </svg>
-  );
-}
-
-function ClockIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='12' cy='12' r='10' />
-      <polyline points='12 6 12 12 16 14' />
-    </svg>
-  );
-}
-
-function TimerIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <line x1='10' x2='14' y1='2' y2='2' />
-      <line x1='12' x2='15' y1='14' y2='11' />
-      <circle cx='12' cy='14' r='8' />
-    </svg>
-  );
-}
-
-function TrendUpIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <polyline points='22 7 13.5 15.5 8.5 10.5 2 17' />
-      <polyline points='16 7 22 7 22 13' />
-    </svg>
-  );
-}
-
-function TrendDownIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <polyline points='22 17 13.5 8.5 8.5 13.5 2 7' />
-      <polyline points='16 17 22 17 22 11' />
-    </svg>
-  );
 }

@@ -237,8 +237,8 @@ export const alertIdParamSchema = z.object({
 
 // Error response helper
 export const createErrorResponse = (
-  code: string,
   message: string,
+  code: string,
   details?: Record<string, unknown>,
 ) => ({
   error: {

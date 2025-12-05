@@ -296,6 +296,17 @@ export async function GET(
         ? Math.round((onTimeCount / tasksWithDueDate.length) * 100)
         : null;
 
+    // Handle null metrics
+    if (!metrics) {
+      return NextResponse.json(
+        createAnalyticsErrorResponse(
+          'Unable to calculate metrics',
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR,
+        ),
+        { status: 500 },
+      );
+    }
+
     // Build response
     const analytics = {
       orchestratorId,

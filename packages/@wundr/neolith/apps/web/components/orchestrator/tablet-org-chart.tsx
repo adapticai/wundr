@@ -7,6 +7,7 @@
  */
 'use client';
 
+import { Minus, Plus, ChevronUp, ChevronDown } from 'lucide-react';
 import { useState, useRef } from 'react';
 
 import {
@@ -133,7 +134,7 @@ export function TabletOrgChart({
               )}
               aria-label='Zoom out'
             >
-              <MinusIcon className='w-5 h-5' />
+              <Minus className='w-5 h-5' />
             </button>
 
             <button
@@ -158,7 +159,7 @@ export function TabletOrgChart({
               )}
               aria-label='Zoom in'
             >
-              <PlusIcon className='w-5 h-5' />
+              <Plus className='w-5 h-5' />
             </button>
           </div>
         </div>
@@ -305,9 +306,9 @@ function OrgChartNode({
             aria-label={expanded ? 'Collapse' : 'Expand'}
           >
             {expanded ? (
-              <ChevronUpIcon className='w-4 h-4' />
+              <ChevronUp className='w-4 h-4' />
             ) : (
-              <ChevronDownIcon className='w-4 h-4' />
+              <ChevronDown className='w-4 h-4' />
             )}
           </button>
         )}
@@ -351,61 +352,4 @@ function getInitials(name: string): string {
     .join('')
     .toUpperCase()
     .slice(0, 2);
-}
-
-// Icons
-function MinusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill='none'
-      viewBox='0 0 24 24'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <path strokeLinecap='round' strokeLinejoin='round' d='M5 12h14' />
-    </svg>
-  );
-}
-
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill='none'
-      viewBox='0 0 24 24'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <path strokeLinecap='round' strokeLinejoin='round' d='M12 5v14m7-7H5' />
-    </svg>
-  );
-}
-
-function ChevronUpIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill='none'
-      viewBox='0 0 24 24'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <path strokeLinecap='round' strokeLinejoin='round' d='m18 15-6-6-6 6' />
-    </svg>
-  );
-}
-
-function ChevronDownIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill='none'
-      viewBox='0 0 24 24'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <path strokeLinecap='round' strokeLinejoin='round' d='m6 9 6 6 6-6' />
-    </svg>
-  );
 }

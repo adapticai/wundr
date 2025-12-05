@@ -2,7 +2,7 @@
  * Wizard Extract API Route
  *
  * Analyzes conversation history and extracts final structured entity data.
- * Uses LLM to parse the entire conversation and generate complete entity specification.
+ * Uses Vercel AI SDK with structured output (generateObject) for guaranteed JSON schema compliance.
  *
  * Routes:
  * - POST /api/wizard/extract - Extract entity data from conversation history
@@ -10,6 +10,9 @@
  * @module app/api/wizard/extract/route
  */
 
+import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
+import { generateObject } from 'ai';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -88,271 +91,288 @@ type ExtractedData =
   | WorkflowData;
 
 /**
- * Validation schemas for each entity type
+ * Enhanced validation schemas for each entity type with better descriptions
  */
 const workspaceSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().min(1),
-  purpose: z.string().optional(),
-  teamSize: z.string().optional(),
-  departments: z.array(z.string()).optional(),
-  organizationType: z.string().optional(),
+  name: z
+    .string()
+    .min(1, 'Workspace name is required')
+    .describe('The name of the workspace'),
+  description: z
+    .string()
+    .min(1, 'Description is required')
+    .describe('A brief description of the workspace purpose'),
+  purpose: z
+    .string()
+    .optional()
+    .describe('The mission or primary goal of the workspace'),
+  teamSize: z
+    .enum(['small', 'medium', 'large'])
+    .optional()
+    .describe(
+      'Team size category: small (1-10), medium (10-50), large (50+)',
+    ),
+  departments: z
+    .array(z.string())
+    .optional()
+    .describe('List of departments or functional areas'),
+  organizationType: z
+    .string()
+    .optional()
+    .describe('Industry or domain (e.g., technology, finance, healthcare)'),
 });
 
 const orchestratorSchema = z.object({
-  name: z.string().min(1),
-  role: z.string().min(1),
-  description: z.string().min(1),
-  capabilities: z.array(z.string()).optional(),
-  goals: z.array(z.string()).optional(),
-  channels: z.array(z.string()).optional(),
-  communicationStyle: z.string().optional(),
+  name: z
+    .string()
+    .min(1, 'Orchestrator name is required')
+    .describe('The name of the orchestrator (can be friendly, e.g., "Sarah")'),
+  role: z
+    .string()
+    .min(1, 'Role is required')
+    .describe(
+      'Primary role or discipline (e.g., Customer Support, Research Analyst)',
+    ),
+  description: z
+    .string()
+    .min(1, 'Description is required')
+    .describe('What this orchestrator does - their responsibilities'),
+  capabilities: z
+    .array(z.string())
+    .optional()
+    .describe('List of key capabilities or skills'),
+  goals: z
+    .array(z.string())
+    .optional()
+    .describe('Primary objectives or goals'),
+  channels: z
+    .array(z.string())
+    .optional()
+    .describe('Channels this orchestrator should monitor'),
+  communicationStyle: z
+    .enum(['formal', 'friendly', 'technical'])
+    .optional()
+    .describe('Preferred communication style'),
 });
 
 const sessionManagerSchema = z.object({
-  name: z.string().min(1),
-  responsibilities: z.string().min(1),
-  parentOrchestrator: z.string().optional(),
-  context: z.string().optional(),
-  escalationCriteria: z.array(z.string()).optional(),
+  name: z
+    .string()
+    .min(1, 'Session manager name is required')
+    .describe('The name of the session manager'),
+  responsibilities: z
+    .string()
+    .min(1, 'Responsibilities are required')
+    .describe('What this session manager is responsible for handling'),
+  parentOrchestrator: z
+    .string()
+    .optional()
+    .describe('The parent orchestrator this session manager reports to'),
+  context: z
+    .string()
+    .optional()
+    .describe('The specific context or channel they manage'),
+  escalationCriteria: z
+    .array(z.string())
+    .optional()
+    .describe('Conditions that trigger escalation to parent orchestrator'),
 });
 
 const workflowSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().min(1),
-  trigger: z.object({
-    type: z.string(),
-    config: z.record(z.unknown()).optional(),
-  }),
-  actions: z.array(
-    z.object({
-      action: z.string(),
-      description: z.string(),
-    }),
-  ),
+  name: z
+    .string()
+    .min(1, 'Workflow name is required')
+    .describe('The name of the workflow'),
+  description: z
+    .string()
+    .min(1, 'Description is required')
+    .describe('What this workflow accomplishes'),
+  trigger: z
+    .object({
+      type: z
+        .enum(['schedule', 'event', 'manual', 'webhook'])
+        .describe('How the workflow is triggered'),
+      config: z
+        .record(z.unknown())
+        .optional()
+        .describe('Additional trigger configuration'),
+    })
+    .describe('Workflow trigger configuration'),
+  actions: z
+    .array(
+      z.object({
+        action: z.string().describe('The action type or name'),
+        description: z.string().describe('What this action does'),
+      }),
+    )
+    .min(1, 'At least one action is required')
+    .describe('List of workflow actions to perform'),
 });
 
 /**
- * Build extraction prompt for entity type
+ * Build enhanced extraction prompt for entity type with better guidance
  */
 function buildExtractionPrompt(entityType: EntityType): string {
-  const basePrompt = `You are analyzing a conversation about creating a ${entityType}. Extract all relevant information from the conversation history and return a complete, structured specification.
+  const basePrompt = `You are an expert at analyzing conversations and extracting structured data. Your task is to carefully review the entire conversation history and extract complete, accurate information about a ${entityType}.
 
-IMPORTANT: Return ONLY valid JSON matching the schema. Do not include any explanatory text before or after the JSON.`;
+IMPORTANT INSTRUCTIONS:
+1. Read the ENTIRE conversation carefully - information may be spread across multiple messages
+2. Extract ALL mentioned information, even if implicit or indirect
+3. Infer reasonable defaults when appropriate based on context
+4. If information is clearly not provided, omit optional fields rather than guessing
+5. Ensure all required fields are present and non-empty
+6. For arrays, extract all mentioned items
+7. Be precise and faithful to the user's intent`;
 
   const entityPrompts: Record<EntityType, string> = {
     workspace: `
-Extract workspace data with these fields:
-- name (required): Organization name
-- description (required): Brief description
-- purpose (optional): Mission or primary goal
-- teamSize (optional): Team size (small/medium/large)
-- departments (optional): Array of department names
-- organizationType (optional): Industry or domain
+WORKSPACE EXTRACTION GUIDELINES:
 
-Return JSON matching this schema:
-{
-  "name": "string",
-  "description": "string",
-  "purpose": "string",
-  "teamSize": "small" | "medium" | "large",
-  "departments": ["string"],
-  "organizationType": "string"
-}
+Required Fields:
+- name: The organization or workspace name mentioned by the user
+- description: A clear description of what the workspace is for
+
+Optional Fields (extract if mentioned):
+- purpose: The mission, vision, or primary goal
+- teamSize: Classify as "small" (1-10), "medium" (10-50), or "large" (50+)
+- departments: List all mentioned departments, teams, or functional areas
+- organizationType: The industry, domain, or type of organization
+
+EXTRACTION STRATEGY:
+- Look for organization names, team descriptions, company info
+- Infer teamSize from mentions of "small team", "large organization", specific numbers
+- Extract departments from mentions of "marketing", "engineering", "sales", etc.
+- Identify industry from context clues
 `,
     orchestrator: `
-Extract orchestrator data with these fields:
-- name (required): Agent name
-- role (required): Primary role or discipline
-- description (required): What this orchestrator does
-- capabilities (optional): Array of key capabilities
-- goals (optional): Array of primary objectives
-- channels (optional): Array of channels to monitor
-- communicationStyle (optional): Communication style
+ORCHESTRATOR EXTRACTION GUIDELINES:
 
-Return JSON matching this schema:
-{
-  "name": "string",
-  "role": "string",
-  "description": "string",
-  "capabilities": ["string"],
-  "goals": ["string"],
-  "channels": ["string"],
-  "communicationStyle": "string"
-}
+Required Fields:
+- name: The agent's name (can be friendly like "Sarah" or formal like "Support Agent")
+- role: Their primary role, title, or discipline
+- description: What they do, their responsibilities, and purpose
+
+Optional Fields (extract if mentioned):
+- capabilities: Specific skills, abilities, or what they can do
+- goals: Their objectives, targets, or what they aim to achieve
+- channels: Specific channels they should monitor or participate in
+- communicationStyle: Must be "formal", "friendly", or "technical" if mentioned
+
+EXTRACTION STRATEGY:
+- Name can be inferred from "call them X", "named Y", or role descriptions
+- Role should capture their primary function or discipline
+- Capabilities should be specific tasks or skills mentioned
+- Goals should reflect intended outcomes or success criteria
+- Only set communicationStyle if explicitly or strongly implied
 `,
     'session-manager': `
-Extract session manager data with these fields:
-- name (required): Session manager name
-- responsibilities (required): What they are responsible for
-- parentOrchestrator (optional): Parent orchestrator name
-- context (optional): Context or channel they manage
-- escalationCriteria (optional): Array of escalation conditions
+SESSION MANAGER EXTRACTION GUIDELINES:
 
-Return JSON matching this schema:
-{
-  "name": "string",
-  "responsibilities": "string",
-  "parentOrchestrator": "string",
-  "context": "string",
-  "escalationCriteria": ["string"]
-}
+Required Fields:
+- name: The session manager's name or identifier
+- responsibilities: What they are responsible for handling or managing
+
+Optional Fields (extract if mentioned):
+- parentOrchestrator: The orchestrator they report to or work under
+- context: The specific channel, situation, or context they manage
+- escalationCriteria: Conditions that trigger escalation (e.g., "urgent", "complex")
+
+EXTRACTION STRATEGY:
+- Look for hierarchical relationships to identify parentOrchestrator
+- Context often relates to specific channels or types of interactions
+- Escalation criteria are conditions like complexity, urgency, or specific keywords
+- Responsibilities should be comprehensive and capture the full scope
 `,
     workflow: `
-Extract workflow data with these fields:
-- name (required): Workflow name
-- description (required): What the workflow does
-- trigger (required): Trigger configuration
-  - type (required): Trigger type (schedule/event/manual/webhook)
-  - config (optional): Additional trigger configuration
-- actions (required): Array of workflow actions
-  - action (required): Action type
-  - description (required): What this action does
+WORKFLOW EXTRACTION GUIDELINES:
 
-Return JSON matching this schema:
-{
-  "name": "string",
-  "description": "string",
-  "trigger": {
-    "type": "schedule" | "event" | "manual" | "webhook",
-    "config": {}
-  },
-  "actions": [
-    {
-      "action": "string",
-      "description": "string"
-    }
-  ]
-}
+Required Fields:
+- name: The workflow's name or title
+- description: What the workflow accomplishes or automates
+- trigger: How the workflow starts
+  - type: Must be "schedule", "event", "manual", or "webhook"
+  - config: Optional configuration (e.g., cron for schedule, event name)
+- actions: The steps or actions performed (at least one required)
+  - action: The action type or name
+  - description: What this specific action does
+
+EXTRACTION STRATEGY:
+- Identify trigger type from phrases like "every day" (schedule), "when X happens" (event)
+- For schedule triggers, extract cron patterns if mentioned
+- For event triggers, extract event type in config
+- Actions should be in logical order if sequence is mentioned
+- Each action should have clear description of what it does
 `,
   };
 
-  return basePrompt + '\n' + entityPrompts[entityType];
+  return basePrompt + '\n\n' + entityPrompts[entityType];
 }
 
 /**
- * Call Anthropic Claude API for extraction
+ * Get schema for entity type
  */
-async function extractWithClaude(
+function getSchemaForEntityType(entityType: EntityType): z.ZodSchema {
+  const schemas: Record<EntityType, z.ZodSchema> = {
+    workspace: workspaceSchema,
+    orchestrator: orchestratorSchema,
+    'session-manager': sessionManagerSchema,
+    workflow: workflowSchema,
+  };
+
+  return schemas[entityType];
+}
+
+/**
+ * Extract entity data using AI SDK structured output
+ * Uses generateObject for guaranteed schema compliance
+ */
+async function extractWithStructuredOutput(
   conversationHistory: ChatMessage[],
   entityType: EntityType,
+  provider: 'openai' | 'anthropic',
 ): Promise<ExtractedData> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY not configured');
-  }
-
+  // Get system prompt and schema
   const systemPrompt = buildExtractionPrompt(entityType);
+  const schema = getSchemaForEntityType(entityType);
 
-  // Build extraction request message
+  // Format conversation for extraction
   const conversationText = conversationHistory
     .map(msg => `${msg.role.toUpperCase()}: ${msg.content}`)
     .join('\n\n');
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: process.env.DEFAULT_LLM_MODEL || 'claude-sonnet-4-20250514',
-      max_tokens: parseInt(process.env.DEFAULT_MAX_TOKENS || '4096', 10),
-      temperature: 0, // Use deterministic extraction
+  // Select model
+  const model =
+    provider === 'openai'
+      ? openai(process.env.OPENAI_MODEL || 'gpt-4o-mini')
+      : anthropic(process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514');
+
+  // Use generateObject for structured output with schema validation
+  try {
+    const result = await generateObject({
+      model,
+      schema,
       system: systemPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: `Here is the conversation history:\n\n${conversationText}\n\nExtract the structured data as JSON.`,
-        },
-      ],
-    }),
-  });
+      prompt: `Analyze this conversation and extract the ${entityType} information:\n\n${conversationText}`,
+    });
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Anthropic API error: ${response.status} ${error}`);
-  }
-
-  const result = await response.json();
-
-  // Extract JSON from response
-  let jsonText = '';
-  for (const block of result.content || []) {
-    if (block.type === 'text') {
-      jsonText += block.text;
+    return result.object as ExtractedData;
+  } catch (error) {
+    // Provide more detailed error messages
+    if (error instanceof Error) {
+      if (error.message.includes('API key')) {
+        throw new Error(`${provider} API key is invalid or not configured`);
+      }
+      if (error.message.includes('rate limit')) {
+        throw new Error(`${provider} API rate limit exceeded`);
+      }
+      if (error.message.includes('timeout')) {
+        throw new Error(`${provider} API request timed out`);
+      }
+      throw new Error(
+        `${provider} extraction failed: ${error.message}`,
+      );
     }
-  }
-
-  // Try to parse JSON
-  try {
-    // Remove markdown code blocks if present
-    const cleanedJson = jsonText.replace(/```json\n?|\n?```/g, '').trim();
-    return JSON.parse(cleanedJson) as ExtractedData;
-  } catch (error) {
-    throw new Error(
-      `Failed to parse extracted JSON: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-}
-
-/**
- * Call OpenAI API for extraction (fallback)
- */
-async function extractWithOpenAI(
-  conversationHistory: ChatMessage[],
-  entityType: EntityType,
-): Promise<ExtractedData> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY not configured');
-  }
-
-  const systemPrompt = buildExtractionPrompt(entityType);
-  const conversationText = conversationHistory
-    .map(msg => `${msg.role.toUpperCase()}: ${msg.content}`)
-    .join('\n\n');
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-      max_tokens: parseInt(process.env.DEFAULT_MAX_TOKENS || '4096', 10),
-      temperature: 0, // Use deterministic extraction
-      messages: [
-        { role: 'system', content: systemPrompt },
-        {
-          role: 'user',
-          content: `Here is the conversation history:\n\n${conversationText}\n\nExtract the structured data as JSON.`,
-        },
-      ],
-      response_format: { type: 'json_object' },
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`OpenAI API error: ${response.status} ${error}`);
-  }
-
-  const result = await response.json();
-  const content = result.choices?.[0]?.message?.content;
-
-  if (!content) {
-    throw new Error('No content in OpenAI response');
-  }
-
-  try {
-    return JSON.parse(content) as ExtractedData;
-  } catch (error) {
-    throw new Error(
-      `Failed to parse extracted JSON: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
+    throw new Error(`${provider} extraction failed with unknown error`);
   }
 }
 
@@ -506,31 +526,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Determine which LLM provider to use (OpenAI default)
-    const provider = process.env.DEFAULT_LLM_PROVIDER || 'openai';
+    const providerConfig = process.env.DEFAULT_LLM_PROVIDER || 'openai';
 
-    // Extract data using appropriate LLM
-    let extractedData: ExtractedData;
-    if (provider === 'anthropic' && process.env.ANTHROPIC_API_KEY) {
-      extractedData = await extractWithClaude(
-        extractReq.conversationHistory,
-        extractReq.entityType,
-      );
-    } else if (provider === 'openai' && process.env.OPENAI_API_KEY) {
-      extractedData = await extractWithOpenAI(
-        extractReq.conversationHistory,
-        extractReq.entityType,
-      );
+    // Validate API keys and select provider
+    let selectedProvider: 'openai' | 'anthropic';
+    if (providerConfig === 'anthropic' && process.env.ANTHROPIC_API_KEY) {
+      selectedProvider = 'anthropic';
+    } else if (providerConfig === 'openai' && process.env.OPENAI_API_KEY) {
+      selectedProvider = 'openai';
     } else {
-      // Fallback: try both
-      if (process.env.ANTHROPIC_API_KEY) {
-        extractedData = await extractWithClaude(
-          extractReq.conversationHistory,
-          extractReq.entityType,
+      // Fallback: try to find any available provider
+      if (process.env.OPENAI_API_KEY) {
+        selectedProvider = 'openai';
+        console.log(
+          '[POST /api/wizard/extract] Falling back to OpenAI (preferred provider not available)',
         );
-      } else if (process.env.OPENAI_API_KEY) {
-        extractedData = await extractWithOpenAI(
-          extractReq.conversationHistory,
-          extractReq.entityType,
+      } else if (process.env.ANTHROPIC_API_KEY) {
+        selectedProvider = 'anthropic';
+        console.log(
+          '[POST /api/wizard/extract] Falling back to Anthropic (OpenAI not available)',
         );
       } else {
         return NextResponse.json(
@@ -538,6 +552,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             error: {
               message:
                 'No LLM API key configured. Please set ANTHROPIC_API_KEY or OPENAI_API_KEY.',
+              code: 'NO_API_KEY',
             },
           },
           { status: 500 },
@@ -545,28 +560,66 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // Validate extracted data
+    console.log(
+      `[POST /api/wizard/extract] Using ${selectedProvider} for ${extractReq.entityType} extraction`,
+    );
+
+    // Extract data using structured output (schema-validated by AI SDK)
+    let extractedData: ExtractedData;
+    try {
+      extractedData = await extractWithStructuredOutput(
+        extractReq.conversationHistory,
+        extractReq.entityType,
+        selectedProvider,
+      );
+    } catch (error) {
+      console.error('[POST /api/wizard/extract] Extraction error:', error);
+      return NextResponse.json(
+        {
+          error: {
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to extract entity data',
+            code: 'EXTRACTION_FAILED',
+          },
+        },
+        { status: 500 },
+      );
+    }
+
+    // Additional validation (AI SDK already validates schema, but we double-check)
     const validation = validateExtractedData(
       extractReq.entityType,
       extractedData,
     );
 
     if (!validation.valid) {
+      console.error(
+        '[POST /api/wizard/extract] Schema validation failed:',
+        validation.errors,
+      );
       return NextResponse.json(
         {
           error: {
-            message: 'Extracted data failed validation',
+            message: 'Extracted data failed schema validation',
             details: validation.errors,
+            code: 'VALIDATION_FAILED',
           },
         },
         { status: 422 },
       );
     }
 
+    console.log(
+      `[POST /api/wizard/extract] Successfully extracted ${extractReq.entityType} data`,
+    );
+
     return NextResponse.json({
       data: validation.data,
       valid: true,
-      provider,
+      provider: selectedProvider,
+      entityType: extractReq.entityType,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

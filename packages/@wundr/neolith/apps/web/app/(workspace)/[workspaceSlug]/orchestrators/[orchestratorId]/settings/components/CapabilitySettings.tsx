@@ -173,6 +173,11 @@ export function CapabilitySettings({
     e.preventDefault();
     setIsSaving(true);
     try {
+      // Convert capabilities object to array for API
+      const capabilitiesArray = Object.values(capabilities).filter(
+        cap => cap.enabled,
+      );
+
       const response = await fetch(
         `/api/orchestrators/${orchestratorId}/capabilities`,
         {
@@ -180,7 +185,7 @@ export function CapabilitySettings({
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ capabilities }),
+          body: JSON.stringify({ capabilities: capabilitiesArray }),
         },
       );
 
