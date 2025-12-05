@@ -9,19 +9,20 @@
  * @module app/api/workspaces/[workspaceId]/workflows/trigger/api/route
  */
 
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
+import { triggerWithApiKeySchema } from '@/lib/validations/trigger';
 import {
   createErrorResponse,
   WORKFLOW_ERROR_CODES,
 } from '@/lib/validations/workflow';
-import { triggerWithApiKeySchema } from '@/lib/validations/trigger';
-import { extractBearerToken, verifyApiKey } from '@/lib/workflow/trigger-auth';
 import { checkRateLimit } from '@/lib/workflow/rate-limiter';
+import { extractBearerToken, verifyApiKey } from '@/lib/workflow/trigger-auth';
 
 import type { TriggerWithApiKeyInput } from '@/lib/validations/trigger';
 import type { WorkflowAction, WorkflowStepResult } from '@/lib/validations/workflow';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 interface RouteContext {

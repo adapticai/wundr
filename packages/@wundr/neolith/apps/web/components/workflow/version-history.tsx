@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import {
   Clock,
   GitBranch,
@@ -17,6 +16,9 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
+import * as React from 'react';
+
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -27,11 +29,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -40,9 +39,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import type { Workflow } from '@/types/workflow';
+
 import { WorkflowDiff } from './workflow-diff';
+
+import type { Workflow } from '@/types/workflow';
 
 /**
  * Workflow version state
@@ -151,10 +154,18 @@ function formatRelativeTime(dateString: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  if (diffMins < 1) {
+return 'Just now';
+}
+  if (diffMins < 60) {
+return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+}
+  if (diffHours < 24) {
+return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+}
+  if (diffDays < 7) {
+return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+}
 
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -207,12 +218,12 @@ function VersionTimelineItem({
 
       {/* Timeline dot */}
       <div className={cn(
-        "relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 bg-background transition-colors",
+        'relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 bg-background transition-colors',
         isCurrentVersion
-          ? "border-primary bg-primary/10"
-          : "border-border"
+          ? 'border-primary bg-primary/10'
+          : 'border-border',
       )}>
-        <Icon className={cn("h-5 w-5", config.color)} />
+        <Icon className={cn('h-5 w-5', config.color)} />
       </div>
 
       {/* Content */}
@@ -244,7 +255,7 @@ function VersionTimelineItem({
               ))}
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className={cn("font-medium", config.color)}>
+              <span className={cn('font-medium', config.color)}>
                 {config.label}
               </span>
               <span>•</span>
@@ -446,7 +457,7 @@ export function VersionHistory({
   // Sort versions by creation date (most recent first)
   const sortedVersions = React.useMemo(() => {
     return [...versions].sort((a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
   }, [versions]);
 

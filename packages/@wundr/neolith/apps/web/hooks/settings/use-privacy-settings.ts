@@ -10,9 +10,11 @@
  */
 
 import { useCallback } from 'react';
-import type { PrivacySettings } from '@/lib/validations/settings';
-import { useUserSettings } from './use-user-settings';
+
 import { useSettingsUpdate } from './use-settings-update';
+import { useUserSettings } from './use-user-settings';
+
+import type { PrivacySettings } from '@/lib/validations/settings';
 
 /**
  * Return type for usePrivacySettings hook

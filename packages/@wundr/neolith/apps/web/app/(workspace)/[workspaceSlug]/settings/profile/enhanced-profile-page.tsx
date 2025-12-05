@@ -1,5 +1,6 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CheckCircle2,
   Globe,
@@ -12,7 +13,6 @@ import {
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 import { ImageCropDialog } from '@/components/profile/image-crop-dialog';
@@ -148,11 +148,15 @@ export default function EnhancedProfilePage() {
   // Load user profile
   useEffect(() => {
     const loadProfile = async () => {
-      if (!session?.user?.id) return;
+      if (!session?.user?.id) {
+return;
+}
 
       try {
         const response = await fetch('/api/users/me');
-        if (!response.ok) throw new Error('Failed to fetch profile');
+        if (!response.ok) {
+throw new Error('Failed to fetch profile');
+}
 
         const { data: user } = await response.json();
         const prefs = (user.preferences || {}) as Record<string, any>;
@@ -272,7 +276,9 @@ export default function EnhancedProfilePage() {
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+return;
+}
 
     if (!file.type.startsWith('image/')) {
       toast({
@@ -298,7 +304,9 @@ export default function EnhancedProfilePage() {
   // Handle cropped image upload
   const handleCropComplete = useCallback(
     async (croppedBlob: Blob) => {
-      if (!session?.user?.id) return;
+      if (!session?.user?.id) {
+return;
+}
 
       setIsUploadingAvatar(true);
 
@@ -392,7 +400,9 @@ export default function EnhancedProfilePage() {
 
   // Form submission
   const onSubmit = async (data: EnhancedProfileInput) => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id) {
+return;
+}
 
     setIsSaving(true);
 

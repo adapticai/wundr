@@ -92,7 +92,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
 
     // Format dates
     const formatDate = (date: Date | null | undefined) => {
-      if (!date) return 'Never';
+      if (!date) {
+return 'Never';
+}
       return new Intl.DateTimeFormat('en-US', {
         year: 'numeric',
         month: 'long',

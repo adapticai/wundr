@@ -1,6 +1,5 @@
 'use client';
 
-import React, { useState, useCallback, useRef, useMemo } from 'react';
 import {
   Upload,
   FileJson,
@@ -14,7 +13,12 @@ import {
   ChevronUp,
   Download,
 } from 'lucide-react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
+
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -25,11 +29,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -37,7 +37,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+
 import type { Workflow, CreateWorkflowInput, TriggerConfig, ActionConfig } from '@/types/workflow';
 
 /**
@@ -224,7 +226,7 @@ export function WorkflowImport({
         warnings,
       };
     },
-    [existingWorkflows]
+    [existingWorkflows],
   );
 
   const handleFileSelect = useCallback(
@@ -262,7 +264,7 @@ export function WorkflowImport({
         ]);
       }
     },
-    [validateWorkflow, onImportError]
+    [validateWorkflow, onImportError],
   );
 
   const handleDrop = useCallback(
@@ -275,7 +277,7 @@ export function WorkflowImport({
         handleFileSelect(file);
       }
     },
-    [handleFileSelect]
+    [handleFileSelect],
   );
 
   const handleFileInputChange = useCallback(
@@ -285,7 +287,7 @@ export function WorkflowImport({
         handleFileSelect(file);
       }
     },
-    [handleFileSelect]
+    [handleFileSelect],
   );
 
   const toggleWorkflowSelection = useCallback((index: number) => {
@@ -461,7 +463,7 @@ export function WorkflowImport({
                   'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
                   isDragging
                     ? 'border-primary bg-primary/5'
-                    : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+                    : 'border-muted-foreground/25 hover:border-muted-foreground/50',
                 )}
                 onDragOver={(e) => {
                   e.preventDefault();
@@ -559,7 +561,7 @@ export function WorkflowImport({
                           'border rounded-lg p-4 transition-colors',
                           workflow.isValid
                             ? 'bg-background hover:bg-muted/50'
-                            : 'bg-destructive/5 border-destructive/20'
+                            : 'bg-destructive/5 border-destructive/20',
                         )}
                       >
                         <div className="flex items-start gap-3">

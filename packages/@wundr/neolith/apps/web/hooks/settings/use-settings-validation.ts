@@ -10,7 +10,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import { z } from 'zod';
+
 import {
   userSettingsSchema,
   generalSettingsSchema,
@@ -23,6 +23,9 @@ import {
   type AppearanceSettings,
   type PrivacySettings,
 } from '@/lib/validations/settings';
+
+import type { z } from 'zod';
+
 
 /**
  * Validation error type

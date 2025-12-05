@@ -30,8 +30,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
 import { useConnectedAccounts } from '@/hooks/use-connected-accounts';
 import { useSessions } from '@/hooks/use-sessions';

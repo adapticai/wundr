@@ -64,7 +64,7 @@ export async function GET(
     const membership = await prisma.workspaceMember.findFirst({
       where: {
         workspaceId: workspace.id,
-        userId: session.user.id
+        userId: session.user.id,
       },
     });
 
@@ -88,7 +88,7 @@ export async function GET(
 
     // Build where clause
     const where: Prisma.workspaceMemberWhereInput = {
-      workspaceId: workspace.id
+      workspaceId: workspace.id,
     };
 
     if (role && role !== 'all') {

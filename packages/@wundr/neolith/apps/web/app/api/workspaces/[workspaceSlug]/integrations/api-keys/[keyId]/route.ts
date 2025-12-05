@@ -6,12 +6,14 @@
  * @module app/api/workspaces/[workspaceSlug]/integrations/api-keys/[keyId]/route
  */
 
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
+
 import { auth } from '@/lib/auth';
 import { checkWorkspaceAccess } from '@/lib/services/integration-service';
 import { INTEGRATION_ERROR_CODES } from '@/lib/validations/integration';
 import { createErrorResponse } from '@/lib/validations/organization';
-import { prisma } from '@neolith/database';
+
 import type { NextRequest } from 'next/server';
 
 /**

@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useState, useRef } from 'react';
 import { Crop, Loader2, RotateCw, ZoomIn, ZoomOut } from 'lucide-react';
+import { useCallback, useState, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -46,7 +46,9 @@ export function ImageCropDialog({
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (!isDragging || !dragStartRef.current) return;
+      if (!isDragging || !dragStartRef.current) {
+return;
+}
 
       const deltaX = e.clientX - dragStartRef.current.x;
       const deltaY = e.clientY - dragStartRef.current.y;
@@ -70,10 +72,14 @@ export function ImageCropDialog({
     const canvas = canvasRef.current;
     const image = imageRef.current;
 
-    if (!canvas || !image) return null;
+    if (!canvas || !image) {
+return null;
+}
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
+    if (!ctx) {
+return null;
+}
 
     const outputSize = 512;
     canvas.width = outputSize;

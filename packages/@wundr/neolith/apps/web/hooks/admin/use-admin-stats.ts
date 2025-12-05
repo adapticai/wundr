@@ -136,7 +136,7 @@ export function useAdminStats(
       refreshInterval,
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
-    }
+    },
   );
 
   // Manual refresh function

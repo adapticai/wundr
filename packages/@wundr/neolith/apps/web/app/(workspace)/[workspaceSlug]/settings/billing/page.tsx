@@ -19,8 +19,8 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 
 import {
   AlertDialog,
@@ -295,7 +295,9 @@ export default function BillingSettingsPage() {
   };
 
   const handleChangePlan = async (plan: Plan) => {
-    if (!currentPlan || plan.id === currentPlan.id) return;
+    if (!currentPlan || plan.id === currentPlan.id) {
+return;
+}
 
     setProcessingAction('changePlan');
     try {
@@ -650,13 +652,17 @@ export default function BillingSettingsPage() {
   };
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 GB';
+    if (bytes === 0) {
+return '0 GB';
+}
     const gb = bytes / (1024 * 1024 * 1024);
     return `${gb.toFixed(2)} GB`;
   };
 
   const getUsagePercentage = (current: number, limit: number) => {
-    if (limit === -1) return 0;
+    if (limit === -1) {
+return 0;
+}
     return Math.min((current / limit) * 100, 100);
   };
 
@@ -899,7 +905,9 @@ export default function BillingSettingsPage() {
               <CardContent>
                 {(() => {
                   const defaultMethod = paymentMethods.find(pm => pm.isDefault);
-                  if (!defaultMethod) return null;
+                  if (!defaultMethod) {
+return null;
+}
 
                   return (
                     <div className="flex items-center gap-4 rounded-lg border p-4">

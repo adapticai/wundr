@@ -40,6 +40,8 @@ interface AnalyticsQuery {
   startDate?: string;
   endDate?: string;
   granularity?: 'daily' | 'weekly' | 'monthly';
+  page?: number;
+  limit?: number;
 }
 
 /**
@@ -146,13 +148,39 @@ function parseAnalyticsQuery(searchParams: URLSearchParams): AnalyticsQuery {
   const granularity =
     (searchParams.get('granularity') as 'daily' | 'weekly' | 'monthly') ||
     'daily';
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const limit = Math.min(
+    parseInt(searchParams.get('limit') || '100', 10),
+    1000,
+  );
 
   // Validate granularity
   if (!['daily', 'weekly', 'monthly'].includes(granularity)) {
     throw new Error('Invalid granularity. Must be daily, weekly, or monthly.');
   }
 
-  return { startDate, endDate, granularity };
+  // Validate pagination
+  if (page < 1) {
+    throw new Error('Page must be a positive integer.');
+  }
+  if (limit < 1 || limit > 1000) {
+    throw new Error('Limit must be between 1 and 1000.');
+  }
+
+  // Validate date formats if provided
+  if (startDate && isNaN(Date.parse(startDate))) {
+    throw new Error('Invalid startDate format. Use ISO 8601 format.');
+  }
+  if (endDate && isNaN(Date.parse(endDate))) {
+    throw new Error('Invalid endDate format. Use ISO 8601 format.');
+  }
+
+  // Validate date range
+  if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+    throw new Error('startDate must be before or equal to endDate.');
+  }
+
+  return { startDate, endDate, granularity, page, limit };
 }
 
 /**

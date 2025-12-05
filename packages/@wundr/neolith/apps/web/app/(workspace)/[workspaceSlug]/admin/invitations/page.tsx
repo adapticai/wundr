@@ -513,7 +513,9 @@ export default function AdminInvitationsPage() {
   );
 
   const handleAddDomain = useCallback(() => {
-    if (!newDomain.trim()) return;
+    if (!newDomain.trim()) {
+return;
+}
 
     const domain = newDomain.trim().toLowerCase();
     if (!domain.includes('.')) {

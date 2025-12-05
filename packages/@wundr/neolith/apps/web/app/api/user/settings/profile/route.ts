@@ -124,15 +124,27 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       updatedPrefs.username = updates.username;
     }
 
-    if (updates.bio !== undefined) updatedPrefs.bio = updates.bio;
-    if (updates.location !== undefined) updatedPrefs.location = updates.location;
-    if (updates.timezone !== undefined) updatedPrefs.timezone = updates.timezone;
-    if (updates.title !== undefined) updatedPrefs.title = updates.title;
-    if (updates.pronouns !== undefined) updatedPrefs.pronouns = updates.pronouns;
-    if (updates.customPronouns !== undefined)
-      updatedPrefs.customPronouns = updates.customPronouns;
-    if (updates.statusMessage !== undefined)
-      updatedPrefs.statusMessage = updates.statusMessage;
+    if (updates.bio !== undefined) {
+updatedPrefs.bio = updates.bio;
+}
+    if (updates.location !== undefined) {
+updatedPrefs.location = updates.location;
+}
+    if (updates.timezone !== undefined) {
+updatedPrefs.timezone = updates.timezone;
+}
+    if (updates.title !== undefined) {
+updatedPrefs.title = updates.title;
+}
+    if (updates.pronouns !== undefined) {
+updatedPrefs.pronouns = updates.pronouns;
+}
+    if (updates.customPronouns !== undefined) {
+updatedPrefs.customPronouns = updates.customPronouns;
+}
+    if (updates.statusMessage !== undefined) {
+updatedPrefs.statusMessage = updates.statusMessage;
+}
 
     // Update social links
     if (updates.socialLinks) {

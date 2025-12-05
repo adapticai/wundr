@@ -742,7 +742,7 @@ export default function WorkflowsPage() {
           <EmptyState
             icon={Search}
             title='No Workflows Found'
-            description={`No workflows match your filters. Try adjusting your search or filters.`}
+            description={'No workflows match your filters. Try adjusting your search or filters.'}
             action={{
               label: 'Clear Filters',
               onClick: () => {

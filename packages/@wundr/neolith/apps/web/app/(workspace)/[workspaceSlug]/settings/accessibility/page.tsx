@@ -143,7 +143,9 @@ export default function AccessibilitySettingsPage() {
   }, []);
 
   const handleToggle = async (key: keyof AccessibilitySettings) => {
-    if (typeof settings[key] !== 'boolean') return;
+    if (typeof settings[key] !== 'boolean') {
+return;
+}
 
     const newValue = !settings[key];
     const newSettings = {

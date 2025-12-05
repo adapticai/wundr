@@ -18,20 +18,37 @@ export async function GET(
   try {
     const session = await getServerSession();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized', code: 'AUTH_REQUIRED' },
+        { status: 401 },
+      );
     }
 
     const { workspaceSlug: workspaceId } = await params;
     const { searchParams } = new URL(request.url);
+
+    // Validate workspace ID format (UUID)
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(workspaceId)) {
+      return NextResponse.json(
+        { error: 'Invalid workspace ID format', code: 'INVALID_ID' },
+        { status: 400 },
+      );
+    }
 
     const membership = await prisma.workspaceMember.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
     if (!membership) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Access denied to workspace', code: 'FORBIDDEN' },
+        { status: 403 },
+      );
     }
 
+    // Parse and validate period parameter
     const period = (searchParams.get('period') || 'month') as
       | 'day'
       | 'week'
@@ -39,20 +56,43 @@ export async function GET(
       | 'quarter'
       | 'year';
 
+    const validPeriods = ['day', 'week', 'month', 'quarter', 'year'];
+    if (!validPeriods.includes(period)) {
+      return NextResponse.json(
+        {
+          error: `Invalid period. Must be one of: ${validPeriods.join(', ')}`,
+          code: 'INVALID_PERIOD',
+        },
+        { status: 400 },
+      );
+    }
+
     const analyticsService = new AnalyticsServiceImpl({
       prisma: prisma as unknown as AnalyticsDatabaseClient,
       redis: redis as unknown as AnalyticsRedisClient,
     });
+
     const report = await analyticsService.generateInsightReport(
       workspaceId,
       period,
     );
 
-    return NextResponse.json(report);
+    return NextResponse.json({
+      data: report,
+      meta: {
+        workspaceId,
+        period,
+        generatedAt: new Date().toISOString(),
+      },
+    });
   } catch (error) {
-    console.error('Analytics insights error:', error);
+    console.error('[GET /api/workspaces/:workspaceId/analytics/insights]', error);
     return NextResponse.json(
-      { error: 'Failed to generate insights' },
+      {
+        error: 'Failed to generate insights',
+        code: 'INTERNAL_ERROR',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 },
     );
   }

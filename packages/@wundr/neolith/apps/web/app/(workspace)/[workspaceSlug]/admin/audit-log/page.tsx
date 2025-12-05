@@ -225,7 +225,9 @@ export default function AuditLogPage() {
 
   // Infinite scroll observer
   useEffect(() => {
-    if (!enableInfiniteScroll) return;
+    if (!enableInfiniteScroll) {
+return;
+}
 
     const observer = new IntersectionObserver(
       entries => {

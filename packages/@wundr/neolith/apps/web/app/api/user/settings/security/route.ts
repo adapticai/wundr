@@ -11,7 +11,7 @@
  * @module app/api/user/settings/security/route
  */
 
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -21,6 +21,7 @@ import {
   type SecuritySettingsInput,
 } from '@/lib/validations/security';
 
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -197,16 +198,21 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const currentPrefs = (user.preferences as Record<string, unknown>) || {};
     const updatedPrefs = { ...currentPrefs };
 
-    if (updates.sessionTimeout !== undefined)
-      updatedPrefs.sessionTimeout = updates.sessionTimeout;
-    if (updates.showOnlineStatus !== undefined)
-      updatedPrefs.showOnlineStatus = updates.showOnlineStatus;
-    if (updates.showTypingIndicators !== undefined)
-      updatedPrefs.showTypingIndicators = updates.showTypingIndicators;
-    if (updates.showReadReceipts !== undefined)
-      updatedPrefs.showReadReceipts = updates.showReadReceipts;
-    if (updates.loginAlerts !== undefined)
-      updatedPrefs.loginAlerts = updates.loginAlerts;
+    if (updates.sessionTimeout !== undefined) {
+updatedPrefs.sessionTimeout = updates.sessionTimeout;
+}
+    if (updates.showOnlineStatus !== undefined) {
+updatedPrefs.showOnlineStatus = updates.showOnlineStatus;
+}
+    if (updates.showTypingIndicators !== undefined) {
+updatedPrefs.showTypingIndicators = updates.showTypingIndicators;
+}
+    if (updates.showReadReceipts !== undefined) {
+updatedPrefs.showReadReceipts = updates.showReadReceipts;
+}
+    if (updates.loginAlerts !== undefined) {
+updatedPrefs.loginAlerts = updates.loginAlerts;
+}
 
     // Update user preferences
     await prisma.user.update({

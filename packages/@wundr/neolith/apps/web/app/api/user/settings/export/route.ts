@@ -11,7 +11,7 @@
  * @module app/api/user/settings/export/route
  */
 
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -21,6 +21,7 @@ import {
   SETTINGS_ERROR_CODES,
 } from '@/lib/validations/settings';
 
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

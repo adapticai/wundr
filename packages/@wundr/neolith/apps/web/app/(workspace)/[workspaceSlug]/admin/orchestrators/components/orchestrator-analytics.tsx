@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { TrendingUp, Activity, DollarSign, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 import {
   Dialog,
@@ -60,7 +60,9 @@ export function OrchestratorAnalytics({
   }, [open, orchestratorId]);
 
   const fetchAnalytics = async () => {
-    if (!orchestratorId) return;
+    if (!orchestratorId) {
+return;
+}
 
     setLoading(true);
     try {

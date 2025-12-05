@@ -5,9 +5,13 @@
  * Handles GET, PATCH, and PUT requests for user accessibility preferences
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
+import { NextResponse } from 'next/server';
+
 import { auth } from '@/lib/auth';
+
+import type { Prisma } from '@neolith/database';
+import type { NextRequest} from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +26,7 @@ export async function GET(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -37,7 +41,7 @@ export async function GET(req: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -71,7 +75,7 @@ export async function GET(req: NextRequest) {
     console.error('Error fetching accessibility settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -87,7 +91,7 @@ export async function PATCH(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -97,7 +101,7 @@ export async function PATCH(req: NextRequest) {
     if (!body || typeof body !== 'object') {
       return NextResponse.json(
         { error: 'Invalid request body' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -112,7 +116,7 @@ export async function PATCH(req: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -140,7 +144,7 @@ export async function PATCH(req: NextRequest) {
     console.error('Error updating accessibility settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -156,7 +160,7 @@ export async function PUT(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -166,7 +170,7 @@ export async function PUT(req: NextRequest) {
     if (!body || typeof body !== 'object') {
       return NextResponse.json(
         { error: 'Invalid request body' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -181,7 +185,7 @@ export async function PUT(req: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -203,7 +207,7 @@ export async function PUT(req: NextRequest) {
     console.error('Error replacing accessibility settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

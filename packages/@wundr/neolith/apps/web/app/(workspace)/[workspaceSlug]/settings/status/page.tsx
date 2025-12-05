@@ -1,5 +1,6 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   AlertCircle,
   Calendar,
@@ -18,7 +19,6 @@ import {
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 import { EmojiPicker } from '@/components/status/emoji-picker';
@@ -54,6 +54,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import {
   statusUpdateSchema,
   workingHoursSchema,
@@ -65,7 +66,6 @@ import {
   type OutOfOfficeInput,
   type ScheduledStatusInput,
 } from '@/lib/validations/status';
-import { cn } from '@/lib/utils';
 
 const STATUS_PRESETS = [
   { emoji: '🟢', message: 'Available', type: 'available' as const },
@@ -144,7 +144,9 @@ export default function StatusSettingsPage() {
   // Load current status and settings
   useEffect(() => {
     const loadData = async () => {
-      if (!session?.user?.id) return;
+      if (!session?.user?.id) {
+return;
+}
 
       try {
         setIsLoading(true);
@@ -204,7 +206,9 @@ export default function StatusSettingsPage() {
 
   // Update status
   const onStatusSubmit = async (data: StatusUpdateInput) => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id) {
+return;
+}
 
     setIsSaving(true);
 

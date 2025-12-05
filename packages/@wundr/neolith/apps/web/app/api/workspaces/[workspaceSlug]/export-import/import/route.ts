@@ -346,14 +346,18 @@ async function importTeamsData(
 
 function parseCSV(content: string): Array<Record<string, string>> {
   const lines = content.split('\n');
-  if (lines.length < 2) return [];
+  if (lines.length < 2) {
+return [];
+}
 
   const headers = lines[0].split(',').map(h => h.trim());
   const data: Array<Record<string, string>> = [];
 
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (!line) continue;
+    if (!line) {
+continue;
+}
 
     const values = line.split(',').map(v => v.trim());
     const row: Record<string, string> = {};

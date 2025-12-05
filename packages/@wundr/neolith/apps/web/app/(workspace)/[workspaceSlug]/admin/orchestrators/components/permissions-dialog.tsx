@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Users, Shield, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -14,8 +16,6 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
 
 interface PermissionsDialogProps {
   open: boolean;
@@ -113,7 +113,9 @@ export function PermissionsDialog({
   };
 
   const fetchPermissions = async () => {
-    if (!orchestratorId) return;
+    if (!orchestratorId) {
+return;
+}
 
     try {
       const response = await fetch(
@@ -131,7 +133,9 @@ export function PermissionsDialog({
   };
 
   const handleSave = async () => {
-    if (!orchestratorId) return;
+    if (!orchestratorId) {
+return;
+}
 
     setLoading(true);
     try {
@@ -147,7 +151,9 @@ export function PermissionsDialog({
         },
       );
 
-      if (!response.ok) throw new Error('Failed to update permissions');
+      if (!response.ok) {
+throw new Error('Failed to update permissions');
+}
 
       toast({
         title: 'Success',

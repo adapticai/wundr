@@ -8,12 +8,11 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-import { ExecutionMonitor } from '@/components/workflows';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -22,7 +21,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+
+// Import required UI components for these examples
+import { ExecutionMonitor } from '@/components/workflows';
+import { useWorkflowExecutions } from '@/hooks';
 
 interface WorkflowExecutionPageProps {
   params: {
@@ -318,7 +322,7 @@ export function ExecutionPageWithActions({ params }: WorkflowExecutionPageProps)
     try {
       // Export execution data
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/workflows/${workflowId}/executions/${executionId}/export`
+        `/api/workspaces/${workspaceSlug}/workflows/${workflowId}/executions/${executionId}/export`,
       );
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -418,7 +422,3 @@ export function ExecutionPageWithActions({ params }: WorkflowExecutionPageProps)
     </div>
   );
 }
-
-// Import required UI components for these examples
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useWorkflowExecutions } from '@/hooks';

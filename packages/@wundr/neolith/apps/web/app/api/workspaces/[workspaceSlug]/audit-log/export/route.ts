@@ -27,7 +27,9 @@ interface RouteContext {
  * Convert an array of objects to CSV format
  */
 function arrayToCSV(data: Record<string, unknown>[]): string {
-  if (data.length === 0) return '';
+  if (data.length === 0) {
+return '';
+}
 
   // Get headers from first object
   const headers = Object.keys(data[0]);
@@ -187,8 +189,12 @@ export async function GET(
 
     if (startDate || endDate) {
       where.createdAt = {};
-      if (startDate) where.createdAt.gte = startDate;
-      if (endDate) where.createdAt.lte = endDate;
+      if (startDate) {
+where.createdAt.gte = startDate;
+}
+      if (endDate) {
+where.createdAt.lte = endDate;
+}
     }
 
     // Fetch all matching logs (no pagination for export)

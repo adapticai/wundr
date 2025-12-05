@@ -3,6 +3,7 @@
 import { AlertCircle, CreditCard, Download, Mail, TrendingUp } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { cn } from '@/lib/utils';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 type BillingInterval = 'monthly' | 'yearly';
 type PlanTier = 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE';
@@ -219,7 +219,9 @@ export default function AdminBillingPage() {
   const handleDownloadInvoice = async (invoiceId: string) => {
     try {
       const res = await fetch(`/api/workspaces/${workspaceSlug}/admin/billing/invoices/${invoiceId}/download`);
-      if (!res.ok) throw new Error('Failed to download invoice');
+      if (!res.ok) {
+throw new Error('Failed to download invoice');
+}
 
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -1081,7 +1083,9 @@ function PaymentMethodDialog({
         body: JSON.stringify({ cardNumber, expiry, cvc }),
       });
 
-      if (!res.ok) throw new Error('Failed to add payment method');
+      if (!res.ok) {
+throw new Error('Failed to add payment method');
+}
 
       onClose();
       window.location.reload();
@@ -1173,7 +1177,9 @@ function EnterpriseContactDialog({
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) throw new Error('Failed to send request');
+      if (!res.ok) {
+throw new Error('Failed to send request');
+}
 
       alert('Thank you! Our enterprise team will contact you within 24 hours.');
       onClose();
@@ -1293,7 +1299,9 @@ function BudgetAlertDialog({
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to create alert');
+      if (!res.ok) {
+throw new Error('Failed to create alert');
+}
 
       onClose();
       window.location.reload();

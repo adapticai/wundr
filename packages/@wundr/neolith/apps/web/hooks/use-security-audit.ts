@@ -91,7 +91,9 @@ export function useSecurityAudit(initialLimit = 20): UseSecurityAuditReturn {
   }, [fetchAudit, filters]);
 
   const loadMore = useCallback(async () => {
-    if (!hasMore || isLoading) return;
+    if (!hasMore || isLoading) {
+return;
+}
     const newOffset = offset + limit;
     setOffset(newOffset);
     await fetchAudit(newOffset, filters);

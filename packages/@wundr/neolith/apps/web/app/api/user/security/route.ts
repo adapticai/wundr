@@ -10,7 +10,7 @@
  * @module app/api/user/security/route
  */
 
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -20,6 +20,7 @@ import {
   SECURITY_ERROR_CODES,
 } from '@/lib/validations/security';
 
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

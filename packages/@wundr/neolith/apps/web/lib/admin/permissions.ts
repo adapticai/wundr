@@ -164,7 +164,7 @@ export function hasAnyPermission(
   checks: Array<{ resource: PermissionResource; action: PermissionAction }>,
 ): boolean {
   return checks.some(check =>
-    hasPermission(permissions, check.resource, check.action)
+    hasPermission(permissions, check.resource, check.action),
   );
 }
 
@@ -180,7 +180,7 @@ export function hasAllPermissions(
   checks: Array<{ resource: PermissionResource; action: PermissionAction }>,
 ): boolean {
   return checks.every(check =>
-    hasPermission(permissions, check.resource, check.action)
+    hasPermission(permissions, check.resource, check.action),
   );
 }
 
@@ -196,7 +196,7 @@ export function isDangerousPermission(
   action: PermissionAction,
 ): boolean {
   return DANGEROUS_PERMISSIONS.some(
-    danger => danger.resource === resource && danger.action === action
+    danger => danger.resource === resource && danger.action === action,
   );
 }
 
@@ -331,7 +331,7 @@ export function filterPermissionsByResource(
   resources: PermissionResource[],
 ): Permission[] {
   return permissions.filter(perm =>
-    resources.includes(perm.resource) || perm.resource === '*'
+    resources.includes(perm.resource) || perm.resource === '*',
   );
 }
 
@@ -343,6 +343,6 @@ export function filterPermissionsByResource(
  */
 export function formatPermissions(permissions: Permission[]): string[] {
   return permissions.flatMap(perm =>
-    perm.actions.map(action => `${action} ${perm.resource}`)
+    perm.actions.map(action => `${action} ${perm.resource}`),
   );
 }

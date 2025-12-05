@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Users, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -13,9 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Badge } from '@/components/ui/badge';
 
 interface Permission {
   userId: string;
@@ -52,7 +52,9 @@ export function WorkflowPermissionsDialog({
   }, [open, workflowId]);
 
   const fetchPermissions = async () => {
-    if (!workflowId) return;
+    if (!workflowId) {
+return;
+}
 
     setIsLoading(true);
     try {
@@ -60,7 +62,9 @@ export function WorkflowPermissionsDialog({
         `/api/workspaces/${workspaceSlug}/admin/workflows/${workflowId}/permissions`,
       );
 
-      if (!response.ok) throw new Error('Failed to fetch permissions');
+      if (!response.ok) {
+throw new Error('Failed to fetch permissions');
+}
 
       const data = await response.json();
       setPermissions(data.permissions || []);
@@ -87,7 +91,9 @@ export function WorkflowPermissionsDialog({
   };
 
   const handleSave = async () => {
-    if (!workflowId) return;
+    if (!workflowId) {
+return;
+}
 
     setIsSaving(true);
     try {
@@ -100,7 +106,9 @@ export function WorkflowPermissionsDialog({
         },
       );
 
-      if (!response.ok) throw new Error('Failed to update permissions');
+      if (!response.ok) {
+throw new Error('Failed to update permissions');
+}
 
       toast({
         title: 'Success',

@@ -211,7 +211,9 @@ export default function CustomizationPage() {
   const handleLogoUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
-      if (!file) return;
+      if (!file) {
+return;
+}
 
       if (file.size > 5 * 1024 * 1024) {
         toast({
@@ -233,7 +235,9 @@ export default function CustomizationPage() {
           { method: 'POST', body: formData },
         );
 
-        if (!response.ok) throw new Error('Upload failed');
+        if (!response.ok) {
+throw new Error('Upload failed');
+}
 
         const data = await response.json();
         setSettings(prev => ({ ...prev, logo: data.url }));
@@ -250,7 +254,9 @@ export default function CustomizationPage() {
         });
       } finally {
         setIsUploadingLogo(false);
-        if (logoInputRef.current) logoInputRef.current.value = '';
+        if (logoInputRef.current) {
+logoInputRef.current.value = '';
+}
       }
     },
     [workspaceSlug, toast],
@@ -259,7 +265,9 @@ export default function CustomizationPage() {
   const handleFaviconUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
-      if (!file) return;
+      if (!file) {
+return;
+}
 
       if (file.size > 1 * 1024 * 1024) {
         toast({
@@ -281,7 +289,9 @@ export default function CustomizationPage() {
           { method: 'POST', body: formData },
         );
 
-        if (!response.ok) throw new Error('Upload failed');
+        if (!response.ok) {
+throw new Error('Upload failed');
+}
 
         const data = await response.json();
         setSettings(prev => ({ ...prev, favicon: data.url }));
@@ -298,7 +308,9 @@ export default function CustomizationPage() {
         });
       } finally {
         setIsUploadingFavicon(false);
-        if (faviconInputRef.current) faviconInputRef.current.value = '';
+        if (faviconInputRef.current) {
+faviconInputRef.current.value = '';
+}
       }
     },
     [workspaceSlug, toast],

@@ -29,7 +29,9 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
     include: { organization: true },
   });
 
-  if (!workspace) return null;
+  if (!workspace) {
+return null;
+}
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -122,9 +124,9 @@ export async function GET(
     const minExecutionTime = Math.min(...durations);
 
     // Calculate memory and API call metrics from metadata
-    let totalMemory = 0;
-    let totalApiCalls = 0;
-    let memoryCount = 0;
+    const totalMemory = 0;
+    const totalApiCalls = 0;
+    const memoryCount = 0;
 
     // Note: metadata field was removed from the select above, so this is placeholder code
     // If needed, add metadata back to the select and type it properly

@@ -7,6 +7,7 @@
  */
 
 import { NextResponse } from 'next/server';
+
 import { auth } from '@/lib/auth';
 import {
   checkWorkspaceAccess,
@@ -19,6 +20,7 @@ import {
   INTEGRATION_ERROR_CODES,
 } from '@/lib/validations/integration';
 import { createErrorResponse } from '@/lib/validations/organization';
+
 import type { NextRequest } from 'next/server';
 
 /**

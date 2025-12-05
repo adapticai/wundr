@@ -1,7 +1,17 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+  type VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 import {
   MoreHorizontal,
   Download,
@@ -17,20 +27,21 @@ import {
   Search,
   X,
 } from 'lucide-react';
-import {
-  type ColumnDef,
-  type ColumnFiltersState,
-  type SortingState,
-  type VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
+import { useParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -50,16 +61,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { UserAvatar } from '@/components/ui/user-avatar';
-import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -68,15 +69,14 @@ import {
 } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { usePageHeader } from '@/contexts/page-header-context';
 
 type UserStatus = 'ACTIVE' | 'SUSPENDED' | 'PENDING';
@@ -154,12 +154,18 @@ export default function AdminUsersPage() {
         offset: String(pagination.pageIndex * pagination.pageSize),
       });
 
-      if (searchQuery) params.set('search', searchQuery);
-      if (roleFilter !== 'all') params.set('role', roleFilter);
-      if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (searchQuery) {
+params.set('search', searchQuery);
+}
+      if (roleFilter !== 'all') {
+params.set('role', roleFilter);
+}
+      if (statusFilter !== 'all') {
+params.set('status', statusFilter);
+}
 
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/users?${params.toString()}`
+        `/api/workspaces/${workspaceSlug}/admin/users?${params.toString()}`,
       );
 
       if (response.ok) {
@@ -185,7 +191,7 @@ export default function AdminUsersPage() {
     setLoadingActivity(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/users/${userId}/activity`
+        `/api/workspaces/${workspaceSlug}/admin/users/${userId}/activity`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -211,7 +217,7 @@ export default function AdminUsersPage() {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: newRole }),
-        }
+        },
       );
 
       if (response.ok) {
@@ -231,7 +237,7 @@ export default function AdminUsersPage() {
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/admin/users/${userId}/suspend`,
-        { method: 'POST' }
+        { method: 'POST' },
       );
 
       if (response.ok) {
@@ -250,7 +256,7 @@ export default function AdminUsersPage() {
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/admin/users/${userId}/activate`,
-        { method: 'POST' }
+        { method: 'POST' },
       );
 
       if (response.ok) {
@@ -269,7 +275,7 @@ export default function AdminUsersPage() {
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/admin/users/${userId}`,
-        { method: 'DELETE' }
+        { method: 'DELETE' },
       );
 
       if (response.ok) {
@@ -286,7 +292,9 @@ export default function AdminUsersPage() {
 
   const handleBulkAction = async () => {
     const { action, targetRole } = bulkActionDialog;
-    if (!action) return;
+    if (!action) {
+return;
+}
 
     const selectedUserIds = Object.keys(rowSelection)
       .filter((key) => rowSelection[key as keyof typeof rowSelection])
@@ -308,7 +316,7 @@ export default function AdminUsersPage() {
             action,
             ...(targetRole && { role: targetRole }),
           }),
-        }
+        },
       );
 
       if (response.ok) {
@@ -329,7 +337,7 @@ export default function AdminUsersPage() {
   const handleExport = async () => {
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/users/export`
+        `/api/workspaces/${workspaceSlug}/admin/users/export`,
       );
 
       if (response.ok) {
@@ -462,7 +470,9 @@ export default function AdminUsersPage() {
       header: 'Last Active',
       cell: ({ row }) => {
         const lastActivity = row.original.user.lastActiveAt;
-        if (!lastActivity) return <span className="text-sm text-muted-foreground">Never</span>;
+        if (!lastActivity) {
+return <span className="text-sm text-muted-foreground">Never</span>;
+}
 
         const date = new Date(lastActivity);
         const now = new Date();
@@ -472,11 +482,17 @@ export default function AdminUsersPage() {
         const diffDays = Math.floor(diffMs / 86400000);
 
         let displayText = '';
-        if (diffMins < 1) displayText = 'Just now';
-        else if (diffMins < 60) displayText = `${diffMins}m ago`;
-        else if (diffHours < 24) displayText = `${diffHours}h ago`;
-        else if (diffDays < 7) displayText = `${diffDays}d ago`;
-        else displayText = date.toLocaleDateString();
+        if (diffMins < 1) {
+displayText = 'Just now';
+} else if (diffMins < 60) {
+displayText = `${diffMins}m ago`;
+} else if (diffHours < 24) {
+displayText = `${diffHours}h ago`;
+} else if (diffDays < 7) {
+displayText = `${diffDays}d ago`;
+} else {
+displayText = date.toLocaleDateString();
+}
 
         return <div className="text-sm text-muted-foreground">{displayText}</div>;
       },
@@ -658,7 +674,7 @@ export default function AdminUsersPage() {
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}

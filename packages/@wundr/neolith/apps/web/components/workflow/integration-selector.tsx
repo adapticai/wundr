@@ -12,8 +12,6 @@
  * - Action selection within integrations
  */
 
-import { useState, useCallback, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Search,
@@ -28,11 +26,13 @@ import {
   Trash2,
   RefreshCw,
 } from 'lucide-react';
+import { useState, useCallback, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
@@ -44,13 +44,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Form,
   FormControl,
   FormDescription,
@@ -59,11 +52,17 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   ALL_INTEGRATIONS,
   getIntegrationById,
@@ -146,7 +145,9 @@ export function IntegrationSelector({
   // Handle action selection
   const handleActionSelect = useCallback(
     (action: IntegrationAction) => {
-      if (!selectedIntegration) return;
+      if (!selectedIntegration) {
+return;
+}
 
       // Check if integration requires connection
       if (selectedIntegration.requiresConnection) {

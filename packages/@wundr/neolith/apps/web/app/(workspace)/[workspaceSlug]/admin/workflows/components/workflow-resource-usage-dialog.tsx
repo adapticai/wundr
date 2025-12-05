@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { TrendingUp, Cpu, Clock, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 import {
   Dialog,
@@ -53,7 +53,9 @@ export function WorkflowResourceUsageDialog({
   }, [open, workflowId]);
 
   const fetchUsage = async () => {
-    if (!workflowId) return;
+    if (!workflowId) {
+return;
+}
 
     setIsLoading(true);
     try {
@@ -61,7 +63,9 @@ export function WorkflowResourceUsageDialog({
         `/api/workspaces/${workspaceSlug}/admin/workflows/${workflowId}/resource-usage`,
       );
 
-      if (!response.ok) throw new Error('Failed to fetch resource usage');
+      if (!response.ok) {
+throw new Error('Failed to fetch resource usage');
+}
 
       const data = await response.json();
       setUsage(data.usage);

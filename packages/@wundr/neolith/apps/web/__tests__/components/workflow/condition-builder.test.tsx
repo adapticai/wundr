@@ -11,6 +11,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import {
   validateCondition,
   validateConditionGroup,
@@ -23,6 +24,7 @@ import {
   type Condition,
   type ConditionGroup,
 } from '@/components/workflow/condition-builder';
+
 import type { ScopedWorkflowVariable } from '@/components/workflow/variable-manager';
 
 // ============================================================================

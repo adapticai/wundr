@@ -10,9 +10,11 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import type { AppearanceSettings } from '@/lib/validations/settings';
-import { useUserSettings } from './use-user-settings';
+
 import { useSettingsUpdate } from './use-settings-update';
+import { useUserSettings } from './use-user-settings';
+
+import type { AppearanceSettings } from '@/lib/validations/settings';
 
 /**
  * Return type for useAccessibilitySettings hook
@@ -108,12 +110,16 @@ export function useAccessibilitySettings(): UseAccessibilitySettingsReturn {
 
   // Detect system reduced motion preference
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
-    if (typeof window === 'undefined') return false;
+    if (typeof window === 'undefined') {
+return false;
+}
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+return;
+}
 
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 

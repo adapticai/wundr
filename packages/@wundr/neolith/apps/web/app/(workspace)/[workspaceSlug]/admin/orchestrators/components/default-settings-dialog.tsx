@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Settings, DollarSign, Shield } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
 import {
   Select,
   SelectContent,
@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/hooks/use-toast';
 
 interface DefaultSettingsDialogProps {
   open: boolean;
@@ -88,7 +88,9 @@ export function DefaultSettingsDialog({
         },
       );
 
-      if (!response.ok) throw new Error('Failed to update settings');
+      if (!response.ok) {
+throw new Error('Failed to update settings');
+}
 
       toast({
         title: 'Success',

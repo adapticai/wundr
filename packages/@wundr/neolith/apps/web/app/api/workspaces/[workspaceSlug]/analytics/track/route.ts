@@ -23,17 +23,65 @@ export async function POST(
   try {
     const session = await getServerSession();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized', code: 'AUTH_REQUIRED' },
+        { status: 401 },
+      );
     }
 
     const { workspaceSlug: workspaceId } = await params;
-    const body = await request.json();
+
+    // Validate workspace ID format (UUID)
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(workspaceId)) {
+      return NextResponse.json(
+        { error: 'Invalid workspace ID format', code: 'INVALID_ID' },
+        { status: 400 },
+      );
+    }
+
+    // Parse request body with validation
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid JSON body', code: 'INVALID_BODY' },
+        { status: 400 },
+      );
+    }
 
     const { eventType, eventData, sessionId } = body;
 
-    if (!eventType) {
+    // Validate required fields
+    if (!eventType || typeof eventType !== 'string') {
       return NextResponse.json(
-        { error: 'Event type required' },
+        { error: 'Event type required and must be a string', code: 'MISSING_EVENT_TYPE' },
+        { status: 400 },
+      );
+    }
+
+    // Validate event type format (alphanumeric, underscores, dots)
+    if (!/^[a-zA-Z0-9._-]+$/.test(eventType)) {
+      return NextResponse.json(
+        { error: 'Invalid event type format. Use alphanumeric characters, dots, underscores, or dashes', code: 'INVALID_EVENT_TYPE' },
+        { status: 400 },
+      );
+    }
+
+    // Validate eventData if provided
+    if (eventData !== undefined && typeof eventData !== 'object') {
+      return NextResponse.json(
+        { error: 'Event data must be an object', code: 'INVALID_EVENT_DATA' },
+        { status: 400 },
+      );
+    }
+
+    // Validate sessionId if provided
+    if (sessionId !== undefined && typeof sessionId !== 'string') {
+      return NextResponse.json(
+        { error: 'Session ID must be a string', code: 'INVALID_SESSION_ID' },
         { status: 400 },
       );
     }
@@ -41,27 +89,38 @@ export async function POST(
     // Get metadata from request
     const userAgent = request.headers.get('user-agent') || undefined;
     const ip =
-      request.headers.get('x-forwarded-for')?.split(',')[0] || undefined;
+      request.headers.get('x-forwarded-for')?.split(',')[0] ||
+      request.headers.get('x-real-ip') ||
+      undefined;
 
     await analyticsService.track({
       workspaceId,
       userId: session.user.id,
-      eventType,
-      eventData: eventData || {},
-      sessionId,
+      eventType: eventType as never,
+      eventData: (eventData || {}) as Record<string, string | number | boolean | undefined>,
+      sessionId: sessionId as string | undefined,
       metadata: {
         userAgent,
         ipAddress: ip,
-        platform: body.platform,
-        version: body.version,
+        platform: typeof body.platform === 'string' ? body.platform : undefined,
+        version: typeof body.version === 'string' ? body.version : undefined,
       },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      message: 'Event tracked successfully',
+      eventType,
+      timestamp: new Date().toISOString(),
+    });
   } catch (error) {
-    console.error('Analytics track error:', error);
+    console.error('[POST /api/workspaces/:workspaceId/analytics/track]', error);
     return NextResponse.json(
-      { error: 'Failed to track event' },
+      {
+        error: 'Failed to track event',
+        code: 'INTERNAL_ERROR',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 },
     );
   }

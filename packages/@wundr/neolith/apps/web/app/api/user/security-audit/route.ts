@@ -64,8 +64,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       if (eventType || severity) {
         // Filtered query
         const whereConditions = [`user_id = ${session.user.id}`];
-        if (eventType) whereConditions.push(`event_type = '${eventType}'`);
-        if (severity) whereConditions.push(`severity = '${severity}'`);
+        if (eventType) {
+whereConditions.push(`event_type = '${eventType}'`);
+}
+        if (severity) {
+whereConditions.push(`severity = '${severity}'`);
+}
 
         logs = await prisma.$queryRawUnsafe<
           Array<{

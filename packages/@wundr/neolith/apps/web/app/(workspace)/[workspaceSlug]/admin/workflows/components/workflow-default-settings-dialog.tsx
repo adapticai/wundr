@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -12,8 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 
@@ -62,7 +62,9 @@ export function WorkflowDefaultSettingsDialog({
         `/api/workspaces/${workspaceSlug}/admin/workflows/settings`,
       );
 
-      if (!response.ok) throw new Error('Failed to fetch settings');
+      if (!response.ok) {
+throw new Error('Failed to fetch settings');
+}
 
       const data = await response.json();
       setSettings(data.settings || settings);
@@ -89,7 +91,9 @@ export function WorkflowDefaultSettingsDialog({
         },
       );
 
-      if (!response.ok) throw new Error('Failed to update settings');
+      if (!response.ok) {
+throw new Error('Failed to update settings');
+}
 
       toast({
         title: 'Success',

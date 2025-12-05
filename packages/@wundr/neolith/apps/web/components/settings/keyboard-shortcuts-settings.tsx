@@ -26,6 +26,17 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -34,6 +45,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
   Dialog,
   DialogContent,
@@ -53,38 +69,24 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
 import {
   useKeyboardShortcuts,
   useShortcutCapture,
   useIsMac,
 } from '@/hooks/use-keyboard-shortcuts';
+import { useToast } from '@/hooks/use-toast';
 import {
   CATEGORY_CONFIG,
   SHORTCUT_PRESETS,
   formatKeyForDisplay,
 } from '@/lib/keyboard-shortcuts';
+import { cn } from '@/lib/utils';
+
 import type {
   KeyboardShortcut,
   ShortcutCategory,
 } from '@/lib/keyboard-shortcuts';
-import { cn } from '@/lib/utils';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+
 
 const CATEGORY_ICONS: Record<ShortcutCategory, React.ElementType> = {
   navigation: Compass,

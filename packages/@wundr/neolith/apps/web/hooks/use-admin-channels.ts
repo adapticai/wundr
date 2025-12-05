@@ -127,11 +127,18 @@ export function useAdminChannels(
   options: UseAdminChannelsOptions = {},
 ): UseAdminChannelsReturn {
   const queryParams = new URLSearchParams();
-  if (options.type) queryParams.set('type', options.type);
-  if (options.archived !== undefined)
-    queryParams.set('archived', String(options.archived));
-  if (options.search) queryParams.set('search', options.search);
-  if (options.limit) queryParams.set('limit', String(options.limit));
+  if (options.type) {
+queryParams.set('type', options.type);
+}
+  if (options.archived !== undefined) {
+queryParams.set('archived', String(options.archived));
+}
+  if (options.search) {
+queryParams.set('search', options.search);
+}
+  if (options.limit) {
+queryParams.set('limit', String(options.limit));
+}
 
   const { data, error, isLoading, mutate } = useSWR<{
     channels: ChannelInfo[];

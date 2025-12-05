@@ -11,8 +11,23 @@
  * - Step details preview
  */
 
-import { useState, useMemo } from 'react';
 import { Search, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { useState, useMemo } from 'react';
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import {
   ALL_STEP_TYPES,
@@ -22,20 +37,6 @@ import {
   type StepCategory,
   type StepType,
 } from '@/lib/workflow/step-types';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card';
 
 export interface StepPaletteProps {
   onStepSelect?: (step: StepType<unknown>) => void;

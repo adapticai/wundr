@@ -10,6 +10,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
+
 import type { UserSettings } from '@/lib/validations/settings';
 
 /**

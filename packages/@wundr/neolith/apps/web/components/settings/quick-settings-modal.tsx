@@ -35,8 +35,12 @@ export function QuickSettingsModal({
     // Load preferences from localStorage
     const savedSound = localStorage.getItem('soundEnabled');
     const savedMotion = localStorage.getItem('reducedMotion');
-    if (savedSound !== null) setSoundEnabled(savedSound === 'true');
-    if (savedMotion !== null) setReducedMotion(savedMotion === 'true');
+    if (savedSound !== null) {
+setSoundEnabled(savedSound === 'true');
+}
+    if (savedMotion !== null) {
+setReducedMotion(savedMotion === 'true');
+}
   }, []);
 
   const handleSoundToggle = (enabled: boolean) => {
@@ -54,7 +58,9 @@ export function QuickSettingsModal({
     }
   };
 
-  if (!mounted) return null;
+  if (!mounted) {
+return null;
+}
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -1,11 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import { ScheduleConfig } from './schedule-config';
-import type { Schedule } from './schedule-config';
+import { toast } from 'sonner';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+
+import { ScheduleConfig } from './schedule-config';
+
+import type { Schedule } from './schedule-config';
+
 
 /**
  * Demo component showcasing the ScheduleConfig component

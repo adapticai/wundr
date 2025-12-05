@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useCallback, useRef } from 'react';
+
 import type { UserSettings } from '@/lib/validations/settings';
 
 /**
@@ -92,7 +93,9 @@ export function useSettingsSync(
 
   // Initialize BroadcastChannel
   useEffect(() => {
-    if (!enabled || typeof window === 'undefined') return;
+    if (!enabled || typeof window === 'undefined') {
+return;
+}
 
     if (isSupported) {
       // Use BroadcastChannel for modern browsers
@@ -116,7 +119,9 @@ export function useSettingsSync(
     } else {
       // Fallback to localStorage events for older browsers
       const handleStorageEvent = (e: StorageEvent) => {
-        if (e.key !== STORAGE_KEY || !e.newValue) return;
+        if (e.key !== STORAGE_KEY || !e.newValue) {
+return;
+}
 
         try {
           const message: SettingsSyncMessage = JSON.parse(e.newValue);
@@ -142,7 +147,9 @@ export function useSettingsSync(
   // Broadcast settings update
   const broadcastUpdate = useCallback(
     (settings: Partial<UserSettings>) => {
-      if (!enabled) return;
+      if (!enabled) {
+return;
+}
 
       const message: SettingsSyncMessage = {
         type: 'settings-updated',
@@ -171,7 +178,9 @@ export function useSettingsSync(
 
   // Request refresh in all tabs
   const requestRefresh = useCallback(() => {
-    if (!enabled) return;
+    if (!enabled) {
+return;
+}
 
     const message: SettingsSyncMessage = {
       type: 'settings-refresh',

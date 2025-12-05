@@ -15,6 +15,7 @@ import {
   DEFAULT_SHORTCUTS,
   SHORTCUT_PRESETS,
 } from '@/lib/keyboard-shortcuts';
+
 import type {
   KeyboardShortcut,
   ShortcutPreset,

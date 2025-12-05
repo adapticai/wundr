@@ -4,8 +4,9 @@
  * @module lib/services/integration-service
  */
 
-import { prisma } from '@neolith/database';
 import crypto from 'crypto';
+
+import { prisma } from '@neolith/database';
 
 /**
  * OAuth provider configurations
@@ -285,10 +286,18 @@ export async function updateWebhook(
 
   const data: any = {};
 
-  if (updates.name) data.name = updates.name;
-  if (updates.url) data.url = updates.url;
-  if (updates.events) data.events = updates.events;
-  if (updates.headers) data.headers = updates.headers;
+  if (updates.name) {
+data.name = updates.name;
+}
+  if (updates.url) {
+data.url = updates.url;
+}
+  if (updates.events) {
+data.events = updates.events;
+}
+  if (updates.headers) {
+data.headers = updates.headers;
+}
   if (updates.active !== undefined) {
     data.status = updates.active ? 'ACTIVE' : 'INACTIVE';
   }
@@ -574,11 +583,21 @@ export async function updateIntegration(
 
   const data: any = {};
 
-  if (updates.name) data.name = updates.name;
-  if (updates.description !== undefined) data.description = updates.description;
-  if (updates.status) data.status = updates.status;
-  if (updates.syncEnabled !== undefined) data.syncEnabled = updates.syncEnabled;
-  if (updates.config) data.config = updates.config;
+  if (updates.name) {
+data.name = updates.name;
+}
+  if (updates.description !== undefined) {
+data.description = updates.description;
+}
+  if (updates.status) {
+data.status = updates.status;
+}
+  if (updates.syncEnabled !== undefined) {
+data.syncEnabled = updates.syncEnabled;
+}
+  if (updates.config) {
+data.config = updates.config;
+}
 
   return await prisma.integration.update({
     where: {

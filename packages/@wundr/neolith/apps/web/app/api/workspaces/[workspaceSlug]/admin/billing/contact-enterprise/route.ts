@@ -9,12 +9,13 @@
  * @module app/api/workspaces/[workspaceSlug]/admin/billing/contact-enterprise/route
  */
 
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { createAdminErrorResponse, ADMIN_ERROR_CODES } from '@/lib/validations/admin';
 
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

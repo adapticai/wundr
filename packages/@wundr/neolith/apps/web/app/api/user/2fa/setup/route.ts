@@ -9,13 +9,14 @@
  * @module app/api/user/2fa/setup/route
  */
 
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import { generateTOTPSecret } from '@/lib/services/security';
 import { SECURITY_ERROR_CODES } from '@/lib/validations/security';
 
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

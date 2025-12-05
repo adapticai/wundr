@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import {
   LineChart,
   Line,
@@ -15,6 +15,9 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Area,
+  AreaChart,
+  ComposedChart,
 } from 'recharts';
 
 import {
@@ -93,6 +96,27 @@ interface ActionPerformanceData {
 }
 
 /**
+ * Duration percentile data for performance analysis
+ */
+interface DurationPercentilesData {
+  date: string;
+  p50: number;
+  p95: number;
+  p99: number;
+  avg: number;
+}
+
+/**
+ * Hourly execution data for trend analysis
+ */
+interface HourlyExecutionData {
+  hour: string;
+  executions: number;
+  successful: number;
+  failed: number;
+}
+
+/**
  * WorkflowAnalytics Component
  *
  * Displays comprehensive analytics for workflow executions including:
@@ -110,6 +134,22 @@ export function WorkflowAnalytics({
   className,
   timeRange = 'all',
 }: WorkflowAnalyticsProps) {
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+
+  // Auto-refresh data every 30 seconds when there are running executions
+  useEffect(() => {
+    const hasRunning = executions.some((e) => e.status === 'running');
+    if (!hasRunning) {
+return;
+}
+
+    const interval = setInterval(() => {
+      setLastUpdate(new Date());
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [executions]);
+
   // Filter executions by time range
   const filteredExecutions = useMemo(() => {
     if (timeRange === 'all') {
@@ -300,10 +340,126 @@ return [];
     ];
   }, [filteredExecutions, triggerType]);
 
+  // Calculate duration percentiles for performance analysis
+  const durationPercentiles = useMemo((): DurationPercentilesData[] => {
+    const groupedByDate = new Map<string, number[]>();
+
+    filteredExecutions
+      .filter((e) => e.status === 'completed' && e.duration)
+      .forEach((execution) => {
+        const date = new Date(execution.startedAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        });
+
+        if (!groupedByDate.has(date)) {
+          groupedByDate.set(date, []);
+        }
+
+        groupedByDate.get(date)!.push(execution.duration!);
+      });
+
+    return Array.from(groupedByDate.entries())
+      .map(([date, durations]) => {
+        const sorted = durations.sort((a, b) => a - b);
+        const p50Index = Math.floor(sorted.length * 0.5);
+        const p95Index = Math.floor(sorted.length * 0.95);
+        const p99Index = Math.floor(sorted.length * 0.99);
+        const avg = Math.round(
+          sorted.reduce((sum, d) => sum + d, 0) / sorted.length,
+        );
+
+        return {
+          date,
+          p50: sorted[p50Index] || 0,
+          p95: sorted[p95Index] || 0,
+          p99: sorted[p99Index] || 0,
+          avg,
+        };
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.date + ', 2024');
+        const dateB = new Date(b.date + ', 2024');
+        return dateA.getTime() - dateB.getTime();
+      });
+  }, [filteredExecutions]);
+
+  // Calculate hourly execution trends
+  const hourlyTrends = useMemo((): HourlyExecutionData[] => {
+    const hourlyMap = new Map<number, HourlyExecutionData>();
+
+    filteredExecutions.forEach((execution) => {
+      const hour = new Date(execution.startedAt).getHours();
+
+      if (!hourlyMap.has(hour)) {
+        hourlyMap.set(hour, {
+          hour: `${hour.toString().padStart(2, '0')}:00`,
+          executions: 0,
+          successful: 0,
+          failed: 0,
+        });
+      }
+
+      const data = hourlyMap.get(hour)!;
+      data.executions += 1;
+      if (execution.status === 'completed') {
+        data.successful += 1;
+      } else if (execution.status === 'failed') {
+        data.failed += 1;
+      }
+    });
+
+    // Fill in missing hours with zero values
+    for (let hour = 0; hour < 24; hour++) {
+      if (!hourlyMap.has(hour)) {
+        hourlyMap.set(hour, {
+          hour: `${hour.toString().padStart(2, '0')}:00`,
+          executions: 0,
+          successful: 0,
+          failed: 0,
+        });
+      }
+    }
+
+    return Array.from(hourlyMap.values()).sort((a, b) =>
+      a.hour.localeCompare(b.hour),
+    );
+  }, [filteredExecutions]);
+
   // Chart configurations
   const trendChartConfig: ChartConfig = {
     completed: {
       label: 'Completed',
+      color: 'hsl(var(--chart-2))',
+    },
+    failed: {
+      label: 'Failed',
+      color: 'hsl(var(--chart-1))',
+    },
+  };
+
+  const percentilesChartConfig: ChartConfig = {
+    p50: {
+      label: 'P50 (Median)',
+      color: 'hsl(var(--chart-3))',
+    },
+    p95: {
+      label: 'P95',
+      color: 'hsl(var(--chart-4))',
+    },
+    p99: {
+      label: 'P99',
+      color: 'hsl(var(--chart-5))',
+    },
+    avg: {
+      label: 'Average',
+      color: 'hsl(var(--chart-2))',
+    },
+  };
+
+  const hourlyChartConfig: ChartConfig = {
+    successful: {
+      label: 'Successful',
       color: 'hsl(var(--chart-2))',
     },
     failed: {
@@ -409,7 +565,7 @@ return [];
           <CardContent>
             {trendData.length > 0 ? (
               <ChartContainer config={trendChartConfig} className='h-[300px]'>
-                <LineChart data={trendData}>
+                <AreaChart data={trendData}>
                   <CartesianGrid strokeDasharray='3 3' />
                   <XAxis
                     dataKey='date'
@@ -419,23 +575,25 @@ return [];
                   <YAxis tick={{ fontSize: 12 }} tickLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Legend />
-                  <Line
+                  <Area
                     type='monotone'
                     dataKey='completed'
+                    stackId='1'
                     stroke='var(--color-completed)'
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
+                    fill='var(--color-completed)'
+                    fillOpacity={0.6}
                     name='Completed'
                   />
-                  <Line
+                  <Area
                     type='monotone'
                     dataKey='failed'
+                    stackId='1'
                     stroke='var(--color-failed)'
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
+                    fill='var(--color-failed)'
+                    fillOpacity={0.6}
                     name='Failed'
                   />
-                </LineChart>
+                </AreaChart>
               </ChartContainer>
             ) : (
               <EmptyChartPlaceholder message='Not enough data for trend analysis' />
@@ -615,6 +773,154 @@ return [];
             )}
           </CardContent>
         </Card>
+
+        {/* Duration Percentiles Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Execution Duration Percentiles</CardTitle>
+            <CardDescription>
+              Performance distribution showing P50, P95, and P99 latencies
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {durationPercentiles.length > 0 ? (
+              <ChartContainer
+                config={percentilesChartConfig}
+                className='h-[300px]'
+              >
+                <LineChart data={durationPercentiles}>
+                  <CartesianGrid strokeDasharray='3 3' />
+                  <XAxis
+                    dataKey='date'
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    label={{
+                      value: 'Duration (ms)',
+                      angle: -90,
+                      position: 'insideLeft',
+                      style: { fontSize: 12 },
+                    }}
+                  />
+                  <ChartTooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className='rounded-lg border bg-background p-2 shadow-md'>
+                            <p className='font-medium'>{data.date}</p>
+                            <p className='text-sm text-muted-foreground'>
+                              P50 (Median): {formatDuration(data.p50)}
+                            </p>
+                            <p className='text-sm text-muted-foreground'>
+                              P95: {formatDuration(data.p95)}
+                            </p>
+                            <p className='text-sm text-muted-foreground'>
+                              P99: {formatDuration(data.p99)}
+                            </p>
+                            <p className='text-sm text-muted-foreground'>
+                              Average: {formatDuration(data.avg)}
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type='monotone'
+                    dataKey='p50'
+                    stroke='var(--color-p50)'
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    name='P50 (Median)'
+                  />
+                  <Line
+                    type='monotone'
+                    dataKey='p95'
+                    stroke='var(--color-p95)'
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    name='P95'
+                  />
+                  <Line
+                    type='monotone'
+                    dataKey='p99'
+                    stroke='var(--color-p99)'
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    name='P99'
+                  />
+                  <Line
+                    type='monotone'
+                    dataKey='avg'
+                    stroke='var(--color-avg)'
+                    strokeWidth={2}
+                    strokeDasharray='5 5'
+                    dot={{ r: 3 }}
+                    name='Average'
+                  />
+                </LineChart>
+              </ChartContainer>
+            ) : (
+              <EmptyChartPlaceholder message='Not enough completed executions for percentile analysis' />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Hourly Execution Trends */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Hourly Execution Distribution</CardTitle>
+            <CardDescription>
+              Execution patterns across 24 hours showing peak activity times
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {hourlyTrends.some((h) => h.executions > 0) ? (
+              <ChartContainer config={hourlyChartConfig} className='h-[300px]'>
+                <ComposedChart data={hourlyTrends}>
+                  <CartesianGrid strokeDasharray='3 3' />
+                  <XAxis
+                    dataKey='hour'
+                    tick={{ fontSize: 11 }}
+                    tickLine={false}
+                    interval={2}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} tickLine={false} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Legend />
+                  <Bar
+                    dataKey='successful'
+                    stackId='a'
+                    fill='var(--color-successful)'
+                    name='Successful'
+                  />
+                  <Bar
+                    dataKey='failed'
+                    stackId='a'
+                    fill='var(--color-failed)'
+                    name='Failed'
+                  />
+                  <Line
+                    type='monotone'
+                    dataKey='executions'
+                    stroke='hsl(var(--primary))'
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    name='Total Executions'
+                  />
+                </ComposedChart>
+              </ChartContainer>
+            ) : (
+              <EmptyChartPlaceholder message='No executions to display hourly trends' />
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Trigger Frequency Table */}
@@ -645,6 +951,125 @@ return [];
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Detailed Error Analysis */}
+      {metrics.failed > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Error Analysis & Diagnostics</CardTitle>
+            <CardDescription>
+              Detailed breakdown of failures and common error patterns
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='space-y-4'>
+              {/* Error Summary */}
+              <div className='grid gap-4 md:grid-cols-3'>
+                <div className='rounded-lg border bg-red-50 p-4 dark:bg-red-900/20'>
+                  <div className='flex items-center gap-2'>
+                    <FailureIcon className='h-5 w-5 text-red-600 dark:text-red-400' />
+                    <span className='text-sm font-medium text-red-900 dark:text-red-100'>
+                      Total Failures
+                    </span>
+                  </div>
+                  <p className='mt-2 text-2xl font-bold text-red-600 dark:text-red-400'>
+                    {metrics.failed}
+                  </p>
+                  <p className='text-xs text-red-600/70 dark:text-red-400/70'>
+                    {metrics.failureRate}% of all executions
+                  </p>
+                </div>
+
+                <div className='rounded-lg border bg-yellow-50 p-4 dark:bg-yellow-900/20'>
+                  <div className='flex items-center gap-2'>
+                    <AlertIcon className='h-5 w-5 text-yellow-600 dark:text-yellow-400' />
+                    <span className='text-sm font-medium text-yellow-900 dark:text-yellow-100'>
+                      Error Types
+                    </span>
+                  </div>
+                  <p className='mt-2 text-2xl font-bold text-yellow-600 dark:text-yellow-400'>
+                    {errorBreakdown.length}
+                  </p>
+                  <p className='text-xs text-yellow-600/70 dark:text-yellow-400/70'>
+                    Distinct error sources
+                  </p>
+                </div>
+
+                <div className='rounded-lg border bg-blue-50 p-4 dark:bg-blue-900/20'>
+                  <div className='flex items-center gap-2'>
+                    <InfoIconAlt className='h-5 w-5 text-blue-600 dark:text-blue-400' />
+                    <span className='text-sm font-medium text-blue-900 dark:text-blue-100'>
+                      Most Affected
+                    </span>
+                  </div>
+                  <p className='mt-2 text-lg font-bold text-blue-600 dark:text-blue-400'>
+                    {errorBreakdown[0]?.step || 'N/A'}
+                  </p>
+                  <p className='text-xs text-blue-600/70 dark:text-blue-400/70'>
+                    {errorBreakdown[0]?.errorCount || 0} errors (
+                    {errorBreakdown[0]?.errorRate || 0}%)
+                  </p>
+                </div>
+              </div>
+
+              {/* Error Details List */}
+              {errorBreakdown.length > 0 && (
+                <div>
+                  <h4 className='mb-3 text-sm font-semibold'>
+                    Error Breakdown by Action
+                  </h4>
+                  <div className='space-y-2'>
+                    {errorBreakdown.slice(0, 5).map((error, index) => (
+                      <div
+                        key={error.step}
+                        className='flex items-center justify-between rounded-lg border border-red-200 bg-red-50/50 p-3 dark:border-red-800 dark:bg-red-900/10'
+                      >
+                        <div className='flex items-center gap-3'>
+                          <span className='flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300'>
+                            {index + 1}
+                          </span>
+                          <div>
+                            <p className='font-medium text-foreground'>
+                              {error.step}
+                            </p>
+                            <p className='text-xs text-muted-foreground'>
+                              Error rate: {error.errorRate}%
+                            </p>
+                          </div>
+                        </div>
+                        <div className='text-right'>
+                          <p className='font-semibold text-red-600 dark:text-red-400'>
+                            {error.errorCount}
+                          </p>
+                          <p className='text-xs text-muted-foreground'>
+                            failures
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Live Data Indicator */}
+      {executions.some((e) => e.status === 'running') && (
+        <div className='flex items-center justify-center gap-2 rounded-lg border bg-blue-50 p-3 dark:bg-blue-900/20'>
+          <span className='relative flex h-3 w-3'>
+            <span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75' />
+            <span className='relative inline-flex h-3 w-3 rounded-full bg-blue-500' />
+          </span>
+          <span className='text-sm font-medium text-blue-900 dark:text-blue-100'>
+            Live data - Auto-refreshing every 30 seconds
+          </span>
+          <span className='text-xs text-blue-600 dark:text-blue-400'>
+            Last update: {lastUpdate.toLocaleTimeString()}
+          </span>
+        </div>
       )}
     </div>
   );
@@ -846,6 +1271,46 @@ function TriggerIcon({ className }: { className?: string }) {
       aria-hidden='true'
     >
       <path d='M13 2 3 14h9l-1 8 10-12h-9l1-8z' />
+    </svg>
+  );
+}
+
+function AlertIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+      aria-hidden='true'
+    >
+      <path d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z' />
+      <line x1='12' y1='9' x2='12' y2='13' />
+      <line x1='12' y1='17' x2='12.01' y2='17' />
+    </svg>
+  );
+}
+
+function InfoIconAlt({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+      aria-hidden='true'
+    >
+      <circle cx='12' cy='12' r='10' />
+      <path d='M12 16v-4' />
+      <path d='M12 8h.01' />
     </svg>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
 import {
   Share2,
   Users,
@@ -13,6 +12,8 @@ import {
   Search,
   X,
 } from 'lucide-react';
+import React, { useState, useCallback, useMemo } from 'react';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -33,14 +35,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import type { WorkflowId } from '@/types/workflow';
+
 import type {
   WorkflowPermissionLevel,
   PermissionSubjectType,
 } from './workflow-permissions';
+import type { WorkflowId } from '@/types/workflow';
 
 /**
  * User or team that can be shared with
@@ -113,7 +115,7 @@ export function ShareDialog({
   const [searchResults, setSearchResults] = useState<ShareableEntity[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedRecipients, setSelectedRecipients] = useState<Map<string, ShareRecipient>>(
-    new Map()
+    new Map(),
   );
   const [defaultPermission, setDefaultPermission] = useState<WorkflowPermissionLevel>('view');
   const [message, setMessage] = useState('');
@@ -137,7 +139,7 @@ export function ShareDialog({
         const results = await onSearchEntities(query, searchType);
         // Filter out entities that are already shared
         const filtered = results.filter(
-          (entity) => !currentShares.some((share) => share.id === entity.id)
+          (entity) => !currentShares.some((share) => share.id === entity.id),
         );
         setSearchResults(filtered);
       } catch (error) {
@@ -147,7 +149,7 @@ export function ShareDialog({
         setIsSearching(false);
       }
     },
-    [onSearchEntities, searchType, currentShares]
+    [onSearchEntities, searchType, currentShares],
   );
 
   // Trigger search with debounce
@@ -172,7 +174,7 @@ export function ShareDialog({
       setSearchQuery('');
       setSearchResults([]);
     },
-    [defaultPermission]
+    [defaultPermission],
   );
 
   const handleRemoveRecipient = useCallback((entityId: string) => {
@@ -194,11 +196,13 @@ export function ShareDialog({
         return next;
       });
     },
-    []
+    [],
   );
 
   const handleShare = useCallback(async () => {
-    if (selectedRecipients.size === 0) return;
+    if (selectedRecipients.size === 0) {
+return;
+}
 
     setIsSharing(true);
     setShareError(null);
@@ -232,7 +236,7 @@ export function ShareDialog({
 
   const recipientsList = useMemo(
     () => Array.from(selectedRecipients.values()),
-    [selectedRecipients]
+    [selectedRecipients],
   );
 
   return (
@@ -381,7 +385,7 @@ export function ShareDialog({
                             onValueChange={(value) =>
                               handleUpdateRecipientPermission(
                                 recipient.entity.id,
-                                value as WorkflowPermissionLevel
+                                value as WorkflowPermissionLevel,
                               )
                             }
                           >

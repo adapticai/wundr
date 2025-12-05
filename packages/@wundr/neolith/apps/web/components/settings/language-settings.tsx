@@ -228,7 +228,9 @@ export function LanguageSettings() {
 
   // Filter locales based on search
   const filteredLocaleRegions = React.useMemo(() => {
-    if (!localeSearch) return localesByRegion;
+    if (!localeSearch) {
+return localesByRegion;
+}
 
     const searchLower = localeSearch.toLowerCase();
     return localesByRegion
@@ -238,7 +240,7 @@ export function LanguageSettings() {
           l =>
             l.name.toLowerCase().includes(searchLower) ||
             l.nativeName.toLowerCase().includes(searchLower) ||
-            l.code.toLowerCase().includes(searchLower)
+            l.code.toLowerCase().includes(searchLower),
         ),
       }))
       .filter(group => group.locales.length > 0);
@@ -246,7 +248,9 @@ export function LanguageSettings() {
 
   // Filter timezones based on search
   const filteredTimezoneRegions = React.useMemo(() => {
-    if (!timezoneSearch) return timezonesByRegion;
+    if (!timezoneSearch) {
+return timezonesByRegion;
+}
 
     const searchLower = timezoneSearch.toLowerCase();
     return timezonesByRegion
@@ -256,7 +260,7 @@ export function LanguageSettings() {
           t =>
             t.label.toLowerCase().includes(searchLower) ||
             t.value.toLowerCase().includes(searchLower) ||
-            t.offset.toLowerCase().includes(searchLower)
+            t.offset.toLowerCase().includes(searchLower),
         ),
       }))
       .filter(group => group.timezones.length > 0);
@@ -348,7 +352,7 @@ export function LanguageSettings() {
                                 'mr-2 h-4 w-4',
                                 preferences.locale === locale.code
                                   ? 'opacity-100'
-                                  : 'opacity-0'
+                                  : 'opacity-0',
                               )}
                             />
                             <div className='flex flex-col'>
@@ -441,7 +445,7 @@ export function LanguageSettings() {
                                 'mr-2 h-4 w-4',
                                 preferences.timezone === timezone.value
                                   ? 'opacity-100'
-                                  : 'opacity-0'
+                                  : 'opacity-0',
                               )}
                             />
                             <div className='flex flex-col'>
@@ -520,7 +524,7 @@ export function LanguageSettings() {
                   className={cn(
                     'flex flex-1 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer',
                     preferences.timeFormat === format.value &&
-                      'border-primary bg-primary/5'
+                      'border-primary bg-primary/5',
                   )}
                 >
                   <RadioGroupItem value={format.value} className='sr-only' />
@@ -617,7 +621,7 @@ export function LanguageSettings() {
                   | 'symbol-before'
                   | 'symbol-after'
                   | 'code-before'
-                  | 'code-after'
+                  | 'code-after',
               ) => updatePreference('currencyFormat', value)}
               className='grid grid-cols-2 gap-4'
             >
@@ -627,7 +631,7 @@ export function LanguageSettings() {
                   className={cn(
                     'flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer',
                     preferences.currencyFormat === format.value &&
-                      'border-primary bg-primary/5'
+                      'border-primary bg-primary/5',
                   )}
                 >
                   <RadioGroupItem value={format.value} className='sr-only' />

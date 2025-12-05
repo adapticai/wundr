@@ -14,6 +14,9 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   ResponsiveModal,
   ResponsiveModalContent,
@@ -29,10 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { usePageHeader } from '@/contexts/page-header-context';
 import {
   useAdminChannels,
@@ -124,7 +124,9 @@ export default function AdminChannelsPage() {
 
   const handleUpdateChannel = useCallback(
     async (updates: Partial<ChannelInfo>) => {
-      if (!editingChannel) return;
+      if (!editingChannel) {
+return;
+}
       await updateChannel(editingChannel.id, updates);
       setShowEditModal(false);
       setEditingChannel(null);
@@ -133,14 +135,18 @@ export default function AdminChannelsPage() {
   );
 
   const handleDeleteChannel = useCallback(async () => {
-    if (!channelToDelete) return;
+    if (!channelToDelete) {
+return;
+}
     await deleteChannel(channelToDelete);
     setChannelToDelete(null);
   }, [channelToDelete, deleteChannel]);
 
   const handleBulkOperation = useCallback(
     async (operation: BulkOperation, data?: { type?: ChannelType }) => {
-      if (selectedChannels.size === 0) return;
+      if (selectedChannels.size === 0) {
+return;
+}
       await performBulkOperation(Array.from(selectedChannels), operation, data);
       setSelectedChannels(new Set());
       setShowBulkDialog(false);
@@ -783,7 +789,9 @@ function EditChannelModal({
     }
   };
 
-  if (!channel) return null;
+  if (!channel) {
+return null;
+}
 
   return (
     <ResponsiveModal open={open} onOpenChange={onClose}>
@@ -1004,7 +1012,9 @@ function BulkOperationDialog({
   const [newType, setNewType] = useState<ChannelType>('PUBLIC');
 
   const handleConfirm = () => {
-    if (!operation) return;
+    if (!operation) {
+return;
+}
     if (operation === 'change_visibility') {
       onConfirm(operation, { type: newType });
     } else {

@@ -81,7 +81,7 @@ export async function POST(_request: Request, context: RouteContext) {
 
       // Check if CNAME points to your service domain
       verified = records.some(record =>
-        record.includes('neolith.io') || record.includes('app.neolith.io')
+        record.includes('neolith.io') || record.includes('app.neolith.io'),
       );
     } catch (error) {
       console.error('DNS verification error:', error);

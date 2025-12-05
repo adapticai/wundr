@@ -216,7 +216,9 @@ export function ImportExportSettings() {
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+return;
+}
 
     try {
       const content = await readSettingsFile(file);
@@ -240,7 +242,9 @@ export function ImportExportSettings() {
   };
 
   const handleImport = async (overwrite: boolean) => {
-    if (!importFile) return;
+    if (!importFile) {
+return;
+}
 
     try {
       setIsImporting(true);
@@ -286,7 +290,9 @@ export function ImportExportSettings() {
   };
 
   const handleRestoreBackup = async () => {
-    if (!selectedBackup) return;
+    if (!selectedBackup) {
+return;
+}
 
     try {
       const result = await restoreFromBackup(selectedBackup);
@@ -314,7 +320,9 @@ export function ImportExportSettings() {
   };
 
   const handleDeleteBackup = async () => {
-    if (!selectedBackup) return;
+    if (!selectedBackup) {
+return;
+}
 
     try {
       await deleteBackup(selectedBackup);

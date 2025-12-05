@@ -131,7 +131,9 @@ export default function ExportImportPage() {
     `/api/workspaces/${workspaceSlug}/export-import/jobs`,
     async (url: string) => {
       const res = await fetch(url);
-      if (!res.ok) throw new Error('Failed to fetch export jobs');
+      if (!res.ok) {
+throw new Error('Failed to fetch export jobs');
+}
       const data = await res.json();
       return data.jobs || [];
     },
@@ -145,7 +147,9 @@ export default function ExportImportPage() {
     `/api/workspaces/${workspaceSlug}/export-import/schedules`,
     async (url: string) => {
       const res = await fetch(url);
-      if (!res.ok) throw new Error('Failed to fetch backup schedules');
+      if (!res.ok) {
+throw new Error('Failed to fetch backup schedules');
+}
       const data = await res.json();
       return data.schedules || [];
     },
@@ -358,11 +362,15 @@ export default function ExportImportPage() {
 
   const handleDownloadExport = useCallback(
     async (job: ExportJob) => {
-      if (!job.downloadUrl) return;
+      if (!job.downloadUrl) {
+return;
+}
 
       try {
         const response = await fetch(job.downloadUrl);
-        if (!response.ok) throw new Error('Download failed');
+        if (!response.ok) {
+throw new Error('Download failed');
+}
 
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -387,7 +395,9 @@ export default function ExportImportPage() {
 
   const handleRestoreBackup = useCallback(
     async (job: ExportJob) => {
-      if (!job.downloadUrl) return;
+      if (!job.downloadUrl) {
+return;
+}
 
       try {
         const response = await fetch(

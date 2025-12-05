@@ -1,5 +1,8 @@
 'use client';
 
+import { CheckCircle2, Circle, Clock, Moon, XCircle } from 'lucide-react';
+import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,8 +13,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { CheckCircle2, Circle, Clock, Moon, XCircle } from 'lucide-react';
-import { useState } from 'react';
 
 interface StatusOption {
   type: 'available' | 'busy' | 'away' | 'dnd';

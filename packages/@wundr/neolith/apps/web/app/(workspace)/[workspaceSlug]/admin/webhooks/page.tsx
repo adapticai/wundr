@@ -391,7 +391,9 @@ export default function AdminWebhooksPage() {
   };
 
   const handleRetryDelivery = async (deliveryId: string) => {
-    if (!selectedWebhook) return;
+    if (!selectedWebhook) {
+return;
+}
 
     setIsSaving(true);
     try {

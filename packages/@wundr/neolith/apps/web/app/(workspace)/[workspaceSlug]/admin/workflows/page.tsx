@@ -22,6 +22,17 @@ import {
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -48,23 +59,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
 import { usePageHeader } from '@/contexts/page-header-context';
+import { useToast } from '@/hooks/use-toast';
 
-import { WorkflowPermissionsDialog } from './components/workflow-permissions-dialog';
 import { WorkflowDefaultSettingsDialog } from './components/workflow-default-settings-dialog';
 import { WorkflowExecutionHistoryDialog } from './components/workflow-execution-history-dialog';
+import { WorkflowPermissionsDialog } from './components/workflow-permissions-dialog';
 import { WorkflowResourceUsageDialog } from './components/workflow-resource-usage-dialog';
 
 type WorkflowStatus = 'ACTIVE' | 'INACTIVE' | 'DRAFT' | 'ARCHIVED';
@@ -166,9 +166,15 @@ export default function AdminWorkflowsManagementPage() {
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
-      if (statusFilter !== 'all') params.set('status', statusFilter);
-      if (triggerFilter !== 'all') params.set('trigger', triggerFilter);
-      if (searchQuery) params.set('search', searchQuery);
+      if (statusFilter !== 'all') {
+params.set('status', statusFilter);
+}
+      if (triggerFilter !== 'all') {
+params.set('trigger', triggerFilter);
+}
+      if (searchQuery) {
+params.set('search', searchQuery);
+}
       params.set('limit', '100');
       params.set('includeStats', 'true');
 
@@ -237,7 +243,9 @@ export default function AdminWorkflowsManagementPage() {
           },
         );
 
-        if (!response.ok) throw new Error('Failed to update status');
+        if (!response.ok) {
+throw new Error('Failed to update status');
+}
 
         toast({
           title: 'Success',
@@ -271,7 +279,9 @@ export default function AdminWorkflowsManagementPage() {
           },
         );
 
-        if (!response.ok) throw new Error('Failed to bulk update');
+        if (!response.ok) {
+throw new Error('Failed to bulk update');
+}
 
         toast({
           title: 'Success',
@@ -301,7 +311,9 @@ export default function AdminWorkflowsManagementPage() {
           },
         );
 
-        if (!response.ok) throw new Error('Failed to delete');
+        if (!response.ok) {
+throw new Error('Failed to delete');
+}
 
         toast({
           title: 'Success',
@@ -330,7 +342,9 @@ export default function AdminWorkflowsManagementPage() {
           },
         );
 
-        if (!response.ok) throw new Error('Failed to duplicate');
+        if (!response.ok) {
+throw new Error('Failed to duplicate');
+}
 
         const data = await response.json();
 
@@ -359,7 +373,9 @@ export default function AdminWorkflowsManagementPage() {
         `/api/workspaces/${workspaceSlug}/admin/workflows/export`,
       );
 
-      if (!response.ok) throw new Error('Failed to export');
+      if (!response.ok) {
+throw new Error('Failed to export');
+}
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);

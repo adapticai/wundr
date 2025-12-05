@@ -11,7 +11,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
+
 import {
   WorkflowPermissions,
   ShareDialog,
@@ -24,6 +24,8 @@ import {
   type ShareableEntity,
   type ShareRecipient,
 } from '@/components/workflow';
+import { useToast } from '@/hooks/use-toast';
+
 import type { WorkflowId } from '@/types/workflow';
 
 interface WorkflowPermissionsPageProps {
@@ -133,14 +135,16 @@ export function WorkflowPermissionsPage({
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ level }),
-          }
+          },
         );
 
-        if (!response.ok) throw new Error('Failed to update permission');
+        if (!response.ok) {
+throw new Error('Failed to update permission');
+}
 
         // Update local state
         setPermissions((prev) =>
-          prev.map((p) => (p.id === permissionId ? { ...p, level } : p))
+          prev.map((p) => (p.id === permissionId ? { ...p, level } : p)),
         );
 
         // Add to access log
@@ -168,7 +172,7 @@ export function WorkflowPermissionsPage({
         });
       }
     },
-    [workflowId, workspaceSlug, toast]
+    [workflowId, workspaceSlug, toast],
   );
 
   const handleRemovePermission = useCallback(
@@ -179,10 +183,12 @@ export function WorkflowPermissionsPage({
           `/api/workspaces/${workspaceSlug}/workflows/${workflowId}/permissions/${permissionId}`,
           {
             method: 'DELETE',
-          }
+          },
         );
 
-        if (!response.ok) throw new Error('Failed to remove permission');
+        if (!response.ok) {
+throw new Error('Failed to remove permission');
+}
 
         // Update local state
         setPermissions((prev) => prev.filter((p) => p.id !== permissionId));
@@ -199,14 +205,14 @@ export function WorkflowPermissionsPage({
         });
       }
     },
-    [workflowId, workspaceSlug, toast]
+    [workflowId, workspaceSlug, toast],
   );
 
   const handleAddPermission = useCallback(
     async (
       subjectType: PermissionSubjectType,
       subjectId: string,
-      level: WorkflowPermissionLevel
+      level: WorkflowPermissionLevel,
     ) => {
       try {
         // Replace with actual API call
@@ -216,10 +222,12 @@ export function WorkflowPermissionsPage({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ subjectType, subjectId, level }),
-          }
+          },
         );
 
-        if (!response.ok) throw new Error('Failed to add permission');
+        if (!response.ok) {
+throw new Error('Failed to add permission');
+}
 
         const newPermission = await response.json();
         setPermissions((prev) => [...prev, newPermission]);
@@ -236,7 +244,7 @@ export function WorkflowPermissionsPage({
         });
       }
     },
-    [workflowId, workspaceSlug, toast]
+    [workflowId, workspaceSlug, toast],
   );
 
   const handleUpdateSharingConfig = useCallback(
@@ -249,10 +257,12 @@ export function WorkflowPermissionsPage({
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(config),
-          }
+          },
         );
 
-        if (!response.ok) throw new Error('Failed to update sharing config');
+        if (!response.ok) {
+throw new Error('Failed to update sharing config');
+}
 
         // Update local state
         setSharingConfig((prev) => ({ ...prev, ...config }));
@@ -269,7 +279,7 @@ export function WorkflowPermissionsPage({
         });
       }
     },
-    [workflowId, workspaceSlug, toast]
+    [workflowId, workspaceSlug, toast],
   );
 
   const handleGenerateShareLink = useCallback(async (): Promise<string> => {
@@ -279,10 +289,12 @@ export function WorkflowPermissionsPage({
         `/api/workspaces/${workspaceSlug}/workflows/${workflowId}/share-link/generate`,
         {
           method: 'POST',
-        }
+        },
       );
 
-      if (!response.ok) throw new Error('Failed to generate share link');
+      if (!response.ok) {
+throw new Error('Failed to generate share link');
+}
 
       const { shareLink } = await response.json();
 
@@ -312,10 +324,12 @@ export function WorkflowPermissionsPage({
         `/api/workspaces/${workspaceSlug}/workflows/${workflowId}/share-link`,
         {
           method: 'DELETE',
-        }
+        },
       );
 
-      if (!response.ok) throw new Error('Failed to revoke share link');
+      if (!response.ok) {
+throw new Error('Failed to revoke share link');
+}
 
       // Update local state
       setSharingConfig((prev) => ({ ...prev, publicShareLink: undefined }));
@@ -341,7 +355,7 @@ export function WorkflowPermissionsPage({
         description: 'Share link copied to clipboard.',
       });
     },
-    [toast]
+    [toast],
   );
 
   const handleShare = useCallback(
@@ -354,10 +368,12 @@ export function WorkflowPermissionsPage({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ recipients, message }),
-          }
+          },
         );
 
-        if (!response.ok) throw new Error('Failed to share workflow');
+        if (!response.ok) {
+throw new Error('Failed to share workflow');
+}
 
         // Update permissions list
         const newPermissions = await response.json();
@@ -376,7 +392,7 @@ export function WorkflowPermissionsPage({
         throw error;
       }
     },
-    [workflowId, workspaceSlug, toast]
+    [workflowId, workspaceSlug, toast],
   );
 
   const handleSearchEntities = useCallback(
@@ -390,7 +406,9 @@ export function WorkflowPermissionsPage({
 
         const response = await fetch(`${endpoint}?q=${encodeURIComponent(query)}`);
 
-        if (!response.ok) throw new Error('Search failed');
+        if (!response.ok) {
+throw new Error('Search failed');
+}
 
         return await response.json();
       } catch (error) {
@@ -398,7 +416,7 @@ export function WorkflowPermissionsPage({
         return [];
       }
     },
-    [workspaceSlug]
+    [workspaceSlug],
   );
 
   return (
@@ -460,7 +478,7 @@ export function WorkflowHeaderWithShare({
 
   const handleSearchEntities = async (
     query: string,
-    type: 'user' | 'team'
+    type: 'user' | 'team',
   ): Promise<ShareableEntity[]> => {
     // Implementation here
     return [];

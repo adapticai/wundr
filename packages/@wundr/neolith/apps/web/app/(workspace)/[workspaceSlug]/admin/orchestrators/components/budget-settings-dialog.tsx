@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
 import {
   Select,
   SelectContent,
@@ -22,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 interface BudgetSettingsDialogProps {
   open: boolean;
@@ -52,7 +52,9 @@ export function BudgetSettingsDialog({
   }, [open, orchestratorId]);
 
   const fetchBudgetSettings = async () => {
-    if (!orchestratorId) return;
+    if (!orchestratorId) {
+return;
+}
 
     try {
       const response = await fetch(
@@ -72,7 +74,9 @@ export function BudgetSettingsDialog({
   };
 
   const handleSave = async () => {
-    if (!orchestratorId) return;
+    if (!orchestratorId) {
+return;
+}
 
     setLoading(true);
     try {
@@ -89,7 +93,9 @@ export function BudgetSettingsDialog({
         },
       );
 
-      if (!response.ok) throw new Error('Failed to update budget settings');
+      if (!response.ok) {
+throw new Error('Failed to update budget settings');
+}
 
       toast({
         title: 'Success',

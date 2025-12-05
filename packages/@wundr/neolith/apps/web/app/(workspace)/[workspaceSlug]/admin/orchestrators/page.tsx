@@ -17,6 +17,17 @@ import {
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -43,24 +54,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
 import { usePageHeader } from '@/contexts/page-header-context';
+import { useToast } from '@/hooks/use-toast';
 
 import { BudgetSettingsDialog } from './components/budget-settings-dialog';
-import { PermissionsDialog } from './components/permissions-dialog';
 import { DefaultSettingsDialog } from './components/default-settings-dialog';
 import { OrchestratorAnalytics } from './components/orchestrator-analytics';
+import { PermissionsDialog } from './components/permissions-dialog';
 
 import type { OrchestratorStatus } from '@/types/orchestrator';
 
@@ -148,10 +148,15 @@ export default function AdminOrchestratorsManagementPage() {
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
-      if (statusFilter !== 'all') params.set('status', statusFilter);
-      if (disciplineFilter !== 'all')
-        params.set('discipline', disciplineFilter);
-      if (searchQuery) params.set('search', searchQuery);
+      if (statusFilter !== 'all') {
+params.set('status', statusFilter);
+}
+      if (disciplineFilter !== 'all') {
+params.set('discipline', disciplineFilter);
+}
+      if (searchQuery) {
+params.set('search', searchQuery);
+}
       params.set('limit', '100');
 
       const response = await fetch(
@@ -223,7 +228,9 @@ export default function AdminOrchestratorsManagementPage() {
           },
         );
 
-        if (!response.ok) throw new Error('Failed to update status');
+        if (!response.ok) {
+throw new Error('Failed to update status');
+}
 
         toast({
           title: 'Success',
@@ -257,7 +264,9 @@ export default function AdminOrchestratorsManagementPage() {
           },
         );
 
-        if (!response.ok) throw new Error('Failed to bulk update');
+        if (!response.ok) {
+throw new Error('Failed to bulk update');
+}
 
         toast({
           title: 'Success',
@@ -287,7 +296,9 @@ export default function AdminOrchestratorsManagementPage() {
           },
         );
 
-        if (!response.ok) throw new Error('Failed to delete');
+        if (!response.ok) {
+throw new Error('Failed to delete');
+}
 
         toast({
           title: 'Success',
@@ -312,7 +323,9 @@ export default function AdminOrchestratorsManagementPage() {
         `/api/workspaces/${workspaceSlug}/admin/orchestrators/export`,
       );
 
-      if (!response.ok) throw new Error('Failed to export');
+      if (!response.ok) {
+throw new Error('Failed to export');
+}
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -365,7 +378,9 @@ export default function AdminOrchestratorsManagementPage() {
   const uniqueDisciplines = useMemo(() => {
     const disciplines = new Set<string>();
     orchestrators.forEach(o => {
-      if (o.discipline) disciplines.add(o.discipline);
+      if (o.discipline) {
+disciplines.add(o.discipline);
+}
     });
     return Array.from(disciplines).sort();
   }, [orchestrators]);

@@ -9,17 +9,18 @@
  * @module app/api/workspaces/[workspaceId]/workflows/trigger/webhook/[token]/route
  */
 
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import {
   createErrorResponse,
   WORKFLOW_ERROR_CODES,
 } from '@/lib/validations/workflow';
-import { verifyWebhookSignature } from '@/lib/workflow/trigger-auth';
 import { checkRateLimit } from '@/lib/workflow/rate-limiter';
+import { verifyWebhookSignature } from '@/lib/workflow/trigger-auth';
 
 import type { WorkflowAction, WorkflowStepResult } from '@/lib/validations/workflow';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 interface RouteContext {

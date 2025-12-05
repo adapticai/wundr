@@ -262,6 +262,75 @@ export type {
   UseRealTimeStatsReturn,
 } from './use-analytics';
 
+// Enhanced Analytics Hooks
+export { useAnalyticsData, useAnalyticsComparison } from './use-analytics-data';
+export type {
+  AnalyticsTimeRange,
+  AnalyticsGranularity,
+  TimeSeriesPoint,
+  OrchestratorActivityMetrics,
+  ChannelEngagementMetrics,
+  TaskMetricsBreakdown,
+  WorkflowMetricsBreakdown,
+  AnalyticsSummary,
+  AnalyticsData,
+  AnalyticsQueryParams,
+  AnalyticsComparison,
+  UseAnalyticsDataReturn,
+  UseAnalyticsComparisonReturn,
+  UseAnalyticsDataOptions,
+} from './use-analytics-data';
+
+// Report Hooks
+export {
+  useInsightReport,
+  useSummaryReport,
+  useDetailedReport,
+  useReportGeneration,
+} from './use-reports';
+export type {
+  ReportType,
+  ReportFormat,
+  ReportPeriod,
+  Insight,
+  TrendDataPoint,
+  TrendAnalysis,
+  PerformanceMetrics,
+  InsightReport,
+  SummaryReport,
+  DetailedReport,
+  ReportGenerationOptions,
+  ReportExportOptions,
+  ReportGenerationStatus,
+  UseInsightReportReturn,
+  UseSummaryReportReturn,
+  UseDetailedReportReturn,
+  UseReportGenerationReturn,
+} from './use-reports';
+
+// Real-time Metrics Hooks
+export {
+  useRealTimeMetrics,
+  useUsageMetrics,
+  useHealthMetrics,
+  usePerformanceMetrics,
+  useCustomMetric,
+} from './use-metrics-realtime';
+export type {
+  MetricUpdate,
+  RealTimeMetrics,
+  UsageMetrics as RealTimeUsageMetrics,
+  HealthMetrics,
+  PerformanceMetrics as RealTimePerformanceMetrics,
+  CustomMetric,
+  UseRealTimeMetricsReturn,
+  UseUsageMetricsReturn,
+  UseHealthMetricsReturn,
+  UsePerformanceMetricsReturn,
+  UseCustomMetricReturn,
+  UseRealTimeMetricsOptions,
+} from './use-metrics-realtime';
+
 // =============================================================================
 // Dashboard Hooks
 // =============================================================================

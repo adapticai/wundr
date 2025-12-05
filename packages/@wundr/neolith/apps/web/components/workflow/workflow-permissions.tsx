@@ -1,6 +1,5 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
 import {
   Shield,
   Users,
@@ -15,11 +14,14 @@ import {
   ChevronUp,
   Search,
 } from 'lucide-react';
+import React, { useState, useCallback, useMemo } from 'react';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -27,9 +29,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -39,6 +40,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
+
 import type { WorkflowId } from '@/types/workflow';
 
 /**
@@ -181,12 +183,14 @@ export function WorkflowPermissions({
 
   // Filter permissions based on search query
   const filteredPermissions = useMemo(() => {
-    if (!searchQuery) return permissions;
+    if (!searchQuery) {
+return permissions;
+}
     const query = searchQuery.toLowerCase();
     return permissions.filter(
       (p) =>
         p.subjectName.toLowerCase().includes(query) ||
-        p.subjectEmail?.toLowerCase().includes(query)
+        p.subjectEmail?.toLowerCase().includes(query),
     );
   }, [permissions, searchQuery]);
 
@@ -233,10 +237,18 @@ export function WorkflowPermissions({
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) {
+return 'Just now';
+}
+    if (diffMins < 60) {
+return `${diffMins}m ago`;
+}
+    if (diffHours < 24) {
+return `${diffHours}h ago`;
+}
+    if (diffDays < 7) {
+return `${diffDays}d ago`;
+}
     return date.toLocaleDateString();
   };
 

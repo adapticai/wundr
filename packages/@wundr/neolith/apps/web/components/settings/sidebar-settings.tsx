@@ -4,6 +4,9 @@
  */
 'use client';
 
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
   GripVertical,
   Eye,
@@ -20,10 +23,6 @@ import {
   Zap,
 } from 'lucide-react';
 import * as React from 'react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import type { DragEndEvent } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -47,6 +46,8 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+
+import type { DragEndEvent } from '@dnd-kit/core';
 
 interface SidebarSection {
   id: string;
@@ -177,7 +178,7 @@ export function SidebarSettings() {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   React.useEffect(() => {
@@ -219,7 +220,7 @@ export function SidebarSettings() {
     const updatedSections = preferences.sections.map(section =>
       section.id === sectionId
         ? { ...section, visible: !section.visible }
-        : section
+        : section,
     );
     updatePreference('sections', updatedSections);
   };
@@ -898,7 +899,7 @@ function SortableSectionItem({ section, onToggleVisibility }: SortableSectionIte
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg border bg-card',
         isDragging && 'opacity-50 cursor-grabbing',
-        !section.sortable && 'opacity-75'
+        !section.sortable && 'opacity-75',
       )}
     >
       {section.sortable && (
@@ -924,7 +925,7 @@ function SortableSectionItem({ section, onToggleVisibility }: SortableSectionIte
           'p-2 rounded-md transition-colors',
           section.visible
             ? 'text-foreground hover:bg-muted'
-            : 'text-muted-foreground hover:bg-muted'
+            : 'text-muted-foreground hover:bg-muted',
         )}
         title={section.visible ? 'Hide section' : 'Show section'}
       >
@@ -957,7 +958,7 @@ function SidebarPreview({ preferences }: SidebarPreviewProps) {
       <div
         className={cn(
           'rounded-lg border bg-background overflow-hidden',
-          preferences.compactMode ? 'p-2' : 'p-3'
+          preferences.compactMode ? 'p-2' : 'p-3',
         )}
         style={{ minHeight: '400px' }}
       >
@@ -979,7 +980,7 @@ function SidebarPreview({ preferences }: SidebarPreviewProps) {
               {/* Section Header */}
               <div className={cn(
                 'flex items-center gap-2 mb-2',
-                preferences.compactMode ? 'text-xs' : 'text-sm'
+                preferences.compactMode ? 'text-xs' : 'text-sm',
               )}>
                 <ChevronRight className='h-3 w-3 text-muted-foreground' />
                 <span className='font-semibold text-muted-foreground uppercase tracking-wider'>
@@ -999,20 +1000,20 @@ function SidebarPreview({ preferences }: SidebarPreviewProps) {
                     key={i}
                     className={cn(
                       'flex items-center gap-2 rounded px-2 py-1.5 bg-muted/50',
-                      preferences.compactMode && 'py-1'
+                      preferences.compactMode && 'py-1',
                     )}
                   >
                     <div className='h-1 w-1 rounded-full bg-muted-foreground/50' />
                     <div className={cn(
                       'h-2 flex-1 rounded bg-muted-foreground/30',
-                      i === 1 ? 'w-20' : i === 2 ? 'w-24' : 'w-16'
+                      i === 1 ? 'w-20' : i === 2 ? 'w-24' : 'w-16',
                     )} />
                     {preferences.showUnreadBadges && i === 1 && (
                       <div className={cn(
                         'flex items-center justify-center rounded-full bg-primary',
                         preferences.unreadBadgeStyle === 'dot'
                           ? 'h-2 w-2'
-                          : 'h-4 min-w-4 px-1'
+                          : 'h-4 min-w-4 px-1',
                       )}>
                         {preferences.unreadBadgeStyle !== 'dot' && (
                           <span className='text-[8px] text-primary-foreground font-medium'>
@@ -1034,7 +1035,7 @@ function SidebarPreview({ preferences }: SidebarPreviewProps) {
           <Separator className='mb-3' />
           <div className={cn(
             'flex items-center gap-2 p-2 rounded bg-muted/50',
-            preferences.compactMode && 'p-1.5'
+            preferences.compactMode && 'p-1.5',
           )}>
             <div className='relative'>
               <div className='h-8 w-8 rounded-full bg-primary' />

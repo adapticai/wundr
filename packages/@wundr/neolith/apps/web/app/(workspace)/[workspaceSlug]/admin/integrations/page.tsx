@@ -2,8 +2,10 @@
 
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
-import { usePageHeader } from '@/contexts/page-header-context';
-import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -11,12 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +21,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -32,7 +30,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePageHeader } from '@/contexts/page-header-context';
+import { cn } from '@/lib/utils';
+
 
 type IntegrationProvider =
   | 'SLACK'
@@ -206,7 +208,9 @@ export default function AdminIntegrationsPage() {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/integrations`,
       );
-      if (!response.ok) throw new Error('Failed to fetch integrations');
+      if (!response.ok) {
+throw new Error('Failed to fetch integrations');
+}
       const data = await response.json();
       setIntegrations(data.integrations || []);
     } catch (error) {
@@ -222,7 +226,9 @@ export default function AdminIntegrationsPage() {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/integrations/webhooks`,
       );
-      if (!response.ok) throw new Error('Failed to fetch webhooks');
+      if (!response.ok) {
+throw new Error('Failed to fetch webhooks');
+}
       const data = await response.json();
       setWebhooks(data.webhooks || []);
     } catch (error) {
@@ -235,7 +241,9 @@ export default function AdminIntegrationsPage() {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/integrations/api-keys`,
       );
-      if (!response.ok) throw new Error('Failed to fetch API keys');
+      if (!response.ok) {
+throw new Error('Failed to fetch API keys');
+}
       const data = await response.json();
       setApiKeys(data.apiKeys || []);
     } catch (error) {
@@ -250,7 +258,9 @@ export default function AdminIntegrationsPage() {
         `/api/workspaces/${workspaceSlug}/integrations/oauth/${provider.toLowerCase()}`,
         { method: 'POST' },
       );
-      if (!response.ok) throw new Error('Failed to initiate OAuth');
+      if (!response.ok) {
+throw new Error('Failed to initiate OAuth');
+}
       const data = await response.json();
       window.location.href = data.authUrl;
     } catch (error) {
@@ -260,7 +270,9 @@ export default function AdminIntegrationsPage() {
   };
 
   const handleConnectManual = async () => {
-    if (!selectedProvider) return;
+    if (!selectedProvider) {
+return;
+}
 
     try {
       const response = await fetch(
@@ -277,7 +289,9 @@ export default function AdminIntegrationsPage() {
         },
       );
 
-      if (!response.ok) throw new Error('Failed to connect integration');
+      if (!response.ok) {
+throw new Error('Failed to connect integration');
+}
       const data = await response.json();
 
       toast.success('Integration connected successfully');
@@ -296,7 +310,9 @@ export default function AdminIntegrationsPage() {
         `/api/workspaces/${workspaceSlug}/integrations/${integrationId}`,
         { method: 'DELETE' },
       );
-      if (!response.ok) throw new Error('Failed to disconnect');
+      if (!response.ok) {
+throw new Error('Failed to disconnect');
+}
       toast.success('Integration disconnected');
       fetchIntegrations();
     } catch (error) {
@@ -311,7 +327,9 @@ export default function AdminIntegrationsPage() {
         `/api/workspaces/${workspaceSlug}/integrations/${integrationId}/test`,
         { method: 'POST' },
       );
-      if (!response.ok) throw new Error('Test failed');
+      if (!response.ok) {
+throw new Error('Test failed');
+}
       const data = await response.json();
       toast.success(data.message || 'Integration test successful');
     } catch (error) {
@@ -326,7 +344,9 @@ export default function AdminIntegrationsPage() {
         `/api/workspaces/${workspaceSlug}/integrations/${integrationId}/sync`,
         { method: 'POST' },
       );
-      if (!response.ok) throw new Error('Sync failed');
+      if (!response.ok) {
+throw new Error('Sync failed');
+}
       toast.success('Sync started successfully');
       fetchIntegrations();
     } catch (error) {
@@ -348,7 +368,9 @@ export default function AdminIntegrationsPage() {
           body: JSON.stringify({ syncEnabled: enabled }),
         },
       );
-      if (!response.ok) throw new Error('Failed to update');
+      if (!response.ok) {
+throw new Error('Failed to update');
+}
       toast.success(`Auto-sync ${enabled ? 'enabled' : 'disabled'}`);
       fetchIntegrations();
     } catch (error) {
@@ -368,7 +390,9 @@ export default function AdminIntegrationsPage() {
           body: JSON.stringify(webhookForm),
         },
       );
-      if (!response.ok) throw new Error('Failed to create webhook');
+      if (!response.ok) {
+throw new Error('Failed to create webhook');
+}
       const data = await response.json();
       toast.success(`Webhook created. Secret: ${data.secret}`);
       setShowWebhookModal(false);
@@ -386,7 +410,9 @@ export default function AdminIntegrationsPage() {
         `/api/workspaces/${workspaceSlug}/integrations/webhooks/${webhookId}`,
         { method: 'DELETE' },
       );
-      if (!response.ok) throw new Error('Failed to delete webhook');
+      if (!response.ok) {
+throw new Error('Failed to delete webhook');
+}
       toast.success('Webhook deleted');
       fetchWebhooks();
     } catch (error) {
@@ -401,7 +427,9 @@ export default function AdminIntegrationsPage() {
         `/api/workspaces/${workspaceSlug}/integrations/webhooks/${webhookId}/test`,
         { method: 'POST' },
       );
-      if (!response.ok) throw new Error('Test failed');
+      if (!response.ok) {
+throw new Error('Test failed');
+}
       toast.success('Test webhook sent successfully');
     } catch (error) {
       console.error('Error testing webhook:', error);
@@ -420,7 +448,9 @@ export default function AdminIntegrationsPage() {
           body: JSON.stringify(apiKeyForm),
         },
       );
-      if (!response.ok) throw new Error('Failed to create API key');
+      if (!response.ok) {
+throw new Error('Failed to create API key');
+}
       const data = await response.json();
       toast.success(`API Key created: ${data.key}`);
       setShowApiKeyModal(false);
@@ -438,7 +468,9 @@ export default function AdminIntegrationsPage() {
         `/api/workspaces/${workspaceSlug}/integrations/api-keys/${keyId}`,
         { method: 'DELETE' },
       );
-      if (!response.ok) throw new Error('Failed to revoke API key');
+      if (!response.ok) {
+throw new Error('Failed to revoke API key');
+}
       toast.success('API key revoked');
       fetchApiKeys();
     } catch (error) {

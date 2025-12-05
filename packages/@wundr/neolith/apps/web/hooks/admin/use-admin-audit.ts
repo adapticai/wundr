@@ -120,10 +120,18 @@ export function useAdminAudit(
 
   // Build query params from filters
   const queryParams = new URLSearchParams();
-  if (filters.action) queryParams.set('action', filters.action);
-  if (filters.actorId) queryParams.set('actorId', filters.actorId);
-  if (filters.targetType) queryParams.set('targetType', filters.targetType);
-  if (filters.targetId) queryParams.set('targetId', filters.targetId);
+  if (filters.action) {
+queryParams.set('action', filters.action);
+}
+  if (filters.actorId) {
+queryParams.set('actorId', filters.actorId);
+}
+  if (filters.targetType) {
+queryParams.set('targetType', filters.targetType);
+}
+  if (filters.targetId) {
+queryParams.set('targetId', filters.targetId);
+}
   if (filters.startDate) {
     queryParams.set('startDate', filters.startDate.toISOString());
   }
@@ -158,7 +166,7 @@ export function useAdminAudit(
         exportParams.delete('limit');
 
         const res = await fetch(
-          `/api/workspaces/${workspaceId}/admin/audit/export?${exportParams}`
+          `/api/workspaces/${workspaceId}/admin/audit/export?${exportParams}`,
         );
 
         if (!res.ok) {
@@ -182,7 +190,7 @@ export function useAdminAudit(
         setIsExporting(false);
       }
     },
-    [workspaceId, queryParams]
+    [workspaceId, queryParams],
   );
 
   return {

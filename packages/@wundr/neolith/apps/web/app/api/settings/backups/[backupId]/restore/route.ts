@@ -3,9 +3,11 @@
  * POST /api/settings/backups/[backupId]/restore
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+
+import type { NextRequest} from 'next/server';
 
 export async function POST(
   request: NextRequest,

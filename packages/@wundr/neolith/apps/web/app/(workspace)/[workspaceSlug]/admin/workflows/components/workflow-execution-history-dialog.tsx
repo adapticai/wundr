@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Activity, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,9 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 
 interface Execution {
   id: string;
@@ -49,7 +49,9 @@ export function WorkflowExecutionHistoryDialog({
   }, [open, workflowId]);
 
   const fetchExecutions = async () => {
-    if (!workflowId) return;
+    if (!workflowId) {
+return;
+}
 
     setIsLoading(true);
     try {
@@ -57,7 +59,9 @@ export function WorkflowExecutionHistoryDialog({
         `/api/workspaces/${workspaceSlug}/admin/workflows/${workflowId}/executions?limit=50`,
       );
 
-      if (!response.ok) throw new Error('Failed to fetch executions');
+      if (!response.ok) {
+throw new Error('Failed to fetch executions');
+}
 
       const data = await response.json();
       setExecutions(data.executions || []);

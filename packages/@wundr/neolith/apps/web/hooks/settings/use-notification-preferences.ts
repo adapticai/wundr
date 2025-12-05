@@ -10,9 +10,11 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import type { NotificationPreferences } from '@/lib/validations/settings';
-import { useUserSettings } from './use-user-settings';
+
 import { useSettingsUpdate } from './use-settings-update';
+import { useUserSettings } from './use-user-settings';
+
+import type { NotificationPreferences } from '@/lib/validations/settings';
 
 /**
  * Return type for useNotificationPreferences hook

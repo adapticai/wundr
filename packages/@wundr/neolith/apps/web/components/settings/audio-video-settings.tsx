@@ -23,6 +23,12 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
+import {
+  SettingsSection,
+  SettingsGroup,
+  SettingsRow,
+} from '@/components/settings/settings-section';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -44,12 +50,6 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import {
-  SettingsSection,
-  SettingsGroup,
-  SettingsRow,
-} from '@/components/settings/settings-section';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface MediaDeviceInfo {
   deviceId: string;
@@ -283,7 +283,9 @@ export function AudioVideoSettings() {
       const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
 
       const checkLevel = () => {
-        if (!analyserRef.current || !isMicTesting) return;
+        if (!analyserRef.current || !isMicTesting) {
+return;
+}
 
         analyserRef.current.getByteFrequencyData(dataArray);
         const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;

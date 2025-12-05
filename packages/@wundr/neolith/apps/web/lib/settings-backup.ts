@@ -283,10 +283,15 @@ export function validateBackup(backup: SettingsBackup): {
   if (!backup.metadata) {
     errors.push('Missing metadata');
   } else {
-    if (!backup.metadata.version) errors.push('Missing version in metadata');
-    if (!backup.metadata.timestamp)
-      errors.push('Missing timestamp in metadata');
-    if (!backup.metadata.userId) errors.push('Missing userId in metadata');
+    if (!backup.metadata.version) {
+errors.push('Missing version in metadata');
+}
+    if (!backup.metadata.timestamp) {
+errors.push('Missing timestamp in metadata');
+}
+    if (!backup.metadata.userId) {
+errors.push('Missing userId in metadata');
+}
   }
 
   if (!backup.data) {

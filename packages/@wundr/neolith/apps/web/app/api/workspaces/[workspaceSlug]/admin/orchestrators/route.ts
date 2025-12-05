@@ -10,11 +10,12 @@
  * @module app/api/workspaces/[workspaceSlug]/admin/orchestrators/route
  */
 
-import { prisma, Prisma, OrchestratorStatus } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
+import type { Prisma, OrchestratorStatus } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 interface RouteContext {

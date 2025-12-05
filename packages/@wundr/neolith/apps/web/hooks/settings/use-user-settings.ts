@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+
 import type { UserSettings } from '@/lib/validations/settings';
 
 /**
@@ -84,7 +85,9 @@ export function useUserSettings(
 
   // Fetch settings from API
   const fetchSettings = useCallback(async () => {
-    if (!enabled) return;
+    if (!enabled) {
+return;
+}
 
     try {
       // Cancel any in-flight requests
@@ -114,7 +117,9 @@ export function useUserSettings(
         throw new Error(result.error || 'Failed to fetch settings');
       }
 
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current) {
+return;
+}
 
       const fetchedSettings = result.data as UserSettings;
       setSettings(fetchedSettings);
@@ -130,7 +135,9 @@ export function useUserSettings(
 
       const error = err instanceof Error ? err : new Error('Unknown error');
 
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current) {
+return;
+}
 
       setError(error);
 

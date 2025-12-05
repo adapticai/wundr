@@ -20,21 +20,21 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
-  createErrorResponse,
-  WORKFLOW_ERROR_CODES,
-} from '@/lib/validations/workflow';
-import {
   createTriggerConfigSchema,
   updateTriggerConfigSchema,
 } from '@/lib/validations/trigger';
+import {
+  createErrorResponse,
+  WORKFLOW_ERROR_CODES,
+} from '@/lib/validations/workflow';
+import { validateCronExpression } from '@/lib/workflow/cron-validator';
+import { getRateLimitStatus, resetRateLimit } from '@/lib/workflow/rate-limiter';
 import {
   generateWebhookToken,
   generateWebhookSecret,
   generateApiKey,
   hashApiKey,
 } from '@/lib/workflow/trigger-auth';
-import { validateCronExpression } from '@/lib/workflow/cron-validator';
-import { getRateLimitStatus, resetRateLimit } from '@/lib/workflow/rate-limiter';
 
 import type {
   CreateTriggerConfigInput,
@@ -472,7 +472,7 @@ export async function POST(
     const { workflow } = result;
     const currentMetadata = workflow.metadata as any || {};
 
-    let newCredentials: Record<string, string> = {};
+    const newCredentials: Record<string, string> = {};
 
     // Regenerate based on type
     switch (regenerateType) {

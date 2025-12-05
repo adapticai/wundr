@@ -15,7 +15,7 @@ import {
   type AuditRedisClient,
 } from '@neolith/core';
 import { redis } from '@neolith/core/redis';
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -25,6 +25,7 @@ import {
   ADMIN_ERROR_CODES,
 } from '@/lib/validations/admin';
 
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

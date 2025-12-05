@@ -233,9 +233,15 @@ const DEFAULT_CIRCUIT_BREAKER_CONFIG: CircuitBreakerConfig = {
 // ============================================================================
 
 function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-  if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`;
+  if (ms < 1000) {
+return `${ms}ms`;
+}
+  if (ms < 60000) {
+return `${(ms / 1000).toFixed(1)}s`;
+}
+  if (ms < 3600000) {
+return `${(ms / 60000).toFixed(1)}m`;
+}
   return `${(ms / 3600000).toFixed(1)}h`;
 }
 
@@ -262,7 +268,9 @@ function calculateBackoff(attempt: number, config: RetryConfig): number {
 }
 
 function fibonacci(n: number): number {
-  if (n <= 1) return 1;
+  if (n <= 1) {
+return 1;
+}
   let a = 1, b = 1;
   for (let i = 2; i < n; i++) {
     [a, b] = [b, a + b];
@@ -864,7 +872,7 @@ export function ErrorHandlingConfig({
                       placeholder="email@example.com, https://hooks.slack.com/..."
                       value={config.notification.recipients.join(', ')}
                       onChange={(e) => updateNotificationConfig({
-                        recipients: e.target.value.split(',').map(r => r.trim()).filter(Boolean)
+                        recipients: e.target.value.split(',').map(r => r.trim()).filter(Boolean),
                       })}
                       disabled={readOnly}
                     />

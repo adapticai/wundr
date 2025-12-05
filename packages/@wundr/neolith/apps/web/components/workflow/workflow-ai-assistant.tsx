@@ -29,18 +29,18 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+
 import type {
   Workflow,
   ActionConfig,
   TriggerConfig,
-  WorkflowExecution
+  WorkflowExecution,
 } from '@/types/workflow';
-
 import type { UIMessage } from '@ai-sdk/react';
 
 export interface WorkflowAIAssistantProps {
@@ -215,7 +215,7 @@ export function WorkflowAIAssistant({
     }
     setActiveSection('suggestions');
     await chat.sendMessage({
-      text: 'Please analyze this workflow and suggest optimizations.'
+      text: 'Please analyze this workflow and suggest optimizations.',
     });
   }, [workflow, chat]);
 
@@ -226,7 +226,7 @@ export function WorkflowAIAssistant({
     }
     setActiveSection('errors');
     await chat.sendMessage({
-      text: 'Please diagnose the errors in the latest execution.'
+      text: 'Please diagnose the errors in the latest execution.',
     });
   }, [execution, chat]);
 
@@ -237,7 +237,7 @@ export function WorkflowAIAssistant({
     }
     setActiveSection('steps');
     await chat.sendMessage({
-      text: 'What steps would you recommend adding to this workflow?'
+      text: 'What steps would you recommend adding to this workflow?',
     });
   }, [workflow, chat]);
 
@@ -266,7 +266,7 @@ export function WorkflowAIAssistant({
   const handleApplyOptimization = (suggestion: OptimizationSuggestion) => {
     // Send message to apply optimization
     chat.sendMessage({
-      text: `Please apply this optimization: ${suggestion.title}`
+      text: `Please apply this optimization: ${suggestion.title}`,
     });
   };
 
@@ -510,7 +510,7 @@ export function WorkflowAIAssistant({
                       size='sm'
                       variant='secondary'
                       onClick={() => chat.sendMessage({
-                        text: `Add a ${recommendation.stepType} step to the workflow`
+                        text: `Add a ${recommendation.stepType} step to the workflow`,
                       })}
                       className='w-full'
                     >

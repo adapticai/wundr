@@ -10,9 +10,11 @@
  */
 
 import { useCallback, useEffect, useState, useMemo } from 'react';
-import type { AppearanceSettings } from '@/lib/validations/settings';
-import { useUserSettings } from './use-user-settings';
+
 import { useSettingsUpdate } from './use-settings-update';
+import { useUserSettings } from './use-user-settings';
+
+import type { AppearanceSettings } from '@/lib/validations/settings';
 
 /**
  * Resolved theme type (without 'system')
@@ -101,7 +103,9 @@ export function useThemeSettings(): UseThemeSettingsReturn {
 
   // Detect system theme preference
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() => {
-    if (typeof window === 'undefined') return 'light';
+    if (typeof window === 'undefined') {
+return 'light';
+}
     return window.matchMedia('(prefers-color-scheme: dark)').matches
       ? 'dark'
       : 'light';
@@ -109,7 +113,9 @@ export function useThemeSettings(): UseThemeSettingsReturn {
 
   // Listen for system theme changes
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+return;
+}
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 

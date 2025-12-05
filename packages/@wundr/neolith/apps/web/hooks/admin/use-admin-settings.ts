@@ -138,7 +138,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
     settingsFetcher,
     {
       revalidateOnFocus: false,
-    }
+    },
   );
 
   // Manual refresh
@@ -150,7 +150,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
   const updateSettings = useCallback(
     async (
       section: SettingsSection,
-      updates: Partial<WorkspaceAdminSettings[keyof WorkspaceAdminSettings]>
+      updates: Partial<WorkspaceAdminSettings[keyof WorkspaceAdminSettings]>,
     ) => {
       try {
         setIsUpdating(true);
@@ -174,7 +174,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
         setIsUpdating(false);
       }
     },
-    [url, mutate]
+    [url, mutate],
   );
 
   // Update general settings
@@ -182,7 +182,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
     async (updates: Partial<GeneralSettings>) => {
       await updateSettings('general', updates);
     },
-    [updateSettings]
+    [updateSettings],
   );
 
   // Update notification settings
@@ -190,7 +190,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
     async (updates: Partial<NotificationSettings>) => {
       await updateSettings('notifications', updates);
     },
-    [updateSettings]
+    [updateSettings],
   );
 
   // Update security settings
@@ -198,7 +198,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
     async (updates: Partial<SecuritySettings>) => {
       await updateSettings('security', updates);
     },
-    [updateSettings]
+    [updateSettings],
   );
 
   // Update integration settings
@@ -206,7 +206,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
     async (updates: Partial<IntegrationSettings>) => {
       await updateSettings('integrations', updates);
     },
-    [updateSettings]
+    [updateSettings],
   );
 
   // Update custom fields
@@ -233,7 +233,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
         setIsUpdating(false);
       }
     },
-    [url, mutate]
+    [url, mutate],
   );
 
   // Reset settings to defaults
@@ -262,7 +262,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
         setIsUpdating(false);
       }
     },
-    [url, mutate]
+    [url, mutate],
   );
 
   return {

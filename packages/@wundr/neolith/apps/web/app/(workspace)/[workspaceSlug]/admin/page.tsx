@@ -73,7 +73,9 @@ interface DashboardMetrics {
  */
 const fetcher = async (url: string) => {
   const res = await fetch(url);
-  if (!res.ok) throw new Error('Failed to fetch');
+  if (!res.ok) {
+throw new Error('Failed to fetch');
+}
   return res.json();
 };
 
@@ -110,7 +112,7 @@ export default function AdminPage() {
   const { data: metrics, isLoading: metricsLoading } = useSWR<DashboardMetrics>(
     `/api/workspaces/${workspaceSlug}/admin/metrics`,
     fetcher,
-    { refreshInterval: 30000 } // Refresh every 30 seconds
+    { refreshInterval: 30000 }, // Refresh every 30 seconds
   );
 
   return (
@@ -122,7 +124,7 @@ export default function AdminPage() {
             'rounded-lg border p-4',
             metrics.health.status === 'critical' && 'border-red-500 bg-red-50 dark:bg-red-950',
             metrics.health.status === 'warning' && 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950',
-            metrics.health.status === 'healthy' && 'border-green-500 bg-green-50 dark:bg-green-950'
+            metrics.health.status === 'healthy' && 'border-green-500 bg-green-50 dark:bg-green-950',
           )}
         >
           <div className='flex items-center justify-between'>
@@ -132,7 +134,7 @@ export default function AdminPage() {
                   'h-5 w-5',
                   metrics.health.status === 'critical' && 'text-red-600 dark:text-red-400',
                   metrics.health.status === 'warning' && 'text-yellow-600 dark:text-yellow-400',
-                  metrics.health.status === 'healthy' && 'text-green-600 dark:text-green-400'
+                  metrics.health.status === 'healthy' && 'text-green-600 dark:text-green-400',
                 )}
               />
               <div>
@@ -277,7 +279,7 @@ export default function AdminPage() {
                   'flex items-start gap-4 px-6 py-4',
                   alert.type === 'error' && 'bg-red-50 dark:bg-red-950/20',
                   alert.type === 'warning' && 'bg-yellow-50 dark:bg-yellow-950/20',
-                  alert.type === 'info' && 'bg-blue-50 dark:bg-blue-950/20'
+                  alert.type === 'info' && 'bg-blue-50 dark:bg-blue-950/20',
                 )}
               >
                 <div className='flex-shrink-0 mt-0.5'>
@@ -609,7 +611,9 @@ function formatRelativeTime(timestamp: Date | string): string {
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
+  if (bytes === 0) {
+return '0 B';
+}
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));

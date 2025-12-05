@@ -1,8 +1,8 @@
 'use client';
 
+import { Shield, Lock, Key, AlertTriangle, Globe, Clock, Copy, Check } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
-import { Shield, Lock, Key, AlertTriangle, Globe, Clock, Copy, Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,8 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
 import { usePageHeader } from '@/contexts/page-header-context';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface PasswordPolicy {
@@ -147,7 +147,7 @@ export default function AdminSecurityPage() {
 
         // Load password policy
         const passwordPolicyRes = await fetch(
-          `/api/workspaces/${workspaceSlug}/security/password-policy`
+          `/api/workspaces/${workspaceSlug}/security/password-policy`,
         );
         if (passwordPolicyRes.ok) {
           const data = await passwordPolicyRes.json();
@@ -217,7 +217,9 @@ export default function AdminSecurityPage() {
         body: JSON.stringify(passwordPolicy),
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+throw new Error('Failed to save');
+}
 
       toast({
         title: 'Success',
@@ -243,7 +245,9 @@ export default function AdminSecurityPage() {
         body: JSON.stringify({ twoFactorRequired }),
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+throw new Error('Failed to save');
+}
 
       toast({
         title: 'Success',
@@ -269,7 +273,9 @@ export default function AdminSecurityPage() {
         body: JSON.stringify({ sessionTimeout }),
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+throw new Error('Failed to save');
+}
 
       toast({
         title: 'Success',
@@ -302,7 +308,9 @@ export default function AdminSecurityPage() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+throw new Error('Failed to save');
+}
 
       setIpRestrictions({ allowlist, blocklist, enabled: ipRestrictions.enabled });
       toast({
@@ -329,7 +337,9 @@ export default function AdminSecurityPage() {
         body: JSON.stringify(loginAttempts),
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+throw new Error('Failed to save');
+}
 
       toast({
         title: 'Success',
@@ -359,7 +369,9 @@ export default function AdminSecurityPage() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+throw new Error('Failed to save');
+}
 
       toast({
         title: 'Success',
@@ -397,7 +409,9 @@ export default function AdminSecurityPage() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to create');
+      if (!res.ok) {
+throw new Error('Failed to create');
+}
 
       const data = await res.json();
       setNewApiKeyValue(data.apiKey);
@@ -431,7 +445,9 @@ export default function AdminSecurityPage() {
         method: 'DELETE',
       });
 
-      if (!res.ok) throw new Error('Failed to delete');
+      if (!res.ok) {
+throw new Error('Failed to delete');
+}
 
       setApiKeys(prev => prev.filter(k => k.id !== keyId));
       toast({
@@ -466,7 +482,9 @@ export default function AdminSecurityPage() {
         body: JSON.stringify(securityAlerts),
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+throw new Error('Failed to save');
+}
 
       toast({
         title: 'Success',
@@ -1025,7 +1043,7 @@ export default function AdminSecurityPage() {
                         key={key.id}
                         className={cn(
                           'flex items-center justify-between rounded-lg border p-4',
-                          !key.isActive && 'opacity-50'
+                          !key.isActive && 'opacity-50',
                         )}
                       >
                         <div className='flex-1'>

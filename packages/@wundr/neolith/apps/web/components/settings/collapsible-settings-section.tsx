@@ -2,7 +2,7 @@
 
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-import type { ReactNode } from 'react';
+
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -12,6 +12,8 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+
+import type { ReactNode } from 'react';
 
 interface CollapsibleSettingsSectionProps {
   title: string;

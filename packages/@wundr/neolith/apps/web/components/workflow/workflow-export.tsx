@@ -1,6 +1,5 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
 import {
   Download,
   FileJson,
@@ -13,7 +12,12 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
+import React, { useState, useCallback, useMemo } from 'react';
+
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -24,12 +28,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+
 import type { Workflow, WorkflowId } from '@/types/workflow';
 
 /**
@@ -119,8 +121,12 @@ export function WorkflowExport({
   const estimatedSize = useMemo(() => {
     const jsonString = JSON.stringify(workflowsToExport);
     const bytes = new Blob([jsonString]).size;
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024) {
+return `${bytes} B`;
+}
+    if (bytes < 1024 * 1024) {
+return `${(bytes / 1024).toFixed(1)} KB`;
+}
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }, [workflowsToExport]);
 
@@ -159,7 +165,7 @@ export function WorkflowExport({
           if (exportOptions.includeExecutionHistory) {
             try {
               const response = await fetch(
-                `/api/workspaces/${workspaceSlug}/workflows/${workflow.id}/executions?limit=50`
+                `/api/workspaces/${workspaceSlug}/workflows/${workflow.id}/executions?limit=50`,
               );
               if (response.ok) {
                 const { executions } = await response.json();
@@ -174,7 +180,7 @@ export function WorkflowExport({
           if (exportOptions.includePermissions) {
             try {
               const response = await fetch(
-                `/api/workspaces/${workspaceSlug}/workflows/${workflow.id}/permissions`
+                `/api/workspaces/${workspaceSlug}/workflows/${workflow.id}/permissions`,
               );
               if (response.ok) {
                 const { permissions } = await response.json();
@@ -186,7 +192,7 @@ export function WorkflowExport({
           }
 
           return data;
-        })
+        }),
       );
 
       // Create JSON string
@@ -245,7 +251,7 @@ export function WorkflowExport({
       const jsonString = JSON.stringify(
         workflowsToExport.length === 1 ? workflowsToExport[0] : workflowsToExport,
         null,
-        2
+        2,
       );
       await navigator.clipboard.writeText(jsonString);
       setCopiedJson(true);

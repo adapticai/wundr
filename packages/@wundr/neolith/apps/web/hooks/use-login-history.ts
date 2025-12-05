@@ -76,7 +76,9 @@ export function useLoginHistory(initialLimit = 20): UseLoginHistoryReturn {
   }, [fetchHistory]);
 
   const loadMore = useCallback(async () => {
-    if (!hasMore || isLoading) return;
+    if (!hasMore || isLoading) {
+return;
+}
     const newOffset = offset + limit;
     setOffset(newOffset);
     await fetchHistory(newOffset);

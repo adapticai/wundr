@@ -33,6 +33,11 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import {
+  SettingsGroup,
+  SettingsRow,
+  SettingsSection,
+} from '@/components/settings/settings-section';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -61,11 +66,6 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import {
-  SettingsGroup,
-  SettingsRow,
-  SettingsSection,
-} from '@/components/settings/settings-section';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 
@@ -200,7 +200,7 @@ export default function AdvancedSettingsPage() {
   // Calculate localStorage cache size
   const calculateCacheSize = (): number => {
     let totalSize = 0;
-    for (let key in localStorage) {
+    for (const key in localStorage) {
       if (localStorage.hasOwnProperty(key)) {
         totalSize += localStorage[key].length + key.length;
       }
@@ -224,7 +224,7 @@ export default function AdvancedSettingsPage() {
     const keysToKeep = ['auth-token', 'user-session', 'advanced-settings'];
     const keysToRemove: string[] = [];
 
-    for (let key in localStorage) {
+    for (const key in localStorage) {
       if (localStorage.hasOwnProperty(key) && !keysToKeep.includes(key)) {
         keysToRemove.push(key);
       }

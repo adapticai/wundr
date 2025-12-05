@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import type { ReactNode } from 'react';
-
 import { toast } from 'sonner';
+
+import { useSettingsKeyboard } from '@/hooks/use-settings-keyboard';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 
 import { SettingsHeader } from './settings-header';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog';
 
-import { useSettingsKeyboard } from '@/hooks/use-settings-keyboard';
-import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
+
+import type { ReactNode } from 'react';
 
 interface SettingsPageWrapperProps {
   workspaceSlug: string;

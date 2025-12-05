@@ -10,16 +10,16 @@
 import { Bell, Lock, Palette } from 'lucide-react';
 import { useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import {
   CollapsibleSettingsSection,
   SettingsPageWrapper,
   SettingsTabs,
 } from '@/components/settings';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 
 // Example 1: Basic Settings Page with Header and Breadcrumb

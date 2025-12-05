@@ -18,7 +18,9 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
     where: { id: workspaceId },
   });
 
-  if (!workspace) return null;
+  if (!workspace) {
+return null;
+}
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {

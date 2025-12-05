@@ -260,7 +260,7 @@ export async function GET(
         percentageChange: Math.round(memberGrowthPercentage * 100) / 100,
       },
       byRole: Object.fromEntries(
-        membersByRole.map(m => [m.role, m._count])
+        membersByRole.map(m => [m.role, m._count]),
       ),
     };
 

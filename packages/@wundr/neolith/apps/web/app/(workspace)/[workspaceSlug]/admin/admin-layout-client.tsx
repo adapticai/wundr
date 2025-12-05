@@ -247,7 +247,7 @@ export function AdminLayoutClient({
         });
       } else {
         const navItem = navItems.find(item =>
-          item.href.endsWith(`/${segment}`)
+          item.href.endsWith(`/${segment}`),
         );
         if (navItem) {
           breadcrumbs.push({
@@ -257,7 +257,7 @@ export function AdminLayoutClient({
         } else {
           breadcrumbs.push({
             label: segment.split('-').map(s =>
-              s.charAt(0).toUpperCase() + s.slice(1)
+              s.charAt(0).toUpperCase() + s.slice(1),
             ).join(' '),
             href: `/${segments.slice(0, index + 1).join('/')}`,
           });
@@ -310,7 +310,7 @@ export function AdminLayoutClient({
                 isActive
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                !sidebarOpen && 'justify-center'
+                !sidebarOpen && 'justify-center',
               )}
             >
               <span className="flex-shrink-0">{item.icon}</span>
@@ -445,7 +445,7 @@ export function AdminLayoutClient({
       <aside
         className={cn(
           'hidden border-r bg-background transition-all duration-300 lg:block',
-          sidebarOpen ? 'w-64' : 'w-16'
+          sidebarOpen ? 'w-64' : 'w-16',
         )}
       >
         <SidebarContent />

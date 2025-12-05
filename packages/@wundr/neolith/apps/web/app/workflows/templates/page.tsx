@@ -7,12 +7,11 @@
  * workflows from pre-built templates.
  */
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft, Sparkles } from 'lucide-react';
-import type { WorkflowTemplate } from '@/types/workflow';
-import { TemplateGallery, TemplateConfigurator } from '@/components/workflow';
-import { useWorkflowTemplate } from '@/hooks/use-workflow-template';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -21,7 +20,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { TemplateGallery, TemplateConfigurator } from '@/components/workflow';
 import { useToast } from '@/hooks/use-toast';
+import { useWorkflowTemplate } from '@/hooks/use-workflow-template';
+
+import type { WorkflowTemplate } from '@/types/workflow';
 
 export default function WorkflowTemplatesPage() {
   const router = useRouter();

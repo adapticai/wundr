@@ -62,7 +62,7 @@ export async function GET(
     const adminMembership = await prisma.workspaceMember.findFirst({
       where: {
         workspaceId: workspace.id,
-        userId: session.user.id
+        userId: session.user.id,
       },
     });
 

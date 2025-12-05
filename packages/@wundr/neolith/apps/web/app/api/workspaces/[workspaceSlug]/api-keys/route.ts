@@ -14,12 +14,14 @@
  */
 
 import crypto from 'crypto';
-import { prisma, Prisma } from '@neolith/database';
+
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -49,7 +51,9 @@ function generateApiKey(): string {
  * Calculate expiration date based on duration string
  */
 function calculateExpiryDate(duration: string | null): Date | null {
-  if (!duration || duration === 'never') return null;
+  if (!duration || duration === 'never') {
+return null;
+}
 
   const now = new Date();
   const durationMap: Record<string, number> = {
@@ -60,7 +64,9 @@ function calculateExpiryDate(duration: string | null): Date | null {
   };
 
   const days = durationMap[duration];
-  if (!days) return null;
+  if (!days) {
+return null;
+}
 
   return new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 }

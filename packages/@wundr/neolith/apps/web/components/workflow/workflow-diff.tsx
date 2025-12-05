@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import {
   Plus,
   Minus,
@@ -13,13 +12,16 @@ import {
   ChevronRight,
   ChevronDown,
 } from 'lucide-react';
+import * as React from 'react';
+
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import type { Workflow, ActionConfig, WorkflowVariable } from '@/types/workflow';
+
 import type { WorkflowVersion } from './version-history';
+import type { Workflow, ActionConfig, WorkflowVariable } from '@/types/workflow';
 
 /**
  * Diff operation types
@@ -97,20 +99,30 @@ const DIFF_ICONS: Record<DiffOperation, React.ComponentType<{ className?: string
  * Deep compare two values
  */
 function deepEqual(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (a == null || b == null) return false;
-  if (typeof a !== 'object' || typeof b !== 'object') return false;
+  if (a === b) {
+return true;
+}
+  if (a == null || b == null) {
+return false;
+}
+  if (typeof a !== 'object' || typeof b !== 'object') {
+return false;
+}
 
   const keysA = Object.keys(a as Record<string, unknown>);
   const keysB = Object.keys(b as Record<string, unknown>);
 
-  if (keysA.length !== keysB.length) return false;
+  if (keysA.length !== keysB.length) {
+return false;
+}
 
   for (const key of keysA) {
-    if (!keysB.includes(key)) return false;
+    if (!keysB.includes(key)) {
+return false;
+}
     if (!deepEqual(
       (a as Record<string, unknown>)[key],
-      (b as Record<string, unknown>)[key]
+      (b as Record<string, unknown>)[key],
     )) {
       return false;
     }
@@ -124,7 +136,7 @@ function deepEqual(a: unknown, b: unknown): boolean {
  */
 function generateWorkflowDiff(
   oldWorkflow: Workflow,
-  newWorkflow: Workflow
+  newWorkflow: Workflow,
 ): WorkflowDiffResult {
   const metadata: DiffItem[] = [];
   const trigger: DiffItem[] = [];
@@ -267,9 +279,15 @@ function generateWorkflowDiff(
  * Format value for display
  */
 function formatValue(value: unknown): string {
-  if (value === null || value === undefined) return 'null';
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (value === null || value === undefined) {
+return 'null';
+}
+  if (typeof value === 'string') {
+return value;
+}
+  if (typeof value === 'number' || typeof value === 'boolean') {
+return String(value);
+}
   try {
     return JSON.stringify(value, null, 2);
   } catch {
@@ -472,7 +490,7 @@ export function WorkflowDiff({
 }: WorkflowDiffProps) {
   const diff = React.useMemo(
     () => generateWorkflowDiff(oldVersion.workflow, newVersion.workflow),
-    [oldVersion, newVersion]
+    [oldVersion, newVersion],
   );
 
   const totalChanges = React.useMemo(() => {

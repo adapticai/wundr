@@ -33,7 +33,9 @@ export function useUnsavedChanges(options: UseUnsavedChangesOptions = {}) {
 
   // Handle browser navigation
   useEffect(() => {
-    if (!enabled || !hasUnsavedChanges) return;
+    if (!enabled || !hasUnsavedChanges) {
+return;
+}
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();

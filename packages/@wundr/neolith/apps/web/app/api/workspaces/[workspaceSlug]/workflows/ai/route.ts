@@ -15,11 +15,11 @@
  */
 
 import { openai } from '@ai-sdk/openai';
+import { prisma } from '@neolith/database';
 import { convertToModelMessages, streamText, tool, zodSchema } from 'ai';
 import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
-import { prisma } from '@neolith/database';
 
 import type { UIMessage } from '@ai-sdk/react';
 import type { NextRequest } from 'next/server';
@@ -70,7 +70,7 @@ const createWorkflowTool = tool({
           ]).describe('Action type'),
           config: z.record(z.unknown()).describe('Action configuration'),
           order: z.number().describe('Execution order (0-indexed)'),
-        })
+        }),
       ).describe('Ordered list of actions to execute'),
     }),
   ),
@@ -89,7 +89,7 @@ const suggestOptimizationsTool = tool({
           title: z.string().describe('Short title'),
           description: z.string().describe('Detailed explanation'),
           impact: z.enum(['high', 'medium', 'low']).describe('Expected impact'),
-        })
+        }),
       ),
     }),
   ),
@@ -121,7 +121,7 @@ const recommendStepsTool = tool({
           stepType: z.string().describe('Type of step (action/condition/etc)'),
           reason: z.string().describe('Why this step would be beneficial'),
           configuration: z.record(z.unknown()).optional().describe('Suggested configuration'),
-        })
+        }),
       ),
     }),
   ),

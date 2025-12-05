@@ -205,7 +205,7 @@ export function useAdminBilling(workspaceId: string): UseAdminBillingReturn {
         setIsUpdating(false);
       }
     },
-    [billingUrl, mutateBilling]
+    [billingUrl, mutateBilling],
   );
 
   // Cancel subscription
@@ -276,7 +276,7 @@ export function useAdminBilling(workspaceId: string): UseAdminBillingReturn {
         setIsUpdating(false);
       }
     },
-    [billingUrl, mutateBilling]
+    [billingUrl, mutateBilling],
   );
 
   // Preview plan change
@@ -302,7 +302,7 @@ export function useAdminBilling(workspaceId: string): UseAdminBillingReturn {
         effectiveDate: new Date(data.effectiveDate),
       };
     },
-    [billingUrl]
+    [billingUrl],
   );
 
   return {

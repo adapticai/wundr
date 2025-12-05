@@ -11,12 +11,13 @@
  * - Natural language preview
  */
 
+import { CheckCircle2, XCircle } from 'lucide-react';
 import * as React from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle2, XCircle } from 'lucide-react';
 
 import {
   ConditionBuilder,
@@ -24,6 +25,7 @@ import {
   validateConditionGroup,
   explainConditionGroup,
 } from './condition-builder';
+
 import type { ScopedWorkflowVariable } from './variable-manager';
 
 // ============================================================================

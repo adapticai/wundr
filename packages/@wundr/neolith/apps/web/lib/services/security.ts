@@ -7,8 +7,9 @@
  * @module lib/services/security
  */
 
-import { prisma } from '@neolith/database';
 import * as crypto from 'crypto';
+
+import { prisma } from '@neolith/database';
 
 /**
  * Hash a password using PBKDF2
@@ -125,21 +126,35 @@ export function parseUserAgent(userAgent: string): {
   let device = 'desktop';
 
   // Parse browser
-  if (userAgent.includes('Chrome')) browser = 'Chrome';
-  else if (userAgent.includes('Safari')) browser = 'Safari';
-  else if (userAgent.includes('Firefox')) browser = 'Firefox';
-  else if (userAgent.includes('Edge')) browser = 'Edge';
+  if (userAgent.includes('Chrome')) {
+browser = 'Chrome';
+} else if (userAgent.includes('Safari')) {
+browser = 'Safari';
+} else if (userAgent.includes('Firefox')) {
+browser = 'Firefox';
+} else if (userAgent.includes('Edge')) {
+browser = 'Edge';
+}
 
   // Parse OS
-  if (userAgent.includes('Windows')) os = 'Windows';
-  else if (userAgent.includes('Mac')) os = 'macOS';
-  else if (userAgent.includes('Linux')) os = 'Linux';
-  else if (userAgent.includes('Android')) os = 'Android';
-  else if (userAgent.includes('iOS')) os = 'iOS';
+  if (userAgent.includes('Windows')) {
+os = 'Windows';
+} else if (userAgent.includes('Mac')) {
+os = 'macOS';
+} else if (userAgent.includes('Linux')) {
+os = 'Linux';
+} else if (userAgent.includes('Android')) {
+os = 'Android';
+} else if (userAgent.includes('iOS')) {
+os = 'iOS';
+}
 
   // Parse device type
-  if (userAgent.includes('Mobile')) device = 'mobile';
-  else if (userAgent.includes('Tablet')) device = 'tablet';
+  if (userAgent.includes('Mobile')) {
+device = 'mobile';
+} else if (userAgent.includes('Tablet')) {
+device = 'tablet';
+}
 
   return { browser, os, device };
 }

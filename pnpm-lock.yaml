@@ -1980,6 +1980,9 @@ importers:
       jspdf:
         specifier: ^3.0.4
         version: 3.0.4
+      jspdf-autotable:
+        specifier: ^5.0.2
+        version: 5.0.2(jspdf@3.0.4)
       livekit-client:
         specifier: ^2.5.0
         version: 2.16.0(@types/dom-mediacapture-record@1.0.22)
@@ -2061,6 +2064,9 @@ importers:
       ws:
         specifier: ^8.14.2
         version: 8.18.3
+      xlsx:
+        specifier: ^0.18.5
+        version: 0.18.5
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -14439,6 +14445,11 @@ packages:
   jsonwebtoken@9.0.2:
     resolution: {integrity: sha512-PRp66vJ865SSqOlgqS8hujT5U4AOgMfhrwYIuIhfKaoSCZcirrmASQr8CX7cUg+RMih+hgznrjp99o+W4pJLHQ==}
     engines: {node: '>=12', npm: '>=6'}
+
+  jspdf-autotable@5.0.2:
+    resolution: {integrity: sha512-YNKeB7qmx3pxOLcNeoqAv3qTS7KuvVwkFe5AduCawpop3NOkBUtqDToxNc225MlNecxT4kP2Zy3z/y/yvGdXUQ==}
+    peerDependencies:
+      jspdf: ^2 || ^3
 
   jspdf@3.0.4:
     resolution: {integrity: sha512-dc6oQ8y37rRcHn316s4ngz/nOjayLF/FFxBF4V9zamQKRqXxyiH1zagkCdktdWhtoQId5K20xt1lB90XzkB+hQ==}
@@ -35009,6 +35020,10 @@ snapshots:
       lodash.once: 4.1.1
       ms: 2.1.3
       semver: 7.7.3
+
+  jspdf-autotable@5.0.2(jspdf@3.0.4):
+    dependencies:
+      jspdf: 3.0.4
 
   jspdf@3.0.4:
     dependencies:

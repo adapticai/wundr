@@ -209,7 +209,7 @@ export function formatAuditTimestamp(
   options: {
     includeTime?: boolean;
     relative?: boolean;
-  } = {}
+  } = {},
 ): string {
   const { includeTime = true, relative = false } = options;
 
@@ -242,10 +242,18 @@ function formatRelativeTime(date: Date): string {
   const diffHour = Math.floor(diffMin / 60);
   const diffDay = Math.floor(diffHour / 24);
 
-  if (diffSec < 60) return 'Just now';
-  if (diffMin < 60) return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
-  if (diffHour < 24) return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
-  if (diffDay < 7) return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+  if (diffSec < 60) {
+return 'Just now';
+}
+  if (diffMin < 60) {
+return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
+}
+  if (diffHour < 24) {
+return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
+}
+  if (diffDay < 7) {
+return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+}
   if (diffDay < 30) {
     const weeks = Math.floor(diffDay / 7);
     return `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
@@ -313,7 +321,7 @@ export function groupLogsByCategory(logs: AuditLog[]): Record<AuditCategory, Aud
       acc[category] = [];
       return acc;
     },
-    {} as Record<AuditCategory, AuditLog[]>
+    {} as Record<AuditCategory, AuditLog[]>,
   );
 
   for (const log of logs) {
@@ -335,10 +343,10 @@ export function groupLogsByCategory(logs: AuditLog[]): Record<AuditCategory, Aud
 export function filterLogsByDateRange(
   logs: AuditLog[],
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): AuditLog[] {
   return logs.filter(
-    log => log.createdAt >= startDate && log.createdAt <= endDate
+    log => log.createdAt >= startDate && log.createdAt <= endDate,
   );
 }
 
@@ -360,7 +368,7 @@ export function getAuditStats(logs: AuditLog[]): {
       acc[category] = 0;
       return acc;
     },
-    {} as Record<AuditCategory, number>
+    {} as Record<AuditCategory, number>,
   );
 
   const bySeverity = Object.values(AuditSeverity).reduce(
@@ -368,7 +376,7 @@ export function getAuditStats(logs: AuditLog[]): {
       acc[severity] = 0;
       return acc;
     },
-    {} as Record<AuditSeverity, number>
+    {} as Record<AuditSeverity, number>,
   );
 
   const actorCounts = new Map<string, { count: number; actor?: AuditLog['actor'] }>();

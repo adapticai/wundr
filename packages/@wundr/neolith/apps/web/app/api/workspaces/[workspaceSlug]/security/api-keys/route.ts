@@ -145,7 +145,7 @@ export async function POST(request: Request, context: RouteContext) {
     // Get or create an orchestrator for the API key
     // Note: Orchestrator model doesn't have 'name' or 'type', it needs discipline and role
     // For simplicity, we'll use an existing orchestrator or the first one we find
-    let orchestrator = await prisma.orchestrator.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         userId: session.user.id,
       },

@@ -13,11 +13,11 @@
  * @module app/(workspace)/[workspaceSlug]/admin/api-keys/page
  */
 
+import { prisma } from '@neolith/database';
 import { redirect } from 'next/navigation';
 
 import { ApiKeysManagement } from '@/components/admin/api-keys-management';
 import { auth } from '@/lib/auth';
-import { prisma } from '@neolith/database';
 
 import type { Metadata } from 'next';
 

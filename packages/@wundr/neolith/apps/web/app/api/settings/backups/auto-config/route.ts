@@ -3,10 +3,12 @@
  * GET/POST /api/settings/backups/auto-config
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+
 import type { AutoBackupConfig } from '@/lib/settings-backup';
+import type { NextRequest} from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {

@@ -104,7 +104,9 @@ export default function AdminRolesPage() {
   const handleDelete = useCallback(
     async (roleId: string) => {
       const role = rolesWithCounts.find(r => r.id === roleId);
-      if (!role) return;
+      if (!role) {
+return;
+}
 
       if (role.memberCount > 0) {
         alert(`Cannot delete role "${role.name}". ${role.memberCount} member(s) are assigned to this role. Please reassign them first.`);
@@ -633,7 +635,7 @@ function PermissionMatrix({ roles, categories, onEditRole }: PermissionMatrixPro
   const hasPermission = (role: Role, permissionId: string): boolean => {
     const [resource] = permissionId.split('.');
     return role.permissions.some(p =>
-      p.resource === resource || p.resource === '*'
+      p.resource === resource || p.resource === '*',
     );
   };
 
@@ -767,7 +769,7 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
       });
     } else {
       setPermissions(prev =>
-        prev.filter(p => !category.permissions.some(cp => cp.resource === p.resource))
+        prev.filter(p => !category.permissions.some(cp => cp.resource === p.resource)),
       );
     }
   };

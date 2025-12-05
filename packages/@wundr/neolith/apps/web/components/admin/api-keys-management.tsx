@@ -13,8 +13,7 @@
  * - Expiry settings
  */
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { formatDistanceToNow } from 'date-fns';
 import {
   PlusIcon,
   KeyIcon,
@@ -29,20 +28,13 @@ import {
   CheckIcon,
   MoreVerticalIcon,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -61,9 +53,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 import {
   Select,
   SelectContent,
@@ -71,6 +60,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ApiKey {
   id: string;
@@ -613,7 +613,7 @@ export function ApiKeysManagement({ workspaceSlug }: ApiKeysManagementProps) {
                             onClick={() => {
                               if (
                                 confirm(
-                                  'Are you sure you want to revoke this API key? This action cannot be undone.'
+                                  'Are you sure you want to revoke this API key? This action cannot be undone.',
                                 )
                               ) {
                                 handleRevokeKey(apiKey.id);

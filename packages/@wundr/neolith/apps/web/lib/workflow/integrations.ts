@@ -16,9 +16,6 @@
  * - Error handling
  */
 
-import { z } from 'zod';
-
-import type { LucideIcon } from 'lucide-react';
 import {
   Globe,
   Mail,
@@ -29,6 +26,9 @@ import {
   Inbox,
   Webhook,
 } from 'lucide-react';
+import { z } from 'zod';
+
+import type { LucideIcon } from 'lucide-react';
 
 // ============================================================================
 // Base Integration Types

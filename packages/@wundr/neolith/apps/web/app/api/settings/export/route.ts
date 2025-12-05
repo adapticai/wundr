@@ -3,10 +3,12 @@
  * POST /api/settings/export
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+
 import type { SettingsBackup } from '@/lib/settings-backup';
+import type { NextRequest} from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {

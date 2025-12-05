@@ -133,11 +133,21 @@ export function useAdminUsers(
 
   // Build query params from filters
   const queryParams = new URLSearchParams();
-  if (filters.status) queryParams.set('status', filters.status);
-  if (filters.roleId) queryParams.set('roleId', filters.roleId);
-  if (filters.search) queryParams.set('search', filters.search);
-  if (filters.sortBy) queryParams.set('sortBy', filters.sortBy);
-  if (filters.sortOrder) queryParams.set('sortOrder', filters.sortOrder);
+  if (filters.status) {
+queryParams.set('status', filters.status);
+}
+  if (filters.roleId) {
+queryParams.set('roleId', filters.roleId);
+}
+  if (filters.search) {
+queryParams.set('search', filters.search);
+}
+  if (filters.sortBy) {
+queryParams.set('sortBy', filters.sortBy);
+}
+  if (filters.sortOrder) {
+queryParams.set('sortOrder', filters.sortOrder);
+}
   queryParams.set('page', String(filters.page ?? 1));
   queryParams.set('limit', String(filters.limit ?? 20));
 
@@ -178,7 +188,7 @@ export function useAdminUsers(
         setIsUpdating(false);
       }
     },
-    [workspaceId, mutate]
+    [workspaceId, mutate],
   );
 
   // Suspend user
@@ -193,7 +203,7 @@ export function useAdminUsers(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ reason }),
-          }
+          },
         );
 
         if (!res.ok) {
@@ -208,7 +218,7 @@ export function useAdminUsers(
         setIsUpdating(false);
       }
     },
-    [workspaceId, mutate]
+    [workspaceId, mutate],
   );
 
   // Unsuspend user
@@ -221,7 +231,7 @@ export function useAdminUsers(
           `/api/workspaces/${workspaceId}/admin/users/${userId}/unsuspend`,
           {
             method: 'POST',
-          }
+          },
         );
 
         if (!res.ok) {
@@ -236,7 +246,7 @@ export function useAdminUsers(
         setIsUpdating(false);
       }
     },
-    [workspaceId, mutate]
+    [workspaceId, mutate],
   );
 
   // Delete user
@@ -261,7 +271,7 @@ export function useAdminUsers(
         setIsUpdating(false);
       }
     },
-    [workspaceId, mutate]
+    [workspaceId, mutate],
   );
 
   // Bulk update
@@ -288,7 +298,7 @@ export function useAdminUsers(
         setIsUpdating(false);
       }
     },
-    [workspaceId, mutate]
+    [workspaceId, mutate],
   );
 
   return {

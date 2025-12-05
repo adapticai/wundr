@@ -138,12 +138,24 @@ export async function PATCH(
       }
     }
 
-    if (description !== undefined) updateData.description = description;
-    if (topic !== undefined) updateData.topic = topic;
-    if (type !== undefined) updateData.type = type;
-    if (isArchived !== undefined) updateData.isArchived = isArchived;
-    if (settings !== undefined) updateData.settings = settings;
-    if (createdById !== undefined) updateData.createdById = createdById;
+    if (description !== undefined) {
+updateData.description = description;
+}
+    if (topic !== undefined) {
+updateData.topic = topic;
+}
+    if (type !== undefined) {
+updateData.type = type;
+}
+    if (isArchived !== undefined) {
+updateData.isArchived = isArchived;
+}
+    if (settings !== undefined) {
+updateData.settings = settings;
+}
+    if (createdById !== undefined) {
+updateData.createdById = createdById;
+}
 
     // Update channel
     const updatedChannel = await prisma.channel.update({

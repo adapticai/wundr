@@ -62,7 +62,7 @@ export async function DELETE(
     const adminMembership = await prisma.workspaceMember.findFirst({
       where: {
         workspaceId: workspace.id,
-        userId: session.user.id
+        userId: session.user.id,
       },
     });
 
@@ -111,7 +111,7 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: 'User removed from workspace'
+      message: 'User removed from workspace',
     });
   } catch (error) {
     console.error('Failed to remove user:', error);

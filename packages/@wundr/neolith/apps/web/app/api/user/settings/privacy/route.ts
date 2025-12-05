@@ -10,7 +10,7 @@
  * @module app/api/user/settings/privacy/route
  */
 
-import { prisma, Prisma } from '@neolith/database';
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -21,6 +21,7 @@ import {
   type PrivacySettings,
 } from '@/lib/validations/settings';
 
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

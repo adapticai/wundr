@@ -1,11 +1,12 @@
 'use client';
 
+import { Search } from 'lucide-react';
+import { useState, useMemo } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Search } from 'lucide-react';
-import { useState, useMemo } from 'react';
 
 interface EmojiPickerProps {
   value?: string;
@@ -804,7 +805,9 @@ export function EmojiPicker({ value, onChange, trigger }: EmojiPickerProps) {
   const [open, setOpen] = useState(false);
 
   const filteredEmojis = useMemo(() => {
-    if (!search) return EMOJI_CATEGORIES;
+    if (!search) {
+return EMOJI_CATEGORIES;
+}
 
     const filtered: Record<string, string[]> = {};
     Object.entries(EMOJI_CATEGORIES).forEach(([category, emojis]) => {

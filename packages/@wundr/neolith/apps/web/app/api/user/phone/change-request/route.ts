@@ -23,8 +23,8 @@ import {
   SECURITY_ERROR_CODES,
 } from '@/lib/validations/security';
 
-import type { NextRequest } from 'next/server';
 import type { Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 
 /**
  * POST /api/user/phone/change-request

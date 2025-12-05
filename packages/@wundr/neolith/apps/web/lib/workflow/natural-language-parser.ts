@@ -446,9 +446,15 @@ export function analyzeWorkflowDescription(text: string): {
 
   // Calculate confidence score
   let confidence = 0;
-  if (hasTrigger) confidence += 0.5;
-  if (hasActions) confidence += 0.3;
-  if (actions.length > 1) confidence += 0.1; // Bonus for multiple actions
+  if (hasTrigger) {
+confidence += 0.5;
+}
+  if (hasActions) {
+confidence += 0.3;
+}
+  if (actions.length > 1) {
+confidence += 0.1;
+} // Bonus for multiple actions
   if (extractChannels(text).length > 0 || extractUsers(text).length > 0) {
     confidence += 0.1; // Bonus for specific references
   }

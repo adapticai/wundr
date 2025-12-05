@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import { format, addDays, addWeeks, addMonths, parseISO } from 'date-fns';
 import {
   Calendar,
   Clock,
@@ -12,25 +12,12 @@ import {
   Pause,
   AlertCircle,
 } from 'lucide-react';
-import { format, addDays, addWeeks, addMonths, parseISO } from 'date-fns';
+import * as React from 'react';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
@@ -39,9 +26,22 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 
 // Cron expression builder types
@@ -462,7 +462,9 @@ function ScheduleCalendar({
 
   // Get schedules for selected date
   const schedulesForDate = React.useMemo(() => {
-    if (!selectedDate) return [];
+    if (!selectedDate) {
+return [];
+}
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     return schedules.filter((schedule) =>
       schedule.nextRuns.some(

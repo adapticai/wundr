@@ -91,7 +91,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         resourceType: 'user',
         resourceId: session.user.id,
         metadata: {
-          message: `Your account deletion request has been received. Your account and all associated data will be permanently deleted in 30 days. You can cancel this request from your settings.`,
+          message: 'Your account deletion request has been received. Your account and all associated data will be permanently deleted in 30 days. You can cancel this request from your settings.',
         },
       },
     });

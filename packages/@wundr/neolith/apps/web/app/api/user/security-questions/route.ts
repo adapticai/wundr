@@ -10,8 +10,9 @@
  * @module app/api/user/security-questions/route
  */
 
-import { prisma } from '@neolith/database';
 import * as crypto from 'crypto';
+
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';

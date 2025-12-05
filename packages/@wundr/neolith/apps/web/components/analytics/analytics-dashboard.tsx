@@ -94,6 +94,7 @@ export function AnalyticsDashboard({
   const [error, setError] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -158,6 +159,23 @@ export function AnalyticsDashboard({
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Close export menu when clicking outside
+  useEffect(() => {
+    if (!showExportMenu) {
+return;
+}
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.export-menu-container')) {
+        setShowExportMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showExportMenu]);
 
   const handleExport = async (format: 'json' | 'csv' = 'csv') => {
     setIsExporting(true);
@@ -315,27 +333,59 @@ export function AnalyticsDashboard({
             }}
           />
 
-          {/* Export button */}
+          {/* Export dropdown */}
+          <div className='relative export-menu-container'>
+            <button
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              disabled={!hasData || isLoading}
+              className={clsx(
+                'px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
+                'bg-primary text-primary-foreground hover:bg-primary/90',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+              )}
+            >
+              <DownloadIcon />
+              Export
+              <ChevronDownIcon />
+            </button>
+            {showExportMenu && hasData && !isLoading && (
+              <div className='absolute right-0 top-full mt-2 w-40 bg-card border border-border rounded-lg shadow-lg z-50'>
+                <button
+                  onClick={() => {
+                    handleExport('csv');
+                    setShowExportMenu(false);
+                  }}
+                  disabled={isExporting}
+                  className='w-full px-4 py-2 text-sm text-left hover:bg-muted transition-colors rounded-t-lg disabled:opacity-50'
+                >
+                  {isExporting ? 'Exporting...' : 'Export as CSV'}
+                </button>
+                <button
+                  onClick={() => {
+                    handleExport('json');
+                    setShowExportMenu(false);
+                  }}
+                  disabled={isExporting}
+                  className='w-full px-4 py-2 text-sm text-left hover:bg-muted transition-colors rounded-b-lg disabled:opacity-50'
+                >
+                  {isExporting ? 'Exporting...' : 'Export as JSON'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Refresh button */}
           <button
-            onClick={() => handleExport('csv')}
-            disabled={isExporting || !hasData || isLoading}
+            onClick={fetchData}
+            disabled={isLoading}
             className={clsx(
-              'px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
-              'bg-primary text-primary-foreground hover:bg-primary/90',
+              'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
+              'bg-muted text-muted-foreground hover:bg-muted/80',
               'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
+            title='Refresh data'
           >
-            {isExporting ? (
-              <>
-                <div className='w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin' />
-                Exporting...
-              </>
-            ) : (
-              <>
-                <DownloadIcon />
-                Export
-              </>
-            )}
+            <RefreshIcon className={clsx('w-4 h-4', isLoading && 'animate-spin')} />
           </button>
         </div>
       </div>
@@ -657,6 +707,36 @@ function DownloadIcon() {
       <path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' />
       <polyline points='7 10 12 15 17 10' />
       <line x1='12' y1='15' x2='12' y2='3' />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      className='w-4 h-4'
+    >
+      <polyline points='6 9 12 15 18 9' />
+    </svg>
+  );
+}
+
+function RefreshIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      className={className}
+    >
+      <path d='M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2' />
     </svg>
   );
 }
