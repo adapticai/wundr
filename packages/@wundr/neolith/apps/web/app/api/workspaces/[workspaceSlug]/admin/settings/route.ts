@@ -170,6 +170,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       'weeklyDigest',
       'requireTwoFactor',
       'allowedDomains',
+      'defaultChannelId',
+      'defaultTimezone',
+      'defaultLanguage',
+      'allowDiscovery',
+      'messageRetentionDays',
+      'fileRetentionDays',
     ];
 
     for (const field of settingsFields) {

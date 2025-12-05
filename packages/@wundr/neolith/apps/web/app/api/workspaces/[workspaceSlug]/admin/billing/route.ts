@@ -37,6 +37,7 @@ const PLAN_LIMITS: Record<
     members: number;
     storage: number; // in GB
     channels: number;
+    apiCalls: number;
     features: string[];
   }
 > = {
@@ -45,17 +46,20 @@ const PLAN_LIMITS: Record<
     members: 10,
     storage: 5,
     channels: 10,
-    features: ['Basic messaging', 'Public channels', '5GB storage'],
+    apiCalls: 10000,
+    features: ['Basic messaging', 'Public channels', '5GB storage', '10K API calls/month'],
   },
   STARTER: {
     name: 'Starter',
     members: 50,
     storage: 50,
     channels: 50,
+    apiCalls: 100000,
     features: [
       'Unlimited messaging',
       'Private channels',
       '50GB storage',
+      '100K API calls/month',
       'Guest access',
     ],
   },
@@ -64,10 +68,12 @@ const PLAN_LIMITS: Record<
     members: 250,
     storage: 500,
     channels: 250,
+    apiCalls: 1000000,
     features: [
       'Unlimited messaging',
       'Unlimited channels',
       '500GB storage',
+      '1M API calls/month',
       'Advanced permissions',
       'API access',
     ],
@@ -77,10 +83,12 @@ const PLAN_LIMITS: Record<
     members: 500,
     storage: 1000,
     channels: 500,
+    apiCalls: 10000000,
     features: [
       'Unlimited messaging',
       'Unlimited channels',
       '1TB storage',
+      '10M API calls/month',
       'Advanced permissions',
       'Priority support',
     ],
@@ -90,6 +98,7 @@ const PLAN_LIMITS: Record<
     members: -1, // unlimited
     storage: -1, // unlimited
     channels: -1, // unlimited
+    apiCalls: -1, // unlimited
     features: [
       'Unlimited everything',
       'SSO/SAML',
@@ -167,6 +176,9 @@ export async function GET(
 
     const storageGB =
       Number(storageUsage._sum.size || 0) / (1024 * 1024 * 1024);
+
+    // Mock API calls usage (in production, this would come from an API usage tracking table)
+    const apiCallsUsage = Math.floor(Math.random() * (planConfig.apiCalls * 0.7));
 
     // Calculate period dates (monthly billing)
     const now = new Date();

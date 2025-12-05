@@ -18,9 +18,14 @@ interface AdminLayoutProps {
 }
 
 /**
- * Admin section layout with admin-only access check
- * The old sidebar has been removed - navigation is handled by sub-layouts
- * Main workspace sidebar is auto-collapsed when in admin routes
+ * Admin section layout with comprehensive features:
+ * - Role-based access control (ADMIN/OWNER only)
+ * - Sidebar navigation with all admin sections
+ * - Breadcrumb navigation
+ * - Admin header with quick actions
+ * - Collapsible sidebar
+ * - Mobile-responsive navigation
+ * - Quick search for admin features
  */
 export default async function AdminLayout({
   children,
@@ -29,6 +34,7 @@ export default async function AdminLayout({
   const { workspaceSlug } = await params;
   const session = await auth();
 
+  // Authentication check
   if (!session?.user?.id) {
     redirect('/login');
   }
@@ -38,18 +44,21 @@ export default async function AdminLayout({
     where: {
       OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
     },
-    select: { id: true },
+    select: { id: true, name: true, slug: true },
   });
 
   if (!workspace) {
     redirect('/');
   }
 
-  // Check if user is admin or owner of this workspace
+  // Authorization check - only ADMIN and OWNER roles
   const membership = await prisma.workspaceMember.findFirst({
     where: {
       workspaceId: workspace.id,
       userId: session.user.id,
+    },
+    select: {
+      role: true,
     },
   });
 
@@ -57,6 +66,15 @@ export default async function AdminLayout({
     redirect(`/${workspaceSlug}/dashboard`);
   }
 
-  // Pass through to children - the AdminLayoutClient handles sidebar collapse
-  return <AdminLayoutClient>{children}</AdminLayoutClient>;
+  // Pass workspace and user data to client component
+  return (
+    <AdminLayoutClient
+      workspaceSlug={workspaceSlug}
+      workspaceName={workspace.name}
+      userRole={membership.role}
+      userName={session.user.name || session.user.email || 'Admin'}
+    >
+      {children}
+    </AdminLayoutClient>
+  );
 }

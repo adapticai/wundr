@@ -31,15 +31,15 @@ import type { z } from 'zod';
 type IntegrationProviderType = z.infer<typeof integrationProviderSchema>;
 
 /**
- * Valid OAuth provider types
+ * Valid OAuth provider types - must match OAUTH_PROVIDERS keys
  */
-type OAuthProvider = 'github' | 'slack' | 'google';
+type OAuthProvider = 'github' | 'slack' | 'gitlab' | 'linear' | 'notion' | 'discord';
 
 /**
  * Type guard to check if a string is a valid OAuth provider
  */
 function isValidOAuthProvider(provider: string): provider is OAuthProvider {
-  return ['github', 'slack', 'google'].includes(provider);
+  return ['github', 'slack', 'gitlab', 'linear', 'notion', 'discord'].includes(provider);
 }
 
 /**

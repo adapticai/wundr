@@ -8,11 +8,28 @@ import {
   Globe,
   Users,
   Calendar,
+  Shield,
+  Trash2,
+  UserCog,
+  AlertTriangle,
+  Clock,
+  Languages,
 } from 'lucide-react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { mutate } from 'swr';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +48,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useWorkspaceSettings } from '@/hooks/use-admin';
 import { useToast } from '@/hooks/use-toast';
@@ -47,6 +65,7 @@ import { cn } from '@/lib/utils';
  */
 export default function GeneralSettingsPage() {
   const params = useParams();
+  const router = useRouter();
   const workspaceSlug = params.workspaceSlug as string;
   const { toast } = useToast();
 
@@ -68,6 +87,20 @@ export default function GeneralSettingsPage() {
   const [visibility, setVisibility] = useState<'public' | 'private'>('private');
   const [allowDiscovery, setAllowDiscovery] = useState(false);
 
+  // Member Join Settings State
+  const [requireApprovalToJoin, setRequireApprovalToJoin] = useState(true);
+  const [allowGuestAccess, setAllowGuestAccess] = useState(false);
+
+  // Data Retention State
+  const [messageRetentionDays, setMessageRetentionDays] = useState('');
+  const [fileRetentionDays, setFileRetentionDays] = useState('');
+
+  // Danger Zone State
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [transferUserId, setTransferUserId] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isTransferring, setIsTransferring] = useState(false);
+
   // UI State
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -88,6 +121,10 @@ export default function GeneralSettingsPage() {
         defaultTimezone?: string;
         defaultLanguage?: string;
         allowDiscovery?: boolean;
+        requireApprovalToJoin?: boolean;
+        allowGuestAccess?: boolean;
+        messageRetentionDays?: number;
+        fileRetentionDays?: number;
       };
 
       setIcon(extendedSettings.icon || '');
@@ -98,6 +135,14 @@ export default function GeneralSettingsPage() {
       );
       setDefaultLanguage(extendedSettings.defaultLanguage || 'en');
       setAllowDiscovery(extendedSettings.allowDiscovery || false);
+      setRequireApprovalToJoin(
+        extendedSettings.requireApprovalToJoin ?? true,
+      );
+      setAllowGuestAccess(extendedSettings.allowGuestAccess || false);
+      setMessageRetentionDays(
+        extendedSettings.messageRetentionDays?.toString() || '',
+      );
+      setFileRetentionDays(extendedSettings.fileRetentionDays?.toString() || '');
     }
   }, [settings]);
 
@@ -270,6 +315,155 @@ export default function GeneralSettingsPage() {
       setIsSaving(false);
     }
   }, [visibility, allowDiscovery, updateSettings, toast]);
+
+  const handleSaveMemberSettings = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      const updates: Record<string, boolean> = {
+        requireApprovalToJoin,
+        allowGuestAccess,
+      };
+      await updateSettings(updates);
+      toast({
+        title: 'Success',
+        description: 'Member join settings updated',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to save member settings',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [requireApprovalToJoin, allowGuestAccess, updateSettings, toast]);
+
+  const handleSaveRetentionSettings = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      const updates: Record<string, number | undefined> = {
+        messageRetentionDays: messageRetentionDays
+          ? parseInt(messageRetentionDays)
+          : undefined,
+        fileRetentionDays: fileRetentionDays
+          ? parseInt(fileRetentionDays)
+          : undefined,
+      };
+      await updateSettings(updates);
+      toast({
+        title: 'Success',
+        description: 'Data retention policies updated',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to save retention settings',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [messageRetentionDays, fileRetentionDays, updateSettings, toast]);
+
+  const handleDeleteWorkspace = useCallback(async () => {
+    if (deleteConfirmation !== name) {
+      toast({
+        title: 'Error',
+        description: 'Workspace name does not match',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/admin/settings/delete`,
+        {
+          method: 'DELETE',
+        },
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete workspace');
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Workspace deleted successfully',
+      });
+
+      // Redirect to home page after deletion
+      router.push('/');
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to delete workspace',
+        variant: 'destructive',
+      });
+      setIsDeleting(false);
+    }
+  }, [deleteConfirmation, name, workspaceSlug, toast, router]);
+
+  const handleTransferOwnership = useCallback(async () => {
+    if (!transferUserId.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a user ID',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsTransferring(true);
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/admin/settings/transfer`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ newOwnerId: transferUserId }),
+        },
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to transfer ownership');
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Ownership transferred successfully',
+      });
+
+      setTransferUserId('');
+
+      // Revalidate settings
+      await mutate(`/api/workspaces/${workspaceSlug}/admin/settings`);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to transfer ownership',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsTransferring(false);
+    }
+  }, [transferUserId, workspaceSlug, toast]);
 
   if (isLoading) {
     return <GeneralSettingsSkeleton />;
@@ -620,6 +814,128 @@ export default function GeneralSettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Member Join Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className='flex items-center gap-2'>
+            <Shield className='h-5 w-5' />
+            Member Join Settings
+          </CardTitle>
+          <CardDescription>
+            Control how members can join your workspace
+          </CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-6'>
+          <div className='flex items-center justify-between rounded-lg border p-4'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='require-approval' className='text-base'>
+                Require approval to join
+              </Label>
+              <p className='text-sm text-muted-foreground'>
+                New members must be approved by an admin before joining
+              </p>
+            </div>
+            <Switch
+              id='require-approval'
+              checked={requireApprovalToJoin}
+              onCheckedChange={setRequireApprovalToJoin}
+            />
+          </div>
+
+          <div className='flex items-center justify-between rounded-lg border p-4'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='guest-access' className='text-base'>
+                Allow guest access
+              </Label>
+              <p className='text-sm text-muted-foreground'>
+                Allow guests to access public channels without full membership
+              </p>
+            </div>
+            <Switch
+              id='guest-access'
+              checked={allowGuestAccess}
+              onCheckedChange={setAllowGuestAccess}
+            />
+          </div>
+
+          <div className='flex justify-end pt-4 border-t'>
+            <Button onClick={handleSaveMemberSettings} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                  Saving...
+                </>
+              ) : (
+                'Save Settings'
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Data Retention */}
+      <Card>
+        <CardHeader>
+          <CardTitle className='flex items-center gap-2'>
+            <Clock className='h-5 w-5' />
+            Data Retention Policies
+          </CardTitle>
+          <CardDescription>
+            Configure automatic data retention and cleanup policies
+          </CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-6'>
+          <div className='space-y-2'>
+            <Label htmlFor='message-retention'>
+              Message Retention (days)
+            </Label>
+            <Input
+              id='message-retention'
+              type='number'
+              min='0'
+              value={messageRetentionDays}
+              onChange={e => setMessageRetentionDays(e.target.value)}
+              placeholder='Never delete (leave empty)'
+            />
+            <p className='text-xs text-muted-foreground flex items-start gap-1'>
+              <Info className='h-3 w-3 mt-0.5 flex-shrink-0' />
+              Messages older than this will be automatically deleted. Leave
+              empty to keep messages forever.
+            </p>
+          </div>
+
+          <div className='space-y-2'>
+            <Label htmlFor='file-retention'>File Retention (days)</Label>
+            <Input
+              id='file-retention'
+              type='number'
+              min='0'
+              value={fileRetentionDays}
+              onChange={e => setFileRetentionDays(e.target.value)}
+              placeholder='Never delete (leave empty)'
+            />
+            <p className='text-xs text-muted-foreground flex items-start gap-1'>
+              <Info className='h-3 w-3 mt-0.5 flex-shrink-0' />
+              Files older than this will be automatically deleted. Leave empty
+              to keep files forever.
+            </p>
+          </div>
+
+          <div className='flex justify-end pt-4 border-t'>
+            <Button onClick={handleSaveRetentionSettings} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                  Saving...
+                </>
+              ) : (
+                'Save Policies'
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Workspace About/Info */}
       <Card>
         <CardHeader>
@@ -691,6 +1007,158 @@ export default function GeneralSettingsPage() {
                   return extendedSettings.channelCount || 0;
                 })()}
               </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Danger Zone */}
+      <Card className='border-red-500/50'>
+        <CardHeader>
+          <CardTitle className='flex items-center gap-2 text-red-600 dark:text-red-400'>
+            <AlertTriangle className='h-5 w-5' />
+            Danger Zone
+          </CardTitle>
+          <CardDescription>
+            Irreversible and destructive actions
+          </CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-6'>
+          {/* Transfer Ownership */}
+          <div className='rounded-lg border border-red-200 dark:border-red-900 p-4 space-y-4'>
+            <div className='space-y-2'>
+              <div className='flex items-center gap-2'>
+                <UserCog className='h-4 w-4 text-red-600 dark:text-red-400' />
+                <Label className='text-base font-semibold'>
+                  Transfer Ownership
+                </Label>
+              </div>
+              <p className='text-sm text-muted-foreground'>
+                Transfer workspace ownership to another admin. You will lose
+                owner privileges.
+              </p>
+            </div>
+            <div className='space-y-3'>
+              <Input
+                placeholder='Enter new owner user ID'
+                value={transferUserId}
+                onChange={e => setTransferUserId(e.target.value)}
+              />
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant='outline'
+                    className='w-full border-red-500/50 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20'
+                    disabled={!transferUserId.trim() || isTransferring}
+                  >
+                    {isTransferring ? (
+                      <>
+                        <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                        Transferring...
+                      </>
+                    ) : (
+                      <>
+                        <UserCog className='h-4 w-4 mr-2' />
+                        Transfer Ownership
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action will transfer ownership of the workspace to
+                      another user. You will lose owner privileges and will not
+                      be able to reverse this action without the new owner's
+                      approval.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleTransferOwnership}
+                      className='bg-red-600 hover:bg-red-700'
+                    >
+                      Transfer Ownership
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+
+          {/* Delete Workspace */}
+          <div className='rounded-lg border border-red-200 dark:border-red-900 p-4 space-y-4'>
+            <div className='space-y-2'>
+              <div className='flex items-center gap-2'>
+                <Trash2 className='h-4 w-4 text-red-600 dark:text-red-400' />
+                <Label className='text-base font-semibold'>
+                  Delete Workspace
+                </Label>
+              </div>
+              <p className='text-sm text-muted-foreground'>
+                Permanently delete this workspace and all of its data. This
+                action cannot be undone.
+              </p>
+            </div>
+            <div className='space-y-3'>
+              <div className='space-y-2'>
+                <Label htmlFor='delete-confirmation'>
+                  Type <span className='font-mono font-bold'>{name}</span> to
+                  confirm
+                </Label>
+                <Input
+                  id='delete-confirmation'
+                  placeholder='Workspace name'
+                  value={deleteConfirmation}
+                  onChange={e => setDeleteConfirmation(e.target.value)}
+                />
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant='destructive'
+                    className='w-full'
+                    disabled={deleteConfirmation !== name || isDeleting}
+                  >
+                    {isDeleting ? (
+                      <>
+                        <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className='h-4 w-4 mr-2' />
+                        Delete Workspace
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete
+                      the workspace, including all channels, messages, files,
+                      and member data. All members will lose access immediately.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteWorkspace}
+                      className='bg-red-600 hover:bg-red-700'
+                    >
+                      Delete Workspace
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </CardContent>
