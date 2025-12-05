@@ -41,7 +41,9 @@ export function BudgetSettingsDialog({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [budgetLimit, setBudgetLimit] = useState('');
-  const [billingPeriod, setBillingPeriod] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
+  const [billingPeriod, setBillingPeriod] = useState<
+    'daily' | 'weekly' | 'monthly'
+  >('monthly');
   const [alertThreshold, setAlertThreshold] = useState('80');
   const [currentUsage, setCurrentUsage] = useState<number>(0);
 
@@ -53,12 +55,12 @@ export function BudgetSettingsDialog({
 
   const fetchBudgetSettings = async () => {
     if (!orchestratorId) {
-return;
-}
+      return;
+    }
 
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/orchestrators/${orchestratorId}/budget`,
+        `/api/workspaces/${workspaceSlug}/admin/orchestrators/${orchestratorId}/budget`
       );
 
       if (response.ok) {
@@ -75,8 +77,8 @@ return;
 
   const handleSave = async () => {
     if (!orchestratorId) {
-return;
-}
+      return;
+    }
 
     setLoading(true);
     try {
@@ -90,12 +92,12 @@ return;
             billingPeriod,
             alertThreshold: parseInt(alertThreshold) || 80,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
-throw new Error('Failed to update budget settings');
-}
+        throw new Error('Failed to update budget settings');
+      }
 
       toast({
         title: 'Success',
@@ -187,7 +189,12 @@ throw new Error('Failed to update budget settings');
           {/* Billing Period */}
           <div className='space-y-2'>
             <Label htmlFor='billingPeriod'>Billing Period</Label>
-            <Select value={billingPeriod} onValueChange={(value: 'daily' | 'weekly' | 'monthly') => setBillingPeriod(value)}>
+            <Select
+              value={billingPeriod}
+              onValueChange={(value: 'daily' | 'weekly' | 'monthly') =>
+                setBillingPeriod(value)
+              }
+            >
               <SelectTrigger id='billingPeriod'>
                 <SelectValue />
               </SelectTrigger>

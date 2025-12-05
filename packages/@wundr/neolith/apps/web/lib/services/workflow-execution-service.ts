@@ -37,7 +37,7 @@ export interface ExecutionContext {
  */
 export type ActionHandler = (
   action: WorkflowAction,
-  context: ExecutionContext,
+  context: ExecutionContext
 ) => Promise<{
   success: boolean;
   output?: unknown;
@@ -47,7 +47,9 @@ export type ActionHandler = (
 /**
  * Execution progress callback
  */
-export type ProgressCallback = (step: WorkflowStepResult) => void | Promise<void>;
+export type ProgressCallback = (
+  step: WorkflowStepResult
+) => void | Promise<void>;
 
 /**
  * Cancellation signal
@@ -66,7 +68,7 @@ const actionHandlers = new Map<string, ActionHandler>();
  */
 export function registerActionHandler(
   actionType: string,
-  handler: ActionHandler,
+  handler: ActionHandler
 ): void {
   actionHandlers.set(actionType, handler);
 }
@@ -89,7 +91,7 @@ function getActionHandler(actionType: string): ActionHandler {
  */
 async function defaultActionHandler(
   action: WorkflowAction,
-  context: ExecutionContext,
+  context: ExecutionContext
 ): Promise<{ success: boolean; output?: unknown; error?: string }> {
   // Simulate action execution
   await new Promise(resolve => setTimeout(resolve, 100));
@@ -115,7 +117,7 @@ async function defaultActionHandler(
 async function executeAction(
   action: WorkflowAction,
   context: ExecutionContext,
-  cancellationSignal: CancellationSignal,
+  cancellationSignal: CancellationSignal
 ): Promise<WorkflowStepResult> {
   const actionId = action.id ?? `action-${context.previousStepResults.length}`;
   const startedAt = new Date();
@@ -148,8 +150,8 @@ async function executeAction(
         new Promise<{ success: false; error: string }>((_, reject) =>
           setTimeout(
             () => reject(new Error('Action execution timeout')),
-            timeout,
-          ),
+            timeout
+          )
         ),
       ]);
 
@@ -174,7 +176,7 @@ async function executeAction(
         retryCount++;
         // Exponential backoff: 1s, 2s, 4s
         await new Promise(resolve =>
-          setTimeout(resolve, Math.pow(2, retryCount - 1) * 1000),
+          setTimeout(resolve, Math.pow(2, retryCount - 1) * 1000)
         );
       }
     } catch (error) {
@@ -199,7 +201,7 @@ async function executeAction(
       retryCount++;
       // Exponential backoff
       await new Promise(resolve =>
-        setTimeout(resolve, Math.pow(2, retryCount - 1) * 1000),
+        setTimeout(resolve, Math.pow(2, retryCount - 1) * 1000)
       );
     }
   }
@@ -226,7 +228,7 @@ export async function executeWorkflowActions(
   actions: WorkflowAction[],
   context: Omit<ExecutionContext, 'previousStepResults'>,
   onProgress?: ProgressCallback,
-  cancellationSignal?: CancellationSignal,
+  cancellationSignal?: CancellationSignal
 ): Promise<{
   steps: WorkflowStepResult[];
   success: boolean;
@@ -402,7 +404,7 @@ registerActionHandler(
         timestamp: new Date().toISOString(),
       },
     };
-  },
+  }
 );
 
 /**
@@ -449,11 +451,10 @@ registerActionHandler(
     } catch (error) {
       return {
         success: false,
-        error:
-          error instanceof Error ? error.message : 'API call failed',
+        error: error instanceof Error ? error.message : 'API call failed',
       };
     }
-  },
+  }
 );
 
 /**
@@ -474,7 +475,7 @@ registerActionHandler(
         durationMs,
       },
     };
-  },
+  }
 );
 
 /**
@@ -498,7 +499,10 @@ registerActionHandler(
       });
 
       if (!orchestrator) {
-        return { success: false, error: 'No orchestrator available in workspace to create task' };
+        return {
+          success: false,
+          error: 'No orchestrator available in workspace to create task',
+        };
       }
 
       // Create task in database
@@ -507,7 +511,9 @@ registerActionHandler(
           title: config.title as string,
           description: (config.description as string) ?? '',
           status: 'TODO',
-          priority: (config.priority as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL') ?? 'MEDIUM',
+          priority:
+            (config.priority as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL') ??
+            'MEDIUM',
           workspaceId: context.workspaceId,
           orchestratorId: (config.orchestratorId as string) ?? orchestrator.id,
           assignedToId: (config.assignedTo as string) ?? context.userId,
@@ -526,11 +532,10 @@ registerActionHandler(
     } catch (error) {
       return {
         success: false,
-        error:
-          error instanceof Error ? error.message : 'Failed to create task',
+        error: error instanceof Error ? error.message : 'Failed to create task',
       };
     }
-  },
+  }
 );
 
 /**
@@ -607,5 +612,5 @@ registerActionHandler(
         actualValue: fieldValue,
       },
     };
-  },
+  }
 );

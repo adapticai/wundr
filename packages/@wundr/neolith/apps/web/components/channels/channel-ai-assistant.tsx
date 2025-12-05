@@ -48,7 +48,7 @@ function getMessageContent(message: UIMessage): string {
   }
   return message.parts
     .filter(
-      (part): part is { type: 'text'; text: string } => part.type === 'text',
+      (part): part is { type: 'text'; text: string } => part.type === 'text'
     )
     .map(part => part.text)
     .join('');
@@ -140,7 +140,7 @@ export function ChannelAIAssistant({
       setInput('');
       await chat.sendMessage({ text: message });
     },
-    [input, chat],
+    [input, chat]
   );
 
   // Handle section toggle
@@ -152,15 +152,19 @@ export function ChannelAIAssistant({
     return null;
   }
 
-  const isChatLoading = chat.status === 'streaming' || chat.status === 'submitted';
-  const isSummaryLoading = summaryChat.status === 'streaming' || summaryChat.status === 'submitted';
-  const isSuggestionsLoading = suggestionsChat.status === 'streaming' || suggestionsChat.status === 'submitted';
+  const isChatLoading =
+    chat.status === 'streaming' || chat.status === 'submitted';
+  const isSummaryLoading =
+    summaryChat.status === 'streaming' || summaryChat.status === 'submitted';
+  const isSuggestionsLoading =
+    suggestionsChat.status === 'streaming' ||
+    suggestionsChat.status === 'submitted';
 
   return (
     <Card
       className={cn(
         'flex h-full w-[400px] flex-col border-l shadow-lg',
-        className,
+        className
       )}
     >
       {/* Header */}
@@ -326,7 +330,7 @@ export function ChannelAIAssistant({
                           key={message.id}
                           className={cn(
                             'flex gap-2',
-                            isUser ? 'flex-row-reverse' : 'flex-row',
+                            isUser ? 'flex-row-reverse' : 'flex-row'
                           )}
                         >
                           <div
@@ -334,7 +338,7 @@ export function ChannelAIAssistant({
                               'rounded-lg px-3 py-2 max-w-[85%]',
                               isUser
                                 ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted',
+                                : 'bg-muted'
                             )}
                           >
                             <p className='text-sm whitespace-pre-wrap break-words'>
@@ -356,7 +360,10 @@ export function ChannelAIAssistant({
               </div>
 
               {/* Chat Input */}
-              <form onSubmit={handleChatSubmit} className='flex gap-2 mt-4 flex-shrink-0'>
+              <form
+                onSubmit={handleChatSubmit}
+                className='flex gap-2 mt-4 flex-shrink-0'
+              >
                 <Textarea
                   value={input}
                   onChange={e => setInput(e.target.value)}

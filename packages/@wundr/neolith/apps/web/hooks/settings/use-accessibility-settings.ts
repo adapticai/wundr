@@ -37,9 +37,13 @@ export interface UseAccessibilitySettingsReturn {
   /** Decrease font size */
   decreaseFontSize: () => Promise<void>;
   /** Set font size directly */
-  setFontSize: (size: 'small' | 'medium' | 'large' | 'extra-large') => Promise<void>;
+  setFontSize: (
+    size: 'small' | 'medium' | 'large' | 'extra-large'
+  ) => Promise<void>;
   /** Set density (spacing) */
-  setDensity: (density: 'compact' | 'comfortable' | 'spacious') => Promise<void>;
+  setDensity: (
+    density: 'compact' | 'comfortable' | 'spacious'
+  ) => Promise<void>;
   /** Enable accessibility preset (high contrast + large text + reduced motion) */
   enableA11yPreset: () => Promise<void>;
   /** Reset to default accessibility settings */
@@ -111,15 +115,15 @@ export function useAccessibilitySettings(): UseAccessibilitySettingsReturn {
   // Detect system reduced motion preference
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
     if (typeof window === 'undefined') {
-return false;
-}
+      return false;
+    }
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
 
   useEffect(() => {
     if (typeof window === 'undefined') {
-return;
-}
+      return;
+    }
 
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -141,7 +145,7 @@ return;
         appearance: updates,
       });
     },
-    [updateSettings],
+    [updateSettings]
   );
 
   // Toggle reduced motion
@@ -161,7 +165,7 @@ return;
     async (size: 'small' | 'medium' | 'large' | 'extra-large') => {
       await updateA11y({ fontSize: size });
     },
-    [updateA11y],
+    [updateA11y]
   );
 
   // Increase font size
@@ -185,7 +189,7 @@ return;
     async (density: 'compact' | 'comfortable' | 'spacious') => {
       await updateA11y({ density });
     },
-    [updateA11y],
+    [updateA11y]
   );
 
   // Enable accessibility preset

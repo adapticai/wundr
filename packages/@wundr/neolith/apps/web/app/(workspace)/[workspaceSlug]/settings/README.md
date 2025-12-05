@@ -5,6 +5,7 @@ A comprehensive, production-ready settings navigation system for the Neolith web
 ## Features
 
 ### 1. Settings Sidebar Navigation ✅
+
 - Categorized navigation with sections (Account, Preferences, etc.)
 - Collapsible/expandable sections
 - Active state highlighting
@@ -12,12 +13,14 @@ A comprehensive, production-ready settings navigation system for the Neolith web
 - Icon support for all menu items
 
 ### 2. Breadcrumb Navigation ✅
+
 - Automatic breadcrumb generation based on current route
 - Home → Settings → Current Page hierarchy
 - Icons for home and settings levels
 - Mobile-friendly responsive design
 
 ### 3. Settings Search ✅
+
 - Full-text search across all settings pages
 - Keyboard shortcut: `⌘K` or `Ctrl+K`
 - Grouped results by category
@@ -25,6 +28,7 @@ A comprehensive, production-ready settings navigation system for the Neolith web
 - Navigate directly to settings from search
 
 ### 4. Quick Settings Modal ✅
+
 - Keyboard shortcut: `⌘,` or `Ctrl+,`
 - Quick access to common settings:
   - Theme switcher (Light/Dark/System)
@@ -33,24 +37,28 @@ A comprehensive, production-ready settings navigation system for the Neolith web
 - Persists preferences to localStorage
 
 ### 5. Mobile-Responsive Layout ✅
+
 - Drawer navigation on mobile devices
 - Fixed header with menu trigger
 - Touch-optimized targets
 - Responsive spacing and typography
 
 ### 6. Settings Page Header ✅
+
 - Title and description support
 - Breadcrumb integration
 - Search button with keyboard hint
 - Consistent styling across pages
 
 ### 7. Tab-Based Sub-Navigation ✅
+
 - Support for settings pages with multiple sections
 - Active tab highlighting
 - Responsive horizontal scrolling on mobile
 - Clean, minimal design
 
 ### 8. Unsaved Changes Warning ✅
+
 - Browser navigation warning (beforeunload)
 - Internal navigation confirmation dialog
 - Save/Discard options
@@ -58,6 +66,7 @@ A comprehensive, production-ready settings navigation system for the Neolith web
 - Custom hook: `useUnsavedChanges`
 
 ### 9. Collapsible Settings Sections ✅
+
 - Organize long settings pages
 - Expand/collapse functionality
 - Icon and badge support
@@ -65,6 +74,7 @@ A comprehensive, production-ready settings navigation system for the Neolith web
 - Smooth animations
 
 ### 10. Keyboard Shortcuts ✅
+
 - `⌘K` / `Ctrl+K` - Open settings search
 - `⌘,` / `Ctrl+,` - Quick settings modal
 - `⌘S` / `Ctrl+S` - Save changes
@@ -108,9 +118,9 @@ import { SettingsPageWrapper } from '@/components/settings';
 export default function NotificationsPage() {
   return (
     <SettingsPageWrapper
-      workspaceSlug="my-workspace"
-      title="Notifications"
-      description="Manage how you receive notifications"
+      workspaceSlug='my-workspace'
+      title='Notifications'
+      description='Manage how you receive notifications'
     >
       {/* Your settings content */}
     </SettingsPageWrapper>
@@ -131,10 +141,7 @@ export default function NotificationsPage() {
   ];
 
   return (
-    <SettingsPageWrapper
-      workspaceSlug="my-workspace"
-      title="Notifications"
-    >
+    <SettingsPageWrapper workspaceSlug='my-workspace' title='Notifications'>
       <SettingsTabs tabs={tabs} />
       {/* Tab content */}
     </SettingsPageWrapper>
@@ -149,13 +156,13 @@ import { CollapsibleSettingsSection } from '@/components/settings';
 import { Lock } from 'lucide-react';
 
 <CollapsibleSettingsSection
-  title="Privacy Controls"
-  description="Manage who can see your information"
-  icon={<Lock className="h-5 w-5" />}
+  title='Privacy Controls'
+  description='Manage who can see your information'
+  icon={<Lock className='h-5 w-5' />}
   defaultOpen={true}
 >
   {/* Section content */}
-</CollapsibleSettingsSection>
+</CollapsibleSettingsSection>;
 ```
 
 ### Form with Unsaved Changes
@@ -179,8 +186,8 @@ export default function ProfilePage() {
 
   return (
     <SettingsPageWrapper
-      workspaceSlug="my-workspace"
-      title="Profile"
+      workspaceSlug='my-workspace'
+      title='Profile'
       enableUnsavedChangesWarning={true}
     >
       {/* Form fields that call markAsDirty() on change */}
@@ -192,9 +199,11 @@ export default function ProfilePage() {
 ## Component APIs
 
 ### SettingsPageWrapper
+
 Wrapper for individual settings pages with header and keyboard shortcuts.
 
 **Props:**
+
 - `workspaceSlug: string` - Current workspace identifier
 - `title: string` - Page title
 - `description?: string` - Page description
@@ -204,18 +213,22 @@ Wrapper for individual settings pages with header and keyboard shortcuts.
 - `enableUnsavedChangesWarning?: boolean` - Enable navigation warnings
 
 ### SettingsTabs
+
 Tab navigation for settings sub-pages.
 
 **Props:**
+
 - `tabs: SettingsTab[]` - Array of tab configurations
   - `label: string` - Tab label
   - `href: string` - Tab URL
   - `value: string` - Unique value
 
 ### CollapsibleSettingsSection
+
 Collapsible section for organizing settings.
 
 **Props:**
+
 - `title: string` - Section title
 - `description?: string` - Section description
 - `icon?: ReactNode` - Icon component
@@ -224,14 +237,17 @@ Collapsible section for organizing settings.
 - `badge?: ReactNode` - Optional badge
 
 ### useUnsavedChanges Hook
+
 Track and manage unsaved form changes.
 
 **Options:**
+
 - `enabled?: boolean` - Enable tracking (default: true)
 - `onSave?: () => Promise<void> | void` - Save callback
 - `onDiscard?: () => void` - Discard callback
 
 **Returns:**
+
 - `hasUnsavedChanges: boolean` - Current state
 - `markAsDirty: () => void` - Mark as changed
 - `markAsClean: () => void` - Mark as saved
@@ -245,13 +261,13 @@ Track and manage unsaved form changes.
 
 All keyboard shortcuts work globally within the settings area:
 
-| Shortcut | Action |
-|----------|--------|
-| `⌘K` or `Ctrl+K` | Open settings search |
-| `⌘,` or `Ctrl+,` | Open quick settings modal |
+| Shortcut         | Action                       |
+| ---------------- | ---------------------------- |
+| `⌘K` or `Ctrl+K` | Open settings search         |
+| `⌘,` or `Ctrl+,` | Open quick settings modal    |
 | `⌘S` or `Ctrl+S` | Save current form (if dirty) |
-| `⌘[` or `Ctrl+[` | Navigate back |
-| `ESC` | Return to settings home |
+| `⌘[` or `Ctrl+[` | Navigate back                |
+| `ESC`            | Return to settings home      |
 
 ## Mobile Responsiveness
 
@@ -286,6 +302,7 @@ All components follow accessibility best practices:
 ### Styling
 
 All components use:
+
 - **Tailwind CSS**: Utility-first styling
 - **shadcn/ui**: Component primitives
 - **CSS variables**: Theme-aware colors
@@ -316,6 +333,7 @@ Potential improvements for future iterations:
 ## Support
 
 For questions or issues:
+
 - Check `example-usage.tsx` for comprehensive examples
 - Review component source code for detailed implementations
 - Refer to shadcn/ui documentation for component APIs
@@ -323,5 +341,4 @@ For questions or issues:
 
 ---
 
-Last updated: 2025-12-05
-Version: 1.0.0
+Last updated: 2025-12-05 Version: 1.0.0

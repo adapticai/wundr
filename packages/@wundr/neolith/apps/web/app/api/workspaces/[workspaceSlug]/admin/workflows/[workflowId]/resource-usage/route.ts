@@ -30,8 +30,8 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -56,7 +56,7 @@ return null;
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -71,7 +71,7 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or insufficient permissions' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -81,7 +81,10 @@ export async function GET(
     });
 
     if (!workflow || workflow.workspaceId !== workspaceId) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Workflow not found' },
+        { status: 404 }
+      );
     }
 
     // Get all completed executions
@@ -118,7 +121,7 @@ export async function GET(
       .filter(d => d > 0);
 
     const avgExecutionTime = Math.round(
-      durations.reduce((sum, d) => sum + d, 0) / durations.length,
+      durations.reduce((sum, d) => sum + d, 0) / durations.length
     );
     const maxExecutionTime = Math.max(...durations);
     const minExecutionTime = Math.min(...durations);
@@ -139,17 +142,17 @@ export async function GET(
     const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const last24hExecutions = completedExecutions.filter(
-      e => new Date(e.startedAt) >= last24h,
+      e => new Date(e.startedAt) >= last24h
     );
     const last7dExecutions = completedExecutions.filter(
-      e => new Date(e.startedAt) >= last7d,
+      e => new Date(e.startedAt) >= last7d
     );
 
     const last24hAvgTime =
       last24hExecutions.length > 0
         ? Math.round(
             last24hExecutions.reduce((sum, e) => sum + (e.durationMs || 0), 0) /
-              last24hExecutions.length,
+              last24hExecutions.length
           )
         : 0;
 
@@ -157,7 +160,7 @@ export async function GET(
       last7dExecutions.length > 0
         ? Math.round(
             last7dExecutions.reduce((sum, e) => sum + (e.durationMs || 0), 0) /
-              last7dExecutions.length,
+              last7dExecutions.length
           )
         : 0;
 
@@ -180,10 +183,13 @@ export async function GET(
 
     return NextResponse.json({ usage });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/admin/workflows/:workflowId/resource-usage]', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/admin/workflows/:workflowId/resource-usage]',
+      error
+    );
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

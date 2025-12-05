@@ -160,7 +160,7 @@ export function CharterTools({
         tool =>
           tool.name.toLowerCase().includes(query) ||
           tool.description.toLowerCase().includes(query) ||
-          category.toLowerCase().includes(query),
+          category.toLowerCase().includes(query)
       );
 
       if (matchingTools.length > 0) {
@@ -185,7 +185,7 @@ export function CharterTools({
 
       onChange(updated);
     },
-    [selectedTools, onChange, disabled, isLoading],
+    [selectedTools, onChange, disabled, isLoading]
   );
 
   // Handle selecting/deselecting all tools in a category
@@ -198,7 +198,7 @@ export function CharterTools({
       const categoryTools = toolsByCategory.get(category) || [];
       const categoryToolNames = categoryTools.map(t => t.name);
       const allSelected = categoryToolNames.every(name =>
-        selectedTools.includes(name),
+        selectedTools.includes(name)
       );
 
       const updated = allSelected
@@ -207,7 +207,7 @@ export function CharterTools({
 
       onChange(updated);
     },
-    [toolsByCategory, selectedTools, onChange, disabled, isLoading],
+    [toolsByCategory, selectedTools, onChange, disabled, isLoading]
   );
 
   // Handle select all / deselect all
@@ -218,7 +218,7 @@ export function CharterTools({
 
     const allToolNames = availableTools.map(t => t.name);
     const allSelected = allToolNames.every(name =>
-      selectedTools.includes(name),
+      selectedTools.includes(name)
     );
 
     onChange(allSelected ? [] : allToolNames);
@@ -292,7 +292,7 @@ export function CharterTools({
 
             const categoryToolNames = tools.map(t => t.name);
             const categorySelectedCount = categoryToolNames.filter(name =>
-              selectedTools.includes(name),
+              selectedTools.includes(name)
             ).length;
             const categoryAllSelected =
               categorySelectedCount === categoryToolNames.length &&
@@ -343,7 +343,7 @@ export function CharterTools({
                               : 'border-border bg-background hover:bg-accent/50',
                             disabled || isLoading
                               ? 'cursor-not-allowed opacity-50'
-                              : 'cursor-pointer',
+                              : 'cursor-pointer'
                           )}
                           onClick={() => handleToolToggle(tool.name)}
                         >

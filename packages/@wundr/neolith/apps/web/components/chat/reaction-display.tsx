@@ -94,7 +94,7 @@ const ReactionBadge = memo(function ReactionBadge({
     }
 
     const names = reaction.users.map(
-      user => user.displayName || user.name || 'Unknown User',
+      user => user.displayName || user.name || 'Unknown User'
     );
 
     // For 1-5 users, show all names
@@ -121,10 +121,12 @@ const ReactionBadge = memo(function ReactionBadge({
       e.stopPropagation();
       onClick();
     },
-    [onClick],
+    [onClick]
   );
 
-  const reactionCount = Number.isNaN(reaction.count) ? 0 : reaction.count ?? 0;
+  const reactionCount = Number.isNaN(reaction.count)
+    ? 0
+    : (reaction.count ?? 0);
 
   return (
     <Tooltip>
@@ -136,7 +138,7 @@ const ReactionBadge = memo(function ReactionBadge({
             'flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
             reaction.hasReacted
               ? 'border-primary/50 bg-primary/10 text-primary hover:border-primary hover:bg-primary/20 shadow-sm'
-              : 'border-border bg-muted/50 hover:border-muted-foreground/50 hover:bg-muted',
+              : 'border-border bg-muted/50 hover:border-muted-foreground/50 hover:bg-muted'
           )}
           aria-label={`${reaction.emoji} reaction, ${reactionCount} ${reactionCount === 1 ? 'person' : 'people'}`}
         >

@@ -76,7 +76,7 @@ export async function GET(_request: Request, context: RouteContext) {
     console.error('Error fetching password policy:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -96,7 +96,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (!parseResult.success) {
       return NextResponse.json(
         { error: 'Invalid input', details: parseResult.error.flatten() },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -162,7 +162,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     console.error('Error updating password policy:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

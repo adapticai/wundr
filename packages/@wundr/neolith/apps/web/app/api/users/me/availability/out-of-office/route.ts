@@ -22,7 +22,7 @@ export async function PUT(request: Request) {
     if (!validation.success) {
       return NextResponse.json(
         { error: 'Invalid input', details: validation.error.errors },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -31,7 +31,7 @@ export async function PUT(request: Request) {
     if (new Date(startDate) >= new Date(endDate)) {
       return NextResponse.json(
         { error: 'End date must be after start date' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -61,7 +61,7 @@ export async function PUT(request: Request) {
     console.error('Error updating out of office settings:', error);
     return NextResponse.json(
       { error: 'Failed to update out of office settings' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

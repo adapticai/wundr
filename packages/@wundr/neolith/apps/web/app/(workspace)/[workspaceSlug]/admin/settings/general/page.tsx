@@ -131,18 +131,18 @@ export default function GeneralSettingsPage() {
       setDefaultChannelId(extendedSettings.defaultChannelId || '');
       setDefaultTimezone(
         extendedSettings.defaultTimezone ||
-          Intl.DateTimeFormat().resolvedOptions().timeZone,
+          Intl.DateTimeFormat().resolvedOptions().timeZone
       );
       setDefaultLanguage(extendedSettings.defaultLanguage || 'en');
       setAllowDiscovery(extendedSettings.allowDiscovery || false);
-      setRequireApprovalToJoin(
-        extendedSettings.requireApprovalToJoin ?? true,
-      );
+      setRequireApprovalToJoin(extendedSettings.requireApprovalToJoin ?? true);
       setAllowGuestAccess(extendedSettings.allowGuestAccess || false);
       setMessageRetentionDays(
-        extendedSettings.messageRetentionDays?.toString() || '',
+        extendedSettings.messageRetentionDays?.toString() || ''
       );
-      setFileRetentionDays(extendedSettings.fileRetentionDays?.toString() || '');
+      setFileRetentionDays(
+        extendedSettings.fileRetentionDays?.toString() || ''
+      );
     }
   }, [settings]);
 
@@ -230,7 +230,7 @@ export default function GeneralSettingsPage() {
         }
       }
     },
-    [workspaceSlug, toast],
+    [workspaceSlug, toast]
   );
 
   const handleSaveIdentity = useCallback(async () => {
@@ -388,7 +388,7 @@ export default function GeneralSettingsPage() {
         `/api/workspaces/${workspaceSlug}/admin/settings/delete`,
         {
           method: 'DELETE',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -434,7 +434,7 @@ export default function GeneralSettingsPage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ newOwnerId: transferUserId }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -520,7 +520,7 @@ export default function GeneralSettingsPage() {
                 <div
                   className={cn(
                     'h-16 w-16 rounded-lg border-2 border-dashed border-muted-foreground/25',
-                    'flex items-center justify-center overflow-hidden bg-muted',
+                    'flex items-center justify-center overflow-hidden bg-muted'
                   )}
                 >
                   {icon ? (
@@ -787,13 +787,13 @@ export default function GeneralSettingsPage() {
               onClick={() => setAllowDiscovery(!allowDiscovery)}
               className={cn(
                 'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-                allowDiscovery ? 'bg-primary' : 'bg-muted',
+                allowDiscovery ? 'bg-primary' : 'bg-muted'
               )}
             >
               <span
                 className={cn(
                   'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-                  allowDiscovery ? 'translate-x-6' : 'translate-x-1',
+                  allowDiscovery ? 'translate-x-6' : 'translate-x-1'
                 )}
               />
             </Button>
@@ -886,9 +886,7 @@ export default function GeneralSettingsPage() {
         </CardHeader>
         <CardContent className='space-y-6'>
           <div className='space-y-2'>
-            <Label htmlFor='message-retention'>
-              Message Retention (days)
-            </Label>
+            <Label htmlFor='message-retention'>Message Retention (days)</Label>
             <Input
               id='message-retention'
               type='number'
@@ -960,7 +958,7 @@ export default function GeneralSettingsPage() {
                   };
                   if (extendedSettings.createdAt) {
                     return new Date(
-                      extendedSettings.createdAt,
+                      extendedSettings.createdAt
                     ).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',

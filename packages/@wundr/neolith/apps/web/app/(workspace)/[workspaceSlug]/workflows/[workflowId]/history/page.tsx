@@ -42,43 +42,46 @@ export default function WorkflowHistoryPage() {
     if (workflow) {
       setPageHeader(
         `${workflow.name} - Execution History`,
-        'View detailed logs and execution history for this workflow',
+        'View detailed logs and execution history for this workflow'
       );
     }
   }, [workflow, setPageHeader]);
 
   // Export handler
-  const handleExport = useCallback((executions: WorkflowExecution[]) => {
-    const exportData = {
-      workflowId,
-      workflowName: workflow?.name,
-      exportedAt: new Date().toISOString(),
-      executionCount: executions.length,
-      executions: executions.map(execution => ({
-        id: execution.id,
-        status: execution.status,
-        startedAt: execution.startedAt,
-        completedAt: execution.completedAt,
-        duration: execution.duration,
-        triggeredBy: execution.triggeredBy,
-        actionResults: execution.actionResults,
-        triggerData: execution.triggerData,
-        error: execution.error,
-      })),
-    };
+  const handleExport = useCallback(
+    (executions: WorkflowExecution[]) => {
+      const exportData = {
+        workflowId,
+        workflowName: workflow?.name,
+        exportedAt: new Date().toISOString(),
+        executionCount: executions.length,
+        executions: executions.map(execution => ({
+          id: execution.id,
+          status: execution.status,
+          startedAt: execution.startedAt,
+          completedAt: execution.completedAt,
+          duration: execution.duration,
+          triggeredBy: execution.triggeredBy,
+          actionResults: execution.actionResults,
+          triggerData: execution.triggerData,
+          error: execution.error,
+        })),
+      };
 
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `workflow-${workflowId}-history-${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, [workflow, workflowId]);
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `workflow-${workflowId}-history-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+    [workflow, workflowId]
+  );
 
   // Loading State
   if (workflowLoading) {
@@ -220,9 +223,8 @@ interface StatsCardProps {
 }
 
 function StatsCard({ label, value, trend, isTime = false }: StatsCardProps) {
-  const displayValue = isTime && typeof value === 'number'
-    ? formatDuration(value)
-    : value;
+  const displayValue =
+    isTime && typeof value === 'number' ? formatDuration(value) : value;
 
   return (
     <div className='rounded-lg border bg-card p-6'>
@@ -250,16 +252,16 @@ function StatsCard({ label, value, trend, isTime = false }: StatsCardProps) {
 
 function calculateAverageDuration(executions: WorkflowExecution[]): number {
   const completedExecutions = executions.filter(
-    e => e.status === 'completed' && e.duration,
+    e => e.status === 'completed' && e.duration
   );
 
   if (completedExecutions.length === 0) {
-return 0;
-}
+    return 0;
+  }
 
   const totalDuration = completedExecutions.reduce(
     (sum, e) => sum + (e.duration || 0),
-    0,
+    0
   );
 
   return Math.round(totalDuration / completedExecutions.length);
@@ -267,8 +269,8 @@ return 0;
 
 function formatDuration(ms: number): string {
   if (ms === 0) {
-return '0ms';
-}
+    return '0ms';
+  }
   if (ms < 1000) {
     return `${ms}ms`;
   }

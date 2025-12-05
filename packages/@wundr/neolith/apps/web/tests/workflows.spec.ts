@@ -351,7 +351,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
 
     test('should display workflow description', async ({ page }) => {
       const description = page.locator(
-        'text=Send welcome message to new users',
+        'text=Send welcome message to new users'
       );
       await expect(description).toBeVisible();
     });
@@ -773,7 +773,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
               ],
             }),
           });
-        },
+        }
       );
 
       const templatesBtn = page.locator('button:has-text("Templates")').first();
@@ -808,7 +808,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
               ],
             }),
           });
-        },
+        }
       );
 
       const templatesBtn = page.locator('button:has-text("Templates")').first();
@@ -842,7 +842,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
               ],
             }),
           });
-        },
+        }
       );
 
       const templatesBtn = page.locator('button:has-text("Templates")').first();
@@ -904,7 +904,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
               ],
             }),
           });
-        },
+        }
       );
 
       const templatesBtn = page.locator('button:has-text("Templates")').first();
@@ -1059,7 +1059,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
               pagination: { hasMore: false, cursor: null },
             }),
           });
-        },
+        }
       );
 
       const historyBtn = page.locator('button:has-text("History")').first();
@@ -1154,7 +1154,7 @@ test.describe('Workflows Page - Full Test Suite', () => {
         err =>
           !err.includes('favicon') &&
           !err.includes('Extension') &&
-          !err.includes('chrome-extension'),
+          !err.includes('chrome-extension')
       );
 
       expect(criticalErrors).toHaveLength(0);

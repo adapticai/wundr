@@ -15,13 +15,22 @@ export { KPICard } from './kpi-card';
 export type { KPICardProps, KPITrend } from './kpi-card';
 
 export { SparklineChart } from './sparkline-chart';
-export type { SparklineChartProps, SparklineDataPoint } from './sparkline-chart';
+export type {
+  SparklineChartProps,
+  SparklineDataPoint,
+} from './sparkline-chart';
 
 export { ProgressRing, ProgressRingGroup } from './progress-ring';
-export type { ProgressRingProps, ProgressRingGroupProps } from './progress-ring';
+export type {
+  ProgressRingProps,
+  ProgressRingGroupProps,
+} from './progress-ring';
 
 export { StatComparisonCard } from './stat-comparison-card';
-export type { StatComparisonCardProps, ComparisonPeriod } from './stat-comparison-card';
+export type {
+  StatComparisonCardProps,
+  ComparisonPeriod,
+} from './stat-comparison-card';
 
 export { RealtimeMetrics, RealtimeActivityFeed } from './realtime-metrics';
 export type {

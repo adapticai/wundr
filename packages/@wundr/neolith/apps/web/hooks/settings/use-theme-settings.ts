@@ -104,8 +104,8 @@ export function useThemeSettings(): UseThemeSettingsReturn {
   // Detect system theme preference
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() => {
     if (typeof window === 'undefined') {
-return 'light';
-}
+      return 'light';
+    }
     return window.matchMedia('(prefers-color-scheme: dark)').matches
       ? 'dark'
       : 'light';
@@ -114,8 +114,8 @@ return 'light';
   // Listen for system theme changes
   useEffect(() => {
     if (typeof window === 'undefined') {
-return;
-}
+      return;
+    }
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -149,7 +149,7 @@ return;
         appearance: updates,
       });
     },
-    [updateSettings],
+    [updateSettings]
   );
 
   // Set theme
@@ -157,7 +157,7 @@ return;
     async (theme: 'light' | 'dark' | 'system') => {
       await updateAppearance({ theme });
     },
-    [updateAppearance],
+    [updateAppearance]
   );
 
   // Toggle between light and dark mode
@@ -181,7 +181,7 @@ return;
     async (scheme: AppearanceSettings['colorScheme']) => {
       await updateAppearance({ colorScheme: scheme });
     },
-    [updateAppearance],
+    [updateAppearance]
   );
 
   // Set font size
@@ -189,7 +189,7 @@ return;
     async (size: AppearanceSettings['fontSize']) => {
       await updateAppearance({ fontSize: size });
     },
-    [updateAppearance],
+    [updateAppearance]
   );
 
   // Set density
@@ -197,7 +197,7 @@ return;
     async (density: AppearanceSettings['density']) => {
       await updateAppearance({ density });
     },
-    [updateAppearance],
+    [updateAppearance]
   );
 
   // Toggle reduced motion

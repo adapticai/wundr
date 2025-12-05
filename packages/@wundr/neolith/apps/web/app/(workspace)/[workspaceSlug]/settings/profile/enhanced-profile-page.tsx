@@ -149,14 +149,14 @@ export default function EnhancedProfilePage() {
   useEffect(() => {
     const loadProfile = async () => {
       if (!session?.user?.id) {
-return;
-}
+        return;
+      }
 
       try {
         const response = await fetch('/api/users/me');
         if (!response.ok) {
-throw new Error('Failed to fetch profile');
-}
+          throw new Error('Failed to fetch profile');
+        }
 
         const { data: user } = await response.json();
         const prefs = (user.preferences || {}) as Record<string, any>;
@@ -164,7 +164,8 @@ throw new Error('Failed to fetch profile');
         const visibility = prefs.visibility || {};
 
         // Detect timezone
-        const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const detectedTimezone =
+          Intl.DateTimeFormat().resolvedOptions().timeZone;
 
         form.reset({
           name: user.name || '',
@@ -209,43 +210,40 @@ throw new Error('Failed to fetch profile');
   }, [session, form, toast]);
 
   // Check username availability
-  const checkUsernameAvailability = useCallback(
-    async (username: string) => {
-      if (!username || username.length < PROFILE_LIMITS.USERNAME_MIN) {
-        setUsernameAvailability({
-          checking: false,
-          available: null,
-          message: '',
-        });
-        return;
-      }
+  const checkUsernameAvailability = useCallback(async (username: string) => {
+    if (!username || username.length < PROFILE_LIMITS.USERNAME_MIN) {
+      setUsernameAvailability({
+        checking: false,
+        available: null,
+        message: '',
+      });
+      return;
+    }
 
-      setUsernameAvailability({ checking: true, available: null, message: '' });
+    setUsernameAvailability({ checking: true, available: null, message: '' });
 
-      try {
-        const response = await fetch('/api/users/username/check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username }),
-        });
+    try {
+      const response = await fetch('/api/users/username/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        setUsernameAvailability({
-          checking: false,
-          available: data.available,
-          message: data.message || '',
-        });
-      } catch (error) {
-        setUsernameAvailability({
-          checking: false,
-          available: null,
-          message: 'Failed to check availability',
-        });
-      }
-    },
-    [],
-  );
+      setUsernameAvailability({
+        checking: false,
+        available: data.available,
+        message: data.message || '',
+      });
+    } catch (error) {
+      setUsernameAvailability({
+        checking: false,
+        available: null,
+        message: 'Failed to check availability',
+      });
+    }
+  }, []);
 
   // Debounced username check
   const handleUsernameChange = useCallback(
@@ -258,7 +256,7 @@ throw new Error('Failed to fetch profile');
         checkUsernameAvailability(value);
       }, 500);
     },
-    [checkUsernameAvailability],
+    [checkUsernameAvailability]
   );
 
   // Handle avatar file selection
@@ -273,12 +271,12 @@ throw new Error('Failed to fetch profile');
   }, []);
 
   const handleAvatarChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) {
-return;
-}
+      return;
+    }
 
     if (!file.type.startsWith('image/')) {
       toast({
@@ -305,18 +303,14 @@ return;
   const handleCropComplete = useCallback(
     async (croppedBlob: Blob) => {
       if (!session?.user?.id) {
-return;
-}
+        return;
+      }
 
       setIsUploadingAvatar(true);
 
       try {
         const formData = new FormData();
-        formData.append(
-          'file',
-          croppedBlob,
-          `avatar-${Date.now()}.jpg`,
-        );
+        formData.append('file', croppedBlob, `avatar-${Date.now()}.jpg`);
 
         const response = await fetch(`/api/users/${session.user.id}/avatar`, {
           method: 'POST',
@@ -350,7 +344,7 @@ return;
         }
       }
     },
-    [session?.user?.id, updateSession, toast],
+    [session?.user?.id, updateSession, toast]
   );
 
   // Drag and drop handlers
@@ -395,14 +389,14 @@ return;
         });
       }
     },
-    [handleAvatarFileSelect, toast],
+    [handleAvatarFileSelect, toast]
   );
 
   // Form submission
   const onSubmit = async (data: EnhancedProfileInput) => {
     if (!session?.user?.id) {
-return;
-}
+      return;
+    }
 
     setIsSaving(true);
 
@@ -464,30 +458,30 @@ return;
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className='flex items-center justify-center min-h-[400px]'>
+        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <h1 className="text-2xl font-bold">Profile Settings</h1>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className='text-2xl font-bold'>Profile Settings</h1>
+        <p className='mt-1 text-muted-foreground'>
           Manage your public profile and how others see you across workspaces.
         </p>
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
           {/* Profile Picture Section */}
           <Card>
             <CardHeader>
               <CardTitle>Profile Picture</CardTitle>
               <CardDescription>
-                Upload a profile picture to personalize your account. Drag and drop
-                or click to browse.
+                Upload a profile picture to personalize your account. Drag and
+                drop or click to browse.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -502,50 +496,50 @@ return;
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
               >
-                <div className="relative">
-                  <Avatar className="h-20 w-20">
+                <div className='relative'>
+                  <Avatar className='h-20 w-20'>
                     <AvatarImage
                       src={avatarPreview || undefined}
                       alt={form.watch('name') || 'User'}
                     />
-                    <AvatarFallback className="text-lg">
+                    <AvatarFallback className='text-lg'>
                       {getInitials(form.watch('name') || 'User')}
                     </AvatarFallback>
                   </Avatar>
                   {isUploadingAvatar && (
-                    <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60">
-                      <Loader2 className="h-6 w-6 animate-spin text-white" />
+                    <div className='absolute inset-0 flex items-center justify-center rounded-full bg-black/60'>
+                      <Loader2 className='h-6 w-6 animate-spin text-white' />
                     </div>
                   )}
                 </div>
 
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
+                <div className='flex-1'>
+                  <div className='flex items-center gap-3'>
                     <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
+                      type='button'
+                      variant='outline'
+                      size='sm'
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isUploadingAvatar}
                     >
-                      <Upload className="mr-2 h-4 w-4" />
+                      <Upload className='mr-2 h-4 w-4' />
                       {isUploadingAvatar ? 'Uploading...' : 'Upload Photo'}
                     </Button>
                     {isDraggingOver && (
-                      <span className="text-sm font-medium text-primary">
+                      <span className='text-sm font-medium text-primary'>
                         Drop to upload
                       </span>
                     )}
                   </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
+                  <p className='mt-2 text-xs text-muted-foreground'>
                     JPG, PNG, WebP or GIF. Max 10MB. Image will be cropped to a
                     circle.
                   </p>
                   <input
                     ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
+                    type='file'
+                    accept='image/*'
+                    className='hidden'
                     onChange={handleAvatarChange}
                     disabled={isUploadingAvatar}
                   />
@@ -562,21 +556,21 @@ return;
                 Your display name and username are visible across the platform.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className='space-y-4'>
               <FormField
                 control={form.control}
-                name="name"
+                name='name'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Display Name</FormLabel>
                     <FormControl>
-                      <div className="relative">
+                      <div className='relative'>
                         <Input
-                          placeholder="How you want to be called"
+                          placeholder='How you want to be called'
                           {...field}
                           maxLength={PROFILE_LIMITS.DISPLAY_NAME_MAX}
                         />
-                        <span className="absolute right-3 top-2.5 text-xs text-muted-foreground">
+                        <span className='absolute right-3 top-2.5 text-xs text-muted-foreground'>
                           {field.value?.length || 0}/
                           {PROFILE_LIMITS.DISPLAY_NAME_MAX}
                         </span>
@@ -592,14 +586,14 @@ return;
 
               <FormField
                 control={form.control}
-                name="username"
+                name='username'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Username / Handle</FormLabel>
                     <FormControl>
-                      <div className="relative">
+                      <div className='relative'>
                         <Input
-                          placeholder="your-username"
+                          placeholder='your-username'
                           {...field}
                           maxLength={PROFILE_LIMITS.USERNAME_MAX}
                           onChange={e => {
@@ -607,17 +601,17 @@ return;
                             handleUsernameChange(e.target.value);
                           }}
                         />
-                        <div className="absolute right-3 top-2.5 flex items-center gap-2">
+                        <div className='absolute right-3 top-2.5 flex items-center gap-2'>
                           {usernameAvailability.checking && (
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            <Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
                           )}
                           {!usernameAvailability.checking &&
                             usernameAvailability.available === true && (
-                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              <CheckCircle2 className='h-4 w-4 text-green-500' />
                             )}
                           {!usernameAvailability.checking &&
                             usernameAvailability.available === false && (
-                              <XCircle className="h-4 w-4 text-destructive" />
+                              <XCircle className='h-4 w-4 text-destructive' />
                             )}
                         </div>
                       </div>
@@ -633,19 +627,19 @@ return;
 
               <FormField
                 control={form.control}
-                name="bio"
+                name='bio'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Bio / Description</FormLabel>
                     <FormControl>
-                      <div className="relative">
+                      <div className='relative'>
                         <Textarea
-                          placeholder="Tell us a little about yourself..."
+                          placeholder='Tell us a little about yourself...'
                           rows={4}
                           {...field}
                           maxLength={PROFILE_LIMITS.BIO_MAX}
                         />
-                        <span className="absolute bottom-3 right-3 text-xs text-muted-foreground">
+                        <span className='absolute bottom-3 right-3 text-xs text-muted-foreground'>
                           {field.value?.length || 0}/{PROFILE_LIMITS.BIO_MAX}
                         </span>
                       </div>
@@ -668,16 +662,16 @@ return;
                 Help others understand your role and expertise.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className='space-y-4'>
               <FormField
                 control={form.control}
-                name="title"
+                name='title'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Title / Role</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="e.g., Senior Designer, Product Manager"
+                        placeholder='e.g., Senior Designer, Product Manager'
                         {...field}
                         maxLength={PROFILE_LIMITS.TITLE_MAX}
                       />
@@ -692,13 +686,13 @@ return;
 
               <FormField
                 control={form.control}
-                name="location"
+                name='location'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Location</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="e.g., San Francisco, CA"
+                        placeholder='e.g., San Francisco, CA'
                         {...field}
                         maxLength={PROFILE_LIMITS.LOCATION_MAX}
                       />
@@ -713,7 +707,7 @@ return;
 
               <FormField
                 control={form.control}
-                name="timezone"
+                name='timezone'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Timezone</FormLabel>
@@ -723,10 +717,10 @@ return;
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select your timezone" />
+                          <SelectValue placeholder='Select your timezone' />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="max-h-[300px]">
+                      <SelectContent className='max-h-[300px]'>
                         {TIMEZONES.map(tz => (
                           <SelectItem key={tz} value={tz}>
                             {tz.replace(/_/g, ' ')}
@@ -744,7 +738,7 @@ return;
 
               <FormField
                 control={form.control}
-                name="pronouns"
+                name='pronouns'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Pronouns (Optional)</FormLabel>
@@ -754,7 +748,7 @@ return;
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select your pronouns" />
+                          <SelectValue placeholder='Select your pronouns' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -776,12 +770,12 @@ return;
               {form.watch('pronouns') === 'custom' && (
                 <FormField
                   control={form.control}
-                  name="customPronouns"
+                  name='customPronouns'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Custom Pronouns</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., ze/zir" {...field} />
+                        <Input placeholder='e.g., ze/zir' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -791,18 +785,18 @@ return;
 
               <FormField
                 control={form.control}
-                name="statusMessage"
+                name='statusMessage'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status Message (Optional)</FormLabel>
                     <FormControl>
-                      <div className="relative">
+                      <div className='relative'>
                         <Input
-                          placeholder="e.g., On vacation, Available, In meetings"
+                          placeholder='e.g., On vacation, Available, In meetings'
                           {...field}
                           maxLength={PROFILE_LIMITS.STATUS_MESSAGE_MAX}
                         />
-                        <span className="absolute right-3 top-2.5 text-xs text-muted-foreground">
+                        <span className='absolute right-3 top-2.5 text-xs text-muted-foreground'>
                           {field.value?.length || 0}/
                           {PROFILE_LIMITS.STATUS_MESSAGE_MAX}
                         </span>
@@ -826,20 +820,20 @@ return;
                 Connect your social profiles and portfolio.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className='space-y-4'>
               <FormField
                 control={form.control}
-                name="socialLinks.linkedin"
+                name='socialLinks.linkedin'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>LinkedIn</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Link2 className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <div className='relative'>
+                        <Link2 className='absolute left-3 top-2.5 h-4 w-4 text-muted-foreground' />
                         <Input
-                          placeholder="https://linkedin.com/in/username"
+                          placeholder='https://linkedin.com/in/username'
                           {...field}
-                          className="pl-10"
+                          className='pl-10'
                         />
                       </div>
                     </FormControl>
@@ -850,17 +844,17 @@ return;
 
               <FormField
                 control={form.control}
-                name="socialLinks.github"
+                name='socialLinks.github'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>GitHub</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Link2 className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <div className='relative'>
+                        <Link2 className='absolute left-3 top-2.5 h-4 w-4 text-muted-foreground' />
                         <Input
-                          placeholder="https://github.com/username"
+                          placeholder='https://github.com/username'
                           {...field}
-                          className="pl-10"
+                          className='pl-10'
                         />
                       </div>
                     </FormControl>
@@ -871,17 +865,17 @@ return;
 
               <FormField
                 control={form.control}
-                name="socialLinks.twitter"
+                name='socialLinks.twitter'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Twitter / X</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Link2 className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <div className='relative'>
+                        <Link2 className='absolute left-3 top-2.5 h-4 w-4 text-muted-foreground' />
                         <Input
-                          placeholder="https://twitter.com/username"
+                          placeholder='https://twitter.com/username'
                           {...field}
-                          className="pl-10"
+                          className='pl-10'
                         />
                       </div>
                     </FormControl>
@@ -892,17 +886,17 @@ return;
 
               <FormField
                 control={form.control}
-                name="socialLinks.website"
+                name='socialLinks.website'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Website</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <div className='relative'>
+                        <Globe className='absolute left-3 top-2.5 h-4 w-4 text-muted-foreground' />
                         <Input
-                          placeholder="https://yourwebsite.com"
+                          placeholder='https://yourwebsite.com'
                           {...field}
-                          className="pl-10"
+                          className='pl-10'
                         />
                       </div>
                     </FormControl>
@@ -913,17 +907,17 @@ return;
 
               <FormField
                 control={form.control}
-                name="socialLinks.portfolio"
+                name='socialLinks.portfolio'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Portfolio</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <div className='relative'>
+                        <Globe className='absolute left-3 top-2.5 h-4 w-4 text-muted-foreground' />
                         <Input
-                          placeholder="https://portfolio.com"
+                          placeholder='https://portfolio.com'
                           {...field}
-                          className="pl-10"
+                          className='pl-10'
                         />
                       </div>
                     </FormControl>
@@ -942,48 +936,49 @@ return;
                 Control who can see your profile information.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className='space-y-6'>
               <FormField
                 control={form.control}
-                name="visibility.profileVisibility"
+                name='visibility.profileVisibility'
                 render={({ field }) => (
-                  <FormItem className="space-y-3">
+                  <FormItem className='space-y-3'>
                     <FormLabel>Profile Visibility</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
                         defaultValue={field.value}
-                        className="flex flex-col space-y-2"
+                        className='flex flex-col space-y-2'
                       >
-                        <div className="flex items-start space-x-3 space-y-0">
-                          <RadioGroupItem value="public" id="public" />
-                          <div className="flex-1">
-                            <Label htmlFor="public" className="font-medium">
+                        <div className='flex items-start space-x-3 space-y-0'>
+                          <RadioGroupItem value='public' id='public' />
+                          <div className='flex-1'>
+                            <Label htmlFor='public' className='font-medium'>
                               Public
                             </Label>
-                            <p className="text-sm text-muted-foreground">
+                            <p className='text-sm text-muted-foreground'>
                               Anyone can see your profile
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-start space-x-3 space-y-0">
-                          <RadioGroupItem value="workspace" id="workspace" />
-                          <div className="flex-1">
-                            <Label htmlFor="workspace" className="font-medium">
+                        <div className='flex items-start space-x-3 space-y-0'>
+                          <RadioGroupItem value='workspace' id='workspace' />
+                          <div className='flex-1'>
+                            <Label htmlFor='workspace' className='font-medium'>
                               Workspace Members Only
                             </Label>
-                            <p className="text-sm text-muted-foreground">
-                              Only members of your workspaces can see your profile
+                            <p className='text-sm text-muted-foreground'>
+                              Only members of your workspaces can see your
+                              profile
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-start space-x-3 space-y-0">
-                          <RadioGroupItem value="private" id="private" />
-                          <div className="flex-1">
-                            <Label htmlFor="private" className="font-medium">
+                        <div className='flex items-start space-x-3 space-y-0'>
+                          <RadioGroupItem value='private' id='private' />
+                          <div className='flex-1'>
+                            <Label htmlFor='private' className='font-medium'>
                               Private
                             </Label>
-                            <p className="text-sm text-muted-foreground">
+                            <p className='text-sm text-muted-foreground'>
                               Only you can see your full profile
                             </p>
                           </div>
@@ -997,16 +992,16 @@ return;
 
               <Separator />
 
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Visible Information</h4>
+              <div className='space-y-4'>
+                <h4 className='text-sm font-medium'>Visible Information</h4>
 
                 <FormField
                   control={form.control}
-                  name="visibility.showEmail"
+                  name='visibility.showEmail'
                   render={({ field }) => (
-                    <FormItem className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Show Email</FormLabel>
+                    <FormItem className='flex items-center justify-between'>
+                      <div className='space-y-0.5'>
+                        <FormLabel className='text-base'>Show Email</FormLabel>
                         <FormDescription>
                           Display your email address on your profile
                         </FormDescription>
@@ -1023,11 +1018,13 @@ return;
 
                 <FormField
                   control={form.control}
-                  name="visibility.showLocation"
+                  name='visibility.showLocation'
                   render={({ field }) => (
-                    <FormItem className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Show Location</FormLabel>
+                    <FormItem className='flex items-center justify-between'>
+                      <div className='space-y-0.5'>
+                        <FormLabel className='text-base'>
+                          Show Location
+                        </FormLabel>
                         <FormDescription>
                           Display your location on your profile
                         </FormDescription>
@@ -1044,11 +1041,11 @@ return;
 
                 <FormField
                   control={form.control}
-                  name="visibility.showBio"
+                  name='visibility.showBio'
                   render={({ field }) => (
-                    <FormItem className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Show Bio</FormLabel>
+                    <FormItem className='flex items-center justify-between'>
+                      <div className='space-y-0.5'>
+                        <FormLabel className='text-base'>Show Bio</FormLabel>
                         <FormDescription>
                           Display your bio on your profile
                         </FormDescription>
@@ -1065,11 +1062,11 @@ return;
 
                 <FormField
                   control={form.control}
-                  name="visibility.showSocialLinks"
+                  name='visibility.showSocialLinks'
                   render={({ field }) => (
-                    <FormItem className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">
+                    <FormItem className='flex items-center justify-between'>
+                      <div className='space-y-0.5'>
+                        <FormLabel className='text-base'>
                           Show Social Links
                         </FormLabel>
                         <FormDescription>
@@ -1090,26 +1087,26 @@ return;
           </Card>
 
           {/* Form Actions */}
-          <div className="flex items-center justify-between rounded-lg border bg-muted/50 p-4">
-            <div className="flex items-center gap-2">
-              <Info className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
+          <div className='flex items-center justify-between rounded-lg border bg-muted/50 p-4'>
+            <div className='flex items-center gap-2'>
+              <Info className='h-4 w-4 text-muted-foreground' />
+              <p className='text-sm text-muted-foreground'>
                 Make sure all information is accurate before saving.
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className='flex gap-3'>
               <Button
-                type="button"
-                variant="outline"
+                type='button'
+                variant='outline'
                 onClick={() => form.reset()}
                 disabled={isSaving}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSaving}>
+              <Button type='submit' disabled={isSaving}>
                 {isSaving ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                     Saving...
                   </>
                 ) : (

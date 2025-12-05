@@ -151,13 +151,48 @@ const PRIORITY_CONFIG = {
 } as const;
 
 const SORT_OPTIONS = [
-  { value: 'dueDate-asc', label: 'Due Date (Earliest First)', sortBy: 'dueDate' as const, sortOrder: 'asc' as const },
-  { value: 'dueDate-desc', label: 'Due Date (Latest First)', sortBy: 'dueDate' as const, sortOrder: 'desc' as const },
-  { value: 'priority-desc', label: 'Priority (High to Low)', sortBy: 'priority' as const, sortOrder: 'desc' as const },
-  { value: 'priority-asc', label: 'Priority (Low to High)', sortBy: 'priority' as const, sortOrder: 'asc' as const },
-  { value: 'updatedAt-desc', label: 'Recently Updated', sortBy: 'updatedAt' as const, sortOrder: 'desc' as const },
-  { value: 'title-asc', label: 'Alphabetical (A-Z)', sortBy: 'title' as const, sortOrder: 'asc' as const },
-  { value: 'title-desc', label: 'Alphabetical (Z-A)', sortBy: 'title' as const, sortOrder: 'desc' as const },
+  {
+    value: 'dueDate-asc',
+    label: 'Due Date (Earliest First)',
+    sortBy: 'dueDate' as const,
+    sortOrder: 'asc' as const,
+  },
+  {
+    value: 'dueDate-desc',
+    label: 'Due Date (Latest First)',
+    sortBy: 'dueDate' as const,
+    sortOrder: 'desc' as const,
+  },
+  {
+    value: 'priority-desc',
+    label: 'Priority (High to Low)',
+    sortBy: 'priority' as const,
+    sortOrder: 'desc' as const,
+  },
+  {
+    value: 'priority-asc',
+    label: 'Priority (Low to High)',
+    sortBy: 'priority' as const,
+    sortOrder: 'asc' as const,
+  },
+  {
+    value: 'updatedAt-desc',
+    label: 'Recently Updated',
+    sortBy: 'updatedAt' as const,
+    sortOrder: 'desc' as const,
+  },
+  {
+    value: 'title-asc',
+    label: 'Alphabetical (A-Z)',
+    sortBy: 'title' as const,
+    sortOrder: 'asc' as const,
+  },
+  {
+    value: 'title-desc',
+    label: 'Alphabetical (Z-A)',
+    sortBy: 'title' as const,
+    sortOrder: 'desc' as const,
+  },
 ] as const;
 
 // =============================================================================
@@ -170,7 +205,7 @@ export default function TasksPage() {
 
   // State
   const [statusFilter, setStatusFilter] = useState<TaskStatusType | 'all'>(
-    'all',
+    'all'
   );
   const [priorityFilter, setPriorityFilter] = useState<
     TaskPriorityType | 'all'
@@ -182,7 +217,8 @@ export default function TasksPage() {
   const [sortValue, setSortValue] = useState('updatedAt-desc');
 
   // Get sort parameters from selected value
-  const currentSortOption = SORT_OPTIONS.find(opt => opt.value === sortValue) || SORT_OPTIONS[4];
+  const currentSortOption =
+    SORT_OPTIONS.find(opt => opt.value === sortValue) || SORT_OPTIONS[4];
 
   // Hooks
   const { tasks, isLoading, error, refetch, pagination } = useTasks(
@@ -196,7 +232,7 @@ export default function TasksPage() {
       limit: pageSize,
       sortBy: currentSortOption.sortBy,
       sortOrder: currentSortOption.sortOrder,
-    },
+    }
   );
 
   // Stats
@@ -466,7 +502,6 @@ export default function TasksPage() {
         </div>
       )}
 
-
       {/* Pagination */}
       {!isLoading && !error && pagination && pagination.totalPages > 1 && (
         <div className='space-y-4'>
@@ -474,12 +509,20 @@ export default function TasksPage() {
           <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
             <div className='text-sm text-muted-foreground'>
               Showing {(pagination.page - 1) * pagination.limit + 1}-
-              {Math.min(pagination.page * pagination.limit, pagination.totalCount)} of{' '}
-              {pagination.totalCount} tasks
+              {Math.min(
+                pagination.page * pagination.limit,
+                pagination.totalCount
+              )}{' '}
+              of {pagination.totalCount} tasks
             </div>
             <div className='flex items-center gap-2'>
-              <span className='text-sm text-muted-foreground'>Items per page:</span>
-              <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+              <span className='text-sm text-muted-foreground'>
+                Items per page:
+              </span>
+              <Select
+                value={String(pageSize)}
+                onValueChange={handlePageSizeChange}
+              >
                 <SelectTrigger className='w-[80px]'>
                   <SelectValue />
                 </SelectTrigger>
@@ -498,16 +541,23 @@ export default function TasksPage() {
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={() => pagination.hasPreviousPage && handlePageChange(currentPage - 1)}
+                  onClick={() =>
+                    pagination.hasPreviousPage &&
+                    handlePageChange(currentPage - 1)
+                  }
                   className={cn(
-                    !pagination.hasPreviousPage && 'pointer-events-none opacity-50',
-                    'cursor-pointer',
+                    !pagination.hasPreviousPage &&
+                      'pointer-events-none opacity-50',
+                    'cursor-pointer'
                   )}
                 />
               </PaginationItem>
 
               {/* Page Numbers */}
-              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => {
+              {Array.from(
+                { length: pagination.totalPages },
+                (_, i) => i + 1
+              ).map(page => {
                 // Show first page, last page, current page, and pages around current
                 const showPage =
                   page === 1 ||
@@ -515,9 +565,11 @@ export default function TasksPage() {
                   (page >= currentPage - 1 && page <= currentPage + 1);
 
                 // Show ellipsis
-                const showEllipsisBefore = page === currentPage - 2 && currentPage > 3;
+                const showEllipsisBefore =
+                  page === currentPage - 2 && currentPage > 3;
                 const showEllipsisAfter =
-                  page === currentPage + 2 && currentPage < pagination.totalPages - 2;
+                  page === currentPage + 2 &&
+                  currentPage < pagination.totalPages - 2;
 
                 if (showEllipsisBefore || showEllipsisAfter) {
                   return (
@@ -546,10 +598,12 @@ export default function TasksPage() {
 
               <PaginationItem>
                 <PaginationNext
-                  onClick={() => pagination.hasNextPage && handlePageChange(currentPage + 1)}
+                  onClick={() =>
+                    pagination.hasNextPage && handlePageChange(currentPage + 1)
+                  }
                   className={cn(
                     !pagination.hasNextPage && 'pointer-events-none opacity-50',
-                    'cursor-pointer',
+                    'cursor-pointer'
                   )}
                 />
               </PaginationItem>
@@ -670,9 +724,7 @@ function CreateTaskDialog({
     } catch (error) {
       console.error('Failed to create task:', error);
       // You could add toast notification here
-      alert(
-        error instanceof Error ? error.message : 'Failed to create task',
-      );
+      alert(error instanceof Error ? error.message : 'Failed to create task');
     } finally {
       setIsSubmitting(false);
     }
@@ -753,7 +805,7 @@ function CreateTaskDialog({
                             <SelectItem key={value} value={value}>
                               {config.label}
                             </SelectItem>
-                          ),
+                          )
                         )}
                       </SelectContent>
                     </Select>
@@ -785,7 +837,7 @@ function CreateTaskDialog({
                             <SelectItem key={value} value={value}>
                               {config.label}
                             </SelectItem>
-                          ),
+                          )
                         )}
                       </SelectContent>
                     </Select>
@@ -843,11 +895,7 @@ function CreateTaskDialog({
                   <FormItem>
                     <FormLabel>Due Date</FormLabel>
                     <FormControl>
-                      <Input
-                        type='date'
-                        {...field}
-                        disabled={isSubmitting}
-                      />
+                      <Input type='date' {...field} disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -960,7 +1008,7 @@ function TaskCard({ task }: TaskCardProps) {
           className={cn(
             'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
             statusConfig.bgColor,
-            statusConfig.color,
+            statusConfig.color
           )}
         >
           {statusConfig.label}

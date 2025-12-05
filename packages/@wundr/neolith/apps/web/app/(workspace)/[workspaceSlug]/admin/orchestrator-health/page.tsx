@@ -29,7 +29,7 @@ export default function OrchestratorHealthDashboardPage() {
   useEffect(() => {
     setPageHeader(
       'OrchestratorHealth Dashboard',
-      'Monitor the health and status of all Orchestrators in your workspace',
+      'Monitor the health and status of all Orchestrators in your workspace'
     );
   }, [setPageHeader]);
 
@@ -46,19 +46,19 @@ export default function OrchestratorHealthDashboardPage() {
         return orchestratorList.filter(
           orchestrator =>
             orchestrator.status === 'ONLINE' &&
-            orchestrator.connectionStatus === 'connected',
+            orchestrator.connectionStatus === 'connected'
         );
       case 'offline':
         return orchestratorList.filter(
           orchestrator =>
             orchestrator.status !== 'ONLINE' ||
-            orchestrator.connectionStatus === 'disconnected',
+            orchestrator.connectionStatus === 'disconnected'
         );
       case 'unhealthy':
         return orchestratorList.filter(
           orchestrator =>
             orchestrator.daemonHealth === 'unhealthy' ||
-            orchestrator.daemonHealth === 'degraded',
+            orchestrator.daemonHealth === 'degraded'
         );
       default:
         return orchestratorList;
@@ -71,9 +71,9 @@ export default function OrchestratorHealthDashboardPage() {
       orchestratorList.filter(
         orchestrator =>
           orchestrator.daemonHealth === 'unhealthy' ||
-          orchestrator.daemonHealth === 'degraded',
+          orchestrator.daemonHealth === 'degraded'
       ).length,
-    [orchestratorList],
+    [orchestratorList]
   );
 
   // Handle manual health check
@@ -84,7 +84,7 @@ export default function OrchestratorHealthDashboardPage() {
         `/api/workspaces/${workspaceSlug}/orchestrators/health-check`,
         {
           method: 'POST',
-        },
+        }
       );
       await refetch();
     } catch {
@@ -99,7 +99,7 @@ export default function OrchestratorHealthDashboardPage() {
     (orchestratorId: string) => {
       window.location.href = `/${workspaceSlug}/orchestrators/${orchestratorId}`;
     },
-    [workspaceSlug],
+    [workspaceSlug]
   );
 
   // Handle daemon restart
@@ -115,7 +115,7 @@ export default function OrchestratorHealthDashboardPage() {
         // Silently fail
       }
     },
-    [refetch],
+    [refetch]
   );
 
   return (
@@ -125,7 +125,7 @@ export default function OrchestratorHealthDashboardPage() {
         <div
           className={cn(
             'mb-6 flex items-center gap-3 rounded-lg border px-4 py-3',
-            'border-red-500/50 bg-red-50 dark:bg-red-900/10',
+            'border-red-500/50 bg-red-50 dark:bg-red-900/10'
           )}
           role='alert'
         >
@@ -147,7 +147,7 @@ export default function OrchestratorHealthDashboardPage() {
             className={cn(
               'rounded-md px-3 py-1.5 text-sm font-medium',
               'bg-red-100 text-red-800 hover:bg-red-200',
-              'dark:bg-red-900/30 dark:text-red-200 dark:hover:bg-red-900/50',
+              'dark:bg-red-900/30 dark:text-red-200 dark:hover:bg-red-900/50'
             )}
           >
             View Issues
@@ -168,7 +168,7 @@ export default function OrchestratorHealthDashboardPage() {
                 'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
                 filter === option.value
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground',
+                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
               )}
             >
               {option.label}
@@ -189,7 +189,7 @@ export default function OrchestratorHealthDashboardPage() {
           className={cn(
             'inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium',
             'transition-colors hover:bg-accent',
-            'disabled:cursor-not-allowed disabled:opacity-50',
+            'disabled:cursor-not-allowed disabled:opacity-50'
           )}
         >
           <RefreshIcon
@@ -212,7 +212,7 @@ export default function OrchestratorHealthDashboardPage() {
             orchestratorList.filter(
               orchestrator =>
                 orchestrator.status === 'ONLINE' &&
-                orchestrator.connectionStatus === 'connected',
+                orchestrator.connectionStatus === 'connected'
             ).length
           }
           icon={CheckCircleIcon}
@@ -222,7 +222,7 @@ export default function OrchestratorHealthDashboardPage() {
           label='Degraded'
           value={
             orchestratorList.filter(
-              orchestrator => orchestrator.daemonHealth === 'degraded',
+              orchestrator => orchestrator.daemonHealth === 'degraded'
             ).length
           }
           icon={AlertTriangleIcon}
@@ -232,7 +232,7 @@ export default function OrchestratorHealthDashboardPage() {
           label='Unhealthy'
           value={
             orchestratorList.filter(
-              orchestrator => orchestrator.daemonHealth === 'unhealthy',
+              orchestrator => orchestrator.daemonHealth === 'unhealthy'
             ).length
           }
           icon={XCircleIcon}

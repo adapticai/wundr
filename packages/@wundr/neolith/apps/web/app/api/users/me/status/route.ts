@@ -33,7 +33,10 @@ export async function GET() {
     const currentStatus = prefs.currentStatus || null;
 
     // Check if status has expired
-    if (currentStatus?.expiresAt && new Date(currentStatus.expiresAt) < new Date()) {
+    if (
+      currentStatus?.expiresAt &&
+      new Date(currentStatus.expiresAt) < new Date()
+    ) {
       // Clear expired status
       await prisma.user.update({
         where: { id: session.user.id },
@@ -53,7 +56,7 @@ export async function GET() {
     console.error('Error fetching user status:', error);
     return NextResponse.json(
       { error: 'Failed to fetch status' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -76,7 +79,7 @@ export async function PUT(request: Request) {
     if (!validation.success) {
       return NextResponse.json(
         { error: 'Invalid input', details: validation.error.errors },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -106,7 +109,7 @@ export async function PUT(request: Request) {
     const updatedHistory = [
       newStatus,
       ...statusHistory.filter(
-        (s: any) => s.emoji !== emoji || s.message !== message,
+        (s: any) => s.emoji !== emoji || s.message !== message
       ),
     ].slice(0, 20);
 
@@ -127,7 +130,7 @@ export async function PUT(request: Request) {
     console.error('Error updating user status:', error);
     return NextResponse.json(
       { error: 'Failed to update status' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -170,7 +173,7 @@ export async function DELETE() {
     console.error('Error clearing user status:', error);
     return NextResponse.json(
       { error: 'Failed to clear status' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

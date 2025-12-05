@@ -39,7 +39,7 @@ export function TypingIndicator({
     <div
       className={cn(
         'flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground',
-        className,
+        className
       )}
     >
       <TypingDots />

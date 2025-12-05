@@ -63,7 +63,7 @@ export function DelegationRules({ orchestratorId }: DelegationRulesProps) {
       // In a real implementation, this would fetch from an API
       // For now, we'll use localStorage as a mock
       const savedRules = localStorage.getItem(
-        `delegation_rules_${orchestratorId}`,
+        `delegation_rules_${orchestratorId}`
       );
       if (savedRules) {
         setRules(JSON.parse(savedRules));
@@ -82,7 +82,7 @@ export function DelegationRules({ orchestratorId }: DelegationRulesProps) {
       // For now, we'll use localStorage as a mock
       localStorage.setItem(
         `delegation_rules_${orchestratorId}`,
-        JSON.stringify(rules),
+        JSON.stringify(rules)
       );
 
       toast({
@@ -123,7 +123,7 @@ export function DelegationRules({ orchestratorId }: DelegationRulesProps) {
 
   const updateRule = (id: string, updates: Partial<DelegationRule>) => {
     setRules(
-      rules.map(rule => (rule.id === id ? { ...rule, ...updates } : rule)),
+      rules.map(rule => (rule.id === id ? { ...rule, ...updates } : rule))
     );
     setHasChanges(true);
   };
@@ -136,8 +136,8 @@ export function DelegationRules({ orchestratorId }: DelegationRulesProps) {
   const toggleRule = (id: string) => {
     setRules(
       rules.map(rule =>
-        rule.id === id ? { ...rule, enabled: !rule.enabled } : rule,
-      ),
+        rule.id === id ? { ...rule, enabled: !rule.enabled } : rule
+      )
     );
     setHasChanges(true);
   };
@@ -189,7 +189,12 @@ export function DelegationRules({ orchestratorId }: DelegationRulesProps) {
             <p className='text-xs text-muted-foreground mt-1'>
               Add rules to automate task delegation
             </p>
-            <Button variant='outline' size='sm' onClick={addRule} className='mt-4'>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={addRule}
+              className='mt-4'
+            >
               <Plus className='h-4 w-4 mr-2' />
               Create First Rule
             </Button>
@@ -240,7 +245,10 @@ export function DelegationRules({ orchestratorId }: DelegationRulesProps) {
                           value={rule.condition.type}
                           onValueChange={value =>
                             updateRule(rule.id, {
-                              condition: { ...rule.condition, type: value as any },
+                              condition: {
+                                ...rule.condition,
+                                type: value as any,
+                              },
                             })
                           }
                         >
@@ -337,11 +345,16 @@ export function DelegationRules({ orchestratorId }: DelegationRulesProps) {
                             checked={rule.action.autoApprove}
                             onCheckedChange={checked =>
                               updateRule(rule.id, {
-                                action: { ...rule.action, autoApprove: checked },
+                                action: {
+                                  ...rule.action,
+                                  autoApprove: checked,
+                                },
                               })
                             }
                           />
-                          <Label className='text-sm'>Auto-approve delegation</Label>
+                          <Label className='text-sm'>
+                            Auto-approve delegation
+                          </Label>
                         </div>
                       </div>
                     </div>

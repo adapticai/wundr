@@ -57,7 +57,7 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
   }
 
   const membership = userOrganizations.find(
-    m => m.organizationId === orchestrator.organizationId,
+    m => m.organizationId === orchestrator.organizationId
   );
 
   return { orchestrator, role: membership?.role ?? null };
@@ -86,7 +86,7 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -95,9 +95,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.UNAUTHORIZED,
-          'Authentication required',
+          'Authentication required'
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -108,9 +108,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
-          'Invalid charter ID format',
+          'Invalid charter ID format'
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -122,9 +122,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
-          'Invalid JSON body',
+          'Invalid JSON body'
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -137,9 +137,9 @@ export async function POST(
           'Validation failed',
           {
             errors: parseResult.error.flatten().fieldErrors,
-          },
+          }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -164,24 +164,24 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VERSION_NOT_FOUND,
-          `Target version ${input.targetVersion} not found`,
+          `Target version ${input.targetVersion} not found`
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Check access and permissions
     const access = await checkOrchestratorAccess(
       targetVersion.orchestratorId,
-      session.user.id,
+      session.user.id
     );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.FORBIDDEN,
-          'Orchestrator not found or access denied',
+          'Orchestrator not found or access denied'
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -190,9 +190,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.FORBIDDEN,
-          'Insufficient permissions to rollback charter version',
+          'Insufficient permissions to rollback charter version'
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -230,7 +230,7 @@ export async function POST(
           orchestratorId: targetVersion.orchestratorId,
           version: nextVersion,
           charterData: JSON.parse(
-            JSON.stringify(targetVersion.charterData),
+            JSON.stringify(targetVersion.charterData)
           ) as Prisma.InputJsonValue,
           changeLog,
           createdBy: session.user.id,
@@ -264,7 +264,7 @@ export async function POST(
         message: `Successfully rolled back to version ${input.targetVersion}`,
         rolledBackFrom: input.targetVersion,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/charters/:charterId/rollback] Error:', error);
@@ -277,18 +277,18 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.DUPLICATE_VERSION,
-          'A charter version with this number already exists',
+          'A charter version with this number already exists'
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
       createErrorResponse(
         CHARTER_ERROR_CODES.INTERNAL_ERROR,
-        'An internal error occurred',
+        'An internal error occurred'
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

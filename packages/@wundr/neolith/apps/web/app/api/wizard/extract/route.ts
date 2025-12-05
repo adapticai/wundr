@@ -109,9 +109,7 @@ const workspaceSchema = z.object({
   teamSize: z
     .enum(['small', 'medium', 'large'])
     .optional()
-    .describe(
-      'Team size category: small (1-10), medium (10-50), large (50+)',
-    ),
+    .describe('Team size category: small (1-10), medium (10-50), large (50+)'),
   departments: z
     .array(z.string())
     .optional()
@@ -131,7 +129,7 @@ const orchestratorSchema = z.object({
     .string()
     .min(1, 'Role is required')
     .describe(
-      'Primary role or discipline (e.g., Customer Support, Research Analyst)',
+      'Primary role or discipline (e.g., Customer Support, Research Analyst)'
     ),
   description: z
     .string()
@@ -141,10 +139,7 @@ const orchestratorSchema = z.object({
     .array(z.string())
     .optional()
     .describe('List of key capabilities or skills'),
-  goals: z
-    .array(z.string())
-    .optional()
-    .describe('Primary objectives or goals'),
+  goals: z.array(z.string()).optional().describe('Primary objectives or goals'),
   channels: z
     .array(z.string())
     .optional()
@@ -203,7 +198,7 @@ const workflowSchema = z.object({
       z.object({
         action: z.string().describe('The action type or name'),
         description: z.string().describe('What this action does'),
-      }),
+      })
     )
     .min(1, 'At least one action is required')
     .describe('List of workflow actions to perform'),
@@ -329,7 +324,7 @@ function getSchemaForEntityType(entityType: EntityType): z.ZodSchema {
 async function extractWithStructuredOutput(
   conversationHistory: ChatMessage[],
   entityType: EntityType,
-  provider: 'openai' | 'anthropic',
+  provider: 'openai' | 'anthropic'
 ): Promise<ExtractedData> {
   // Get system prompt and schema
   const systemPrompt = buildExtractionPrompt(entityType);
@@ -368,9 +363,7 @@ async function extractWithStructuredOutput(
       if (error.message.includes('timeout')) {
         throw new Error(`${provider} API request timed out`);
       }
-      throw new Error(
-        `${provider} extraction failed: ${error.message}`,
-      );
+      throw new Error(`${provider} extraction failed: ${error.message}`);
     }
     throw new Error(`${provider} extraction failed with unknown error`);
   }
@@ -381,7 +374,7 @@ async function extractWithStructuredOutput(
  */
 function validateExtractedData(
   entityType: EntityType,
-  data: unknown,
+  data: unknown
 ): { valid: boolean; data?: ExtractedData; errors?: unknown } {
   const schemas: Record<EntityType, z.ZodSchema> = {
     workspace: workspaceSchema,
@@ -447,7 +440,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -458,7 +451,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: { message: 'Invalid JSON body' } },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -466,7 +459,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!body || typeof body !== 'object') {
       return NextResponse.json(
         { error: { message: 'Invalid request body' } },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -489,7 +482,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             message: `Invalid entityType. Must be one of: ${validEntityTypes.join(', ')}`,
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -505,7 +498,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               'conversationHistory array is required and must not be empty',
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -514,13 +507,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (!msg.role || !msg.content || typeof msg.content !== 'string') {
         return NextResponse.json(
           { error: { message: 'Each message must have role and content' } },
-          { status: 400 },
+          { status: 400 }
         );
       }
       if (msg.role !== 'user' && msg.role !== 'assistant') {
         return NextResponse.json(
           { error: { message: 'Message role must be "user" or "assistant"' } },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -539,12 +532,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (process.env.OPENAI_API_KEY) {
         selectedProvider = 'openai';
         console.log(
-          '[POST /api/wizard/extract] Falling back to OpenAI (preferred provider not available)',
+          '[POST /api/wizard/extract] Falling back to OpenAI (preferred provider not available)'
         );
       } else if (process.env.ANTHROPIC_API_KEY) {
         selectedProvider = 'anthropic';
         console.log(
-          '[POST /api/wizard/extract] Falling back to Anthropic (OpenAI not available)',
+          '[POST /api/wizard/extract] Falling back to Anthropic (OpenAI not available)'
         );
       } else {
         return NextResponse.json(
@@ -555,13 +548,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               code: 'NO_API_KEY',
             },
           },
-          { status: 500 },
+          { status: 500 }
         );
       }
     }
 
     console.log(
-      `[POST /api/wizard/extract] Using ${selectedProvider} for ${extractReq.entityType} extraction`,
+      `[POST /api/wizard/extract] Using ${selectedProvider} for ${extractReq.entityType} extraction`
     );
 
     // Extract data using structured output (schema-validated by AI SDK)
@@ -570,7 +563,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       extractedData = await extractWithStructuredOutput(
         extractReq.conversationHistory,
         extractReq.entityType,
-        selectedProvider,
+        selectedProvider
       );
     } catch (error) {
       console.error('[POST /api/wizard/extract] Extraction error:', error);
@@ -584,20 +577,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             code: 'EXTRACTION_FAILED',
           },
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
     // Additional validation (AI SDK already validates schema, but we double-check)
     const validation = validateExtractedData(
       extractReq.entityType,
-      extractedData,
+      extractedData
     );
 
     if (!validation.valid) {
       console.error(
         '[POST /api/wizard/extract] Schema validation failed:',
-        validation.errors,
+        validation.errors
       );
       return NextResponse.json(
         {
@@ -607,12 +600,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             code: 'VALIDATION_FAILED',
           },
         },
-        { status: 422 },
+        { status: 422 }
       );
     }
 
     console.log(
-      `[POST /api/wizard/extract] Successfully extracted ${extractReq.entityType} data`,
+      `[POST /api/wizard/extract] Successfully extracted ${extractReq.entityType} data`
     );
 
     return NextResponse.json({
@@ -633,7 +626,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               : 'An internal error occurred',
         },
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

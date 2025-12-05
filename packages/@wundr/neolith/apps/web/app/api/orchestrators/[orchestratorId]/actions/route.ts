@@ -72,7 +72,7 @@ const ACTION_TO_STATUS: Record<
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -81,9 +81,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -94,9 +94,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid OrchestratorID format',
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -108,9 +108,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -121,9 +121,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -161,24 +161,24 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found',
-          ORCHESTRATOR_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Check organization membership and role
     const membership = userOrganizations.find(
-      m => m.organizationId === orchestrator.organizationId,
+      m => m.organizationId === orchestrator.organizationId
     );
 
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Access denied to this Orchestrator',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -186,9 +186,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to perform this action',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -257,9 +257,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

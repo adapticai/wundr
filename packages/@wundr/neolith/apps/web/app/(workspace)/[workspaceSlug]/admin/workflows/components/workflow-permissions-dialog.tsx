@@ -53,18 +53,18 @@ export function WorkflowPermissionsDialog({
 
   const fetchPermissions = async () => {
     if (!workflowId) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/workflows/${workflowId}/permissions`,
+        `/api/workspaces/${workspaceSlug}/admin/workflows/${workflowId}/permissions`
       );
 
       if (!response.ok) {
-throw new Error('Failed to fetch permissions');
-}
+        throw new Error('Failed to fetch permissions');
+      }
 
       const data = await response.json();
       setPermissions(data.permissions || []);
@@ -81,19 +81,17 @@ throw new Error('Failed to fetch permissions');
 
   const handleTogglePermission = (
     userId: string,
-    type: 'canExecute' | 'canEdit',
+    type: 'canExecute' | 'canEdit'
   ) => {
     setPermissions(prev =>
-      prev.map(p =>
-        p.userId === userId ? { ...p, [type]: !p[type] } : p,
-      ),
+      prev.map(p => (p.userId === userId ? { ...p, [type]: !p[type] } : p))
     );
   };
 
   const handleSave = async () => {
     if (!workflowId) {
-return;
-}
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -103,12 +101,12 @@ return;
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ permissions }),
-        },
+        }
       );
 
       if (!response.ok) {
-throw new Error('Failed to update permissions');
-}
+        throw new Error('Failed to update permissions');
+      }
 
       toast({
         title: 'Success',

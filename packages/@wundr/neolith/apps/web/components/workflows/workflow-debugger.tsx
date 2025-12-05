@@ -92,14 +92,15 @@ export function WorkflowDebugger({
   const [isPaused, setIsPaused] = useState(false);
   const [currentStep, setCurrentStep] = useState<number>(-1);
   const [breakpoints, setBreakpoints] = useState<Map<string, Breakpoint>>(
-    new Map(),
+    new Map()
   );
-  const [mockServices, setMockServices] =
-    useState<MockService[]>(DEFAULT_MOCK_SERVICES);
+  const [mockServices, setMockServices] = useState<MockService[]>(
+    DEFAULT_MOCK_SERVICES
+  );
 
   // Test data input
   const [testData, setTestData] = useState<string>(
-    JSON.stringify(getDefaultTriggerData(workflow.trigger), null, 2),
+    JSON.stringify(getDefaultTriggerData(workflow.trigger), null, 2)
   );
   const [testDataError, setTestDataError] = useState<string>('');
 
@@ -130,7 +131,7 @@ export function WorkflowDebugger({
     (
       level: 'info' | 'warn' | 'error' | 'debug',
       message: string,
-      data?: unknown,
+      data?: unknown
     ) => {
       setLogs(prev => [
         ...prev,
@@ -142,7 +143,7 @@ export function WorkflowDebugger({
         },
       ]);
     },
-    [],
+    []
   );
 
   const toggleBreakpoint = useCallback((actionId: string) => {
@@ -150,7 +151,10 @@ export function WorkflowDebugger({
       const newBreakpoints = new Map(prev);
       const existing = newBreakpoints.get(actionId);
       if (existing) {
-        newBreakpoints.set(actionId, { ...existing, enabled: !existing.enabled });
+        newBreakpoints.set(actionId, {
+          ...existing,
+          enabled: !existing.enabled,
+        });
       } else {
         newBreakpoints.set(actionId, { actionId, enabled: true });
       }
@@ -163,8 +167,8 @@ export function WorkflowDebugger({
       prev.map(service =>
         service.id === serviceId
           ? { ...service, enabled: !service.enabled }
-          : service,
-      ),
+          : service
+      )
     );
   }, []);
 
@@ -174,9 +178,7 @@ export function WorkflowDebugger({
       setTestDataError('');
       return true;
     } catch (error) {
-      setTestDataError(
-        error instanceof Error ? error.message : 'Invalid JSON',
-      );
+      setTestDataError(error instanceof Error ? error.message : 'Invalid JSON');
       return false;
     }
   }, [testData]);
@@ -185,7 +187,7 @@ export function WorkflowDebugger({
     async (
       action: ActionConfig,
       triggerData: Record<string, unknown>,
-      actionVariables: Record<string, unknown>,
+      actionVariables: Record<string, unknown>
     ): Promise<ActionResult> => {
       const startTime = Date.now();
       const result: ActionResult = {
@@ -195,7 +197,9 @@ export function WorkflowDebugger({
         startedAt: new Date().toISOString(),
       };
 
-      addLog('info', `Executing action: ${action.type}`, { actionId: action.id });
+      addLog('info', `Executing action: ${action.type}`, {
+        actionId: action.id,
+      });
 
       // Check if we should use mock services
       const mockService = mockServices.find(s => {
@@ -214,7 +218,9 @@ export function WorkflowDebugger({
       });
 
       // Simulate execution with delay
-      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+      await new Promise(resolve =>
+        setTimeout(resolve, 500 + Math.random() * 1000)
+      );
 
       try {
         let output: Record<string, unknown> = {};
@@ -222,7 +228,8 @@ export function WorkflowDebugger({
         if (mockService) {
           // Use mock response
           addLog('debug', `Using mock service: ${mockService.name}`);
-          output = (mockService.responses.default || mockService.responses) as Record<string, unknown>;
+          output = (mockService.responses.default ||
+            mockService.responses) as Record<string, unknown>;
         } else {
           // Simulate real execution (in test mode, this would still be simulated)
           switch (action.type) {
@@ -233,7 +240,7 @@ export function WorkflowDebugger({
                 content: replaceVariables(
                   action.config.message,
                   triggerData,
-                  actionVariables,
+                  actionVariables
                 ),
               };
               break;
@@ -260,7 +267,7 @@ export function WorkflowDebugger({
               const conditionResult = evaluateCondition(
                 action.config.condition,
                 triggerData,
-                actionVariables,
+                actionVariables
               );
               output = {
                 result: conditionResult,
@@ -273,7 +280,10 @@ export function WorkflowDebugger({
         }
 
         const duration = Date.now() - startTime;
-        addLog('info', `Action completed: ${action.type}`, { duration, output });
+        addLog('info', `Action completed: ${action.type}`, {
+          duration,
+          output,
+        });
 
         return {
           ...result,
@@ -286,7 +296,9 @@ export function WorkflowDebugger({
         const duration = Date.now() - startTime;
         const errorMessage =
           error instanceof Error ? error.message : 'Unknown error';
-        addLog('error', `Action failed: ${action.type}`, { error: errorMessage });
+        addLog('error', `Action failed: ${action.type}`, {
+          error: errorMessage,
+        });
 
         return {
           ...result,
@@ -297,7 +309,7 @@ export function WorkflowDebugger({
         };
       }
     },
-    [mockServices, addLog],
+    [mockServices, addLog]
   );
 
   const handleRunTest = useCallback(async () => {
@@ -329,7 +341,7 @@ export function WorkflowDebugger({
       breakpoints: new Set(
         Array.from(breakpoints.entries())
           .filter(([_, bp]) => bp.enabled)
-          .map(([id]) => id),
+          .map(([id]) => id)
       ),
     };
 
@@ -401,7 +413,8 @@ export function WorkflowDebugger({
       setExecution(newExecution);
       onExecutionComplete?.(newExecution);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       addLog('error', 'Workflow execution failed', { error: errorMessage });
       newExecution.status = 'failed';
       newExecution.completedAt = new Date().toISOString();
@@ -465,13 +478,13 @@ export function WorkflowDebugger({
           <div
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-lg',
-              testMode ? 'bg-primary/10' : 'bg-muted',
+              testMode ? 'bg-primary/10' : 'bg-muted'
             )}
           >
             <BugIcon
               className={cn(
                 'h-5 w-5',
-                testMode ? 'text-primary' : 'text-muted-foreground',
+                testMode ? 'text-primary' : 'text-muted-foreground'
               )}
             />
           </div>
@@ -521,7 +534,7 @@ export function WorkflowDebugger({
                     testDataError
                       ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
                       : 'border-input focus:border-primary focus:ring-primary',
-                    'focus:outline-none focus:ring-1',
+                    'focus:outline-none focus:ring-1'
                   )}
                   placeholder='{"message": "test", "user": {"id": "123"}}'
                 />
@@ -629,7 +642,7 @@ export function WorkflowDebugger({
                   'rounded-lg border p-3 transition-all',
                   execution && currentStep === -1
                     ? 'border-primary bg-primary/5'
-                    : 'border-border bg-muted/30',
+                    : 'border-border bg-muted/30'
                 )}
               >
                 <div className='flex items-center gap-3'>
@@ -651,7 +664,7 @@ export function WorkflowDebugger({
               <div className='space-y-2'>
                 {workflow.actions.map((action, index) => {
                   const result = execution?.actionResults.find(
-                    r => r.actionId === action.id,
+                    r => r.actionId === action.id
                   );
                   const hasBreakpoint = breakpoints.get(action.id)?.enabled;
                   const isActive = currentStep === index;
@@ -679,7 +692,7 @@ export function WorkflowDebugger({
                             'border-red-500/50 bg-red-500/5',
                           !isActive &&
                             !isCompleted &&
-                            'border-border bg-muted/30',
+                            'border-border bg-muted/30'
                         )}
                       >
                         <div className='flex items-center gap-3'>
@@ -691,7 +704,7 @@ export function WorkflowDebugger({
                               'flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors',
                               hasBreakpoint
                                 ? 'border-red-500 bg-red-500'
-                                : 'border-border bg-background hover:border-red-500',
+                                : 'border-border bg-background hover:border-red-500'
                             )}
                             title='Toggle breakpoint'
                           >
@@ -715,7 +728,7 @@ export function WorkflowDebugger({
                                 'bg-red-500 text-white',
                               !isActive &&
                                 !isCompleted &&
-                                'bg-muted text-muted-foreground',
+                                'bg-muted text-muted-foreground'
                             )}
                           >
                             {isCompleted && result.status === 'completed' ? (
@@ -835,10 +848,14 @@ export function WorkflowDebugger({
                       key={index}
                       className={cn(
                         'rounded-md p-2 text-xs',
-                        log.level === 'error' && 'bg-red-500/10 text-red-600 dark:text-red-400',
-                        log.level === 'warn' && 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
-                        log.level === 'info' && 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-                        log.level === 'debug' && 'bg-gray-500/10 text-gray-600 dark:text-gray-400',
+                        log.level === 'error' &&
+                          'bg-red-500/10 text-red-600 dark:text-red-400',
+                        log.level === 'warn' &&
+                          'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
+                        log.level === 'info' &&
+                          'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+                        log.level === 'debug' &&
+                          'bg-gray-500/10 text-gray-600 dark:text-gray-400'
                       )}
                     >
                       <div className='flex items-start gap-2'>
@@ -894,7 +911,8 @@ export function WorkflowDebugger({
                   <div className='flex justify-between'>
                     <span className='text-muted-foreground'>Actions:</span>
                     <span className='font-mono text-foreground'>
-                      {execution.actionResults.length} / {workflow.actions.length}
+                      {execution.actionResults.length} /{' '}
+                      {workflow.actions.length}
                     </span>
                   </div>
                   <div className='flex justify-between'>
@@ -929,7 +947,9 @@ export function WorkflowDebugger({
 
 // Helper functions
 
-function getDefaultTriggerData(trigger: TriggerConfig): Record<string, unknown> {
+function getDefaultTriggerData(
+  trigger: TriggerConfig
+): Record<string, unknown> {
   switch (trigger.type) {
     case 'message':
       return {
@@ -999,7 +1019,7 @@ function getDefaultTriggerData(trigger: TriggerConfig): Record<string, unknown> 
 function replaceVariables(
   template: string,
   triggerData: Record<string, unknown>,
-  variables: Record<string, unknown>,
+  variables: Record<string, unknown>
 ): string {
   let result = template;
   const allData = { trigger: triggerData, ...variables };
@@ -1014,17 +1034,14 @@ function replaceVariables(
   return result;
 }
 
-function getNestedValue(
-  obj: Record<string, unknown>,
-  path: string,
-): unknown {
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   return path.split('.').reduce((current: any, key) => current?.[key], obj);
 }
 
 function evaluateCondition(
   condition: { field: string; operator: string; value: string },
   triggerData: Record<string, unknown>,
-  variables: Record<string, unknown>,
+  variables: Record<string, unknown>
 ): boolean {
   const allData = { trigger: triggerData, ...variables };
   const fieldValue = getNestedValue(allData, condition.field);

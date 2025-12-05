@@ -21,7 +21,7 @@ export const passwordChangeSchema = z.object({
     .max(128, 'Password must be less than 128 characters')
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      'Password must contain uppercase, lowercase, number and special character',
+      'Password must contain uppercase, lowercase, number and special character'
     ),
 });
 

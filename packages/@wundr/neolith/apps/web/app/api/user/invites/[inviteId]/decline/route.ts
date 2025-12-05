@@ -35,14 +35,14 @@ interface RouteContext {
  */
 export async function POST(
   _request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id || !session.user.email) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -84,7 +84,7 @@ export async function POST(
     if (!targetWorkspace || !targetInvite) {
       return NextResponse.json(
         { error: 'Invite not found', code: 'INVITE_NOT_FOUND' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -95,7 +95,7 @@ export async function POST(
           error: 'This invite is for a different email address',
           code: 'INVITE_EMAIL_MISMATCH',
         },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -106,7 +106,7 @@ export async function POST(
           error: 'Invite has already been accepted',
           code: 'INVITE_ALREADY_ACCEPTED',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -116,7 +116,7 @@ export async function POST(
           error: 'Invite has already been declined',
           code: 'INVITE_ALREADY_DECLINED',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -148,7 +148,7 @@ export async function POST(
     console.error('[POST /api/user/invites/:inviteId/decline] Error:', error);
     return NextResponse.json(
       { error: 'Failed to decline invite', code: 'INTERNAL_ERROR' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

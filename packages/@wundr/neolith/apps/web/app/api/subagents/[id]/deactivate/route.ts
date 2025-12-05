@@ -41,7 +41,7 @@ const SUBAGENT_ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: (typeof SUBAGENT_ERROR_CODES)[keyof typeof SUBAGENT_ERROR_CODES],
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) {
   return {
     error: {
@@ -106,7 +106,7 @@ async function checkSubagentAccess(subagentId: string, userId: string) {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -115,9 +115,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          SUBAGENT_ERROR_CODES.UNAUTHORIZED,
+          SUBAGENT_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -129,9 +129,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Subagent not found or access denied',
-          SUBAGENT_ERROR_CODES.SUBAGENT_NOT_FOUND,
+          SUBAGENT_ERROR_CODES.SUBAGENT_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -139,9 +139,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Admin or Owner role required.',
-          SUBAGENT_ERROR_CODES.FORBIDDEN,
+          SUBAGENT_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -150,9 +150,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Subagent is already inactive',
-          SUBAGENT_ERROR_CODES.ALREADY_INACTIVE,
+          SUBAGENT_ERROR_CODES.ALREADY_INACTIVE
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -182,9 +182,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SUBAGENT_ERROR_CODES.INTERNAL_ERROR,
+        SUBAGENT_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

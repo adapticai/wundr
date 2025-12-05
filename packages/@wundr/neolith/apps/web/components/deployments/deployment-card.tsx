@@ -44,7 +44,7 @@ export function DeploymentCard({
       <div
         className={cn(
           'group flex items-center gap-4 rounded-lg border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-sm',
-          isLoading && 'pointer-events-none opacity-60',
+          isLoading && 'pointer-events-none opacity-60'
         )}
       >
         {/* Type Icon */}
@@ -117,7 +117,7 @@ export function DeploymentCard({
     <div
       className={cn(
         'group relative flex flex-col rounded-lg border bg-card p-5 shadow-sm transition-all hover:border-primary/50 hover:shadow-md',
-        isLoading && 'pointer-events-none opacity-60',
+        isLoading && 'pointer-events-none opacity-60'
       )}
     >
       {/* Header */}
@@ -318,7 +318,7 @@ export function DeploymentStatusBadge({
         config.bgColor,
         config.color,
         size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs',
-        className,
+        className
       )}
       role='status'
       aria-label={`Status: ${config.label}`}
@@ -368,7 +368,7 @@ export function HealthBadge({
       className={cn(
         'inline-flex items-center gap-1 rounded-full font-medium',
         size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs',
-        className,
+        className
       )}
       role='status'
       aria-label={`Health: ${config.label}`}

@@ -136,7 +136,7 @@ export function ConnectedApps({
 }: ConnectedAppsProps) {
   const { toast } = useToast();
   const [selectedApp, setSelectedApp] = useState<IntegrationConfig | null>(
-    null,
+    null
   );
   const [showConnectDialog, setShowConnectDialog] = useState(false);
   const [showAPIKeyDialog, setShowAPIKeyDialog] = useState(false);
@@ -160,9 +160,7 @@ export function ConnectedApps({
       scopes: ['read:*', 'write:*'],
       createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
       lastUsedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-      expiresAt: new Date(
-        Date.now() + 60 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
     },
   ]);
 
@@ -216,16 +214,14 @@ export function ConnectedApps({
         toast({
           title: 'Error',
           description:
-            error instanceof Error
-              ? error.message
-              : 'Failed to disconnect app',
+            error instanceof Error ? error.message : 'Failed to disconnect app',
           variant: 'destructive',
         });
       } finally {
         setIsLoading(false);
       }
     },
-    [onDisconnectApp, toast],
+    [onDisconnectApp, toast]
   );
 
   const handleRefresh = useCallback(
@@ -250,33 +246,36 @@ export function ConnectedApps({
         setIsLoading(false);
       }
     },
-    [onRefreshConnection, toast],
+    [onRefreshConnection, toast]
   );
 
   // Group integrations by category
   const calendarApps = integrations.filter(i =>
-    ['google_drive', 'microsoft_outlook'].includes(i.provider),
+    ['google_drive', 'microsoft_outlook'].includes(i.provider)
   );
   const storageApps = integrations.filter(i =>
-    ['dropbox', 'google_drive'].includes(i.provider),
+    ['dropbox', 'google_drive'].includes(i.provider)
   );
   const communicationApps = integrations.filter(i =>
-    ['slack', 'teams', 'discord'].includes(i.provider),
+    ['slack', 'teams', 'discord'].includes(i.provider)
   );
   const otherApps = integrations.filter(
     i =>
       ![...calendarApps, ...storageApps, ...communicationApps].some(
-        app => app.id === i.id,
-      ),
+        app => app.id === i.id
+      )
   );
 
   return (
     <div className={cn('space-y-6', className)}>
       {/* Security Warning Banner */}
-      <Alert variant="destructive" className="border-orange-500/50 bg-orange-500/10">
-        <AlertTriangle className="h-4 w-4 text-orange-600" />
-        <AlertTitle className="text-orange-600">Security Notice</AlertTitle>
-        <AlertDescription className="text-orange-600/90">
+      <Alert
+        variant='destructive'
+        className='border-orange-500/50 bg-orange-500/10'
+      >
+        <AlertTriangle className='h-4 w-4 text-orange-600' />
+        <AlertTitle className='text-orange-600'>Security Notice</AlertTitle>
+        <AlertDescription className='text-orange-600/90'>
           Connected apps have access to your data. Only connect trusted
           applications and review permissions regularly. Revoke access
           immediately if you suspect unauthorized activity.
@@ -284,38 +283,38 @@ export function ConnectedApps({
       </Alert>
 
       {/* Main Tabs */}
-      <Tabs defaultValue="apps" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="apps">
-            <LinkIcon className="h-4 w-4 mr-2" />
+      <Tabs defaultValue='apps' className='space-y-6'>
+        <TabsList className='grid w-full grid-cols-4'>
+          <TabsTrigger value='apps'>
+            <LinkIcon className='h-4 w-4 mr-2' />
             Connected Apps
           </TabsTrigger>
-          <TabsTrigger value="api-keys">
-            <Key className="h-4 w-4 mr-2" />
+          <TabsTrigger value='api-keys'>
+            <Key className='h-4 w-4 mr-2' />
             API Keys
           </TabsTrigger>
-          <TabsTrigger value="webhooks">
-            <Webhook className="h-4 w-4 mr-2" />
+          <TabsTrigger value='webhooks'>
+            <Webhook className='h-4 w-4 mr-2' />
             Webhooks
           </TabsTrigger>
-          <TabsTrigger value="activity">
-            <Clock className="h-4 w-4 mr-2" />
+          <TabsTrigger value='activity'>
+            <Clock className='h-4 w-4 mr-2' />
             Activity
           </TabsTrigger>
         </TabsList>
 
         {/* Connected Apps Tab */}
-        <TabsContent value="apps" className="space-y-6">
+        <TabsContent value='apps' className='space-y-6'>
           {/* Action Bar */}
-          <div className="flex items-center justify-between">
+          <div className='flex items-center justify-between'>
             <div>
-              <h3 className="text-lg font-semibold">Connected Applications</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className='text-lg font-semibold'>Connected Applications</h3>
+              <p className='text-sm text-muted-foreground'>
                 Manage third-party apps with access to your account
               </p>
             </div>
             <Button onClick={() => setShowConnectDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className='h-4 w-4 mr-2' />
               Connect App
             </Button>
           </div>
@@ -324,15 +323,17 @@ export function ConnectedApps({
           {calendarApps.length > 0 && (
             <Card>
               <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <CardTitle className="text-base">Calendar Integrations</CardTitle>
+                <div className='flex items-center gap-2'>
+                  <Calendar className='h-5 w-5 text-muted-foreground' />
+                  <CardTitle className='text-base'>
+                    Calendar Integrations
+                  </CardTitle>
                 </div>
                 <CardDescription>
                   Sync your calendar events and availability
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className='space-y-3'>
                 {calendarApps.map(app => (
                   <AppConnectionCard
                     key={app.id}
@@ -351,15 +352,15 @@ export function ConnectedApps({
           {storageApps.length > 0 && (
             <Card>
               <CardHeader>
-                <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-muted-foreground" />
-                  <CardTitle className="text-base">File Storage</CardTitle>
+                <div className='flex items-center gap-2'>
+                  <FileText className='h-5 w-5 text-muted-foreground' />
+                  <CardTitle className='text-base'>File Storage</CardTitle>
                 </div>
                 <CardDescription>
                   Connect cloud storage services for file sharing
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className='space-y-3'>
                 {storageApps.map(app => (
                   <AppConnectionCard
                     key={app.id}
@@ -378,15 +379,15 @@ export function ConnectedApps({
           {communicationApps.length > 0 && (
             <Card>
               <CardHeader>
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-muted-foreground" />
-                  <CardTitle className="text-base">Communication</CardTitle>
+                <div className='flex items-center gap-2'>
+                  <MessageSquare className='h-5 w-5 text-muted-foreground' />
+                  <CardTitle className='text-base'>Communication</CardTitle>
                 </div>
                 <CardDescription>
                   Integrate with messaging and collaboration tools
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className='space-y-3'>
                 {communicationApps.map(app => (
                   <AppConnectionCard
                     key={app.id}
@@ -405,9 +406,9 @@ export function ConnectedApps({
           {otherApps.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Other Integrations</CardTitle>
+                <CardTitle className='text-base'>Other Integrations</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className='space-y-3'>
                 {otherApps.map(app => (
                   <AppConnectionCard
                     key={app.id}
@@ -424,16 +425,16 @@ export function ConnectedApps({
 
           {integrations.length === 0 && (
             <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <LinkIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                <h3 className="font-medium text-foreground mb-2">
+              <CardContent className='flex flex-col items-center justify-center py-12'>
+                <LinkIcon className='h-12 w-12 text-muted-foreground/50 mb-4' />
+                <h3 className='font-medium text-foreground mb-2'>
                   No Connected Apps
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className='text-sm text-muted-foreground mb-4'>
                   Connect third-party apps to extend functionality
                 </p>
                 <Button onClick={() => setShowConnectDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className='h-4 w-4 mr-2' />
                   Connect Your First App
                 </Button>
               </CardContent>
@@ -442,22 +443,22 @@ export function ConnectedApps({
         </TabsContent>
 
         {/* API Keys Tab */}
-        <TabsContent value="api-keys" className="space-y-6">
-          <div className="flex items-center justify-between">
+        <TabsContent value='api-keys' className='space-y-6'>
+          <div className='flex items-center justify-between'>
             <div>
-              <h3 className="text-lg font-semibold">Personal API Keys</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className='text-lg font-semibold'>Personal API Keys</h3>
+              <p className='text-sm text-muted-foreground'>
                 Generate API keys for programmatic access
               </p>
             </div>
             <Button onClick={() => setShowAPIKeyDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className='h-4 w-4 mr-2' />
               Generate Key
             </Button>
           </div>
 
           <Alert>
-            <Shield className="h-4 w-4" />
+            <Shield className='h-4 w-4' />
             <AlertTitle>Keep Your Keys Secure</AlertTitle>
             <AlertDescription>
               API keys provide full access to your account. Never share them
@@ -467,23 +468,23 @@ export function ConnectedApps({
           </Alert>
 
           <Card>
-            <CardContent className="p-0">
+            <CardContent className='p-0'>
               {apiKeys.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Key className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                  <h3 className="font-medium text-foreground mb-2">
+                <div className='flex flex-col items-center justify-center py-12'>
+                  <Key className='h-12 w-12 text-muted-foreground/50 mb-4' />
+                  <h3 className='font-medium text-foreground mb-2'>
                     No API Keys
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className='text-sm text-muted-foreground mb-4'>
                     Generate your first API key to get started
                   </p>
                   <Button onClick={() => setShowAPIKeyDialog(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className='h-4 w-4 mr-2' />
                     Generate API Key
                   </Button>
                 </div>
               ) : (
-                <div className="divide-y">
+                <div className='divide-y'>
                   {apiKeys.map(key => (
                     <APIKeyCard key={key.id} apiKey={key} />
                   ))}
@@ -494,38 +495,38 @@ export function ConnectedApps({
         </TabsContent>
 
         {/* Webhooks Tab */}
-        <TabsContent value="webhooks" className="space-y-6">
-          <div className="flex items-center justify-between">
+        <TabsContent value='webhooks' className='space-y-6'>
+          <div className='flex items-center justify-between'>
             <div>
-              <h3 className="text-lg font-semibold">Personal Webhooks</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className='text-lg font-semibold'>Personal Webhooks</h3>
+              <p className='text-sm text-muted-foreground'>
                 Configure webhooks for personal automations
               </p>
             </div>
             <Button onClick={() => setShowWebhookDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className='h-4 w-4 mr-2' />
               Create Webhook
             </Button>
           </div>
 
           <Card>
-            <CardContent className="p-0">
+            <CardContent className='p-0'>
               {webhooks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Webhook className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                  <h3 className="font-medium text-foreground mb-2">
+                <div className='flex flex-col items-center justify-center py-12'>
+                  <Webhook className='h-12 w-12 text-muted-foreground/50 mb-4' />
+                  <h3 className='font-medium text-foreground mb-2'>
                     No Webhooks Configured
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className='text-sm text-muted-foreground mb-4'>
                     Create webhooks to receive real-time notifications
                   </p>
                   <Button onClick={() => setShowWebhookDialog(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className='h-4 w-4 mr-2' />
                     Create Webhook
                   </Button>
                 </div>
               ) : (
-                <div className="divide-y">
+                <div className='divide-y'>
                   {webhooks.map(webhook => (
                     <WebhookCard key={webhook.id} webhook={webhook} />
                   ))}
@@ -536,29 +537,29 @@ export function ConnectedApps({
         </TabsContent>
 
         {/* Activity Log Tab */}
-        <TabsContent value="activity" className="space-y-6">
+        <TabsContent value='activity' className='space-y-6'>
           <div>
-            <h3 className="text-lg font-semibold">Activity Log</h3>
-            <p className="text-sm text-muted-foreground">
+            <h3 className='text-lg font-semibold'>Activity Log</h3>
+            <p className='text-sm text-muted-foreground'>
               Recent interactions with connected apps
             </p>
           </div>
 
           <Card>
-            <CardContent className="p-0">
-              <ScrollArea className="h-[500px]">
+            <CardContent className='p-0'>
+              <ScrollArea className='h-[500px]'>
                 {activityLog.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <Clock className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                    <h3 className="font-medium text-foreground mb-2">
+                  <div className='flex flex-col items-center justify-center py-12'>
+                    <Clock className='h-12 w-12 text-muted-foreground/50 mb-4' />
+                    <h3 className='font-medium text-foreground mb-2'>
                       No Activity
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className='text-sm text-muted-foreground'>
                       App activity will appear here
                     </p>
                   </div>
                 ) : (
-                  <div className="divide-y">
+                  <div className='divide-y'>
                     {activityLog.map(entry => (
                       <ActivityLogCard key={entry.id} entry={entry} />
                     ))}
@@ -654,33 +655,34 @@ function AppConnectionCard({
   const StatusIcon = status.icon;
 
   return (
-    <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-      <div className="flex items-center gap-4 flex-1 min-w-0">
-        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted shrink-0">
-          <span className="text-sm font-bold">
+    <div className='flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors'>
+      <div className='flex items-center gap-4 flex-1 min-w-0'>
+        <div className='flex h-10 w-10 items-center justify-center rounded-md bg-muted shrink-0'>
+          <span className='text-sm font-bold'>
             {integration.provider.substring(0, 2).toUpperCase()}
           </span>
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-medium text-foreground truncate">
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center gap-2 mb-1'>
+            <h4 className='font-medium text-foreground truncate'>
               {integration.name}
             </h4>
             <Badge
-              variant="outline"
+              variant='outline'
               className={cn('shrink-0', status.bg, status.color)}
             >
-              <StatusIcon className="h-3 w-3 mr-1" />
+              <StatusIcon className='h-3 w-3 mr-1' />
               {status.label}
             </Badge>
           </div>
           {integration.lastSyncAt && (
-            <p className="text-xs text-muted-foreground">
-              Last synced {new Date(integration.lastSyncAt).toLocaleDateString()}
+            <p className='text-xs text-muted-foreground'>
+              Last synced{' '}
+              {new Date(integration.lastSyncAt).toLocaleDateString()}
             </p>
           )}
           {integration.errorMessage && (
-            <p className="text-xs text-red-600 mt-1">
+            <p className='text-xs text-red-600 mt-1'>
               {integration.errorMessage}
             </p>
           )}
@@ -688,29 +690,29 @@ function AppConnectionCard({
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" disabled={isLoading}>
+          <Button variant='ghost' size='icon' disabled={isLoading}>
             {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className='h-4 w-4 animate-spin' />
             ) : (
-              <MoreVertical className="h-4 w-4" />
+              <MoreVertical className='h-4 w-4' />
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align='end'>
           <DropdownMenuItem onClick={() => onViewDetails(integration)}>
-            <Shield className="h-4 w-4 mr-2" />
+            <Shield className='h-4 w-4 mr-2' />
             View Permissions
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onRefresh(integration)}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className='h-4 w-4 mr-2' />
             Refresh Connection
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => onDisconnect(integration)}
-            className="text-destructive focus:text-destructive"
+            className='text-destructive focus:text-destructive'
           >
-            <Unlink className="h-4 w-4 mr-2" />
+            <Unlink className='h-4 w-4 mr-2' />
             Disconnect
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -737,49 +739,48 @@ function APIKeyCard({ apiKey }: APIKeyCardProps) {
 
   const isExpiringSoon =
     apiKey.expiresAt &&
-    new Date(apiKey.expiresAt).getTime() - Date.now() <
-      7 * 24 * 60 * 60 * 1000;
+    new Date(apiKey.expiresAt).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000;
 
   return (
-    <div className="p-4 hover:bg-accent/50 transition-colors">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-foreground mb-1">{apiKey.name}</h4>
-          <div className="flex items-center gap-2 mb-2">
-            <code className="text-xs font-mono bg-muted px-2 py-1 rounded">
+    <div className='p-4 hover:bg-accent/50 transition-colors'>
+      <div className='flex items-start justify-between mb-3'>
+        <div className='flex-1 min-w-0'>
+          <h4 className='font-medium text-foreground mb-1'>{apiKey.name}</h4>
+          <div className='flex items-center gap-2 mb-2'>
+            <code className='text-xs font-mono bg-muted px-2 py-1 rounded'>
               {showKey
                 ? apiKey.prefix + '**********************'
                 : '•'.repeat(32)}
             </code>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
+              variant='ghost'
+              size='icon'
+              className='h-7 w-7'
               onClick={() => setShowKey(!showKey)}
             >
               {showKey ? (
-                <EyeOff className="h-3 w-3" />
+                <EyeOff className='h-3 w-3' />
               ) : (
-                <Eye className="h-3 w-3" />
+                <Eye className='h-3 w-3' />
               )}
             </Button>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
+              variant='ghost'
+              size='icon'
+              className='h-7 w-7'
               onClick={handleCopy}
             >
-              <Copy className="h-3 w-3" />
+              <Copy className='h-3 w-3' />
             </Button>
           </div>
-          <div className="flex flex-wrap gap-1 mb-2">
+          <div className='flex flex-wrap gap-1 mb-2'>
             {apiKey.scopes.map(scope => (
-              <Badge key={scope} variant="secondary" className="text-xs">
+              <Badge key={scope} variant='secondary' className='text-xs'>
                 {scope}
               </Badge>
             ))}
           </div>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className='flex items-center gap-4 text-xs text-muted-foreground'>
             <span>
               Created {new Date(apiKey.createdAt).toLocaleDateString()}
             </span>
@@ -799,31 +800,31 @@ function APIKeyCard({ apiKey }: APIKeyCardProps) {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-4 w-4" />
+            <Button variant='ghost' size='icon'>
+              <MoreVertical className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align='end'>
             <DropdownMenuItem>
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <RefreshCw className='h-4 w-4 mr-2' />
               Regenerate
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Copy className="h-4 w-4 mr-2" />
+              <Copy className='h-4 w-4 mr-2' />
               Copy Full Key
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive focus:text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" />
+            <DropdownMenuItem className='text-destructive focus:text-destructive'>
+              <Trash2 className='h-4 w-4 mr-2' />
               Revoke
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
       {isExpiringSoon && (
-        <Alert variant="destructive" className="mt-2">
-          <AlertTriangle className="h-3 w-3" />
-          <AlertDescription className="text-xs">
+        <Alert variant='destructive' className='mt-2'>
+          <AlertTriangle className='h-3 w-3' />
+          <AlertDescription className='text-xs'>
             This key will expire soon. Generate a new key before it expires.
           </AlertDescription>
         </Alert>
@@ -844,43 +845,43 @@ function WebhookCard({ webhook }: WebhookCardProps) {
   };
 
   return (
-    <div className="p-4 hover:bg-accent/50 transition-colors">
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
+    <div className='p-4 hover:bg-accent/50 transition-colors'>
+      <div className='flex items-start justify-between'>
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center gap-2 mb-2'>
             <div
               className={cn(
                 'h-2 w-2 rounded-full shrink-0',
-                statusColors[webhook.status],
+                statusColors[webhook.status]
               )}
             />
-            <h4 className="font-medium text-foreground truncate">
+            <h4 className='font-medium text-foreground truncate'>
               {webhook.name}
             </h4>
           </div>
-          <p className="text-sm text-muted-foreground truncate mb-2">
+          <p className='text-sm text-muted-foreground truncate mb-2'>
             {webhook.url}
           </p>
-          <div className="flex flex-wrap gap-1 mb-2">
+          <div className='flex flex-wrap gap-1 mb-2'>
             {webhook.events.slice(0, 3).map(event => (
-              <Badge key={event} variant="outline" className="text-xs">
+              <Badge key={event} variant='outline' className='text-xs'>
                 {event}
               </Badge>
             ))}
             {webhook.events.length > 3 && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant='outline' className='text-xs'>
                 +{webhook.events.length - 3} more
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <CheckCircle2 className="h-3 w-3 text-green-600" />
+          <div className='flex items-center gap-4 text-xs text-muted-foreground'>
+            <span className='flex items-center gap-1'>
+              <CheckCircle2 className='h-3 w-3 text-green-600' />
               {webhook.successCount || 0} successful
             </span>
             {webhook.failureCount > 0 && (
-              <span className="flex items-center gap-1 text-red-600">
-                <XCircle className="h-3 w-3" />
+              <span className='flex items-center gap-1 text-red-600'>
+                <XCircle className='h-3 w-3' />
                 {webhook.failureCount} failed
               </span>
             )}
@@ -888,22 +889,22 @@ function WebhookCard({ webhook }: WebhookCardProps) {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-4 w-4" />
+            <Button variant='ghost' size='icon'>
+              <MoreVertical className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align='end'>
             <DropdownMenuItem>
-              <ExternalLink className="h-4 w-4 mr-2" />
+              <ExternalLink className='h-4 w-4 mr-2' />
               Test Webhook
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Clock className="h-4 w-4 mr-2" />
+              <Clock className='h-4 w-4 mr-2' />
               View Deliveries
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive focus:text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" />
+            <DropdownMenuItem className='text-destructive focus:text-destructive'>
+              <Trash2 className='h-4 w-4 mr-2' />
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -928,18 +929,18 @@ function ActivityLogCard({ entry }: ActivityLogCardProps) {
   const SeverityIcon = config.icon;
 
   return (
-    <div className="p-4 hover:bg-accent/50 transition-colors">
-      <div className="flex items-start gap-3">
+    <div className='p-4 hover:bg-accent/50 transition-colors'>
+      <div className='flex items-start gap-3'>
         <SeverityIcon className={cn('h-5 w-5 mt-0.5 shrink-0', config.color)} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <h4 className="font-medium text-foreground">{entry.appName}</h4>
-            <span className="text-xs text-muted-foreground shrink-0">
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center justify-between mb-1'>
+            <h4 className='font-medium text-foreground'>{entry.appName}</h4>
+            <span className='text-xs text-muted-foreground shrink-0'>
               {new Date(entry.timestamp).toLocaleString()}
             </span>
           </div>
-          <p className="text-sm text-muted-foreground mb-1">{entry.action}</p>
-          <p className="text-xs text-muted-foreground">{entry.description}</p>
+          <p className='text-sm text-muted-foreground mb-1'>{entry.action}</p>
+          <p className='text-xs text-muted-foreground'>{entry.description}</p>
         </div>
       </div>
     </div>
@@ -997,11 +998,11 @@ function AppDetailsDialog({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className='max-w-2xl max-h-[90vh] overflow-hidden flex flex-col'>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
-              <span className="text-sm font-bold">
+          <DialogTitle className='flex items-center gap-3'>
+            <div className='flex h-10 w-10 items-center justify-center rounded-md bg-muted'>
+              <span className='text-sm font-bold'>
                 {integration.provider.substring(0, 2).toUpperCase()}
               </span>
             </div>
@@ -1010,36 +1011,38 @@ function AppDetailsDialog({
           <DialogDescription>{integration.description}</DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-6">
+        <ScrollArea className='flex-1 pr-4'>
+          <div className='space-y-6'>
             {/* Connection Status */}
             <div>
-              <h4 className="text-sm font-medium mb-3">Connection Status</h4>
-              <div className="grid gap-3">
-                <div className="flex items-center justify-between p-3 rounded-lg border">
-                  <span className="text-sm text-muted-foreground">Status</span>
+              <h4 className='text-sm font-medium mb-3'>Connection Status</h4>
+              <div className='grid gap-3'>
+                <div className='flex items-center justify-between p-3 rounded-lg border'>
+                  <span className='text-sm text-muted-foreground'>Status</span>
                   <Badge
                     variant={
-                      integration.status === 'active' ? 'default' : 'destructive'
+                      integration.status === 'active'
+                        ? 'default'
+                        : 'destructive'
                     }
                   >
                     {integration.status}
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg border">
-                  <span className="text-sm text-muted-foreground">
+                <div className='flex items-center justify-between p-3 rounded-lg border'>
+                  <span className='text-sm text-muted-foreground'>
                     Connected
                   </span>
-                  <span className="text-sm font-medium">
+                  <span className='text-sm font-medium'>
                     {new Date(integration.createdAt).toLocaleDateString()}
                   </span>
                 </div>
                 {integration.lastSyncAt && (
-                  <div className="flex items-center justify-between p-3 rounded-lg border">
-                    <span className="text-sm text-muted-foreground">
+                  <div className='flex items-center justify-between p-3 rounded-lg border'>
+                    <span className='text-sm text-muted-foreground'>
                       Last Sync
                     </span>
-                    <span className="text-sm font-medium">
+                    <span className='text-sm font-medium'>
                       {new Date(integration.lastSyncAt).toLocaleString()}
                     </span>
                   </div>
@@ -1051,30 +1054,30 @@ function AppDetailsDialog({
 
             {/* Permissions */}
             <div>
-              <h4 className="text-sm font-medium mb-3">Permissions</h4>
-              <div className="space-y-3">
+              <h4 className='text-sm font-medium mb-3'>Permissions</h4>
+              <div className='space-y-3'>
                 {permissions.map(permission => (
                   <div
                     key={permission.id}
-                    className="flex items-start gap-3 p-3 rounded-lg border"
+                    className='flex items-start gap-3 p-3 rounded-lg border'
                   >
                     <Switch
                       checked={permission.granted}
                       disabled={permission.required}
-                      className="mt-1"
+                      className='mt-1'
                     />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium">
+                    <div className='flex-1 min-w-0'>
+                      <div className='flex items-center gap-2 mb-1'>
+                        <span className='text-sm font-medium'>
                           {permission.name}
                         </span>
                         {permission.required && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant='outline' className='text-xs'>
                             Required
                           </Badge>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className='text-xs text-muted-foreground'>
                         {permission.description}
                       </p>
                     </div>
@@ -1086,8 +1089,8 @@ function AppDetailsDialog({
             {integration.errorMessage && (
               <>
                 <Separator />
-                <Alert variant="destructive">
-                  <AlertTriangle className="h-4 w-4" />
+                <Alert variant='destructive'>
+                  <AlertTriangle className='h-4 w-4' />
                   <AlertTitle>Connection Error</AlertTitle>
                   <AlertDescription>
                     {integration.errorMessage}
@@ -1098,13 +1101,13 @@ function AppDetailsDialog({
           </div>
         </ScrollArea>
 
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={onRefresh}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+        <DialogFooter className='gap-2'>
+          <Button variant='outline' onClick={onRefresh}>
+            <RefreshCw className='h-4 w-4 mr-2' />
             Refresh Connection
           </Button>
-          <Button variant="destructive" onClick={onDisconnect}>
-            <Unlink className="h-4 w-4 mr-2" />
+          <Button variant='destructive' onClick={onDisconnect}>
+            <Unlink className='h-4 w-4 mr-2' />
             Disconnect
           </Button>
         </DialogFooter>
@@ -1182,7 +1185,7 @@ function ConnectAppDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className='max-w-3xl'>
         <DialogHeader>
           <DialogTitle>Connect Application</DialogTitle>
           <DialogDescription>
@@ -1190,31 +1193,31 @@ function ConnectAppDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className='grid gap-3 sm:grid-cols-2'>
           {availableApps.map(app => (
             <button
               key={app.provider}
               onClick={() => handleConnect(app.provider)}
               disabled={isConnecting}
-              className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-accent transition-colors disabled:opacity-50 text-left"
+              className='flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-accent transition-colors disabled:opacity-50 text-left'
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted shrink-0">
-                <span className="text-sm font-bold">
+              <div className='flex h-10 w-10 items-center justify-center rounded-md bg-muted shrink-0'>
+                <span className='text-sm font-bold'>
                   {app.provider.substring(0, 2).toUpperCase()}
                 </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-medium text-foreground">{app.name}</h4>
-                  <Badge variant="outline" className="text-xs">
+              <div className='flex-1 min-w-0'>
+                <div className='flex items-center gap-2 mb-1'>
+                  <h4 className='font-medium text-foreground'>{app.name}</h4>
+                  <Badge variant='outline' className='text-xs'>
                     {app.category}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className='text-xs text-muted-foreground'>
                   {app.description}
                 </p>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+              <ChevronRight className='h-5 w-5 text-muted-foreground shrink-0' />
             </button>
           ))}
         </div>
@@ -1275,25 +1278,25 @@ function CreateAPIKeyDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className='space-y-4'>
           <div>
-            <Label htmlFor="key-name">Key Name</Label>
+            <Label htmlFor='key-name'>Key Name</Label>
             <Input
-              id="key-name"
+              id='key-name'
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="e.g., Development Key"
-              className="mt-1"
+              placeholder='e.g., Development Key'
+              className='mt-1'
             />
           </div>
 
           <div>
             <Label>Scopes</Label>
-            <div className="mt-2 space-y-2 max-h-64 overflow-y-auto rounded-lg border p-3">
+            <div className='mt-2 space-y-2 max-h-64 overflow-y-auto rounded-lg border p-3'>
               {availableScopes.map(scope => (
-                <div key={scope.id} className="flex items-start gap-2">
+                <div key={scope.id} className='flex items-start gap-2'>
                   <input
-                    type="checkbox"
+                    type='checkbox'
                     id={scope.id}
                     checked={selectedScopes.includes(scope.id)}
                     onChange={e => {
@@ -1301,15 +1304,15 @@ function CreateAPIKeyDialog({
                         setSelectedScopes([...selectedScopes, scope.id]);
                       } else {
                         setSelectedScopes(
-                          selectedScopes.filter(s => s !== scope.id),
+                          selectedScopes.filter(s => s !== scope.id)
                         );
                       }
                     }}
-                    className="mt-1 h-4 w-4 rounded"
+                    className='mt-1 h-4 w-4 rounded'
                   />
-                  <label htmlFor={scope.id} className="flex-1 cursor-pointer">
-                    <div className="font-medium text-sm">{scope.label}</div>
-                    <div className="text-xs text-muted-foreground">
+                  <label htmlFor={scope.id} className='flex-1 cursor-pointer'>
+                    <div className='font-medium text-sm'>{scope.label}</div>
+                    <div className='text-xs text-muted-foreground'>
                       {scope.category}
                     </div>
                   </label>
@@ -1319,9 +1322,9 @@ function CreateAPIKeyDialog({
           </div>
 
           <Alert>
-            <Shield className="h-4 w-4" />
+            <Shield className='h-4 w-4' />
             <AlertTitle>Security Notice</AlertTitle>
-            <AlertDescription className="text-xs">
+            <AlertDescription className='text-xs'>
               Keep your API key secure. It will only be shown once after
               creation. Store it in a secure location.
             </AlertDescription>
@@ -1329,7 +1332,7 @@ function CreateAPIKeyDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant='outline' onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={handleCreate}>Generate Key</Button>
@@ -1383,45 +1386,45 @@ function CreateWebhookDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className='space-y-4'>
           <div>
-            <Label htmlFor="webhook-name">Webhook Name</Label>
+            <Label htmlFor='webhook-name'>Webhook Name</Label>
             <Input
-              id="webhook-name"
+              id='webhook-name'
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="e.g., My Automation"
-              className="mt-1"
+              placeholder='e.g., My Automation'
+              className='mt-1'
             />
           </div>
 
           <div>
-            <Label htmlFor="webhook-url">Endpoint URL</Label>
+            <Label htmlFor='webhook-url'>Endpoint URL</Label>
             <Input
-              id="webhook-url"
-              type="url"
+              id='webhook-url'
+              type='url'
               value={url}
               onChange={e => setUrl(e.target.value)}
-              placeholder="https://example.com/webhook"
-              className="mt-1"
+              placeholder='https://example.com/webhook'
+              className='mt-1'
             />
           </div>
 
           <div>
-            <Label htmlFor="webhook-description">Description (optional)</Label>
+            <Label htmlFor='webhook-description'>Description (optional)</Label>
             <Textarea
-              id="webhook-description"
+              id='webhook-description'
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Describe what this webhook does..."
+              placeholder='Describe what this webhook does...'
               rows={3}
-              className="mt-1"
+              className='mt-1'
             />
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant='outline' onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={handleCreate}>Create Webhook</Button>

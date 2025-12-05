@@ -1,10 +1,12 @@
 # Condition Builder Component
 
-A comprehensive visual condition builder for workflow steps with advanced features for creating complex logical expressions.
+A comprehensive visual condition builder for workflow steps with advanced features for creating
+complex logical expressions.
 
 ## Features
 
 ### Visual Condition Building
+
 - **AND/OR Groups**: Create logical groups with unlimited nesting depth
 - **Visual Hierarchy**: Clear visual indication of condition structure with indentation
 - **Collapsible Groups**: Collapse/expand condition groups for better organization
@@ -13,6 +15,7 @@ A comprehensive visual condition builder for workflow steps with advanced featur
 ### Comparison Operators
 
 #### String Operators
+
 - `equals` - Exact match
 - `not_equals` - Not equal to value
 - `contains` - Contains substring
@@ -22,6 +25,7 @@ A comprehensive visual condition builder for workflow steps with advanced featur
 - `matches_regex` - Matches regular expression
 
 #### Numeric Operators
+
 - `equals` - Exact numeric match
 - `not_equals` - Not equal to value
 - `greater_than` - Numerically greater
@@ -30,37 +34,44 @@ A comprehensive visual condition builder for workflow steps with advanced featur
 - `less_than_or_equal` - Less or equal
 
 #### Empty/Existence Checks
+
 - `is_empty` - Empty or null
 - `is_not_empty` - Not empty or null
 
 #### Array Operators
+
 - `contains` - Contains element
 - `not_contains` - Does not contain element
 - `in_array` - Value exists in array
 - `not_in_array` - Value does not exist in array
 
 ### Variable References
+
 - **Type-Aware**: Only shows operators supported by variable type
 - **Variable vs Literal**: Toggle between literal values and variable references
 - **Validation**: Real-time validation of variable references
 
 ### Nested Conditions
+
 - **Unlimited Depth**: Create deeply nested condition groups
 - **Mixed Logic**: Combine AND/OR at different levels
 - **Visual Indentation**: Clear hierarchy with visual depth indicators
 
 ### Condition Preview
+
 - **Natural Language**: Human-readable explanation of conditions
 - **Copy to Clipboard**: Copy condition text for documentation
 - **Real-time Updates**: Preview updates as you build
 
 ### Validation
+
 - **Real-time**: Immediate feedback on validation errors
 - **Type Checking**: Ensures operators are compatible with variable types
 - **Required Values**: Validates that required values are provided
 - **Variable Existence**: Checks that referenced variables exist
 
 ### Templates
+
 Four pre-built templates for common scenarios:
 
 1. **Email Validation**
@@ -94,11 +105,7 @@ function MyComponent() {
   });
 
   return (
-    <ConditionBuilder
-      value={condition}
-      onChange={setCondition}
-      variables={availableVariables}
-    />
+    <ConditionBuilder value={condition} onChange={setCondition} variables={availableVariables} />
   );
 }
 ```
@@ -239,6 +246,7 @@ console.log(explanation);
 ```
 
 Example output:
+
 ```
 trigger.payload.enabled equals "true"
 AND (
@@ -315,7 +323,7 @@ The component uses Tailwind CSS and shadcn/ui components. Customize with:
 
 ```tsx
 <ConditionBuilder
-  className="my-custom-class"
+  className='my-custom-class'
   value={condition}
   onChange={setCondition}
   variables={variables}
@@ -453,11 +461,13 @@ describe('My Workflow', () => {
 ## Performance
 
 ### Large Condition Trees
+
 - Use React.memo for ConditionItem and ConditionGroupItem
 - Implement virtualization for very large trees
 - Consider lazy loading for deeply nested groups
 
 ### Optimization Tips
+
 ```typescript
 // Memoize validation
 const errors = React.useMemo(
@@ -472,6 +482,7 @@ const debouncedOnChange = useDebouncedCallback(onChange, 300);
 ## Accessibility
 
 The component includes:
+
 - ARIA labels for all interactive elements
 - Keyboard navigation support
 - Screen reader friendly error messages

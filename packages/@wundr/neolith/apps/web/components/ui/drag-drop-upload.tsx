@@ -93,7 +93,7 @@ export function DragDropUpload({
         // Check file size
         if (file.size > maxSize) {
           newErrors.push(
-            `${file.name}: File size exceeds ${formatFileSize(maxSize)}`,
+            `${file.name}: File size exceeds ${formatFileSize(maxSize)}`
           );
           return;
         }
@@ -107,7 +107,7 @@ export function DragDropUpload({
               type === file.type ||
               type === fileExtension ||
               (type.endsWith('/*') &&
-                file.type.startsWith(type.replace('/*', ''))),
+                file.type.startsWith(type.replace('/*', '')))
           );
 
           if (!isAccepted) {
@@ -121,7 +121,7 @@ export function DragDropUpload({
 
       return { valid: validFiles, errors: newErrors };
     },
-    [accept, maxSize, maxFiles, uploadedFiles.length],
+    [accept, maxSize, maxFiles, uploadedFiles.length]
   );
 
   const handleFiles = React.useCallback(
@@ -133,7 +133,7 @@ export function DragDropUpload({
         onFilesSelected(valid);
       }
     },
-    [validateFiles, onFilesSelected],
+    [validateFiles, onFilesSelected]
   );
 
   const handleDragEnter = React.useCallback(
@@ -150,7 +150,7 @@ export function DragDropUpload({
         setIsDragging(true);
       }
     },
-    [disabled],
+    [disabled]
   );
 
   const handleDragLeave = React.useCallback((e: React.DragEvent) => {
@@ -176,7 +176,7 @@ export function DragDropUpload({
         e.dataTransfer.dropEffect = 'copy';
       }
     },
-    [disabled],
+    [disabled]
   );
 
   const handleDrop = React.useCallback(
@@ -196,7 +196,7 @@ export function DragDropUpload({
         handleFiles(files);
       }
     },
-    [disabled, handleFiles],
+    [disabled, handleFiles]
   );
 
   const handleInputChange = React.useCallback(
@@ -208,7 +208,7 @@ export function DragDropUpload({
       // Reset input value to allow selecting the same file again
       e.target.value = '';
     },
-    [handleFiles],
+    [handleFiles]
   );
 
   const handleClick = React.useCallback(() => {
@@ -233,7 +233,7 @@ export function DragDropUpload({
           isDragging && 'border-primary bg-accent',
           disabled &&
             'opacity-50 cursor-not-allowed hover:border-border hover:bg-transparent',
-          !isDragging && 'border-border',
+          !isDragging && 'border-border'
         )}
       >
         <input
@@ -251,13 +251,13 @@ export function DragDropUpload({
           <div
             className={cn(
               'p-3 rounded-full',
-              isDragging ? 'bg-primary/20' : 'bg-muted',
+              isDragging ? 'bg-primary/20' : 'bg-muted'
             )}
           >
             <Upload
               className={cn(
                 'h-8 w-8',
-                isDragging ? 'text-primary' : 'text-muted-foreground',
+                isDragging ? 'text-primary' : 'text-muted-foreground'
               )}
             />
           </div>
@@ -308,7 +308,7 @@ export function DragDropUpload({
                     'flex items-center gap-3 p-3 rounded-md border',
                     hasError
                       ? 'border-destructive/50 bg-destructive/5'
-                      : 'border-border bg-background',
+                      : 'border-border bg-background'
                   )}
                 >
                   <FileIcon className='h-8 w-8 text-muted-foreground flex-shrink-0' />

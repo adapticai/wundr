@@ -49,21 +49,25 @@ function MetricCard({ metric }: { metric: MetricCardData }) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{metric.title}</CardTitle>
-        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+      <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+        <CardTitle className='text-sm font-medium'>{metric.title}</CardTitle>
+        {Icon && <Icon className='h-4 w-4 text-muted-foreground' />}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{metric.value}</div>
+        <div className='text-2xl font-bold'>{metric.value}</div>
         {metric.change !== undefined && (
-          <div className={cn('text-xs flex items-center gap-1 mt-1', trendColor)}>
-            {TrendIcon && <TrendIcon className="h-3 w-3" />}
+          <div
+            className={cn('text-xs flex items-center gap-1 mt-1', trendColor)}
+          >
+            {TrendIcon && <TrendIcon className='h-3 w-3' />}
             <span>
               {metric.change > 0 ? '+' : ''}
               {metric.change}%
             </span>
             {metric.changeLabel && (
-              <span className="text-muted-foreground">{metric.changeLabel}</span>
+              <span className='text-muted-foreground'>
+                {metric.changeLabel}
+              </span>
             )}
           </div>
         )}
@@ -83,11 +87,11 @@ export function PerformanceReport({
     <div className={cn('space-y-6', className)}>
       {/* Header */}
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">
+        <h2 className='text-3xl font-bold tracking-tight'>
           Performance Report
         </h2>
         {dateRange && (
-          <p className="text-muted-foreground">
+          <p className='text-muted-foreground'>
             {dateRange.from.toLocaleDateString()} -{' '}
             {dateRange.to.toLocaleDateString()}
           </p>
@@ -95,7 +99,7 @@ export function PerformanceReport({
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         {metrics.map((metric, index) => (
           <MetricCard key={index} metric={metric} />
         ))}
@@ -103,39 +107,39 @@ export function PerformanceReport({
 
       {/* Time Series Chart */}
       <AreaChart
-        title="Trend Over Time"
-        description="Performance metrics tracked over the selected period"
+        title='Trend Over Time'
+        description='Performance metrics tracked over the selected period'
         data={timeSeriesData}
         dataKeys={Object.keys(timeSeriesData[0] || {}).filter(
-          (k) => k !== 'date' && k !== 'name',
+          k => k !== 'date' && k !== 'name'
         )}
-        xAxisKey="date"
+        xAxisKey='date'
         height={400}
         stacked
         gradient
       />
 
       {/* Category Breakdown */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className='grid gap-4 md:grid-cols-2'>
         <BarChart
-          title="Category Breakdown"
-          description="Performance by category"
+          title='Category Breakdown'
+          description='Performance by category'
           data={categoryData}
           dataKeys={Object.keys(categoryData[0] || {}).filter(
-            (k) => k !== 'category' && k !== 'name',
+            k => k !== 'category' && k !== 'name'
           )}
-          xAxisKey="category"
+          xAxisKey='category'
           height={350}
         />
 
         <LineChart
-          title="Comparative Analysis"
-          description="Side-by-side comparison"
+          title='Comparative Analysis'
+          description='Side-by-side comparison'
           data={categoryData}
           dataKeys={Object.keys(categoryData[0] || {}).filter(
-            (k) => k !== 'category' && k !== 'name',
+            k => k !== 'category' && k !== 'name'
           )}
-          xAxisKey="category"
+          xAxisKey='category'
           height={350}
         />
       </div>

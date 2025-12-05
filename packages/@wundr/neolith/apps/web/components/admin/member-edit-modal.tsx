@@ -46,7 +46,7 @@ export function MemberEditModal({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'activity' | 'danger'>(
-    'details',
+    'details'
   );
 
   const fetchMemberDetails = useCallback(async () => {
@@ -60,7 +60,7 @@ export function MemberEditModal({
       const [detailsRes, activityRes] = await Promise.all([
         fetch(`/api/workspaces/${workspaceId}/admin/members/${member.id}`),
         fetch(
-          `/api/workspaces/${workspaceId}/admin/members/${member.id}/activity`,
+          `/api/workspaces/${workspaceId}/admin/members/${member.id}/activity`
         ),
       ]);
 
@@ -77,7 +77,7 @@ export function MemberEditModal({
       setActivity(activityData.activity || []);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load member details',
+        err instanceof Error ? err.message : 'Failed to load member details'
       );
       console.error('Failed to fetch member details:', err);
     } finally {
@@ -106,7 +106,7 @@ export function MemberEditModal({
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: selectedRole, customFields }),
-        },
+        }
       );
       if (!response.ok) {
         throw new Error('Failed to update member');
@@ -134,7 +134,7 @@ export function MemberEditModal({
         `/api/workspaces/${workspaceId}/admin/members/${member.id}/suspend`,
         {
           method: 'POST',
-        },
+        }
       );
       if (!response.ok) {
         throw new Error('Failed to suspend member');
@@ -157,7 +157,7 @@ export function MemberEditModal({
         `/api/workspaces/${workspaceId}/admin/members/${member.id}/activate`,
         {
           method: 'POST',
-        },
+        }
       );
       if (!response.ok) {
         throw new Error('Failed to activate member');
@@ -165,7 +165,7 @@ export function MemberEditModal({
       onSave();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to activate member',
+        err instanceof Error ? err.message : 'Failed to activate member'
       );
       console.error('Failed to activate member:', err);
     }
@@ -177,7 +177,7 @@ export function MemberEditModal({
     }
     if (
       !confirm(
-        `Are you sure you want to remove ${member.name} from this workspace? This action cannot be undone.`,
+        `Are you sure you want to remove ${member.name} from this workspace? This action cannot be undone.`
       )
     ) {
       return;
@@ -189,7 +189,7 @@ export function MemberEditModal({
         `/api/workspaces/${workspaceId}/admin/members/${member.id}`,
         {
           method: 'DELETE',
-        },
+        }
       );
       if (!response.ok) {
         throw new Error('Failed to remove member');
@@ -213,7 +213,7 @@ export function MemberEditModal({
       <div
         className={cn(
           'w-full max-w-2xl bg-card border border-border rounded-xl shadow-lg',
-          className,
+          className
         )}
         onClick={e => e.stopPropagation()}
       >
@@ -263,7 +263,7 @@ export function MemberEditModal({
                     ? tab === 'danger'
                       ? 'border-destructive text-destructive'
                       : 'border-stone-700 dark:border-stone-300 text-stone-700 dark:text-stone-300'
-                    : 'border-transparent text-muted-foreground hover:text-foreground',
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 )}
               >
                 {tab === 'danger' ? 'Danger Zone' : tab}
@@ -384,7 +384,7 @@ export function MemberEditModal({
                             ? 'text-green-500'
                             : member.status === 'suspended'
                               ? 'text-red-500'
-                              : 'text-yellow-500',
+                              : 'text-yellow-500'
                         )}
                       >
                         {member.status}
@@ -503,7 +503,7 @@ export function MemberEditModal({
               disabled={isSaving}
               className={cn(
                 'px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
+                'disabled:opacity-50 disabled:cursor-not-allowed'
               )}
             >
               {isSaving ? 'Saving...' : 'Save Changes'}

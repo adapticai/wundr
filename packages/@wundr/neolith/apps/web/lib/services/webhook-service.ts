@@ -28,7 +28,7 @@ export async function unregisterWebhook(webhookId: string): Promise<void> {
  */
 export async function triggerWebhook(
   webhookId: string,
-  payload: any,
+  payload: any
 ): Promise<any> {
   console.log('[WebhookService] triggerWebhook called with:', {
     webhookId,
@@ -54,7 +54,7 @@ export async function getWebhook(webhookId: string): Promise<any> {
  */
 export async function listWebhooks(
   workspaceId: string,
-  filters?: any,
+  filters?: any
 ): Promise<{ webhooks: any[]; total: number }> {
   console.log('[WebhookService] listWebhooks called with:', {
     workspaceId,
@@ -69,7 +69,7 @@ export async function listWebhooks(
  */
 export async function updateWebhook(
   webhookId: string,
-  updates: any,
+  updates: any
 ): Promise<any> {
   console.log('[WebhookService] updateWebhook called with:', {
     webhookId,
@@ -84,7 +84,7 @@ export async function updateWebhook(
  */
 export async function getWebhookHistory(
   webhookId: string,
-  limit?: number,
+  limit?: number
 ): Promise<any[]> {
   console.log('[WebhookService] getWebhookHistory called with:', {
     webhookId,
@@ -99,7 +99,7 @@ export async function getWebhookHistory(
  */
 export async function retryWebhookDelivery(
   webhookId: string,
-  deliveryId: string,
+  deliveryId: string
 ): Promise<any> {
   console.log('[WebhookService] retryWebhookDelivery called with:', {
     webhookId,
@@ -115,7 +115,7 @@ export async function retryWebhookDelivery(
 export async function validateWebhookSignature(
   payload: any,
   signature: string,
-  secret: string,
+  secret: string
 ): Promise<boolean> {
   console.log('[WebhookService] validateWebhookSignature called with:', {
     payload,
@@ -139,7 +139,7 @@ export async function createWebhook(
     active?: boolean;
     headers?: Record<string, string>;
   },
-  userId: string,
+  userId: string
 ): Promise<{ webhook: any; secret: string }> {
   console.log('[WebhookService] createWebhook called with:', {
     workspaceId,

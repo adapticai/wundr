@@ -87,7 +87,7 @@ export function ReportBuilder({
       } else if (reportRef.current) {
         await exportElementToPDF(
           reportRef.current.id || 'report-content',
-          `${title.toLowerCase().replace(/\s+/g, '-')}.pdf`,
+          `${title.toLowerCase().replace(/\s+/g, '-')}.pdf`
         );
       }
     } catch (error) {
@@ -113,11 +113,11 @@ export function ReportBuilder({
   return (
     <div className={cn('space-y-6', className)}>
       {/* Header with title and export */}
-      <div className="flex items-start justify-between">
+      <div className='flex items-start justify-between'>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+          <h1 className='text-3xl font-bold tracking-tight'>{title}</h1>
           {description && (
-            <p className="text-muted-foreground mt-1">{description}</p>
+            <p className='text-muted-foreground mt-1'>{description}</p>
           )}
         </div>
 
@@ -126,20 +126,20 @@ export function ReportBuilder({
             <DropdownMenuTrigger asChild>
               <Button disabled={isExporting}>
                 {isExporting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className='h-4 w-4 animate-spin' />
                 ) : (
-                  <Download className="h-4 w-4" />
+                  <Download className='h-4 w-4' />
                 )}
-                <span className="ml-2">Export</span>
+                <span className='ml-2'>Export</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align='end'>
               <DropdownMenuItem onClick={handleExportPDF}>
-                <FileText className="h-4 w-4 mr-2" />
+                <FileText className='h-4 w-4 mr-2' />
                 Export as PDF
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleExportCSV}>
-                <FileText className="h-4 w-4 mr-2" />
+                <FileText className='h-4 w-4 mr-2' />
                 Export as CSV
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -149,12 +149,12 @@ export function ReportBuilder({
 
       {/* Date Range Picker */}
       {showDateRange && (
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-medium">Date Range:</span>
+        <div className='flex items-center gap-4'>
+          <span className='text-sm font-medium'>Date Range:</span>
           <DateRangePicker
             value={dateRange}
             onChange={handleDateRangeChange}
-            className="w-[300px]"
+            className='w-[300px]'
           />
         </div>
       )}
@@ -171,7 +171,7 @@ export function ReportBuilder({
       <Separator />
 
       {/* Report Content */}
-      <div ref={reportRef} id="report-content">
+      <div ref={reportRef} id='report-content'>
         {children}
       </div>
     </div>

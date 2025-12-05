@@ -22,18 +22,19 @@ GET /api/workspaces/:workspaceSlug/channels/:channelId/analytics
 ## Authentication
 
 Requires valid session authentication. User must be:
+
 - Member of the organization
 - Member of the channel (for private channels)
 
 ## Query Parameters
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `startDate` | ISO 8601 | 30 days ago | Start of analysis period |
-| `endDate` | ISO 8601 | now | End of analysis period |
-| `granularity` | string | `day` | Time bucket size: `hour`, `day`, `week`, `month` |
-| `timezone` | string | `UTC` | Timezone for date calculations |
-| `export` | string | - | Export format: `json` or `csv` |
+| Parameter     | Type     | Default     | Description                                      |
+| ------------- | -------- | ----------- | ------------------------------------------------ |
+| `startDate`   | ISO 8601 | 30 days ago | Start of analysis period                         |
+| `endDate`     | ISO 8601 | now         | End of analysis period                           |
+| `granularity` | string   | `day`       | Time bucket size: `hour`, `day`, `week`, `month` |
+| `timezone`    | string   | `UTC`       | Timezone for date calculations                   |
+| `export`      | string   | -           | Export format: `json` or `csv`                   |
 
 ## Response Format
 
@@ -148,6 +149,7 @@ Requires valid session authentication. User must be:
 ### CSV Response (export=csv)
 
 When requesting CSV export, returns a formatted CSV file with sections:
+
 - Message Volume Over Time
 - Active Users Over Time
 - Peak Activity Hours
@@ -155,6 +157,7 @@ When requesting CSV export, returns a formatted CSV file with sections:
 - Top Contributors
 
 **Headers:**
+
 ```
 Content-Type: text/csv
 Content-Disposition: attachment; filename="channel-{slug}-analytics-{timestamp}.csv"
@@ -272,6 +275,7 @@ The API uses optimized Prisma queries with the following features:
 ### Dashboard Visualization
 
 Perfect for building channel analytics dashboards:
+
 ```typescript
 const analytics = await fetch(
   `/api/workspaces/${workspaceId}/channels/${channelId}/analytics?granularity=day`
@@ -284,22 +288,23 @@ const data = await analytics.json();
 ### Engagement Reports
 
 Generate weekly engagement reports:
+
 ```typescript
 const startDate = new Date();
 startDate.setDate(startDate.getDate() - 7);
 
 const analytics = await fetch(
   `/api/workspaces/${workspaceId}/channels/${channelId}/analytics?` +
-  `startDate=${startDate.toISOString()}&granularity=day`
+    `startDate=${startDate.toISOString()}&granularity=day`
 );
 ```
 
 ### Export for Analysis
 
 Download CSV for external analysis:
+
 ```typescript
-window.location.href =
-  `/api/workspaces/${workspaceId}/channels/${channelId}/analytics?export=csv`;
+window.location.href = `/api/workspaces/${workspaceId}/channels/${channelId}/analytics?export=csv`;
 ```
 
 ## Future Enhancements
@@ -324,11 +329,13 @@ Potential improvements for future versions:
 ## Testing
 
 Comprehensive test suite available at:
+
 ```
 apps/web/app/api/workspaces/[workspaceSlug]/channels/[channelId]/analytics/__tests__/analytics.test.ts
 ```
 
 Run tests:
+
 ```bash
 pnpm test analytics.test.ts
 ```
@@ -336,5 +343,6 @@ pnpm test analytics.test.ts
 ## Support
 
 For issues or questions:
+
 - GitHub Issues: [github.com/yourorg/neolith/issues](https://github.com)
 - Documentation: [docs.neolith.com](https://docs.neolith.com)

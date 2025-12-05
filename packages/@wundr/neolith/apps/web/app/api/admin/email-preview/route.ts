@@ -55,7 +55,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       if (!session?.user?.id) {
         return NextResponse.json(
           { error: 'Authentication required' },
-          { status: 401 },
+          { status: 401 }
         );
       }
 
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       if (!isAdmin) {
         return NextResponse.json(
           { error: 'Admin access required' },
-          { status: 403 },
+          { status: 403 }
         );
       }
     }
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!template) {
       return NextResponse.json(
         { error: 'Missing required parameter: template' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -164,7 +164,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
               'password-changed',
             ],
           },
-          { status: 400 },
+          { status: 400 }
         );
     }
 
@@ -187,7 +187,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: 'Failed to render email template',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

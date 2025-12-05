@@ -63,7 +63,7 @@ function getMessageContent(message: UIMessage): string {
   }
   return message.parts
     .filter(
-      (part): part is { type: 'text'; text: string } => part.type === 'text',
+      (part): part is { type: 'text'; text: string } => part.type === 'text'
     )
     .map(part => part.text)
     .join('');
@@ -93,8 +93,13 @@ interface OptimizationSuggestion {
   impact: 'high' | 'medium' | 'low';
 }
 
-function parseOptimizationsFromToolCall(toolCall: any): OptimizationSuggestion[] {
-  if (toolCall?.toolName === 'suggest_optimizations' && toolCall?.args?.suggestions) {
+function parseOptimizationsFromToolCall(
+  toolCall: any
+): OptimizationSuggestion[] {
+  if (
+    toolCall?.toolName === 'suggest_optimizations' &&
+    toolCall?.args?.suggestions
+  ) {
     return toolCall.args.suggestions as OptimizationSuggestion[];
   }
   return [];
@@ -119,8 +124,13 @@ interface StepRecommendation {
   configuration?: Record<string, unknown>;
 }
 
-function parseStepRecommendationsFromToolCall(toolCall: any): StepRecommendation[] {
-  if (toolCall?.toolName === 'recommend_steps' && toolCall?.args?.recommendations) {
+function parseStepRecommendationsFromToolCall(
+  toolCall: any
+): StepRecommendation[] {
+  if (
+    toolCall?.toolName === 'recommend_steps' &&
+    toolCall?.args?.recommendations
+  ) {
     return toolCall.args.recommendations as StepRecommendation[];
   }
   return [];
@@ -149,9 +159,14 @@ export function WorkflowAIAssistant({
   const [activeSection, setActiveSection] = React.useState<
     'chat' | 'suggestions' | 'errors' | 'steps' | null
   >('chat');
-  const [optimizations, setOptimizations] = React.useState<OptimizationSuggestion[]>([]);
-  const [errorDiagnosis, setErrorDiagnosis] = React.useState<ErrorDiagnosis | null>(null);
-  const [stepRecommendations, setStepRecommendations] = React.useState<StepRecommendation[]>([]);
+  const [optimizations, setOptimizations] = React.useState<
+    OptimizationSuggestion[]
+  >([]);
+  const [errorDiagnosis, setErrorDiagnosis] =
+    React.useState<ErrorDiagnosis | null>(null);
+  const [stepRecommendations, setStepRecommendations] = React.useState<
+    StepRecommendation[]
+  >([]);
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   // Main chat interface
@@ -204,7 +219,8 @@ export function WorkflowAIAssistant({
   // Handle quick action: Create workflow from description
   const handleQuickCreate = React.useCallback(async () => {
     setActiveSection('chat');
-    const message = "I'll help you create a workflow. What would you like it to do?";
+    const message =
+      "I'll help you create a workflow. What would you like it to do?";
     await chat.sendMessage({ text: message });
   }, [chat]);
 
@@ -254,7 +270,7 @@ export function WorkflowAIAssistant({
       setInput('');
       await chat.sendMessage({ text: message });
     },
-    [input, chat],
+    [input, chat]
   );
 
   // Handle section toggle
@@ -274,14 +290,15 @@ export function WorkflowAIAssistant({
     return null;
   }
 
-  const isChatLoading = chat.status === 'streaming' || chat.status === 'submitted';
+  const isChatLoading =
+    chat.status === 'streaming' || chat.status === 'submitted';
   const hasError = execution?.status === 'failed';
 
   return (
     <Card
       className={cn(
         'flex h-full w-[400px] flex-col border-l shadow-lg',
-        className,
+        className
       )}
     >
       {/* Header */}
@@ -387,14 +404,16 @@ export function WorkflowAIAssistant({
                     <div className='flex items-start justify-between gap-2'>
                       <div className='flex-1'>
                         <div className='flex items-center gap-2'>
-                          <h4 className='font-medium text-sm'>{suggestion.title}</h4>
+                          <h4 className='font-medium text-sm'>
+                            {suggestion.title}
+                          </h4>
                           <Badge
                             variant={
                               suggestion.impact === 'high'
                                 ? 'destructive'
                                 : suggestion.impact === 'medium'
-                                ? 'default'
-                                : 'secondary'
+                                  ? 'default'
+                                  : 'secondary'
                             }
                           >
                             {suggestion.impact}
@@ -456,10 +475,15 @@ export function WorkflowAIAssistant({
                 </div>
                 {errorDiagnosis.preventionTips.length > 0 && (
                   <div>
-                    <h4 className='font-medium text-sm mb-1'>Prevention Tips</h4>
+                    <h4 className='font-medium text-sm mb-1'>
+                      Prevention Tips
+                    </h4>
                     <ul className='space-y-1'>
                       {errorDiagnosis.preventionTips.map((tip, index) => (
-                        <li key={index} className='text-sm text-muted-foreground'>
+                        <li
+                          key={index}
+                          className='text-sm text-muted-foreground'
+                        >
                           • {tip}
                         </li>
                       ))}
@@ -500,7 +524,9 @@ export function WorkflowAIAssistant({
                   >
                     <div className='flex items-start justify-between gap-2'>
                       <div className='flex-1'>
-                        <h4 className='font-medium text-sm'>{recommendation.stepType}</h4>
+                        <h4 className='font-medium text-sm'>
+                          {recommendation.stepType}
+                        </h4>
                         <p className='text-sm text-muted-foreground mt-1'>
                           {recommendation.reason}
                         </p>
@@ -509,9 +535,11 @@ export function WorkflowAIAssistant({
                     <Button
                       size='sm'
                       variant='secondary'
-                      onClick={() => chat.sendMessage({
-                        text: `Add a ${recommendation.stepType} step to the workflow`,
-                      })}
+                      onClick={() =>
+                        chat.sendMessage({
+                          text: `Add a ${recommendation.stepType} step to the workflow`,
+                        })
+                      }
                       className='w-full'
                     >
                       <Plus className='h-3 w-3 mr-1' />
@@ -549,7 +577,8 @@ export function WorkflowAIAssistant({
                     <div className='flex flex-col items-center justify-center py-8 text-center'>
                       <Bot className='h-12 w-12 text-muted-foreground mb-2' />
                       <p className='text-sm text-muted-foreground max-w-[250px]'>
-                        Describe what you want your workflow to do in natural language
+                        Describe what you want your workflow to do in natural
+                        language
                       </p>
                     </div>
                   ) : (
@@ -562,7 +591,7 @@ export function WorkflowAIAssistant({
                           key={message.id}
                           className={cn(
                             'flex gap-2',
-                            isUser ? 'flex-row-reverse' : 'flex-row',
+                            isUser ? 'flex-row-reverse' : 'flex-row'
                           )}
                         >
                           <div
@@ -570,7 +599,7 @@ export function WorkflowAIAssistant({
                               'rounded-lg px-3 py-2 max-w-[85%]',
                               isUser
                                 ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted',
+                                : 'bg-muted'
                             )}
                           >
                             <p className='text-sm whitespace-pre-wrap break-words'>
@@ -592,7 +621,10 @@ export function WorkflowAIAssistant({
               </div>
 
               {/* Chat Input */}
-              <form onSubmit={handleChatSubmit} className='flex gap-2 mt-4 flex-shrink-0'>
+              <form
+                onSubmit={handleChatSubmit}
+                className='flex gap-2 mt-4 flex-shrink-0'
+              >
                 <Textarea
                   value={input}
                   onChange={e => setInput(e.target.value)}

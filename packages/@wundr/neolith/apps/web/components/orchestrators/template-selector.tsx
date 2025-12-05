@@ -75,7 +75,7 @@ export function TemplateSelector({
         template.name.toLowerCase().includes(search.toLowerCase()) ||
         template.description.toLowerCase().includes(search.toLowerCase()) ||
         template.tags.some(tag =>
-          tag.toLowerCase().includes(search.toLowerCase()),
+          tag.toLowerCase().includes(search.toLowerCase())
         );
 
       const matchesCategory =
@@ -209,7 +209,7 @@ function TemplateCard({
     <Card
       className={cn(
         'group relative cursor-pointer transition-all hover:shadow-md',
-        disabled && 'pointer-events-none opacity-50',
+        disabled && 'pointer-events-none opacity-50'
       )}
       onClick={onSelect}
     >

@@ -70,14 +70,14 @@ async function getWorkspaceWithAccess(workspaceSlug: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required', code: 'UNAUTHORIZED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -87,7 +87,7 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied', code: 'NOT_FOUND' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -97,7 +97,7 @@ export async function GET(
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.min(
       100,
-      Math.max(1, parseInt(searchParams.get('limit') || '50', 10)),
+      Math.max(1, parseInt(searchParams.get('limit') || '50', 10))
     );
     const skip = (page - 1) * limit;
 
@@ -181,13 +181,13 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/saved-items] Error:',
-      error,
+      error
     );
     const errorMessage =
       error instanceof Error ? error.message : 'An internal error occurred';
     return NextResponse.json(
       { error: errorMessage, code: 'INTERNAL_ERROR', details: String(error) },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -206,14 +206,14 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required', code: 'UNAUTHORIZED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -223,7 +223,7 @@ export async function POST(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied', code: 'NOT_FOUND' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -240,7 +240,7 @@ export async function POST(
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON body', code: 'VALIDATION_ERROR' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -252,7 +252,7 @@ export async function POST(
           error: 'Invalid type. Must be MESSAGE or FILE.',
           code: 'VALIDATION_ERROR',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -262,14 +262,14 @@ export async function POST(
           error: 'messageId is required for MESSAGE type',
           code: 'VALIDATION_ERROR',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (type === 'FILE' && !fileId) {
       return NextResponse.json(
         { error: 'fileId is required for FILE type', code: 'VALIDATION_ERROR' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -291,7 +291,7 @@ export async function POST(
       if (!message || message.channel.channelMembers.length === 0) {
         return NextResponse.json(
           { error: 'Message not found or access denied', code: 'NOT_FOUND' },
-          { status: 404 },
+          { status: 404 }
         );
       }
 
@@ -312,7 +312,7 @@ export async function POST(
             code: 'ALREADY_EXISTS',
             data: existing,
           },
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
@@ -328,7 +328,7 @@ export async function POST(
       if (!file) {
         return NextResponse.json(
           { error: 'File not found', code: 'NOT_FOUND' },
-          { status: 404 },
+          { status: 404 }
         );
       }
 
@@ -349,7 +349,7 @@ export async function POST(
             code: 'ALREADY_EXISTS',
             data: existing,
           },
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
@@ -405,12 +405,12 @@ export async function POST(
 
     return NextResponse.json(
       { data: savedItem, message: 'Item saved successfully' },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceSlug/saved-items] Error:',
-      error,
+      error
     );
 
     if (
@@ -419,13 +419,13 @@ export async function POST(
     ) {
       return NextResponse.json(
         { error: 'Item already saved', code: 'ALREADY_EXISTS' },
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
       { error: 'An internal error occurred', code: 'INTERNAL_ERROR' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

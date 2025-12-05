@@ -54,12 +54,12 @@ export function StepPalette({
   initialExpanded = ['triggers', 'actions'],
 }: StepPaletteProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<StepCategory | 'all'>(
-    'all',
-  );
-  const [expandedCategories, setExpandedCategories] = useState<Set<StepCategory>>(
-    new Set(initialExpanded),
-  );
+  const [selectedCategory, setSelectedCategory] = useState<
+    StepCategory | 'all'
+  >('all');
+  const [expandedCategories, setExpandedCategories] = useState<
+    Set<StepCategory>
+  >(new Set(initialExpanded));
 
   // Filter steps based on search and category
   const filteredSteps = useMemo(() => {
@@ -91,7 +91,10 @@ export function StepPalette({
   };
 
   const handleDragStart = (step: StepType<unknown>, event: React.DragEvent) => {
-    event.dataTransfer.setData('application/json', JSON.stringify({ stepId: step.id }));
+    event.dataTransfer.setData(
+      'application/json',
+      JSON.stringify({ stepId: step.id })
+    );
     event.dataTransfer.effectAllowed = 'copy';
     onStepDragStart?.(step, event);
   };
@@ -154,7 +157,9 @@ export function StepPalette({
             {Object.values(STEP_CATEGORIES).map(category => (
               <Button
                 key={category.id}
-                variant={selectedCategory === category.id ? 'default' : 'outline'}
+                variant={
+                  selectedCategory === category.id ? 'default' : 'outline'
+                }
                 size='sm'
                 onClick={() => setSelectedCategory(category.id)}
               >
@@ -172,7 +177,8 @@ export function StepPalette({
             // Search results view
             <div className='space-y-2'>
               <p className='mb-3 text-xs text-muted-foreground'>
-                {filteredSteps.length} result{filteredSteps.length !== 1 ? 's' : ''}
+                {filteredSteps.length} result
+                {filteredSteps.length !== 1 ? 's' : ''}
               </p>
               {filteredSteps.map(step => (
                 <StepCard
@@ -290,14 +296,14 @@ function StepCard({ step, compact, onClick, onDragStart }: StepCardProps) {
             'group flex w-full items-start gap-3 rounded-md border bg-card p-3 text-left transition-all',
             'hover:border-primary hover:shadow-sm',
             'active:scale-[0.98]',
-            'cursor-grab active:cursor-grabbing',
+            'cursor-grab active:cursor-grabbing'
           )}
         >
           {/* Icon */}
           <div
             className={cn(
               'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors',
-              'bg-muted group-hover:bg-primary/10',
+              'bg-muted group-hover:bg-primary/10'
             )}
           >
             <Icon className={cn('h-4 w-4', step.color)} />
@@ -306,7 +312,9 @@ function StepCard({ step, compact, onClick, onDragStart }: StepCardProps) {
           {/* Content */}
           <div className='min-w-0 flex-1'>
             <div className='flex items-start justify-between gap-2'>
-              <h3 className='text-sm font-medium text-foreground'>{step.name}</h3>
+              <h3 className='text-sm font-medium text-foreground'>
+                {step.name}
+              </h3>
               {step.deprecated && (
                 <Badge variant='outline' className='text-xs'>
                   Deprecated
@@ -365,7 +373,7 @@ function StepDetailPreview({ step }: StepDetailPreviewProps) {
         <div
           className={cn(
             'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-            'bg-primary/10',
+            'bg-primary/10'
           )}
         >
           <Icon className={cn('h-5 w-5', step.color)} />

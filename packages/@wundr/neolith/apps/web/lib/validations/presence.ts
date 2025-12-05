@@ -145,7 +145,7 @@ export const userIdParamSchema = z.object({
 export const createPresenceErrorResponse = (
   message: string,
   code: PresenceErrorCode,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) => ({
   error: {
     code,

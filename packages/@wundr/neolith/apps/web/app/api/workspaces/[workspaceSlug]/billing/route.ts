@@ -82,7 +82,7 @@ interface PlanChangeRequest {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _generateMockBillingInfo(
   workspaceId: string,
-  plan: BillingPlan = 'FREE',
+  plan: BillingPlan = 'FREE'
 ): BillingInfo {
   const planLimits = {
     FREE: { storage: 5, users: 5, apiCalls: 1000, price: 0 },
@@ -105,13 +105,13 @@ function _generateMockBillingInfo(
       },
       users: {
         active: Math.floor(
-          Math.random() * (limits.users > 0 ? limits.users : 100) * 0.6,
+          Math.random() * (limits.users > 0 ? limits.users : 100) * 0.6
         ),
         limit: limits.users,
       },
       apiCalls: {
         count: Math.floor(
-          Math.random() * (limits.apiCalls > 0 ? limits.apiCalls : 100000) * 0.5,
+          Math.random() * (limits.apiCalls > 0 ? limits.apiCalls : 100000) * 0.5
         ),
         limit: limits.apiCalls,
         period: 'month',
@@ -155,7 +155,7 @@ function _generateMockBillingInfo(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -166,7 +166,7 @@ export async function GET(
           error: 'Authentication required',
           code: 'UNAUTHORIZED',
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -179,7 +179,7 @@ export async function GET(
           error: 'Workspace identifier is required',
           code: 'VALIDATION_ERROR',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -201,7 +201,7 @@ export async function GET(
           error: 'Workspace not found',
           code: 'NOT_FOUND',
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -211,7 +211,7 @@ export async function GET(
           error: 'Access denied',
           code: 'FORBIDDEN',
         },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -311,7 +311,7 @@ export async function GET(
       {
         data: billingInfo,
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error('[GET /api/workspaces/:workspaceId/billing] Error:', error);
@@ -320,7 +320,7 @@ export async function GET(
         error: 'An internal error occurred',
         code: 'INTERNAL_ERROR',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -340,7 +340,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -351,7 +351,7 @@ export async function POST(
           error: 'Authentication required',
           code: 'UNAUTHORIZED',
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -364,7 +364,7 @@ export async function POST(
           error: 'Workspace identifier is required',
           code: 'VALIDATION_ERROR',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -389,7 +389,7 @@ export async function POST(
           error: 'Workspace not found',
           code: 'NOT_FOUND',
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -399,7 +399,7 @@ export async function POST(
           error: 'Only workspace owners/admins can change billing plans',
           code: 'FORBIDDEN',
         },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -413,7 +413,7 @@ export async function POST(
           error: 'Invalid JSON body',
           code: 'VALIDATION_ERROR',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -428,7 +428,7 @@ export async function POST(
             'Invalid plan specified. Must be one of: FREE, PRO, ENTERPRISE',
           code: 'VALIDATION_ERROR',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -441,7 +441,7 @@ export async function POST(
           error: 'Invalid billing interval. Must be monthly or annual',
           code: 'VALIDATION_ERROR',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -546,7 +546,7 @@ export async function POST(
         data: billingInfo,
         message: `Plan successfully changed to ${changeRequest.plan}`,
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error('[POST /api/workspaces/:workspaceId/billing] Error:', error);
@@ -555,7 +555,7 @@ export async function POST(
         error: 'An internal error occurred',
         code: 'INTERNAL_ERROR',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

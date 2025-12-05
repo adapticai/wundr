@@ -49,7 +49,7 @@ export function StarButton({
         <Star
           className={cn(
             iconSize,
-            isStarred && 'fill-yellow-400 text-yellow-400',
+            isStarred && 'fill-yellow-400 text-yellow-400'
           )}
         />
       )}

@@ -147,7 +147,7 @@ export function MobileSidebar({
 }: MobileSidebarProps) {
   const pathname = usePathname();
   const [openSections, setOpenSections] = React.useState<Set<string>>(
-    new Set(sections.filter(s => s.defaultOpen).map(s => s.id)),
+    new Set(sections.filter(s => s.defaultOpen).map(s => s.id))
   );
 
   const toggleSection = React.useCallback((sectionId: string) => {
@@ -168,7 +168,7 @@ export function MobileSidebar({
         onChannelClick(channelId);
       }
     },
-    [onChannelClick],
+    [onChannelClick]
   );
 
   return (
@@ -193,7 +193,7 @@ export function MobileSidebar({
                     'text-sm font-semibold text-muted-foreground',
                     'hover:text-foreground transition-colors',
                     'rounded-md hover:bg-accent',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                   )}
                 >
                   <span className='uppercase tracking-wider text-xs'>
@@ -226,7 +226,7 @@ export function MobileSidebar({
                           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                           isActive
                             ? 'bg-accent text-accent-foreground'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                         )}
                         aria-label={channel.name}
                         aria-current={isActive ? 'page' : undefined}
@@ -241,7 +241,7 @@ export function MobileSidebar({
                               'flex items-center justify-center',
                               'min-w-[20px] h-5 px-1.5',
                               'text-xs font-bold text-white',
-                              'bg-primary rounded-full',
+                              'bg-primary rounded-full'
                             )}
                             aria-label={`${channel.unread} unread messages`}
                           >
@@ -277,7 +277,7 @@ export function MobileSidebar({
                 className={cn(
                   'absolute bottom-0 right-0',
                   'w-3 h-3 rounded-full border-2 border-background',
-                  getStatusColor(user.status),
+                  getStatusColor(user.status)
                 )}
                 aria-label={`Status: ${user.status}`}
               />
@@ -350,7 +350,7 @@ export function MobileSidebarItem({
             'flex items-center justify-center',
             'min-w-[20px] h-5 px-1.5',
             'text-xs font-bold text-white',
-            'bg-primary rounded-full',
+            'bg-primary rounded-full'
           )}
           aria-label={`${badge} notifications`}
         >
@@ -370,7 +370,7 @@ export function MobileSidebarItem({
     isActive
       ? 'bg-accent text-accent-foreground'
       : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-    className,
+    className
   );
 
   if (href) {

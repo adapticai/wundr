@@ -40,7 +40,7 @@ export type SearchErrorCode =
 export function createSearchErrorResponse(
   message: string,
   code: SearchErrorCode,
-  extraData?: Record<string, unknown>,
+  extraData?: Record<string, unknown>
 ): { error: SearchErrorCode; message: string } & Record<string, unknown> {
   return {
     error: code,
@@ -225,14 +225,14 @@ export const searchFacetsSchema = z.object({
     z.object({
       type: z.string(),
       count: z.number().int().min(0),
-    }),
+    })
   ),
   channels: z.array(
     z.object({
       id: z.string(),
       name: z.string(),
       count: z.number().int().min(0),
-    }),
+    })
   ),
 });
 
@@ -354,7 +354,7 @@ export const dmResultSchema = z.object({
       name: z.string().nullable(),
       avatarUrl: z.string().nullable(),
       isOrchestrator: z.boolean(),
-    }),
+    })
   ),
   lastMessageAt: z.date().nullable(),
   highlighted: highlightSchema.optional(),

@@ -86,7 +86,7 @@ interface SystemHealth {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   const startTime = Date.now();
 
@@ -96,9 +96,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED,
+          ADMIN_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -113,9 +113,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Workspace not found',
-          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -124,16 +124,13 @@ export async function GET(
       where: { workspaceId: workspace.id, userId: session.user.id },
     });
 
-    if (
-      !membership ||
-      !['ADMIN', 'OWNER'].includes(membership.role)
-    ) {
+    if (!membership || !['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN,
+          ADMIN_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -146,7 +143,8 @@ export async function GET(
       await prisma.$queryRaw`SELECT 1`;
       const dbLatency = Date.now() - dbStartTime;
       databaseHealth = {
-        status: dbLatency < 100 ? 'healthy' : dbLatency < 500 ? 'degraded' : 'down',
+        status:
+          dbLatency < 100 ? 'healthy' : dbLatency < 500 ? 'degraded' : 'down',
         latency: dbLatency,
         lastChecked: now,
       };
@@ -165,7 +163,12 @@ export async function GET(
       await redis.ping();
       const redisLatency = Date.now() - redisStartTime;
       redisHealth = {
-        status: redisLatency < 50 ? 'healthy' : redisLatency < 200 ? 'degraded' : 'down',
+        status:
+          redisLatency < 50
+            ? 'healthy'
+            : redisLatency < 200
+              ? 'degraded'
+              : 'down',
         latency: redisLatency,
         lastChecked: now,
       };
@@ -189,7 +192,12 @@ export async function GET(
       const storagePercentage = (storageUsed / storageLimit) * 100;
 
       storageHealth = {
-        status: storagePercentage < 80 ? 'healthy' : storagePercentage < 95 ? 'degraded' : 'down',
+        status:
+          storagePercentage < 80
+            ? 'healthy'
+            : storagePercentage < 95
+              ? 'degraded'
+              : 'down',
         lastChecked: now,
       };
     } catch (error) {
@@ -202,11 +210,15 @@ export async function GET(
 
     // Determine overall status
     const overallStatus: HealthStatus =
-      databaseHealth.status === 'down' || redisHealth.status === 'down' || storageHealth.status === 'down'
+      databaseHealth.status === 'down' ||
+      redisHealth.status === 'down' ||
+      storageHealth.status === 'down'
         ? 'down'
-        : databaseHealth.status === 'degraded' || redisHealth.status === 'degraded' || storageHealth.status === 'degraded'
-        ? 'degraded'
-        : 'healthy';
+        : databaseHealth.status === 'degraded' ||
+            redisHealth.status === 'degraded' ||
+            storageHealth.status === 'degraded'
+          ? 'degraded'
+          : 'healthy';
 
     // Get resource usage
     const memUsage = process.memoryUsage();
@@ -254,14 +266,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/admin/health] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to check system health',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR,
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

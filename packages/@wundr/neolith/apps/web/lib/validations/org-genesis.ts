@@ -61,7 +61,7 @@ export const orgDescriptionSchema = z.object({
     .string()
     .min(
       50,
-      'Please provide at least 50 characters describing your organization',
+      'Please provide at least 50 characters describing your organization'
     )
     .max(2000, 'Description must be less than 2000 characters'),
   strategy: z

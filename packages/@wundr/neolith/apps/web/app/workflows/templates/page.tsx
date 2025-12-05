@@ -11,7 +11,6 @@ import { ArrowLeft, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -40,14 +39,14 @@ export default function WorkflowTemplatesPage() {
     clearTemplate,
     createAndEdit,
   } = useWorkflowTemplate({
-    onWorkflowCreated: (workflowId) => {
+    onWorkflowCreated: workflowId => {
       toast({
         title: 'Workflow created',
         description: 'Your workflow has been created from the template.',
       });
       // Navigation will be handled by createAndEdit
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Failed to create workflow',
         description: error.message,
@@ -77,28 +76,28 @@ export default function WorkflowTemplatesPage() {
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className='container mx-auto py-8'>
       {/* Header */}
-      <div className="mb-8">
+      <div className='mb-8'>
         <Button
-          variant="ghost"
-          size="sm"
+          variant='ghost'
+          size='sm'
           onClick={() => router.push('/workflows')}
-          className="mb-4"
+          className='mb-4'
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className='mr-2 h-4 w-4' />
           Back to Workflows
         </Button>
 
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <Sparkles className="h-6 w-6 text-primary" />
+        <div className='flex items-center gap-3'>
+          <div className='flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10'>
+            <Sparkles className='h-6 w-6 text-primary' />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className='text-3xl font-bold tracking-tight'>
               Workflow Templates
             </h1>
-            <p className="text-muted-foreground">
+            <p className='text-muted-foreground'>
               Choose from our collection of pre-built workflow templates to get
               started quickly
             </p>
@@ -111,7 +110,7 @@ export default function WorkflowTemplatesPage() {
 
       {/* Configuration Dialog */}
       <Dialog open={showConfigurator} onOpenChange={setShowConfigurator}>
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+        <DialogContent className='max-h-[90vh] max-w-2xl overflow-y-auto'>
           {selectedTemplate && (
             <>
               <DialogHeader>

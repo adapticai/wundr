@@ -14,6 +14,7 @@ Comprehensive export functionality for CSV, PDF, Excel, chart images, and custom
 ## Installation
 
 Required packages are already installed:
+
 - `jspdf` - PDF generation
 - `jspdf-autotable` - PDF tables
 - `xlsx` - Excel generation
@@ -118,18 +119,12 @@ await exportMultipleSheetsToXLSX(sheets, {
 ### Report Templates
 
 ```typescript
-import {
-  exportReportToPDF,
-  createDashboardReportTemplate,
-  getTemplate
-} from '@/lib/export';
+import { exportReportToPDF, createDashboardReportTemplate, getTemplate } from '@/lib/export';
 
 // Use pre-built template
-const template = createDashboardReportTemplate(
-  'Monthly Report',
-  ['revenue-chart', 'users-chart'],
-  { includeDataTables: true }
-);
+const template = createDashboardReportTemplate('Monthly Report', ['revenue-chart', 'users-chart'], {
+  includeDataTables: true,
+});
 
 // Export with template
 const sections = template.sections.map(section => {
@@ -287,7 +282,7 @@ const readable = formatFileSize(estimatedBytes); // "1.23 MB"
 ```typescript
 import { createProgressTracker } from '@/lib/export';
 
-const tracker = createProgressTracker(100, (progress) => {
+const tracker = createProgressTracker(100, progress => {
   console.log(`Progress: ${progress}%`);
 });
 

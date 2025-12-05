@@ -111,7 +111,7 @@ export default function OrchestratorDetailPage() {
     if (orchestrator) {
       setPageHeader(
         orchestrator.title,
-        orchestrator.description || 'Orchestrator details and configuration',
+        orchestrator.description || 'Orchestrator details and configuration'
       );
     }
   }, [orchestrator, setPageHeader]);
@@ -201,7 +201,7 @@ export default function OrchestratorDetailPage() {
       setIsCharterEditorOpen(false);
       refetch();
     },
-    [orchestrator, updateOrchestrator, refetch],
+    [orchestrator, updateOrchestrator, refetch]
   );
 
   // Fetch charter versions
@@ -212,7 +212,7 @@ export default function OrchestratorDetailPage() {
 
     try {
       const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/charter/versions`,
+        `/api/orchestrators/${orchestratorId}/charter/versions`
       );
       if (response.ok) {
         const data = await response.json();
@@ -231,7 +231,7 @@ export default function OrchestratorDetailPage() {
       }
 
       const confirmRollback = window.confirm(
-        `Are you sure you want to rollback to version ${version}? This will create a new version with the previous charter.`,
+        `Are you sure you want to rollback to version ${version}? This will create a new version with the previous charter.`
       );
 
       if (!confirmRollback) {
@@ -255,7 +255,7 @@ export default function OrchestratorDetailPage() {
       updateOrchestrator,
       refetch,
       fetchCharterVersions,
-    ],
+    ]
   );
 
   // Load charter versions when on charter tab
@@ -305,455 +305,460 @@ export default function OrchestratorDetailPage() {
     <div className='flex gap-6'>
       {/* Main Content */}
       <div className='flex-1 space-y-6'>
-      {/* Breadcrumbs */}
-      <nav className='flex items-center gap-2 text-sm text-muted-foreground'>
-        <button
-          type='button'
-          onClick={() => router.push(`/${workspaceSlug}/orchestrators`)}
-          className='hover:text-foreground transition-colors'
-        >
-          Orchestrators
-        </button>
-        <ChevronRight className='h-4 w-4' />
-        <span className='text-foreground font-medium'>
-          {orchestrator.title}
-        </span>
-      </nav>
+        {/* Breadcrumbs */}
+        <nav className='flex items-center gap-2 text-sm text-muted-foreground'>
+          <button
+            type='button'
+            onClick={() => router.push(`/${workspaceSlug}/orchestrators`)}
+            className='hover:text-foreground transition-colors'
+          >
+            Orchestrators
+          </button>
+          <ChevronRight className='h-4 w-4' />
+          <span className='text-foreground font-medium'>
+            {orchestrator.title}
+          </span>
+        </nav>
 
-      {/* Header Section */}
-      <Card>
-        <CardHeader>
-          <div className='flex items-start justify-between'>
-            <div className='flex items-start gap-4'>
-              {/* Avatar */}
-              <div className='flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl font-bold'>
-                {orchestrator.avatarUrl ? (
-                  <img
-                    src={orchestrator.avatarUrl}
-                    alt={orchestrator.title}
-                    className='h-full w-full rounded-full object-cover'
-                  />
-                ) : (
-                  orchestrator.title.substring(0, 2).toUpperCase()
-                )}
-              </div>
+        {/* Header Section */}
+        <Card>
+          <CardHeader>
+            <div className='flex items-start justify-between'>
+              <div className='flex items-start gap-4'>
+                {/* Avatar */}
+                <div className='flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl font-bold'>
+                  {orchestrator.avatarUrl ? (
+                    <img
+                      src={orchestrator.avatarUrl}
+                      alt={orchestrator.title}
+                      className='h-full w-full rounded-full object-cover'
+                    />
+                  ) : (
+                    orchestrator.title.substring(0, 2).toUpperCase()
+                  )}
+                </div>
 
-              <div className='flex-1'>
-                {isEditingMode ? (
-                  <input
-                    type='text'
-                    value={editFormData.title || ''}
-                    onChange={e =>
-                      setEditFormData({
-                        ...editFormData,
-                        title: e.target.value,
-                      })
-                    }
-                    className='text-2xl font-bold border-b-2 border-primary bg-transparent focus:outline-none w-full'
-                  />
-                ) : (
-                  <CardTitle className='text-2xl'>
-                    {orchestrator.title}
-                  </CardTitle>
-                )}
+                <div className='flex-1'>
+                  {isEditingMode ? (
+                    <input
+                      type='text'
+                      value={editFormData.title || ''}
+                      onChange={e =>
+                        setEditFormData({
+                          ...editFormData,
+                          title: e.target.value,
+                        })
+                      }
+                      className='text-2xl font-bold border-b-2 border-primary bg-transparent focus:outline-none w-full'
+                    />
+                  ) : (
+                    <CardTitle className='text-2xl'>
+                      {orchestrator.title}
+                    </CardTitle>
+                  )}
 
-                {isEditingMode ? (
-                  <textarea
-                    value={editFormData.description || ''}
-                    onChange={e =>
-                      setEditFormData({
-                        ...editFormData,
-                        description: e.target.value,
-                      })
-                    }
-                    className='mt-2 w-full border rounded-md p-2 text-sm bg-muted'
-                    rows={2}
-                    placeholder='Add a description...'
-                  />
-                ) : (
-                  <CardDescription className='mt-1'>
-                    {orchestrator.description || 'No description provided'}
-                  </CardDescription>
-                )}
+                  {isEditingMode ? (
+                    <textarea
+                      value={editFormData.description || ''}
+                      onChange={e =>
+                        setEditFormData({
+                          ...editFormData,
+                          description: e.target.value,
+                        })
+                      }
+                      className='mt-2 w-full border rounded-md p-2 text-sm bg-muted'
+                      rows={2}
+                      placeholder='Add a description...'
+                    />
+                  ) : (
+                    <CardDescription className='mt-1'>
+                      {orchestrator.description || 'No description provided'}
+                    </CardDescription>
+                  )}
 
-                <div className='mt-3 flex flex-wrap gap-2'>
-                  <Badge
-                    className={cn(statusConfig.bgColor, statusConfig.color)}
-                  >
-                    {statusConfig.label}
-                  </Badge>
-                  {isEditingMode && (
+                  <div className='mt-3 flex flex-wrap gap-2'>
                     <Badge
-                      variant='outline'
-                      className='text-amber-600 border-amber-400 bg-amber-50'
+                      className={cn(statusConfig.bgColor, statusConfig.color)}
                     >
-                      <Edit className='h-3 w-3 mr-1' />
-                      Editing Mode
+                      {statusConfig.label}
                     </Badge>
-                  )}
-                  {orchestrator.discipline && (
-                    <Badge variant='outline'>
-                      <Tag className='h-3 w-3 mr-1' />
-                      {orchestrator.discipline}
+                    {isEditingMode && (
+                      <Badge
+                        variant='outline'
+                        className='text-amber-600 border-amber-400 bg-amber-50'
+                      >
+                        <Edit className='h-3 w-3 mr-1' />
+                        Editing Mode
+                      </Badge>
+                    )}
+                    {orchestrator.discipline && (
+                      <Badge variant='outline'>
+                        <Tag className='h-3 w-3 mr-1' />
+                        {orchestrator.discipline}
+                      </Badge>
+                    )}
+                    <Badge variant='secondary'>
+                      <MessageSquare className='h-3 w-3 mr-1' />
+                      {orchestrator.messageCount} messages
                     </Badge>
-                  )}
-                  <Badge variant='secondary'>
-                    <MessageSquare className='h-3 w-3 mr-1' />
-                    {orchestrator.messageCount} messages
-                  </Badge>
-                  <Badge variant='secondary'>
-                    <Users className='h-3 w-3 mr-1' />
-                    {orchestrator.agentCount} agents
-                  </Badge>
+                    <Badge variant='secondary'>
+                      <Users className='h-3 w-3 mr-1' />
+                      {orchestrator.agentCount} agents
+                    </Badge>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className='flex gap-2'>
-              {isEditingMode ? (
-                <>
-                  <Button
-                    variant='outline'
-                    onClick={handleCancelEdit}
-                    disabled={isMutating}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSaveChanges} disabled={isMutating}>
-                    {isMutating ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant='outline' onClick={handleEditWithAI}>
-                    <Brain className='h-4 w-4 mr-2' />
-                    Edit with AI
-                  </Button>
-                  <Button variant='outline' onClick={handleToggleEditMode}>
-                    <PenLine className='h-4 w-4 mr-2' />
-                    Edit Directly
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className='text-lg'>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='flex flex-wrap gap-2'>
-            <Button
-              variant={
-                orchestrator.status === 'ONLINE' ? 'destructive' : 'default'
-              }
-              onClick={handleToggleStatus}
-              disabled={isMutating}
-            >
-              {orchestrator.status === 'ONLINE' ? (
-                <>
-                  <Pause className='h-4 w-4 mr-2' />
-                  Set Offline
-                </>
-              ) : (
-                <>
-                  <Play className='h-4 w-4 mr-2' />
-                  Set Online
-                </>
-              )}
-            </Button>
-            <Button
-              variant='outline'
-              onClick={handlePause}
-              disabled={isMutating}
-            >
-              <Clock className='h-4 w-4 mr-2' />
-              Mark as Busy
-            </Button>
-            <Button variant='outline' onClick={handleConfigure}>
-              <Settings className='h-4 w-4 mr-2' />
-              Advanced Settings
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tabbed Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className='grid w-full grid-cols-9'>
-          <TabsTrigger value='overview'>
-            <Activity className='h-4 w-4 mr-2' />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger value='backlog'>
-            <ListTodo className='h-4 w-4 mr-2' />
-            Backlog
-          </TabsTrigger>
-          <TabsTrigger value='delegation'>
-            <GitBranch className='h-4 w-4 mr-2' />
-            Delegation
-          </TabsTrigger>
-          <TabsTrigger value='charter'>
-            <FileText className='h-4 w-4 mr-2' />
-            Charter
-          </TabsTrigger>
-          <TabsTrigger value='session-managers'>
-            <Users className='h-4 w-4 mr-2' />
-            Session Managers
-          </TabsTrigger>
-          <TabsTrigger value='subagents'>
-            <Brain className='h-4 w-4 mr-2' />
-            Subagents
-          </TabsTrigger>
-          <TabsTrigger value='configuration'>
-            <Settings className='h-4 w-4 mr-2' />
-            Configuration
-          </TabsTrigger>
-          <TabsTrigger value='activity'>
-            <TrendingUp className='h-4 w-4 mr-2' />
-            Activity
-          </TabsTrigger>
-          <TabsTrigger value='capabilities'>
-            <Zap className='h-4 w-4 mr-2' />
-            Capabilities
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value='backlog' className='space-y-4 mt-6'>
-          <BacklogList orchestratorId={orchestrator.id} />
-        </TabsContent>
-
-        <TabsContent value='delegation' className='space-y-4 mt-6'>
-          <DelegationTab
-            orchestratorId={orchestrator.id}
-            onOpenDelegationDialog={() => setIsDelegationDialogOpen(true)}
-            refreshTrigger={delegationRefreshTrigger}
-          />
-        </TabsContent>
-
-        <TabsContent value='charter' className='space-y-4 mt-6'>
-          <CharterTab
-            orchestrator={orchestrator}
-            onOpenEditor={handleOpenCharterEditor}
-            versions={charterVersions}
-            onRollback={handleRollbackCharter}
-            compareVersion={compareVersion}
-            onCompareVersion={setCompareVersion}
-          />
-        </TabsContent>
-
-        <TabsContent value='session-managers' className='space-y-4 mt-6'>
-          <SessionManagersTab orchestratorId={orchestrator.id} />
-        </TabsContent>
-
-        <TabsContent value='subagents' className='space-y-4 mt-6'>
-          <SubagentsTab />
-        </TabsContent>
-
-        <TabsContent value='overview' className='space-y-4 mt-6'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Performance Metrics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-                <MetricCard
-                  label='Total Messages'
-                  value={orchestrator.messageCount.toString()}
-                />
-                <MetricCard
-                  label='Managed Agents'
-                  value={orchestrator.agentCount.toString()}
-                />
-                <MetricCard
-                  label='Last Active'
-                  value={
-                    orchestrator.lastActivityAt
-                      ? new Date(
-                          orchestrator.lastActivityAt,
-                        ).toLocaleDateString()
-                      : 'Never'
-                  }
-                />
-                <MetricCard
-                  label='Created'
-                  value={new Date(orchestrator.createdAt).toLocaleDateString()}
-                />
+              {/* Action Buttons */}
+              <div className='flex gap-2'>
+                {isEditingMode ? (
+                  <>
+                    <Button
+                      variant='outline'
+                      onClick={handleCancelEdit}
+                      disabled={isMutating}
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSaveChanges} disabled={isMutating}>
+                      {isMutating ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant='outline' onClick={handleEditWithAI}>
+                      <Brain className='h-4 w-4 mr-2' />
+                      Edit with AI
+                    </Button>
+                    <Button variant='outline' onClick={handleToggleEditMode}>
+                      <PenLine className='h-4 w-4 mr-2' />
+                      Edit Directly
+                    </Button>
+                  </>
+                )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardHeader>
+        </Card>
 
-          {orchestrator.charter && (
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className='text-lg'>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='flex flex-wrap gap-2'>
+              <Button
+                variant={
+                  orchestrator.status === 'ONLINE' ? 'destructive' : 'default'
+                }
+                onClick={handleToggleStatus}
+                disabled={isMutating}
+              >
+                {orchestrator.status === 'ONLINE' ? (
+                  <>
+                    <Pause className='h-4 w-4 mr-2' />
+                    Set Offline
+                  </>
+                ) : (
+                  <>
+                    <Play className='h-4 w-4 mr-2' />
+                    Set Online
+                  </>
+                )}
+              </Button>
+              <Button
+                variant='outline'
+                onClick={handlePause}
+                disabled={isMutating}
+              >
+                <Clock className='h-4 w-4 mr-2' />
+                Mark as Busy
+              </Button>
+              <Button variant='outline' onClick={handleConfigure}>
+                <Settings className='h-4 w-4 mr-2' />
+                Advanced Settings
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tabbed Content */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className='grid w-full grid-cols-9'>
+            <TabsTrigger value='overview'>
+              <Activity className='h-4 w-4 mr-2' />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value='backlog'>
+              <ListTodo className='h-4 w-4 mr-2' />
+              Backlog
+            </TabsTrigger>
+            <TabsTrigger value='delegation'>
+              <GitBranch className='h-4 w-4 mr-2' />
+              Delegation
+            </TabsTrigger>
+            <TabsTrigger value='charter'>
+              <FileText className='h-4 w-4 mr-2' />
+              Charter
+            </TabsTrigger>
+            <TabsTrigger value='session-managers'>
+              <Users className='h-4 w-4 mr-2' />
+              Session Managers
+            </TabsTrigger>
+            <TabsTrigger value='subagents'>
+              <Brain className='h-4 w-4 mr-2' />
+              Subagents
+            </TabsTrigger>
+            <TabsTrigger value='configuration'>
+              <Settings className='h-4 w-4 mr-2' />
+              Configuration
+            </TabsTrigger>
+            <TabsTrigger value='activity'>
+              <TrendingUp className='h-4 w-4 mr-2' />
+              Activity
+            </TabsTrigger>
+            <TabsTrigger value='capabilities'>
+              <Zap className='h-4 w-4 mr-2' />
+              Capabilities
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value='backlog' className='space-y-4 mt-6'>
+            <BacklogList orchestratorId={orchestrator.id} />
+          </TabsContent>
+
+          <TabsContent value='delegation' className='space-y-4 mt-6'>
+            <DelegationTab
+              orchestratorId={orchestrator.id}
+              onOpenDelegationDialog={() => setIsDelegationDialogOpen(true)}
+              refreshTrigger={delegationRefreshTrigger}
+            />
+          </TabsContent>
+
+          <TabsContent value='charter' className='space-y-4 mt-6'>
+            <CharterTab
+              orchestrator={orchestrator}
+              onOpenEditor={handleOpenCharterEditor}
+              versions={charterVersions}
+              onRollback={handleRollbackCharter}
+              compareVersion={compareVersion}
+              onCompareVersion={setCompareVersion}
+            />
+          </TabsContent>
+
+          <TabsContent value='session-managers' className='space-y-4 mt-6'>
+            <SessionManagersTab orchestratorId={orchestrator.id} />
+          </TabsContent>
+
+          <TabsContent value='subagents' className='space-y-4 mt-6'>
+            <SubagentsTab />
+          </TabsContent>
+
+          <TabsContent value='overview' className='space-y-4 mt-6'>
             <Card>
               <CardHeader>
-                <CardTitle>Charter</CardTitle>
+                <CardTitle>Performance Metrics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+                  <MetricCard
+                    label='Total Messages'
+                    value={orchestrator.messageCount.toString()}
+                  />
+                  <MetricCard
+                    label='Managed Agents'
+                    value={orchestrator.agentCount.toString()}
+                  />
+                  <MetricCard
+                    label='Last Active'
+                    value={
+                      orchestrator.lastActivityAt
+                        ? new Date(
+                            orchestrator.lastActivityAt
+                          ).toLocaleDateString()
+                        : 'Never'
+                    }
+                  />
+                  <MetricCard
+                    label='Created'
+                    value={new Date(
+                      orchestrator.createdAt
+                    ).toLocaleDateString()}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {orchestrator.charter && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Charter</CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                  <div>
+                    <h4 className='font-semibold text-sm mb-1'>Mission</h4>
+                    <p className='text-sm text-muted-foreground'>
+                      {orchestrator.charter.mission}
+                    </p>
+                  </div>
+                  <Separator />
+                  <div>
+                    <h4 className='font-semibold text-sm mb-1'>Vision</h4>
+                    <p className='text-sm text-muted-foreground'>
+                      {orchestrator.charter.vision}
+                    </p>
+                  </div>
+                  {orchestrator.charter.values &&
+                    orchestrator.charter.values.length > 0 && (
+                      <>
+                        <Separator />
+                        <div>
+                          <h4 className='font-semibold text-sm mb-2'>Values</h4>
+                          <div className='flex flex-wrap gap-2'>
+                            {orchestrator.charter.values.map((value, index) => (
+                              <Badge key={index} variant='secondary'>
+                                {value}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value='configuration' className='space-y-4 mt-6'>
+            <Card>
+              <CardHeader>
+                <CardTitle>System Configuration</CardTitle>
+                <CardDescription>
+                  Technical settings and model configuration for this
+                  orchestrator
+                </CardDescription>
               </CardHeader>
               <CardContent className='space-y-4'>
                 <div>
-                  <h4 className='font-semibold text-sm mb-1'>Mission</h4>
-                  <p className='text-sm text-muted-foreground'>
-                    {orchestrator.charter.mission}
-                  </p>
+                  <h4 className='font-semibold text-sm mb-2'>System Prompt</h4>
+                  {isEditingMode ? (
+                    <textarea
+                      value={editFormData.systemPrompt || ''}
+                      onChange={e =>
+                        setEditFormData({
+                          ...editFormData,
+                          systemPrompt: e.target.value,
+                        })
+                      }
+                      className='w-full border rounded-md p-3 text-sm bg-muted font-mono'
+                      rows={8}
+                      placeholder="Define the orchestrator's system prompt..."
+                    />
+                  ) : (
+                    <pre className='text-xs bg-muted p-3 rounded-md overflow-auto max-h-64'>
+                      {orchestrator.systemPrompt ||
+                        'No system prompt configured'}
+                    </pre>
+                  )}
                 </div>
-                <Separator />
-                <div>
-                  <h4 className='font-semibold text-sm mb-1'>Vision</h4>
-                  <p className='text-sm text-muted-foreground'>
-                    {orchestrator.charter.vision}
-                  </p>
-                </div>
-                {orchestrator.charter.values &&
-                  orchestrator.charter.values.length > 0 && (
-                    <>
-                      <Separator />
-                      <div>
-                        <h4 className='font-semibold text-sm mb-2'>Values</h4>
-                        <div className='flex flex-wrap gap-2'>
-                          {orchestrator.charter.values.map((value, index) => (
-                            <Badge key={index} variant='secondary'>
-                              {value}
-                            </Badge>
-                          ))}
+
+                {orchestrator.modelConfig && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h4 className='font-semibold text-sm mb-2'>
+                        Model Configuration
+                      </h4>
+                      <div className='grid grid-cols-2 gap-4'>
+                        <div>
+                          <span className='text-xs text-muted-foreground'>
+                            Model ID
+                          </span>
+                          <p className='text-sm font-mono'>
+                            {orchestrator.modelConfig.modelId}
+                          </p>
+                        </div>
+                        <div>
+                          <span className='text-xs text-muted-foreground'>
+                            Temperature
+                          </span>
+                          <p className='text-sm font-mono'>
+                            {orchestrator.modelConfig.temperature}
+                          </p>
+                        </div>
+                        <div>
+                          <span className='text-xs text-muted-foreground'>
+                            Max Tokens
+                          </span>
+                          <p className='text-sm font-mono'>
+                            {orchestrator.modelConfig.maxTokens}
+                          </p>
+                        </div>
+                        <div>
+                          <span className='text-xs text-muted-foreground'>
+                            Top P
+                          </span>
+                          <p className='text-sm font-mono'>
+                            {orchestrator.modelConfig.topP}
+                          </p>
                         </div>
                       </div>
-                    </>
-                  )}
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
-          )}
-        </TabsContent>
+          </TabsContent>
 
-        <TabsContent value='configuration' className='space-y-4 mt-6'>
-          <Card>
-            <CardHeader>
-              <CardTitle>System Configuration</CardTitle>
-              <CardDescription>
-                Technical settings and model configuration for this orchestrator
-              </CardDescription>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div>
-                <h4 className='font-semibold text-sm mb-2'>System Prompt</h4>
-                {isEditingMode ? (
-                  <textarea
-                    value={editFormData.systemPrompt || ''}
-                    onChange={e =>
-                      setEditFormData({
-                        ...editFormData,
-                        systemPrompt: e.target.value,
-                      })
-                    }
-                    className='w-full border rounded-md p-3 text-sm bg-muted font-mono'
-                    rows={8}
-                    placeholder="Define the orchestrator's system prompt..."
-                  />
-                ) : (
-                  <pre className='text-xs bg-muted p-3 rounded-md overflow-auto max-h-64'>
-                    {orchestrator.systemPrompt || 'No system prompt configured'}
-                  </pre>
-                )}
-              </div>
+          <TabsContent value='activity' className='space-y-4 mt-6'>
+            <Card>
+              <CardHeader>
+                <CardTitle>Activity History</CardTitle>
+                <CardDescription>
+                  Recent actions and events for this orchestrator with real-time
+                  updates
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <OrchestratorActivityFeed
+                  orchestratorId={orchestrator.id}
+                  workspaceSlug={workspaceSlug}
+                  autoRefresh={orchestrator.status === 'ONLINE'}
+                  refreshInterval={30000}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              {orchestrator.modelConfig && (
-                <>
-                  <Separator />
-                  <div>
-                    <h4 className='font-semibold text-sm mb-2'>
-                      Model Configuration
-                    </h4>
-                    <div className='grid grid-cols-2 gap-4'>
-                      <div>
-                        <span className='text-xs text-muted-foreground'>
-                          Model ID
-                        </span>
-                        <p className='text-sm font-mono'>
-                          {orchestrator.modelConfig.modelId}
-                        </p>
-                      </div>
-                      <div>
-                        <span className='text-xs text-muted-foreground'>
-                          Temperature
-                        </span>
-                        <p className='text-sm font-mono'>
-                          {orchestrator.modelConfig.temperature}
-                        </p>
-                      </div>
-                      <div>
-                        <span className='text-xs text-muted-foreground'>
-                          Max Tokens
-                        </span>
-                        <p className='text-sm font-mono'>
-                          {orchestrator.modelConfig.maxTokens}
-                        </p>
-                      </div>
-                      <div>
-                        <span className='text-xs text-muted-foreground'>
-                          Top P
-                        </span>
-                        <p className='text-sm font-mono'>
-                          {orchestrator.modelConfig.topP}
-                        </p>
-                      </div>
-                    </div>
+          <TabsContent value='capabilities' className='space-y-4 mt-6'>
+            <Card>
+              <CardHeader>
+                <CardTitle>Capabilities</CardTitle>
+                <CardDescription>
+                  Skills and abilities enabled for this orchestrator
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {orchestrator.capabilities &&
+                orchestrator.capabilities.length > 0 ? (
+                  <div className='flex flex-wrap gap-2'>
+                    {orchestrator.capabilities.map((capability, index) => (
+                      <Badge key={index} variant='outline' className='text-sm'>
+                        <Zap className='h-3 w-3 mr-1' />
+                        {capability}
+                      </Badge>
+                    ))}
                   </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value='activity' className='space-y-4 mt-6'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Activity History</CardTitle>
-              <CardDescription>
-                Recent actions and events for this orchestrator with real-time updates
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <OrchestratorActivityFeed
-                orchestratorId={orchestrator.id}
-                workspaceSlug={workspaceSlug}
-                autoRefresh={orchestrator.status === 'ONLINE'}
-                refreshInterval={30000}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value='capabilities' className='space-y-4 mt-6'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Capabilities</CardTitle>
-              <CardDescription>
-                Skills and abilities enabled for this orchestrator
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {orchestrator.capabilities &&
-              orchestrator.capabilities.length > 0 ? (
-                <div className='flex flex-wrap gap-2'>
-                  {orchestrator.capabilities.map((capability, index) => (
-                    <Badge key={index} variant='outline' className='text-sm'>
-                      <Zap className='h-3 w-3 mr-1' />
-                      {capability}
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                <p className='text-sm text-muted-foreground'>
-                  No capabilities configured
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                ) : (
+                  <p className='text-sm text-muted-foreground'>
+                    No capabilities configured
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         {/* Charter Editor Dialog */}
         <Dialog
@@ -977,7 +982,7 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
         }
 
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/activity?${params.toString()}`,
+          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/activity?${params.toString()}`
         );
 
         if (!response.ok) {
@@ -1006,7 +1011,7 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
         setIsLoadingMore(false);
       }
     },
-    [workspaceSlug, orchestratorId, cursor],
+    [workspaceSlug, orchestratorId, cursor]
   );
 
   /**
@@ -1107,7 +1112,7 @@ function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
               <div
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-full shrink-0',
-                  config.bgColor,
+                  config.bgColor
                 )}
               >
                 <IconComponent className={cn('h-4 w-4', config.color)} />
@@ -1676,7 +1681,7 @@ function CharterTab({
                   key={versionData.version}
                   className={cn(
                     'flex items-center justify-between p-3 rounded-lg border',
-                    index === 0 ? 'bg-primary/5 border-primary/20' : 'bg-card',
+                    index === 0 ? 'bg-primary/5 border-primary/20' : 'bg-card'
                   )}
                 >
                   <div className='flex items-center gap-3'>
@@ -1737,7 +1742,7 @@ function CharterTab({
           <CardContent>
             {(() => {
               const oldVersion = versions.find(
-                v => v.version === compareVersion,
+                v => v.version === compareVersion
               );
               if (!oldVersion) {
                 return (
@@ -1761,4 +1766,3 @@ function CharterTab({
     </>
   );
 }
-

@@ -127,7 +127,7 @@ export default function WorkflowsPage() {
   // State
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [statusFilter, setStatusFilter] = useState<WorkflowStatus | 'all'>(
-    'all',
+    'all'
   );
   const [triggerTypeFilter, setTriggerTypeFilter] = useState<
     TriggerType | 'all'
@@ -140,15 +140,15 @@ export default function WorkflowsPage() {
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [selectedWorkflows, setSelectedWorkflows] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
   const [showBuilder, setShowBuilder] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(
-    null,
+    null
   );
   const [showHistory, setShowHistory] = useState(false);
   const [historyWorkflowId, setHistoryWorkflowId] = useState<string | null>(
-    null,
+    null
   );
   const [showTemplates, setShowTemplates] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -158,7 +158,7 @@ export default function WorkflowsPage() {
     workspaceSlug,
     {
       status: statusFilter === 'all' ? undefined : statusFilter,
-    },
+    }
   );
   const { templates, isLoading: templatesLoading } =
     useWorkflowTemplates(workspaceSlug);
@@ -189,9 +189,7 @@ export default function WorkflowsPage() {
 
     // Apply trigger type filter
     if (triggerTypeFilter !== 'all') {
-      filtered = filtered.filter(
-        wf => wf.trigger.type === triggerTypeFilter,
-      );
+      filtered = filtered.filter(wf => wf.trigger.type === triggerTypeFilter);
     }
 
     // Apply search query
@@ -228,12 +226,8 @@ export default function WorkflowsPage() {
           comparison = a.status.localeCompare(b.status);
           break;
         case 'lastRun':
-          const aLastRun = a.lastRunAt
-            ? new Date(a.lastRunAt).getTime()
-            : 0;
-          const bLastRun = b.lastRunAt
-            ? new Date(b.lastRunAt).getTime()
-            : 0;
+          const aLastRun = a.lastRunAt ? new Date(a.lastRunAt).getTime() : 0;
+          const bLastRun = b.lastRunAt ? new Date(b.lastRunAt).getTime() : 0;
           comparison = aLastRun - bLastRun;
           break;
         case 'runCount':
@@ -241,8 +235,7 @@ export default function WorkflowsPage() {
           break;
         case 'createdAt':
           comparison =
-            new Date(a.createdAt).getTime() -
-            new Date(b.createdAt).getTime();
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           break;
       }
 
@@ -278,7 +271,7 @@ export default function WorkflowsPage() {
         mutate();
       }
     },
-    [createWorkflow, mutate],
+    [createWorkflow, mutate]
   );
 
   const handleEditWorkflow = useCallback((workflow: Workflow) => {
@@ -317,7 +310,7 @@ export default function WorkflowsPage() {
         } as TriggerConfig,
         actions: template.actions.map(
           (a, i) =>
-            ({ ...a, id: `temp_${i}` as ActionId, order: i }) as ActionConfig,
+            ({ ...a, id: `temp_${i}` as ActionId, order: i }) as ActionConfig
         ),
         variables:
           template.variables?.map(v => ({ ...v, source: 'custom' as const })) ??
@@ -331,7 +324,7 @@ export default function WorkflowsPage() {
       setShowTemplates(false);
       setShowBuilder(true);
     },
-    [workspaceSlug],
+    [workspaceSlug]
   );
 
   // Bulk operation handlers
@@ -340,7 +333,7 @@ export default function WorkflowsPage() {
       setSelectedWorkflows(new Set());
     } else {
       setSelectedWorkflows(
-        new Set(filteredAndSortedWorkflows.map(wf => wf.id)),
+        new Set(filteredAndSortedWorkflows.map(wf => wf.id))
       );
     }
   }, [filteredAndSortedWorkflows, selectedWorkflows.size]);
@@ -355,7 +348,7 @@ export default function WorkflowsPage() {
       }
       setSelectedWorkflows(newSelection);
     },
-    [selectedWorkflows],
+    [selectedWorkflows]
   );
 
   const handleBulkActivate = useCallback(async () => {
@@ -382,7 +375,7 @@ export default function WorkflowsPage() {
   const handleBulkDelete = useCallback(async () => {
     if (
       !confirm(
-        `Are you sure you want to delete ${selectedWorkflows.size} workflow(s)?`,
+        `Are you sure you want to delete ${selectedWorkflows.size} workflow(s)?`
       )
     ) {
       return;
@@ -400,18 +393,17 @@ export default function WorkflowsPage() {
       console.log('Duplicating workflow:', workflow.id);
       mutate();
     },
-    [mutate],
+    [mutate]
   );
 
   const handleToggleActive = useCallback(
     async (workflow: Workflow) => {
-      const newStatus =
-        workflow.status === 'active' ? 'inactive' : 'active';
+      const newStatus = workflow.status === 'active' ? 'inactive' : 'active';
       // TODO: Implement update status API call
       console.log(`Setting workflow ${workflow.id} to ${newStatus}`);
       mutate();
     },
-    [mutate],
+    [mutate]
   );
 
   const handleDelete = useCallback(
@@ -423,7 +415,7 @@ export default function WorkflowsPage() {
       console.log('Deleting workflow:', workflow.id);
       mutate();
     },
-    [mutate],
+    [mutate]
   );
 
   const handleArchive = useCallback(
@@ -432,7 +424,7 @@ export default function WorkflowsPage() {
       console.log('Archiving workflow:', workflow.id);
       mutate();
     },
-    [mutate],
+    [mutate]
   );
 
   const handleExport = useCallback((workflow: Workflow) => {
@@ -456,7 +448,7 @@ export default function WorkflowsPage() {
         setSortOrder('asc');
       }
     },
-    [sortField, sortOrder],
+    [sortField, sortOrder]
   );
 
   return (
@@ -574,9 +566,7 @@ export default function WorkflowsPage() {
             <Button
               variant='ghost'
               size='sm'
-              onClick={() =>
-                setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-              }
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               className='h-9 px-3'
             >
               {sortOrder === 'asc' ? '↑' : '↓'}
@@ -589,11 +579,7 @@ export default function WorkflowsPage() {
               <span className='text-sm text-muted-foreground'>
                 {selectedWorkflows.size} selected
               </span>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={handleBulkActivate}
-              >
+              <Button variant='outline' size='sm' onClick={handleBulkActivate}>
                 <Power className='mr-2 h-4 w-4' />
                 Activate
               </Button>
@@ -605,11 +591,7 @@ export default function WorkflowsPage() {
                 <PowerOff className='mr-2 h-4 w-4' />
                 Deactivate
               </Button>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={handleBulkArchive}
-              >
+              <Button variant='outline' size='sm' onClick={handleBulkArchive}>
                 <Archive className='mr-2 h-4 w-4' />
                 Archive
               </Button>
@@ -645,7 +627,7 @@ export default function WorkflowsPage() {
                 'whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition-colors',
                 statusFilter === tab
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
+                  : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
               )}
             >
               {tab === 'all' ? 'All' : WORKFLOW_STATUS_CONFIG[tab].label}
@@ -654,7 +636,7 @@ export default function WorkflowsPage() {
                   'ml-2 rounded-full px-2 py-0.5 text-xs',
                   statusFilter === tab
                     ? 'bg-primary/10 text-primary'
-                    : 'bg-muted text-muted-foreground',
+                    : 'bg-muted text-muted-foreground'
                 )}
                 aria-label={`${workflowStats[tab]} workflows`}
               >
@@ -742,7 +724,9 @@ export default function WorkflowsPage() {
           <EmptyState
             icon={Search}
             title='No Workflows Found'
-            description={'No workflows match your filters. Try adjusting your search or filters.'}
+            description={
+              'No workflows match your filters. Try adjusting your search or filters.'
+            }
             action={{
               label: 'Clear Filters',
               onClick: () => {
@@ -868,7 +852,7 @@ function WorkflowCard({
     <Card
       className={cn(
         'transition-all hover:shadow-md',
-        selected && 'ring-2 ring-primary',
+        selected && 'ring-2 ring-primary'
       )}
     >
       <CardHeader className='pb-3'>
@@ -1198,7 +1182,7 @@ function WorkflowTable({
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric',
-                          },
+                          }
                         )
                       : 'Never'}
                   </div>
@@ -1463,7 +1447,7 @@ function TriggerSelector({ value, onChange }: TriggerSelectorProps) {
             'rounded-lg border p-3 text-left transition-colors hover:border-primary',
             value?.type === type
               ? 'border-primary bg-primary/5'
-              : 'border-border',
+              : 'border-border'
           )}
         >
           <p className='font-medium text-sm'>{config.label}</p>
@@ -1589,7 +1573,7 @@ function TemplateSelectionModal({
               'rounded-full px-3 py-1 text-sm transition-colors',
               categoryFilter === 'all'
                 ? 'bg-primary text-primary-foreground'
-                : 'bg-muted hover:bg-muted/80',
+                : 'bg-muted hover:bg-muted/80'
             )}
           >
             All
@@ -1603,7 +1587,7 @@ function TemplateSelectionModal({
                 'rounded-full px-3 py-1 text-sm transition-colors',
                 categoryFilter === key
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted hover:bg-muted/80',
+                  : 'bg-muted hover:bg-muted/80'
               )}
             >
               {config.label}
@@ -1715,7 +1699,7 @@ function ExecutionHistoryDrawer({
                       className={cn(
                         'rounded-full px-2 py-0.5 text-xs font-medium',
                         statusConfig.bgColor,
-                        statusConfig.color,
+                        statusConfig.color
                       )}
                     >
                       {statusConfig.label}

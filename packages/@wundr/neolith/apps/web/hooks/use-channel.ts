@@ -265,7 +265,7 @@ export function useChannels(workspaceId: string): UseChannelsReturn {
           .json()
           .catch(() => ({ error: 'Failed to fetch channels' }));
         throw new Error(
-          errorData.error || errorData.message || 'Failed to fetch channels',
+          errorData.error || errorData.message || 'Failed to fetch channels'
         );
       }
 
@@ -303,10 +303,10 @@ export function useChannels(workspaceId: string): UseChannelsReturn {
                   email: m.user.email || '',
                   status: (m.user.status as User['status']) || 'offline',
                 },
-              }),
+              })
             ),
-          }),
-        ),
+          })
+        )
       );
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
@@ -328,7 +328,7 @@ export function useChannels(workspaceId: string): UseChannelsReturn {
     const starred = channels.filter(c => c.isStarred);
     const publicCh = channels.filter(c => c.type === 'public' && !c.isStarred);
     const privateCh = channels.filter(
-      c => c.type === 'private' && !c.isStarred,
+      c => c.type === 'private' && !c.isStarred
     );
 
     return {
@@ -377,7 +377,7 @@ export function useChannel(channelId: string): UseChannelReturn {
           .json()
           .catch(() => ({ error: 'Failed to fetch channel' }));
         throw new Error(
-          errorData.error || errorData.message || 'Failed to fetch channel',
+          errorData.error || errorData.message || 'Failed to fetch channel'
         );
       }
 
@@ -416,7 +416,7 @@ export function useChannel(channelId: string): UseChannelReturn {
               email: m.user.email || '',
               status: (m.user.status as User['status']) || 'offline',
             },
-          }),
+          })
         ),
       });
     } catch (err) {
@@ -471,7 +471,7 @@ export function useChannelMembers(channelId: string): UseChannelMembersReturn {
           .json()
           .catch(() => ({ error: 'Failed to fetch members' }));
         throw new Error(
-          errorData.error || errorData.message || 'Failed to fetch members',
+          errorData.error || errorData.message || 'Failed to fetch members'
         );
       }
 
@@ -495,8 +495,8 @@ export function useChannelMembers(channelId: string): UseChannelMembersReturn {
               email: m.user.email || '',
               status: (m.user.status as User['status']) || 'offline',
             },
-          }),
-        ),
+          })
+        )
       );
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
@@ -519,10 +519,10 @@ export function useChannelMembers(channelId: string): UseChannelMembersReturn {
       m =>
         m.user.status === 'online' ||
         m.user.status === 'busy' ||
-        m.user.status === 'away',
+        m.user.status === 'away'
     );
     const offline = members.filter(
-      m => m.user.status === 'offline' || !m.user.status,
+      m => m.user.status === 'offline' || !m.user.status
     );
 
     return { onlineMembers: online, offlineMembers: offline };
@@ -548,7 +548,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
   const createChannel = useCallback(
     async (
       workspaceId: string,
-      input: CreateChannelInput,
+      input: CreateChannelInput
     ): Promise<Channel | null> => {
       setIsLoading(true);
       setError(null);
@@ -576,7 +576,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
             .json()
             .catch(() => ({ error: 'Failed to create channel' }));
           throw new Error(
-            errorData.error || errorData.message || 'Failed to create channel',
+            errorData.error || errorData.message || 'Failed to create channel'
           );
         }
 
@@ -616,7 +616,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
                 email: m.user.email || '',
                 status: (m.user.status as User['status']) || 'offline',
               },
-            }),
+            })
           ),
         };
         return channel;
@@ -627,13 +627,13 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const updateChannel = useCallback(
     async (
       channelId: string,
-      input: UpdateChannelInput,
+      input: UpdateChannelInput
     ): Promise<Channel | null> => {
       setIsLoading(true);
       setError(null);
@@ -650,7 +650,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
             .json()
             .catch(() => ({ error: 'Failed to update channel' }));
           throw new Error(
-            errorData.error || errorData.message || 'Failed to update channel',
+            errorData.error || errorData.message || 'Failed to update channel'
           );
         }
 
@@ -690,7 +690,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
                 email: m.user.email || '',
                 status: (m.user.status as User['status']) || 'offline',
               },
-            }),
+            })
           ),
         };
         return channel;
@@ -701,7 +701,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const deleteChannel = useCallback(
@@ -726,7 +726,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const archiveChannel = useCallback(
@@ -755,7 +755,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const toggleStar = useCallback(
@@ -780,7 +780,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const leaveChannel = useCallback(
@@ -805,14 +805,14 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const inviteMembers = useCallback(
     async (
       channelId: string,
       userIds: string[],
-      role: 'admin' | 'member' = 'member',
+      role: 'admin' | 'member' = 'member'
     ): Promise<boolean> => {
       setIsLoading(true);
       setError(null);
@@ -824,7 +824,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId, role }),
-          }),
+          })
         );
 
         const responses = await Promise.all(promises);
@@ -835,7 +835,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
           const failedResponses = responses.filter(r => !r.ok);
           const errors = await Promise.all(failedResponses.map(r => r.json()));
           throw new Error(
-            errors[0]?.message || 'Failed to invite some members',
+            errors[0]?.message || 'Failed to invite some members'
           );
         }
 
@@ -847,7 +847,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const removeMember = useCallback(
@@ -860,7 +860,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
           `/api/channels/${channelId}/members/${userId}`,
           {
             method: 'DELETE',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -876,14 +876,14 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const changeMemberRole = useCallback(
     async (
       channelId: string,
       userId: string,
-      role: 'admin' | 'member',
+      role: 'admin' | 'member'
     ): Promise<boolean> => {
       setIsLoading(true);
       setError(null);
@@ -898,7 +898,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ role: apiRole }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -914,7 +914,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   return {
@@ -937,7 +937,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
  * Fetches and caches permissions from the API
  */
 export function useChannelPermissions(
-  channelId: string,
+  channelId: string
 ): UseChannelPermissionsReturn {
   const [permissions, setPermissions] = useState<ChannelPermissions>({
     canPost: false,
@@ -979,9 +979,7 @@ export function useChannelPermissions(
           .json()
           .catch(() => ({ error: 'Failed to fetch permissions' }));
         throw new Error(
-          errorData.error ||
-            errorData.message ||
-            'Failed to fetch permissions',
+          errorData.error || errorData.message || 'Failed to fetch permissions'
         );
       }
 
@@ -1031,10 +1029,10 @@ export function useChannelPermissions(
  * Hook for direct messages
  */
 export function useDirectMessages(
-  workspaceId: string,
+  workspaceId: string
 ): UseDirectMessagesReturn {
   const [directMessages, setDirectMessages] = useState<DirectMessageChannel[]>(
-    [],
+    []
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -1061,7 +1059,7 @@ export function useDirectMessages(
         throw new Error(
           errorData.error ||
             errorData.message ||
-            'Failed to fetch direct messages',
+            'Failed to fetch direct messages'
         );
       }
 
@@ -1104,7 +1102,7 @@ export function useDirectMessages(
         return null;
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   return {
@@ -1120,7 +1118,7 @@ export function useDirectMessages(
  * Hook for searching workspace users
  */
 export function useWorkspaceUsers(
-  workspaceId: string,
+  workspaceId: string
 ): UseWorkspaceUsersReturn {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -1136,7 +1134,7 @@ export function useWorkspaceUsers(
 
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/users?search=${encodeURIComponent(query)}`,
+          `/api/workspaces/${workspaceId}/users?search=${encodeURIComponent(query)}`
         );
         if (!response.ok) {
           throw new Error('Failed to search users');
@@ -1150,7 +1148,7 @@ export function useWorkspaceUsers(
         setIsLoading(false);
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   const fetchAllUsers = useCallback(async () => {
@@ -1189,7 +1187,7 @@ export function useWorkspaceUsers(
  */
 export function useWorkspaceMembersForDM(
   workspaceId: string,
-  currentUserId: string | undefined,
+  currentUserId: string | undefined
 ): UseWorkspaceMembersForDMReturn {
   const [members, setMembers] = useState<WorkspaceMemberForDM[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -1224,7 +1222,7 @@ export function useWorkspaceMembersForDM(
         throw new Error(
           errorData.error ||
             errorData.message ||
-            'Failed to fetch workspace members',
+            'Failed to fetch workspace members'
         );
       }
 
@@ -1297,7 +1295,7 @@ export function useWorkspaceMembersForDM(
             lastMessageAt: dmInfo?.lastMessageAt || null,
             unreadCount: dmInfo?.unreadCount || 0,
           };
-        },
+        }
       );
 
       setMembers(transformedMembers);

@@ -58,7 +58,7 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -67,9 +67,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Authentication required',
-          COORDINATION_ERROR_CODES.UNAUTHORIZED,
+          COORDINATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -80,9 +80,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Invalid OrchestratorID format',
-          COORDINATION_ERROR_CODES.VALIDATION_ERROR,
+          COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -96,9 +96,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Invalid JSON body',
-          COORDINATION_ERROR_CODES.VALIDATION_ERROR,
+          COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -109,9 +109,9 @@ export async function POST(
         createCoordinationErrorResponse(
           'Validation failed',
           COORDINATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -122,9 +122,9 @@ export async function POST(
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Primary Orchestrator cannot be a collaborator',
-          COORDINATION_ERROR_CODES.VALIDATION_ERROR,
+          COORDINATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -143,7 +143,7 @@ export async function POST(
           roles: input.roles,
           note: input.note,
         },
-      },
+      }
     );
 
     return NextResponse.json({
@@ -155,9 +155,9 @@ export async function POST(
     return NextResponse.json(
       createCoordinationErrorResponse(
         'An internal error occurred',
-        COORDINATION_ERROR_CODES.INTERNAL_ERROR,
+        COORDINATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -115,11 +115,11 @@ export function SalesReportExample() {
   ];
 
   return (
-    <div className="space-y-12">
+    <div className='space-y-12'>
       {/* Example 1: Full Report with Builder */}
       <ReportBuilder
-        title="Monthly Sales Report"
-        description="Comprehensive sales analysis for the selected period"
+        title='Monthly Sales Report'
+        description='Comprehensive sales analysis for the selected period'
         filters={filters}
         onFilterChange={setFilterValues}
         onDateRangeChange={setDateRange}
@@ -127,30 +127,30 @@ export function SalesReportExample() {
         showFilters
         showExport
       >
-        <div className="grid gap-6">
+        <div className='grid gap-6'>
           <LineChart
-            title="Revenue & Profit Trends"
-            description="Monthly revenue and profit over time"
+            title='Revenue & Profit Trends'
+            description='Monthly revenue and profit over time'
             data={salesTimeSeriesData}
             dataKeys={['revenue', 'profit']}
-            xAxisKey="date"
+            xAxisKey='date'
             height={400}
             curved
           />
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className='grid md:grid-cols-2 gap-6'>
             <BarChart
-              title="Sales by Category"
-              description="Category-wise sales and returns"
+              title='Sales by Category'
+              description='Category-wise sales and returns'
               data={categoryData}
               dataKeys={['sales', 'returns']}
-              xAxisKey="category"
+              xAxisKey='category'
               height={350}
             />
 
             <PieChart
-              title="Revenue Distribution"
-              description="Revenue breakdown by category"
+              title='Revenue Distribution'
+              description='Revenue breakdown by category'
               data={pieData}
               height={350}
               donut
@@ -159,11 +159,11 @@ export function SalesReportExample() {
           </div>
 
           <AreaChart
-            title="Order Volume"
-            description="Number of orders over time"
+            title='Order Volume'
+            description='Number of orders over time'
             data={salesTimeSeriesData}
             dataKeys={['orders']}
-            xAxisKey="date"
+            xAxisKey='date'
             height={300}
             gradient
           />
@@ -180,7 +180,7 @@ export function SalesReportExample() {
 
       {/* Example 3: Analytics Report Template */}
       <AnalyticsReport
-        title="Customer Analytics"
+        title='Customer Analytics'
         dateRange={dateRange}
         overviewData={{
           totalUsers: 10234,
@@ -194,38 +194,38 @@ export function SalesReportExample() {
       />
 
       {/* Example 4: Individual Charts */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold">Individual Chart Examples</h2>
+      <div className='space-y-6'>
+        <h2 className='text-2xl font-bold'>Individual Chart Examples</h2>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className='grid gap-6 md:grid-cols-2'>
           <LineChart
-            title="Simple Line Chart"
+            title='Simple Line Chart'
             data={salesTimeSeriesData}
             dataKeys={['revenue']}
-            xAxisKey="date"
+            xAxisKey='date'
             height={300}
           />
 
           <BarChart
-            title="Horizontal Bar Chart"
+            title='Horizontal Bar Chart'
             data={categoryData}
             dataKeys={['sales']}
-            xAxisKey="category"
+            xAxisKey='category'
             height={300}
             horizontal
           />
 
           <AreaChart
-            title="Stacked Area Chart"
+            title='Stacked Area Chart'
             data={salesTimeSeriesData}
             dataKeys={['revenue', 'profit']}
-            xAxisKey="date"
+            xAxisKey='date'
             height={300}
             stacked
           />
 
           <PieChart
-            title="Simple Pie Chart"
+            title='Simple Pie Chart'
             data={pieData}
             height={300}
             showLabels

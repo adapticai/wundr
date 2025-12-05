@@ -436,9 +436,13 @@ model user {
   tasksCreatedBy         task[]               @relation("taskCreatedBy")
   orchestrator           orchestrator? // Associated Orchestrator profile (if user is an Orchestrator)
   workspaceMembers       workspaceMember[]
-  webhooks               webhook[]
-  savedItems             savedItem[]
-  charterVersionsCreated charterVersion[]
+  webhooks                webhook[]
+  savedItems              savedItem[]
+  charterVersionsCreated  charterVersion[]
+  promptTemplates         promptTemplate[]
+  promptTemplateStars     promptTemplateStar[]
+  promptTemplateVersions  promptTemplateVersion[]
+  aiFeedback              aiFeedback[]
 
   @@index([email])
   @@index([status])
@@ -617,6 +621,7 @@ model workspace {
   organization      organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   webhooks          webhook[]
   savedItems        savedItem[]
+  aiFeedback        aiFeedback[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -1408,4 +1413,112 @@ model DaemonNode {
   createdAt      DateTime   @default(now()) @map("created_at")
 
   @@map("daemon_nodes")
+}
+
+// =============================================================================
+// AI Prompt Template Models (Phase 10 - AI Features)
+// =============================================================================
+
+/// PromptTemplate - Reusable AI prompt templates with variable interpolation
+model promptTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  category    String   // writing, coding, analysis, brainstorming, documentation, communication, workflow, research, custom
+  content     String   @db.Text // Template content with {{variable}} placeholders
+  variables   Json     @default("[]") // Array of PromptVariable objects
+  tags        String[] @default([])
+  isPublic    Boolean  @default(false) @map("is_public")
+  isSystem    Boolean  @default(false) @map("is_system") // System/built-in template
+  version     Int      @default(1)
+  usageCount  Int      @default(0) @map("usage_count")
+  starCount   Int      @default(0) @map("star_count")
+  authorId    String?  @map("author_id")
+  workspaceId String?  @map("workspace_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  author   user?                   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  stars    promptTemplateStar[]
+  versions promptTemplateVersion[]
+
+  @@index([authorId])
+  @@index([workspaceId])
+  @@index([category])
+  @@index([isPublic])
+  @@index([isSystem])
+  @@index([createdAt])
+  @@map("prompt_templates")
+}
+
+/// PromptTemplateStar - User stars/favorites for prompt templates
+model promptTemplateStar {
+  id                String         @id @default(cuid())
+  promptTemplateId  String         @map("prompt_template_id")
+  userId            String         @map("user_id")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  promptTemplate    promptTemplate @relation(fields: [promptTemplateId], references: [id], onDelete: Cascade)
+  user              user           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([promptTemplateId, userId])
+  @@index([promptTemplateId])
+  @@index([userId])
+  @@map("prompt_template_stars")
+}
+
+/// PromptTemplateVersion - Version history for prompt templates
+model promptTemplateVersion {
+  id               String         @id @default(cuid())
+  promptTemplateId String         @map("prompt_template_id")
+  version          Int
+  content          String         @db.Text
+  variables        Json           @default("[]")
+  changeLog        String?        @map("change_log")
+  createdById      String         @map("created_by_id")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  promptTemplate   promptTemplate @relation(fields: [promptTemplateId], references: [id], onDelete: Cascade)
+  createdBy        user           @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@unique([promptTemplateId, version])
+  @@index([promptTemplateId])
+  @@index([createdById])
+  @@map("prompt_template_versions")
+}
+
+// =============================================================================
+// AI Feedback Models (Phase 10 - AI Feedback System)
+// =============================================================================
+
+/// AIFeedback sentiment enumeration
+enum AIFeedbackSentiment {
+  POSITIVE
+  NEGATIVE
+  NEUTRAL
+}
+
+/// AIFeedback - User feedback on AI responses
+model aiFeedback {
+  id           String               @id @default(cuid())
+  responseId   String               @map("response_id") // AI response or message ID
+  sentiment    AIFeedbackSentiment  // Quick feedback: thumbs up/down
+  category     String?              // accuracy, helpfulness, clarity, relevance, tone, other
+  comment      String?              @db.Text
+  metadata     Json                 @default("{}") // Provider, model, prompt context, etc.
+  isAnonymous  Boolean              @default(false) @map("is_anonymous")
+  workspaceId  String               @map("workspace_id")
+  userId       String?              @map("user_id") // Null if anonymous
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+
+  user      user?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  workspace workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([sentiment])
+  @@index([category])
+  @@index([createdAt])
+  @@index([responseId])
+  @@map("ai_feedback")
 }

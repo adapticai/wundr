@@ -38,7 +38,7 @@ interface RouteContext {
 async function verifyVPAccess(
   workspaceId: string,
   orchestratorId: string,
-  userId: string,
+  userId: string
 ) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -106,7 +106,7 @@ async function verifyVPAccess(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -115,9 +115,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -130,9 +130,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid parameters',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -140,15 +140,15 @@ export async function GET(
     const access = await verifyVPAccess(
       workspaceId,
       orchestratorId,
-      session.user.id,
+      session.user.id
     );
     if (!access) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -161,9 +161,9 @@ export async function GET(
         createAnalyticsErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -199,7 +199,7 @@ export async function GET(
       : 1;
 
     const filteredAnomalies = anomalies.filter(
-      (anomaly: any) => severityOrder[anomaly.severity] >= minSeverityLevel,
+      (anomaly: any) => severityOrder[anomaly.severity] >= minSeverityLevel
     );
 
     // Group anomalies by severity
@@ -211,7 +211,7 @@ export async function GET(
         acc[anomaly.severity].push(anomaly);
         return acc;
       },
-      {} as Record<string, typeof filteredAnomalies>,
+      {} as Record<string, typeof filteredAnomalies>
     );
 
     // Calculate overall health score
@@ -253,8 +253,8 @@ export async function GET(
               acc[a.anomalyType] = (acc[a.anomalyType] || 0) + 1;
               return acc;
             },
-            {} as Record<string, number>,
-          ),
+            {} as Record<string, number>
+          )
         ).map(([type, count]) => ({ type, count })),
         bySeverity: {
           critical: anomaliesBySeverity.critical?.length || 0,
@@ -289,7 +289,7 @@ export async function GET(
     // Add overall recommendations
     if (response.healthScore < 60) {
       response.recommendations.push(
-        'Immediate attention required - multiple performance issues detected',
+        'Immediate attention required - multiple performance issues detected'
       );
     }
 
@@ -298,31 +298,31 @@ export async function GET(
       anomaliesBySeverity.critical.length > 0
     ) {
       response.recommendations.push(
-        'Critical issues detected - prioritize resolution of high-severity anomalies',
+        'Critical issues detected - prioritize resolution of high-severity anomalies'
       );
     }
 
     const lowCompletionAnomaly = filteredAnomalies.find(
-      (a: any) => a.anomalyType === 'low_completion_rate',
+      (a: any) => a.anomalyType === 'low_completion_rate'
     );
     if (lowCompletionAnomaly) {
       response.recommendations.push(
-        'Consider workload adjustment or additional training to improve completion rate',
+        'Consider workload adjustment or additional training to improve completion rate'
       );
     }
 
     const highResponseTimeAnomaly = filteredAnomalies.find(
-      (a: any) => a.anomalyType === 'high_response_time',
+      (a: any) => a.anomalyType === 'high_response_time'
     );
     if (highResponseTimeAnomaly) {
       response.recommendations.push(
-        'Review task complexity and consider breaking down large tasks',
+        'Review task complexity and consider breaking down large tasks'
       );
     }
 
     if (filteredAnomalies.length === 0) {
       response.recommendations.push(
-        'No significant anomalies detected - Orchestrator performing normally',
+        'No significant anomalies detected - Orchestrator performing normally'
       );
     }
 
@@ -333,14 +333,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/anomalies] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createAnalyticsErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -195,7 +195,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
     setIsSuggestionsLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/command-palette`,
+        `/api/workspaces/${workspaceSlug}/command-palette`
       );
 
       if (response.ok) {
@@ -239,10 +239,10 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
       setRecentItems(updated);
       localStorage.setItem(
         `recent-items-${workspaceSlug}`,
-        JSON.stringify(updated),
+        JSON.stringify(updated)
       );
     },
-    [recentItems, workspaceSlug],
+    [recentItems, workspaceSlug]
   );
 
   // Debounced search function
@@ -257,7 +257,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/search?q=${encodeURIComponent(searchQuery)}&types=channels,users,orchestrators,dms,files&limit=20`,
+          `/api/workspaces/${workspaceSlug}/search?q=${encodeURIComponent(searchQuery)}&types=channels,users,orchestrators,dms,files&limit=20`
         );
 
         if (response.ok) {
@@ -320,7 +320,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
                     metadata: {
                       isGroup: item.participants?.length > 2,
                       participants: item.participants?.map(
-                        (p: { name: string }) => p.name,
+                        (p: { name: string }) => p.name
                       ),
                     },
                   });
@@ -356,7 +356,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
         setIsLoading(false);
       }
     },
-    [workspaceSlug],
+    [workspaceSlug]
   );
 
   // Handle query change with debounce
@@ -378,7 +378,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
         setIsLoading(false);
       }
     },
-    [performSearch],
+    [performSearch]
   );
 
   // Handle result selection
@@ -456,7 +456,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
           break;
       }
     },
-    [router, saveRecentItem, workspaceSlug, openPreview],
+    [router, saveRecentItem, workspaceSlug, openPreview]
   );
 
   // Handle recent item selection
@@ -477,7 +477,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
           break;
       }
     },
-    [router, workspaceSlug],
+    [router, workspaceSlug]
   );
 
   // Handle quick action selection (for dynamic quick actions from API)
@@ -487,7 +487,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
       setQuery('');
       router.push(path);
     },
-    [router],
+    [router]
   );
 
   // Handle channel suggestion selection
@@ -502,7 +502,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
       setQuery('');
       router.push(`/${workspaceSlug}/channels/${channel.id}`);
     },
-    [router, saveRecentItem, workspaceSlug],
+    [router, saveRecentItem, workspaceSlug]
   );
 
   // Handle DM suggestion selection
@@ -520,7 +520,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
       setQuery('');
       router.push(`/${workspaceSlug}/dm/${dm.id}`);
     },
-    [router, saveRecentItem, workspaceSlug],
+    [router, saveRecentItem, workspaceSlug]
   );
 
   // Handle person suggestion selection
@@ -536,7 +536,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
       setQuery('');
       router.push(`/${workspaceSlug}/messages/new?user=${person.id}`);
     },
-    [router, saveRecentItem, workspaceSlug],
+    [router, saveRecentItem, workspaceSlug]
   );
 
   // Handle file suggestion selection
@@ -547,7 +547,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
       // Open file preview modal
       try {
         const response = await fetch(
-          `/api/files/${file.id}/download?inline=true`,
+          `/api/files/${file.id}/download?inline=true`
         );
         const data = await response.json();
         if (data.data?.url) {
@@ -564,7 +564,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
         console.error('Error opening file preview:', err);
       }
     },
-    [openPreview],
+    [openPreview]
   );
 
   // Helper to get icon for quick actions
@@ -605,7 +605,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
           break;
       }
     },
-    [router, workspaceSlug],
+    [router, workspaceSlug]
   );
 
   // Keyboard shortcut (Cmd/Ctrl + K)
@@ -665,7 +665,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
   const channelResults = results.filter(r => r.type === 'channel');
   const dmResults = results.filter(r => r.type === 'dm');
   const userResults = results.filter(
-    r => r.type === 'user' || r.type === 'orchestrator',
+    r => r.type === 'user' || r.type === 'orchestrator'
   );
   const fileResults = results.filter(r => r.type === 'file');
 
@@ -677,7 +677,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
         onClick={() => setOpen(true)}
         className={cn(
           'flex items-center gap-2 px-3 h-9 w-full rounded-md border border-input bg-muted/50 hover:bg-muted/80 transition-colors',
-          className,
+          className
         )}
         aria-label='Search'
       >

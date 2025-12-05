@@ -52,7 +52,10 @@ export type VariableScope = 'global' | 'step';
 /**
  * Extended variable definition with scope
  */
-export interface ScopedWorkflowVariable extends Omit<WorkflowVariable, 'source'> {
+export interface ScopedWorkflowVariable extends Omit<
+  WorkflowVariable,
+  'source'
+> {
   id: string;
   scope: VariableScope;
   stepId?: string; // Only for step-scoped variables
@@ -93,7 +96,10 @@ const VARIABLE_TYPE_CONFIG: Record<
 /**
  * Validate variable name
  */
-function validateVariableName(name: string, existingNames: string[]): string | null {
+function validateVariableName(
+  name: string,
+  existingNames: string[]
+): string | null {
   if (!name) {
     return 'Variable name is required';
   }
@@ -109,10 +115,13 @@ function validateVariableName(name: string, existingNames: string[]): string | n
 /**
  * Validate default value based on type
  */
-function validateDefaultValue(value: string, type: VariableType): string | null {
+function validateDefaultValue(
+  value: string,
+  type: VariableType
+): string | null {
   if (!value) {
-return null;
-} // Empty values are allowed
+    return null;
+  } // Empty values are allowed
 
   try {
     switch (type) {
@@ -151,11 +160,11 @@ return null;
  */
 function parseDefaultValue(
   value: string,
-  type: VariableType,
+  type: VariableType
 ): string | number | boolean | unknown[] | Record<string, unknown> | undefined {
   if (!value) {
-return undefined;
-}
+    return undefined;
+  }
 
   switch (type) {
     case 'string':
@@ -176,12 +185,18 @@ return undefined;
  * Convert default value to string for editing
  */
 function stringifyDefaultValue(
-  value: string | number | boolean | readonly unknown[] | Readonly<Record<string, unknown>> | undefined,
-  type: VariableType,
+  value:
+    | string
+    | number
+    | boolean
+    | readonly unknown[]
+    | Readonly<Record<string, unknown>>
+    | undefined,
+  type: VariableType
 ): string {
   if (value === undefined) {
-return '';
-}
+    return '';
+  }
 
   switch (type) {
     case 'string':
@@ -219,10 +234,13 @@ function VariableDialog({
 }: VariableDialogProps) {
   const [formData, setFormData] = React.useState({
     name: variable?.name || '',
-    type: variable?.type || 'string' as VariableType,
+    type: variable?.type || ('string' as VariableType),
     description: variable?.description || '',
-    defaultValue: stringifyDefaultValue(variable?.defaultValue, variable?.type || 'string'),
-    scope: variable?.scope || 'global' as VariableScope,
+    defaultValue: stringifyDefaultValue(
+      variable?.defaultValue,
+      variable?.type || 'string'
+    ),
+    scope: variable?.scope || ('global' as VariableScope),
     stepId: variable?.stepId || '',
   });
 
@@ -234,7 +252,10 @@ function VariableDialog({
         name: variable.name,
         type: variable.type,
         description: variable.description || '',
-        defaultValue: stringifyDefaultValue(variable.defaultValue, variable.type),
+        defaultValue: stringifyDefaultValue(
+          variable.defaultValue,
+          variable.type
+        ),
         scope: variable.scope,
         stepId: variable.stepId || '',
       });
@@ -256,8 +277,8 @@ function VariableDialog({
 
     // Validate name
     const existingNames = existingVariables
-      .filter((v) => v.id !== variable?.id)
-      .map((v) => v.name);
+      .filter(v => v.id !== variable?.id)
+      .map(v => v.name);
     const nameError = validateVariableName(formData.name, existingNames);
     if (nameError) {
       newErrors.name = nameError;
@@ -265,7 +286,10 @@ function VariableDialog({
 
     // Validate default value
     if (formData.defaultValue) {
-      const valueError = validateDefaultValue(formData.defaultValue, formData.type);
+      const valueError = validateDefaultValue(
+        formData.defaultValue,
+        formData.type
+      );
       if (valueError) {
         newErrors.defaultValue = valueError;
       }
@@ -282,8 +306,8 @@ function VariableDialog({
 
   const handleSave = () => {
     if (!validate()) {
-return;
-}
+      return;
+    }
 
     const savedVariable: ScopedWorkflowVariable = {
       id: variable?.id || `var_${Date.now()}`,
@@ -301,44 +325,46 @@ return;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className='max-w-2xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>
             {variable ? 'Edit Variable' : 'Add Variable'}
           </DialogTitle>
           <DialogDescription>
-            Define a variable that can be used throughout your workflow. Use ${'{'}variable.name{'}'} to reference it.
+            Define a variable that can be used throughout your workflow. Use $
+            {'{'}variable.name{'}'} to reference it.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className='space-y-4 py-4'>
           {/* Variable Name */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Variable Name <span className="text-destructive">*</span>
+          <div className='space-y-2'>
+            <label className='text-sm font-medium'>
+              Variable Name <span className='text-destructive'>*</span>
             </label>
             <Input
-              placeholder="myVariable"
+              placeholder='myVariable'
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
               className={cn(errors.name && 'border-destructive')}
             />
             {errors.name && (
-              <p className="text-sm text-destructive">{errors.name}</p>
+              <p className='text-sm text-destructive'>{errors.name}</p>
             )}
-            <p className="text-xs text-muted-foreground">
-              Must start with a letter or underscore, contain only letters, numbers, and underscores
+            <p className='text-xs text-muted-foreground'>
+              Must start with a letter or underscore, contain only letters,
+              numbers, and underscores
             </p>
           </div>
 
           {/* Variable Type */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Type <span className="text-destructive">*</span>
+          <div className='space-y-2'>
+            <label className='text-sm font-medium'>
+              Type <span className='text-destructive'>*</span>
             </label>
             <Select
               value={formData.type}
-              onValueChange={(value) =>
+              onValueChange={value =>
                 setFormData({ ...formData, type: value as VariableType })
               }
             >
@@ -348,8 +374,8 @@ return;
               <SelectContent>
                 {Object.entries(VARIABLE_TYPE_CONFIG).map(([type, config]) => (
                   <SelectItem key={type} value={type}>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs">{config.icon}</span>
+                    <div className='flex items-center gap-2'>
+                      <span className='font-mono text-xs'>{config.icon}</span>
                       {config.label}
                     </div>
                   </SelectItem>
@@ -359,32 +385,36 @@ return;
           </div>
 
           {/* Scope */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Scope <span className="text-destructive">*</span>
+          <div className='space-y-2'>
+            <label className='text-sm font-medium'>
+              Scope <span className='text-destructive'>*</span>
             </label>
             <Select
               value={formData.scope}
-              onValueChange={(value) =>
-                setFormData({ ...formData, scope: value as VariableScope, stepId: '' })
+              onValueChange={value =>
+                setFormData({
+                  ...formData,
+                  scope: value as VariableScope,
+                  stepId: '',
+                })
               }
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="global">
-                  <div className="space-y-1">
+                <SelectItem value='global'>
+                  <div className='space-y-1'>
                     <div>Global</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className='text-xs text-muted-foreground'>
                       Available in all workflow steps
                     </div>
                   </div>
                 </SelectItem>
-                <SelectItem value="step">
-                  <div className="space-y-1">
+                <SelectItem value='step'>
+                  <div className='space-y-1'>
                     <div>Step-scoped</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className='text-xs text-muted-foreground'>
                       Available only in specific step
                     </div>
                   </div>
@@ -395,21 +425,23 @@ return;
 
           {/* Step Selection (for step-scoped variables) */}
           {formData.scope === 'step' && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Step <span className="text-destructive">*</span>
+            <div className='space-y-2'>
+              <label className='text-sm font-medium'>
+                Step <span className='text-destructive'>*</span>
               </label>
               <Select
                 value={formData.stepId}
-                onValueChange={(value) =>
+                onValueChange={value =>
                   setFormData({ ...formData, stepId: value })
                 }
               >
-                <SelectTrigger className={cn(errors.stepId && 'border-destructive')}>
-                  <SelectValue placeholder="Select a step" />
+                <SelectTrigger
+                  className={cn(errors.stepId && 'border-destructive')}
+                >
+                  <SelectValue placeholder='Select a step' />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableSteps.map((step) => (
+                  {availableSteps.map(step => (
                     <SelectItem key={step.id} value={step.id}>
                       {step.name}
                     </SelectItem>
@@ -417,18 +449,18 @@ return;
                 </SelectContent>
               </Select>
               {errors.stepId && (
-                <p className="text-sm text-destructive">{errors.stepId}</p>
+                <p className='text-sm text-destructive'>{errors.stepId}</p>
               )}
             </div>
           )}
 
           {/* Description */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Description</label>
+          <div className='space-y-2'>
+            <label className='text-sm font-medium'>Description</label>
             <Textarea
-              placeholder="Describe what this variable is used for..."
+              placeholder='Describe what this variable is used for...'
               value={formData.description}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({ ...formData, description: e.target.value })
               }
               rows={2}
@@ -436,18 +468,18 @@ return;
           </div>
 
           {/* Default Value */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Default Value</label>
+          <div className='space-y-2'>
+            <label className='text-sm font-medium'>Default Value</label>
             {formData.type === 'array' || formData.type === 'object' ? (
               <Textarea
                 placeholder={VARIABLE_TYPE_CONFIG[formData.type].defaultValue}
                 value={formData.defaultValue}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, defaultValue: e.target.value })
                 }
                 className={cn(
                   'font-mono text-xs',
-                  errors.defaultValue && 'border-destructive',
+                  errors.defaultValue && 'border-destructive'
                 )}
                 rows={6}
               />
@@ -455,45 +487,46 @@ return;
               <Input
                 placeholder={VARIABLE_TYPE_CONFIG[formData.type].defaultValue}
                 value={formData.defaultValue}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, defaultValue: e.target.value })
                 }
                 className={cn(errors.defaultValue && 'border-destructive')}
               />
             )}
             {errors.defaultValue && (
-              <p className="text-sm text-destructive">{errors.defaultValue}</p>
+              <p className='text-sm text-destructive'>{errors.defaultValue}</p>
             )}
             {formData.type === 'boolean' && (
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 Enter "true" or "false"
               </p>
             )}
             {(formData.type === 'array' || formData.type === 'object') && (
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 Enter valid JSON format
               </p>
             )}
           </div>
 
           {/* Variable Reference Preview */}
-          <div className="rounded-lg border bg-muted/50 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Code2 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Variable Reference</span>
+          <div className='rounded-lg border bg-muted/50 p-4'>
+            <div className='flex items-center gap-2 mb-2'>
+              <Code2 className='h-4 w-4 text-muted-foreground' />
+              <span className='text-sm font-medium'>Variable Reference</span>
             </div>
-            <code className="text-sm bg-background px-2 py-1 rounded border">
-              ${'{'}variable.{formData.name || 'name'}{'}'}
+            <code className='text-sm bg-background px-2 py-1 rounded border'>
+              ${'{'}variable.{formData.name || 'name'}
+              {'}'}
             </code>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant='outline' onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className='h-4 w-4 mr-2' />
             Save Variable
           </Button>
         </DialogFooter>
@@ -516,16 +549,16 @@ export function VariableManager({
     ScopedWorkflowVariable | undefined
   >();
   const [expandedScopes, setExpandedScopes] = React.useState<Set<string>>(
-    new Set(['global']),
+    new Set(['global'])
   );
 
-  const globalVariables = variables.filter((v) => v.scope === 'global');
-  const stepVariables = variables.filter((v) => v.scope === 'step');
+  const globalVariables = variables.filter(v => v.scope === 'global');
+  const stepVariables = variables.filter(v => v.scope === 'step');
 
   // Group step variables by step
   const variablesByStep = React.useMemo(() => {
     const grouped = new Map<string, ScopedWorkflowVariable[]>();
-    stepVariables.forEach((variable) => {
+    stepVariables.forEach(variable => {
       if (variable.stepId) {
         if (!grouped.has(variable.stepId)) {
           grouped.set(variable.stepId, []);
@@ -547,14 +580,14 @@ export function VariableManager({
   };
 
   const handleDeleteVariable = (variableId: string) => {
-    onVariablesChange(variables.filter((v) => v.id !== variableId));
+    onVariablesChange(variables.filter(v => v.id !== variableId));
   };
 
   const handleSaveVariable = (variable: ScopedWorkflowVariable) => {
     if (editingVariable) {
       // Update existing
       onVariablesChange(
-        variables.map((v) => (v.id === variable.id ? variable : v)),
+        variables.map(v => (v.id === variable.id ? variable : v))
       );
     } else {
       // Add new
@@ -563,7 +596,7 @@ export function VariableManager({
   };
 
   const toggleScope = (scope: string) => {
-    setExpandedScopes((prev) => {
+    setExpandedScopes(prev => {
       const next = new Set(prev);
       if (next.has(scope)) {
         next.delete(scope);
@@ -576,51 +609,52 @@ export function VariableManager({
 
   const renderVariableRow = (variable: ScopedWorkflowVariable) => (
     <TableRow key={variable.id}>
-      <TableCell className="font-mono text-sm">{variable.name}</TableCell>
+      <TableCell className='font-mono text-sm'>{variable.name}</TableCell>
       <TableCell>
-        <Badge variant="secondary" className="font-mono text-xs">
+        <Badge variant='secondary' className='font-mono text-xs'>
           {VARIABLE_TYPE_CONFIG[variable.type].icon} {variable.type}
         </Badge>
       </TableCell>
-      <TableCell className="max-w-xs">
-        <div className="truncate text-sm text-muted-foreground">
+      <TableCell className='max-w-xs'>
+        <div className='truncate text-sm text-muted-foreground'>
           {variable.description || '-'}
         </div>
       </TableCell>
       <TableCell>
         {variable.defaultValue !== undefined ? (
-          <code className="text-xs bg-muted px-2 py-1 rounded">
+          <code className='text-xs bg-muted px-2 py-1 rounded'>
             {stringifyDefaultValue(variable.defaultValue, variable.type).slice(
               0,
-              50,
+              50
             )}
-            {stringifyDefaultValue(variable.defaultValue, variable.type).length >
-              50 && '...'}
+            {stringifyDefaultValue(variable.defaultValue, variable.type)
+              .length > 50 && '...'}
           </code>
         ) : (
-          <span className="text-sm text-muted-foreground">-</span>
+          <span className='text-sm text-muted-foreground'>-</span>
         )}
       </TableCell>
       <TableCell>
-        <code className="text-xs bg-muted px-2 py-1 rounded">
-          ${'{'}variable.{variable.name}{'}'}
+        <code className='text-xs bg-muted px-2 py-1 rounded'>
+          ${'{'}variable.{variable.name}
+          {'}'}
         </code>
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           <Button
-            variant="ghost"
-            size="icon"
+            variant='ghost'
+            size='icon'
             onClick={() => handleEditVariable(variable)}
           >
-            <Edit2 className="h-4 w-4" />
+            <Edit2 className='h-4 w-4' />
           </Button>
           <Button
-            variant="ghost"
-            size="icon"
+            variant='ghost'
+            size='icon'
             onClick={() => handleDeleteVariable(variable.id)}
           >
-            <Trash2 className="h-4 w-4 text-destructive" />
+            <Trash2 className='h-4 w-4 text-destructive' />
           </Button>
         </div>
       </TableCell>
@@ -629,52 +663,53 @@ export function VariableManager({
 
   return (
     <div className={cn('space-y-4', className)}>
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h3 className="text-lg font-semibold">Workflow Variables</h3>
-          <p className="text-sm text-muted-foreground">
-            Define variables that can be referenced in workflow steps using ${'{'}
+          <h3 className='text-lg font-semibold'>Workflow Variables</h3>
+          <p className='text-sm text-muted-foreground'>
+            Define variables that can be referenced in workflow steps using $
+            {'{'}
             variable.name{'}'}
           </p>
         </div>
         <Button onClick={handleAddVariable}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className='h-4 w-4 mr-2' />
           Add Variable
         </Button>
       </div>
 
       {variables.length === 0 ? (
-        <div className="border rounded-lg p-8 text-center">
-          <Code2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h4 className="text-lg font-medium mb-2">No variables defined</h4>
-          <p className="text-sm text-muted-foreground mb-4">
+        <div className='border rounded-lg p-8 text-center'>
+          <Code2 className='h-12 w-12 mx-auto mb-4 text-muted-foreground' />
+          <h4 className='text-lg font-medium mb-2'>No variables defined</h4>
+          <p className='text-sm text-muted-foreground mb-4'>
             Variables help you store and reuse values throughout your workflow
           </p>
           <Button onClick={handleAddVariable}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className='h-4 w-4 mr-2' />
             Add Your First Variable
           </Button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className='space-y-4'>
           {/* Global Variables */}
-          <div className="border rounded-lg">
+          <div className='border rounded-lg'>
             <button
-              className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+              className='w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors'
               onClick={() => toggleScope('global')}
             >
-              <div className="flex items-center gap-2">
+              <div className='flex items-center gap-2'>
                 {expandedScopes.has('global') ? (
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className='h-4 w-4' />
                 ) : (
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className='h-4 w-4' />
                 )}
-                <span className="font-medium">Global Variables</span>
-                <Badge variant="secondary">{globalVariables.length}</Badge>
+                <span className='font-medium'>Global Variables</span>
+                <Badge variant='secondary'>{globalVariables.length}</Badge>
               </div>
             </button>
             {expandedScopes.has('global') && globalVariables.length > 0 && (
-              <div className="border-t">
+              <div className='border-t'>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -683,7 +718,7 @@ export function VariableManager({
                       <TableHead>Description</TableHead>
                       <TableHead>Default Value</TableHead>
                       <TableHead>Reference</TableHead>
-                      <TableHead className="w-[100px]">Actions</TableHead>
+                      <TableHead className='w-[100px]'>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -696,30 +731,30 @@ export function VariableManager({
 
           {/* Step-scoped Variables */}
           {variablesByStep.size > 0 && (
-            <div className="border rounded-lg">
+            <div className='border rounded-lg'>
               <button
-                className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+                className='w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors'
                 onClick={() => toggleScope('step')}
               >
-                <div className="flex items-center gap-2">
+                <div className='flex items-center gap-2'>
                   {expandedScopes.has('step') ? (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className='h-4 w-4' />
                   ) : (
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className='h-4 w-4' />
                   )}
-                  <span className="font-medium">Step Variables</span>
-                  <Badge variant="secondary">{stepVariables.length}</Badge>
+                  <span className='font-medium'>Step Variables</span>
+                  <Badge variant='secondary'>{stepVariables.length}</Badge>
                 </div>
               </button>
               {expandedScopes.has('step') && (
-                <div className="border-t">
+                <div className='border-t'>
                   {Array.from(variablesByStep.entries()).map(
                     ([stepId, vars]) => {
-                      const step = availableSteps.find((s) => s.id === stepId);
+                      const step = availableSteps.find(s => s.id === stepId);
                       return (
-                        <div key={stepId} className="border-b last:border-b-0">
-                          <div className="p-3 bg-muted/30">
-                            <span className="text-sm font-medium">
+                        <div key={stepId} className='border-b last:border-b-0'>
+                          <div className='p-3 bg-muted/30'>
+                            <span className='text-sm font-medium'>
                               {step?.name || `Step ${stepId}`}
                             </span>
                           </div>
@@ -731,7 +766,7 @@ export function VariableManager({
                                 <TableHead>Description</TableHead>
                                 <TableHead>Default Value</TableHead>
                                 <TableHead>Reference</TableHead>
-                                <TableHead className="w-[100px]">
+                                <TableHead className='w-[100px]'>
                                   Actions
                                 </TableHead>
                               </TableRow>
@@ -740,7 +775,7 @@ export function VariableManager({
                           </Table>
                         </div>
                       );
-                    },
+                    }
                   )}
                 </div>
               )}

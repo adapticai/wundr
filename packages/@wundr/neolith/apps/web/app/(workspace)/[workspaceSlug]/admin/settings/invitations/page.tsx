@@ -62,7 +62,7 @@ export default function InvitationsSettingsPage() {
   const loadInvitations = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/invites`,
+        `/api/workspaces/${workspaceSlug}/admin/invites`
       );
       if (!response.ok) {
         throw new Error('Failed to load invitations');
@@ -70,7 +70,7 @@ export default function InvitationsSettingsPage() {
       const data = await response.json();
       setInvitations(data.invitations || []);
       setInviteLink(
-        data.inviteLink || `https://app.wundr.ai/invite/${workspaceSlug}/abc123`,
+        data.inviteLink || `https://app.wundr.ai/invite/${workspaceSlug}/abc123`
       );
     } catch (error) {
       toast({
@@ -92,7 +92,7 @@ export default function InvitationsSettingsPage() {
           `/api/workspaces/${workspaceSlug}/admin/invites/${invitationId}/resend`,
           {
             method: 'POST',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -118,7 +118,7 @@ export default function InvitationsSettingsPage() {
         setIsProcessing(false);
       }
     },
-    [workspaceSlug, toast, loadInvitations],
+    [workspaceSlug, toast, loadInvitations]
   );
 
   const handleRevokeInvite = useCallback(
@@ -129,7 +129,7 @@ export default function InvitationsSettingsPage() {
           `/api/workspaces/${workspaceSlug}/admin/invites/${invitationId}`,
           {
             method: 'DELETE',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -155,7 +155,7 @@ export default function InvitationsSettingsPage() {
         setIsProcessing(false);
       }
     },
-    [workspaceSlug, toast, loadInvitations],
+    [workspaceSlug, toast, loadInvitations]
   );
 
   const handleBulkInvite = useCallback(async () => {
@@ -190,7 +190,7 @@ export default function InvitationsSettingsPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ emails }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -232,7 +232,7 @@ export default function InvitationsSettingsPage() {
         `/api/workspaces/${workspaceSlug}/admin/invites/regenerate-link`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -263,10 +263,10 @@ export default function InvitationsSettingsPage() {
   }
 
   const pendingInvitations = invitations.filter(
-    inv => inv.status === 'pending',
+    inv => inv.status === 'pending'
   );
   const acceptedInvitations = invitations.filter(
-    inv => inv.status === 'accepted',
+    inv => inv.status === 'accepted'
   );
 
   return (
@@ -296,7 +296,7 @@ export default function InvitationsSettingsPage() {
               className={cn(
                 'block w-full rounded-md border border-input bg-background',
                 'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+                'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
               )}
             />
             <p className='mt-2 text-xs text-muted-foreground'>
@@ -311,7 +311,7 @@ export default function InvitationsSettingsPage() {
               'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2',
               'text-sm font-medium text-primary-foreground',
               'hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-              'disabled:cursor-not-allowed disabled:opacity-50',
+              'disabled:cursor-not-allowed disabled:opacity-50'
             )}
           >
             {isSendingBulk ? (
@@ -349,14 +349,14 @@ export default function InvitationsSettingsPage() {
               readOnly
               className={cn(
                 'flex-1 rounded-md border border-input bg-muted px-3 py-2 text-sm',
-                'focus:outline-none',
+                'focus:outline-none'
               )}
             />
             <button
               onClick={handleCopyLink}
               className={cn(
                 'inline-flex items-center gap-2 rounded-md border border-input bg-background',
-                'px-3 py-2 text-sm font-medium hover:bg-accent',
+                'px-3 py-2 text-sm font-medium hover:bg-accent'
               )}
             >
               <Copy className='h-4 w-4' />
@@ -369,7 +369,7 @@ export default function InvitationsSettingsPage() {
             disabled={isRegeneratingLink}
             className={cn(
               'inline-flex items-center gap-2 text-sm text-primary hover:underline',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >
             {isRegeneratingLink ? (
@@ -464,7 +464,7 @@ export default function InvitationsSettingsPage() {
                           disabled={isProcessing}
                           className={cn(
                             'inline-flex items-center gap-1 text-primary hover:underline',
-                            'disabled:opacity-50 disabled:cursor-not-allowed',
+                            'disabled:opacity-50 disabled:cursor-not-allowed'
                           )}
                         >
                           <Send className='h-3 w-3' />
@@ -475,7 +475,7 @@ export default function InvitationsSettingsPage() {
                           disabled={isProcessing}
                           className={cn(
                             'inline-flex items-center gap-1 text-destructive hover:underline',
-                            'disabled:opacity-50 disabled:cursor-not-allowed',
+                            'disabled:opacity-50 disabled:cursor-not-allowed'
                           )}
                         >
                           <X className='h-3 w-3' />
@@ -581,7 +581,7 @@ function StatusBadge({ status }: { status: Invitation['status'] }) {
     <span
       className={cn(
         'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium',
-        config.className,
+        config.className
       )}
     >
       <Icon className='h-3 w-3' />

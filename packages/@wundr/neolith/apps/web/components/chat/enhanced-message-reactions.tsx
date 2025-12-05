@@ -38,7 +38,7 @@ interface EnhancedMessageReactionsProps {
  */
 async function fetchReactionUsers(
   messageId: string,
-  workspaceSlug: string,
+  workspaceSlug: string
 ): Promise<ReactionWithUsers[]> {
   try {
     const response = await fetch(`/api/messages/${messageId}/reactions`);
@@ -59,7 +59,7 @@ async function fetchReactionUsers(
 async function toggleReactionAPI(
   messageId: string,
   emoji: string,
-  hasReacted: boolean,
+  hasReacted: boolean
 ): Promise<void> {
   if (hasReacted) {
     // Remove reaction
@@ -67,7 +67,7 @@ async function toggleReactionAPI(
       `/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`,
       {
         method: 'DELETE',
-      },
+      }
     );
     if (!response.ok) {
       throw new Error('Failed to remove reaction');
@@ -138,7 +138,7 @@ export function EnhancedMessageReactions({
       // Create optimistic update
       const optimisticReactions = reactionsWithUsers.slice();
       const reactionIndex = optimisticReactions.findIndex(
-        r => r.emoji === emoji,
+        r => r.emoji === emoji
       );
 
       if (hasReacted) {
@@ -213,7 +213,7 @@ export function EnhancedMessageReactions({
           if (workspaceSlug) {
             const updatedReactions = await fetchReactionUsers(
               message.id,
-              workspaceSlug,
+              workspaceSlug
             );
             setReactions(updatedReactions);
           }
@@ -224,7 +224,7 @@ export function EnhancedMessageReactions({
         }
       });
     },
-    [reactionsWithUsers, currentUser, message.id, workspaceSlug],
+    [reactionsWithUsers, currentUser, message.id, workspaceSlug]
   );
 
   return (

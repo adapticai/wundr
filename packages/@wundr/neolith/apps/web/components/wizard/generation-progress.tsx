@@ -169,7 +169,7 @@ export function GenerationProgress({
         <div className='space-y-3'>
           {steps.map((step, index) => {
             const currentIndex = steps.findIndex(
-              s => s.state === currentStep.state,
+              s => s.state === currentStep.state
             );
             const isPast = index < currentIndex;
             const isCurrent = step.state === currentStep.state;
@@ -274,7 +274,7 @@ function StepIndicator({
             isPending && 'border-muted bg-muted/50',
             isCurrent && 'border-primary bg-primary/10',
             isComplete && 'border-green-600 bg-green-600',
-            isError && 'border-destructive bg-destructive',
+            isError && 'border-destructive bg-destructive'
           )}
         >
           {isPending && (
@@ -294,7 +294,7 @@ function StepIndicator({
               'mt-1 h-8 w-0.5',
               (isComplete || isCurrent) && 'bg-primary',
               isPending && 'bg-muted',
-              isError && 'bg-destructive',
+              isError && 'bg-destructive'
             )}
           />
         )}
@@ -308,7 +308,7 @@ function StepIndicator({
             isPending && 'text-muted-foreground',
             isCurrent && 'text-foreground',
             isComplete && 'text-foreground',
-            isError && 'text-destructive',
+            isError && 'text-destructive'
           )}
         >
           {label}

@@ -30,7 +30,9 @@ interface RouteContext {
  */
 function hashApiKey(key: string): string {
   const salt = crypto.randomBytes(16).toString('hex');
-  const hash = crypto.pbkdf2Sync(key, salt, 100000, 64, 'sha512').toString('hex');
+  const hash = crypto
+    .pbkdf2Sync(key, salt, 100000, 64, 'sha512')
+    .toString('hex');
   return `${salt}:${hash}`;
 }
 
@@ -48,7 +50,7 @@ function generateApiKey(): string {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Verify authentication
@@ -74,7 +76,7 @@ export async function POST(
     if (!workspace || workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -84,12 +86,15 @@ export async function POST(
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can regenerate API keys' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Get current API keys
-    const currentSettings = workspace.settings as Record<string, unknown> | null;
+    const currentSettings = workspace.settings as Record<
+      string,
+      unknown
+    > | null;
     const apiKeys =
       currentSettings &&
       typeof currentSettings === 'object' &&
@@ -120,7 +125,7 @@ export async function POST(
         : [];
 
     // Find the key to regenerate
-    const keyIndex = apiKeys.findIndex((k) => k.id === keyId);
+    const keyIndex = apiKeys.findIndex(k => k.id === keyId);
     if (keyIndex === -1) {
       return NextResponse.json({ error: 'API key not found' }, { status: 404 });
     }
@@ -163,11 +168,11 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceSlug/api-keys/:keyId/regenerate] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

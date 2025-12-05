@@ -82,7 +82,13 @@ const emailDeliverySchema = z.object({
 const reportParametersSchema = z.object({
   dateRange: z
     .object({
-      type: z.enum(['last-7-days', 'last-30-days', 'last-quarter', 'last-year', 'custom']),
+      type: z.enum([
+        'last-7-days',
+        'last-30-days',
+        'last-quarter',
+        'last-year',
+        'custom',
+      ]),
       startDate: z.string().datetime().optional(),
       endDate: z.string().datetime().optional(),
     })
@@ -126,7 +132,9 @@ const queryFiltersSchema = z.object({
   tag: z.string().optional(),
   limit: z.coerce.number().int().positive().max(100).default(50),
   offset: z.coerce.number().int().min(0).default(0),
-  sortBy: z.enum(['name', 'createdAt', 'lastRun', 'nextRun']).default('createdAt'),
+  sortBy: z
+    .enum(['name', 'createdAt', 'lastRun', 'nextRun'])
+    .default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
@@ -172,7 +180,7 @@ interface ScheduledReport {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -196,7 +204,7 @@ export async function GET(
     if (!workspace || workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -220,11 +228,12 @@ export async function GET(
           error: 'Invalid query parameters',
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const { reportType, isActive, tag, limit, offset, sortBy, sortOrder } = parseResult.data;
+    const { reportType, isActive, tag, limit, offset, sortBy, sortOrder } =
+      parseResult.data;
 
     // Build where clause
     const whereClause: any = {
@@ -260,7 +269,7 @@ export async function GET(
 
     // Transform reports to include schedule information
     const transformedReports: ScheduledReport[] = await Promise.all(
-      reports.map(async (report) => {
+      reports.map(async report => {
         const metadata = (report as any).metadata || {};
         const scheduleConfig = metadata.schedule || {};
 
@@ -288,7 +297,9 @@ export async function GET(
           cronExpression,
           cronDescription: describeCronExpression(cronExpression),
           timezone: scheduleConfig.timezone || 'UTC',
-          exportFormats: scheduleConfig.exportFormats || [report.format.toLowerCase()],
+          exportFormats: scheduleConfig.exportFormats || [
+            report.format.toLowerCase(),
+          ],
           emailDelivery: scheduleConfig.emailDelivery || {
             enabled: false,
             recipients: [],
@@ -299,7 +310,9 @@ export async function GET(
           parameters: scheduleConfig.parameters || null,
           isActive: scheduleConfig.isActive ?? true,
           tags: metadata.tags || [],
-          lastRun: scheduleConfig.lastRun ? new Date(scheduleConfig.lastRun) : null,
+          lastRun: scheduleConfig.lastRun
+            ? new Date(scheduleConfig.lastRun)
+            : null,
           lastRunStatus: scheduleConfig.lastRunStatus || null,
           nextRun,
           runCount: scheduleConfig.runCount || 0,
@@ -313,7 +326,7 @@ export async function GET(
           createdAt: report.createdAt,
           updatedAt: new Date(), // exportJob doesn't have updatedAt
         };
-      }),
+      })
     );
 
     return NextResponse.json({
@@ -331,10 +344,13 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/reports/scheduled] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/reports/scheduled] Error:',
+      error
+    );
     return NextResponse.json(
       { error: 'Failed to fetch scheduled reports' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -350,7 +366,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -374,7 +390,7 @@ export async function POST(
     if (!workspace || workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -382,7 +398,7 @@ export async function POST(
     if (memberRole === 'GUEST') {
       return NextResponse.json(
         { error: 'Insufficient permissions to create scheduled reports' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -396,7 +412,7 @@ export async function POST(
           error: 'Validation failed',
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -406,20 +422,28 @@ export async function POST(
     if (!validateFrequencyLimit(data.cronExpression, 60)) {
       return NextResponse.json(
         { error: 'Schedule frequency too high. Minimum interval is 1 hour.' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Validate email recipients if email delivery is enabled
-    if (data.emailDelivery.enabled && data.emailDelivery.recipients.length === 0) {
+    if (
+      data.emailDelivery.enabled &&
+      data.emailDelivery.recipients.length === 0
+    ) {
       return NextResponse.json(
-        { error: 'At least one email recipient is required when email delivery is enabled' },
-        { status: 400 },
+        {
+          error:
+            'At least one email recipient is required when email delivery is enabled',
+        },
+        { status: 400 }
       );
     }
 
     // Calculate next run time
-    const nextRun = data.isActive ? getNextExecution(data.cronExpression) : null;
+    const nextRun = data.isActive
+      ? getNextExecution(data.cronExpression)
+      : null;
 
     // Create scheduled report using exportJob table with extended metadata
     // In production, create a dedicated scheduled_reports table
@@ -476,10 +500,13 @@ export async function POST(
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceSlug/reports/scheduled] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceSlug/reports/scheduled] Error:',
+      error
+    );
     return NextResponse.json(
       { error: 'Failed to create scheduled report' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -1,7 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Bar, BarChart as RechartsBarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import {
+  Bar,
+  BarChart as RechartsBarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 import {
   ChartContainer,
@@ -50,7 +56,7 @@ export function BarChart({
         value: item.value,
         fill: item.color || 'hsl(var(--primary))',
       })),
-    [data],
+    [data]
   );
 
   if (isLoading) {
@@ -87,7 +93,11 @@ export function BarChart({
         <h3 className='text-sm font-medium text-foreground mb-3'>{title}</h3>
       )}
 
-      <ChartContainer config={chartConfig} className='w-full' style={{ height }}>
+      <ChartContainer
+        config={chartConfig}
+        className='w-full'
+        style={{ height }}
+      >
         <RechartsBarChart
           data={chartData}
           layout={orientation === 'horizontal' ? 'vertical' : 'horizontal'}

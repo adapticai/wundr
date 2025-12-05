@@ -241,7 +241,7 @@ function highlightText(text: string, query: string): string {
  */
 async function getAccessibleChannels(
   workspaceId: string,
-  userId: string,
+  userId: string
 ): Promise<string[]> {
   // Check workspace membership
   const membership = await prisma.workspaceMember.findUnique({
@@ -294,7 +294,7 @@ async function searchChannels(
   channelId?: string,
   limit?: number,
   offset?: number,
-  includeHighlight: boolean = true,
+  includeHighlight: boolean = true
 ): Promise<{ results: ChannelResult[]; totalCount: number }> {
   const whereClause: Prisma.channelWhereInput = {
     workspaceId,
@@ -360,7 +360,7 @@ async function searchMessages(
   channelId?: string,
   limit?: number,
   offset?: number,
-  includeHighlight: boolean = true,
+  includeHighlight: boolean = true
 ): Promise<{ results: MessageResult[]; totalCount: number }> {
   const whereClause: Prisma.messageWhereInput = {
     channel: { workspaceId },
@@ -432,7 +432,7 @@ async function searchFiles(
   channelId?: string,
   limit?: number,
   offset?: number,
-  includeHighlight: boolean = true,
+  includeHighlight: boolean = true
 ): Promise<{ results: FileResult[]; totalCount: number }> {
   // Find files attached to messages in accessible channels
   const whereClause: Prisma.fileWhereInput = {
@@ -517,7 +517,7 @@ async function searchUsers(
   query: string,
   limit?: number,
   offset?: number,
-  includeHighlight: boolean = true,
+  includeHighlight: boolean = true
 ): Promise<{ results: UserResult[]; totalCount: number }> {
   // Get workspace to find organization
   const workspace = await prisma.workspace.findUnique({
@@ -593,7 +593,7 @@ async function searchOrchestrators(
   query: string,
   limit?: number,
   offset?: number,
-  includeHighlight: boolean = true,
+  includeHighlight: boolean = true
 ): Promise<{ results: OrchestratorResult[]; totalCount: number }> {
   // Get workspace to find organization
   const workspace = await prisma.workspace.findUnique({
@@ -681,7 +681,7 @@ async function searchDMs(
   query: string,
   limit?: number,
   offset?: number,
-  includeHighlight: boolean = true,
+  includeHighlight: boolean = true
 ): Promise<{ results: DMResult[]; totalCount: number }> {
   // Find DM channels where user is a member and name matches query
   const whereClause: Prisma.channelWhereInput = {
@@ -771,7 +771,7 @@ async function searchDMs(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -780,9 +780,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED,
+          ORG_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -795,9 +795,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace slug is required',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -813,9 +813,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -830,9 +830,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Search query (q) is required',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -841,7 +841,7 @@ export async function GET(
     const channelId = searchParams.get('channelId') || undefined;
     const limit = Math.min(
       parseInt(searchParams.get('limit') || '20', 10),
-      100,
+      100
     );
     const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
     const includeHighlight = searchParams.get('highlight') !== 'false';
@@ -868,16 +868,16 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           `Invalid search type(s): ${invalidTypes.join(', ')}. Must be: ${validTypes.join(', ')}`,
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get accessible channels for the user
     const accessibleChannelIds = await getAccessibleChannels(
       workspaceId,
-      session.user.id,
+      session.user.id
     );
 
     // Check workspace membership
@@ -885,9 +885,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -908,7 +908,7 @@ export async function GET(
           channelId,
           isAllTypes ? limitPerType : limit,
           isAllTypes ? offsetPerType : offset,
-          includeHighlight,
+          includeHighlight
         );
       allResults.push(...channelResults);
       totalCount += channelCount;
@@ -923,7 +923,7 @@ export async function GET(
           channelId,
           isAllTypes ? limitPerType : limit,
           isAllTypes ? offsetPerType : offset,
-          includeHighlight,
+          includeHighlight
         );
       allResults.push(...messageResults);
       totalCount += messageCount;
@@ -936,7 +936,7 @@ export async function GET(
         channelId,
         isAllTypes ? limitPerType : limit,
         isAllTypes ? offsetPerType : offset,
-        includeHighlight,
+        includeHighlight
       );
       allResults.push(...fileResults);
       totalCount += fileCount;
@@ -948,7 +948,7 @@ export async function GET(
         query,
         isAllTypes ? limitPerType : limit,
         isAllTypes ? offsetPerType : offset,
-        includeHighlight,
+        includeHighlight
       );
       allResults.push(...userResults);
       totalCount += userCount;
@@ -961,7 +961,7 @@ export async function GET(
           query,
           isAllTypes ? limitPerType : limit,
           isAllTypes ? offsetPerType : offset,
-          includeHighlight,
+          includeHighlight
         );
       allResults.push(...orchestratorResults);
       totalCount += orchestratorCount;
@@ -974,7 +974,7 @@ export async function GET(
         query,
         isAllTypes ? limitPerType : limit,
         isAllTypes ? offsetPerType : offset,
-        includeHighlight,
+        includeHighlight
       );
       allResults.push(...dmResults);
       totalCount += dmCount;
@@ -1104,9 +1104,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred during search',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

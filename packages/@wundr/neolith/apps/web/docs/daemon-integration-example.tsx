@@ -167,8 +167,8 @@ export function StreamingOutputExample() {
             prev.map(t =>
               t.includes(info.toolName)
                 ? `${info.toolName} (${info.status})`
-                : t,
-            ),
+                : t
+            )
           );
         }
       },
@@ -369,7 +369,7 @@ export function DaemonStatusDashboard() {
                     </ul>
                   )}
                 </div>
-              ),
+              )
             )}
           </div>
         </>

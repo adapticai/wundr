@@ -69,7 +69,8 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
-  VisibilityState} from '@tanstack/react-table';
+  VisibilityState,
+} from '@tanstack/react-table';
 
 // =============================================================================
 // Types
@@ -128,29 +129,29 @@ export function ExecutionHistory({
         const startOfDay = new Date(
           now.getFullYear(),
           now.getMonth(),
-          now.getDate(),
+          now.getDate()
         );
 
         switch (dateFilter) {
           case 'today':
             if (executionDate < startOfDay) {
-return false;
-}
+              return false;
+            }
             break;
           case 'week': {
             const weekAgo = new Date(startOfDay);
             weekAgo.setDate(weekAgo.getDate() - 7);
             if (executionDate < weekAgo) {
-return false;
-}
+              return false;
+            }
             break;
           }
           case 'month': {
             const monthAgo = new Date(startOfDay);
             monthAgo.setMonth(monthAgo.getMonth() - 1);
             if (executionDate < monthAgo) {
-return false;
-}
+              return false;
+            }
             break;
           }
         }
@@ -191,14 +192,14 @@ return false;
                 className={cn(
                   'h-4 w-4',
                   status === 'running' && 'animate-spin',
-                  config.color,
+                  config.color
                 )}
               />
               <span
                 className={cn(
                   'rounded-full px-2 py-0.5 text-xs font-medium',
                   config.bgColor,
-                  config.color,
+                  config.color
                 )}
               >
                 {config.label}
@@ -244,7 +245,7 @@ return false;
         cell: ({ row }) => {
           const results = row.original.actionResults;
           const completed = results.filter(
-            r => r.status === 'completed',
+            r => r.status === 'completed'
           ).length;
           const failed = results.filter(r => r.status === 'failed').length;
 
@@ -312,7 +313,7 @@ return false;
         },
       },
     ],
-    [onExport],
+    [onExport]
   );
 
   const table = useReactTable({
@@ -364,11 +365,13 @@ return false;
             </SelectTrigger>
             <SelectContent>
               <SelectItem value='all'>All Status</SelectItem>
-              {Object.entries(EXECUTION_STATUS_CONFIG).map(([status, config]) => (
-                <SelectItem key={status} value={status}>
-                  {config.label}
-                </SelectItem>
-              ))}
+              {Object.entries(EXECUTION_STATUS_CONFIG).map(
+                ([status, config]) => (
+                  <SelectItem key={status} value={status}>
+                    {config.label}
+                  </SelectItem>
+                )
+              )}
             </SelectContent>
           </Select>
           <Select value={dateFilter} onValueChange={setDateFilter}>
@@ -422,7 +425,9 @@ return false;
                       key={column.id}
                       className='capitalize'
                       checked={column.getIsVisible()}
-                      onCheckedChange={value => column.toggleVisibility(!!value)}
+                      onCheckedChange={value =>
+                        column.toggleVisibility(!!value)
+                      }
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
@@ -446,7 +451,7 @@ return false;
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -457,7 +462,10 @@ return false;
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className='h-24 text-center'>
+                <TableCell
+                  colSpan={columns.length}
+                  className='h-24 text-center'
+                >
                   <div className='flex items-center justify-center'>
                     <RefreshCw className='mr-2 h-4 w-4 animate-spin' />
                     Loading executions...
@@ -476,7 +484,7 @@ return false;
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext(),
+                        cell.getContext()
                       )}
                     </TableCell>
                   ))}
@@ -484,7 +492,10 @@ return false;
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className='h-24 text-center'>
+                <TableCell
+                  colSpan={columns.length}
+                  className='h-24 text-center'
+                >
                   <div className='flex flex-col items-center justify-center py-8'>
                     <AlertCircle className='h-8 w-8 text-muted-foreground' />
                     <p className='mt-2 text-sm text-muted-foreground'>
@@ -518,7 +529,9 @@ return false;
               }}
             >
               <SelectTrigger className='h-8 w-[70px]'>
-                <SelectValue placeholder={table.getState().pagination.pageSize} />
+                <SelectValue
+                  placeholder={table.getState().pagination.pageSize}
+                />
               </SelectTrigger>
               <SelectContent side='top'>
                 {[10, 20, 30, 40, 50].map(pageSize => (
@@ -591,7 +604,7 @@ return false;
 
 function ExecutionDetails({ execution, onClose }: ExecutionDetailsProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'logs' | 'data'>(
-    'overview',
+    'overview'
   );
 
   const config = EXECUTION_STATUS_CONFIG[execution.status];
@@ -639,14 +652,12 @@ function ExecutionDetails({ execution, onClose }: ExecutionDetailsProps) {
               className={cn(
                 'h-5 w-5',
                 execution.status === 'running' && 'animate-spin',
-                config.color,
+                config.color
               )}
             />
             Execution Details
           </SheetTitle>
-          <SheetDescription>
-            Execution ID: {execution.id}
-          </SheetDescription>
+          <SheetDescription>Execution ID: {execution.id}</SheetDescription>
         </SheetHeader>
 
         <div className='mt-6 space-y-6'>
@@ -658,7 +669,7 @@ function ExecutionDetails({ execution, onClose }: ExecutionDetailsProps) {
                 'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                 activeTab === 'overview'
                   ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               Overview
@@ -669,7 +680,7 @@ function ExecutionDetails({ execution, onClose }: ExecutionDetailsProps) {
                 'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                 activeTab === 'logs'
                   ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               Step Logs
@@ -680,7 +691,7 @@ function ExecutionDetails({ execution, onClose }: ExecutionDetailsProps) {
                 'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                 activeTab === 'data'
                   ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               Input/Output
@@ -722,13 +733,13 @@ function ExecutionOverview({ execution }: { execution: WorkflowExecution }) {
     : null;
 
   const successCount = execution.actionResults.filter(
-    r => r.status === 'completed',
+    r => r.status === 'completed'
   ).length;
   const failedCount = execution.actionResults.filter(
-    r => r.status === 'failed',
+    r => r.status === 'failed'
   ).length;
   const skippedCount = execution.actionResults.filter(
-    r => r.status === 'skipped',
+    r => r.status === 'skipped'
   ).length;
 
   return (
@@ -743,7 +754,7 @@ function ExecutionOverview({ execution }: { execution: WorkflowExecution }) {
                 className={cn(
                   'rounded-full px-2 py-0.5 text-xs font-medium',
                   config.bgColor,
-                  config.color,
+                  config.color
                 )}
               >
                 {config.label}
@@ -895,7 +906,7 @@ function ActionResultCard({
       className={cn(
         'rounded-lg border p-4',
         statusConfig.bgColor,
-        statusConfig.borderColor,
+        statusConfig.borderColor
       )}
     >
       <div className='flex items-start justify-between'>

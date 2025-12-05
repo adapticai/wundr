@@ -1,6 +1,7 @@
 # Admin Hooks
 
-Comprehensive React hooks for managing workspace administration, built with SWR for optimal caching and real-time updates.
+Comprehensive React hooks for managing workspace administration, built with SWR for optimal caching
+and real-time updates.
 
 ## Overview
 
@@ -33,7 +34,7 @@ function Dashboard() {
   return (
     <div>
       <StatCard
-        title="Active Users"
+        title='Active Users'
         value={stats.activeUsers.current}
         change={stats.activeUsers.percentageChange}
         trend={stats.activeUsers.isPositive ? 'up' : 'down'}
@@ -46,6 +47,7 @@ function Dashboard() {
 ```
 
 **Features:**
+
 - Growth metrics with percentage changes
 - Activity trends over time
 - Storage and API usage tracking
@@ -83,12 +85,7 @@ function UsersPage() {
   return (
     <div>
       <UserFilters filters={filters} onChange={setFilters} />
-      <UserTable
-        users={users}
-        onUpdate={updateUser}
-        onSuspend={suspendUser}
-        loading={isUpdating}
-      />
+      <UserTable users={users} onUpdate={updateUser} onSuspend={suspendUser} loading={isUpdating} />
       <Pagination {...pagination} />
     </div>
   );
@@ -96,6 +93,7 @@ function UsersPage() {
 ```
 
 **Features:**
+
 - Advanced filtering (status, role, search)
 - Pagination with keepPreviousData
 - Update, suspend, unsuspend, delete operations
@@ -111,17 +109,13 @@ Access and export audit logs with comprehensive filtering.
 import { useAdminAudit } from '@/hooks/admin';
 
 function AuditLogPage() {
-  const {
-    logs,
-    pagination,
-    filters,
-    setFilters,
-    exportLogs,
-    isExporting,
-  } = useAdminAudit('workspace-123', {
-    action: 'user.login',
-    startDate: new Date('2024-01-01'),
-  });
+  const { logs, pagination, filters, setFilters, exportLogs, isExporting } = useAdminAudit(
+    'workspace-123',
+    {
+      action: 'user.login',
+      startDate: new Date('2024-01-01'),
+    }
+  );
 
   return (
     <div>
@@ -140,6 +134,7 @@ function AuditLogPage() {
 ```
 
 **Features:**
+
 - Filter by action, actor, target, date range
 - Export to CSV or JSON
 - Pagination with large page sizes (50+ items)
@@ -178,8 +173,8 @@ function AdminPanel() {
 
       <PermissionGuard
         can={can}
-        resource="settings"
-        action="update"
+        resource='settings'
+        action='update'
         fallback={<div>No access</div>}
       >
         <SettingsPanel />
@@ -192,6 +187,7 @@ function AdminPanel() {
 ```
 
 **Features:**
+
 - Single permission checks with `can()`
 - Bulk permission checks with `canMultiple()`
 - Logical operations with `canAny()` and `canAll()`
@@ -219,7 +215,7 @@ function SettingsPage() {
 
   return (
     <Tabs>
-      <TabPanel title="General">
+      <TabPanel title='General'>
         <GeneralSettingsForm
           data={settings?.general}
           onSubmit={updateGeneral}
@@ -227,21 +223,15 @@ function SettingsPage() {
         />
       </TabPanel>
 
-      <TabPanel title="Security">
-        <SecuritySettingsForm
-          data={settings?.security}
-          onSubmit={updateSecurity}
-        />
-        <Button onClick={() => resetSettings('security')} variant="ghost">
+      <TabPanel title='Security'>
+        <SecuritySettingsForm data={settings?.security} onSubmit={updateSecurity} />
+        <Button onClick={() => resetSettings('security')} variant='ghost'>
           Reset to Defaults
         </Button>
       </TabPanel>
 
-      <TabPanel title="Notifications">
-        <NotificationSettingsForm
-          data={settings?.notifications}
-          onSubmit={updateNotifications}
-        />
+      <TabPanel title='Notifications'>
+        <NotificationSettingsForm data={settings?.notifications} onSubmit={updateNotifications} />
       </TabPanel>
     </Tabs>
   );
@@ -249,6 +239,7 @@ function SettingsPage() {
 ```
 
 **Features:**
+
 - Section-specific updates (general, notifications, security, integrations)
 - Custom fields support
 - Reset to defaults functionality
@@ -263,14 +254,8 @@ Manage billing, subscriptions, and plan changes.
 import { useAdminBilling } from '@/hooks/admin';
 
 function BillingPage() {
-  const {
-    billing,
-    availablePlans,
-    changePlan,
-    previewPlanChange,
-    cancelSubscription,
-    isUpdating,
-  } = useAdminBilling('workspace-123');
+  const { billing, availablePlans, changePlan, previewPlanChange, cancelSubscription, isUpdating } =
+    useAdminBilling('workspace-123');
 
   const handleUpgrade = async (plan: PlanType) => {
     // Preview the change first
@@ -281,9 +266,7 @@ function BillingPage() {
     });
 
     // Confirm with user
-    const confirmed = confirm(
-      `You will be charged $${preview.nextInvoiceAmount / 100}. Continue?`
-    );
+    const confirmed = confirm(`You will be charged $${preview.nextInvoiceAmount / 100}. Continue?`);
 
     if (confirmed) {
       await changePlan({ plan, interval: 'monthly' });
@@ -295,17 +278,14 @@ function BillingPage() {
     <div>
       <CurrentPlanCard billing={billing} />
       <UsageMetrics usage={billing?.usage} />
-      <PlanSelector
-        plans={availablePlans}
-        currentPlan={billing?.plan}
-        onSelect={handleUpgrade}
-      />
+      <PlanSelector plans={availablePlans} currentPlan={billing?.plan} onSelect={handleUpgrade} />
     </div>
   );
 }
 ```
 
 **Features:**
+
 - Current plan and subscription status
 - Usage metrics with limits
 - Available plans with pricing
@@ -422,9 +402,11 @@ import type {
 The hooks expect the following API endpoints to be implemented:
 
 ### Statistics
+
 - `GET /api/workspaces/:id/admin/stats?timeRange=30d`
 
 ### Users
+
 - `GET /api/workspaces/:id/admin/users?status=active&page=1&limit=20`
 - `PATCH /api/workspaces/:id/admin/users/:userId`
 - `POST /api/workspaces/:id/admin/users/:userId/suspend`
@@ -433,18 +415,22 @@ The hooks expect the following API endpoints to be implemented:
 - `PATCH /api/workspaces/:id/admin/users/bulk`
 
 ### Audit Logs
+
 - `GET /api/workspaces/:id/admin/audit?action=user.login&page=1`
 - `GET /api/workspaces/:id/admin/audit/export?format=csv`
 
 ### Permissions
+
 - `GET /api/workspaces/:id/admin/permissions?userId=123`
 
 ### Settings
+
 - `GET /api/workspaces/:id/admin/settings`
 - `PATCH /api/workspaces/:id/admin/settings`
 - `POST /api/workspaces/:id/admin/settings/reset?section=security`
 
 ### Billing
+
 - `GET /api/workspaces/:id/admin/billing`
 - `GET /api/workspaces/:id/admin/billing/plans`
 - `PUT /api/workspaces/:id/admin/billing/plan`
@@ -455,6 +441,7 @@ The hooks expect the following API endpoints to be implemented:
 ## Best Practices
 
 1. **Error Handling**: Always wrap async operations in try-catch blocks
+
    ```tsx
    try {
      await updateUser(userId, updates);
@@ -465,6 +452,7 @@ The hooks expect the following API endpoints to be implemented:
    ```
 
 2. **Permission Checks**: Check permissions before rendering admin UI
+
    ```tsx
    const { can } = useAdminPermissions(workspaceId);
 
@@ -486,11 +474,7 @@ The hooks expect the following API endpoints to be implemented:
 ### Complete Admin Dashboard
 
 ```tsx
-import {
-  useAdminStats,
-  useAdminUsers,
-  useAdminPermissions,
-} from '@/hooks/admin';
+import { useAdminStats, useAdminUsers, useAdminPermissions } from '@/hooks/admin';
 
 function AdminDashboard({ workspaceId }: { workspaceId: string }) {
   const { stats, isLoading: statsLoading } = useAdminStats(workspaceId);
@@ -500,20 +484,18 @@ function AdminDashboard({ workspaceId }: { workspaceId: string }) {
   if (statsLoading) return <DashboardSkeleton />;
 
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className='grid grid-cols-3 gap-4'>
       <StatCard {...stats.activeUsers} />
       <StatCard {...stats.totalMembers} />
       <StatCard {...stats.totalChannels} />
 
-      <div className="col-span-2">
+      <div className='col-span-2'>
         <ActivityChart data={stats.activityTrends} />
       </div>
 
       <div>
         <RecentUsers users={users} />
-        {can('user', 'create') && (
-          <Button>Add User</Button>
-        )}
+        {can('user', 'create') && <Button>Add User</Button>}
       </div>
     </div>
   );

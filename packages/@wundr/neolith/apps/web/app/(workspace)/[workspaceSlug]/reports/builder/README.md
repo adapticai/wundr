@@ -1,16 +1,19 @@
 # Report Builder
 
-An advanced drag-and-drop report builder with scheduling, data source management, and multiple chart types.
+An advanced drag-and-drop report builder with scheduling, data source management, and multiple chart
+types.
 
 ## Features
 
 ### Drag-and-Drop Interface
+
 - Intuitive widget palette with multiple chart types
 - Drag widgets onto canvas to create reports
 - Resize and reposition widgets freely
 - Visual feedback during drag operations
 
 ### Multiple Chart Types
+
 - **Line Chart**: Display trends over time with smooth or linear lines
 - **Bar Chart**: Compare values across categories (stacked or grouped)
 - **Area Chart**: Show cumulative trends with filled areas
@@ -21,6 +24,7 @@ An advanced drag-and-drop report builder with scheduling, data source management
 - **Divider**: Separate report sections
 
 ### Data Source Management
+
 - Multiple data source types:
   - Analytics
   - Tasks
@@ -32,6 +36,7 @@ An advanced drag-and-drop report builder with scheduling, data source management
 - Reusable data sources across widgets
 
 ### Advanced Filtering
+
 - Field-based filters
 - Multiple operators:
   - Equals / Not Equals
@@ -42,6 +47,7 @@ An advanced drag-and-drop report builder with scheduling, data source management
 - Combine multiple filters per widget
 
 ### Report Scheduling
+
 - Schedule automatic report generation
 - Frequency options:
   - Daily
@@ -52,6 +58,7 @@ An advanced drag-and-drop report builder with scheduling, data source management
 - Export formats: PDF, CSV, Excel
 
 ### Widget Configuration
+
 - Customizable titles and descriptions
 - Chart-specific settings:
   - Data field selection
@@ -107,6 +114,7 @@ An advanced drag-and-drop report builder with scheduling, data source management
 ## Types
 
 See `types.ts` for complete type definitions:
+
 - `ReportWidget`: Widget configuration and position
 - `DataSource`: Data source configuration
 - `FilterConfig`: Filter definition
@@ -143,6 +151,7 @@ Body: { templateId, schedule: ReportSchedule }
 ### Adding New Widget Types
 
 1. Add widget type to `types.ts`:
+
 ```typescript
 export type WidgetType = '...' | 'custom-widget';
 ```
@@ -154,6 +163,7 @@ export type WidgetType = '...' | 'custom-widget';
 ### Adding New Data Source Types
 
 1. Add type to `types.ts`:
+
 ```typescript
 export type DataSourceType = '...' | 'custom-source';
 ```

@@ -61,7 +61,7 @@ const workspaceSchema = z.object({
         role: z.string().min(1, 'Role is required'),
         count: z.number().min(1, 'Count must be at least 1'),
         responsibilities: z.string().optional(),
-      }),
+      })
     )
     .min(1, 'At least one team structure entry is required'),
 });
@@ -94,7 +94,7 @@ const workflowSchema = z.object({
         name: z.string().min(1, 'Step name is required'),
         action: z.string().min(1, 'Action is required'),
         params: z.record(z.any()).optional(),
-      }),
+      })
     )
     .min(1, 'At least one step is required'),
   conditions: z
@@ -103,7 +103,7 @@ const workflowSchema = z.object({
         field: z.string().min(1, 'Field is required'),
         operator: z.enum(['equals', 'contains', 'greater_than', 'less_than']),
         value: z.string().min(1, 'Value is required'),
-      }),
+      })
     )
     .optional(),
 });
@@ -120,7 +120,7 @@ const sessionManagerSchema = z.object({
         type: z.string().min(1, 'Rule type is required'),
         condition: z.string().min(1, 'Condition is required'),
         action: z.string().min(1, 'Action is required'),
-      }),
+      })
     )
     .min(1, 'At least one rule is required'),
 });
@@ -190,7 +190,7 @@ type EntityTypeToData<T extends EntityType> = T extends 'workspace'
 
 // Helper to get the correct schema for an entity type
 function getEntitySchema<T extends EntityType>(
-  entityType: T,
+  entityType: T
 ): EntitySchemaMap[T] {
   return entitySchemas[entityType] as EntitySchemaMap[T];
 }
@@ -300,7 +300,7 @@ export function EntityReviewForm<T extends EntityType>({
     } catch (error) {
       if (error instanceof z.ZodError) {
         setJsonError(
-          error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('\n'),
+          error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('\n')
         );
       } else if (error instanceof SyntaxError) {
         setJsonError(`Invalid JSON: ${error.message}`);
@@ -451,7 +451,7 @@ function FieldWrapper({
     <div
       className={cn(
         'relative',
-        isChanged && 'ring-2 ring-primary/20 rounded-md p-3 -m-3',
+        isChanged && 'ring-2 ring-primary/20 rounded-md p-3 -m-3'
       )}
     >
       {isChanged && (
@@ -542,7 +542,7 @@ function WorkspaceFields({ form, changedFields }: FieldComponentProps) {
                 <FieldWrapper
                   key={field.id}
                   isChanged={changedFields.some(f =>
-                    f.startsWith(`teamStructure.${index}`),
+                    f.startsWith(`teamStructure.${index}`)
                   )}
                 >
                   <Card>
@@ -915,7 +915,7 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
                 <FieldWrapper
                   key={field.id}
                   isChanged={changedFields.some(f =>
-                    f.startsWith(`steps.${index}`),
+                    f.startsWith(`steps.${index}`)
                   )}
                 >
                   <Card>
@@ -1031,7 +1031,7 @@ function WorkflowFields({ form, changedFields }: FieldComponentProps) {
                 <FieldWrapper
                   key={field.id}
                   isChanged={changedFields.some(f =>
-                    f.startsWith(`conditions.${index}`),
+                    f.startsWith(`conditions.${index}`)
                   )}
                 >
                   <Card>
@@ -1245,7 +1245,7 @@ function SessionManagerFields({ form, changedFields }: FieldComponentProps) {
               <FieldWrapper
                 key={field.id}
                 isChanged={changedFields.some(f =>
-                  f.startsWith(`rules.${index}`),
+                  f.startsWith(`rules.${index}`)
                 )}
               >
                 <Card>

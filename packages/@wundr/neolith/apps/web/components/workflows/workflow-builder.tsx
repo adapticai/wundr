@@ -77,7 +77,7 @@ export function WorkflowBuilder({
   const defaultTrigger: TriggerConfig = { type: 'message', message: {} };
   const availableVariables = getAvailableVariables(
     trigger || defaultTrigger,
-    actions,
+    actions
   );
 
   const handleAddAction = useCallback(() => {
@@ -100,7 +100,7 @@ export function WorkflowBuilder({
     (actionId: string, updates: Partial<ActionConfig>) => {
       updateAction(actionId, updates);
     },
-    [updateAction],
+    [updateAction]
   );
 
   const handleDeleteAction = useCallback(
@@ -110,7 +110,7 @@ export function WorkflowBuilder({
         setSelectedActionId(null);
       }
     },
-    [removeAction, selectedActionId],
+    [removeAction, selectedActionId]
   );
 
   const handleReorderActions = useCallback(
@@ -125,7 +125,7 @@ export function WorkflowBuilder({
       }));
       reorderActions(reorderedActions);
     },
-    [actions, reorderActions],
+    [actions, reorderActions]
   );
 
   const handleSave = useCallback(() => {
@@ -197,7 +197,7 @@ export function WorkflowBuilder({
                   'px-3 py-1.5 text-sm font-medium transition-colors',
                   mode === m
                     ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-accent',
+                    : 'text-muted-foreground hover:bg-accent'
                 )}
               >
                 {m.charAt(0).toUpperCase() + m.slice(1)}
@@ -254,7 +254,7 @@ export function WorkflowBuilder({
                     placeholder='Enter workflow name'
                     className={cn(
                       'w-full rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-                      errors.name ? 'border-red-500' : 'border-input',
+                      errors.name ? 'border-red-500' : 'border-input'
                     )}
                   />
                   {errors.name && (
@@ -456,7 +456,7 @@ function ActionItem({
     <div
       className={cn(
         'group flex items-center gap-3 rounded-lg border bg-card p-4 transition-all',
-        isSelected ? 'border-primary shadow-sm' : 'hover:border-primary/50',
+        isSelected ? 'border-primary shadow-sm' : 'hover:border-primary/50'
       )}
     >
       {/* Order Number */}
@@ -685,7 +685,7 @@ function WorkflowTestMode({ name, trigger, actions }: WorkflowTestModeProps) {
             'rounded-lg border p-6',
             testResult.status === 'success'
               ? 'border-green-500/50 bg-green-500/10'
-              : 'border-red-500/50 bg-red-500/10',
+              : 'border-red-500/50 bg-red-500/10'
           )}
         >
           <h3
@@ -693,7 +693,7 @@ function WorkflowTestMode({ name, trigger, actions }: WorkflowTestModeProps) {
               'mb-2 text-sm font-semibold',
               testResult.status === 'success'
                 ? 'text-green-600 dark:text-green-400'
-                : 'text-red-600 dark:text-red-400',
+                : 'text-red-600 dark:text-red-400'
             )}
           >
             {testResult.status === 'success' ? 'Test Passed' : 'Test Failed'}
@@ -710,7 +710,7 @@ function WorkflowTestMode({ name, trigger, actions }: WorkflowTestModeProps) {
 // Helper function to get available variables
 function getAvailableVariables(
   trigger: TriggerConfig,
-  actions: ActionConfig[],
+  actions: ActionConfig[]
 ): WorkflowVariable[] {
   const variables: WorkflowVariable[] = [];
 

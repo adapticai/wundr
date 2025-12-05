@@ -30,8 +30,8 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -56,7 +56,7 @@ return null;
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -71,7 +71,7 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or insufficient permissions' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -134,11 +134,11 @@ export async function GET(
 
       const totalExecutions = allWorkflows.reduce(
         (sum, w) => sum + w.executionCount,
-        0,
+        0
       );
       const failedExecutions = allWorkflows.reduce(
         (sum, w) => sum + w.failureCount,
-        0,
+        0
       );
 
       // Calculate average execution time from recent executions
@@ -158,8 +158,8 @@ export async function GET(
           ? Math.round(
               recentExecutions.reduce(
                 (sum, e) => sum + (e.durationMs || 0),
-                0,
-              ) / recentExecutions.length,
+                0
+              ) / recentExecutions.length
             )
           : 0;
 
@@ -195,10 +195,13 @@ export async function GET(
       ...(stats && { stats }),
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/admin/workflows]', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/admin/workflows]',
+      error
+    );
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

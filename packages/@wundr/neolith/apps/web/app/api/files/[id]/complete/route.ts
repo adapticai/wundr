@@ -48,7 +48,7 @@ interface RouteContext {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -57,9 +57,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          UPLOAD_ERROR_CODES.UNAUTHORIZED,
+          UPLOAD_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -70,9 +70,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid file ID format',
-          UPLOAD_ERROR_CODES.VALIDATION_ERROR,
+          UPLOAD_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -92,7 +92,7 @@ export async function POST(
     if (!file) {
       return NextResponse.json(
         createErrorResponse('File not found', UPLOAD_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -101,9 +101,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Only the uploader can complete the upload',
-          UPLOAD_ERROR_CODES.FORBIDDEN,
+          UPLOAD_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -129,9 +129,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'File not found in storage. Upload may have failed.',
-            UPLOAD_ERROR_CODES.FILE_NOT_IN_STORAGE,
+            UPLOAD_ERROR_CODES.FILE_NOT_IN_STORAGE
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -141,14 +141,14 @@ export async function POST(
     } catch (error) {
       console.error(
         '[POST /api/files/:id/complete] S3 verification error:',
-        error,
+        error
       );
       return NextResponse.json(
         createErrorResponse(
           'Failed to verify file in storage',
-          UPLOAD_ERROR_CODES.STORAGE_ERROR,
+          UPLOAD_ERROR_CODES.STORAGE_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -212,9 +212,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

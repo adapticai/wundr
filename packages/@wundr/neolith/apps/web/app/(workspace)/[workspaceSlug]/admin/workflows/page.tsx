@@ -150,7 +150,7 @@ export default function AdminWorkflowsManagementPage() {
     useState(false);
   const [resourceUsageDialogOpen, setResourceUsageDialogOpen] = useState(false);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(
-    null,
+    null
   );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [workflowToDelete, setWorkflowToDelete] = useState<string | null>(null);
@@ -158,7 +158,7 @@ export default function AdminWorkflowsManagementPage() {
   useEffect(() => {
     setPageHeader(
       'Workflow Management',
-      'Manage workflows, permissions, executions, and resource usage',
+      'Manage workflows, permissions, executions, and resource usage'
     );
   }, [setPageHeader]);
 
@@ -167,19 +167,19 @@ export default function AdminWorkflowsManagementPage() {
     try {
       const params = new URLSearchParams();
       if (statusFilter !== 'all') {
-params.set('status', statusFilter);
-}
+        params.set('status', statusFilter);
+      }
       if (triggerFilter !== 'all') {
-params.set('trigger', triggerFilter);
-}
+        params.set('trigger', triggerFilter);
+      }
       if (searchQuery) {
-params.set('search', searchQuery);
-}
+        params.set('search', searchQuery);
+      }
       params.set('limit', '100');
       params.set('includeStats', 'true');
 
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/workflows?${params}`,
+        `/api/workspaces/${workspaceSlug}/admin/workflows?${params}`
       );
 
       if (!response.ok) {
@@ -213,7 +213,7 @@ params.set('search', searchQuery);
         setSelectedIds(new Set());
       }
     },
-    [workflows],
+    [workflows]
   );
 
   const handleSelectOne = useCallback((id: string, checked: boolean) => {
@@ -231,8 +231,7 @@ params.set('search', searchQuery);
   const handleToggleStatus = useCallback(
     async (id: string, currentStatus: WorkflowStatus) => {
       try {
-        const newStatus =
-          currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+        const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
 
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/admin/workflows/${id}`,
@@ -240,12 +239,12 @@ params.set('search', searchQuery);
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus }),
-          },
+          }
         );
 
         if (!response.ok) {
-throw new Error('Failed to update status');
-}
+          throw new Error('Failed to update status');
+        }
 
         toast({
           title: 'Success',
@@ -261,7 +260,7 @@ throw new Error('Failed to update status');
         });
       }
     },
-    [workspaceSlug, toast, fetchWorkflows],
+    [workspaceSlug, toast, fetchWorkflows]
   );
 
   const handleBulkToggle = useCallback(
@@ -276,12 +275,12 @@ throw new Error('Failed to update status');
               workflowIds: Array.from(selectedIds),
               action: enable ? 'enable' : 'disable',
             }),
-          },
+          }
         );
 
         if (!response.ok) {
-throw new Error('Failed to bulk update');
-}
+          throw new Error('Failed to bulk update');
+        }
 
         toast({
           title: 'Success',
@@ -298,7 +297,7 @@ throw new Error('Failed to bulk update');
         });
       }
     },
-    [workspaceSlug, selectedIds, toast, fetchWorkflows],
+    [workspaceSlug, selectedIds, toast, fetchWorkflows]
   );
 
   const handleDelete = useCallback(
@@ -308,12 +307,12 @@ throw new Error('Failed to bulk update');
           `/api/workspaces/${workspaceSlug}/admin/workflows/${id}`,
           {
             method: 'DELETE',
-          },
+          }
         );
 
         if (!response.ok) {
-throw new Error('Failed to delete');
-}
+          throw new Error('Failed to delete');
+        }
 
         toast({
           title: 'Success',
@@ -329,7 +328,7 @@ throw new Error('Failed to delete');
         });
       }
     },
-    [workspaceSlug, toast, fetchWorkflows],
+    [workspaceSlug, toast, fetchWorkflows]
   );
 
   const handleDuplicate = useCallback(
@@ -339,12 +338,12 @@ throw new Error('Failed to delete');
           `/api/workspaces/${workspaceSlug}/admin/workflows/${id}/duplicate`,
           {
             method: 'POST',
-          },
+          }
         );
 
         if (!response.ok) {
-throw new Error('Failed to duplicate');
-}
+          throw new Error('Failed to duplicate');
+        }
 
         const data = await response.json();
 
@@ -353,9 +352,7 @@ throw new Error('Failed to duplicate');
           description: 'Workflow duplicated successfully',
         });
 
-        router.push(
-          `/${workspaceSlug}/workflows/${data.workflow.id}/edit`,
-        );
+        router.push(`/${workspaceSlug}/workflows/${data.workflow.id}/edit`);
       } catch (error) {
         toast({
           title: 'Error',
@@ -364,18 +361,18 @@ throw new Error('Failed to duplicate');
         });
       }
     },
-    [workspaceSlug, router, toast],
+    [workspaceSlug, router, toast]
   );
 
   const handleExport = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/workflows/export`,
+        `/api/workspaces/${workspaceSlug}/admin/workflows/export`
       );
 
       if (!response.ok) {
-throw new Error('Failed to export');
-}
+        throw new Error('Failed to export');
+      }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -405,10 +402,7 @@ throw new Error('Failed to export');
       if (statusFilter !== 'all' && workflow.status !== statusFilter) {
         return false;
       }
-      if (
-        triggerFilter !== 'all' &&
-        workflow.trigger.type !== triggerFilter
-      ) {
+      if (triggerFilter !== 'all' && workflow.trigger.type !== triggerFilter) {
         return false;
       }
       if (searchQuery) {
@@ -468,7 +462,11 @@ throw new Error('Failed to export');
       <div className='grid gap-4 md:grid-cols-6'>
         <StatsCard label='Total' value={stats.total} />
         <StatsCard label='Active' value={stats.active} color='text-green-600' />
-        <StatsCard label='Inactive' value={stats.inactive} color='text-gray-600' />
+        <StatsCard
+          label='Inactive'
+          value={stats.inactive}
+          color='text-gray-600'
+        />
         <StatsCard label='Draft' value={stats.draft} color='text-yellow-600' />
         <StatsCard
           label='Executions'
@@ -539,9 +537,7 @@ throw new Error('Failed to export');
               Defaults
             </Button>
             <Button
-              onClick={() =>
-                router.push(`/${workspaceSlug}/workflows/new`)
-              }
+              onClick={() => router.push(`/${workspaceSlug}/workflows/new`)}
             >
               <Plus className='h-4 w-4 mr-2' />
               New Workflow
@@ -642,7 +638,9 @@ throw new Error('Failed to export');
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>{getTriggerBadge(workflow.trigger.type)}</TableCell>
+                  <TableCell>
+                    {getTriggerBadge(workflow.trigger.type)}
+                  </TableCell>
                   <TableCell>{getStatusBadge(workflow.status)}</TableCell>
                   <TableCell>
                     <div>
@@ -690,7 +688,7 @@ throw new Error('Failed to export');
                         <DropdownMenuItem
                           onClick={() =>
                             router.push(
-                              `/${workspaceSlug}/workflows/${workflow.id}/edit`,
+                              `/${workspaceSlug}/workflows/${workflow.id}/edit`
                             )
                           }
                         >
@@ -803,8 +801,8 @@ throw new Error('Failed to export');
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Workflow</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this workflow? This action
-              cannot be undone and will remove all associated execution history.
+              Are you sure you want to delete this workflow? This action cannot
+              be undone and will remove all associated execution history.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

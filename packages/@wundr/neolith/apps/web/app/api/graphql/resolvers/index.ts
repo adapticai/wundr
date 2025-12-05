@@ -214,7 +214,7 @@ function mergeResolvers(
 export const resolvers = mergeResolvers(
   baseResolvers,
   userResolvers,
-  workspaceResolvers,
+  workspaceResolvers
 );
 
 /**

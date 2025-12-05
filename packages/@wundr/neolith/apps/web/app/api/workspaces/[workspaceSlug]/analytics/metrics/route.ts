@@ -13,14 +13,14 @@ import type { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     const session = await getServerSession();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'AUTH_REQUIRED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -33,7 +33,7 @@ export async function GET(
     if (!uuidRegex.test(workspaceId)) {
       return NextResponse.json(
         { error: 'Invalid workspace ID format', code: 'INVALID_ID' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -45,7 +45,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Access denied to workspace', code: 'FORBIDDEN' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -59,11 +59,14 @@ export async function GET(
       | 'custom';
     const fromParam = searchParams.get('from');
     const toParam = searchParams.get('to');
-    const metricsFilter = searchParams.get('metrics')?.split(',').filter(Boolean);
+    const metricsFilter = searchParams
+      .get('metrics')
+      ?.split(',')
+      .filter(Boolean);
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.min(
       Math.max(1, parseInt(searchParams.get('limit') || '100', 10)),
-      1000,
+      1000
     );
 
     // Validate period
@@ -74,7 +77,7 @@ export async function GET(
           error: `Invalid period. Must be one of: ${validPeriods.join(', ')}`,
           code: 'INVALID_PERIOD',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -90,7 +93,7 @@ export async function GET(
             error: 'Invalid from date format. Use ISO 8601 format (YYYY-MM-DD)',
             code: 'INVALID_DATE',
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -103,7 +106,7 @@ export async function GET(
             error: 'Invalid to date format. Use ISO 8601 format (YYYY-MM-DD)',
             code: 'INVALID_DATE',
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -112,7 +115,7 @@ export async function GET(
     if (startDate && endDate && startDate > endDate) {
       return NextResponse.json(
         { error: 'from date must be before to date', code: 'INVALID_RANGE' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -123,7 +126,7 @@ export async function GET(
           error: 'Custom period requires both from and to dates',
           code: 'MISSING_DATES',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -160,14 +163,17 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/analytics/metrics]', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/analytics/metrics]',
+      error
+    );
     return NextResponse.json(
       {
         error: 'Failed to fetch metrics',
         code: 'INTERNAL_ERROR',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

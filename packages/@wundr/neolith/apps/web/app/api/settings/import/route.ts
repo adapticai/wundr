@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { validateBackup, type SettingsBackup } from '@/lib/settings-backup';
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     if (!validation.valid) {
       return NextResponse.json(
         { error: 'Invalid backup format', details: validation.errors },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
     console.error('Import error:', error);
     return NextResponse.json(
       { error: 'Failed to import settings' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

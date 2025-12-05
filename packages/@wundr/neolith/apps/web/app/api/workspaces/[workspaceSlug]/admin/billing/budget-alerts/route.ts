@@ -14,7 +14,10 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { createAdminErrorResponse, ADMIN_ERROR_CODES } from '@/lib/validations/admin';
+import {
+  createAdminErrorResponse,
+  ADMIN_ERROR_CODES,
+} from '@/lib/validations/admin';
 
 import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
@@ -39,13 +42,19 @@ interface BudgetAlert {
  *
  * Get budget alerts for workspace. Requires admin role.
  */
-export async function GET(_request: Request, context: RouteContext): Promise<NextResponse> {
+export async function GET(
+  _request: Request,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -57,24 +66,37 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
       include: { workspace: true },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
     // Get budget alerts from workspace settings
-    const settings = (membership.workspace.settings as Record<string, unknown>) || {};
+    const settings =
+      (membership.workspace.settings as Record<string, unknown>) || {};
     const billingSettings = (settings.billing as Record<string, unknown>) || {};
     const alerts = (billingSettings.budgetAlerts as BudgetAlert[]) || [];
 
     return NextResponse.json({ alerts });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/admin/billing/budget-alerts] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/admin/billing/budget-alerts] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to fetch budget alerts', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to fetch budget alerts',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -84,13 +106,19 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
  *
  * Create a budget alert. Requires admin role.
  */
-export async function POST(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function POST(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -102,14 +130,20 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       include: { workspace: true },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
-    const body = await request.json() as {
+    const body = (await request.json()) as {
       threshold: number;
       notifyEmail: boolean;
       notifySlack: boolean;
@@ -123,7 +157,8 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       notifySlack: body.notifySlack,
     };
 
-    const settings = (membership.workspace.settings as Record<string, unknown>) || {};
+    const settings =
+      (membership.workspace.settings as Record<string, unknown>) || {};
     const billingSettings = (settings.billing as Record<string, unknown>) || {};
     const alerts = (billingSettings.budgetAlerts as BudgetAlert[]) || [];
 
@@ -145,10 +180,16 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     return NextResponse.json({ alert: newAlert });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceSlug/admin/billing/budget-alerts] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceSlug/admin/billing/budget-alerts] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to create budget alert', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to create budget alert',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

@@ -55,7 +55,9 @@ const statsFetcher = async (url: string): Promise<DashboardStats> => {
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || 'Failed to fetch stats');
+    throw new Error(
+      errorData.error || errorData.message || 'Failed to fetch stats'
+    );
   }
 
   const result = await res.json();
@@ -63,10 +65,12 @@ const statsFetcher = async (url: string): Promise<DashboardStats> => {
 
   // Transform date strings to Date objects
   if (data.activityTrends) {
-    data.activityTrends = data.activityTrends.map((trend: { date: string }) => ({
-      ...trend,
-      date: new Date(trend.date),
-    }));
+    data.activityTrends = data.activityTrends.map(
+      (trend: { date: string }) => ({
+        ...trend,
+        date: new Date(trend.date),
+      })
+    );
   }
 
   return data as DashboardStats;
@@ -118,7 +122,7 @@ const statsFetcher = async (url: string): Promise<DashboardStats> => {
  */
 export function useAdminStats(
   workspaceId: string,
-  options: UseAdminStatsOptions = {},
+  options: UseAdminStatsOptions = {}
 ): UseAdminStatsReturn {
   const { timeRange = '30d', refreshInterval } = options;
 
@@ -136,7 +140,7 @@ export function useAdminStats(
       refreshInterval,
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
-    },
+    }
   );
 
   // Manual refresh function

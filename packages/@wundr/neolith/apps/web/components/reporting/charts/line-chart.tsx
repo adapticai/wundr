@@ -85,7 +85,7 @@ export function LineChart({
         data={data}
         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
       >
-        {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} />}
+        {showGrid && <CartesianGrid strokeDasharray='3 3' vertical={false} />}
         <XAxis
           dataKey={xAxisKey}
           tickLine={false}

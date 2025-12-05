@@ -121,7 +121,7 @@ export function ThemeToggle({
           'hover:bg-accent hover:text-accent-foreground',
           'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
           'active:scale-95',
-          className,
+          className
         )}
         title={`Theme: ${displayLabel}`}
         aria-label='Toggle theme'
@@ -152,7 +152,7 @@ export function ThemeToggle({
           'hover:bg-accent hover:text-accent-foreground',
           'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
           'active:scale-95',
-          isOpen && 'bg-accent',
+          isOpen && 'bg-accent'
         )}
         aria-expanded={isOpen}
         aria-haspopup='listbox'
@@ -168,7 +168,7 @@ export function ThemeToggle({
             <ChevronDownIcon
               className={cn(
                 'h-4 w-4 transition-transform duration-200',
-                isOpen && 'rotate-180',
+                isOpen && 'rotate-180'
               )}
             />
           </>
@@ -194,7 +194,7 @@ export function ThemeToggle({
               'absolute right-0 top-full z-40 mt-2 w-56',
               'origin-top-right rounded-lg border bg-popover shadow-lg',
               'ring-1 ring-black/5 dark:ring-white/5',
-              'animate-fade-in',
+              'animate-fade-in'
             )}
             role='listbox'
             aria-label='Theme options'
@@ -220,7 +220,7 @@ export function ThemeToggle({
                     'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
                     theme === option.value
                       ? 'bg-accent text-accent-foreground'
-                      : 'text-foreground hover:bg-accent/50',
+                      : 'text-foreground hover:bg-accent/50'
                   )}
                   role='option'
                   aria-selected={theme === option.value}
@@ -284,7 +284,7 @@ export function ThemeToggleLarge() {
             'cursor-pointer transition-colors',
             theme === option.value
               ? 'border-primary bg-primary/5'
-              : 'border-muted hover:border-muted-foreground/50',
+              : 'border-muted hover:border-muted-foreground/50'
           )}
         >
           <input

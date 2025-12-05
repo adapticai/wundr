@@ -96,7 +96,7 @@ export default function PaymentMethodsPage() {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/billing/payment-methods`,
+        `/api/workspaces/${workspaceSlug}/billing/payment-methods`
       );
       if (!response.ok) {
         throw new Error('Failed to fetch payment data');
@@ -146,7 +146,7 @@ export default function PaymentMethodsPage() {
             expiryYear: parseInt(expiryYear),
             cvv,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -201,7 +201,7 @@ export default function PaymentMethodsPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ defaultPaymentMethodId: id }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -225,7 +225,7 @@ export default function PaymentMethodsPage() {
         setSettingDefaultId(null);
       }
     },
-    [workspaceSlug, toast, fetchData],
+    [workspaceSlug, toast, fetchData]
   );
 
   const handleDeletePaymentMethod = useCallback(
@@ -234,7 +234,7 @@ export default function PaymentMethodsPage() {
       try {
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/billing/payment-methods?id=${id}`,
-          { method: 'DELETE' },
+          { method: 'DELETE' }
         );
 
         if (!response.ok) {
@@ -260,7 +260,7 @@ export default function PaymentMethodsPage() {
         setDeletingId(null);
       }
     },
-    [workspaceSlug, toast, fetchData],
+    [workspaceSlug, toast, fetchData]
   );
 
   const formatCardNumber = (value: string) => {
@@ -431,7 +431,7 @@ export default function PaymentMethodsPage() {
                             >
                               {month.toString().padStart(2, '0')}
                             </SelectItem>
-                          ),
+                          )
                         )}
                       </SelectContent>
                     </Select>
@@ -446,7 +446,7 @@ export default function PaymentMethodsPage() {
                       <SelectContent>
                         {Array.from(
                           { length: 10 },
-                          (_, i) => new Date().getFullYear() + i,
+                          (_, i) => new Date().getFullYear() + i
                         ).map(year => (
                           <SelectItem key={year} value={year.toString()}>
                             {year}
@@ -531,7 +531,7 @@ export default function PaymentMethodsPage() {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',
-                          },
+                          }
                         )}
                         {invoice.status === 'pending' && (
                           <span className='ml-2'>

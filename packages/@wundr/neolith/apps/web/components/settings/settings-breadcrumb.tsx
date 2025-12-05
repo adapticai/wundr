@@ -67,7 +67,10 @@ export function SettingsBreadcrumb({ workspaceSlug }: SettingsBreadcrumbProps) {
           const isFirst = index === 0;
 
           return (
-            <div key={segment.href || segment.label} className="flex items-center">
+            <div
+              key={segment.href || segment.label}
+              className='flex items-center'
+            >
               <BreadcrumbItem>
                 {isLast ? (
                   <BreadcrumbPage>{segment.label}</BreadcrumbPage>
@@ -75,10 +78,10 @@ export function SettingsBreadcrumb({ workspaceSlug }: SettingsBreadcrumbProps) {
                   <BreadcrumbLink asChild>
                     <Link
                       href={segment.href!}
-                      className="flex items-center gap-1.5"
+                      className='flex items-center gap-1.5'
                     >
-                      {isFirst && <Home className="h-3.5 w-3.5" />}
-                      {index === 1 && <SettingsIcon className="h-3.5 w-3.5" />}
+                      {isFirst && <Home className='h-3.5 w-3.5' />}
+                      {index === 1 && <SettingsIcon className='h-3.5 w-3.5' />}
                       <span>{segment.label}</span>
                     </Link>
                   </BreadcrumbLink>

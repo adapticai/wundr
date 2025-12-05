@@ -60,7 +60,7 @@ function DeviceSelect({
           'bg-muted border border-border',
           'text-sm text-foreground',
           'focus:outline-none focus:ring-2 focus:ring-stone-500',
-          'disabled:opacity-50 disabled:cursor-not-allowed',
+          'disabled:opacity-50 disabled:cursor-not-allowed'
         )}
         aria-label={label}
       >
@@ -104,7 +104,7 @@ function AudioLevelIndicator({
     analyserRef.current = analyser;
 
     const source = audioContext.createMediaStreamSource(
-      new MediaStream([audioTrack]),
+      new MediaStream([audioTrack])
     );
     source.connect(analyser);
 
@@ -143,7 +143,7 @@ function AudioLevelIndicator({
               ? 'bg-green-500'
               : level > 30
                 ? 'bg-yellow-500'
-                : 'bg-muted-foreground',
+                : 'bg-muted-foreground'
           )}
           style={{ width: `${level}%` }}
         />
@@ -257,7 +257,7 @@ export function PreJoin({
       className={clsx(
         'flex flex-col items-center justify-center min-h-screen p-6',
         'bg-background',
-        className,
+        className
       )}
     >
       <div className='w-full max-w-2xl space-y-6'>
@@ -274,7 +274,7 @@ export function PreJoin({
         <div
           className={clsx(
             'relative aspect-video rounded-xl overflow-hidden',
-            'bg-muted border border-border',
+            'bg-muted border border-border'
           )}
         >
           {isVideoEnabled && videoTrack ? (
@@ -317,7 +317,7 @@ export function PreJoin({
                 'w-12 h-12 rounded-full flex items-center justify-center transition-all',
                 isAudioEnabled
                   ? 'bg-muted hover:bg-muted/80 text-foreground'
-                  : 'bg-red-500 hover:bg-red-600 text-white',
+                  : 'bg-red-500 hover:bg-red-600 text-white'
               )}
               aria-label={
                 isAudioEnabled ? 'Mute microphone' : 'Unmute microphone'
@@ -365,7 +365,7 @@ export function PreJoin({
                 'w-12 h-12 rounded-full flex items-center justify-center transition-all',
                 isVideoEnabled
                   ? 'bg-muted hover:bg-muted/80 text-foreground'
-                  : 'bg-red-500 hover:bg-red-600 text-white',
+                  : 'bg-red-500 hover:bg-red-600 text-white'
               )}
               aria-label={isVideoEnabled ? 'Turn off camera' : 'Turn on camera'}
             >
@@ -456,7 +456,7 @@ export function PreJoin({
                 'w-full px-3 py-2 rounded-lg',
                 'bg-muted border border-border',
                 'text-foreground placeholder:text-muted-foreground',
-                'focus:outline-none focus:ring-2 focus:ring-stone-500',
+                'focus:outline-none focus:ring-2 focus:ring-stone-500'
               )}
               autoFocus
             />
@@ -472,7 +472,7 @@ export function PreJoin({
                 'flex-1 px-4 py-3 rounded-lg',
                 'bg-muted hover:bg-muted/80',
                 'text-foreground font-medium',
-                'transition-colors',
+                'transition-colors'
               )}
             >
               Cancel
@@ -486,7 +486,7 @@ export function PreJoin({
               'bg-stone-700 hover:bg-stone-800 dark:bg-stone-600 dark:hover:bg-stone-700',
               'text-white font-medium',
               'transition-colors',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >
             {isJoining ? 'Joining...' : 'Join call'}

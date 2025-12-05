@@ -112,7 +112,9 @@ function WebhookTriggerConfig({ readOnly }: { readOnly?: boolean }) {
                 <SelectItem value='PATCH'>PATCH</SelectItem>
               </SelectContent>
             </Select>
-            <FormDescription>HTTP method that will trigger the workflow</FormDescription>
+            <FormDescription>
+              HTTP method that will trigger the workflow
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -141,7 +143,9 @@ function WebhookTriggerConfig({ readOnly }: { readOnly?: boolean }) {
                 <SelectItem value='api-key'>API Key</SelectItem>
               </SelectContent>
             </Select>
-            <FormDescription>How to authenticate incoming webhook requests</FormDescription>
+            <FormDescription>
+              How to authenticate incoming webhook requests
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -150,8 +154,8 @@ function WebhookTriggerConfig({ readOnly }: { readOnly?: boolean }) {
       <Alert>
         <Info className='h-4 w-4' />
         <AlertDescription>
-          Your webhook URL will be generated after saving and can be found in the execution
-          history.
+          Your webhook URL will be generated after saving and can be found in
+          the execution history.
         </AlertDescription>
       </Alert>
     </div>
@@ -179,7 +183,8 @@ function ScheduleTriggerConfig({ readOnly }: { readOnly?: boolean }) {
               />
             </FormControl>
             <FormDescription>
-              Standard cron expression (e.g., &quot;0 0 * * *&quot; for daily at midnight)
+              Standard cron expression (e.g., &quot;0 0 * * *&quot; for daily at
+              midnight)
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -192,7 +197,11 @@ function ScheduleTriggerConfig({ readOnly }: { readOnly?: boolean }) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Timezone</FormLabel>
-            <Select disabled={readOnly} onValueChange={field.onChange} defaultValue={field.value}>
+            <Select
+              disabled={readOnly}
+              onValueChange={field.onChange}
+              defaultValue={field.value}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder='Select timezone' />
@@ -200,8 +209,12 @@ function ScheduleTriggerConfig({ readOnly }: { readOnly?: boolean }) {
               </FormControl>
               <SelectContent>
                 <SelectItem value='UTC'>UTC</SelectItem>
-                <SelectItem value='America/New_York'>America/New York</SelectItem>
-                <SelectItem value='America/Los_Angeles'>America/Los Angeles</SelectItem>
+                <SelectItem value='America/New_York'>
+                  America/New York
+                </SelectItem>
+                <SelectItem value='America/Los_Angeles'>
+                  America/Los Angeles
+                </SelectItem>
                 <SelectItem value='Europe/London'>Europe/London</SelectItem>
                 <SelectItem value='Asia/Tokyo'>Asia/Tokyo</SelectItem>
               </SelectContent>
@@ -237,7 +250,11 @@ function MessageTriggerConfig({ readOnly }: { readOnly?: boolean }) {
           <FormItem>
             <FormLabel>Message Pattern</FormLabel>
             <FormControl>
-              <Input {...field} placeholder='Enter regex pattern or keywords' disabled={readOnly} />
+              <Input
+                {...field}
+                placeholder='Enter regex pattern or keywords'
+                disabled={readOnly}
+              />
             </FormControl>
             <FormDescription>
               Optional pattern to match messages (leave empty for all messages)
@@ -262,7 +279,7 @@ function MessageTriggerConfig({ readOnly }: { readOnly?: boolean }) {
                     e.target.value
                       .split(',')
                       .map(id => id.trim())
-                      .filter(Boolean),
+                      .filter(Boolean)
                   )
                 }
                 placeholder='channel-id-1, channel-id-2'
@@ -284,19 +301,38 @@ function MessageTriggerConfig({ readOnly }: { readOnly?: boolean }) {
 // ACTION CONFIGURATION FORM
 // ============================================================================
 
-export function ActionConfigForm({ stepType, availableVariables, readOnly }: ConfigFormProps) {
+export function ActionConfigForm({
+  stepType,
+  availableVariables,
+  readOnly,
+}: ConfigFormProps) {
   const stepId = stepType.id;
 
   if (stepId === 'action.send_message') {
-    return <SendMessageActionConfig readOnly={readOnly} availableVariables={availableVariables} />;
+    return (
+      <SendMessageActionConfig
+        readOnly={readOnly}
+        availableVariables={availableVariables}
+      />
+    );
   }
 
   if (stepId === 'action.send_dm') {
-    return <SendDMActionConfig readOnly={readOnly} availableVariables={availableVariables} />;
+    return (
+      <SendDMActionConfig
+        readOnly={readOnly}
+        availableVariables={availableVariables}
+      />
+    );
   }
 
   if (stepId === 'action.http_request') {
-    return <HttpRequestActionConfig readOnly={readOnly} availableVariables={availableVariables} />;
+    return (
+      <HttpRequestActionConfig
+        readOnly={readOnly}
+        availableVariables={availableVariables}
+      />
+    );
   }
 
   if (stepId === 'action.wait') {
@@ -341,7 +377,9 @@ function SendMessageActionConfig({
                 placeholder='Insert variable'
               />
             </div>
-            <FormDescription>The channel to send the message to</FormDescription>
+            <FormDescription>
+              The channel to send the message to
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -366,12 +404,16 @@ function SendMessageActionConfig({
               <VariablePicker
                 variables={availableVariables}
                 onSelect={varName =>
-                  field.onChange((field.value || '') + `\${variable.${varName}}`)
+                  field.onChange(
+                    (field.value || '') + `\${variable.${varName}}`
+                  )
                 }
                 placeholder='Insert variable'
               />
             </div>
-            <FormDescription>Message content (supports variables)</FormDescription>
+            <FormDescription>
+              Message content (supports variables)
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -433,7 +475,9 @@ function SendDMActionConfig({
               <VariablePicker
                 variables={availableVariables}
                 onSelect={varName =>
-                  field.onChange((field.value || '') + `\${variable.${varName}}`)
+                  field.onChange(
+                    (field.value || '') + `\${variable.${varName}}`
+                  )
                 }
                 placeholder='Insert variable'
               />
@@ -467,12 +511,20 @@ function HttpRequestActionConfig({
           <FormItem>
             <FormLabel>URL *</FormLabel>
             <FormControl>
-              <Input {...field} placeholder='https://api.example.com/endpoint' disabled={readOnly} />
+              <Input
+                {...field}
+                placeholder='https://api.example.com/endpoint'
+                disabled={readOnly}
+              />
             </FormControl>
             <div className='mt-2'>
               <VariablePicker
                 variables={availableVariables}
-                onSelect={varName => field.onChange((field.value || '') + `\${variable.${varName}}`)}
+                onSelect={varName =>
+                  field.onChange(
+                    (field.value || '') + `\${variable.${varName}}`
+                  )
+                }
                 placeholder='Insert variable'
               />
             </div>
@@ -532,12 +584,16 @@ function HttpRequestActionConfig({
                 <VariablePicker
                   variables={availableVariables}
                   onSelect={varName =>
-                    field.onChange((field.value || '') + `\${variable.${varName}}`)
+                    field.onChange(
+                      (field.value || '') + `\${variable.${varName}}`
+                    )
                   }
                   placeholder='Insert variable'
                 />
               </div>
-              <FormDescription>JSON request body (supports variables)</FormDescription>
+              <FormDescription>
+                JSON request body (supports variables)
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -561,7 +617,9 @@ function HttpRequestActionConfig({
                 onChange={e => field.onChange(parseInt(e.target.value) || 30)}
               />
             </FormControl>
-            <FormDescription>Request timeout in seconds (1-300)</FormDescription>
+            <FormDescription>
+              Request timeout in seconds (1-300)
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -650,7 +708,11 @@ export function ConditionConfigForm({
           <FormItem>
             <FormLabel>Field to Check *</FormLabel>
             <FormControl>
-              <Input {...field} placeholder='trigger.message.content' disabled={readOnly} />
+              <Input
+                {...field}
+                placeholder='trigger.message.content'
+                disabled={readOnly}
+              />
             </FormControl>
             <div className='mt-2'>
               <VariablePicker
@@ -705,7 +767,11 @@ export function ConditionConfigForm({
           <FormItem>
             <FormLabel>Value *</FormLabel>
             <FormControl>
-              <Input {...field} placeholder='Expected value' disabled={readOnly} />
+              <Input
+                {...field}
+                placeholder='Expected value'
+                disabled={readOnly}
+              />
             </FormControl>
             <div className='mt-2'>
               <VariablePicker
@@ -723,8 +789,8 @@ export function ConditionConfigForm({
       <Alert>
         <Info className='h-4 w-4' />
         <AlertDescription>
-          Connect the &quot;Then&quot; output for actions when the condition is true, and
-          &quot;Else&quot; for when it&apos;s false.
+          Connect the &quot;Then&quot; output for actions when the condition is
+          true, and &quot;Else&quot; for when it&apos;s false.
         </AlertDescription>
       </Alert>
     </div>
@@ -735,7 +801,11 @@ export function ConditionConfigForm({
 // LOOP CONFIGURATION FORM
 // ============================================================================
 
-export function LoopConfigForm({ stepType, availableVariables, readOnly }: ConfigFormProps) {
+export function LoopConfigForm({
+  stepType,
+  availableVariables,
+  readOnly,
+}: ConfigFormProps) {
   const { control, watch } = useFormContext();
   const loopType = watch('config.type') || 'count';
 
@@ -787,7 +857,9 @@ export function LoopConfigForm({ stepType, availableVariables, readOnly }: Confi
                   onChange={e => field.onChange(parseInt(e.target.value) || 1)}
                 />
               </FormControl>
-              <FormDescription>Number of times to repeat (1-1000)</FormDescription>
+              <FormDescription>
+                Number of times to repeat (1-1000)
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -836,7 +908,9 @@ export function LoopConfigForm({ stepType, availableVariables, readOnly }: Confi
                   disabled={readOnly}
                 />
               </FormControl>
-              <FormDescription>Condition to evaluate (loop continues while true)</FormDescription>
+              <FormDescription>
+                Condition to evaluate (loop continues while true)
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -871,7 +945,8 @@ export function LoopConfigForm({ stepType, availableVariables, readOnly }: Confi
       <Alert>
         <Info className='h-4 w-4' />
         <AlertDescription>
-          Connect steps to the loop body output. They will execute for each iteration.
+          Connect steps to the loop body output. They will execute for each
+          iteration.
         </AlertDescription>
       </Alert>
     </div>
@@ -891,8 +966,8 @@ export function IntegrationConfigForm({
     <Alert>
       <Info className='h-4 w-4' />
       <AlertDescription>
-        Integration configuration forms will be available soon. Each integration will have
-        provider-specific settings.
+        Integration configuration forms will be available soon. Each integration
+        will have provider-specific settings.
       </AlertDescription>
     </Alert>
   );
@@ -902,7 +977,11 @@ export function IntegrationConfigForm({
 // DATA CONFIGURATION FORM
 // ============================================================================
 
-export function DataConfigForm({ stepType, availableVariables, readOnly }: ConfigFormProps) {
+export function DataConfigForm({
+  stepType,
+  availableVariables,
+  readOnly,
+}: ConfigFormProps) {
   const { control } = useFormContext();
 
   return (
@@ -939,7 +1018,8 @@ export function DataConfigForm({ stepType, availableVariables, readOnly }: Confi
       <Alert>
         <Info className='h-4 w-4' />
         <AlertDescription>
-          Advanced data transformation features will be available in the next release.
+          Advanced data transformation features will be available in the next
+          release.
         </AlertDescription>
       </Alert>
     </div>
@@ -950,12 +1030,17 @@ export function DataConfigForm({ stepType, availableVariables, readOnly }: Confi
 // UTILITY CONFIGURATION FORM
 // ============================================================================
 
-export function UtilityConfigForm({ stepType, availableVariables, readOnly }: ConfigFormProps) {
+export function UtilityConfigForm({
+  stepType,
+  availableVariables,
+  readOnly,
+}: ConfigFormProps) {
   return (
     <Alert>
       <Info className='h-4 w-4' />
       <AlertDescription>
-        Utility configuration will vary by step type. Advanced settings coming soon.
+        Utility configuration will vary by step type. Advanced settings coming
+        soon.
       </AlertDescription>
     </Alert>
   );

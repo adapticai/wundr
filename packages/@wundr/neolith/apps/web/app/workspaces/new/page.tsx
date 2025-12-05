@@ -97,7 +97,7 @@ export default function NewWorkspacePage() {
   const handleCreateWorkspace = async (data: WorkspaceReviewData) => {
     if (!organizationId) {
       toast.error(
-        'No organization found. Please create an organization first.',
+        'No organization found. Please create an organization first.'
       );
       return;
     }
@@ -268,7 +268,7 @@ export default function NewWorkspacePage() {
                 <Suggestions
                   suggestions={getEntitySuggestions(
                     'workspace',
-                    messages.filter(m => m.role === 'user').length,
+                    messages.filter(m => m.role === 'user').length
                   )}
                   onSelect={handleSuggestionSelect}
                 />

@@ -28,13 +28,7 @@ function MyComponent() {
     logErrors: true,
   });
 
-  return (
-    <ErrorHandlingConfig
-      config={config}
-      availableSteps={steps}
-      onConfigChange={setConfig}
-    />
-  );
+  return <ErrorHandlingConfig config={config} availableSteps={steps} onConfigChange={setConfig} />;
 }
 ```
 
@@ -183,40 +177,41 @@ function WorkflowWithDLQ() {
 
 ## 📊 Backoff Strategy Cheat Sheet
 
-| Strategy | Formula | Example (initial: 1s) |
-|----------|---------|----------------------|
-| Fixed | constant | 1s, 1s, 1s, 1s |
-| Linear | n × initial | 1s, 2s, 3s, 4s |
-| Exponential | 2^(n-1) × initial | 1s, 2s, 4s, 8s, 16s |
-| Fibonacci | fib(n) × initial | 1s, 1s, 2s, 3s, 5s |
+| Strategy    | Formula           | Example (initial: 1s) |
+| ----------- | ----------------- | --------------------- |
+| Fixed       | constant          | 1s, 1s, 1s, 1s        |
+| Linear      | n × initial       | 1s, 2s, 3s, 4s        |
+| Exponential | 2^(n-1) × initial | 1s, 2s, 4s, 8s, 16s   |
+| Fibonacci   | fib(n) × initial  | 1s, 1s, 2s, 3s, 5s    |
 
 **Recommendation**: Use **Exponential** for most cases.
 
 ## 🎨 Error Type Icons
 
-| Type | Icon | Use Case |
-|------|------|----------|
-| network | ⚡ | Connection failures |
-| timeout | 🕐 | Request timeouts |
-| validation | ⚠️ | Data validation errors |
-| authentication | ❌ | Auth/permission errors |
-| rate-limit | ⚠️ | API rate limits |
-| server | ⚠️ | 5xx errors |
-| client | ⚠️ | 4xx errors |
-| unknown | ℹ️ | Uncategorized |
+| Type           | Icon | Use Case               |
+| -------------- | ---- | ---------------------- |
+| network        | ⚡   | Connection failures    |
+| timeout        | 🕐   | Request timeouts       |
+| validation     | ⚠️   | Data validation errors |
+| authentication | ❌   | Auth/permission errors |
+| rate-limit     | ⚠️   | API rate limits        |
+| server         | ⚠️   | 5xx errors             |
+| client         | ⚠️   | 4xx errors             |
+| unknown        | ℹ️   | Uncategorized          |
 
 ## 🔔 Notification Priority Guide
 
-| Priority | Use Case | Example |
-|----------|----------|---------|
+| Priority | Use Case                   | Example                    |
+| -------- | -------------------------- | -------------------------- |
 | Critical | System failures, data loss | Payment processing failure |
-| High | Important but recoverable | External API down |
-| Medium | Minor issues, degraded | Rate limit warnings |
-| Low | Informational | Analytics tracking failed |
+| High     | Important but recoverable  | External API down          |
+| Medium   | Minor issues, degraded     | Rate limit warnings        |
+| Low      | Informational              | Analytics tracking failed  |
 
 ## 🛡️ Circuit Breaker Settings
 
 ### Conservative (Production)
+
 ```tsx
 circuitBreaker: {
   enabled: true,
@@ -228,6 +223,7 @@ circuitBreaker: {
 ```
 
 ### Aggressive (Testing)
+
 ```tsx
 circuitBreaker: {
   enabled: true,
@@ -255,6 +251,7 @@ interface ErrorHandlingConfigProps {
 ## 🎯 Best Practices
 
 ### ✅ DO
+
 - Use exponential backoff for network retries
 - Set reasonable max delays (30-60s)
 - Configure notifications with cooldowns
@@ -263,6 +260,7 @@ interface ErrorHandlingConfigProps {
 - Monitor DLQ regularly
 
 ### ❌ DON'T
+
 - Retry validation errors
 - Set very short cooldown periods
 - Retry authentication errors
@@ -281,22 +279,26 @@ See `ERROR_HANDLING_README.md` for complete documentation.
 ## 🐛 Troubleshooting
 
 ### Component not rendering
+
 - Check if all required props are provided
 - Verify `availableSteps` is not empty
 - Check console for TypeScript errors
 
 ### Retry not working
+
 - Verify `retry.enabled` is `true`
 - Check `retry.retryOn` includes the error type
 - Ensure `maxAttempts` > 1
 
 ### Notifications not sending
+
 - Verify `notification.enabled` is `true`
 - Check `threshold` is reached
 - Verify `cooldown` period has passed
 - Check `recipients` array is populated
 
 ### DLQ entries not showing
+
 - Verify `dlqEntries` prop is provided
 - Check if entries exist for the step
 - Ensure entries are properly typed

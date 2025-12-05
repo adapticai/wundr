@@ -107,8 +107,9 @@ export default function SessionManagerDetailPage() {
   const { setPageHeader } = usePageHeader();
 
   // State
-  const [sessionManager, setSessionManager] =
-    useState<SessionManager | null>(null);
+  const [sessionManager, setSessionManager] = useState<SessionManager | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -145,7 +146,8 @@ export default function SessionManagerDetailPage() {
     if (sessionManager) {
       setPageHeader(
         sessionManager.name,
-        sessionManager.description || 'Session Manager details and configuration',
+        sessionManager.description ||
+          'Session Manager details and configuration'
       );
     }
   }, [sessionManager, setPageHeader]);
@@ -153,7 +155,7 @@ export default function SessionManagerDetailPage() {
   // Handlers
   const handleBack = useCallback(() => {
     router.push(
-      `/${workspaceSlug}/orchestrators/${orchestratorId}?tab=session-managers`,
+      `/${workspaceSlug}/orchestrators/${orchestratorId}?tab=session-managers`
     );
   }, [router, workspaceSlug, orchestratorId]);
 
@@ -162,13 +164,14 @@ export default function SessionManagerDetailPage() {
       return;
     }
 
-    const action = sessionManager.status === 'ACTIVE' ? 'deactivate' : 'activate';
+    const action =
+      sessionManager.status === 'ACTIVE' ? 'deactivate' : 'activate';
     setIsActivating(true);
 
     try {
       const response = await fetch(
         `/api/session-managers/${sessionManagerId}/${action}`,
-        { method: 'POST' },
+        { method: 'POST' }
       );
 
       if (!response.ok) {
@@ -221,7 +224,7 @@ export default function SessionManagerDetailPage() {
   }
 
   const activeSubagents = sessionManager.subagents.filter(
-    sa => sa.status === 'ACTIVE',
+    sa => sa.status === 'ACTIVE'
   ).length;
 
   return (
@@ -250,7 +253,7 @@ export default function SessionManagerDetailPage() {
           type='button'
           onClick={() =>
             router.push(
-              `/${workspaceSlug}/orchestrators/${orchestratorId}?tab=session-managers`,
+              `/${workspaceSlug}/orchestrators/${orchestratorId}?tab=session-managers`
             )
           }
           className='hover:text-foreground transition-colors'
@@ -281,7 +284,7 @@ export default function SessionManagerDetailPage() {
                   <div
                     className={cn(
                       'h-3 w-3 rounded-full',
-                      statusColors[sessionManager.status],
+                      statusColors[sessionManager.status]
                     )}
                     title={sessionManager.status}
                   />
@@ -292,7 +295,9 @@ export default function SessionManagerDetailPage() {
                 </CardDescription>
 
                 <div className='mt-3 flex flex-wrap gap-2'>
-                  <Badge className={cn(statusTextColors[sessionManager.status])}>
+                  <Badge
+                    className={cn(statusTextColors[sessionManager.status])}
+                  >
                     {sessionManager.status}
                   </Badge>
                   {sessionManager.isGlobal && (
@@ -305,7 +310,8 @@ export default function SessionManagerDetailPage() {
                   </Badge>
                   <Badge variant='secondary'>
                     <Zap className='h-3 w-3 mr-1' />
-                    {sessionManager.tokenBudgetPerHour.toLocaleString()} tokens/hr
+                    {sessionManager.tokenBudgetPerHour.toLocaleString()}{' '}
+                    tokens/hr
                   </Badge>
                 </div>
               </div>
@@ -425,7 +431,9 @@ export default function SessionManagerDetailPage() {
                   <p className='text-sm font-medium text-muted-foreground'>
                     Status
                   </p>
-                  <Badge className={cn(statusTextColors[sessionManager.status])}>
+                  <Badge
+                    className={cn(statusTextColors[sessionManager.status])}
+                  >
                     {sessionManager.status}
                   </Badge>
                 </div>
@@ -472,7 +480,8 @@ export default function SessionManagerDetailPage() {
                       Concurrent Subagents
                     </span>
                     <span className='text-sm text-muted-foreground'>
-                      {activeSubagents} / {sessionManager.maxConcurrentSubagents}
+                      {activeSubagents} /{' '}
+                      {sessionManager.maxConcurrentSubagents}
                     </span>
                   </div>
                   <div className='w-full bg-muted rounded-full h-2'>
@@ -491,12 +500,14 @@ export default function SessionManagerDetailPage() {
                   <div className='flex justify-between items-center mb-2'>
                     <span className='text-sm font-medium'>Token Budget</span>
                     <span className='text-sm text-muted-foreground'>
-                      {sessionManager.tokenBudgetPerHour.toLocaleString()} / hour
+                      {sessionManager.tokenBudgetPerHour.toLocaleString()} /
+                      hour
                     </span>
                   </div>
                   <p className='text-xs text-muted-foreground'>
                     Estimated usage: ~
-                    {Math.round(activeSubagents * 5000).toLocaleString()} tokens/hr
+                    {Math.round(activeSubagents * 5000).toLocaleString()}{' '}
+                    tokens/hr
                   </p>
                 </div>
               </div>
@@ -567,7 +578,9 @@ export default function SessionManagerDetailPage() {
               <Separator />
 
               <div>
-                <h4 className='text-sm font-semibold mb-2'>Worktree Configuration</h4>
+                <h4 className='text-sm font-semibold mb-2'>
+                  Worktree Configuration
+                </h4>
                 {sessionManager.worktreeConfig ? (
                   <pre className='text-xs bg-muted p-3 rounded-md overflow-auto max-h-48'>
                     {JSON.stringify(sessionManager.worktreeConfig, null, 2)}

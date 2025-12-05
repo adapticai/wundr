@@ -91,7 +91,7 @@ export interface UseOrchestratorTasksReturn {
  */
 export function useOrchestratorTasks(
   orchestratorId: string,
-  options?: UseOrchestratorTasksOptions,
+  options?: UseOrchestratorTasksOptions
 ): UseOrchestratorTasksReturn {
   const [tasks, setTasks] = useState<OrchestratorTask[]>([]);
   const [metrics, setMetrics] = useState<OrchestratorTaskMetrics | null>(null);
@@ -146,7 +146,7 @@ export function useOrchestratorTasks(
       }
 
       const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/backlog?${params.toString()}`,
+        `/api/orchestrators/${orchestratorId}/backlog?${params.toString()}`
       );
 
       if (!response.ok) {

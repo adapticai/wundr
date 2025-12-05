@@ -15,7 +15,7 @@ export default function KeyboardShortcutsPage() {
   useEffect(() => {
     setPageHeader(
       'Keyboard Shortcuts',
-      'Customize keyboard shortcuts to match your workflow',
+      'Customize keyboard shortcuts to match your workflow'
     );
   }, [setPageHeader]);
 

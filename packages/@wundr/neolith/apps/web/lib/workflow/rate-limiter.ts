@@ -37,7 +37,7 @@ export const RATE_LIMITS: Record<string, RateLimitConfig> = {
  */
 export async function checkRateLimit(
   workflowId: string,
-  triggerType: string = 'webhook',
+  triggerType: string = 'webhook'
 ): Promise<RateLimitResult> {
   const config = RATE_LIMITS[triggerType] || RATE_LIMITS.webhook;
   const key = `ratelimit:workflow:${workflowId}:${triggerType}`;
@@ -96,7 +96,7 @@ export async function checkRateLimit(
  */
 export async function getRateLimitStatus(
   workflowId: string,
-  triggerType: string = 'webhook',
+  triggerType: string = 'webhook'
 ): Promise<RateLimitResult> {
   const config = RATE_LIMITS[triggerType] || RATE_LIMITS.webhook;
   const key = `ratelimit:workflow:${workflowId}:${triggerType}`;
@@ -133,7 +133,7 @@ export async function getRateLimitStatus(
  */
 export async function resetRateLimit(
   workflowId: string,
-  triggerType?: string,
+  triggerType?: string
 ): Promise<void> {
   try {
     if (triggerType) {

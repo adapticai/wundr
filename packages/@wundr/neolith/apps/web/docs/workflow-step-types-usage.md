@@ -2,7 +2,9 @@
 
 ## Overview
 
-The workflow step types library provides a comprehensive set of pre-defined workflow steps that can be used to build visual workflow automation systems. This guide demonstrates how to use the library in your application.
+The workflow step types library provides a comprehensive set of pre-defined workflow steps that can
+be used to build visual workflow automation systems. This guide demonstrates how to use the library
+in your application.
 
 ## Installation
 
@@ -290,12 +292,14 @@ function createOnboardingWorkflow(): Workflow {
 ## Step Type Categories
 
 ### Triggers (4 steps)
+
 - `WEBHOOK_TRIGGER` - HTTP webhook events
 - `SCHEDULE_TRIGGER` - Time-based scheduling
 - `MESSAGE_RECEIVED_TRIGGER` - Message events
 - `USER_JOIN_TRIGGER` - User joining events
 
 ### Actions (5 steps)
+
 - `SEND_MESSAGE_ACTION` - Send channel message
 - `SEND_EMAIL_ACTION` - Send email
 - `HTTP_REQUEST_ACTION` - Make HTTP request
@@ -303,21 +307,26 @@ function createOnboardingWorkflow(): Workflow {
 - `UPDATE_STATUS_ACTION` - Update entity status
 
 ### Conditions (2 steps)
+
 - `IF_ELSE_CONDITION` - Binary branching
 - `SWITCH_CASE_CONDITION` - Multi-way branching
 
 ### Loops (2 steps)
+
 - `FOR_EACH_LOOP` - Array iteration
 - `WHILE_LOOP` - Conditional looping
 
 ### Integrations (1 step)
+
 - `SLACK_INTEGRATION` - Slack operations
 
 ### Data (2 steps)
+
 - `TRANSFORM_DATA` - Data transformation
 - `FILTER_DATA` - Data filtering
 
 ### Utilities (2 steps)
+
 - `WAIT_DELAY` - Time delay
 - `ERROR_HANDLER` - Error handling
 
@@ -348,10 +357,10 @@ Each step defines input and output ports:
 
 ```typescript
 interface Connection {
-  from: string;      // Source step ID
-  to: string;        // Target step ID
-  fromPort: string;  // Source port ID
-  toPort: string;    // Target port ID
+  from: string; // Source step ID
+  to: string; // Target step ID
+  fromPort: string; // Source port ID
+  toPort: string; // Target port ID
 }
 ```
 
@@ -441,6 +450,7 @@ const categoryInfo = STEP_CATEGORIES['triggers'];
 ## Examples
 
 See the complete examples in:
+
 - `/docs/PHASE_6_AGENT_2_COMPLETION_REPORT.md`
 - Component source: `/components/workflow/step-palette.tsx`
 - Type definitions: `/lib/workflow/step-types.ts`
@@ -504,8 +514,12 @@ export const MY_STEP: StepType = {
   category: 'actions',
   icon: MyIcon,
   color: 'text-blue-500',
-  inputs: [/* ... */],
-  outputs: [/* ... */],
+  inputs: [
+    /* ... */
+  ],
+  outputs: [
+    /* ... */
+  ],
   configSchema: myStepSchema,
   defaultConfig: {
     field1: 'default value',

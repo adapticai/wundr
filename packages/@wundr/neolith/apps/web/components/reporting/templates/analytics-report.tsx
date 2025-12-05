@@ -53,9 +53,9 @@ export function AnalyticsReport({
     <div className={cn('space-y-6', className)}>
       {/* Header */}
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">{title}</h2>
+        <h2 className='text-3xl font-bold tracking-tight'>{title}</h2>
         {dateRange && (
-          <p className="text-muted-foreground mt-1">
+          <p className='text-muted-foreground mt-1'>
             {dateRange.from.toLocaleDateString()} -{' '}
             {dateRange.to.toLocaleDateString()}
           </p>
@@ -63,58 +63,61 @@ export function AnalyticsReport({
       </div>
 
       {/* Overview Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Total Users</CardTitle>
+            <Users className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className='text-2xl font-bold'>
               {overviewData.totalUsers.toLocaleString()}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Active Users</CardTitle>
+            <Activity className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className='text-2xl font-bold'>
               {overviewData.activeUsers.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {((overviewData.activeUsers / overviewData.totalUsers) * 100).toFixed(
-                1,
-              )}
+            <p className='text-xs text-muted-foreground mt-1'>
+              {(
+                (overviewData.activeUsers / overviewData.totalUsers) *
+                100
+              ).toFixed(1)}
               % of total
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>
+              Total Sessions
+            </CardTitle>
+            <BarChart3 className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className='text-2xl font-bold'>
               {overviewData.totalSessions.toLocaleString()}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>
               Avg Session Duration
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className='text-2xl font-bold'>
               {overviewData.avgSessionDuration}
             </div>
           </CardContent>
@@ -122,84 +125,80 @@ export function AnalyticsReport({
       </div>
 
       {/* Tabs for different views */}
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs defaultValue='overview' className='space-y-4'>
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="trends">Trends</TabsTrigger>
-          <TabsTrigger value="distribution">Distribution</TabsTrigger>
+          <TabsTrigger value='overview'>Overview</TabsTrigger>
+          <TabsTrigger value='trends'>Trends</TabsTrigger>
+          <TabsTrigger value='distribution'>Distribution</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
+        <TabsContent value='overview' className='space-y-4'>
           <AreaChart
-            title="Activity Over Time"
-            description="User activity and engagement trends"
+            title='Activity Over Time'
+            description='User activity and engagement trends'
             data={timeSeriesData}
             dataKeys={Object.keys(timeSeriesData[0] || {}).filter(
-              (k) => k !== 'date' && k !== 'name',
+              k => k !== 'date' && k !== 'name'
             )}
-            xAxisKey="date"
+            xAxisKey='date'
             height={400}
             gradient
           />
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className='grid gap-4 md:grid-cols-2'>
             <PieChart
-              title="Category Distribution"
-              description="Breakdown by category"
+              title='Category Distribution'
+              description='Breakdown by category'
               data={categoryData}
               height={350}
               donut
             />
 
             <BarChart
-              title="Category Comparison"
-              description="Comparative analysis"
+              title='Category Comparison'
+              description='Comparative analysis'
               data={comparisonData}
               dataKeys={Object.keys(comparisonData[0] || {}).filter(
-                (k) => k !== 'category' && k !== 'name',
+                k => k !== 'category' && k !== 'name'
               )}
-              xAxisKey="category"
+              xAxisKey='category'
               height={350}
             />
           </div>
         </TabsContent>
 
-        <TabsContent value="trends" className="space-y-4">
+        <TabsContent value='trends' className='space-y-4'>
           <LineChart
-            title="Trend Analysis"
-            description="Detailed trend analysis over time"
+            title='Trend Analysis'
+            description='Detailed trend analysis over time'
             data={timeSeriesData}
             dataKeys={Object.keys(timeSeriesData[0] || {}).filter(
-              (k) => k !== 'date' && k !== 'name',
+              k => k !== 'date' && k !== 'name'
             )}
-            xAxisKey="date"
+            xAxisKey='date'
             height={400}
             showGrid
           />
 
           <AreaChart
-            title="Stacked Trends"
-            description="Combined view of all metrics"
+            title='Stacked Trends'
+            description='Combined view of all metrics'
             data={timeSeriesData}
             dataKeys={Object.keys(timeSeriesData[0] || {}).filter(
-              (k) => k !== 'date' && k !== 'name',
+              k => k !== 'date' && k !== 'name'
             )}
-            xAxisKey="date"
+            xAxisKey='date'
             height={400}
             stacked
           />
         </TabsContent>
 
-        <TabsContent value="distribution" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <PieChart
-              title="Distribution"
-              data={categoryData}
-              height={350}
-            />
+        <TabsContent value='distribution' className='space-y-4'>
+          <div className='grid gap-4 md:grid-cols-2'>
+            <PieChart title='Distribution' data={categoryData} height={350} />
 
             <PieChart
-              title="Donut View"
+              title='Donut View'
               data={categoryData}
               height={350}
               donut
@@ -208,13 +207,13 @@ export function AnalyticsReport({
           </div>
 
           <BarChart
-            title="Horizontal Comparison"
-            description="Side-by-side category comparison"
+            title='Horizontal Comparison'
+            description='Side-by-side category comparison'
             data={comparisonData}
             dataKeys={Object.keys(comparisonData[0] || {}).filter(
-              (k) => k !== 'category' && k !== 'name',
+              k => k !== 'category' && k !== 'name'
             )}
-            xAxisKey="category"
+            xAxisKey='category'
             height={400}
             horizontal
           />

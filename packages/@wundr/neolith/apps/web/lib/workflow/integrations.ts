@@ -34,7 +34,12 @@ import type { LucideIcon } from 'lucide-react';
 // Base Integration Types
 // ============================================================================
 
-export type IntegrationType = 'http' | 'email' | 'slack' | 'github' | 'calendar';
+export type IntegrationType =
+  | 'http'
+  | 'email'
+  | 'slack'
+  | 'github'
+  | 'calendar';
 
 export type AuthType = 'none' | 'api-key' | 'oauth2' | 'basic' | 'bearer';
 
@@ -91,7 +96,9 @@ const httpConfigSchema = z.object({
 
 const httpRequestActionSchema = z.object({
   url: z.string().url('Must be a valid URL'),
-  method: z.enum(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']).default('GET'),
+  method: z
+    .enum(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'])
+    .default('GET'),
   headers: z.record(z.string()).optional(),
   queryParams: z.record(z.string()).optional(),
   body: z.union([z.string(), z.record(z.unknown())]).optional(),
@@ -136,7 +143,9 @@ export const HTTP_INTEGRATION: BaseIntegration = {
       description: 'Receive HTTP webhooks',
       icon: Webhook,
       configSchema: z.object({
-        method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']).default('POST'),
+        method: z
+          .enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
+          .default('POST'),
         validateSignature: z.boolean().default(false),
         signatureHeader: z.string().optional(),
         signatureSecret: z.string().optional(),
@@ -180,7 +189,7 @@ const sendEmailActionSchema = z.object({
         content: z.string(), // Base64 encoded
         contentType: z.string(),
         size: z.number(),
-      }),
+      })
     )
     .max(10)
     .optional(),
@@ -249,12 +258,9 @@ const slackConnectionSchema = z.object({
   signingSecret: z.string().min(1),
   clientId: z.string().optional(),
   clientSecret: z.string().optional(),
-  scopes: z.array(z.string()).default([
-    'chat:write',
-    'channels:read',
-    'users:read',
-    'files:write',
-  ]),
+  scopes: z
+    .array(z.string())
+    .default(['chat:write', 'channels:read', 'users:read', 'files:write']),
 });
 
 const slackSendMessageActionSchema = z.object({
@@ -275,7 +281,10 @@ const slackCreateChannelActionSchema = z.object({
     .string()
     .min(1)
     .max(80)
-    .regex(/^[a-z0-9-_]+$/, 'Channel name must be lowercase alphanumeric with dashes/underscores'),
+    .regex(
+      /^[a-z0-9-_]+$/,
+      'Channel name must be lowercase alphanumeric with dashes/underscores'
+    ),
   description: z.string().max(250).optional(),
   isPrivate: z.boolean().default(false),
   userIds: z.array(z.string()).optional(),
@@ -283,7 +292,10 @@ const slackCreateChannelActionSchema = z.object({
 
 const slackInviteUserActionSchema = z.object({
   channelId: z.string().min(1),
-  userIds: z.array(z.string()).min(1, 'At least one user ID required').max(1000),
+  userIds: z
+    .array(z.string())
+    .min(1, 'At least one user ID required')
+    .max(1000),
 });
 
 const slackUploadFileActionSchema = z.object({
@@ -473,7 +485,10 @@ const calendarConnectionSchema = z.object({
   timezone: z.string().default('UTC'),
   scopes: z
     .array(z.string())
-    .default(['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/calendar.events']),
+    .default([
+      'https://www.googleapis.com/auth/calendar',
+      'https://www.googleapis.com/auth/calendar.events',
+    ]),
 });
 
 const calendarCreateEventActionSchema = z.object({
@@ -491,8 +506,10 @@ const calendarCreateEventActionSchema = z.object({
         email: z.string().email(),
         displayName: z.string().optional(),
         optional: z.boolean().default(false),
-        responseStatus: z.enum(['needsAction', 'accepted', 'declined', 'tentative']).optional(),
-      }),
+        responseStatus: z
+          .enum(['needsAction', 'accepted', 'declined', 'tentative'])
+          .optional(),
+      })
     )
     .optional(),
   reminders: z
@@ -500,12 +517,14 @@ const calendarCreateEventActionSchema = z.object({
       z.object({
         method: z.enum(['email', 'popup']),
         minutes: z.number().min(0).max(40320), // Max 4 weeks
-      }),
+      })
     )
     .optional(),
   recurrence: z.array(z.string()).optional(), // RRULE format
   color: z.string().optional(),
-  visibility: z.enum(['default', 'public', 'private', 'confidential']).default('default'),
+  visibility: z
+    .enum(['default', 'public', 'private', 'confidential'])
+    .default('default'),
   conferenceData: z
     .object({
       createRequest: z.boolean().default(false),
@@ -539,7 +558,7 @@ const calendarUpdateEventActionSchema = z.object({
       z.object({
         method: z.enum(['email', 'popup']),
         minutes: z.number(),
-      }),
+      })
     )
     .optional(),
   sendUpdates: z.enum(['all', 'externalOnly', 'none']).default('all'),
@@ -613,13 +632,15 @@ export function getIntegrationById(id: string): BaseIntegration | undefined {
   return ALL_INTEGRATIONS.find(integration => integration.id === id);
 }
 
-export function getIntegrationsByType(type: IntegrationType): BaseIntegration[] {
+export function getIntegrationsByType(
+  type: IntegrationType
+): BaseIntegration[] {
   return ALL_INTEGRATIONS.filter(integration => integration.type === type);
 }
 
 export function getIntegrationAction(
   integrationId: string,
-  actionId: string,
+  actionId: string
 ): IntegrationAction | undefined {
   const integration = getIntegrationById(integrationId);
   return integration?.actions.find(action => action.id === actionId);
@@ -634,8 +655,8 @@ export function searchIntegrations(query: string): BaseIntegration[] {
       integration.actions.some(
         action =>
           action.name.toLowerCase().includes(lowerQuery) ||
-          action.description.toLowerCase().includes(lowerQuery),
-      ),
+          action.description.toLowerCase().includes(lowerQuery)
+      )
   );
 }
 
@@ -677,11 +698,13 @@ export function getOAuthUrl(
   integrationId: string,
   clientId: string,
   redirectUri: string,
-  state: string,
+  state: string
 ): string {
   const config = OAUTH_CONFIGS[integrationId];
   if (!config?.authorizationUrl || !config.scopes) {
-    throw new Error(`OAuth configuration not found for integration: ${integrationId}`);
+    throw new Error(
+      `OAuth configuration not found for integration: ${integrationId}`
+    );
   }
 
   const params = new URLSearchParams({
@@ -701,7 +724,7 @@ export function getOAuthUrl(
 
 export async function validateIntegrationConnection(
   integration: BaseIntegration,
-  credentials: Record<string, unknown>,
+  credentials: Record<string, unknown>
 ): Promise<{ valid: boolean; error?: string }> {
   try {
     // Validate against schema
@@ -752,7 +775,8 @@ export async function validateIntegrationConnection(
   } catch (error) {
     return {
       valid: false,
-      error: error instanceof Error ? error.message : 'Unknown validation error',
+      error:
+        error instanceof Error ? error.message : 'Unknown validation error',
     };
   }
 }

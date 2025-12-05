@@ -108,7 +108,7 @@ function _createMockRequest(
   method: string,
   path: string,
   body?: Record<string, unknown>,
-  headers?: Record<string, string>,
+  headers?: Record<string, string>
 ): NextRequest {
   const url = new URL(`http://localhost:3000${path}`);
 
@@ -124,7 +124,7 @@ function _createMockRequest(
 
 function createMockUserPresence(
   userId: string,
-  status: UserPresenceStatus = 'online',
+  status: UserPresenceStatus = 'online'
 ) {
   return {
     userId,
@@ -152,7 +152,7 @@ function createMockOrchestratorPresence(orchestratorId: string) {
 
 function createMockChannelPresence(
   channelId: string,
-  onlineMembers: string[] = [],
+  onlineMembers: string[] = []
 ) {
   return {
     channelId,
@@ -194,12 +194,12 @@ describe('Presence API', () => {
       expect(session.user).toBeDefined();
       await mockPresenceService.setUserStatus(
         session.user.id,
-        requestBody.status,
+        requestBody.status
       );
 
       expect(mockPresenceService.setUserStatus).toHaveBeenCalledWith(
         'user-123',
-        'away',
+        'away'
       );
     });
 
@@ -225,7 +225,7 @@ describe('Presence API', () => {
       // Invalid status should be rejected (in real implementation)
       const invalidStatus = 'invalid-status';
       const isValidStatus = validStatuses.includes(
-        invalidStatus as UserPresenceStatus,
+        invalidStatus as UserPresenceStatus
       );
       expect(isValidStatus).toBe(false);
     });
@@ -257,18 +257,18 @@ describe('Presence API', () => {
 
       await mockPresenceService.setUserStatus(
         session.user.id,
-        requestBody.status,
+        requestBody.status
       );
       await mockPresenceService.setUserCustomStatus(
         session.user.id,
         requestBody.customStatus,
-        requestBody.customStatusEmoji,
+        requestBody.customStatusEmoji
       );
 
       expect(mockPresenceService.setUserCustomStatus).toHaveBeenCalledWith(
         'user-123',
         'In a meeting',
-        '...',
+        '...'
       );
     });
 
@@ -283,7 +283,7 @@ describe('Presence API', () => {
 
       await mockPresenceService.setUserStatus(
         session.user.id,
-        requestBody.status,
+        requestBody.status
       );
 
       expect(mockPresenceService.setUserCustomStatus).not.toHaveBeenCalled();
@@ -380,7 +380,7 @@ describe('Presence API', () => {
 
       expect(mockPresenceService.addUserToChannel).toHaveBeenCalledWith(
         'user-123',
-        'channel-123',
+        'channel-123'
       );
     });
 
@@ -410,7 +410,7 @@ describe('Presence API', () => {
 
       mockPresenceService.addUserToChannel.mockResolvedValue(undefined);
       mockPresenceService.getChannelPresence.mockResolvedValue(
-        mockChannelPresence,
+        mockChannelPresence
       );
 
       await mockPresenceService.addUserToChannel(session.user.id, channelId);
@@ -443,12 +443,12 @@ describe('Presence API', () => {
 
       await mockPresenceService.removeUserFromChannel(
         session.user.id,
-        channelId,
+        channelId
       );
 
       expect(mockPresenceService.removeUserFromChannel).toHaveBeenCalledWith(
         'user-123',
-        'channel-123',
+        'channel-123'
       );
     });
 
@@ -462,7 +462,7 @@ describe('Presence API', () => {
       mockPresenceService.removeUserFromChannel.mockResolvedValue(undefined);
 
       await expect(
-        mockPresenceService.removeUserFromChannel(session.user.id, channelId),
+        mockPresenceService.removeUserFromChannel(session.user.id, channelId)
       ).resolves.toBeUndefined();
     });
   });
@@ -480,7 +480,7 @@ describe('Presence API', () => {
       const onlineMembers = ['user-123', 'user-456', 'user-789'];
 
       mockPresenceService.getOnlineChannelMembers.mockResolvedValue(
-        onlineMembers,
+        onlineMembers
       );
 
       const result =
@@ -542,7 +542,7 @@ describe('Presence API', () => {
         expect.objectContaining({
           responseTimeMs: 150,
           messagesProcessed: 100,
-        }),
+        })
       );
     });
 
@@ -586,13 +586,13 @@ describe('Presence API', () => {
       await mockHeartbeatService.sendHeartbeat(
         orchestratorId,
         daemonId,
-        metrics,
+        metrics
       );
 
       expect(mockHeartbeatService.sendHeartbeat).toHaveBeenCalledWith(
         orchestratorId,
         daemonId,
-        metrics,
+        metrics
       );
     });
 
@@ -749,7 +749,7 @@ describe('Presence API', () => {
       const mockPresence = createMockOrchestratorPresence(orchestratorId);
 
       mockPresenceService.getOrchestratorPresence.mockResolvedValue(
-        mockPresence,
+        mockPresence
       );
 
       const result =
@@ -782,7 +782,7 @@ describe('Presence API', () => {
       const mockPresence = createMockOrchestratorPresence(orchestratorId);
 
       mockPresenceService.getOrchestratorPresence.mockResolvedValue(
-        mockPresence,
+        mockPresence
       );
 
       const result =
@@ -892,11 +892,11 @@ describe('Presence API', () => {
       mockAuth.mockResolvedValue(session);
 
       mockPresenceService.setUserStatus.mockRejectedValue(
-        new Error('Redis connection refused'),
+        new Error('Redis connection refused')
       );
 
       await expect(
-        mockPresenceService.setUserStatus(session.user.id, 'online'),
+        mockPresenceService.setUserStatus(session.user.id, 'online')
       ).rejects.toThrow('Redis connection refused');
     });
 
@@ -916,11 +916,11 @@ describe('Presence API', () => {
       mockAuth.mockResolvedValue(session);
 
       mockPresenceService.getUserPresence.mockRejectedValue(
-        new Error('Request timeout'),
+        new Error('Request timeout')
       );
 
       await expect(
-        mockPresenceService.getUserPresence('user-123'),
+        mockPresenceService.getUserPresence('user-123')
       ).rejects.toThrow('Request timeout');
     });
   });

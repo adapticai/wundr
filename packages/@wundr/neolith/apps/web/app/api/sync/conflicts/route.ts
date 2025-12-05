@@ -33,7 +33,7 @@ import type { NextRequest } from 'next/server';
  */
 function deepMerge(
   target: Record<string, unknown>,
-  source: Record<string, unknown>,
+  source: Record<string, unknown>
 ): Record<string, unknown> {
   const result = { ...target };
 
@@ -48,7 +48,7 @@ function deepMerge(
     ) {
       result[key] = deepMerge(
         target[key] as Record<string, unknown>,
-        source[key] as Record<string, unknown>,
+        source[key] as Record<string, unknown>
       );
     } else {
       result[key] = source[key];
@@ -72,7 +72,7 @@ type ConflictResolutionResult = {
 async function resolveConflict(
   conflict: ConflictItem,
   resolution: ResolveConflictInput,
-  userId: string,
+  userId: string
 ): Promise<ConflictResolutionResult> {
   try {
     let dataToApply: Record<string, unknown>;
@@ -236,9 +236,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createNotificationErrorResponse(
           'Authentication required',
-          NOTIFICATION_ERROR_CODES.UNAUTHORIZED,
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -268,9 +268,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -334,9 +334,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createNotificationErrorResponse(
           'Authentication required',
-          NOTIFICATION_ERROR_CODES.UNAUTHORIZED,
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -348,9 +348,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createNotificationErrorResponse(
           'Invalid JSON body',
-          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
+          NOTIFICATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -361,9 +361,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createNotificationErrorResponse(
           'Validation failed',
           NOTIFICATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -419,7 +419,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const result = await resolveConflict(
         conflict,
         resolution,
-        session.user.id,
+        session.user.id
       );
 
       results.push({
@@ -438,7 +438,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Remove resolved conflicts from user preferences
     const remainingConflicts = existingConflicts.filter(
-      c => !resolvedIds.includes(c.id),
+      c => !resolvedIds.includes(c.id)
     );
 
     await prisma.user.update({
@@ -448,7 +448,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           JSON.stringify({
             ...currentPrefs,
             syncConflicts: remainingConflicts,
-          }),
+          })
         ) as Prisma.InputJsonValue,
       },
     });
@@ -470,9 +470,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

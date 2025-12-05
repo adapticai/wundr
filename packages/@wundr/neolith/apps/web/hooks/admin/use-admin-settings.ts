@@ -23,7 +23,12 @@ import type {
 /**
  * Settings section type
  */
-export type SettingsSection = 'general' | 'notifications' | 'security' | 'integrations' | 'all';
+export type SettingsSection =
+  | 'general'
+  | 'notifications'
+  | 'security'
+  | 'integrations'
+  | 'all';
 
 /**
  * Return type for useAdminSettings hook
@@ -38,7 +43,9 @@ export interface UseAdminSettingsReturn {
   /** Update general settings */
   updateGeneral: (updates: Partial<GeneralSettings>) => Promise<void>;
   /** Update notification settings */
-  updateNotifications: (updates: Partial<NotificationSettings>) => Promise<void>;
+  updateNotifications: (
+    updates: Partial<NotificationSettings>
+  ) => Promise<void>;
   /** Update security settings */
   updateSecurity: (updates: Partial<SecuritySettings>) => Promise<void>;
   /** Update integration settings */
@@ -46,7 +53,10 @@ export interface UseAdminSettingsReturn {
   /** Update custom fields */
   updateCustomFields: (fields: Record<string, unknown>) => Promise<void>;
   /** Update any section */
-  updateSettings: (section: SettingsSection, updates: Partial<WorkspaceAdminSettings[keyof WorkspaceAdminSettings]>) => Promise<void>;
+  updateSettings: (
+    section: SettingsSection,
+    updates: Partial<WorkspaceAdminSettings[keyof WorkspaceAdminSettings]>
+  ) => Promise<void>;
   /** Reset settings to defaults */
   resetSettings: (section?: SettingsSection) => Promise<void>;
   /** Manually refresh settings */
@@ -62,12 +72,16 @@ export interface UseAdminSettingsReturn {
 /**
  * Fetcher function with error handling
  */
-const settingsFetcher = async (url: string): Promise<WorkspaceAdminSettings> => {
+const settingsFetcher = async (
+  url: string
+): Promise<WorkspaceAdminSettings> => {
   const res = await fetch(url);
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || 'Failed to fetch settings');
+    throw new Error(
+      errorData.error || errorData.message || 'Failed to fetch settings'
+    );
   }
 
   const result = await res.json();
@@ -138,7 +152,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
     settingsFetcher,
     {
       revalidateOnFocus: false,
-    },
+    }
   );
 
   // Manual refresh
@@ -150,7 +164,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
   const updateSettings = useCallback(
     async (
       section: SettingsSection,
-      updates: Partial<WorkspaceAdminSettings[keyof WorkspaceAdminSettings]>,
+      updates: Partial<WorkspaceAdminSettings[keyof WorkspaceAdminSettings]>
     ) => {
       try {
         setIsUpdating(true);
@@ -163,18 +177,22 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Failed to update settings');
+          throw new Error(
+            errorData.error || errorData.message || 'Failed to update settings'
+          );
         }
 
         // Optimistic update
         await mutate();
       } catch (err) {
-        throw err instanceof Error ? err : new Error('Failed to update settings');
+        throw err instanceof Error
+          ? err
+          : new Error('Failed to update settings');
       } finally {
         setIsUpdating(false);
       }
     },
-    [url, mutate],
+    [url, mutate]
   );
 
   // Update general settings
@@ -182,7 +200,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
     async (updates: Partial<GeneralSettings>) => {
       await updateSettings('general', updates);
     },
-    [updateSettings],
+    [updateSettings]
   );
 
   // Update notification settings
@@ -190,7 +208,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
     async (updates: Partial<NotificationSettings>) => {
       await updateSettings('notifications', updates);
     },
-    [updateSettings],
+    [updateSettings]
   );
 
   // Update security settings
@@ -198,7 +216,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
     async (updates: Partial<SecuritySettings>) => {
       await updateSettings('security', updates);
     },
-    [updateSettings],
+    [updateSettings]
   );
 
   // Update integration settings
@@ -206,7 +224,7 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
     async (updates: Partial<IntegrationSettings>) => {
       await updateSettings('integrations', updates);
     },
-    [updateSettings],
+    [updateSettings]
   );
 
   // Update custom fields
@@ -223,17 +241,23 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Failed to update custom fields');
+          throw new Error(
+            errorData.error ||
+              errorData.message ||
+              'Failed to update custom fields'
+          );
         }
 
         await mutate();
       } catch (err) {
-        throw err instanceof Error ? err : new Error('Failed to update custom fields');
+        throw err instanceof Error
+          ? err
+          : new Error('Failed to update custom fields');
       } finally {
         setIsUpdating(false);
       }
     },
-    [url, mutate],
+    [url, mutate]
   );
 
   // Reset settings to defaults
@@ -252,17 +276,21 @@ export function useAdminSettings(workspaceId: string): UseAdminSettingsReturn {
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Failed to reset settings');
+          throw new Error(
+            errorData.error || errorData.message || 'Failed to reset settings'
+          );
         }
 
         await mutate();
       } catch (err) {
-        throw err instanceof Error ? err : new Error('Failed to reset settings');
+        throw err instanceof Error
+          ? err
+          : new Error('Failed to reset settings');
       } finally {
         setIsUpdating(false);
       }
     },
-    [url, mutate],
+    [url, mutate]
   );
 
   return {

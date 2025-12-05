@@ -17,7 +17,10 @@ import {
   enhancedProfileSchema,
   type EnhancedProfileInput,
 } from '@/lib/validations/profile';
-import { createUserErrorResponse, USER_ERROR_CODES } from '@/lib/validations/user';
+import {
+  createUserErrorResponse,
+  USER_ERROR_CODES,
+} from '@/lib/validations/user';
 
 import type { NextRequest } from 'next/server';
 
@@ -37,9 +40,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createUserErrorResponse(
           'Authentication required',
-          USER_ERROR_CODES.UNAUTHORIZED,
+          USER_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -51,9 +54,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createUserErrorResponse(
           'Invalid JSON body',
-          USER_ERROR_CODES.VALIDATION_ERROR,
+          USER_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -63,9 +66,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         createUserErrorResponse(
           'Validation failed',
           USER_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -80,11 +83,12 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (!currentUser) {
       return NextResponse.json(
         createUserErrorResponse('User not found', USER_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
-    const currentPrefs = (currentUser.preferences as Record<string, unknown>) || {};
+    const currentPrefs =
+      (currentUser.preferences as Record<string, unknown>) || {};
 
     // Prepare update data
     const updateData: Record<string, unknown> = {
@@ -115,9 +119,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           createUserErrorResponse(
             'Username is already taken',
             USER_ERROR_CODES.VALIDATION_ERROR,
-            { field: 'username' },
+            { field: 'username' }
           ),
-          { status: 409 },
+          { status: 409 }
         );
       }
 
@@ -125,26 +129,26 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     }
 
     if (updates.bio !== undefined) {
-updatedPrefs.bio = updates.bio;
-}
+      updatedPrefs.bio = updates.bio;
+    }
     if (updates.location !== undefined) {
-updatedPrefs.location = updates.location;
-}
+      updatedPrefs.location = updates.location;
+    }
     if (updates.timezone !== undefined) {
-updatedPrefs.timezone = updates.timezone;
-}
+      updatedPrefs.timezone = updates.timezone;
+    }
     if (updates.title !== undefined) {
-updatedPrefs.title = updates.title;
-}
+      updatedPrefs.title = updates.title;
+    }
     if (updates.pronouns !== undefined) {
-updatedPrefs.pronouns = updates.pronouns;
-}
+      updatedPrefs.pronouns = updates.pronouns;
+    }
     if (updates.customPronouns !== undefined) {
-updatedPrefs.customPronouns = updates.customPronouns;
-}
+      updatedPrefs.customPronouns = updates.customPronouns;
+    }
     if (updates.statusMessage !== undefined) {
-updatedPrefs.statusMessage = updates.statusMessage;
-}
+      updatedPrefs.statusMessage = updates.statusMessage;
+    }
 
     // Update social links
     if (updates.socialLinks) {
@@ -210,9 +214,9 @@ updatedPrefs.statusMessage = updates.statusMessage;
     return NextResponse.json(
       createUserErrorResponse(
         'An internal error occurred',
-        USER_ERROR_CODES.INTERNAL_ERROR,
+        USER_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

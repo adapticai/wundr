@@ -167,7 +167,8 @@ export function useSecuritySettings(): UseSecuritySettingsReturn {
         },
         sessions: (data.sessions || []).map((s: unknown) => ({
           id: (s as { id: string }).id,
-          deviceName: (s as { deviceName: string }).deviceName || 'Unknown Device',
+          deviceName:
+            (s as { deviceName: string }).deviceName || 'Unknown Device',
           browser: (s as { browser: string }).browser || 'Unknown',
           os: (s as { os: string }).os || 'Unknown',
           ipAddress: (s as { ipAddress: string }).ipAddress || '',
@@ -226,7 +227,7 @@ export function useSecuritySettings(): UseSecuritySettingsReturn {
         setIsUpdating(false);
       }
     },
-    [refresh],
+    [refresh]
   );
 
   // Disable 2FA
@@ -305,7 +306,7 @@ export function useSecuritySettings(): UseSecuritySettingsReturn {
         setIsUpdating(false);
       }
     },
-    [refresh],
+    [refresh]
   );
 
   // Revoke all other sessions

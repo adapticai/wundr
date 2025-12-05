@@ -60,7 +60,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  { params }: RouteContext,
+  { params }: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -69,9 +69,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          TASK_ERROR_CODES.UNAUTHORIZED,
+          TASK_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -83,9 +83,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace ID and OrchestratorID are required',
-          TASK_ERROR_CODES.VALIDATION_ERROR,
+          TASK_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -101,9 +101,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          TASK_ERROR_CODES.FORBIDDEN,
+          TASK_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -119,9 +119,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found',
-          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -130,9 +130,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator does not belong to this workspace',
-          TASK_ERROR_CODES.FORBIDDEN,
+          TASK_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -140,7 +140,7 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const limit = Math.min(
       parseInt(searchParams.get('limit') || '20', 10),
-      100,
+      100
     );
     const cursor = searchParams.get('cursor') || undefined;
     const statusParam = searchParams.get('status');
@@ -165,16 +165,16 @@ export async function GET(
         .split(',')
         .map(s => statusMap[s.trim().toUpperCase()] || s.trim().toUpperCase())
         .filter(s =>
-          ['TODO', 'IN_PROGRESS', 'BLOCKED', 'DONE', 'CANCELLED'].includes(s),
+          ['TODO', 'IN_PROGRESS', 'BLOCKED', 'DONE', 'CANCELLED'].includes(s)
         );
 
       if (statusFilter.length === 0) {
         return NextResponse.json(
           createErrorResponse(
             'Invalid status filter. Valid values: PENDING, IN_PROGRESS, COMPLETED, FAILED, TODO, DONE, BLOCKED, CANCELLED',
-            TASK_ERROR_CODES.VALIDATION_ERROR,
+            TASK_ERROR_CODES.VALIDATION_ERROR
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -191,9 +191,9 @@ export async function GET(
         return NextResponse.json(
           createErrorResponse(
             'Invalid priority filter. Valid values: CRITICAL, HIGH, MEDIUM, LOW',
-            TASK_ERROR_CODES.VALIDATION_ERROR,
+            TASK_ERROR_CODES.VALIDATION_ERROR
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -271,14 +271,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/tasks] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        TASK_ERROR_CODES.INTERNAL_ERROR,
+        TASK_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -321,7 +321,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: RouteContext,
+  { params }: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -330,9 +330,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          TASK_ERROR_CODES.UNAUTHORIZED,
+          TASK_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -344,9 +344,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace ID and OrchestratorID are required',
-          TASK_ERROR_CODES.VALIDATION_ERROR,
+          TASK_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -358,9 +358,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          TASK_ERROR_CODES.VALIDATION_ERROR,
+          TASK_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -369,9 +369,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Request body must be an object',
-          TASK_ERROR_CODES.VALIDATION_ERROR,
+          TASK_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -387,9 +387,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           TASK_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -407,9 +407,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          TASK_ERROR_CODES.FORBIDDEN,
+          TASK_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -425,9 +425,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found',
-          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -436,9 +436,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator does not belong to this workspace',
-          TASK_ERROR_CODES.FORBIDDEN,
+          TASK_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -446,7 +446,7 @@ export async function POST(
     const depValidation = await validateTaskDependencies(
       'new-task', // temporary ID for new task
       input.dependsOn || [],
-      workspaceId,
+      workspaceId
     );
 
     if (!depValidation.valid) {
@@ -457,9 +457,9 @@ export async function POST(
           {
             circularDependencies: depValidation.circularDependencies,
             unresolvedDependencies: depValidation.unresolvedDependencies,
-          },
+          }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -477,9 +477,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Channel not found in this workspace',
-            TASK_ERROR_CODES.NOT_FOUND,
+            TASK_ERROR_CODES.NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -495,9 +495,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Assignee not found',
-            TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND,
+            TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
 
@@ -513,9 +513,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Assignee does not have access to this workspace',
-            TASK_ERROR_CODES.FORBIDDEN,
+            TASK_ERROR_CODES.FORBIDDEN
           ),
-          { status: 403 },
+          { status: 403 }
         );
       }
     }
@@ -556,12 +556,12 @@ export async function POST(
 
     return NextResponse.json(
       { data: task, message: 'Task assigned successfully to Orchestrator' },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error(
       '[POST /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/tasks] Error:',
-      error,
+      error
     );
 
     // Handle Prisma errors
@@ -570,18 +570,18 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Required resource not found',
-            TASK_ERROR_CODES.NOT_FOUND,
+            TASK_ERROR_CODES.NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
       if (error.code === 'P2003') {
         return NextResponse.json(
           createErrorResponse(
             'Foreign key constraint failed',
-            TASK_ERROR_CODES.VALIDATION_ERROR,
+            TASK_ERROR_CODES.VALIDATION_ERROR
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -589,9 +589,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        TASK_ERROR_CODES.INTERNAL_ERROR,
+        TASK_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

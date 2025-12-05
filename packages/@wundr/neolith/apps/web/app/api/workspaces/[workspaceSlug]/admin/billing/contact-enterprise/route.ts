@@ -13,7 +13,10 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { createAdminErrorResponse, ADMIN_ERROR_CODES } from '@/lib/validations/admin';
+import {
+  createAdminErrorResponse,
+  ADMIN_ERROR_CODES,
+} from '@/lib/validations/admin';
 
 import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
@@ -30,13 +33,19 @@ interface RouteContext {
  *
  * Send enterprise contact request. Requires authentication.
  */
-export async function POST(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function POST(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -50,11 +59,11 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     if (!membership) {
       return NextResponse.json(
         createAdminErrorResponse('Access denied', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
-    const body = await request.json() as {
+    const body = (await request.json()) as {
       name: string;
       email: string;
       company: string;
@@ -105,10 +114,16 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       message: 'Enterprise inquiry submitted successfully',
     });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceSlug/admin/billing/contact-enterprise] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceSlug/admin/billing/contact-enterprise] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to send inquiry', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to send inquiry',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

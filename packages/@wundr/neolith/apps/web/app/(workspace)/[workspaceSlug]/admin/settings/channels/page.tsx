@@ -86,7 +86,7 @@ export default function ChannelSettingsPage() {
     const loadSettings = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/admin/settings/channels`,
+          `/api/workspaces/${workspaceSlug}/admin/settings/channels`
         );
         if (!response.ok) {
           throw new Error('Failed to load settings');
@@ -121,7 +121,7 @@ export default function ChannelSettingsPage() {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updates),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -146,7 +146,7 @@ export default function ChannelSettingsPage() {
         setIsSaving(false);
       }
     },
-    [settings, workspaceSlug, toast],
+    [settings, workspaceSlug, toast]
   );
 
   if (isLoading) {
@@ -238,7 +238,7 @@ function CreationPermissionsSection({
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
               'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'disabled:cursor-not-allowed disabled:opacity-50',
+              'disabled:cursor-not-allowed disabled:opacity-50'
             )}
           >
             <option value='everyone'>Everyone (all workspace members)</option>
@@ -268,7 +268,7 @@ function CreationPermissionsSection({
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
               'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'disabled:cursor-not-allowed disabled:opacity-50',
+              'disabled:cursor-not-allowed disabled:opacity-50'
             )}
           >
             <option value='everyone'>Everyone (all workspace members)</option>
@@ -288,7 +288,7 @@ function NamingConventionsSection({
 }: SectionProps) {
   const [localPrefix, setLocalPrefix] = useState(settings.requiredPrefix || '');
   const [localPattern, setLocalPattern] = useState(
-    settings.namingPattern || '',
+    settings.namingPattern || ''
   );
 
   return (
@@ -345,7 +345,7 @@ function NamingConventionsSection({
                   className={cn(
                     'flex-1 rounded-md border border-input bg-background',
                     'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                   )}
                 />
                 <button
@@ -354,7 +354,7 @@ function NamingConventionsSection({
                   disabled={isSaving}
                   className={cn(
                     'rounded-md border border-input bg-background px-4 py-2 text-sm font-medium',
-                    'hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50',
+                    'hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50'
                   )}
                 >
                   Save
@@ -382,7 +382,7 @@ function NamingConventionsSection({
                   className={cn(
                     'flex-1 rounded-md border border-input bg-background',
                     'px-3 py-2 text-sm font-mono placeholder:text-muted-foreground',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                   )}
                 />
                 <button
@@ -391,7 +391,7 @@ function NamingConventionsSection({
                   disabled={isSaving}
                   className={cn(
                     'rounded-md border border-input bg-background px-4 py-2 text-sm font-medium',
-                    'hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50',
+                    'hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50'
                   )}
                 >
                   Save
@@ -420,7 +420,7 @@ function NamingConventionsSection({
                   'block w-full rounded-md border border-input bg-background',
                   'px-3 py-2 text-sm',
                   'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-                  'disabled:cursor-not-allowed disabled:opacity-50',
+                  'disabled:cursor-not-allowed disabled:opacity-50'
                 )}
               >
                 <option value='alphanumeric'>
@@ -483,7 +483,7 @@ function PostingPermissionsSection({
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
               'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'disabled:cursor-not-allowed disabled:opacity-50',
+              'disabled:cursor-not-allowed disabled:opacity-50'
             )}
           >
             <option value='everyone'>Everyone (all channel members)</option>
@@ -567,7 +567,7 @@ function ArchivalSettingsSection({ settings, onSave, isSaving }: SectionProps) {
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
               'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'disabled:cursor-not-allowed disabled:opacity-50',
+              'disabled:cursor-not-allowed disabled:opacity-50'
             )}
           >
             <option value={0}>Never (disabled)</option>
@@ -600,7 +600,7 @@ function ArchivalSettingsSection({ settings, onSave, isSaving }: SectionProps) {
               'block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
               'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'disabled:cursor-not-allowed disabled:opacity-50',
+              'disabled:cursor-not-allowed disabled:opacity-50'
             )}
           >
             <option value='everyone'>Everyone (all channel members)</option>
@@ -633,7 +633,7 @@ function ArchivalSettingsSection({ settings, onSave, isSaving }: SectionProps) {
 
 function ChannelLimitsSection({ settings, onSave, isSaving }: SectionProps) {
   const [maxNameLength, setMaxNameLength] = useState(
-    settings.maxChannelNameLength,
+    settings.maxChannelNameLength
   );
 
   return (
@@ -715,13 +715,13 @@ function ToggleSwitch({
       className={cn(
         'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
         checked ? 'bg-primary' : 'bg-muted-foreground/30',
-        disabled && 'cursor-not-allowed opacity-50',
+        disabled && 'cursor-not-allowed opacity-50'
       )}
     >
       <span
         className={cn(
           'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-          checked ? 'translate-x-6' : 'translate-x-1',
+          checked ? 'translate-x-6' : 'translate-x-1'
         )}
       />
     </button>

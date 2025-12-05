@@ -65,17 +65,23 @@ describe('Cron Validation', () => {
 
     it('should convert daily frequency', () => {
       expect(frequencyToCron('daily')).toBe('0 0 * * *');
-      expect(frequencyToCron('daily', { hour: 9, minute: 30 })).toBe('30 9 * * *');
+      expect(frequencyToCron('daily', { hour: 9, minute: 30 })).toBe(
+        '30 9 * * *'
+      );
     });
 
     it('should convert weekly frequency', () => {
       expect(frequencyToCron('weekly')).toBe('0 0 * * 0');
-      expect(frequencyToCron('weekly', { hour: 9, dayOfWeek: 1 })).toBe('0 9 * * 1');
+      expect(frequencyToCron('weekly', { hour: 9, dayOfWeek: 1 })).toBe(
+        '0 9 * * 1'
+      );
     });
 
     it('should convert monthly frequency', () => {
       expect(frequencyToCron('monthly')).toBe('0 0 1 * *');
-      expect(frequencyToCron('monthly', { hour: 9, dayOfMonth: 15 })).toBe('0 9 15 * *');
+      expect(frequencyToCron('monthly', { hour: 9, dayOfMonth: 15 })).toBe(
+        '0 9 15 * *'
+      );
     });
 
     it('should convert quarterly frequency', () => {

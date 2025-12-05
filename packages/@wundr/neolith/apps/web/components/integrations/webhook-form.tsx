@@ -62,7 +62,7 @@ export function WebhookForm({
   const [url, setUrl] = useState('');
   const [events, setEvents] = useState<WebhookEventType[]>([]);
   const [headers, setHeaders] = useState<Array<{ key: string; value: string }>>(
-    [],
+    []
   );
   const [retryPolicy, setRetryPolicy] = useState(DEFAULT_RETRY_POLICY);
   const [showSecret, setShowSecret] = useState(false);
@@ -82,7 +82,7 @@ export function WebhookForm({
               key,
               value,
             }))
-          : [],
+          : []
       );
       setRetryPolicy(webhook.retryPolicy);
       setGeneratedSecret('');
@@ -101,7 +101,7 @@ export function WebhookForm({
 
   const handleEventToggle = useCallback((event: WebhookEventType) => {
     setEvents(prev =>
-      prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event],
+      prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event]
     );
   }, []);
 
@@ -122,7 +122,7 @@ export function WebhookForm({
         return updated;
       });
     },
-    [],
+    []
   );
 
   const handleRemoveHeader = useCallback((index: number) => {
@@ -206,7 +206,7 @@ export function WebhookForm({
         setIsSubmitting(false);
       }
     },
-    [name, url, events, headers, retryPolicy, validate, onSubmit, onClose],
+    [name, url, events, headers, retryPolicy, validate, onSubmit, onClose]
   );
 
   if (!isOpen) {
@@ -232,7 +232,7 @@ export function WebhookForm({
       <div
         className={cn(
           'relative z-10 w-full max-w-2xl rounded-lg border bg-card shadow-xl',
-          className,
+          className
         )}
         role='dialog'
         aria-modal='true'
@@ -277,7 +277,7 @@ export function WebhookForm({
                   'mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1',
                   errors.name
                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'border-input focus:border-primary focus:ring-primary',
+                    : 'border-input focus:border-primary focus:ring-primary'
                 )}
               />
               {errors.name && (
@@ -303,7 +303,7 @@ export function WebhookForm({
                   'mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1',
                   errors.url
                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'border-input focus:border-primary focus:ring-primary',
+                    : 'border-input focus:border-primary focus:ring-primary'
                 )}
               />
               {errors.url && (
@@ -372,7 +372,7 @@ export function WebhookForm({
               <div
                 className={cn(
                   'mt-2 grid gap-2 sm:grid-cols-2 rounded-md border p-3',
-                  errors.events ? 'border-red-500' : 'border-border',
+                  errors.events ? 'border-red-500' : 'border-border'
                 )}
               >
                 {allEvents.map(([event, config]) => (

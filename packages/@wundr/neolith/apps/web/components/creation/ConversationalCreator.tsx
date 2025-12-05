@@ -282,7 +282,7 @@ function ChatMessageBubble({ message }: { message: ChatMessage }) {
           'max-w-[80%] rounded-lg px-4 py-3',
           isUser
             ? 'bg-primary text-primary-foreground'
-            : 'bg-muted text-muted-foreground',
+            : 'bg-muted text-muted-foreground'
         )}
       >
         {!isUser && (
@@ -292,7 +292,7 @@ function ChatMessageBubble({ message }: { message: ChatMessage }) {
         <div
           className={cn(
             'mt-1 text-xs',
-            isUser ? 'text-primary-foreground/70' : 'text-muted-foreground/70',
+            isUser ? 'text-primary-foreground/70' : 'text-muted-foreground/70'
           )}
         >
           {message.timestamp.toLocaleTimeString([], {

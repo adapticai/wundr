@@ -30,8 +30,8 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -56,7 +56,7 @@ return null;
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -71,24 +71,28 @@ export async function PATCH(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or insufficient permissions' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     const body = await request.json();
     const { workflowIds, action } = body;
 
-    if (!workflowIds || !Array.isArray(workflowIds) || workflowIds.length === 0) {
+    if (
+      !workflowIds ||
+      !Array.isArray(workflowIds) ||
+      workflowIds.length === 0
+    ) {
       return NextResponse.json(
         { error: 'Invalid workflow IDs' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!action || !['enable', 'disable'].includes(action)) {
       return NextResponse.json(
         { error: 'Invalid action. Must be "enable" or "disable"' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -110,10 +114,13 @@ export async function PATCH(
       updated: result.count,
     });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/:workspaceSlug/admin/workflows/bulk]', error);
+    console.error(
+      '[PATCH /api/workspaces/:workspaceSlug/admin/workflows/bulk]',
+      error
+    );
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

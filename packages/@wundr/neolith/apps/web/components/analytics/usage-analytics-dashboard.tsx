@@ -181,7 +181,7 @@ export function UsageAnalyticsDashboard({
       }
 
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/analytics/usage?${queryParams}`,
+        `/api/workspaces/${workspaceId}/analytics/usage?${queryParams}`
       );
 
       if (!response.ok) {
@@ -196,7 +196,7 @@ export function UsageAnalyticsDashboard({
     } catch (err) {
       console.error('Usage analytics fetch error:', err);
       setError(
-        err instanceof Error ? err.message : 'Failed to load usage analytics',
+        err instanceof Error ? err.message : 'Failed to load usage analytics'
       );
     } finally {
       setIsLoading(false);
@@ -223,14 +223,14 @@ export function UsageAnalyticsDashboard({
   // Format bytes to human readable
   const formatBytes = (bytes: number): string => {
     if (bytes < 1024) {
-return `${bytes} B`;
-}
+      return `${bytes} B`;
+    }
     if (bytes < 1024 * 1024) {
-return `${(bytes / 1024).toFixed(1)} KB`;
-}
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
     if (bytes < 1024 * 1024 * 1024) {
-return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
   };
 
@@ -347,7 +347,7 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                   granularity === g
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground hover:bg-muted/80',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                  'disabled:opacity-50 disabled:cursor-not-allowed'
                 )}
               >
                 {g.charAt(0).toUpperCase() + g.slice(1)}
@@ -371,11 +371,13 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
             className={clsx(
               'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
               'bg-muted text-muted-foreground hover:bg-muted/80',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
             title='Refresh data'
           >
-            <RefreshIcon className={clsx('w-4 h-4', isLoading && 'animate-spin')} />
+            <RefreshIcon
+              className={clsx('w-4 h-4', isLoading && 'animate-spin')}
+            />
           </button>
         </div>
       </div>
@@ -428,7 +430,8 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                 <div className='space-y-2'>
                   <div className='flex justify-between text-sm'>
                     <span className='text-muted-foreground'>
-                      {formatBytes(metrics?.resourceUsage.storage.total || 0)} of{' '}
+                      {formatBytes(metrics?.resourceUsage.storage.total || 0)}{' '}
+                      of{' '}
                       {formatBytes(metrics?.resourceUsage.storage.limit || 0)}
                     </span>
                     <span className='font-medium'>
@@ -444,7 +447,7 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                           : (metrics?.resourceUsage.storage.percentUsed || 0) >
                               75
                             ? 'bg-yellow-500'
-                            : 'bg-primary',
+                            : 'bg-primary'
                       )}
                       style={{
                         width: `${Math.min(metrics?.resourceUsage.storage.percentUsed || 0, 100)}%`,
@@ -484,7 +487,7 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                           : (metrics?.resourceUsage.apiCalls.percentUsed || 0) >
                               75
                             ? 'bg-yellow-500'
-                            : 'bg-primary',
+                            : 'bg-primary'
                       )}
                       style={{
                         width: `${Math.min(metrics?.resourceUsage.apiCalls.percentUsed || 0, 100)}%`,
@@ -514,7 +517,7 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                         metrics?.featureAdoption.orchestrators.trend ===
                           'down' && 'text-rose-600',
                         metrics?.featureAdoption.orchestrators.trend ===
-                          'stable' && 'text-muted-foreground',
+                          'stable' && 'text-muted-foreground'
                       )}
                     >
                       {metrics?.featureAdoption.orchestrators.trend === 'up' &&
@@ -523,14 +526,14 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                         'down' && '↓'}
                       {Math.abs(
                         metrics?.featureAdoption.orchestrators.changePercent ||
-                          0,
+                          0
                       ).toFixed(1)}
                       %
                     </span>
                   </div>
                   <div className='text-2xl font-semibold'>
                     {metrics?.featureAdoption.orchestrators.adoptionRate.toFixed(
-                      1,
+                      1
                     )}
                     %
                   </div>
@@ -551,20 +554,21 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                         metrics?.featureAdoption.workflows.trend === 'down' &&
                           'text-rose-600',
                         metrics?.featureAdoption.workflows.trend === 'stable' &&
-                          'text-muted-foreground',
+                          'text-muted-foreground'
                       )}
                     >
                       {metrics?.featureAdoption.workflows.trend === 'up' && '↑'}
                       {metrics?.featureAdoption.workflows.trend === 'down' &&
                         '↓'}
                       {Math.abs(
-                        metrics?.featureAdoption.workflows.changePercent || 0,
+                        metrics?.featureAdoption.workflows.changePercent || 0
                       ).toFixed(1)}
                       %
                     </span>
                   </div>
                   <div className='text-2xl font-semibold'>
-                    {metrics?.featureAdoption.workflows.adoptionRate.toFixed(1)}%
+                    {metrics?.featureAdoption.workflows.adoptionRate.toFixed(1)}
+                    %
                   </div>
                   <div className='text-xs text-muted-foreground'>
                     {metrics?.featureAdoption.workflows.active} /{' '}
@@ -583,13 +587,14 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                         metrics?.featureAdoption.channels.trend === 'down' &&
                           'text-rose-600',
                         metrics?.featureAdoption.channels.trend === 'stable' &&
-                          'text-muted-foreground',
+                          'text-muted-foreground'
                       )}
                     >
                       {metrics?.featureAdoption.channels.trend === 'up' && '↑'}
-                      {metrics?.featureAdoption.channels.trend === 'down' && '↓'}
+                      {metrics?.featureAdoption.channels.trend === 'down' &&
+                        '↓'}
                       {Math.abs(
-                        metrics?.featureAdoption.channels.changePercent || 0,
+                        metrics?.featureAdoption.channels.changePercent || 0
                       ).toFixed(1)}
                       %
                     </span>
@@ -614,7 +619,7 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                         metrics?.featureAdoption.integrations.trend ===
                           'down' && 'text-rose-600',
                         metrics?.featureAdoption.integrations.trend ===
-                          'stable' && 'text-muted-foreground',
+                          'stable' && 'text-muted-foreground'
                       )}
                     >
                       {metrics?.featureAdoption.integrations.trend === 'up' &&
@@ -622,14 +627,14 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                       {metrics?.featureAdoption.integrations.trend === 'down' &&
                         '↓'}
                       {Math.abs(
-                        metrics?.featureAdoption.integrations.changePercent || 0,
+                        metrics?.featureAdoption.integrations.changePercent || 0
                       ).toFixed(1)}
                       %
                     </span>
                   </div>
                   <div className='text-2xl font-semibold'>
                     {metrics?.featureAdoption.integrations.adoptionRate.toFixed(
-                      1,
+                      1
                     )}
                     %
                   </div>
@@ -646,10 +651,15 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
             <Card>
               <CardHeader>
-                <CardTitle className='text-base'>Storage Usage Over Time</CardTitle>
+                <CardTitle className='text-base'>
+                  Storage Usage Over Time
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={storageChartConfig} className='h-[200px]'>
+                <ChartContainer
+                  config={storageChartConfig}
+                  className='h-[200px]'
+                >
                   <AreaChart
                     data={metrics?.usageTrends.daily.map(d => ({
                       date: formatTimestamp(d.date),
@@ -696,7 +706,10 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                 <CardTitle className='text-base'>API Calls Over Time</CardTitle>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={apiCallsChartConfig} className='h-[200px]'>
+                <ChartContainer
+                  config={apiCallsChartConfig}
+                  className='h-[200px]'
+                >
                   <LineChart
                     data={metrics?.usageTrends.daily.map(d => ({
                       date: formatTimestamp(d.date),
@@ -791,25 +804,31 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                   <div className='flex items-center gap-2'>
                     <div className='w-3 h-3 rounded-full bg-[hsl(var(--chart-1))]' />
                     <span className='text-xs text-muted-foreground'>
-                      Documents: {formatBytes(metrics?.resourceUsage.storage.documents || 0)}
+                      Documents:{' '}
+                      {formatBytes(
+                        metrics?.resourceUsage.storage.documents || 0
+                      )}
                     </span>
                   </div>
                   <div className='flex items-center gap-2'>
                     <div className='w-3 h-3 rounded-full bg-[hsl(var(--chart-2))]' />
                     <span className='text-xs text-muted-foreground'>
-                      Images: {formatBytes(metrics?.resourceUsage.storage.images || 0)}
+                      Images:{' '}
+                      {formatBytes(metrics?.resourceUsage.storage.images || 0)}
                     </span>
                   </div>
                   <div className='flex items-center gap-2'>
                     <div className='w-3 h-3 rounded-full bg-[hsl(var(--chart-3))]' />
                     <span className='text-xs text-muted-foreground'>
-                      Videos: {formatBytes(metrics?.resourceUsage.storage.videos || 0)}
+                      Videos:{' '}
+                      {formatBytes(metrics?.resourceUsage.storage.videos || 0)}
                     </span>
                   </div>
                   <div className='flex items-center gap-2'>
                     <div className='w-3 h-3 rounded-full bg-[hsl(var(--chart-4))]' />
                     <span className='text-xs text-muted-foreground'>
-                      Other: {formatBytes(metrics?.resourceUsage.storage.other || 0)}
+                      Other:{' '}
+                      {formatBytes(metrics?.resourceUsage.storage.other || 0)}
                     </span>
                   </div>
                 </div>
@@ -839,14 +858,14 @@ return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                             metrics.costAnalysis.trend === 'down' &&
                               'text-emerald-600',
                             metrics.costAnalysis.trend === 'stable' &&
-                              'text-muted-foreground',
+                              'text-muted-foreground'
                           )}
                         >
                           {metrics.costAnalysis.trend === 'up' && '↑'}
                           {metrics.costAnalysis.trend === 'down' && '↓'}
-                          {Math.abs(
-                            metrics.costAnalysis.changePercent,
-                          ).toFixed(1)}
+                          {Math.abs(metrics.costAnalysis.changePercent).toFixed(
+                            1
+                          )}
                           % vs last period
                         </div>
                       </div>

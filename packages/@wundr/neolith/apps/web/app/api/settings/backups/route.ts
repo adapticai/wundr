@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     console.error('Backup history error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch backup history' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

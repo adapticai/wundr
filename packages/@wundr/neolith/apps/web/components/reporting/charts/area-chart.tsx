@@ -95,19 +95,19 @@ export function AreaChart({
                 <linearGradient
                   key={key}
                   id={`gradient-${key}`}
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
+                  x1='0'
+                  y1='0'
+                  x2='0'
+                  y2='1'
                 >
-                  <stop offset="5%" stopColor={color} stopOpacity={0.8} />
-                  <stop offset="95%" stopColor={color} stopOpacity={0.1} />
+                  <stop offset='5%' stopColor={color} stopOpacity={0.8} />
+                  <stop offset='95%' stopColor={color} stopOpacity={0.1} />
                 </linearGradient>
               );
             })}
           </defs>
         )}
-        {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} />}
+        {showGrid && <CartesianGrid strokeDasharray='3 3' vertical={false} />}
         <XAxis
           dataKey={xAxisKey}
           tickLine={false}
@@ -120,10 +120,12 @@ export function AreaChart({
         {dataKeys.map((key, index) => (
           <Area
             key={key}
-            type="monotone"
+            type='monotone'
             dataKey={key}
             stroke={colors[index % colors.length]}
-            fill={gradient ? `url(#gradient-${key})` : colors[index % colors.length]}
+            fill={
+              gradient ? `url(#gradient-${key})` : colors[index % colors.length]
+            }
             strokeWidth={2}
             stackId={stacked ? 'stack' : undefined}
           />

@@ -38,7 +38,7 @@ export type OrchestratorErrorCode =
 export function createErrorResponse(
   message: string,
   code: OrchestratorErrorCode | string,
-  extraData?: Record<string, unknown>,
+  extraData?: Record<string, unknown>
 ): { error: string; message: string } & Record<string, unknown> {
   return { error: code, message, ...extraData };
 }

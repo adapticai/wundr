@@ -102,7 +102,7 @@ export function ChannelNotificationBell({
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ preference: newPreference }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -117,7 +117,7 @@ export function ChannelNotificationBell({
         setIsLoading(false);
       }
     },
-    [channelId],
+    [channelId]
   );
 
   const handleMuteFor = useCallback(
@@ -155,7 +155,7 @@ export function ChannelNotificationBell({
       setMuteUntil(until);
       updatePreference('none');
     },
-    [updatePreference],
+    [updatePreference]
   );
 
   const isMuted = preference === 'none' || muteUntil !== null;
@@ -177,7 +177,7 @@ export function ChannelNotificationBell({
               className={cn(
                 'h-4 w-4',
                 isMuted && 'text-muted-foreground',
-                isMentionsOnly && 'text-yellow-500',
+                isMentionsOnly && 'text-yellow-500'
               )}
             />
             Notifications
@@ -201,7 +201,7 @@ export function ChannelNotificationBell({
           type='button'
           className={cn(
             'relative rounded-md p-1.5 hover:bg-accent transition-colors',
-            className,
+            className
           )}
           title='Notification settings'
           disabled={isLoading}
@@ -210,7 +210,7 @@ export function ChannelNotificationBell({
             className={cn(
               'h-5 w-5',
               isMuted && 'text-muted-foreground',
-              isMentionsOnly && 'text-yellow-500',
+              isMentionsOnly && 'text-yellow-500'
             )}
           />
           {muteUntil && (
@@ -287,12 +287,10 @@ function NotificationDropdownContent({
       )}
 
       <DropdownMenuItem onClick={() => onMuteFor('1hour')}>
-        <Clock className='mr-2 h-4 w-4' />
-        1 hour
+        <Clock className='mr-2 h-4 w-4' />1 hour
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => onMuteFor('4hours')}>
-        <Clock className='mr-2 h-4 w-4' />
-        4 hours
+        <Clock className='mr-2 h-4 w-4' />4 hours
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => onMuteFor('tomorrow')}>
         <Sun className='mr-2 h-4 w-4' />
@@ -393,7 +391,12 @@ export function ChannelNotificationSettings({
       {/* Notification preference */}
       <div className='space-y-3'>
         <Label className='text-base'>Notify me about</Label>
-        <RadioGroup value={preference} onValueChange={(value) => setPreference(value as NotificationPreference)}>
+        <RadioGroup
+          value={preference}
+          onValueChange={value =>
+            setPreference(value as NotificationPreference)
+          }
+        >
           <div className='flex items-start space-x-3'>
             <RadioGroupItem value='all' id='all' />
             <div className='flex-1'>

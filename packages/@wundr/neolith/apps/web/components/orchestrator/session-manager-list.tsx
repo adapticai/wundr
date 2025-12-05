@@ -72,7 +72,7 @@ export function SessionManagerList({
       setLoading(true);
       setError(null);
       const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/session-managers`,
+        `/api/orchestrators/${orchestratorId}/session-managers`
       );
       if (!response.ok) {
         throw new Error('Failed to fetch session managers');
@@ -117,7 +117,7 @@ export function SessionManagerList({
       <Card
         className={cn(
           'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/20',
-          className,
+          className
         )}
       >
         <CardContent className='pt-6'>
@@ -160,7 +160,7 @@ export function SessionManagerList({
               key={sm.id}
               className={cn(
                 'cursor-pointer hover:border-primary/50 hover:shadow-md transition-all',
-                className,
+                className
               )}
               onClick={() => {
                 if (onSelect) {
@@ -168,7 +168,7 @@ export function SessionManagerList({
                 } else {
                   // Navigate to detail page
                   router.push(
-                    `/${workspaceSlug}/orchestrators/${orchestratorId}/session-managers/${sm.id}`,
+                    `/${workspaceSlug}/orchestrators/${orchestratorId}/session-managers/${sm.id}`
                   );
                 }
               }}
@@ -193,7 +193,7 @@ export function SessionManagerList({
                   <div
                     className={cn(
                       'h-3 w-3 rounded-full flex-shrink-0',
-                      statusColors[sm.status],
+                      statusColors[sm.status]
                     )}
                     title={sm.status}
                   />

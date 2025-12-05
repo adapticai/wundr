@@ -36,10 +36,7 @@ function PasswordRequirements({ password }: { password: string }) {
       </p>
       <ul className='space-y-1'>
         {requirements.map((req, index) => (
-          <li
-            key={index}
-            className='flex items-center gap-2 text-xs'
-          >
+          <li key={index} className='flex items-center gap-2 text-xs'>
             {req.met ? (
               <Check className='h-3.5 w-3.5 text-green-600 dark:text-green-400' />
             ) : (
@@ -66,7 +63,7 @@ function PasswordRequirements({ password }: { password: string }) {
  */
 function PasswordStrength({ password }: { password: string }) {
   const getStrength = (
-    pwd: string,
+    pwd: string
   ): { score: number; label: string; color: string } => {
     if (!pwd) {
       return { score: 0, label: '', color: '' };
@@ -213,7 +210,7 @@ function ResetPasswordContent() {
 
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
       setError(
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
       );
       return;
     }

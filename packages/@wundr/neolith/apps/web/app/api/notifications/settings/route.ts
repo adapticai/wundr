@@ -50,7 +50,7 @@ const ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: (typeof ERROR_CODES)[keyof typeof ERROR_CODES],
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) {
   return {
     error: {
@@ -65,7 +65,7 @@ function createErrorResponse(
  * Extract notification settings from user preferences JSON field
  */
 function extractNotificationSettings(
-  preferences: Prisma.JsonValue,
+  preferences: Prisma.JsonValue
 ): NotificationSettings {
   let notificationSettings: Partial<NotificationSettings> = {};
 
@@ -166,9 +166,10 @@ function isValidTimeFormat(time: string): boolean {
 /**
  * Validate notification settings update
  */
-function validateNotificationSettings(
-  input: Record<string, unknown>,
-): { valid: boolean; errors: Record<string, string> } {
+function validateNotificationSettings(input: Record<string, unknown>): {
+  valid: boolean;
+  errors: Record<string, string>;
+} {
   const errors: Record<string, string> = {};
 
   // Validate enabled
@@ -242,7 +243,7 @@ function validateNotificationSettings(
       errors.mutedChannels = 'Muted channels must be an array';
     } else {
       const allStrings = input.mutedChannels.every(
-        (id: unknown) => typeof id === 'string',
+        (id: unknown) => typeof id === 'string'
       );
       if (!allStrings) {
         errors.mutedChannels = 'Muted channels must be an array of strings';
@@ -344,9 +345,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ERROR_CODES.UNAUTHORIZED,
+          ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -359,7 +360,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     if (!user) {
       return NextResponse.json(
         createErrorResponse('User not found', ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -371,9 +372,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -427,9 +428,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ERROR_CODES.UNAUTHORIZED,
+          ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -440,7 +441,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -449,9 +450,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Request body must be an object',
-          ERROR_CODES.VALIDATION_ERROR,
+          ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -464,7 +465,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         createErrorResponse('Validation failed', ERROR_CODES.VALIDATION_ERROR, {
           errors: validation.errors,
         }),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -477,7 +478,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (!user) {
       return NextResponse.json(
         createErrorResponse('User not found', ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -613,9 +614,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

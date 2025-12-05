@@ -6,14 +6,18 @@ import html2canvas from 'html2canvas';
 
 import { downloadBlob, measureExportDuration } from './utils';
 
-import type { ChartExportOptions, ImageExportOptions, ExportResult } from './types';
+import type {
+  ChartExportOptions,
+  ImageExportOptions,
+  ExportResult,
+} from './types';
 
 /**
  * Export chart element to image
  */
 export async function exportChartToImage(
   element: HTMLElement | string,
-  options: ChartExportOptions = {},
+  options: ChartExportOptions = {}
 ): Promise<ExportResult> {
   const startTime = Date.now();
 
@@ -85,13 +89,13 @@ export async function exportChartToImage(
 function canvasToBlob(
   canvas: HTMLCanvasElement,
   format: 'png' | 'jpeg',
-  quality: number,
+  quality: number
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
 
     canvas.toBlob(
-      (blob) => {
+      blob => {
         if (blob) {
           resolve(blob);
         } else {
@@ -99,7 +103,7 @@ function canvasToBlob(
         }
       },
       mimeType,
-      quality,
+      quality
     );
   });
 }
@@ -109,7 +113,7 @@ function canvasToBlob(
  */
 export async function exportChartToDataURL(
   element: HTMLElement | string,
-  options: ChartExportOptions = {},
+  options: ChartExportOptions = {}
 ): Promise<string> {
   const {
     format = 'png',
@@ -147,8 +151,12 @@ export async function exportChartToDataURL(
  * Export multiple charts to images
  */
 export async function exportMultipleCharts(
-  elements: Array<{ id: string; element: HTMLElement | string; filename?: string }>,
-  options: ChartExportOptions = {},
+  elements: Array<{
+    id: string;
+    element: HTMLElement | string;
+    filename?: string;
+  }>,
+  options: ChartExportOptions = {}
 ): Promise<ExportResult[]> {
   const results: ExportResult[] = [];
 
@@ -170,7 +178,7 @@ export async function exportMultipleCharts(
 export async function exportChartWithDimensions(
   element: HTMLElement | string,
   dimensions: { width: number; height: number },
-  options: ChartExportOptions = {},
+  options: ChartExportOptions = {}
 ): Promise<ExportResult> {
   return exportChartToImage(element, {
     ...options,
@@ -184,7 +192,7 @@ export async function exportChartWithDimensions(
  */
 export async function exportElementToImage(
   element: HTMLElement | string,
-  options: ImageExportOptions = {},
+  options: ImageExportOptions = {}
 ): Promise<ExportResult> {
   const startTime = Date.now();
 
@@ -256,7 +264,7 @@ export async function exportCompositeImage(
     height?: number;
   }>,
   canvasSize: { width: number; height: number },
-  options: ImageExportOptions = {},
+  options: ImageExportOptions = {}
 ): Promise<ExportResult> {
   const startTime = Date.now();
 
@@ -285,11 +293,13 @@ export async function exportCompositeImage(
     // Render each element onto the composite canvas
     for (const { element, x, y, width, height } of elements) {
       const targetElement =
-        typeof element === 'string' ? document.getElementById(element) : element;
+        typeof element === 'string'
+          ? document.getElementById(element)
+          : element;
 
       if (!targetElement) {
-continue;
-}
+        continue;
+      }
 
       const elementCanvas = await html2canvas(targetElement, {
         logging: false,
@@ -303,7 +313,7 @@ continue;
         x,
         y,
         width || elementCanvas.width,
-        height || elementCanvas.height,
+        height || elementCanvas.height
       );
     }
 
@@ -339,7 +349,7 @@ continue;
  */
 export async function getChartPreview(
   element: HTMLElement | string,
-  maxWidth: number = 300,
+  maxWidth: number = 300
 ): Promise<string> {
   const dataURL = await exportChartToDataURL(element, {
     format: 'png',

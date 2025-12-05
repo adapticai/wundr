@@ -41,7 +41,7 @@ interface RouteContext {
  */
 async function getOrchestratorWithAccessCheck(
   orchestratorId: string,
-  userId: string,
+  userId: string
 ) {
   const userOrganizations = await prisma.organizationMember.findMany({
     where: { userId },
@@ -166,7 +166,7 @@ async function queryUsageHistory(
   endDate: Date,
   granularity: Granularity,
   limit: number,
-  offset: number,
+  offset: number
 ): Promise<{ entries: UsageHistoryEntry[]; total: number }> {
   const dateTrunc = getDateTruncForGranularity(granularity);
   const interval = getIntervalForGranularity(granularity);
@@ -245,7 +245,7 @@ async function queryUsageHistory(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -254,9 +254,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          BUDGET_ERROR_CODES.UNAUTHORIZED,
+          BUDGET_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -267,9 +267,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid orchestrator ID format',
-          BUDGET_ERROR_CODES.VALIDATION_ERROR,
+          BUDGET_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -291,9 +291,9 @@ export async function GET(
         createErrorResponse(
           'Validation failed',
           BUDGET_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -302,16 +302,16 @@ export async function GET(
     // Get orchestrator with access check
     const orchestrator = await getOrchestratorWithAccessCheck(
       params.orchestratorId,
-      session.user.id,
+      session.user.id
     );
 
     if (!orchestrator) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -324,9 +324,9 @@ export async function GET(
         return NextResponse.json(
           createErrorResponse(
             'startDate and endDate are required for CUSTOM time range',
-            BUDGET_ERROR_CODES.INVALID_TIME_RANGE,
+            BUDGET_ERROR_CODES.INVALID_TIME_RANGE
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
       startDate = new Date(query.startDate);
@@ -342,9 +342,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'startDate must be before endDate',
-          BUDGET_ERROR_CODES.INVALID_TIME_RANGE,
+          BUDGET_ERROR_CODES.INVALID_TIME_RANGE
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -355,17 +355,17 @@ export async function GET(
       endDate,
       query.granularity,
       query.limit,
-      query.offset,
+      query.offset
     );
 
     // Calculate summary statistics
     const totalTokens = entries.reduce(
       (sum, entry) => sum + entry.tokensUsed,
-      0,
+      0
     );
     const totalRequests = entries.reduce(
       (sum, entry) => sum + entry.requestCount,
-      0,
+      0
     );
     const avgTokensPerRequest =
       totalRequests > 0 ? totalTokens / totalRequests : 0;
@@ -398,14 +398,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/orchestrators/:orchestratorId/budget/history] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        BUDGET_ERROR_CODES.INTERNAL_ERROR,
+        BUDGET_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

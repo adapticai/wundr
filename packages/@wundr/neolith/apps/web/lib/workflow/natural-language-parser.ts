@@ -51,15 +51,8 @@ export const TRIGGER_PATTERNS = {
     /reaction (is )?added/i,
     /emoji (is )?added/i,
   ],
-  mention: [
-    /when (someone|user) mention(s)?/i,
-    /@mention/i,
-  ],
-  webhook: [
-    /webhook/i,
-    /external (event|trigger)/i,
-    /http (request|call)/i,
-  ],
+  mention: [/when (someone|user) mention(s)?/i, /@mention/i],
+  webhook: [/webhook/i, /external (event|trigger)/i, /http (request|call)/i],
 } as const;
 
 export const ACTION_PATTERNS = {
@@ -78,38 +71,17 @@ export const ACTION_PATTERNS = {
     /new channel/i,
     /make (a )?channel/i,
   ],
-  invite_to_channel: [
-    /invite (to|into) channel/i,
-    /add (user )?to channel/i,
-  ],
-  assign_role: [
-    /assign (a )?role/i,
-    /give (a )?role/i,
-    /set role/i,
-  ],
-  add_reaction: [
-    /add (a )?reaction/i,
-    /react with/i,
-    /add emoji/i,
-  ],
+  invite_to_channel: [/invite (to|into) channel/i, /add (user )?to channel/i],
+  assign_role: [/assign (a )?role/i, /give (a )?role/i, /set role/i],
+  add_reaction: [/add (a )?reaction/i, /react with/i, /add emoji/i],
   http_request: [
     /http (request|call)/i,
     /api (request|call)/i,
     /webhook/i,
     /external (service|api)/i,
   ],
-  wait: [
-    /wait/i,
-    /delay/i,
-    /pause/i,
-    /sleep/i,
-  ],
-  condition: [
-    /if/i,
-    /when.*then/i,
-    /check (if|whether)/i,
-    /condition/i,
-  ],
+  wait: [/wait/i, /delay/i, /pause/i, /sleep/i],
+  condition: [/if/i, /when.*then/i, /check (if|whether)/i, /condition/i],
   notify_orchestrator: [
     /notify (the )?orchestrator/i,
     /alert (the )?agent/i,
@@ -177,7 +149,9 @@ export function extractSchedule(text: string): {
   }
 
   // Weekly patterns
-  const dayMatch = text.match(/on (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i);
+  const dayMatch = text.match(
+    /on (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i
+  );
   if (dayMatch || /every week|weekly/i.test(text)) {
     const dayMap: Record<string, number> = {
       sunday: 0,
@@ -233,7 +207,9 @@ export function detectActionTypes(text: string): ActionType[] {
 /**
  * Parse natural language into trigger configuration
  */
-export function parseTriggerFromText(text: string): Partial<TriggerConfig> | null {
+export function parseTriggerFromText(
+  text: string
+): Partial<TriggerConfig> | null {
   const triggerType = detectTriggerType(text);
   if (!triggerType) {
     return null;
@@ -333,7 +309,9 @@ export function suggestActionsFromText(text: string): Array<{
           config.channelId = channels[0];
         }
         // Extract message content after "send message" or similar
-        const messageMatch = text.match(/send message[: ]+"([^"]+)"|send message[: ]+'([^']+)'/i);
+        const messageMatch = text.match(
+          /send message[: ]+"([^"]+)"|send message[: ]+'([^']+)'/i
+        );
         if (messageMatch) {
           config.message = messageMatch[1] || messageMatch[2];
         }
@@ -349,7 +327,9 @@ export function suggestActionsFromText(text: string): Array<{
       }
 
       case 'create_channel': {
-        const nameMatch = text.match(/channel (called|named) ["']?([a-z0-9_-]+)["']?/i);
+        const nameMatch = text.match(
+          /channel (called|named) ["']?([a-z0-9_-]+)["']?/i
+        );
         if (nameMatch) {
           config.channelName = nameMatch[2];
         }
@@ -436,25 +416,29 @@ export function analyzeWorkflowDescription(text: string): {
 
   if (!hasTrigger) {
     missingElements.push('trigger');
-    suggestions.push('Specify when the workflow should run (e.g., "when a message is posted", "every day at 9am")');
+    suggestions.push(
+      'Specify when the workflow should run (e.g., "when a message is posted", "every day at 9am")'
+    );
   }
 
   if (!hasActions) {
     missingElements.push('actions');
-    suggestions.push('Describe what should happen (e.g., "send a message", "notify the user")');
+    suggestions.push(
+      'Describe what should happen (e.g., "send a message", "notify the user")'
+    );
   }
 
   // Calculate confidence score
   let confidence = 0;
   if (hasTrigger) {
-confidence += 0.5;
-}
+    confidence += 0.5;
+  }
   if (hasActions) {
-confidence += 0.3;
-}
+    confidence += 0.3;
+  }
   if (actions.length > 1) {
-confidence += 0.1;
-} // Bonus for multiple actions
+    confidence += 0.1;
+  } // Bonus for multiple actions
   if (extractChannels(text).length > 0 || extractUsers(text).length > 0) {
     confidence += 0.1; // Bonus for specific references
   }

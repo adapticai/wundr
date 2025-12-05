@@ -9,7 +9,6 @@ import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { SettingsHeader } from './settings-header';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog';
 
-
 import type { ReactNode } from 'react';
 
 interface SettingsPageWrapperProps {
@@ -78,7 +77,7 @@ export function SettingsPageWrapper({
 
   return (
     <>
-      <div className="space-y-6">
+      <div className='space-y-6'>
         <SettingsHeader
           workspaceSlug={workspaceSlug}
           title={title}

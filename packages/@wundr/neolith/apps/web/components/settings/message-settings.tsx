@@ -173,7 +173,7 @@ export function MessageSettings() {
 
   const updatePreference = <K extends keyof MessagePreferences>(
     key: K,
-    value: MessagePreferences[K],
+    value: MessagePreferences[K]
   ) => {
     setPreferences(prev => {
       const updated = { ...prev, [key]: value };
@@ -307,7 +307,8 @@ export function MessageSettings() {
                     className='w-full'
                   />
                   <p className='text-xs text-muted-foreground'>
-                    Preview: &quot;{sampleMessage.slice(0, preferences.messagePreviewLength)}
+                    Preview: &quot;
+                    {sampleMessage.slice(0, preferences.messagePreviewLength)}
                     {sampleMessage.length > preferences.messagePreviewLength
                       ? '...'
                       : ''}
@@ -349,7 +350,9 @@ export function MessageSettings() {
 
                 <div className='flex items-center justify-between'>
                   <div className='space-y-0.5'>
-                    <Label htmlFor='shift-enter'>Shift+Enter for New Line</Label>
+                    <Label htmlFor='shift-enter'>
+                      Shift+Enter for New Line
+                    </Label>
                     <p className='text-sm text-muted-foreground'>
                       Use Shift+Enter to add line breaks
                     </p>
@@ -367,13 +370,25 @@ export function MessageSettings() {
                   <div className='font-medium mb-2'>Current Shortcuts:</div>
                   <ul className='space-y-1 text-muted-foreground'>
                     <li>
-                      • <kbd className='px-1.5 py-0.5 bg-background rounded text-xs'>Enter</kbd>:{' '}
-                      {preferences.enterToSend ? 'Send message' : 'New line'}
+                      •{' '}
+                      <kbd className='px-1.5 py-0.5 bg-background rounded text-xs'>
+                        Enter
+                      </kbd>
+                      : {preferences.enterToSend ? 'Send message' : 'New line'}
                     </li>
                     <li>
-                      • <kbd className='px-1.5 py-0.5 bg-background rounded text-xs'>Shift</kbd> +{' '}
-                      <kbd className='px-1.5 py-0.5 bg-background rounded text-xs'>Enter</kbd>:{' '}
-                      {preferences.shiftEnterForNewLine ? 'New line' : 'Send message'}
+                      •{' '}
+                      <kbd className='px-1.5 py-0.5 bg-background rounded text-xs'>
+                        Shift
+                      </kbd>{' '}
+                      +{' '}
+                      <kbd className='px-1.5 py-0.5 bg-background rounded text-xs'>
+                        Enter
+                      </kbd>
+                      :{' '}
+                      {preferences.shiftEnterForNewLine
+                        ? 'New line'
+                        : 'Send message'}
                     </li>
                   </ul>
                 </div>
@@ -417,7 +432,10 @@ export function MessageSettings() {
                       {Object.entries(EMOJI_SHORTCUTS)
                         .slice(0, 8)
                         .map(([shortcut, emoji]) => (
-                          <div key={shortcut} className='flex items-center gap-2'>
+                          <div
+                            key={shortcut}
+                            className='flex items-center gap-2'
+                          >
                             <code className='px-1.5 py-0.5 bg-background rounded'>
                               {shortcut}
                             </code>
@@ -491,8 +509,8 @@ export function MessageSettings() {
                 <div className='space-y-3'>
                   <div className='flex items-center justify-between'>
                     <Label htmlFor='grouping-threshold'>
-                      Group messages within ({preferences.messageGroupingThreshold}{' '}
-                      minutes)
+                      Group messages within (
+                      {preferences.messageGroupingThreshold} minutes)
                     </Label>
                     <span className='text-sm text-muted-foreground'>
                       {preferences.messageGroupingThreshold} min
@@ -691,7 +709,9 @@ export function MessageSettings() {
 
                 <div className='flex items-center justify-between'>
                   <div className='space-y-0.5'>
-                    <Label htmlFor='highlight-quoted'>Highlight Quoted Text</Label>
+                    <Label htmlFor='highlight-quoted'>
+                      Highlight Quoted Text
+                    </Label>
                     <p className='text-sm text-muted-foreground'>
                       Use visual highlighting for quoted content
                     </p>
@@ -783,7 +803,9 @@ export function MessageSettings() {
               <CardContent className='space-y-4'>
                 <div className='flex items-center justify-between'>
                   <div className='space-y-0.5'>
-                    <Label htmlFor='auto-expand-images'>Auto-Expand Images</Label>
+                    <Label htmlFor='auto-expand-images'>
+                      Auto-Expand Images
+                    </Label>
                     <p className='text-sm text-muted-foreground'>
                       Show images at full size automatically
                     </p>
@@ -801,7 +823,9 @@ export function MessageSettings() {
 
                 <div className='flex items-center justify-between'>
                   <div className='space-y-0.5'>
-                    <Label htmlFor='auto-expand-videos'>Auto-Expand Videos</Label>
+                    <Label htmlFor='auto-expand-videos'>
+                      Auto-Expand Videos
+                    </Label>
                     <p className='text-sm text-muted-foreground'>
                       Show video players automatically
                     </p>
@@ -952,8 +976,8 @@ interface MessagePreviewProps {
 
 function MessagePreview({ preferences }: MessagePreviewProps) {
   const demoText = preferences.enableMarkdown
-    ? 'Check out this **important update**! We just launched _something amazing_. Here\'s a quick example: `npm install awesome-package`'
-    : 'Check out this important update! We just launched something amazing. Here\'s a quick example: npm install awesome-package';
+    ? "Check out this **important update**! We just launched _something amazing_. Here's a quick example: `npm install awesome-package`"
+    : "Check out this important update! We just launched something amazing. Here's a quick example: npm install awesome-package";
 
   const convertedEmoji = preferences.emojiAutoConvert
     ? 'Great work :) Looking forward to this! :D'
@@ -1018,13 +1042,14 @@ function MessagePreview({ preferences }: MessagePreviewProps) {
             )}
 
             {/* Thread Preview */}
-            {preferences.showThreadIndicators && !preferences.threadCollapseDefault && (
-              <div className='mt-2 ml-4 border-l-2 border-primary/30 pl-3 py-1'>
-                <div className='text-xs text-muted-foreground'>
-                  2 replies • Last reply 5m ago
+            {preferences.showThreadIndicators &&
+              !preferences.threadCollapseDefault && (
+                <div className='mt-2 ml-4 border-l-2 border-primary/30 pl-3 py-1'>
+                  <div className='text-xs text-muted-foreground'>
+                    2 replies • Last reply 5m ago
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </div>
 
@@ -1063,10 +1088,12 @@ function MessagePreview({ preferences }: MessagePreviewProps) {
                     'text-xs border-l-2 pl-2 mb-2',
                     preferences.highlightQuotedText
                       ? 'border-primary/50 bg-primary/5 py-1'
-                      : 'border-muted-foreground/30',
+                      : 'border-muted-foreground/30'
                   )}
                 >
-                  <div className='text-muted-foreground font-medium'>John Doe:</div>
+                  <div className='text-muted-foreground font-medium'>
+                    John Doe:
+                  </div>
                   <div className='text-muted-foreground line-clamp-2'>
                     {demoText.slice(0, 80)}...
                   </div>
@@ -1116,7 +1143,9 @@ function MessagePreview({ preferences }: MessagePreviewProps) {
               <Link className='h-6 w-6 text-muted-foreground' />
             </div>
             <div className='flex-1 min-w-0'>
-              <div className='text-sm font-medium truncate'>Example Website</div>
+              <div className='text-sm font-medium truncate'>
+                Example Website
+              </div>
               <div className='text-xs text-muted-foreground line-clamp-2'>
                 This is how link previews will appear in your messages
               </div>
@@ -1127,7 +1156,9 @@ function MessagePreview({ preferences }: MessagePreviewProps) {
 
       {/* Settings Summary */}
       <div className='space-y-2 text-xs'>
-        <div className='font-medium text-muted-foreground'>Active Settings:</div>
+        <div className='font-medium text-muted-foreground'>
+          Active Settings:
+        </div>
         <div className='space-y-1'>
           <div className='flex justify-between'>
             <span className='text-muted-foreground'>Send:</span>
@@ -1135,7 +1166,9 @@ function MessagePreview({ preferences }: MessagePreviewProps) {
           </div>
           <div className='flex justify-between'>
             <span className='text-muted-foreground'>Format:</span>
-            <span className='capitalize'>{preferences.defaultFormattingMode}</span>
+            <span className='capitalize'>
+              {preferences.defaultFormattingMode}
+            </span>
           </div>
           <div className='flex justify-between'>
             <span className='text-muted-foreground'>Grouping:</span>
@@ -1197,7 +1230,12 @@ interface ReactionBubbleProps {
   showUsers?: boolean;
 }
 
-function ReactionBubble({ emoji, count, size, showUsers }: ReactionBubbleProps) {
+function ReactionBubble({
+  emoji,
+  count,
+  size,
+  showUsers,
+}: ReactionBubbleProps) {
   const sizeClasses = {
     sm: 'text-xs px-1.5 py-0.5',
     md: 'text-sm px-2 py-1',
@@ -1208,7 +1246,7 @@ function ReactionBubble({ emoji, count, size, showUsers }: ReactionBubbleProps) 
     <div
       className={cn(
         'inline-flex items-center gap-1 rounded-full border bg-muted/50 hover:bg-muted transition-colors cursor-pointer',
-        sizeClasses[size],
+        sizeClasses[size]
       )}
       title={showUsers ? 'John, Alice, Mike' : undefined}
     >

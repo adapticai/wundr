@@ -154,14 +154,14 @@ export function WidgetRenderer({
               )}
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border">
-                <table className="w-full">
-                  <thead className="bg-muted/50">
+              <div className='rounded-md border'>
+                <table className='w-full'>
+                  <thead className='bg-muted/50'>
                     <tr>
-                      {(config.columns || []).map((col) => (
+                      {(config.columns || []).map(col => (
                         <th
                           key={col.accessorKey}
-                          className="px-4 py-2 text-left text-sm font-medium"
+                          className='px-4 py-2 text-left text-sm font-medium'
                         >
                           {col.header}
                         </th>
@@ -172,7 +172,7 @@ export function WidgetRenderer({
                     <tr>
                       <td
                         colSpan={config.columns?.length || 1}
-                        className="px-4 py-8 text-center text-sm text-muted-foreground"
+                        className='px-4 py-8 text-center text-sm text-muted-foreground'
                       >
                         Configure data source to display data
                       </td>
@@ -187,15 +187,13 @@ export function WidgetRenderer({
       case 'metric-card':
         return (
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className='pb-2'>
+              <CardTitle className='text-sm font-medium text-muted-foreground'>
                 {config.title || 'Metric'}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">
-                {config.value || '0'}
-              </div>
+              <div className='text-3xl font-bold'>{config.value || '0'}</div>
               {config.change !== undefined && (
                 <p
                   className={cn(
@@ -232,11 +230,11 @@ export function WidgetRenderer({
         );
 
       case 'divider':
-        return <div className="border-t my-4" />;
+        return <div className='border-t my-4' />;
 
       default:
         return (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
+          <div className='flex items-center justify-center h-full text-muted-foreground'>
             Unknown widget type: {type}
           </div>
         );
@@ -261,46 +259,46 @@ export function WidgetRenderer({
     >
       {/* Drag Handle and Actions */}
       {isSelected && (
-        <div className="absolute -top-10 left-0 right-0 flex items-center justify-between bg-primary text-primary-foreground rounded-t-md px-2 py-1">
-          <div className="flex items-center gap-1">
+        <div className='absolute -top-10 left-0 right-0 flex items-center justify-between bg-primary text-primary-foreground rounded-t-md px-2 py-1'>
+          <div className='flex items-center gap-1'>
             <div
               {...listeners}
               {...attributes}
-              className="cursor-grab active:cursor-grabbing p-1 hover:bg-primary-foreground/20 rounded"
+              className='cursor-grab active:cursor-grabbing p-1 hover:bg-primary-foreground/20 rounded'
             >
-              <GripVertical className="h-4 w-4" />
+              <GripVertical className='h-4 w-4' />
             </div>
-            <span className="text-xs font-medium">{widget.type}</span>
+            <span className='text-xs font-medium'>{widget.type}</span>
           </div>
-          <div className="flex items-center gap-1">
+          <div className='flex items-center gap-1'>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 hover:bg-primary-foreground/20"
+              variant='ghost'
+              size='icon'
+              className='h-6 w-6 hover:bg-primary-foreground/20'
               onClick={handleDuplicate}
             >
-              <Copy className="h-3 w-3" />
+              <Copy className='h-3 w-3' />
             </Button>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 hover:bg-primary-foreground/20"
+              variant='ghost'
+              size='icon'
+              className='h-6 w-6 hover:bg-primary-foreground/20'
               onClick={handleDelete}
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className='h-3 w-3' />
             </Button>
           </div>
         </div>
       )}
 
       {/* Widget Content */}
-      <div className="h-full">{renderWidgetContent()}</div>
+      <div className='h-full'>{renderWidgetContent()}</div>
 
       {/* Resize Handle */}
       {isSelected && (
         <div
-          className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-primary rounded-tl"
-          onMouseDown={(e) => {
+          className='absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-primary rounded-tl'
+          onMouseDown={e => {
             e.stopPropagation();
             setIsResizing(true);
             const startX = e.clientX;

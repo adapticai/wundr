@@ -9,14 +9,14 @@
  */
 export async function scheduleExecution(
   orchestratorId: string,
-  scheduleConfig: any,
+  scheduleConfig: any
 ): Promise<any> {
   console.log(
     '[OrchestratorSchedulingService] scheduleExecution called with:',
     {
       orchestratorId,
       scheduleConfig,
-    },
+    }
   );
   // TODO: Implement execution scheduling
   return null;
@@ -37,7 +37,7 @@ export async function cancelSchedule(scheduleId: string): Promise<void> {
  */
 export async function updateSchedule(
   scheduleId: string,
-  newConfig: any,
+  newConfig: any
 ): Promise<any> {
   console.log('[OrchestratorSchedulingService] updateSchedule called with:', {
     scheduleId,
@@ -52,14 +52,14 @@ export async function updateSchedule(
  */
 export async function getUpcomingExecutions(
   orchestratorId?: string,
-  limit?: number,
+  limit?: number
 ): Promise<any[]> {
   console.log(
     '[OrchestratorSchedulingService] getUpcomingExecutions called with:',
     {
       orchestratorId,
       limit,
-    },
+    }
   );
   // TODO: Implement upcoming executions retrieval
   return [];
@@ -71,7 +71,7 @@ export async function getUpcomingExecutions(
 export async function createRecurringSchedule(
   orchestratorId: string,
   cronExpression: string,
-  config?: any,
+  config?: any
 ): Promise<any> {
   console.log(
     '[OrchestratorSchedulingService] createRecurringSchedule called with:',
@@ -79,7 +79,7 @@ export async function createRecurringSchedule(
       orchestratorId,
       cronExpression,
       config,
-    },
+    }
   );
   // TODO: Implement recurring schedule creation
   return null;
@@ -118,7 +118,7 @@ export async function addRecurringTask(
     name: string;
     cronExpression: string;
     taskConfig: Record<string, unknown>;
-  },
+  }
 ): Promise<{ id: string; nextRunAt: Date }> {
   console.log('[OrchestratorSchedulingService] addRecurringTask called with:', {
     orchestratorId,
@@ -136,14 +136,14 @@ export async function addRecurringTask(
  */
 export async function removeRecurringTask(
   orchestratorId: string,
-  taskIndex: number,
+  taskIndex: number
 ): Promise<any[]> {
   console.log(
     '[OrchestratorSchedulingService] removeRecurringTask called with:',
     {
       orchestratorId,
       taskIndex,
-    },
+    }
   );
   // TODO: Implement recurring task removal
   // Should return remaining tasks after removal
@@ -154,13 +154,13 @@ export async function removeRecurringTask(
  * Get all recurring tasks for an orchestrator
  */
 export async function getRecurringTasks(
-  orchestratorId: string,
+  orchestratorId: string
 ): Promise<any[]> {
   console.log(
     '[OrchestratorSchedulingService] getRecurringTasks called with:',
     {
       orchestratorId,
-    },
+    }
   );
   // TODO: Implement recurring tasks retrieval
   return [];
@@ -195,14 +195,14 @@ export async function updateWorkSchedule(
     workingHours?: { start: string; end: string };
     timezone?: string;
     workDays?: number[];
-  },
+  }
 ): Promise<any> {
   console.log(
     '[OrchestratorSchedulingService] updateWorkSchedule called with:',
     {
       orchestratorId,
       schedule,
-    },
+    }
   );
   // TODO: Implement work schedule update
   return { orchestratorId, ...schedule };
@@ -232,7 +232,7 @@ export async function getCapacity(orchestratorId: string): Promise<{
  */
 export async function updateCapacity(
   orchestratorId: string,
-  capacity: { max?: number; reserved?: number },
+  capacity: { max?: number; reserved?: number }
 ): Promise<void> {
   console.log('[OrchestratorSchedulingService] updateCapacity called with:', {
     orchestratorId,
@@ -246,14 +246,14 @@ export async function updateCapacity(
  */
 export async function checkAvailability(
   orchestratorId: string,
-  timeSlot: { start: Date; end: Date },
+  timeSlot: { start: Date; end: Date }
 ): Promise<{ available: boolean; conflicts?: string[] }> {
   console.log(
     '[OrchestratorSchedulingService] checkAvailability called with:',
     {
       orchestratorId,
       timeSlot,
-    },
+    }
   );
   // TODO: Implement availability check
   return { available: true };
@@ -264,7 +264,7 @@ export async function checkAvailability(
  */
 export async function reserveTimeSlot(
   orchestratorId: string,
-  timeSlot: { start: Date; end: Date; taskId: string },
+  timeSlot: { start: Date; end: Date; taskId: string }
 ): Promise<{ reservationId: string }> {
   console.log('[OrchestratorSchedulingService] reserveTimeSlot called with:', {
     orchestratorId,

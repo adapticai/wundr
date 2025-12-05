@@ -110,7 +110,7 @@ export function OrchestratorReviewForm({
   const handleRemoveCapability = (capability: string) => {
     form.setValue(
       'capabilities',
-      capabilities.filter(c => c !== capability),
+      capabilities.filter(c => c !== capability)
     );
   };
 
@@ -124,7 +124,7 @@ export function OrchestratorReviewForm({
   const handleRemoveGoal = (goal: string) => {
     form.setValue(
       'goals',
-      goals.filter(g => g !== goal),
+      goals.filter(g => g !== goal)
     );
   };
 
@@ -138,7 +138,7 @@ export function OrchestratorReviewForm({
   const handleRemoveChannel = (channel: string) => {
     form.setValue(
       'channels',
-      channels.filter(c => c !== channel),
+      channels.filter(c => c !== channel)
     );
   };
 

@@ -75,7 +75,13 @@ const emailDeliverySchema = z.object({
 const reportParametersSchema = z.object({
   dateRange: z
     .object({
-      type: z.enum(['last-7-days', 'last-30-days', 'last-quarter', 'last-year', 'custom']),
+      type: z.enum([
+        'last-7-days',
+        'last-30-days',
+        'last-quarter',
+        'last-year',
+        'custom',
+      ]),
       startDate: z.string().datetime().optional(),
       endDate: z.string().datetime().optional(),
     })
@@ -116,7 +122,7 @@ const updateScheduledReportSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -140,7 +146,7 @@ export async function GET(
     if (!workspace || workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -152,7 +158,7 @@ export async function GET(
     if (!report || report.workspaceId !== workspace.id) {
       return NextResponse.json(
         { error: 'Scheduled report not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -200,11 +206,15 @@ export async function GET(
       id: report.id,
       name: metadata.name || `Report ${report.type}`,
       description: metadata.description || null,
-      reportType: (metadata.reportType || 'custom') as z.infer<typeof reportTypeEnum>,
+      reportType: (metadata.reportType || 'custom') as z.infer<
+        typeof reportTypeEnum
+      >,
       cronExpression,
       cronDescription: describeCronExpression(cronExpression),
       timezone: scheduleConfig.timezone || 'UTC',
-      exportFormats: scheduleConfig.exportFormats || [report.format.toLowerCase()],
+      exportFormats: scheduleConfig.exportFormats || [
+        report.format.toLowerCase(),
+      ],
       emailDelivery: scheduleConfig.emailDelivery || {
         enabled: false,
         recipients: [],
@@ -228,7 +238,7 @@ export async function GET(
       },
       createdAt: report.createdAt,
       updatedAt: new Date(),
-      executionHistory: executionHistory.map((exec) => ({
+      executionHistory: executionHistory.map(exec => ({
         id: exec.id,
         status: exec.status,
         startedAt: exec.startedAt,
@@ -236,18 +246,22 @@ export async function GET(
         recordCount: exec.recordCount,
         fileSize: exec.fileSize ? Number(exec.fileSize) : null,
         error: exec.error,
-        duration: exec.startedAt && exec.completedAt
-          ? exec.completedAt.getTime() - exec.startedAt.getTime()
-          : null,
+        duration:
+          exec.startedAt && exec.completedAt
+            ? exec.completedAt.getTime() - exec.startedAt.getTime()
+            : null,
       })),
     };
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/reports/scheduled/:reportId] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/reports/scheduled/:reportId] Error:',
+      error
+    );
     return NextResponse.json(
       { error: 'Failed to fetch scheduled report' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -263,7 +277,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -287,7 +301,7 @@ export async function PUT(
     if (!workspace || workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -295,7 +309,7 @@ export async function PUT(
     if (memberRole === 'GUEST') {
       return NextResponse.json(
         { error: 'Insufficient permissions to update scheduled reports' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -307,7 +321,7 @@ export async function PUT(
     if (!existingReport || existingReport.workspaceId !== workspace.id) {
       return NextResponse.json(
         { error: 'Scheduled report not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -321,25 +335,34 @@ export async function PUT(
           error: 'Validation failed',
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const data = parseResult.data;
 
     // Validate cron frequency if provided
-    if (data.cronExpression && !validateFrequencyLimit(data.cronExpression, 60)) {
+    if (
+      data.cronExpression &&
+      !validateFrequencyLimit(data.cronExpression, 60)
+    ) {
       return NextResponse.json(
         { error: 'Schedule frequency too high. Minimum interval is 1 hour.' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Validate email recipients if email delivery is being updated
-    if (data.emailDelivery?.enabled && data.emailDelivery.recipients.length === 0) {
+    if (
+      data.emailDelivery?.enabled &&
+      data.emailDelivery.recipients.length === 0
+    ) {
       return NextResponse.json(
-        { error: 'At least one email recipient is required when email delivery is enabled' },
-        { status: 400 },
+        {
+          error:
+            'At least one email recipient is required when email delivery is enabled',
+        },
+        { status: 400 }
       );
     }
 
@@ -379,7 +402,9 @@ export async function PUT(
       where: { id: reportId },
       data: {
         type: data.reportType || existingReport.type,
-        format: data.exportFormats?.[0]?.toUpperCase() as any || existingReport.format,
+        format:
+          (data.exportFormats?.[0]?.toUpperCase() as any) ||
+          existingReport.format,
         // Update metadata field here
       },
     });
@@ -403,12 +428,16 @@ export async function PUT(
       cronExpression,
       cronDescription: describeCronExpression(cronExpression),
       timezone: updatedSchedule.timezone || 'UTC',
-      exportFormats: updatedSchedule.exportFormats || [updatedReport.format.toLowerCase()],
+      exportFormats: updatedSchedule.exportFormats || [
+        updatedReport.format.toLowerCase(),
+      ],
       emailDelivery: updatedSchedule.emailDelivery,
       parameters: updatedSchedule.parameters || null,
       isActive: updatedSchedule.isActive ?? true,
       tags: updatedMetadata.tags || [],
-      lastRun: updatedSchedule.lastRun ? new Date(updatedSchedule.lastRun) : null,
+      lastRun: updatedSchedule.lastRun
+        ? new Date(updatedSchedule.lastRun)
+        : null,
       lastRunStatus: updatedSchedule.lastRunStatus || null,
       nextRun,
       runCount: updatedSchedule.runCount || 0,
@@ -425,10 +454,13 @@ export async function PUT(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('[PUT /api/workspaces/:workspaceSlug/reports/scheduled/:reportId] Error:', error);
+    console.error(
+      '[PUT /api/workspaces/:workspaceSlug/reports/scheduled/:reportId] Error:',
+      error
+    );
     return NextResponse.json(
       { error: 'Failed to update scheduled report' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -444,7 +476,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -468,7 +500,7 @@ export async function DELETE(
     if (!workspace || workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -476,7 +508,7 @@ export async function DELETE(
     if (memberRole === 'GUEST') {
       return NextResponse.json(
         { error: 'Insufficient permissions to delete scheduled reports' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -488,15 +520,19 @@ export async function DELETE(
     if (!report || report.workspaceId !== workspace.id) {
       return NextResponse.json(
         { error: 'Scheduled report not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Only allow deletion by owner/admin or the creator
-    if (memberRole !== 'OWNER' && memberRole !== 'ADMIN' && report.requestedBy !== session.user.id) {
+    if (
+      memberRole !== 'OWNER' &&
+      memberRole !== 'ADMIN' &&
+      report.requestedBy !== session.user.id
+    ) {
       return NextResponse.json(
         { error: 'Insufficient permissions to delete this report' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -510,10 +546,13 @@ export async function DELETE(
       message: 'Scheduled report deleted successfully',
     });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:workspaceSlug/reports/scheduled/:reportId] Error:', error);
+    console.error(
+      '[DELETE /api/workspaces/:workspaceSlug/reports/scheduled/:reportId] Error:',
+      error
+    );
     return NextResponse.json(
       { error: 'Failed to delete scheduled report' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

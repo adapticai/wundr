@@ -150,7 +150,7 @@ export function KeyboardShortcuts({
       acc[shortcut.category].push(shortcut);
       return acc;
     },
-    {} as Record<string, Shortcut[]>,
+    {} as Record<string, Shortcut[]>
   );
 
   const isMac =
@@ -206,7 +206,7 @@ export function KeyboardShortcuts({
                                 'px-2 py-1 text-xs font-semibold',
                                 'bg-background border border-border rounded',
                                 'shadow-sm',
-                                'min-w-[2rem] text-center',
+                                'min-w-[2rem] text-center'
                               )}
                             >
                               {formatKey(key)}
@@ -218,7 +218,7 @@ export function KeyboardShortcuts({
                   ))}
                 </div>
               </div>
-            ),
+            )
           )}
         </div>
 
@@ -254,7 +254,7 @@ export function KeyboardShortcutsTrigger({
           'inline-flex items-center justify-center',
           'text-sm text-muted-foreground hover:text-foreground',
           'transition-colors',
-          className,
+          className
         )}
         aria-label='Show keyboard shortcuts'
       >

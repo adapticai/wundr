@@ -47,7 +47,7 @@ interface ChannelSettings {
  */
 async function checkChannelMembershipWithRole(
   channelId: string,
-  userId: string,
+  userId: string
 ) {
   const membership = await prisma.channelMember.findUnique({
     where: {
@@ -83,7 +83,7 @@ async function checkChannelMembershipWithRole(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -92,9 +92,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED,
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -105,24 +105,24 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid channel ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check channel membership
     const membership = await checkChannelMembershipWithRole(
       params.channelId,
-      session.user.id,
+      session.user.id
     );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -184,9 +184,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -213,7 +213,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -222,9 +222,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED,
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -235,9 +235,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid channel ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -249,9 +249,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -262,9 +262,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           MESSAGE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -273,15 +273,15 @@ export async function POST(
     // Check channel membership and role
     const membership = await checkChannelMembershipWithRole(
       params.channelId,
-      session.user.id,
+      session.user.id
     );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -290,9 +290,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Only channel admins can pin messages',
-          MESSAGE_ERROR_CODES.FORBIDDEN,
+          MESSAGE_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -305,7 +305,7 @@ export async function POST(
     if (!message || message.isDeleted) {
       return NextResponse.json(
         createErrorResponse('Message not found', MESSAGE_ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -313,9 +313,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Message does not belong to this channel',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -328,9 +328,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Message is already pinned',
-          MESSAGE_ERROR_CODES.PIN_ALREADY_EXISTS,
+          MESSAGE_ERROR_CODES.PIN_ALREADY_EXISTS
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -366,16 +366,16 @@ export async function POST(
 
     return NextResponse.json(
       { data: pinnedMessage, message: 'Message pinned successfully' },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/channels/:channelId/pins] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -397,7 +397,7 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -406,9 +406,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED,
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -419,9 +419,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Invalid channel ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -431,24 +431,24 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'messageId query parameter is required',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check channel membership and role
     const membership = await checkChannelMembershipWithRole(
       params.channelId,
-      session.user.id,
+      session.user.id
     );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -457,9 +457,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Only channel admins can unpin messages',
-          MESSAGE_ERROR_CODES.FORBIDDEN,
+          MESSAGE_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -472,9 +472,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Message is not pinned',
-          MESSAGE_ERROR_CODES.PIN_NOT_FOUND,
+          MESSAGE_ERROR_CODES.PIN_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -501,9 +501,9 @@ export async function DELETE(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

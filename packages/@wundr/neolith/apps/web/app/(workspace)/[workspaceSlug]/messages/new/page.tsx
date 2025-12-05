@@ -94,7 +94,7 @@ export default function NewMessagePage() {
     const loadInitialSuggestions = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/search?q=*&types=channels,dms,users,orchestrators&limit=10`,
+          `/api/workspaces/${workspaceSlug}/search?q=*&types=channels,dms,users,orchestrators&limit=10`
         );
 
         if (response.ok) {
@@ -223,7 +223,7 @@ export default function NewMessagePage() {
       setIsSearching(true);
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/search?q=${encodeURIComponent(searchQuery)}&types=channels,dms,users,orchestrators`,
+          `/api/workspaces/${workspaceSlug}/search?q=${encodeURIComponent(searchQuery)}&types=channels,dms,users,orchestrators`
         );
 
         if (response.ok) {
@@ -234,7 +234,7 @@ export default function NewMessagePage() {
 
           // Filter channels that match from search results
           const channels = searchData.filter(
-            (item: any) => item.type === 'channel',
+            (item: any) => item.type === 'channel'
           );
           for (const channel of channels) {
             const uniqueKey = `channel-${channel.id}`;
@@ -309,7 +309,7 @@ export default function NewMessagePage() {
 
           // Filter orchestrators from search results
           const orchestrators = searchData.filter(
-            (item: any) => item.type === 'orchestrator',
+            (item: any) => item.type === 'orchestrator'
           );
           for (const orch of orchestrators) {
             if (recipients.some(r => r.id === orch.id)) {
@@ -402,7 +402,7 @@ export default function NewMessagePage() {
       setShowInitialSuggestions(false);
       inputRef.current?.focus();
     },
-    [router, workspaceSlug],
+    [router, workspaceSlug]
   );
 
   // Handle recipient removal
@@ -419,7 +419,7 @@ export default function NewMessagePage() {
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
         setHighlightedIndex(prev =>
-          Math.min(prev + 1, searchResults.length - 1),
+          Math.min(prev + 1, searchResults.length - 1)
         );
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
@@ -438,7 +438,7 @@ export default function NewMessagePage() {
       searchResults,
       highlightedIndex,
       handleSelectResult,
-    ],
+    ]
   );
 
   // Handle sending message
@@ -477,7 +477,7 @@ export default function NewMessagePage() {
         console.error('Error creating conversation:', error);
       }
     },
-    [recipients, currentUser, workspaceSlug, router],
+    [recipients, currentUser, workspaceSlug, router]
   );
 
   // Auto-save indicator
@@ -525,7 +525,7 @@ export default function NewMessagePage() {
         <div
           className={cn(
             'flex flex-wrap items-center gap-2 rounded-md border bg-background px-3 py-2 transition-colors',
-            isFocused && 'border-primary ring-1 ring-primary',
+            isFocused && 'border-primary ring-1 ring-primary'
           )}
           onClick={() => inputRef.current?.focus()}
         >
@@ -746,7 +746,7 @@ function SearchResultItem({
               <span
                 className={cn(
                   'absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-popover',
-                  statusColors[result.status],
+                  statusColors[result.status]
                 )}
               />
             )}
@@ -761,7 +761,7 @@ function SearchResultItem({
       onClick={onSelect}
       className={cn(
         'flex w-full items-center gap-3 px-3 py-2 text-left transition-colors',
-        isHighlighted ? 'bg-accent' : 'hover:bg-accent/50',
+        isHighlighted ? 'bg-accent' : 'hover:bg-accent/50'
       )}
     >
       {renderIcon()}

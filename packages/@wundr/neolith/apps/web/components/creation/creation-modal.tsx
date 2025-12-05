@@ -55,7 +55,7 @@ export function CreationModal({
 }: CreationModalProps) {
   const [mode, setMode] = React.useState<CreationMode>(initialMode);
   const [spec, setSpec] = React.useState<EntitySpec | null>(
-    existingSpec || null,
+    existingSpec || null
   );
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -162,7 +162,7 @@ export function CreationModal({
 async function createEntity(
   entityType: EntityType,
   spec: EntitySpec,
-  workspaceId?: string,
+  workspaceId?: string
 ): Promise<unknown> {
   // TODO: Replace with actual API calls to your backend
   const endpoint = getEntityEndpoint(entityType);

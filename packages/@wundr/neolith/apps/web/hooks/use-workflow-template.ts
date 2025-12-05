@@ -14,7 +14,6 @@ import { getTemplateById } from '@/lib/workflow/templates';
 
 import type { WorkflowTemplate, CreateWorkflowInput } from '@/types/workflow';
 
-
 interface UseWorkflowTemplateOptions {
   /**
    * Callback when a workflow is successfully created from a template
@@ -35,7 +34,7 @@ export function useWorkflowTemplate(options: UseWorkflowTemplateOptions = {}) {
   const [selectedTemplate, setSelectedTemplate] =
     useState<WorkflowTemplate | null>(null);
   const [variableValues, setVariableValues] = useState<TemplateVariableValues>(
-    {},
+    {}
   );
   const [isCreating, setIsCreating] = useState(false);
 
@@ -47,7 +46,7 @@ export function useWorkflowTemplate(options: UseWorkflowTemplateOptions = {}) {
 
     // Initialize variable values with defaults
     const initialValues: TemplateVariableValues = {};
-    template.variables?.forEach((variable) => {
+    template.variables?.forEach(variable => {
       if (variable.defaultValue !== undefined) {
         initialValues[variable.name] = variable.defaultValue as
           | string
@@ -68,24 +67,27 @@ export function useWorkflowTemplate(options: UseWorkflowTemplateOptions = {}) {
         selectTemplate(template);
       }
     },
-    [selectTemplate],
+    [selectTemplate]
   );
 
   /**
    * Update a variable value
    */
-  const updateVariable = useCallback((name: string, value: string | number | boolean) => {
-    setVariableValues((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  }, []);
+  const updateVariable = useCallback(
+    (name: string, value: string | number | boolean) => {
+      setVariableValues(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    },
+    []
+  );
 
   /**
    * Update multiple variables at once
    */
   const updateVariables = useCallback((values: TemplateVariableValues) => {
-    setVariableValues((prev) => ({
+    setVariableValues(prev => ({
       ...prev,
       ...values,
     }));
@@ -104,10 +106,10 @@ export function useWorkflowTemplate(options: UseWorkflowTemplateOptions = {}) {
    */
   const hasAllRequiredVariables = useCallback(() => {
     if (!selectedTemplate?.variables) {
-return true;
-}
+      return true;
+    }
 
-    return selectedTemplate.variables.every((variable) => {
+    return selectedTemplate.variables.every(variable => {
       const value = variableValues[variable.name];
       return value !== undefined && value !== '';
     });
@@ -128,7 +130,7 @@ return true;
 
       return result;
     },
-    [variableValues],
+    [variableValues]
   );
 
   /**
@@ -153,11 +155,14 @@ return true;
           name: workflowName || selectedTemplate.name,
           description: selectedTemplate.description,
           trigger: selectedTemplate.trigger,
-          actions: selectedTemplate.actions.map((action) => ({
+          actions: selectedTemplate.actions.map(action => ({
             ...action,
-            config: substituteConfigVariables(action.config as Record<string, unknown>, variableValues),
+            config: substituteConfigVariables(
+              action.config as Record<string, unknown>,
+              variableValues
+            ),
           })),
-          variables: selectedTemplate.variables?.map((variable) => ({
+          variables: selectedTemplate.variables?.map(variable => ({
             ...variable,
             defaultValue: variableValues[variable.name],
           })),
@@ -201,7 +206,7 @@ return true;
       hasAllRequiredVariables,
       clearTemplate,
       options,
-    ],
+    ]
   );
 
   /**
@@ -214,7 +219,7 @@ return true;
         router.push(`/workflows/${workflowId}/edit`);
       }
     },
-    [createFromTemplate, router],
+    [createFromTemplate, router]
   );
 
   return {
@@ -242,7 +247,7 @@ return true;
  */
 function substituteConfigVariables(
   config: Record<string, unknown>,
-  variables: TemplateVariableValues,
+  variables: TemplateVariableValues
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
@@ -255,11 +260,15 @@ function substituteConfigVariables(
         substituted = substituted.replace(pattern, String(val));
       });
       result[key] = substituted;
-    } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    } else if (
+      typeof value === 'object' &&
+      value !== null &&
+      !Array.isArray(value)
+    ) {
       // Recursively substitute in nested objects
       result[key] = substituteConfigVariables(
         value as Record<string, unknown>,
-        variables,
+        variables
       );
     } else {
       // Keep other types as-is

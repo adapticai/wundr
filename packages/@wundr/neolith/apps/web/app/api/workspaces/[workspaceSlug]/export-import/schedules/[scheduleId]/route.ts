@@ -18,7 +18,7 @@ export async function DELETE(
     params,
   }: {
     params: Promise<{ workspaceSlug: string; scheduleId: string }>;
-  },
+  }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -39,14 +39,14 @@ export async function DELETE(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can delete schedules' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -59,7 +59,7 @@ export async function DELETE(
     console.error('Failed to delete backup schedule:', error);
     return NextResponse.json(
       { error: 'Failed to delete backup schedule' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -70,7 +70,7 @@ export async function PATCH(
     params,
   }: {
     params: Promise<{ workspaceSlug: string; scheduleId: string }>;
-  },
+  }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -91,14 +91,14 @@ export async function PATCH(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can update schedules' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -117,7 +117,7 @@ export async function PATCH(
     console.error('Failed to update backup schedule:', error);
     return NextResponse.json(
       { error: 'Failed to update backup schedule' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

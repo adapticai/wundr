@@ -22,7 +22,7 @@ export async function PUT(request: Request) {
     if (!validation.success) {
       return NextResponse.json(
         { error: 'Invalid input', details: validation.error.errors },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -52,7 +52,7 @@ export async function PUT(request: Request) {
     console.error('Error updating working hours:', error);
     return NextResponse.json(
       { error: 'Failed to update working hours' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

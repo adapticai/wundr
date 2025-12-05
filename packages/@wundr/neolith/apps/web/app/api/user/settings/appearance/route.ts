@@ -40,9 +40,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Authentication required',
-          SETTINGS_ERROR_CODES.UNAUTHORIZED,
+          SETTINGS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -58,9 +58,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'User not found',
-          SETTINGS_ERROR_CODES.NOT_FOUND,
+          SETTINGS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -69,17 +69,22 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     const appearanceSettings: AppearanceSettings = {
       theme: (prefs.theme as 'light' | 'dark' | 'system') || 'system',
       colorScheme:
-        (prefs.colorScheme as 'blue' | 'purple' | 'green' | 'orange' | 'red') || 'blue',
+        (prefs.colorScheme as 'blue' | 'purple' | 'green' | 'orange' | 'red') ||
+        'blue',
       fontSize:
-        (prefs.fontSize as 'small' | 'medium' | 'large' | 'extra-large') || 'medium',
-      density: (prefs.density as 'compact' | 'comfortable' | 'spacious') || 'comfortable',
+        (prefs.fontSize as 'small' | 'medium' | 'large' | 'extra-large') ||
+        'medium',
+      density:
+        (prefs.density as 'compact' | 'comfortable' | 'spacious') ||
+        'comfortable',
       reduceMotion: (prefs.reduceMotion as boolean) ?? false,
       highContrast: (prefs.highContrast as boolean) ?? false,
       sidebarPosition: (prefs.sidebarPosition as 'left' | 'right') || 'left',
       messageGrouping: (prefs.messageGrouping as boolean) ?? true,
       showAvatars: (prefs.showAvatars as boolean) ?? true,
       emojiStyle:
-        (prefs.emojiStyle as 'native' | 'twitter' | 'google' | 'apple') || 'native',
+        (prefs.emojiStyle as 'native' | 'twitter' | 'google' | 'apple') ||
+        'native',
     };
 
     return NextResponse.json({
@@ -91,9 +96,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createSettingsErrorResponse(
         'An internal error occurred',
-        SETTINGS_ERROR_CODES.INTERNAL_ERROR,
+        SETTINGS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -114,9 +119,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Authentication required',
-          SETTINGS_ERROR_CODES.UNAUTHORIZED,
+          SETTINGS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -128,9 +133,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Invalid JSON body',
-          SETTINGS_ERROR_CODES.VALIDATION_ERROR,
+          SETTINGS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -140,9 +145,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         createSettingsErrorResponse(
           'Validation failed',
           SETTINGS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -158,9 +163,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'User not found',
-          SETTINGS_ERROR_CODES.NOT_FOUND,
+          SETTINGS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -194,9 +199,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createSettingsErrorResponse(
         'An internal error occurred',
-        SETTINGS_ERROR_CODES.INTERNAL_ERROR,
+        SETTINGS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

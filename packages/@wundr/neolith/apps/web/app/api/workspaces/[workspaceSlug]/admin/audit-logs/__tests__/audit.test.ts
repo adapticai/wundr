@@ -146,7 +146,7 @@ describe('Audit Logs API Routes', () => {
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs',
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -160,12 +160,12 @@ describe('Audit Logs API Routes', () => {
     it('should require admin role', async () => {
       auth.mockResolvedValue(createMockSession());
       prisma.workspaceMember.findFirst.mockResolvedValue(
-        createMockMembership('member'),
+        createMockMembership('member')
       );
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs',
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -179,13 +179,13 @@ describe('Audit Logs API Routes', () => {
     it('should return audit logs for admin', async () => {
       auth.mockResolvedValue(createMockSession());
       prisma.workspaceMember.findFirst.mockResolvedValue(
-        createMockMembership('admin'),
+        createMockMembership('admin')
       );
       mockAuditService.query.mockResolvedValue(createMockAuditResponse());
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs',
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -201,13 +201,13 @@ describe('Audit Logs API Routes', () => {
     it('should return audit logs for owner', async () => {
       auth.mockResolvedValue(createMockSession());
       prisma.workspaceMember.findFirst.mockResolvedValue(
-        createMockMembership('owner'),
+        createMockMembership('owner')
       );
       mockAuditService.query.mockResolvedValue(createMockAuditResponse());
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs',
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -219,13 +219,13 @@ describe('Audit Logs API Routes', () => {
     it('should pass filter parameters', async () => {
       auth.mockResolvedValue(createMockSession());
       prisma.workspaceMember.findFirst.mockResolvedValue(
-        createMockMembership('admin'),
+        createMockMembership('admin')
       );
       mockAuditService.query.mockResolvedValue(createMockAuditResponse());
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs?severity=critical&category=security&limit=25',
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs?severity=critical&category=security&limit=25'
       );
       await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -240,20 +240,20 @@ describe('Audit Logs API Routes', () => {
         expect.objectContaining({
           limit: 25,
         }),
-        undefined,
+        undefined
       );
     });
 
     it('should handle sort parameters', async () => {
       auth.mockResolvedValue(createMockSession());
       prisma.workspaceMember.findFirst.mockResolvedValue(
-        createMockMembership('admin'),
+        createMockMembership('admin')
       );
       mockAuditService.query.mockResolvedValue(createMockAuditResponse());
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs?sort=timestamp&order=asc',
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs?sort=timestamp&order=asc'
       );
       await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -265,14 +265,14 @@ describe('Audit Logs API Routes', () => {
         expect.objectContaining({
           field: 'timestamp',
           direction: 'asc',
-        }),
+        })
       );
     });
 
     it('should handle date range filters', async () => {
       auth.mockResolvedValue(createMockSession());
       prisma.workspaceMember.findFirst.mockResolvedValue(
-        createMockMembership('admin'),
+        createMockMembership('admin')
       );
       mockAuditService.query.mockResolvedValue(createMockAuditResponse());
 
@@ -280,7 +280,7 @@ describe('Audit Logs API Routes', () => {
       const fromDate = '2024-01-01T00:00:00Z';
       const toDate = '2024-12-31T23:59:59Z';
       const request = new NextRequest(
-        `http://localhost/api/workspaces/ws-1/admin/audit-logs?from=${fromDate}&to=${toDate}`,
+        `http://localhost/api/workspaces/ws-1/admin/audit-logs?from=${fromDate}&to=${toDate}`
       );
       await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -294,20 +294,20 @@ describe('Audit Logs API Routes', () => {
           }),
         }),
         expect.anything(),
-        undefined,
+        undefined
       );
     });
 
     it('should handle search parameter', async () => {
       auth.mockResolvedValue(createMockSession());
       prisma.workspaceMember.findFirst.mockResolvedValue(
-        createMockMembership('admin'),
+        createMockMembership('admin')
       );
       mockAuditService.query.mockResolvedValue(createMockAuditResponse());
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs?search=login',
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs?search=login'
       );
       await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -318,7 +318,7 @@ describe('Audit Logs API Routes', () => {
           search: 'login',
         }),
         expect.anything(),
-        undefined,
+        undefined
       );
     });
   });
@@ -331,7 +331,7 @@ describe('Audit Logs API Routes', () => {
     it('should create export for admin', async () => {
       auth.mockResolvedValue(createMockSession());
       prisma.workspaceMember.findFirst.mockResolvedValue(
-        createMockMembership('admin'),
+        createMockMembership('admin')
       );
       mockAuditService.requestExport.mockResolvedValue({
         id: 'export-1',
@@ -346,7 +346,7 @@ describe('Audit Logs API Routes', () => {
         {
           method: 'POST',
           body: JSON.stringify({ format: 'csv' }),
-        },
+        }
       );
       const response = await POST(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -361,7 +361,7 @@ describe('Audit Logs API Routes', () => {
     it('should get export status', async () => {
       auth.mockResolvedValue(createMockSession());
       prisma.workspaceMember.findFirst.mockResolvedValue(
-        createMockMembership('admin'),
+        createMockMembership('admin')
       );
       mockAuditService.getExport.mockResolvedValue({
         id: 'export-1',
@@ -374,7 +374,7 @@ describe('Audit Logs API Routes', () => {
 
       const { GET } = await import('../export/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs/export?id=export-1',
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs/export?id=export-1'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -389,13 +389,13 @@ describe('Audit Logs API Routes', () => {
     it('should return 404 for missing export', async () => {
       auth.mockResolvedValue(createMockSession());
       prisma.workspaceMember.findFirst.mockResolvedValue(
-        createMockMembership('admin'),
+        createMockMembership('admin')
       );
       mockAuditService.getExport.mockResolvedValue(null);
 
       const { GET } = await import('../export/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs/export?id=non-existent',
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs/export?id=non-existent'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -407,12 +407,12 @@ describe('Audit Logs API Routes', () => {
     it('should require export ID', async () => {
       auth.mockResolvedValue(createMockSession());
       prisma.workspaceMember.findFirst.mockResolvedValue(
-        createMockMembership('admin'),
+        createMockMembership('admin')
       );
 
       const { GET } = await import('../export/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs/export',
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs/export'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),

@@ -127,7 +127,7 @@ export default function AdminInvitationsPage() {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/invites`,
+        `/api/workspaces/${workspaceSlug}/admin/invites`
       );
       if (!response.ok) {
         throw new Error('Failed to load invitations');
@@ -149,7 +149,7 @@ export default function AdminInvitationsPage() {
   const loadDomainSettings = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/invites/domain-settings`,
+        `/api/workspaces/${workspaceSlug}/admin/invites/domain-settings`
       );
       if (response.ok) {
         const data = await response.json();
@@ -189,7 +189,7 @@ export default function AdminInvitationsPage() {
               },
             ],
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -265,7 +265,7 @@ export default function AdminInvitationsPage() {
               expiresInDays: parseInt(bulkExpiryDays, 10),
             })),
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -349,7 +349,7 @@ export default function AdminInvitationsPage() {
               expiresInDays: parseInt(bulkExpiryDays, 10),
             })),
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -400,7 +400,7 @@ export default function AdminInvitationsPage() {
             role: linkRole,
             expiresInDays: parseInt(linkExpiryDays, 10),
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -446,7 +446,7 @@ export default function AdminInvitationsPage() {
           `/api/workspaces/${workspaceSlug}/admin/invites/${invitationId}/resend`,
           {
             method: 'POST',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -472,7 +472,7 @@ export default function AdminInvitationsPage() {
         setIsProcessing(false);
       }
     },
-    [workspaceSlug, toast, loadInvitations],
+    [workspaceSlug, toast, loadInvitations]
   );
 
   const handleRevokeInvite = useCallback(
@@ -483,7 +483,7 @@ export default function AdminInvitationsPage() {
           `/api/workspaces/${workspaceSlug}/admin/invites/${invitationId}`,
           {
             method: 'DELETE',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -509,13 +509,13 @@ export default function AdminInvitationsPage() {
         setIsProcessing(false);
       }
     },
-    [workspaceSlug, toast, loadInvitations],
+    [workspaceSlug, toast, loadInvitations]
   );
 
   const handleAddDomain = useCallback(() => {
     if (!newDomain.trim()) {
-return;
-}
+      return;
+    }
 
     const domain = newDomain.trim().toLowerCase();
     if (!domain.includes('.')) {
@@ -550,7 +550,7 @@ return;
         allowedDomains: domainSettings.allowedDomains.filter(d => d !== domain),
       });
     },
-    [domainSettings],
+    [domainSettings]
   );
 
   const handleSaveDomainSettings = useCallback(async () => {
@@ -562,7 +562,7 @@ return;
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(domainSettings),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -616,16 +616,16 @@ return;
   }
 
   const pendingInvitations = invitations.filter(
-    inv => inv.status === 'PENDING',
+    inv => inv.status === 'PENDING'
   );
   const acceptedInvitations = invitations.filter(
-    inv => inv.status === 'ACCEPTED',
+    inv => inv.status === 'ACCEPTED'
   );
   const expiredInvitations = invitations.filter(
-    inv => inv.status === 'EXPIRED',
+    inv => inv.status === 'EXPIRED'
   );
   const revokedInvitations = invitations.filter(
-    inv => inv.status === 'REVOKED',
+    inv => inv.status === 'REVOKED'
   );
 
   return (
@@ -687,7 +687,7 @@ return;
                   className={cn(
                     'block w-full rounded-md border border-input bg-background',
                     'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                   )}
                 />
               </div>
@@ -975,7 +975,7 @@ return;
                       readOnly
                       className={cn(
                         'flex-1 rounded-md border border-input bg-muted px-3 py-2 text-sm',
-                        'focus:outline-none',
+                        'focus:outline-none'
                       )}
                     />
                     <Button onClick={handleCopyLink} variant='outline'>
@@ -1032,7 +1032,7 @@ return;
                             className={cn(
                               'flex-1 rounded-md border border-input bg-background',
                               'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+                              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                             )}
                           />
                           <Button onClick={handleAddDomain} size='sm'>
@@ -1277,7 +1277,7 @@ function InvitationTable({
                         disabled={isProcessing}
                         className={cn(
                           'inline-flex items-center gap-1 text-primary hover:underline',
-                          'disabled:opacity-50 disabled:cursor-not-allowed',
+                          'disabled:opacity-50 disabled:cursor-not-allowed'
                         )}
                       >
                         <Send className='h-3 w-3' />
@@ -1290,7 +1290,7 @@ function InvitationTable({
                         disabled={isProcessing}
                         className={cn(
                           'inline-flex items-center gap-1 text-destructive hover:underline',
-                          'disabled:opacity-50 disabled:cursor-not-allowed',
+                          'disabled:opacity-50 disabled:cursor-not-allowed'
                         )}
                       >
                         <X className='h-3 w-3' />
@@ -1342,7 +1342,7 @@ function StatusBadge({ status }: { status: Invitation['status'] }) {
     <span
       className={cn(
         'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium',
-        config.className,
+        config.className
       )}
     >
       <Icon className='h-3 w-3' />

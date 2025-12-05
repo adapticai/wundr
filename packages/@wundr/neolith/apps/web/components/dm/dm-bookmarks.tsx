@@ -90,13 +90,13 @@ export function DMBookmarks({
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/saved-items?type=MESSAGE&status=IN_PROGRESS&limit=100`,
+        `/api/workspaces/${workspaceSlug}/saved-items?type=MESSAGE&status=IN_PROGRESS&limit=100`
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error || `Failed to fetch bookmarks (${response.status})`,
+          errorData.error || `Failed to fetch bookmarks (${response.status})`
         );
       }
 
@@ -105,7 +105,7 @@ export function DMBookmarks({
 
       // Filter to only bookmarks from this channel
       const channelBookmarks = allBookmarks.filter(
-        (item: SavedItem) => item.message?.channel.id === channelId,
+        (item: SavedItem) => item.message?.channel.id === channelId
       );
 
       setBookmarks(channelBookmarks);
@@ -113,7 +113,7 @@ export function DMBookmarks({
     } catch (error) {
       console.error('Failed to fetch bookmarks:', error);
       toast.error(
-        error instanceof Error ? error.message : 'Failed to load bookmarks',
+        error instanceof Error ? error.message : 'Failed to load bookmarks'
       );
       setBookmarks([]);
       setFilteredBookmarks([]);
@@ -172,7 +172,7 @@ export function DMBookmarks({
           `/api/workspaces/${workspaceSlug}/saved-items/${itemId}`,
           {
             method: 'DELETE',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -190,7 +190,7 @@ export function DMBookmarks({
         setRemovingId(null);
       }
     },
-    [workspaceSlug],
+    [workspaceSlug]
   );
 
   // Handle click on bookmark to scroll to message
@@ -200,7 +200,7 @@ export function DMBookmarks({
         onScrollToMessage(messageId);
       }
     },
-    [onScrollToMessage],
+    [onScrollToMessage]
   );
 
   // Format timestamp
@@ -234,12 +234,7 @@ export function DMBookmarks({
 
   if (isLoading) {
     return (
-      <div
-        className={cn(
-          'flex h-full items-center justify-center',
-          className,
-        )}
-      >
+      <div className={cn('flex h-full items-center justify-center', className)}>
         <LoadingSpinner size='lg' />
       </div>
     );
@@ -286,11 +281,7 @@ export function DMBookmarks({
           <div className='flex h-full items-center justify-center p-8'>
             <EmptyState
               icon={Bookmark}
-              title={
-                searchQuery
-                  ? 'No bookmarks found'
-                  : 'No bookmarks yet'
-              }
+              title={searchQuery ? 'No bookmarks found' : 'No bookmarks yet'}
               description={
                 searchQuery
                   ? 'Try a different search term'

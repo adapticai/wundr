@@ -2,13 +2,15 @@
 
 ## Overview
 
-Successfully implemented a comprehensive workflow triggers system with multiple trigger types, robust authentication, rate limiting, and detailed logging capabilities.
+Successfully implemented a comprehensive workflow triggers system with multiple trigger types,
+robust authentication, rate limiting, and detailed logging capabilities.
 
 ## Implemented Features
 
 ### 1. Core Trigger Routes
 
 #### a. Event-Based Triggering (Internal)
+
 **File:** `/app/api/workspaces/[workspaceSlug]/workflows/trigger/route.enhanced.ts`
 
 - POST endpoint for internal event-based triggering
@@ -18,6 +20,7 @@ Successfully implemented a comprehensive workflow triggers system with multiple 
 - Trigger history logging
 
 #### b. Webhook Triggering
+
 **File:** `/app/api/workspaces/[workspaceSlug]/workflows/trigger/webhook/[token]/route.ts`
 
 - Unique webhook URLs per workflow
@@ -28,6 +31,7 @@ Successfully implemented a comprehensive workflow triggers system with multiple 
 - Test endpoint (GET) for validation
 
 #### c. API Key Triggering
+
 **File:** `/app/api/workspaces/[workspaceSlug]/workflows/trigger/api/route.ts`
 
 - Bearer token authentication
@@ -37,6 +41,7 @@ Successfully implemented a comprehensive workflow triggers system with multiple 
 - Comprehensive error handling
 
 #### d. Trigger Configuration Management
+
 **File:** `/app/api/workspaces/[workspaceSlug]/workflows/trigger/config/[workflowId]/route.ts`
 
 - GET endpoint to retrieve configuration
@@ -46,6 +51,7 @@ Successfully implemented a comprehensive workflow triggers system with multiple 
 - Statistics aggregation
 
 #### e. Trigger Logs and History
+
 **File:** `/app/api/workspaces/[workspaceSlug]/workflows/trigger/route.enhanced.ts` (GET handler)
 
 - Filterable trigger logs
@@ -57,9 +63,11 @@ Successfully implemented a comprehensive workflow triggers system with multiple 
 ### 2. Authentication & Security
 
 #### a. Trigger Authentication Utilities
+
 **File:** `/lib/workflow/trigger-auth.ts`
 
 **Functions:**
+
 - `generateApiKey()` - Generate secure 64-char API keys
 - `generateWebhookSecret()` - Generate webhook secrets
 - `generateWebhookToken()` - Generate unique webhook tokens
@@ -72,6 +80,7 @@ Successfully implemented a comprehensive workflow triggers system with multiple 
 - `isValidWebhookTokenFormat(token)` - Token validation
 
 **Security Features:**
+
 - Timing-safe comparisons to prevent timing attacks
 - Secure random generation using crypto module
 - SHA-256 hashing for API keys
@@ -80,15 +89,18 @@ Successfully implemented a comprehensive workflow triggers system with multiple 
 ### 3. Rate Limiting
 
 #### a. Rate Limiter
+
 **File:** `/lib/workflow/rate-limiter.ts`
 
 **Features:**
+
 - Sliding window algorithm using Redis
 - Per-workflow and per-trigger-type limits
 - Automatic window expiration
 - Fail-open behavior (allows on Redis failure)
 
 **Default Limits:**
+
 ```typescript
 webhook:  100 requests / minute
 api:      1000 requests / minute
@@ -97,12 +109,14 @@ event:    500 requests / minute
 ```
 
 **Functions:**
+
 - `checkRateLimit(workflowId, triggerType)` - Check and increment
 - `getRateLimitStatus(workflowId, triggerType)` - Status without increment
 - `resetRateLimit(workflowId, triggerType?)` - Reset limits
 - `getRateLimitConfig(triggerType)` - Get configuration
 
 **Response Headers:**
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
@@ -112,15 +126,18 @@ X-RateLimit-Reset: 1640000000000
 ### 4. Schedule Triggers
 
 #### a. Cron Validator
+
 **File:** `/lib/workflow/cron-validator.ts`
 
 **Features:**
+
 - Validates 5-field and 6-field cron expressions
 - Supports wildcards, ranges, steps, and lists
 - Field-level validation
 - Common presets
 
 **Supported Expressions:**
+
 ```
 */5 * * * *        Every 5 minutes
 0 9 * * 1-5        Weekdays at 9 AM
@@ -129,12 +146,14 @@ X-RateLimit-Reset: 1640000000000
 ```
 
 **Presets:**
+
 - `every-minute`, `every-5-minutes`, `every-15-minutes`
 - `every-30-minutes`, `every-hour`
 - `every-day`, `every-week`, `every-month`
 - `weekdays-9am`
 
 **Functions:**
+
 - `validateCronExpression(expression)` - Validate format
 - `getNextExecutionTime(cronExpression)` - Calculate next run
 - `CRON_PRESETS` - Common cron patterns
@@ -142,9 +161,11 @@ X-RateLimit-Reset: 1640000000000
 ### 5. Validation Schemas
 
 #### a. Trigger Validations
+
 **File:** `/lib/validations/trigger.ts`
 
 **Schemas:**
+
 - `webhookTriggerConfigSchema` - Webhook settings
 - `scheduleTriggerConfigSchema` - Cron and timezone
 - `eventTriggerConfigSchema` - Event types and conditions
@@ -155,6 +176,7 @@ X-RateLimit-Reset: 1640000000000
 - `triggerLogFiltersSchema` - Log filtering options
 
 **Types:**
+
 - `WebhookTriggerConfig`
 - `ScheduleTriggerConfig`
 - `EventTriggerConfig`
@@ -168,6 +190,7 @@ X-RateLimit-Reset: 1640000000000
 **Storage:** Stored in workflow metadata as `triggerHistory` array
 
 **Log Entry Structure:**
+
 ```typescript
 {
   id: string;                    // Unique log ID
@@ -184,6 +207,7 @@ X-RateLimit-Reset: 1640000000000
 ```
 
 **Features:**
+
 - Last 100 entries kept per workflow
 - Filterable by status, date range
 - Paginated results
@@ -192,16 +216,16 @@ X-RateLimit-Reset: 1640000000000
 
 ## API Endpoints Summary
 
-| Method | Endpoint | Purpose | Auth |
-|--------|----------|---------|------|
-| POST | `/workflows/trigger` | Event-based trigger | Session |
-| POST | `/workflows/trigger/webhook/:token` | Webhook trigger | Token |
-| GET | `/workflows/trigger/webhook/:token` | Test webhook | Token |
-| POST | `/workflows/trigger/api` | API key trigger | API Key |
-| GET | `/workflows/trigger/logs` | Get trigger logs | Session |
-| GET | `/workflows/trigger/config/:workflowId` | Get config | Session |
-| PUT | `/workflows/trigger/config/:workflowId` | Update config | Session |
-| POST | `/workflows/trigger/config/:workflowId/regenerate` | Regenerate credentials | Session |
+| Method | Endpoint                                           | Purpose                | Auth    |
+| ------ | -------------------------------------------------- | ---------------------- | ------- |
+| POST   | `/workflows/trigger`                               | Event-based trigger    | Session |
+| POST   | `/workflows/trigger/webhook/:token`                | Webhook trigger        | Token   |
+| GET    | `/workflows/trigger/webhook/:token`                | Test webhook           | Token   |
+| POST   | `/workflows/trigger/api`                           | API key trigger        | API Key |
+| GET    | `/workflows/trigger/logs`                          | Get trigger logs       | Session |
+| GET    | `/workflows/trigger/config/:workflowId`            | Get config             | Session |
+| PUT    | `/workflows/trigger/config/:workflowId`            | Update config          | Session |
+| POST   | `/workflows/trigger/config/:workflowId/regenerate` | Regenerate credentials | Session |
 
 ## Security Features
 
@@ -232,6 +256,7 @@ X-RateLimit-Reset: 1640000000000
 ## Error Handling
 
 **Error Codes:**
+
 - `UNAUTHORIZED` - Authentication failure
 - `WORKSPACE_NOT_FOUND` - Workspace access denied
 - `WORKFLOW_NOT_FOUND` - Workflow not found
@@ -241,17 +266,20 @@ X-RateLimit-Reset: 1640000000000
 - `INTERNAL_ERROR` - Server error
 
 **Rate Limit Response:**
+
 ```json
 {
   "error": "VALIDATION_ERROR",
   "message": "Rate limit exceeded"
 }
 ```
+
 Status: `429 Too Many Requests`
 
 ## Configuration Options
 
 ### Webhook Configuration
+
 ```typescript
 {
   url: string;              // Auto-generated
@@ -264,6 +292,7 @@ Status: `429 Too Many Requests`
 ```
 
 ### Schedule Configuration
+
 ```typescript
 {
   cron: string;             // Cron expression
@@ -275,6 +304,7 @@ Status: `429 Too Many Requests`
 ```
 
 ### Event Configuration
+
 ```typescript
 {
   eventType: string;        // Event type to listen for
@@ -292,16 +322,18 @@ Status: `429 Too Many Requests`
 ```
 
 ### Rate Limit Configuration
+
 ```typescript
 {
-  maxRequests: number;      // Max requests per window
-  windowMs: number;         // Window size in milliseconds
+  maxRequests: number; // Max requests per window
+  windowMs: number; // Window size in milliseconds
 }
 ```
 
 ## Usage Examples
 
 ### 1. Webhook Trigger with Signature
+
 ```bash
 #!/bin/bash
 WEBHOOK_URL="https://api.example.com/api/workspaces/ws_123/workflows/trigger/webhook/abc123"
@@ -317,6 +349,7 @@ curl -X POST "$WEBHOOK_URL" \
 ```
 
 ### 2. API Key Trigger
+
 ```bash
 curl -X POST https://api.example.com/api/workspaces/ws_123/workflows/trigger/api \
   -H "Authorization: Bearer wf_abc123..." \
@@ -325,6 +358,7 @@ curl -X POST https://api.example.com/api/workspaces/ws_123/workflows/trigger/api
 ```
 
 ### 3. Get Trigger Configuration
+
 ```bash
 curl -X GET https://api.example.com/api/workspaces/ws_123/workflows/trigger/config/wf_456 \
   -H "Cookie: session_token=..." \
@@ -332,6 +366,7 @@ curl -X GET https://api.example.com/api/workspaces/ws_123/workflows/trigger/conf
 ```
 
 ### 4. Regenerate API Key
+
 ```bash
 curl -X POST https://api.example.com/api/workspaces/ws_123/workflows/trigger/config/wf_456/regenerate \
   -H "Cookie: session_token=..." \
@@ -340,6 +375,7 @@ curl -X POST https://api.example.com/api/workspaces/ws_123/workflows/trigger/con
 ```
 
 ### 5. Get Trigger Logs
+
 ```bash
 curl -X GET "https://api.example.com/api/workspaces/ws_123/workflows/trigger/logs?status=success&page=1&limit=20" \
   -H "Cookie: session_token=..." \
@@ -348,9 +384,11 @@ curl -X GET "https://api.example.com/api/workspaces/ws_123/workflows/trigger/log
 
 ## Database Schema Impact
 
-The implementation uses existing workflow and workflowExecution tables, storing trigger-specific data in the `metadata` JSON field:
+The implementation uses existing workflow and workflowExecution tables, storing trigger-specific
+data in the `metadata` JSON field:
 
 **Workflow.metadata structure:**
+
 ```json
 {
   "webhookToken": "64-char-hex-token",
@@ -381,10 +419,12 @@ The implementation uses existing workflow and workflowExecution tables, storing 
 ## Dependencies
 
 ### Required
+
 - `ioredis` - For rate limiting (already in package.json)
 - `crypto` - Node.js built-in (for hashing and signatures)
 
 ### Already Available
+
 - `@neolith/database` - Prisma client
 - `zod` - Validation schemas
 - `next` - Next.js framework
@@ -440,20 +480,27 @@ The implementation uses existing workflow and workflowExecution tables, storing 
 ## Files Created
 
 ### API Routes
-1. `/app/api/workspaces/[workspaceSlug]/workflows/trigger/route.enhanced.ts` (Enhanced event trigger)
-2. `/app/api/workspaces/[workspaceSlug]/workflows/trigger/webhook/[token]/route.ts` (Webhook trigger)
+
+1. `/app/api/workspaces/[workspaceSlug]/workflows/trigger/route.enhanced.ts` (Enhanced event
+   trigger)
+2. `/app/api/workspaces/[workspaceSlug]/workflows/trigger/webhook/[token]/route.ts` (Webhook
+   trigger)
 3. `/app/api/workspaces/[workspaceSlug]/workflows/trigger/api/route.ts` (API key trigger)
-4. `/app/api/workspaces/[workspaceSlug]/workflows/trigger/config/[workflowId]/route.ts` (Configuration)
+4. `/app/api/workspaces/[workspaceSlug]/workflows/trigger/config/[workflowId]/route.ts`
+   (Configuration)
 
 ### Utilities
+
 5. `/lib/workflow/trigger-auth.ts` (Authentication utilities)
 6. `/lib/workflow/rate-limiter.ts` (Rate limiting)
 7. `/lib/workflow/cron-validator.ts` (Cron validation)
 
 ### Validation
+
 8. `/lib/validations/trigger.ts` (Trigger schemas)
 
 ### Documentation
+
 9. `/docs/api/workflow-triggers.md` (API documentation)
 10. `/docs/api/workflow-triggers-implementation.md` (This file)
 

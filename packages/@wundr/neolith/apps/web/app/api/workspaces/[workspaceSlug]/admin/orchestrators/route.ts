@@ -67,7 +67,7 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -83,7 +83,7 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or insufficient permissions' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -97,7 +97,8 @@ export async function GET(
     // Build where clause
     const where: Prisma.orchestratorWhereInput = {
       organizationId: access.workspace.organizationId,
-      ...(status && status !== 'all' && { status: status as OrchestratorStatus }),
+      ...(status &&
+        status !== 'all' && { status: status as OrchestratorStatus }),
       ...(discipline && discipline !== 'all' && { discipline }),
       ...(search && {
         OR: [
@@ -164,10 +165,10 @@ export async function GET(
     ]);
 
     const completedTaskMap = new Map(
-      completedTaskCounts.map(item => [item.orchestratorId, item._count.id]),
+      completedTaskCounts.map(item => [item.orchestratorId, item._count.id])
     );
     const activeTaskMap = new Map(
-      activeTaskCounts.map(item => [item.orchestratorId, item._count.id]),
+      activeTaskCounts.map(item => [item.orchestratorId, item._count.id])
     );
 
     // Enhanced orchestrators with admin data
@@ -206,16 +207,15 @@ export async function GET(
     const stats = {
       total: enhancedOrchestrators.length,
       online: enhancedOrchestrators.filter(o => o.status === 'ONLINE').length,
-      offline: enhancedOrchestrators.filter(o => o.status === 'OFFLINE')
-        .length,
+      offline: enhancedOrchestrators.filter(o => o.status === 'OFFLINE').length,
       busy: enhancedOrchestrators.filter(o => o.status === 'BUSY').length,
       totalBudget: enhancedOrchestrators.reduce(
         (sum, o) => sum + (o.budgetLimit || 0),
-        0,
+        0
       ),
       usedBudget: enhancedOrchestrators.reduce(
         (sum, o) => sum + (o.budgetUsed || 0),
-        0,
+        0
       ),
     };
 
@@ -229,10 +229,13 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/admin/orchestrators]', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/admin/orchestrators]',
+      error
+    );
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

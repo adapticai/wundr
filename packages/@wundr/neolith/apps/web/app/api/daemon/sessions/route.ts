@@ -90,7 +90,7 @@ const ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: string,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ): DaemonErrorResponse {
   return {
     error: {
@@ -187,7 +187,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -213,7 +213,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Sort by creation date (newest first)
     sessions.sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
     const response: SessionListResponse = {
@@ -227,9 +227,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'Failed to list sessions',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -269,7 +269,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -280,7 +280,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -290,7 +290,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse('Validation failed', ERROR_CODES.VALIDATION_ERROR, {
           errors: parseResult.error.flatten().fieldErrors,
         }),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -301,9 +301,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Cannot create session for different Orchestrator',
-          ERROR_CODES.FORBIDDEN,
+          ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -317,16 +317,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found',
-          ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Generate session ID and timestamps
     const sessionId = generateSessionId(
       sessionData.orchestratorId,
-      sessionData.type,
+      sessionData.type
     );
     const now = new Date();
     const ttl = sessionData.timeoutSeconds || DEFAULT_SESSION_TTL_SECONDS;
@@ -352,9 +352,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Failed to create session',
-          ERROR_CODES.INTERNAL_ERROR,
+          ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -370,9 +370,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'Failed to create session',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -409,7 +409,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -420,7 +420,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -430,7 +430,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         createErrorResponse('Validation failed', ERROR_CODES.VALIDATION_ERROR, {
           errors: parseResult.error.flatten().fieldErrors,
         }),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -447,9 +447,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Failed to retrieve session',
-          ERROR_CODES.INTERNAL_ERROR,
+          ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -457,9 +457,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Session not found or expired',
-          ERROR_CODES.SESSION_NOT_FOUND,
+          ERROR_CODES.SESSION_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -471,9 +471,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Cannot update session for different Orchestrator',
-          ERROR_CODES.FORBIDDEN,
+          ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -498,7 +498,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     if (updateData.extendTTL) {
       const now = new Date();
       const newExpiresAt = new Date(
-        now.getTime() + DEFAULT_SESSION_TTL_SECONDS * 1000,
+        now.getTime() + DEFAULT_SESSION_TTL_SECONDS * 1000
       );
       session.expiresAt = newExpiresAt.toISOString();
     } else {
@@ -507,7 +507,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       const now = new Date();
       ttl = Math.max(
         60,
-        Math.floor((expiresAt.getTime() - now.getTime()) / 1000),
+        Math.floor((expiresAt.getTime() - now.getTime()) / 1000)
       );
     }
 
@@ -519,9 +519,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Failed to update session',
-          ERROR_CODES.INTERNAL_ERROR,
+          ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -537,9 +537,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'Failed to update session',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -568,7 +568,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -580,9 +580,9 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Session ID is required',
-          ERROR_CODES.VALIDATION_ERROR,
+          ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -597,9 +597,9 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Failed to retrieve session',
-          ERROR_CODES.INTERNAL_ERROR,
+          ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -607,9 +607,9 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Session not found or expired',
-          ERROR_CODES.SESSION_NOT_FOUND,
+          ERROR_CODES.SESSION_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -620,9 +620,9 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Cannot delete session for different Orchestrator',
-          ERROR_CODES.FORBIDDEN,
+          ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -634,9 +634,9 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Failed to delete session',
-          ERROR_CODES.INTERNAL_ERROR,
+          ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -651,9 +651,9 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'Failed to delete session',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

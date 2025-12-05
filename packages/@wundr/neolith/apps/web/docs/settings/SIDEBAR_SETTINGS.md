@@ -1,21 +1,24 @@
 # Sidebar Settings Component
 
-**Location**: `/components/settings/sidebar-settings.tsx`
-**Page**: `/app/(workspace)/[workspaceSlug]/settings/sidebar/page.tsx`
+**Location**: `/components/settings/sidebar-settings.tsx` **Page**:
+`/app/(workspace)/[workspaceSlug]/settings/sidebar/page.tsx`
 
 ## Overview
 
-A comprehensive sidebar customization settings component with drag-and-drop section ordering, visibility toggles, sorting preferences, and a live preview of the sidebar configuration.
+A comprehensive sidebar customization settings component with drag-and-drop section ordering,
+visibility toggles, sorting preferences, and a live preview of the sidebar configuration.
 
 ## Features Implemented
 
 ### 1. Section Visibility & Ordering
+
 - **Drag-and-drop reordering**: Users can reorder sidebar sections using @dnd-kit
 - **Visibility toggles**: Show/hide individual sections (Starred, Channels, DMs, Favorites, Threads)
 - **Visual feedback**: Eye/EyeOff icons indicate section visibility
 - **Non-sortable sections**: Some sections (Channels, Direct Messages) are locked in place
 
 ### 2. Channel Sorting Preferences
+
 - **Alphabetical**: Sort channels A-Z by name
 - **Recent Activity**: Sort by most recently active channels
 - **Unread First**: Prioritize channels with unread messages
@@ -24,6 +27,7 @@ A comprehensive sidebar customization settings component with drag-and-drop sect
 - **Group by Type**: Separate public and private channels into sub-sections
 
 ### 3. Direct Message Sorting
+
 - **Alphabetical**: Sort DMs A-Z by participant name
 - **Recent Activity**: Sort by most recent conversation (default)
 - **Online First**: Prioritize online users at the top
@@ -32,16 +36,19 @@ A comprehensive sidebar customization settings component with drag-and-drop sect
 - **Show User Presence**: Display online status indicators
 
 ### 4. Starred Items Section
+
 - **Enable/Disable**: Toggle starred items section visibility
 - **Position**: Choose top or bottom placement
 - **Auto-sync**: Starred items automatically appear when starred via context menu
 
 ### 5. Quick Access & Favorites
+
 - **Favorites Section**: Dedicated section for frequently accessed channels/DMs
 - **Management**: View and manage favorited items
 - **Visual Indicators**: Shows item type (channel/DM) and icons
 
 ### 6. Visual Display Settings
+
 - **Sidebar Width**: Adjustable from 200-400px via slider
 - **Compact Mode**: Reduced spacing and smaller fonts
 - **Unread Badges**: Toggle visibility of unread indicators
@@ -49,12 +56,14 @@ A comprehensive sidebar customization settings component with drag-and-drop sect
 - **Section Counts**: Show item counts next to section headers
 
 ### 7. Collapse Behavior
+
 - **Mobile Auto-collapse**: Automatically collapse on small screens
 - **Inactivity Auto-collapse**: Collapse after configurable delay (1-30 minutes)
 - **Remember State**: Persist collapse state across sessions
 - **Smooth Transitions**: Animated collapse/expand with CSS transforms
 
 ### 8. Live Preview Panel
+
 - **Real-time Updates**: Preview changes as you adjust settings
 - **Accurate Representation**: Mimics actual sidebar layout and styling
 - **Dimensions Display**: Shows current sidebar width
@@ -63,6 +72,7 @@ A comprehensive sidebar customization settings component with drag-and-drop sect
 ## Technical Implementation
 
 ### State Management
+
 ```typescript
 interface SidebarPreferences {
   sections: SidebarSection[];
@@ -89,20 +99,25 @@ interface SidebarPreferences {
 ```
 
 ### Drag & Drop
+
 Uses `@dnd-kit` for smooth, accessible drag-and-drop:
+
 - **Sensors**: PointerSensor (mouse/touch) + KeyboardSensor (accessibility)
 - **Collision Detection**: closestCenter algorithm
 - **Strategy**: verticalListSortingStrategy for list reordering
 - **Visual Feedback**: Opacity and cursor changes during drag
 
 ### Persistence
+
 - **localStorage**: Client-side preference caching
 - **API**: `/api/users/me/preferences` PATCH endpoint for server sync
 - **Auto-save**: Updates localStorage on every change
 - **Manual Save**: Explicit "Save All Changes" button for API sync
 
 ### UI Components
+
 Built with shadcn/ui components:
+
 - Card, CardHeader, CardContent, CardDescription, CardTitle
 - Tabs, TabsList, TabsTrigger, TabsContent
 - Switch, Select, Slider, Button, Label, Separator
@@ -111,12 +126,14 @@ Built with shadcn/ui components:
 ## Usage
 
 ### Accessing the Settings
+
 ```
 Navigation: Settings > Sidebar
 URL: /{workspaceSlug}/settings/sidebar
 ```
 
 ### Integration with Sidebar Component
+
 The preferences can be read from localStorage or API and applied to the main sidebar:
 
 ```typescript
@@ -136,6 +153,7 @@ const sortedChannels = sortChannels(channels, preferences.channelSorting);
 ## API Integration
 
 ### Saving Preferences
+
 ```typescript
 PATCH /api/users/me/preferences
 Body: {
@@ -148,6 +166,7 @@ Body: {
 ```
 
 ### Loading Preferences
+
 ```typescript
 GET /api/users/me/preferences
 Response: {
@@ -163,7 +182,8 @@ Response: {
 - **ARIA Labels**: Proper labels on all interactive elements
 - **Focus Management**: Visible focus indicators
 - **Screen Reader Support**: Descriptive text for all actions
-- **Drag & Drop Keyboard**: Can reorder sections with keyboard (Space to grab, Arrow keys to move, Space to drop)
+- **Drag & Drop Keyboard**: Can reorder sections with keyboard (Space to grab, Arrow keys to move,
+  Space to drop)
 
 ## Performance Considerations
 
@@ -185,6 +205,7 @@ Response: {
 ## Testing
 
 ### Manual Testing Checklist
+
 - [ ] Drag sections to reorder (except locked sections)
 - [ ] Toggle section visibility
 - [ ] Adjust sidebar width slider (200-400px)
@@ -200,6 +221,7 @@ Response: {
 - [ ] Reload page and verify persistence
 
 ### Edge Cases
+
 - [ ] All sections hidden (should show warning)
 - [ ] Maximum sidebar width (400px)
 - [ ] Minimum sidebar width (200px)

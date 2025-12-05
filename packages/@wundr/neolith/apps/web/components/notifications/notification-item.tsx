@@ -86,14 +86,14 @@ export function NotificationItem({
       className={cn(
         'relative overflow-hidden',
         isDismissing && 'opacity-0 transition-opacity duration-200',
-        className,
+        className
       )}
     >
       {/* Dismiss background */}
       <div
         className={cn(
           'absolute inset-y-0 right-0 flex items-center justify-end bg-destructive px-4 text-destructive-foreground',
-          'w-[100px]',
+          'w-[100px]'
         )}
       >
         <TrashIcon className='h-5 w-5' />
@@ -119,7 +119,7 @@ export function NotificationItem({
           'relative flex gap-3 px-4 py-3 cursor-pointer transition-all duration-150',
           'bg-background',
           !notification.read && 'bg-accent/30',
-          isHovered && 'bg-accent/50',
+          isHovered && 'bg-accent/50'
         )}
       >
         {/* Icon */}
@@ -136,7 +136,7 @@ export function NotificationItem({
                   'text-sm line-clamp-1 font-sans',
                   !notification.read
                     ? 'font-semibold text-stone-900 dark:text-stone-100'
-                    : 'text-stone-700 dark:text-stone-300',
+                    : 'text-stone-700 dark:text-stone-300'
                 )}
               >
                 {notification.title}
@@ -222,7 +222,7 @@ interface NotificationIconProps {
 function NotificationIcon({ type, className }: NotificationIconProps) {
   const iconClasses = cn(
     'h-8 w-8 rounded-full flex items-center justify-center',
-    className,
+    className
   );
 
   switch (type) {
@@ -231,7 +231,7 @@ function NotificationIcon({ type, className }: NotificationIconProps) {
         <div
           className={cn(
             iconClasses,
-            'bg-stone-100 text-stone-600 dark:bg-stone-900/30 dark:text-stone-400',
+            'bg-stone-100 text-stone-600 dark:bg-stone-900/30 dark:text-stone-400'
           )}
         >
           <MessageIcon className='h-4 w-4' />
@@ -242,7 +242,7 @@ function NotificationIcon({ type, className }: NotificationIconProps) {
         <div
           className={cn(
             iconClasses,
-            'bg-stone-200 text-stone-700 dark:bg-stone-800/30 dark:text-stone-300',
+            'bg-stone-200 text-stone-700 dark:bg-stone-800/30 dark:text-stone-300'
           )}
         >
           <AtIcon className='h-4 w-4' />
@@ -253,7 +253,7 @@ function NotificationIcon({ type, className }: NotificationIconProps) {
         <div
           className={cn(
             iconClasses,
-            'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400',
+            'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400'
           )}
         >
           <EmojiIcon className='h-4 w-4' />
@@ -264,7 +264,7 @@ function NotificationIcon({ type, className }: NotificationIconProps) {
         <div
           className={cn(
             iconClasses,
-            'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
+            'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
           )}
         >
           <ThreadIcon className='h-4 w-4' />
@@ -275,7 +275,7 @@ function NotificationIcon({ type, className }: NotificationIconProps) {
         <div
           className={cn(
             iconClasses,
-            'bg-stone-300 text-stone-800 dark:bg-stone-700/30 dark:text-stone-200',
+            'bg-stone-300 text-stone-800 dark:bg-stone-700/30 dark:text-stone-200'
           )}
         >
           <InviteIcon className='h-4 w-4' />
@@ -289,7 +289,7 @@ function NotificationIcon({ type, className }: NotificationIconProps) {
             iconClasses,
             type === 'call_missed'
               ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-              : 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
+              : 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
           )}
         >
           <PhoneIcon className='h-4 w-4' />
@@ -300,7 +300,7 @@ function NotificationIcon({ type, className }: NotificationIconProps) {
         <div
           className={cn(
             iconClasses,
-            'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+            'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
           )}
         >
           <BotIcon className='h-4 w-4' />
@@ -312,7 +312,7 @@ function NotificationIcon({ type, className }: NotificationIconProps) {
         <div
           className={cn(
             iconClasses,
-            'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400',
+            'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400'
           )}
         >
           <BellIcon className='h-4 w-4' />

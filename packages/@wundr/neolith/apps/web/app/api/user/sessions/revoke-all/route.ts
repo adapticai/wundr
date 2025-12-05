@@ -37,7 +37,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'No active session found',
           code: SECURITY_ERROR_CODES.SESSION_NOT_FOUND,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -77,7 +77,7 @@ function groupByTimeBuckets<T extends { createdAt: Date }>(
   startTime: Date,
   intervalMinutes: number,
   dataPoints: number,
-  valueExtractor: (items: T[]) => number,
+  valueExtractor: (items: T[]) => number
 ): TimeSeriesMetric[] {
   const intervalMs = intervalMinutes * 60 * 1000;
   const buckets: Map<number, T[]> = new Map();
@@ -92,7 +92,7 @@ function groupByTimeBuckets<T extends { createdAt: Date }>(
   data.forEach(item => {
     const itemTime = item.createdAt.getTime();
     const bucketIndex = Math.floor(
-      (itemTime - startTime.getTime()) / intervalMs,
+      (itemTime - startTime.getTime()) / intervalMs
     );
     const bucketTime = startTime.getTime() + bucketIndex * intervalMs;
 
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!adminMembership) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!['1h', '24h', '7d', '30d'].includes(timeRange)) {
       return NextResponse.json(
         { error: 'Invalid timeRange. Must be one of: 1h, 24h, 7d, 30d' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -225,7 +225,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       startTime,
       intervalMinutes,
       dataPoints,
-      items => items.filter(s => s.status === 'ACTIVE').length,
+      items => items.filter(s => s.status === 'ACTIVE').length
     );
 
     // Group token usage by time buckets (sum tokens)
@@ -234,7 +234,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       startTime,
       intervalMinutes,
       dataPoints,
-      items => items.reduce((sum, item) => sum + item.totalTokens, 0),
+      items => items.reduce((sum, item) => sum + item.totalTokens, 0)
     );
 
     // Group errors by time buckets
@@ -244,7 +244,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       intervalMinutes,
       dataPoints,
       items =>
-        items.filter(log => ['error', 'critical'].includes(log.severity)).length,
+        items.filter(log => ['error', 'critical'].includes(log.severity)).length
     );
 
     // Calculate latency metrics (extract from audit log metadata if available)
@@ -252,19 +252,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const latency: LatencyMetrics = {
       p50: Array.from({ length: dataPoints }, (_, i) => ({
         timestamp: new Date(
-          startTime.getTime() + i * intervalMinutes * 60 * 1000,
+          startTime.getTime() + i * intervalMinutes * 60 * 1000
         ).toISOString(),
         value: 0,
       })),
       p95: Array.from({ length: dataPoints }, (_, i) => ({
         timestamp: new Date(
-          startTime.getTime() + i * intervalMinutes * 60 * 1000,
+          startTime.getTime() + i * intervalMinutes * 60 * 1000
         ).toISOString(),
         value: 0,
       })),
       p99: Array.from({ length: dataPoints }, (_, i) => ({
         timestamp: new Date(
-          startTime.getTime() + i * intervalMinutes * 60 * 1000,
+          startTime.getTime() + i * intervalMinutes * 60 * 1000
         ).toISOString(),
         value: 0,
       })),
@@ -285,7 +285,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.error('[GET /api/admin/health/metrics] Error:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

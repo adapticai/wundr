@@ -32,7 +32,8 @@ export const usernameSchema = z
     message: `Username must be at most ${PROFILE_LIMITS.USERNAME_MAX} characters`,
   })
   .regex(/^[a-zA-Z0-9_-]+$/, {
-    message: 'Username can only contain letters, numbers, hyphens, and underscores',
+    message:
+      'Username can only contain letters, numbers, hyphens, and underscores',
   })
   .transform(val => val.toLowerCase());
 

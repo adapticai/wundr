@@ -32,7 +32,7 @@ export default function PerformanceAnalyticsPage(): JSX.Element {
   useEffect(() => {
     setPageHeader(
       'Performance Analytics',
-      'Monitor page load metrics, API response times, and system throughput',
+      'Monitor page load metrics, API response times, and system throughput'
     );
   }, [setPageHeader]);
 

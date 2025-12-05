@@ -44,7 +44,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'User not found or password not set',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid password',
           code: SECURITY_ERROR_CODES.INVALID_PASSWORD,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Email already in use',
           code: SECURITY_ERROR_CODES.EMAIL_ALREADY_EXISTS,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -168,7 +168,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

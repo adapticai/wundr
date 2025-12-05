@@ -116,7 +116,10 @@ function generateTimeSeriesData(): TimeSeriesData[] {
     const date = new Date(startDate);
     date.setDate(date.getDate() + i);
     data.push({
-      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      date: date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      }),
       productivity: Math.floor(Math.random() * 30) + 70,
       collaboration: Math.floor(Math.random() * 40) + 60,
       activity: Math.floor(Math.random() * 50) + 50,
@@ -146,7 +149,9 @@ function generateResponseTimeData(): ResponseTimeData[] {
   }));
 }
 
-function generateCollaborationMatrix(members: TeamMember[]): CollaborationPattern[] {
+function generateCollaborationMatrix(
+  members: TeamMember[]
+): CollaborationPattern[] {
   const patterns: CollaborationPattern[] = [];
   for (let i = 0; i < members.length; i++) {
     for (let j = i + 1; j < members.length; j++) {
@@ -192,16 +197,21 @@ export default function TeamAnalyticsPage(): JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesData[]>([]);
-  const [responseTimeData, setResponseTimeData] = useState<ResponseTimeData[]>([]);
+  const [responseTimeData, setResponseTimeData] = useState<ResponseTimeData[]>(
+    []
+  );
   const [collaborationPatterns, setCollaborationPatterns] = useState<
     CollaborationPattern[]
   >([]);
-  const [selectedTimeRange, setSelectedTimeRange] = useState<'7d' | '30d' | '90d'>(
-    '30d',
-  );
+  const [selectedTimeRange, setSelectedTimeRange] = useState<
+    '7d' | '30d' | '90d'
+  >('30d');
 
   useEffect(() => {
-    setPageHeader('Team Analytics', 'Track team productivity and collaboration');
+    setPageHeader(
+      'Team Analytics',
+      'Track team productivity and collaboration'
+    );
   }, [setPageHeader]);
 
   useEffect(() => {
@@ -225,7 +235,9 @@ export default function TeamAnalyticsPage(): JSX.Element {
     return (
       <div className='min-h-screen bg-background flex items-center justify-center'>
         <div className='text-center'>
-          <p className='text-lg font-medium text-foreground'>Invalid workspace</p>
+          <p className='text-lg font-medium text-foreground'>
+            Invalid workspace
+          </p>
           <p className='text-sm text-muted-foreground mt-2'>
             Unable to load team analytics
           </p>
@@ -237,9 +249,11 @@ export default function TeamAnalyticsPage(): JSX.Element {
   // Calculate aggregate metrics
   const totalTasks = teamMembers.reduce((sum, m) => sum + m.tasksCompleted, 0);
   const avgProductivity =
-    teamMembers.reduce((sum, m) => sum + m.productivity, 0) / teamMembers.length || 0;
+    teamMembers.reduce((sum, m) => sum + m.productivity, 0) /
+      teamMembers.length || 0;
   const avgResponseTime =
-    teamMembers.reduce((sum, m) => sum + m.responseTime, 0) / teamMembers.length || 0;
+    teamMembers.reduce((sum, m) => sum + m.responseTime, 0) /
+      teamMembers.length || 0;
   const avgCollaboration =
     teamMembers.reduce((sum, m) => sum + m.collaborationScore, 0) /
       teamMembers.length || 0;
@@ -285,7 +299,9 @@ export default function TeamAnalyticsPage(): JSX.Element {
         <div className='flex justify-end mb-6'>
           <Tabs
             value={selectedTimeRange}
-            onValueChange={v => setSelectedTimeRange(v as typeof selectedTimeRange)}
+            onValueChange={v =>
+              setSelectedTimeRange(v as typeof selectedTimeRange)
+            }
           >
             <TabsList>
               <TabsTrigger value='7d'>7 Days</TabsTrigger>
@@ -431,8 +447,13 @@ export default function TeamAnalyticsPage(): JSX.Element {
                       >
                         <div className='flex items-start gap-3'>
                           <Avatar className='w-12 h-12'>
-                            <AvatarImage src={member.avatarUrl} alt={member.name} />
-                            <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
+                            <AvatarImage
+                              src={member.avatarUrl}
+                              alt={member.name}
+                            />
+                            <AvatarFallback>
+                              {getInitials(member.name)}
+                            </AvatarFallback>
                           </Avatar>
                           <div className='flex-1 min-w-0'>
                             <h4 className='font-medium text-sm truncate'>
@@ -450,8 +471,12 @@ export default function TeamAnalyticsPage(): JSX.Element {
                         </div>
                         <div className='mt-4 space-y-2'>
                           <div className='flex justify-between text-xs'>
-                            <span className='text-muted-foreground'>Productivity</span>
-                            <span className='font-medium'>{member.productivity}%</span>
+                            <span className='text-muted-foreground'>
+                              Productivity
+                            </span>
+                            <span className='font-medium'>
+                              {member.productivity}%
+                            </span>
                           </div>
                           <div className='w-full bg-muted rounded-full h-1.5'>
                             <div
@@ -460,7 +485,9 @@ export default function TeamAnalyticsPage(): JSX.Element {
                             />
                           </div>
                           <div className='flex justify-between text-xs'>
-                            <span className='text-muted-foreground'>Collaboration</span>
+                            <span className='text-muted-foreground'>
+                              Collaboration
+                            </span>
                             <span className='font-medium'>
                               {member.collaborationScore}%
                             </span>
@@ -552,46 +579,52 @@ export default function TeamAnalyticsPage(): JSX.Element {
                   </div>
                 ) : (
                   <div className='space-y-3'>
-                    {collaborationPatterns.slice(0, 10).map((pattern, index) => (
-                      <div
-                        key={`${pattern.from}-${pattern.to}`}
-                        className='flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors'
-                      >
-                        <span className='text-xs font-medium text-muted-foreground w-6'>
-                          #{index + 1}
-                        </span>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <Avatar className='w-8 h-8'>
-                            <AvatarFallback className='text-xs'>
-                              {getInitials(pattern.from)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className='text-sm font-medium'>{pattern.from}</span>
-                          <svg
-                            className='w-4 h-4 text-muted-foreground'
-                            fill='none'
-                            viewBox='0 0 24 24'
-                            stroke='currentColor'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2}
-                              d='M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4'
-                            />
-                          </svg>
-                          <Avatar className='w-8 h-8'>
-                            <AvatarFallback className='text-xs'>
-                              {getInitials(pattern.to)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className='text-sm font-medium'>{pattern.to}</span>
+                    {collaborationPatterns
+                      .slice(0, 10)
+                      .map((pattern, index) => (
+                        <div
+                          key={`${pattern.from}-${pattern.to}`}
+                          className='flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors'
+                        >
+                          <span className='text-xs font-medium text-muted-foreground w-6'>
+                            #{index + 1}
+                          </span>
+                          <div className='flex items-center gap-2 flex-1'>
+                            <Avatar className='w-8 h-8'>
+                              <AvatarFallback className='text-xs'>
+                                {getInitials(pattern.from)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className='text-sm font-medium'>
+                              {pattern.from}
+                            </span>
+                            <svg
+                              className='w-4 h-4 text-muted-foreground'
+                              fill='none'
+                              viewBox='0 0 24 24'
+                              stroke='currentColor'
+                            >
+                              <path
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                                strokeWidth={2}
+                                d='M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4'
+                              />
+                            </svg>
+                            <Avatar className='w-8 h-8'>
+                              <AvatarFallback className='text-xs'>
+                                {getInitials(pattern.to)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className='text-sm font-medium'>
+                              {pattern.to}
+                            </span>
+                          </div>
+                          <Badge variant='secondary'>
+                            {pattern.interactions} interactions
+                          </Badge>
                         </div>
-                        <Badge variant='secondary'>
-                          {pattern.interactions} interactions
-                        </Badge>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 )}
               </CardContent>

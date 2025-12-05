@@ -44,7 +44,7 @@ async function generateLiveKitToken(
   roomName: string,
   identity: string,
   name: string,
-  audioOnly: boolean = false,
+  audioOnly: boolean = false
 ): Promise<string> {
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
@@ -55,7 +55,7 @@ async function generateLiveKitToken(
 
   // In production, use the official livekit-server-sdk
   const header = Buffer.from(
-    JSON.stringify({ alg: 'HS256', typ: 'JWT' }),
+    JSON.stringify({ alg: 'HS256', typ: 'JWT' })
   ).toString('base64url');
   const now = Math.floor(Date.now() / 1000);
   const exp = now + 6 * 60 * 60; // 6 hours
@@ -78,7 +78,7 @@ async function generateLiveKitToken(
           ? ['microphone']
           : ['camera', 'microphone', 'screen_share'],
       },
-    }),
+    })
   ).toString('base64url');
 
   const crypto = await import('crypto');
@@ -101,7 +101,7 @@ async function generateLiveKitToken(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -110,9 +110,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED,
+          CALL_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -123,9 +123,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid huddle ID format',
-          CALL_ERROR_CODES.VALIDATION_ERROR,
+          CALL_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -146,9 +146,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -203,7 +203,7 @@ export async function POST(
           huddles?: HuddleResponse[];
         } | null;
         const foundHuddle = settings?.huddles?.find(
-          h => h.id === params.huddleId,
+          h => h.id === params.huddleId
         );
 
         if (foundHuddle) {
@@ -224,9 +224,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Huddle not found',
-          CALL_ERROR_CODES.HUDDLE_NOT_FOUND,
+          CALL_ERROR_CODES.HUDDLE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -235,9 +235,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Huddle has already ended',
-          CALL_ERROR_CODES.HUDDLE_ALREADY_ENDED,
+          CALL_ERROR_CODES.HUDDLE_ALREADY_ENDED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -250,9 +250,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          CALL_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          CALL_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -268,7 +268,7 @@ export async function POST(
     if (!orgMembership) {
       return NextResponse.json(
         createErrorResponse('Access denied', CALL_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -295,9 +295,9 @@ export async function POST(
           return NextResponse.json(
             createErrorResponse(
               'This is a private huddle. You need an invitation to join.',
-              CALL_ERROR_CODES.HUDDLE_PRIVATE,
+              CALL_ERROR_CODES.HUDDLE_PRIVATE
             ),
-            { status: 403 },
+            { status: 403 }
           );
         }
       }
@@ -320,19 +320,19 @@ export async function POST(
         huddle.roomName,
         participantIdentity,
         participantName,
-        audioOnly ?? false,
+        audioOnly ?? false
       );
     } catch (error) {
       console.error(
         '[POST /api/huddles/:huddleId/join] LiveKit token error:',
-        error,
+        error
       );
       return NextResponse.json(
         createErrorResponse(
           'Failed to generate access token',
-          CALL_ERROR_CODES.LIVEKIT_TOKEN_ERROR,
+          CALL_ERROR_CODES.LIVEKIT_TOKEN_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -378,9 +378,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR,
+        CALL_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -47,7 +47,7 @@ describe('Actions Component', () => {
       await waitFor(() => {
         expect(screen.getByRole('button')).toHaveAttribute(
           'aria-label',
-          'Copied!',
+          'Copied!'
         );
       });
     });
@@ -64,7 +64,7 @@ describe('Actions Component', () => {
       await waitFor(() => {
         expect(screen.getByRole('button')).toHaveAttribute(
           'aria-label',
-          'Copied!',
+          'Copied!'
         );
       });
 
@@ -73,7 +73,7 @@ describe('Actions Component', () => {
       await waitFor(() => {
         expect(screen.getByRole('button')).toHaveAttribute(
           'aria-label',
-          'Copy',
+          'Copy'
         );
       });
 
@@ -148,7 +148,7 @@ describe('Actions Component', () => {
           onCopy={onCopy}
           onRegenerate={onRegenerate}
           onFeedback={onFeedback}
-        />,
+        />
       );
 
       const buttons = screen.getAllByRole('button');

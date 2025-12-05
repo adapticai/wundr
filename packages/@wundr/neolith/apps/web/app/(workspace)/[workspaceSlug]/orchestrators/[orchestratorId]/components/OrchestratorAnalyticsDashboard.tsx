@@ -132,7 +132,7 @@ export function OrchestratorAnalyticsDashboard({
       try {
         // Fetch main analytics
         const analyticsResponse = await fetch(
-          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/analytics?timeRange=${timeRange}`,
+          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/analytics?timeRange=${timeRange}`
         );
 
         if (!analyticsResponse.ok) {
@@ -144,7 +144,7 @@ export function OrchestratorAnalyticsDashboard({
 
         // Fetch trends
         const trendsResponse = await fetch(
-          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/analytics/trends?period=daily&timeRange=${timeRange}`,
+          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/analytics/trends?period=daily&timeRange=${timeRange}`
         );
 
         if (!trendsResponse.ok) {
@@ -170,7 +170,7 @@ export function OrchestratorAnalyticsDashboard({
       // Return sample data for visualization
       return Array.from({ length: 7 }, (_, i) => ({
         date: new Date(
-          Date.now() - (6 - i) * 24 * 60 * 60 * 1000,
+          Date.now() - (6 - i) * 24 * 60 * 60 * 1000
         ).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         tasksCompleted: Math.floor(Math.random() * 50) + 10,
         successRate: Math.floor(Math.random() * 20) + 75,
@@ -308,8 +308,15 @@ export function OrchestratorAnalyticsDashboard({
                   tickLine={false}
                   axisLine={false}
                 />
-                <YAxis tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
-                <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent />}
+                />
                 <Bar
                   dataKey='tasksCompleted'
                   fill='var(--color-tasksCompleted)'
@@ -342,7 +349,10 @@ export function OrchestratorAnalyticsDashboard({
                   axisLine={false}
                   domain={[0, 100]}
                 />
-                <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent />}
+                />
                 <Area
                   type='monotone'
                   dataKey='successRate'
@@ -372,8 +382,15 @@ export function OrchestratorAnalyticsDashboard({
                   tickLine={false}
                   axisLine={false}
                 />
-                <YAxis tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
-                <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent />}
+                />
                 <Line
                   type='monotone'
                   dataKey='avgDuration'
@@ -481,7 +498,12 @@ interface MetricCardProps {
   format?: 'number' | 'percentage' | 'duration';
 }
 
-function MetricCard({ title, value, trend, format = 'number' }: MetricCardProps) {
+function MetricCard({
+  title,
+  value,
+  trend,
+  format = 'number',
+}: MetricCardProps) {
   const formatValue = (val: number) => {
     switch (format) {
       case 'percentage':

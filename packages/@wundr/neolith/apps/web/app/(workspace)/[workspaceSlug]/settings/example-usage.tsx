@@ -26,15 +26,15 @@ import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 export function BasicSettingsPageExample() {
   return (
     <SettingsPageWrapper
-      workspaceSlug="workspace-123"
-      title="Notifications"
-      description="Manage how you receive notifications"
+      workspaceSlug='workspace-123'
+      title='Notifications'
+      description='Manage how you receive notifications'
     >
-      <div className="space-y-4">
+      <div className='space-y-4'>
         {/* Your settings content here */}
-        <div className="flex items-center justify-between">
-          <Label htmlFor="email-notifications">Email Notifications</Label>
-          <Switch id="email-notifications" />
+        <div className='flex items-center justify-between'>
+          <Label htmlFor='email-notifications'>Email Notifications</Label>
+          <Switch id='email-notifications' />
         </div>
       </div>
     </SettingsPageWrapper>
@@ -63,9 +63,9 @@ export function SettingsPageWithTabsExample() {
 
   return (
     <SettingsPageWrapper
-      workspaceSlug="workspace-123"
-      title="Notifications"
-      description="Control how and when you receive notifications"
+      workspaceSlug='workspace-123'
+      title='Notifications'
+      description='Control how and when you receive notifications'
     >
       <SettingsTabs tabs={tabs} />
       {/* Tab content here */}
@@ -77,23 +77,23 @@ export function SettingsPageWithTabsExample() {
 export function CollapsibleSectionsExample() {
   return (
     <SettingsPageWrapper
-      workspaceSlug="workspace-123"
-      title="Privacy & Data"
-      description="Manage your privacy settings and data"
+      workspaceSlug='workspace-123'
+      title='Privacy & Data'
+      description='Manage your privacy settings and data'
     >
-      <div className="space-y-4">
+      <div className='space-y-4'>
         <CollapsibleSettingsSection
-          title="Data Collection"
-          description="Control what data we collect"
-          icon={<Lock className="h-5 w-5" />}
+          title='Data Collection'
+          description='Control what data we collect'
+          icon={<Lock className='h-5 w-5' />}
           defaultOpen={true}
-          badge={<Badge variant="outline">Recommended</Badge>}
+          badge={<Badge variant='outline'>Recommended</Badge>}
         >
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+          <div className='space-y-4'>
+            <div className='flex items-center justify-between'>
               <div>
                 <Label>Analytics</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className='text-sm text-muted-foreground'>
                   Help us improve by sharing usage data
                 </p>
               </div>
@@ -103,13 +103,13 @@ export function CollapsibleSectionsExample() {
         </CollapsibleSettingsSection>
 
         <CollapsibleSettingsSection
-          title="Privacy Controls"
-          description="Manage who can see your information"
-          icon={<Bell className="h-5 w-5" />}
+          title='Privacy Controls'
+          description='Manage who can see your information'
+          icon={<Bell className='h-5 w-5' />}
           defaultOpen={false}
         >
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+          <div className='space-y-4'>
+            <div className='flex items-center justify-between'>
               <Label>Profile Visibility</Label>
               <Switch />
             </div>
@@ -159,33 +159,33 @@ export function UnsavedChangesExample() {
 
   return (
     <SettingsPageWrapper
-      workspaceSlug="workspace-123"
-      title="Profile"
-      description="Update your personal information"
+      workspaceSlug='workspace-123'
+      title='Profile'
+      description='Update your personal information'
       enableUnsavedChangesWarning={true}
     >
-      <div className="space-y-4">
+      <div className='space-y-4'>
         <div>
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor='name'>Name</Label>
           <Input
-            id="name"
+            id='name'
             value={formData.name}
             onChange={e => handleChange('name', e.target.value)}
           />
         </div>
         <div>
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor='email'>Email</Label>
           <Input
-            id="email"
-            type="email"
+            id='email'
+            type='email'
             value={formData.email}
             onChange={e => handleChange('email', e.target.value)}
           />
         </div>
         {hasUnsavedChanges && (
-          <div className="flex gap-2">
+          <div className='flex gap-2'>
             <Button onClick={saveChanges}>Save Changes</Button>
-            <Button variant="outline" onClick={handleDiscard}>
+            <Button variant='outline' onClick={handleDiscard}>
               Discard
             </Button>
           </div>

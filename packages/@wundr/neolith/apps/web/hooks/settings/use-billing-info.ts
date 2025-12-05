@@ -19,7 +19,12 @@ export type SubscriptionPlan = 'free' | 'pro' | 'enterprise';
 /**
  * Subscription status
  */
-export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing' | 'unpaid';
+export type SubscriptionStatus =
+  | 'active'
+  | 'canceled'
+  | 'past_due'
+  | 'trialing'
+  | 'unpaid';
 
 /**
  * Payment method type
@@ -267,7 +272,7 @@ export function useBillingInfo(): UseBillingInfoReturn {
         setIsUpdating(false);
       }
     },
-    [refresh],
+    [refresh]
   );
 
   // Remove payment method
@@ -280,7 +285,7 @@ export function useBillingInfo(): UseBillingInfoReturn {
           `/api/user/billing/payment-methods/${methodId}`,
           {
             method: 'DELETE',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -296,7 +301,7 @@ export function useBillingInfo(): UseBillingInfoReturn {
         setIsUpdating(false);
       }
     },
-    [refresh],
+    [refresh]
   );
 
   // Set default payment method
@@ -309,7 +314,7 @@ export function useBillingInfo(): UseBillingInfoReturn {
           `/api/user/billing/payment-methods/${methodId}/default`,
           {
             method: 'POST',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -325,7 +330,7 @@ export function useBillingInfo(): UseBillingInfoReturn {
         setIsUpdating(false);
       }
     },
-    [refresh],
+    [refresh]
   );
 
   // Update subscription
@@ -353,7 +358,7 @@ export function useBillingInfo(): UseBillingInfoReturn {
         setIsUpdating(false);
       }
     },
-    [refresh],
+    [refresh]
   );
 
   // Cancel subscription
@@ -384,9 +389,12 @@ export function useBillingInfo(): UseBillingInfoReturn {
     try {
       setIsUpdating(true);
 
-      const response = await fetch('/api/user/billing/subscription/reactivate', {
-        method: 'POST',
-      });
+      const response = await fetch(
+        '/api/user/billing/subscription/reactivate',
+        {
+          method: 'POST',
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to reactivate subscription');

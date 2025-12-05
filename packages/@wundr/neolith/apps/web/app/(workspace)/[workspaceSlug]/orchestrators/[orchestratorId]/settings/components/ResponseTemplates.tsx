@@ -55,7 +55,7 @@ export function ResponseTemplates({
   disabled,
 }: ResponseTemplatesProps) {
   const [templates, setTemplates] = useState<Record<string, ResponseTemplate>>(
-    (config?.responseTemplates as Record<string, ResponseTemplate>) || {},
+    (config?.responseTemplates as Record<string, ResponseTemplate>) || {}
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -126,8 +126,8 @@ export function ResponseTemplates({
 
   const deleteTemplate = async () => {
     if (!deleteTemplateId) {
-return;
-}
+      return;
+    }
 
     const newTemplates = { ...templates };
     delete newTemplates[deleteTemplateId];
@@ -146,8 +146,8 @@ return;
   const toggleTemplateActive = async (id: string) => {
     const template = templates[id];
     if (!template) {
-return;
-}
+      return;
+    }
 
     const updatedTemplate = {
       ...template,

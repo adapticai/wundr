@@ -67,10 +67,10 @@ export function A11yProvider({ children }: A11yProviderProps) {
   useEffect(() => {
     // Detect system preferences
     const prefersReducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
+      '(prefers-reduced-motion: reduce)'
     ).matches;
     const prefersContrast = window.matchMedia(
-      '(prefers-contrast: more)',
+      '(prefers-contrast: more)'
     ).matches;
 
     setPreferences(prev => ({
@@ -94,19 +94,19 @@ export function A11yProvider({ children }: A11yProviderProps) {
     // Apply preferences to document
     document.documentElement.classList.toggle(
       'reduce-motion',
-      preferences.reduceMotion,
+      preferences.reduceMotion
     );
     document.documentElement.classList.toggle(
       'high-contrast',
-      preferences.highContrast,
+      preferences.highContrast
     );
     document.documentElement.classList.toggle(
       'large-text',
-      preferences.largeText,
+      preferences.largeText
     );
     document.documentElement.classList.toggle(
       'enhanced-focus',
-      preferences.focusIndicators === 'enhanced',
+      preferences.focusIndicators === 'enhanced'
     );
 
     localStorage.setItem('a11y-preferences', JSON.stringify(preferences));
@@ -114,7 +114,7 @@ export function A11yProvider({ children }: A11yProviderProps) {
 
   const setPreference = <K extends keyof A11yPreferences>(
     key: K,
-    value: A11yPreferences[K],
+    value: A11yPreferences[K]
   ) => {
     setPreferences(prev => ({ ...prev, [key]: value }));
   };
@@ -215,7 +215,7 @@ export function LiveRegion({
  */
 export function useFocusTrap(
   containerRef: React.RefObject<HTMLElement>,
-  active: boolean,
+  active: boolean
 ): void {
   useEffect(() => {
     if (!active || !containerRef.current) {
@@ -224,7 +224,7 @@ export function useFocusTrap(
 
     const container = containerRef.current;
     const focusableElements = container.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
@@ -264,7 +264,7 @@ export type AnnounceFn = (
 export function useAnnounce(): AnnounceFn {
   const announce: AnnounceFn = (
     message: string,
-    politeness: 'polite' | 'assertive' = 'polite',
+    politeness: 'polite' | 'assertive' = 'polite'
   ) => {
     const el = document.createElement('div');
     el.setAttribute('aria-live', politeness);

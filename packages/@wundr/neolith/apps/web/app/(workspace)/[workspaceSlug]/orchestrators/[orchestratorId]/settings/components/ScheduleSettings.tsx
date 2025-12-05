@@ -152,7 +152,7 @@ export function ScheduleSettings({
 
   // Availability Calendar State
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date(),
+    new Date()
   );
   const [availabilityData, setAvailabilityData] = useState<{
     isAvailable: boolean;
@@ -176,7 +176,7 @@ export function ScheduleSettings({
   const loadScheduleData = async () => {
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/schedule`,
+        `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/schedule`
       );
       if (response.ok) {
         const data = await response.json();
@@ -192,7 +192,7 @@ export function ScheduleSettings({
   const loadRecurringTasks = async () => {
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/recurring-tasks`,
+        `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/recurring-tasks`
       );
       if (response.ok) {
         const data = await response.json();
@@ -208,8 +208,8 @@ export function ScheduleSettings({
   const checkAvailabilityForDate = useCallback(
     async (date: Date) => {
       if (!date) {
-return;
-}
+        return;
+      }
 
       const startTime = new Date(date);
       startTime.setHours(0, 0, 0, 0);
@@ -218,7 +218,7 @@ return;
 
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/availability?startTime=${startTime.toISOString()}&endTime=${endTime.toISOString()}&includeSlots=true`,
+          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/availability?startTime=${startTime.toISOString()}&endTime=${endTime.toISOString()}&includeSlots=true`
         );
         if (response.ok) {
           const data = await response.json();
@@ -228,7 +228,7 @@ return;
         console.error('Failed to check availability:', error);
       }
     },
-    [orchestratorId, workspaceSlug],
+    [orchestratorId, workspaceSlug]
   );
 
   useEffect(() => {
@@ -246,7 +246,7 @@ return;
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(schedule),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -298,7 +298,7 @@ return;
               estimatedHours: newTask.estimatedHours,
             },
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -343,7 +343,7 @@ return;
         `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/recurring-tasks?index=${index}`,
         {
           method: 'DELETE',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -612,7 +612,9 @@ return;
                           key={idx}
                           className='rounded-lg border bg-muted p-3 text-sm'
                         >
-                          <div className='font-medium'>{conflict.taskTitle}</div>
+                          <div className='font-medium'>
+                            {conflict.taskTitle}
+                          </div>
                           <div className='text-muted-foreground text-xs'>
                             {new Date(conflict.start).toLocaleTimeString()} -{' '}
                             {new Date(conflict.end).toLocaleTimeString()}
@@ -804,9 +806,7 @@ return;
                 </div>
 
                 <div className='space-y-2'>
-                  <Label htmlFor='task-estimated-hours'>
-                    Estimated Hours
-                  </Label>
+                  <Label htmlFor='task-estimated-hours'>Estimated Hours</Label>
                   <Input
                     id='task-estimated-hours'
                     type='number'
@@ -868,7 +868,11 @@ return;
                     )}
                     <div className='text-muted-foreground flex gap-4 text-xs'>
                       <span>
-                        Time: {formatTime(task.scheduledTime.hour, task.scheduledTime.minute)}
+                        Time:{' '}
+                        {formatTime(
+                          task.scheduledTime.hour,
+                          task.scheduledTime.minute
+                        )}
                       </span>
                       {task.dayOfWeek && <span>Day: {task.dayOfWeek}</span>}
                       {task.dayOfMonth && (

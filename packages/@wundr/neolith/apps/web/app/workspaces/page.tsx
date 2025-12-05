@@ -58,7 +58,7 @@ export default function WorkspacesPage() {
     } catch (err) {
       console.error('Error fetching workspaces:', err);
       setError(
-        err instanceof Error ? err.message : 'Failed to load workspaces',
+        err instanceof Error ? err.message : 'Failed to load workspaces'
       );
     } finally {
       setIsLoadingWorkspaces(false);
@@ -95,7 +95,7 @@ export default function WorkspacesPage() {
         `/api/workspaces/invites/${inviteId}/accept`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -119,7 +119,7 @@ export default function WorkspacesPage() {
         `/api/workspaces/invites/${inviteId}/decline`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {

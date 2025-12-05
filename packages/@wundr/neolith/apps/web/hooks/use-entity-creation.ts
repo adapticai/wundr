@@ -245,7 +245,7 @@ export function useEntityCreation<T extends EntityType>({
 
         // Show success toast
         toast.success(
-          `${getEntityDisplayName(entityType)} created successfully!`,
+          `${getEntityDisplayName(entityType)} created successfully!`
         );
 
         // Call success callback if provided
@@ -278,7 +278,7 @@ export function useEntityCreation<T extends EntityType>({
         setIsCreating(false);
       }
     },
-    [entityType, workspaceSlug, redirectPath, router, onSuccess, onError],
+    [entityType, workspaceSlug, redirectPath, router, onSuccess, onError]
   );
 
   const reset = React.useCallback(() => {

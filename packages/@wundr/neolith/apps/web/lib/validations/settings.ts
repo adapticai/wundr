@@ -52,8 +52,14 @@ export const notificationPreferencesSchema = z.object({
   doNotDisturb: z
     .object({
       enabled: z.boolean().optional(),
-      startTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/).optional(),
-      endTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/).optional(),
+      startTime: z
+        .string()
+        .regex(/^([01]\d|2[0-3]):([0-5]\d)$/)
+        .optional(),
+      endTime: z
+        .string()
+        .regex(/^([01]\d|2[0-3]):([0-5]\d)$/)
+        .optional(),
       days: z.array(z.number().min(0).max(6)).optional(),
     })
     .optional(),
@@ -97,7 +103,9 @@ export const privacySettingsSchema = z.object({
   whoCanSeePosts: z.enum(['public', 'workspace', 'private']).optional(),
   allowDirectMessages: z.boolean().optional(),
   showActivityStatus: z.boolean().optional(),
-  dataRetention: z.enum(['forever', '1-year', '6-months', '3-months']).optional(),
+  dataRetention: z
+    .enum(['forever', '1-year', '6-months', '3-months'])
+    .optional(),
 });
 
 export type PrivacySettings = z.infer<typeof privacySettingsSchema>;
@@ -169,7 +177,7 @@ export type SettingsErrorCode =
 export function createSettingsErrorResponse(
   message: string,
   code: SettingsErrorCode,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) {
   return {
     success: false,

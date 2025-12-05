@@ -1,0 +1,340 @@
+/**
+ * AI Conversation Share API Route
+ *
+ * Handles sharing conversations with other users.
+ *
+ * Routes:
+ * - POST /api/ai/conversations/[id]/share - Share conversation
+ * - DELETE /api/ai/conversations/[id]/share - Revoke share
+ *
+ * @module app/api/ai/conversations/[id]/share/route
+ */
+
+import { prisma, type Prisma } from '@neolith/database';
+import { NextResponse } from 'next/server';
+import crypto from 'crypto';
+
+import { auth } from '@/lib/auth';
+import {
+  createErrorResponse,
+  ORG_ERROR_CODES,
+} from '@/lib/validations/organization';
+
+import type {
+  ShareConversationInput,
+  AIConversationMetadata,
+} from '@/types/ai-conversation';
+import type { NextRequest } from 'next/server';
+
+/**
+ * Route context with conversation ID parameter
+ */
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
+
+/**
+ * Generate a secure share token
+ */
+function generateShareToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+/**
+ * POST /api/ai/conversations/[id]/share
+ *
+ * Share a conversation with other users or make it public.
+ *
+ * @param request - Next.js request with share data
+ * @param params - Route parameters with conversation ID
+ * @returns Updated share settings
+ *
+ * @example
+ * ```
+ * POST /api/ai/conversations/conv_123/share
+ * Content-Type: application/json
+ *
+ * {
+ *   "isPublic": true
+ * }
+ * ```
+ *
+ * @example
+ * ```
+ * POST /api/ai/conversations/conv_123/share
+ * Content-Type: application/json
+ *
+ * {
+ *   "userIds": ["user_1", "user_2"]
+ * }
+ * ```
+ */
+export async function POST(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
+  try {
+    // Authenticate user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
+      );
+    }
+
+    const { id: conversationId } = await context.params;
+
+    // Parse request body
+    let body: Partial<ShareConversationInput>;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        createErrorResponse(
+          'Invalid JSON body',
+          ORG_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
+      );
+    }
+
+    const { isPublic, userIds } = body;
+
+    // Fetch conversation
+    const channel = await prisma.channel.findUnique({
+      where: { id: conversationId },
+      include: {
+        channelMembers: true,
+      },
+    });
+
+    if (!channel) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Conversation not found',
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
+        ),
+        { status: 404 }
+      );
+    }
+
+    // Check if user is owner
+    const isOwner = channel.channelMembers.some(
+      member => member.userId === session.user.id && member.role === 'OWNER'
+    );
+
+    if (!isOwner) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Only the owner can share this conversation',
+          ORG_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
+      );
+    }
+
+    // Update share settings in a transaction
+    const result = await prisma.$transaction(async tx => {
+      const settings = (channel.settings as Record<string, unknown>) || {};
+      const metadata = (settings.aiMetadata as AIConversationMetadata) || {};
+
+      // Generate share token if making public
+      const shareToken =
+        isPublic && !metadata.shareSettings?.shareToken
+          ? generateShareToken()
+          : metadata.shareSettings?.shareToken;
+
+      // Update metadata
+      const updatedMetadata: AIConversationMetadata = {
+        ...metadata,
+        shareSettings: {
+          isPublic: isPublic || false,
+          shareToken,
+          allowedUserIds:
+            userIds || metadata.shareSettings?.allowedUserIds || [],
+        },
+      };
+
+      // Update channel
+      await tx.channel.update({
+        where: { id: conversationId },
+        data: {
+          settings: {
+            ...settings,
+            aiMetadata: updatedMetadata as unknown as Prisma.InputJsonValue,
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      // Add specified users as members
+      if (userIds && userIds.length > 0) {
+        // Verify users exist in workspace
+        const workspace = await tx.workspace.findUnique({
+          where: { id: channel.workspaceId },
+        });
+
+        if (workspace) {
+          const workspaceMembers = await tx.workspaceMember.findMany({
+            where: {
+              workspaceId: workspace.id,
+              userId: { in: userIds },
+            },
+          });
+
+          const validUserIds = workspaceMembers.map(m => m.userId);
+
+          // Add as channel members
+          for (const userId of validUserIds) {
+            const existingMember = await tx.channelMember.findUnique({
+              where: {
+                channelId_userId: {
+                  channelId: conversationId,
+                  userId,
+                },
+              },
+            });
+
+            if (!existingMember) {
+              await tx.channelMember.create({
+                data: {
+                  channelId: conversationId,
+                  userId,
+                  role: 'MEMBER',
+                },
+              });
+            }
+          }
+        }
+      }
+
+      return updatedMetadata.shareSettings;
+    });
+
+    return NextResponse.json({
+      data: result,
+      message: 'Conversation shared successfully',
+    });
+  } catch (error) {
+    console.error(`[POST /api/ai/conversations/[id]/share] Error:`, error);
+    return NextResponse.json(
+      createErrorResponse(
+        'An internal error occurred',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/ai/conversations/[id]/share
+ *
+ * Revoke sharing for a conversation.
+ *
+ * @param request - Next.js request object
+ * @param params - Route parameters with conversation ID
+ * @returns Success response
+ */
+export async function DELETE(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
+  try {
+    // Authenticate user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
+      );
+    }
+
+    const { id: conversationId } = await context.params;
+
+    // Fetch conversation
+    const channel = await prisma.channel.findUnique({
+      where: { id: conversationId },
+      include: {
+        channelMembers: true,
+      },
+    });
+
+    if (!channel) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Conversation not found',
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
+        ),
+        { status: 404 }
+      );
+    }
+
+    // Check if user is owner
+    const isOwner = channel.channelMembers.some(
+      member => member.userId === session.user.id && member.role === 'OWNER'
+    );
+
+    if (!isOwner) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Only the owner can revoke sharing',
+          ORG_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
+      );
+    }
+
+    // Revoke sharing
+    await prisma.$transaction(async tx => {
+      const settings = (channel.settings as Record<string, unknown>) || {};
+      const metadata = (settings.aiMetadata as AIConversationMetadata) || {};
+
+      const updatedMetadata: AIConversationMetadata = {
+        ...metadata,
+        shareSettings: {
+          isPublic: false,
+          shareToken: undefined,
+          allowedUserIds: [],
+        },
+      };
+
+      await tx.channel.update({
+        where: { id: conversationId },
+        data: {
+          settings: {
+            ...settings,
+            aiMetadata: updatedMetadata as unknown as Prisma.InputJsonValue,
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      // Remove non-owner members
+      await tx.channelMember.deleteMany({
+        where: {
+          channelId: conversationId,
+          userId: { not: session.user.id },
+        },
+      });
+    });
+
+    return NextResponse.json({
+      message: 'Sharing revoked successfully',
+    });
+  } catch (error) {
+    console.error(`[DELETE /api/ai/conversations/[id]/share] Error:`, error);
+    return NextResponse.json(
+      createErrorResponse(
+        'An internal error occurred',
+        ORG_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
+    );
+  }
+}

@@ -181,7 +181,7 @@ export type CharterVersionCreateInput = z.infer<
 export const createErrorResponse = (
   code: CharterErrorCode,
   message: string,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) => ({
   error: {
     code,

@@ -341,7 +341,7 @@ export function VirtualizedList<T>({
       itemHeight,
       containerHeight,
       overscan,
-    },
+    }
   );
 
   return (

@@ -118,10 +118,11 @@ export default function PrivacySettingsPage() {
       functional: true,
       analytics: true,
       advertising: false,
-    },
+    }
   );
 
-  const [dataInventory, setDataInventory] = useState<PersonalDataInventory | null>(null);
+  const [dataInventory, setDataInventory] =
+    useState<PersonalDataInventory | null>(null);
   const [exportStatus, setExportStatus] = useState<DataExportStatus>({
     status: 'idle',
     progress: 0,
@@ -549,9 +550,7 @@ export default function PrivacySettingsPage() {
             <Switch
               id='third-party-sharing'
               checked={settings.allowThirdPartyDataSharing}
-              onCheckedChange={() =>
-                handleToggle('allowThirdPartyDataSharing')
-              }
+              onCheckedChange={() => handleToggle('allowThirdPartyDataSharing')}
             />
           </div>
         </CardContent>
@@ -753,10 +752,7 @@ export default function PrivacySettingsPage() {
       </Dialog>
 
       {/* Data Inventory Dialog */}
-      <Dialog
-        open={inventoryDialogOpen}
-        onOpenChange={setInventoryDialogOpen}
-      >
+      <Dialog open={inventoryDialogOpen} onOpenChange={setInventoryDialogOpen}>
         <DialogContent className='max-w-2xl max-h-[80vh] overflow-y-auto'>
           <DialogHeader>
             <DialogTitle className='flex items-center gap-2'>
@@ -806,9 +802,7 @@ export default function PrivacySettingsPage() {
                 <h4 className='font-semibold text-sm'>Activity Summary</h4>
                 <div className='grid grid-cols-2 gap-4 rounded-lg border p-4'>
                   <div>
-                    <p className='text-xs text-muted-foreground'>
-                      Last Active
-                    </p>
+                    <p className='text-xs text-muted-foreground'>Last Active</p>
                     <p className='text-sm font-medium'>
                       {dataInventory.activity.lastActive}
                     </p>
@@ -822,17 +816,13 @@ export default function PrivacySettingsPage() {
                     </p>
                   </div>
                   <div>
-                    <p className='text-xs text-muted-foreground'>
-                      Total Files
-                    </p>
+                    <p className='text-xs text-muted-foreground'>Total Files</p>
                     <p className='text-sm font-medium'>
                       {dataInventory.activity.totalFiles}
                     </p>
                   </div>
                   <div>
-                    <p className='text-xs text-muted-foreground'>
-                      Workspaces
-                    </p>
+                    <p className='text-xs text-muted-foreground'>Workspaces</p>
                     <p className='text-sm font-medium'>
                       {dataInventory.activity.totalWorkspaces}
                     </p>
@@ -910,21 +900,22 @@ export default function PrivacySettingsPage() {
               </div>
             )}
 
-            {exportStatus.status === 'completed' && exportStatus.downloadUrl && (
-              <div className='flex flex-col items-center gap-4'>
-                <CheckCircle2 className='h-12 w-12 text-green-600' />
-                <p className='text-sm text-center'>
-                  Your data has been exported successfully. The download link
-                  will expire in 24 hours.
-                </p>
-                <Button asChild className='w-full'>
-                  <a href={exportStatus.downloadUrl} download>
-                    <Download className='mr-2 h-4 w-4' />
-                    Download Now
-                  </a>
-                </Button>
-              </div>
-            )}
+            {exportStatus.status === 'completed' &&
+              exportStatus.downloadUrl && (
+                <div className='flex flex-col items-center gap-4'>
+                  <CheckCircle2 className='h-12 w-12 text-green-600' />
+                  <p className='text-sm text-center'>
+                    Your data has been exported successfully. The download link
+                    will expire in 24 hours.
+                  </p>
+                  <Button asChild className='w-full'>
+                    <a href={exportStatus.downloadUrl} download>
+                      <Download className='mr-2 h-4 w-4' />
+                      Download Now
+                    </a>
+                  </Button>
+                </div>
+              )}
 
             {exportStatus.status === 'failed' && (
               <div className='flex flex-col items-center gap-4'>
@@ -993,7 +984,7 @@ export default function PrivacySettingsPage() {
                   onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     if (e.key === 'Enter') {
                       handleRequestDataDeletion(
-                        (e.target as HTMLInputElement).value,
+                        (e.target as HTMLInputElement).value
                       );
                     }
                   }}
@@ -1007,7 +998,7 @@ export default function PrivacySettingsPage() {
               className='bg-destructive hover:bg-destructive/90'
               onClick={() => {
                 const input = document.getElementById(
-                  'delete-confirm',
+                  'delete-confirm'
                 ) as HTMLInputElement;
                 handleRequestDataDeletion(input?.value || '');
               }}

@@ -41,7 +41,7 @@ import type { NextRequest } from 'next/server';
  */
 async function verifyWebhookSignature(
   request: NextRequest,
-  _body: string,
+  _body: string
 ): Promise<boolean> {
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
@@ -84,7 +84,7 @@ async function verifyWebhookSignature(
     if (process.env.NODE_ENV === 'development') {
       // Check if the issuer matches our API key
       const payloadData = JSON.parse(
-        Buffer.from(payload, 'base64url').toString(),
+        Buffer.from(payload, 'base64url').toString()
       );
       if (payloadData.iss === apiKey) {
         return true;
@@ -122,7 +122,7 @@ function parseRoomName(roomName: string): {
  * Handle room_started event
  */
 async function handleRoomStarted(
-  payload: LiveKitWebhookPayload,
+  payload: LiveKitWebhookPayload
 ): Promise<void> {
   const roomName = payload.room?.name;
   if (!roomName) {
@@ -152,7 +152,7 @@ async function handleRoomStarted(
  * Handle room_finished event
  */
 async function handleRoomFinished(
-  payload: LiveKitWebhookPayload,
+  payload: LiveKitWebhookPayload
 ): Promise<void> {
   const roomName = payload.room?.name;
   if (!roomName) {
@@ -234,7 +234,7 @@ async function handleRoomFinished(
             (h): HuddleResponse =>
               h.roomName === roomName
                 ? { ...h, status: 'ended', endedAt: now }
-                : h,
+                : h
           );
 
           await prisma.workspace.update({
@@ -244,7 +244,7 @@ async function handleRoomFinished(
                 JSON.stringify({
                   ...settings,
                   huddles: updatedHuddles,
-                }),
+                })
               ),
             },
           });
@@ -258,7 +258,7 @@ async function handleRoomFinished(
  * Handle participant_joined event
  */
 async function handleParticipantJoined(
-  payload: LiveKitWebhookPayload,
+  payload: LiveKitWebhookPayload
 ): Promise<void> {
   const roomName = payload.room?.name;
   const participant = payload.participant;
@@ -338,7 +338,7 @@ async function handleParticipantJoined(
  * Handle participant_left event
  */
 async function handleParticipantLeft(
-  payload: LiveKitWebhookPayload,
+  payload: LiveKitWebhookPayload
 ): Promise<void> {
   const roomName = payload.room?.name;
   const participant = payload.participant;
@@ -386,7 +386,7 @@ async function handleParticipantLeft(
  * Handle track_published event
  */
 async function handleTrackPublished(
-  payload: LiveKitWebhookPayload,
+  payload: LiveKitWebhookPayload
 ): Promise<void> {
   const roomName = payload.room?.name;
   const participant = payload.participant;
@@ -456,7 +456,7 @@ async function handleTrackPublished(
  * Handle track_unpublished event
  */
 async function handleTrackUnpublished(
-  payload: LiveKitWebhookPayload,
+  payload: LiveKitWebhookPayload
 ): Promise<void> {
   const roomName = payload.room?.name;
   const participant = payload.participant;
@@ -525,7 +525,7 @@ async function handleTrackUnpublished(
  * Handle egress_started event (recording started)
  */
 async function handleEgressStarted(
-  payload: LiveKitWebhookPayload,
+  payload: LiveKitWebhookPayload
 ): Promise<void> {
   const egressInfo = payload.egressInfo;
   if (!egressInfo?.egressId || !egressInfo.roomName) {
@@ -552,7 +552,7 @@ async function handleEgressStarted(
  * Handle egress_ended event (recording ended)
  */
 async function handleEgressEnded(
-  payload: LiveKitWebhookPayload,
+  payload: LiveKitWebhookPayload
 ): Promise<void> {
   const egressInfo = payload.egressInfo;
   if (!egressInfo?.egressId) {
@@ -593,9 +593,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid webhook signature',
-          CALL_ERROR_CODES.WEBHOOK_VERIFICATION_FAILED,
+          CALL_ERROR_CODES.WEBHOOK_VERIFICATION_FAILED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -607,9 +607,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON payload',
-          CALL_ERROR_CODES.VALIDATION_ERROR,
+          CALL_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -617,15 +617,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!parseResult.success) {
       console.error(
         '[LiveKit Webhook] Invalid payload:',
-        parseResult.error.flatten(),
+        parseResult.error.flatten()
       );
       return NextResponse.json(
         createErrorResponse(
           'Invalid webhook payload',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -681,9 +681,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR,
+        CALL_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

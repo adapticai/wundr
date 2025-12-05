@@ -43,7 +43,7 @@ export async function POST(_request: Request, context: RouteContext) {
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -51,19 +51,20 @@ export async function POST(_request: Request, context: RouteContext) {
     if (!member || (member.role !== 'ADMIN' && member.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Insufficient permissions' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Get custom domain from settings
     const settings = (workspace.settings as Record<string, unknown>) || {};
-    const customization = (settings.customization as Record<string, unknown>) || {};
+    const customization =
+      (settings.customization as Record<string, unknown>) || {};
     const customDomain = customization.customDomain as string;
 
     if (!customDomain) {
       return NextResponse.json(
         { error: 'No custom domain configured' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -80,8 +81,9 @@ export async function POST(_request: Request, context: RouteContext) {
       const records = await dns.resolveCname(customDomain).catch(() => []);
 
       // Check if CNAME points to your service domain
-      verified = records.some(record =>
-        record.includes('neolith.io') || record.includes('app.neolith.io'),
+      verified = records.some(
+        record =>
+          record.includes('neolith.io') || record.includes('app.neolith.io')
       );
     } catch (error) {
       console.error('DNS verification error:', error);
@@ -134,7 +136,7 @@ export async function POST(_request: Request, context: RouteContext) {
     console.error('Error verifying domain:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

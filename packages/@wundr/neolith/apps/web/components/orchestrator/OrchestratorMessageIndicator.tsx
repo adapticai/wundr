@@ -66,7 +66,7 @@ export function OrchestratorMessageIndicator({
         <div
           className={cn(
             'absolute flex items-center justify-center rounded-full bg-primary ring-2 ring-background',
-            sizes.badge,
+            sizes.badge
           )}
         >
           <Bot className={cn('text-primary-foreground', sizes.icon)} />
@@ -89,7 +89,7 @@ export function OrchestratorMessageIndicator({
       <div
         className={cn(
           'flex items-center justify-center rounded-full bg-primary/10 p-1',
-          className,
+          className
         )}
       >
         <Bot className={cn('text-primary', sizes.icon)} />
@@ -105,7 +105,7 @@ export function OrchestratorMessageIndicator({
         className={cn(
           'inline-flex items-center gap-1 bg-primary/10 text-primary hover:bg-primary/20',
           sizes.label,
-          className,
+          className
         )}
       >
         <Sparkles className={sizes.icon} />
@@ -156,7 +156,7 @@ export function OrchestratorMessageWrapper({
       className={cn(
         'relative rounded-lg border border-primary/20 bg-primary/5',
         'before:absolute before:-left-1 before:top-0 before:h-full before:w-1 before:rounded-full before:bg-primary',
-        className,
+        className
       )}
     >
       {children}
@@ -174,7 +174,7 @@ export function OrchestratorMessageBadge({
     <div
       className={cn(
         'inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary',
-        className,
+        className
       )}
     >
       <Bot className='h-3 w-3' />

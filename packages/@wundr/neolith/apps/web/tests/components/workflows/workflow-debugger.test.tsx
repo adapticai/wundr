@@ -67,7 +67,7 @@ describe('WorkflowDebugger', () => {
       expect(screen.getByText('Debug Mode')).toBeInTheDocument();
       expect(screen.getByText('Disabled')).toBeInTheDocument();
       expect(
-        screen.getByText('Enable Debug Mode to start testing'),
+        screen.getByText('Enable Debug Mode to start testing')
       ).toBeInTheDocument();
     });
 
@@ -136,7 +136,9 @@ describe('WorkflowDebugger', () => {
       await user.tab();
 
       await waitFor(() => {
-        expect(screen.getByText(/Invalid JSON|Unexpected token/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Invalid JSON|Unexpected token/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -156,7 +158,9 @@ describe('WorkflowDebugger', () => {
       await user.tab();
 
       await waitFor(() => {
-        expect(screen.getByText(/Invalid JSON|Unexpected token/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Invalid JSON|Unexpected token/i)
+        ).toBeInTheDocument();
       });
 
       // Now set valid JSON
@@ -166,7 +170,9 @@ describe('WorkflowDebugger', () => {
       await user.tab();
 
       await waitFor(() => {
-        expect(screen.queryByText(/Invalid JSON|Unexpected token/i)).not.toBeInTheDocument();
+        expect(
+          screen.queryByText(/Invalid JSON|Unexpected token/i)
+        ).not.toBeInTheDocument();
       });
     });
   });
@@ -192,8 +198,8 @@ describe('WorkflowDebugger', () => {
       await user.click(toggle);
 
       const switches = screen.getAllByRole('switch');
-      const httpMockSwitch = switches.find(
-        s => s.closest('div')?.textContent?.includes('HTTP Requests'),
+      const httpMockSwitch = switches.find(s =>
+        s.closest('div')?.textContent?.includes('HTTP Requests')
       );
 
       expect(httpMockSwitch).toBeDefined();
@@ -214,9 +220,7 @@ describe('WorkflowDebugger', () => {
       await user.click(toggle);
 
       // Check trigger
-      expect(
-        screen.getByText(/Trigger: message/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Trigger: message/i)).toBeInTheDocument();
 
       // Check actions
       expect(screen.getByText('Send Message')).toBeInTheDocument();
@@ -272,7 +276,7 @@ describe('WorkflowDebugger', () => {
       await user.click(toggle);
 
       expect(
-        screen.getByRole('button', { name: /Run Test/i }),
+        screen.getByRole('button', { name: /Run Test/i })
       ).toBeInTheDocument();
     });
 
@@ -297,7 +301,7 @@ describe('WorkflowDebugger', () => {
         <WorkflowDebugger
           workflow={mockWorkflow}
           onExecutionComplete={onExecutionComplete}
-        />,
+        />
       );
 
       const toggle = screen.getByRole('switch');
@@ -308,8 +312,12 @@ describe('WorkflowDebugger', () => {
 
       // Should show pause and stop buttons during execution
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Pause/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /Stop/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /Pause/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /Stop/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -320,7 +328,7 @@ describe('WorkflowDebugger', () => {
         <WorkflowDebugger
           workflow={mockWorkflow}
           onExecutionComplete={onExecutionComplete}
-        />,
+        />
       );
 
       const toggle = screen.getByRole('switch');
@@ -333,7 +341,7 @@ describe('WorkflowDebugger', () => {
         () => {
           expect(onExecutionComplete).toHaveBeenCalled();
         },
-        { timeout: 10000 },
+        { timeout: 10000 }
       );
     }, 15000);
 
@@ -349,9 +357,11 @@ describe('WorkflowDebugger', () => {
 
       await waitFor(
         () => {
-          expect(screen.getByRole('button', { name: /Reset/i })).toBeInTheDocument();
+          expect(
+            screen.getByRole('button', { name: /Reset/i })
+          ).toBeInTheDocument();
         },
-        { timeout: 10000 },
+        { timeout: 10000 }
       );
     }, 15000);
   });
@@ -364,9 +374,7 @@ describe('WorkflowDebugger', () => {
       const toggle = screen.getByRole('switch');
       await user.click(toggle);
 
-      expect(
-        screen.getByText(/No variables available/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/No variables available/i)).toBeInTheDocument();
     });
 
     it('should display variables during execution', async () => {
@@ -383,7 +391,7 @@ describe('WorkflowDebugger', () => {
         () => {
           expect(screen.getByText('trigger')).toBeInTheDocument();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
     }, 10000);
   });
@@ -396,9 +404,7 @@ describe('WorkflowDebugger', () => {
       const toggle = screen.getByRole('switch');
       await user.click(toggle);
 
-      expect(
-        screen.getByText(/No logs yet/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/No logs yet/i)).toBeInTheDocument();
     });
 
     it('should display logs during execution', async () => {
@@ -414,10 +420,10 @@ describe('WorkflowDebugger', () => {
       await waitFor(
         () => {
           expect(
-            screen.getByText(/Starting workflow execution/i),
+            screen.getByText(/Starting workflow execution/i)
           ).toBeInTheDocument();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
     }, 10000);
   });
@@ -443,10 +449,10 @@ describe('WorkflowDebugger', () => {
       await waitFor(
         () => {
           expect(
-            screen.getByRole('button', { name: /Step Over/i }),
+            screen.getByRole('button', { name: /Step Over/i })
           ).toBeInTheDocument();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
     }, 10000);
 
@@ -470,10 +476,10 @@ describe('WorkflowDebugger', () => {
       await waitFor(
         () => {
           expect(
-            screen.getByRole('button', { name: /Step Over/i }),
+            screen.getByRole('button', { name: /Step Over/i })
           ).toBeInTheDocument();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       // Step over
@@ -483,9 +489,11 @@ describe('WorkflowDebugger', () => {
       // Should continue execution
       await waitFor(
         () => {
-          expect(screen.queryByRole('button', { name: /Step Over/i })).not.toBeInTheDocument();
+          expect(
+            screen.queryByRole('button', { name: /Step Over/i })
+          ).not.toBeInTheDocument();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
     }, 15000);
   });
@@ -508,7 +516,7 @@ describe('WorkflowDebugger', () => {
           expect(screen.getByText('Duration:')).toBeInTheDocument();
           expect(screen.getByText('Actions:')).toBeInTheDocument();
         },
-        { timeout: 10000 },
+        { timeout: 10000 }
       );
     }, 15000);
   });

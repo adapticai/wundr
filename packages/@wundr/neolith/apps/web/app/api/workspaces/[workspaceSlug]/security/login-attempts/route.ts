@@ -64,7 +64,7 @@ export async function GET(_request: Request, context: RouteContext) {
     console.error('Error fetching login attempts settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -84,7 +84,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (!parseResult.success) {
       return NextResponse.json(
         { error: 'Invalid input', details: parseResult.error.flatten() },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -128,8 +128,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     // Log audit event
     await prisma.auditLog.create({
       data: {
-        
-        actorId: session.user.id, actorType: 'user',
+        actorId: session.user.id,
+        actorType: 'user',
         action: 'settings.login_attempts.updated',
         resourceType: 'workspace',
         resourceId: workspace.id,
@@ -144,7 +144,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     console.error('Error updating login attempts settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

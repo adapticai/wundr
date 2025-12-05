@@ -127,7 +127,7 @@ export function FilesTab({
       // Note: The API will also enforce this on the backend
       return isUploader || isAdminOrOwner;
     },
-    [currentUserId, currentUserRole],
+    [currentUserId, currentUserRole]
   );
 
   const fetchFiles = useCallback(
@@ -172,7 +172,7 @@ export function FilesTab({
       } catch (error) {
         console.error('Failed to fetch files:', error);
         setError(
-          error instanceof Error ? error.message : 'Failed to load files',
+          error instanceof Error ? error.message : 'Failed to load files'
         );
         if (!loadMore) {
           setFiles([]);
@@ -181,7 +181,7 @@ export function FilesTab({
         setIsLoading(false);
       }
     },
-    [channelId, filter, cursor, mode],
+    [channelId, filter, cursor, mode]
   );
 
   useEffect(() => {
@@ -211,7 +211,7 @@ export function FilesTab({
       <div
         className={cn(
           'flex flex-1 flex-col items-center justify-center p-4 sm:p-8',
-          className,
+          className
         )}
       >
         <div className='mb-6 sm:mb-8 rounded-full bg-destructive/10 p-4 sm:p-6'>
@@ -245,7 +245,7 @@ export function FilesTab({
               'shrink-0 rounded-md px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors',
               filter === key
                 ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
           >
             {label}

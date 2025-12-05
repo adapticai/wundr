@@ -132,6 +132,11 @@ export default async function SettingsLayout({
           icon: 'Settings',
         },
         {
+          href: `/${workspaceSlug}/settings/ai`,
+          label: 'AI & Models',
+          icon: 'Bot',
+        },
+        {
           href: `/${workspaceSlug}/settings/notifications`,
           label: 'Notifications',
           icon: 'Bell',

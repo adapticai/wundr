@@ -105,8 +105,12 @@ export function WorkflowExport({
 }: WorkflowExportProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [exportOptions, setExportOptions] = useState<ExportOptions>(DEFAULT_EXPORT_OPTIONS);
-  const [lastExportResult, setLastExportResult] = useState<ExportResult | null>(null);
+  const [exportOptions, setExportOptions] = useState<ExportOptions>(
+    DEFAULT_EXPORT_OPTIONS
+  );
+  const [lastExportResult, setLastExportResult] = useState<ExportResult | null>(
+    null
+  );
   const [copiedJson, setCopiedJson] = useState(false);
 
   // Filter workflows based on selection
@@ -114,7 +118,7 @@ export function WorkflowExport({
     if (selectedWorkflowIds.length === 0) {
       return workflows;
     }
-    return workflows.filter((w) => selectedWorkflowIds.includes(w.id));
+    return workflows.filter(w => selectedWorkflowIds.includes(w.id));
   }, [workflows, selectedWorkflowIds]);
 
   // Calculate export size estimate
@@ -122,17 +126,20 @@ export function WorkflowExport({
     const jsonString = JSON.stringify(workflowsToExport);
     const bytes = new Blob([jsonString]).size;
     if (bytes < 1024) {
-return `${bytes} B`;
-}
+      return `${bytes} B`;
+    }
     if (bytes < 1024 * 1024) {
-return `${(bytes / 1024).toFixed(1)} KB`;
-}
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }, [workflowsToExport]);
 
-  const handleOptionChange = useCallback((key: keyof ExportOptions, value: boolean) => {
-    setExportOptions((prev) => ({ ...prev, [key]: value }));
-  }, []);
+  const handleOptionChange = useCallback(
+    (key: keyof ExportOptions, value: boolean) => {
+      setExportOptions(prev => ({ ...prev, [key]: value }));
+    },
+    []
+  );
 
   const exportWorkflows = useCallback(async () => {
     setIsExporting(true);
@@ -141,7 +148,7 @@ return `${(bytes / 1024).toFixed(1)} KB`;
     try {
       // Fetch additional data based on options
       const exportData = await Promise.all(
-        workflowsToExport.map(async (workflow) => {
+        workflowsToExport.map(async workflow => {
           const data: ExportedWorkflow = {
             version: '1.0.0',
             exportedAt: new Date().toISOString(),
@@ -165,14 +172,17 @@ return `${(bytes / 1024).toFixed(1)} KB`;
           if (exportOptions.includeExecutionHistory) {
             try {
               const response = await fetch(
-                `/api/workspaces/${workspaceSlug}/workflows/${workflow.id}/executions?limit=50`,
+                `/api/workspaces/${workspaceSlug}/workflows/${workflow.id}/executions?limit=50`
               );
               if (response.ok) {
                 const { executions } = await response.json();
                 data.executionHistory = executions;
               }
             } catch (error) {
-              console.warn(`Failed to fetch execution history for ${workflow.id}:`, error);
+              console.warn(
+                `Failed to fetch execution history for ${workflow.id}:`,
+                error
+              );
             }
           }
 
@@ -180,24 +190,31 @@ return `${(bytes / 1024).toFixed(1)} KB`;
           if (exportOptions.includePermissions) {
             try {
               const response = await fetch(
-                `/api/workspaces/${workspaceSlug}/workflows/${workflow.id}/permissions`,
+                `/api/workspaces/${workspaceSlug}/workflows/${workflow.id}/permissions`
               );
               if (response.ok) {
                 const { permissions } = await response.json();
                 data.permissions = permissions;
               }
             } catch (error) {
-              console.warn(`Failed to fetch permissions for ${workflow.id}:`, error);
+              console.warn(
+                `Failed to fetch permissions for ${workflow.id}:`,
+                error
+              );
             }
           }
 
           return data;
-        }),
+        })
       );
 
       // Create JSON string
       const jsonString = exportOptions.prettyPrint
-        ? JSON.stringify(exportData.length === 1 ? exportData[0] : exportData, null, 2)
+        ? JSON.stringify(
+            exportData.length === 1 ? exportData[0] : exportData,
+            null,
+            2
+          )
         : JSON.stringify(exportData.length === 1 ? exportData[0] : exportData);
 
       // Create blob and download
@@ -244,14 +261,22 @@ return `${(bytes / 1024).toFixed(1)} KB`;
     } finally {
       setIsExporting(false);
     }
-  }, [workflowsToExport, exportOptions, workspaceSlug, onExportComplete, onExportError]);
+  }, [
+    workflowsToExport,
+    exportOptions,
+    workspaceSlug,
+    onExportComplete,
+    onExportError,
+  ]);
 
   const copyToClipboard = useCallback(async () => {
     try {
       const jsonString = JSON.stringify(
-        workflowsToExport.length === 1 ? workflowsToExport[0] : workflowsToExport,
+        workflowsToExport.length === 1
+          ? workflowsToExport[0]
+          : workflowsToExport,
         null,
-        2,
+        2
       );
       await navigator.clipboard.writeText(jsonString);
       setCopiedJson(true);
@@ -265,44 +290,46 @@ return `${(bytes / 1024).toFixed(1)} KB`;
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
+          <Button variant='outline' size='sm'>
+            <Download className='h-4 w-4 mr-2' />
             Export
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className='max-w-2xl'>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileJson className="h-5 w-5" />
+          <DialogTitle className='flex items-center gap-2'>
+            <FileJson className='h-5 w-5' />
             Export Workflows
           </DialogTitle>
           <DialogDescription>
-            Export {workflowsToExport.length} workflow{workflowsToExport.length !== 1 ? 's' : ''}{' '}
-            to JSON format
+            Export {workflowsToExport.length} workflow
+            {workflowsToExport.length !== 1 ? 's' : ''} to JSON format
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className='space-y-6 py-4'>
           {/* Workflows to Export */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium">Workflows to Export</Label>
-            <ScrollArea className="h-[120px] border rounded-lg p-3">
-              <div className="space-y-2">
-                {workflowsToExport.map((workflow) => (
+          <div className='space-y-3'>
+            <Label className='text-base font-medium'>Workflows to Export</Label>
+            <ScrollArea className='h-[120px] border rounded-lg p-3'>
+              <div className='space-y-2'>
+                {workflowsToExport.map(workflow => (
                   <div
                     key={workflow.id}
-                    className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                    className='flex items-center justify-between p-2 bg-muted/50 rounded'
                   >
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{workflow.name}</div>
+                    <div className='flex-1 min-w-0'>
+                      <div className='font-medium truncate'>
+                        {workflow.name}
+                      </div>
                       {workflow.description && (
-                        <div className="text-xs text-muted-foreground truncate">
+                        <div className='text-xs text-muted-foreground truncate'>
                           {workflow.description}
                         </div>
                       )}
                     </div>
-                    <Badge variant="outline">{workflow.status}</Badge>
+                    <Badge variant='outline'>{workflow.status}</Badge>
                   </div>
                 ))}
               </div>
@@ -312,83 +339,89 @@ return `${(bytes / 1024).toFixed(1)} KB`;
           <Separator />
 
           {/* Export Options */}
-          <div className="space-y-4">
-            <Label className="text-base font-medium">Export Options</Label>
+          <div className='space-y-4'>
+            <Label className='text-base font-medium'>Export Options</Label>
 
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
+            <div className='space-y-3'>
+              <div className='flex items-center space-x-2'>
                 <Checkbox
-                  id="includeMetadata"
+                  id='includeMetadata'
                   checked={exportOptions.includeMetadata}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={checked =>
                     handleOptionChange('includeMetadata', checked === true)
                   }
                 />
                 <Label
-                  htmlFor="includeMetadata"
-                  className="text-sm font-normal cursor-pointer"
+                  htmlFor='includeMetadata'
+                  className='text-sm font-normal cursor-pointer'
                 >
                   Include metadata (creation dates, run counts, etc.)
                 </Label>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className='flex items-center space-x-2'>
                 <Checkbox
-                  id="includeVariables"
+                  id='includeVariables'
                   checked={exportOptions.includeVariables}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={checked =>
                     handleOptionChange('includeVariables', checked === true)
                   }
                 />
                 <Label
-                  htmlFor="includeVariables"
-                  className="text-sm font-normal cursor-pointer"
+                  htmlFor='includeVariables'
+                  className='text-sm font-normal cursor-pointer'
                 >
                   Include workflow variables and configurations
                 </Label>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className='flex items-center space-x-2'>
                 <Checkbox
-                  id="includeExecutionHistory"
+                  id='includeExecutionHistory'
                   checked={exportOptions.includeExecutionHistory}
-                  onCheckedChange={(checked) =>
-                    handleOptionChange('includeExecutionHistory', checked === true)
+                  onCheckedChange={checked =>
+                    handleOptionChange(
+                      'includeExecutionHistory',
+                      checked === true
+                    )
                   }
                 />
                 <Label
-                  htmlFor="includeExecutionHistory"
-                  className="text-sm font-normal cursor-pointer"
+                  htmlFor='includeExecutionHistory'
+                  className='text-sm font-normal cursor-pointer'
                 >
                   Include execution history (last 50 runs)
                 </Label>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className='flex items-center space-x-2'>
                 <Checkbox
-                  id="includePermissions"
+                  id='includePermissions'
                   checked={exportOptions.includePermissions}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={checked =>
                     handleOptionChange('includePermissions', checked === true)
                   }
                 />
                 <Label
-                  htmlFor="includePermissions"
-                  className="text-sm font-normal cursor-pointer"
+                  htmlFor='includePermissions'
+                  className='text-sm font-normal cursor-pointer'
                 >
                   Include permission settings
                 </Label>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className='flex items-center space-x-2'>
                 <Checkbox
-                  id="prettyPrint"
+                  id='prettyPrint'
                   checked={exportOptions.prettyPrint}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={checked =>
                     handleOptionChange('prettyPrint', checked === true)
                   }
                 />
-                <Label htmlFor="prettyPrint" className="text-sm font-normal cursor-pointer">
+                <Label
+                  htmlFor='prettyPrint'
+                  className='text-sm font-normal cursor-pointer'
+                >
                   Pretty print JSON (formatted with indentation)
                 </Label>
               </div>
@@ -398,44 +431,50 @@ return `${(bytes / 1024).toFixed(1)} KB`;
           <Separator />
 
           {/* Export Info */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-              <Package className="h-4 w-4 text-muted-foreground" />
+          <div className='grid grid-cols-3 gap-4'>
+            <div className='flex items-center gap-2 p-3 bg-muted/50 rounded-lg'>
+              <Package className='h-4 w-4 text-muted-foreground' />
               <div>
-                <div className="text-xs text-muted-foreground">Workflows</div>
-                <div className="text-sm font-semibold">{workflowsToExport.length}</div>
+                <div className='text-xs text-muted-foreground'>Workflows</div>
+                <div className='text-sm font-semibold'>
+                  {workflowsToExport.length}
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-              <FileText className="h-4 w-4 text-muted-foreground" />
+            <div className='flex items-center gap-2 p-3 bg-muted/50 rounded-lg'>
+              <FileText className='h-4 w-4 text-muted-foreground' />
               <div>
-                <div className="text-xs text-muted-foreground">Est. Size</div>
-                <div className="text-sm font-semibold">{estimatedSize}</div>
+                <div className='text-xs text-muted-foreground'>Est. Size</div>
+                <div className='text-sm font-semibold'>{estimatedSize}</div>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+            <div className='flex items-center gap-2 p-3 bg-muted/50 rounded-lg'>
+              <Calendar className='h-4 w-4 text-muted-foreground' />
               <div>
-                <div className="text-xs text-muted-foreground">Format</div>
-                <div className="text-sm font-semibold">JSON</div>
+                <div className='text-xs text-muted-foreground'>Format</div>
+                <div className='text-sm font-semibold'>JSON</div>
               </div>
             </div>
           </div>
 
           {/* Export Result */}
           {lastExportResult && (
-            <Alert variant={lastExportResult.success ? 'default' : 'destructive'}>
+            <Alert
+              variant={lastExportResult.success ? 'default' : 'destructive'}
+            >
               {lastExportResult.success ? (
-                <CheckCircle2 className="h-4 w-4" />
+                <CheckCircle2 className='h-4 w-4' />
               ) : (
-                <AlertTriangle className="h-4 w-4" />
+                <AlertTriangle className='h-4 w-4' />
               )}
               <AlertTitle>
-                {lastExportResult.success ? 'Export Successful' : 'Export Failed'}
+                {lastExportResult.success
+                  ? 'Export Successful'
+                  : 'Export Failed'}
               </AlertTitle>
               <AlertDescription>
                 {lastExportResult.success ? (
-                  <div className="space-y-1">
+                  <div className='space-y-1'>
                     <p>File: {lastExportResult.fileName}</p>
                     <p>
                       Size: {(lastExportResult.size / 1024).toFixed(2)} KB (
@@ -450,29 +489,36 @@ return `${(bytes / 1024).toFixed(1)} KB`;
           )}
         </div>
 
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={copyToClipboard} disabled={isExporting}>
+        <DialogFooter className='gap-2'>
+          <Button
+            variant='outline'
+            onClick={copyToClipboard}
+            disabled={isExporting}
+          >
             {copiedJson ? (
               <>
-                <Check className="h-4 w-4 mr-2" />
+                <Check className='h-4 w-4 mr-2' />
                 Copied!
               </>
             ) : (
               <>
-                <Copy className="h-4 w-4 mr-2" />
+                <Copy className='h-4 w-4 mr-2' />
                 Copy JSON
               </>
             )}
           </Button>
-          <Button onClick={exportWorkflows} disabled={isExporting || workflowsToExport.length === 0}>
+          <Button
+            onClick={exportWorkflows}
+            disabled={isExporting || workflowsToExport.length === 0}
+          >
             {isExporting ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className='h-4 w-4 mr-2 animate-spin' />
                 Exporting...
               </>
             ) : (
               <>
-                <Download className="h-4 w-4 mr-2" />
+                <Download className='h-4 w-4 mr-2' />
                 Export to File
               </>
             )}

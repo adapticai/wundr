@@ -127,7 +127,7 @@ const AlertItem: React.FC<AlertItemProps> = ({ alert, onAcknowledge }) => {
         className={cn(
           'flex items-start gap-4 p-4 border-l-4 rounded-lg bg-card hover:bg-muted/50 transition-colors',
           getSeverityColor(),
-          alert.acknowledged && 'opacity-60',
+          alert.acknowledged && 'opacity-60'
         )}
       >
         <div className='flex-1 space-y-2'>
@@ -220,7 +220,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
         'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
         selectedSeverity === severity
           ? 'bg-primary text-primary-foreground'
-          : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+          : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
       )}
     >
       {label} ({count})

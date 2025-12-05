@@ -36,11 +36,11 @@ export function QuickSettingsModal({
     const savedSound = localStorage.getItem('soundEnabled');
     const savedMotion = localStorage.getItem('reducedMotion');
     if (savedSound !== null) {
-setSoundEnabled(savedSound === 'true');
-}
+      setSoundEnabled(savedSound === 'true');
+    }
     if (savedMotion !== null) {
-setReducedMotion(savedMotion === 'true');
-}
+      setReducedMotion(savedMotion === 'true');
+    }
   }, []);
 
   const handleSoundToggle = (enabled: boolean) => {
@@ -59,15 +59,15 @@ setReducedMotion(savedMotion === 'true');
   };
 
   if (!mounted) {
-return null;
-}
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className='sm:max-w-md'>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
+          <DialogTitle className='flex items-center gap-2'>
+            <Zap className='h-5 w-5' />
             Quick Settings
           </DialogTitle>
           <DialogDescription>
@@ -75,37 +75,37 @@ return null;
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className='space-y-6 py-4'>
           {/* Theme Selection */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <Palette className="h-4 w-4" />
+          <div className='space-y-3'>
+            <Label className='text-sm font-medium flex items-center gap-2'>
+              <Palette className='h-4 w-4' />
               Appearance
             </Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className='grid grid-cols-3 gap-2'>
               <Button
                 variant={theme === 'light' ? 'default' : 'outline'}
-                size="sm"
+                size='sm'
                 onClick={() => setTheme('light')}
-                className="gap-2"
+                className='gap-2'
               >
-                <Sun className="h-4 w-4" />
+                <Sun className='h-4 w-4' />
                 Light
               </Button>
               <Button
                 variant={theme === 'dark' ? 'default' : 'outline'}
-                size="sm"
+                size='sm'
                 onClick={() => setTheme('dark')}
-                className="gap-2"
+                className='gap-2'
               >
-                <Moon className="h-4 w-4" />
+                <Moon className='h-4 w-4' />
                 Dark
               </Button>
               <Button
                 variant={theme === 'system' ? 'default' : 'outline'}
-                size="sm"
+                size='sm'
                 onClick={() => setTheme('system')}
-                className="gap-2"
+                className='gap-2'
               >
                 System
               </Button>
@@ -115,22 +115,22 @@ return null;
           <Separator />
 
           {/* Sound Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="sound" className="flex items-center gap-2">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='sound' className='flex items-center gap-2'>
                 {soundEnabled ? (
-                  <Volume2 className="h-4 w-4" />
+                  <Volume2 className='h-4 w-4' />
                 ) : (
-                  <VolumeX className="h-4 w-4" />
+                  <VolumeX className='h-4 w-4' />
                 )}
                 Sound Effects
               </Label>
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 Play sounds for notifications and actions
               </p>
             </div>
             <Switch
-              id="sound"
+              id='sound'
               checked={soundEnabled}
               onCheckedChange={handleSoundToggle}
             />
@@ -139,25 +139,25 @@ return null;
           <Separator />
 
           {/* Reduced Motion Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="motion" className="text-sm font-medium">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
+              <Label htmlFor='motion' className='text-sm font-medium'>
                 Reduce Motion
               </Label>
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 Minimize animations and transitions
               </p>
             </div>
             <Switch
-              id="motion"
+              id='motion'
               checked={reducedMotion}
               onCheckedChange={handleMotionToggle}
             />
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
+        <div className='flex justify-end'>
+          <Button variant='ghost' size='sm' onClick={() => onOpenChange(false)}>
             Done
           </Button>
         </div>

@@ -37,7 +37,7 @@ export default function NewOrchestratorPage() {
   useEffect(() => {
     setPageHeader(
       'Create New Orchestrator',
-      'Define an AI-powered orchestrator through conversation',
+      'Define an AI-powered orchestrator through conversation'
     );
   }, [setPageHeader]);
 
@@ -109,7 +109,7 @@ export default function NewOrchestratorPage() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(input),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -129,7 +129,7 @@ export default function NewOrchestratorPage() {
         setIsCreating(false);
       }
     },
-    [workspaceSlug, router],
+    [workspaceSlug, router]
   );
 
   return (
@@ -239,7 +239,7 @@ function extractValues(spec: EntitySpec): string[] {
     spec.properties?.values &&
     Array.isArray(spec.properties.values) &&
     spec.properties.values.every(
-      (item): item is string => typeof item === 'string',
+      (item): item is string => typeof item === 'string'
     )
   ) {
     return spec.properties.values;
@@ -252,7 +252,7 @@ function extractTraits(spec: EntitySpec): string[] {
     spec.properties?.traits &&
     Array.isArray(spec.properties.traits) &&
     spec.properties.traits.every(
-      (item): item is string => typeof item === 'string',
+      (item): item is string => typeof item === 'string'
     )
   ) {
     return spec.properties.traits;
@@ -335,7 +335,7 @@ function extractExpertise(spec: EntitySpec): string[] {
     spec.properties?.expertise &&
     Array.isArray(spec.properties.expertise) &&
     spec.properties.expertise.every(
-      (item): item is string => typeof item === 'string',
+      (item): item is string => typeof item === 'string'
     )
   ) {
     return spec.properties.expertise;
@@ -379,7 +379,7 @@ function extractCapabilities(spec: EntitySpec): string[] {
     spec.properties?.capabilities &&
     Array.isArray(spec.properties.capabilities) &&
     spec.properties.capabilities.every(
-      (item): item is string => typeof item === 'string',
+      (item): item is string => typeof item === 'string'
     )
   ) {
     return spec.properties.capabilities;

@@ -55,7 +55,7 @@ export function IntegrationSettings({
   const workspaceSlug = params.workspaceSlug as string;
 
   const [webhookUrls, setWebhookUrls] = useState<string[]>(
-    (config?.webhookUrls as string[]) || [],
+    (config?.webhookUrls as string[]) || []
   );
   const [newWebhook, setNewWebhook] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -64,7 +64,7 @@ export function IntegrationSettings({
   const [integrations, setIntegrations] = useState<IntegrationConfig[]>([]);
   const [isLoadingIntegrations, setIsLoadingIntegrations] = useState(true);
   const [enabledIntegrations, setEnabledIntegrations] = useState<Set<string>>(
-    new Set((config?.integrationConfig?.enabled as string[]) || []),
+    new Set((config?.integrationConfig?.enabled as string[]) || [])
   );
 
   // Fetch workspace integrations
@@ -73,7 +73,7 @@ export function IntegrationSettings({
       try {
         setIsLoadingIntegrations(true);
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/integrations?status=ACTIVE`,
+          `/api/workspaces/${workspaceSlug}/integrations?status=ACTIVE`
         );
 
         if (!response.ok) {
@@ -189,7 +189,7 @@ export function IntegrationSettings({
                         'flex items-center justify-between rounded-lg border p-4 transition-colors',
                         isEnabled
                           ? 'border-primary/50 bg-primary/5'
-                          : 'border-border bg-background',
+                          : 'border-border bg-background'
                       )}
                     >
                       <div className='flex items-center gap-3 flex-1 min-w-0'>
@@ -198,7 +198,7 @@ export function IntegrationSettings({
                             'flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold',
                             isEnabled
                               ? 'bg-primary/10 text-primary'
-                              : 'bg-muted text-muted-foreground',
+                              : 'bg-muted text-muted-foreground'
                           )}
                         >
                           {provider.icon}
@@ -235,7 +235,9 @@ export function IntegrationSettings({
                       </div>
                       <Switch
                         checked={isEnabled}
-                        onCheckedChange={() => toggleIntegration(integration.id)}
+                        onCheckedChange={() =>
+                          toggleIntegration(integration.id)
+                        }
                         disabled={disabled || integration.status !== 'active'}
                       />
                     </div>
@@ -264,7 +266,7 @@ export function IntegrationSettings({
                 onClick={() =>
                   window.open(
                     `/${workspaceSlug}/settings/integrations`,
-                    '_blank',
+                    '_blank'
                   )
                 }
               >

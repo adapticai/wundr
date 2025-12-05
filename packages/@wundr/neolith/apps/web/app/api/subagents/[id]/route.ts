@@ -41,7 +41,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (!subagent) {
       return NextResponse.json(
         { error: 'Subagent not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     console.error('Error fetching subagent:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -84,7 +84,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     console.error('Error updating subagent:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -106,7 +106,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     console.error('Error deleting subagent:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

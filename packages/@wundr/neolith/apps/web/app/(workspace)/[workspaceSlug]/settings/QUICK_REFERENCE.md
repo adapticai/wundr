@@ -29,9 +29,9 @@ import { SettingsPageWrapper } from '@/components/settings';
 export default function MySettingsPage() {
   return (
     <SettingsPageWrapper
-      workspaceSlug="workspace-id"
-      title="My Settings"
-      description="Manage your settings"
+      workspaceSlug='workspace-id'
+      title='My Settings'
+      description='Manage your settings'
     >
       {/* Your content */}
     </SettingsPageWrapper>
@@ -47,19 +47,19 @@ const tabs = [
   { label: 'Tab 2', href: '/settings/page/tab2', value: 'tab2' },
 ];
 
-<SettingsPageWrapper title="Settings" workspaceSlug="workspace-id">
+<SettingsPageWrapper title='Settings' workspaceSlug='workspace-id'>
   <SettingsTabs tabs={tabs} />
   {/* Tab content */}
-</SettingsPageWrapper>
+</SettingsPageWrapper>;
 ```
 
 ## Collapsible Section
 
 ```tsx
 <CollapsibleSettingsSection
-  title="Section Title"
-  description="Section description"
-  icon={<IconComponent className="h-5 w-5" />}
+  title='Section Title'
+  description='Section description'
+  icon={<IconComponent className='h-5 w-5' />}
   defaultOpen={true}
   badge={<Badge>New</Badge>}
 >
@@ -97,17 +97,18 @@ useSettingsKeyboard({
 
 ## Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `⌘K` | Open search |
-| `⌘,` | Quick settings |
-| `⌘S` | Save changes |
-| `⌘[` | Go back |
-| `ESC` | Settings home |
+| Key   | Action         |
+| ----- | -------------- |
+| `⌘K`  | Open search    |
+| `⌘,`  | Quick settings |
+| `⌘S`  | Save changes   |
+| `⌘[`  | Go back        |
+| `ESC` | Settings home  |
 
 ## Props Reference
 
 ### SettingsPageWrapper
+
 ```typescript
 {
   workspaceSlug: string;
@@ -121,6 +122,7 @@ useSettingsKeyboard({
 ```
 
 ### SettingsTabs
+
 ```typescript
 {
   tabs: Array<{
@@ -133,6 +135,7 @@ useSettingsKeyboard({
 ```
 
 ### CollapsibleSettingsSection
+
 ```typescript
 {
   title: string;

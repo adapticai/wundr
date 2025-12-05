@@ -82,7 +82,7 @@ export function OrchestratorPresenceTooltip({
                     orchestrator.status === 'ONLINE' && 'bg-green-500',
                     orchestrator.status === 'BUSY' && 'bg-yellow-500',
                     orchestrator.status === 'AWAY' && 'bg-orange-500',
-                    orchestrator.status === 'OFFLINE' && 'bg-gray-400',
+                    orchestrator.status === 'OFFLINE' && 'bg-gray-400'
                   )}
                 />
                 <span className='capitalize'>

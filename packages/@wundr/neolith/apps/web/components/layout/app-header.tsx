@@ -50,7 +50,7 @@ export function AppHeader({ user, compact = false }: AppHeaderProps) {
         router.push(notification.actionUrl);
       }
     },
-    [markAsRead, router],
+    [markAsRead, router]
   );
 
   // Handle opening notification settings

@@ -5,6 +5,7 @@ Comprehensive API for executing workflows and monitoring execution progress in r
 ## Overview
 
 The Workflow Execution API provides endpoints for:
+
 - **Executing workflows** manually or via triggers
 - **Monitoring execution progress** in real-time
 - **Viewing execution history** with detailed logs
@@ -166,32 +167,30 @@ GET /api/workspaces/:workspaceSlug/workflows/executions/:executionId/stream
 
 ```javascript
 // Client-side usage
-const eventSource = new EventSource(
-  '/api/workspaces/ws_123/workflows/executions/exec_456/stream'
-);
+const eventSource = new EventSource('/api/workspaces/ws_123/workflows/executions/exec_456/stream');
 
 // Connection established
-eventSource.addEventListener('connected', (event) => {
+eventSource.addEventListener('connected', event => {
   const data = JSON.parse(event.data);
   console.log('Connected:', data.executionId);
 });
 
 // Step completed
-eventSource.addEventListener('step', (event) => {
+eventSource.addEventListener('step', event => {
   const step = JSON.parse(event.data);
   console.log(`Step ${step.actionType}: ${step.status}`);
   console.log('Output:', step.output);
 });
 
 // Progress update
-eventSource.addEventListener('progress', (event) => {
+eventSource.addEventListener('progress', event => {
   const progress = JSON.parse(event.data);
   console.log(`Progress: ${progress.percentage}%`);
   console.log(`Completed: ${progress.completedSteps}/${progress.totalSteps}`);
 });
 
 // Execution complete
-eventSource.addEventListener('complete', (event) => {
+eventSource.addEventListener('complete', event => {
   const data = JSON.parse(event.data);
   console.log('Execution complete:', data.status);
   console.log('Duration:', data.durationMs, 'ms');
@@ -199,7 +198,7 @@ eventSource.addEventListener('complete', (event) => {
 });
 
 // Error
-eventSource.addEventListener('error', (event) => {
+eventSource.addEventListener('error', event => {
   const data = JSON.parse(event.data);
   console.error('Error:', data.message);
   eventSource.close();
@@ -209,6 +208,7 @@ eventSource.addEventListener('error', (event) => {
 **Event Types:**
 
 1. **connected** - Initial connection established
+
    ```json
    {
      "executionId": "exec_123",
@@ -217,6 +217,7 @@ eventSource.addEventListener('error', (event) => {
    ```
 
 2. **step** - Step completed
+
    ```json
    {
      "actionId": "action-1",
@@ -228,6 +229,7 @@ eventSource.addEventListener('error', (event) => {
    ```
 
 3. **progress** - Progress update
+
    ```json
    {
      "totalSteps": 5,
@@ -240,6 +242,7 @@ eventSource.addEventListener('error', (event) => {
    ```
 
 4. **complete** - Execution finished
+
    ```json
    {
      "status": "COMPLETED",
@@ -457,6 +460,7 @@ Evaluate a condition.
 ```
 
 **Operators:**
+
 - `equals`, `not_equals`
 - `greater_than`, `less_than`
 - `contains`, `not_contains`
@@ -506,7 +510,7 @@ registerActionHandler('send_email', async (action, context) => {
   if (!config.to || !config.subject) {
     return {
       success: false,
-      error: 'Email requires to and subject'
+      error: 'Email requires to and subject',
     };
   }
 
@@ -553,8 +557,8 @@ registerActionHandler('send_email', async (action, context) => {
 const { execution } = await fetch('/api/workspaces/ws_123/workflows/wf_456/execute', {
   method: 'POST',
   body: JSON.stringify({
-    triggerData: { userId: 'user_789' }
-  })
+    triggerData: { userId: 'user_789' },
+  }),
 }).then(r => r.json());
 
 // Stream progress
@@ -562,12 +566,12 @@ const eventSource = new EventSource(
   `/api/workspaces/ws_123/workflows/executions/${execution.id}/stream`
 );
 
-eventSource.addEventListener('progress', (event) => {
+eventSource.addEventListener('progress', event => {
   const { percentage } = JSON.parse(event.data);
   updateProgressBar(percentage);
 });
 
-eventSource.addEventListener('complete', (event) => {
+eventSource.addEventListener('complete', event => {
   const { status } = JSON.parse(event.data);
   showNotification(`Workflow ${status.toLowerCase()}`);
   eventSource.close();
@@ -581,7 +585,7 @@ const executionId = 'exec_123';
 
 // Cancel
 await fetch(`/api/workspaces/ws_123/workflows/executions/${executionId}`, {
-  method: 'POST' // or DELETE
+  method: 'POST', // or DELETE
 });
 
 // Verify cancellation
@@ -595,9 +599,9 @@ console.log(execution.status); // "CANCELLED"
 ### Analyze Execution Statistics
 
 ```typescript
-const { statistics } = await fetch(
-  '/api/workspaces/ws_123/workflows/wf_456/executions'
-).then(r => r.json());
+const { statistics } = await fetch('/api/workspaces/ws_123/workflows/wf_456/executions').then(r =>
+  r.json()
+);
 
 console.log(`Success Rate: ${statistics.successRate}%`);
 console.log(`Average Duration: ${statistics.averageDurationMs}ms`);

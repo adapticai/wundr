@@ -18,7 +18,7 @@ import { prisma } from '@neolith/database';
  */
 export async function checkOrchestratorAccess(
   orchestratorId: string,
-  userId: string,
+  userId: string
 ) {
   const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },

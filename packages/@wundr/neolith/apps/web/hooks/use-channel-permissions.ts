@@ -50,7 +50,7 @@ export interface UseChannelPermissionsReturn {
  * ```
  */
 export function useChannelPermissions(
-  channelId: string,
+  channelId: string
 ): UseChannelPermissionsReturn {
   // Default permissions state (all false for security)
   const defaultPermissions: ChannelPermissions = {
@@ -100,9 +100,7 @@ export function useChannelPermissions(
           .json()
           .catch(() => ({ error: 'Failed to fetch permissions' }));
         throw new Error(
-          errorData.error ||
-            errorData.message ||
-            'Failed to fetch permissions',
+          errorData.error || errorData.message || 'Failed to fetch permissions'
         );
       }
 

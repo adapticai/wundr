@@ -64,7 +64,7 @@ export function DefaultSettingsDialog({
   const fetchSettings = async () => {
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/orchestrators/defaults`,
+        `/api/workspaces/${workspaceSlug}/admin/orchestrators/defaults`
       );
 
       if (response.ok) {
@@ -85,12 +85,12 @@ export function DefaultSettingsDialog({
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ settings }),
-        },
+        }
       );
 
       if (!response.ok) {
-throw new Error('Failed to update settings');
-}
+        throw new Error('Failed to update settings');
+      }
 
       toast({
         title: 'Success',
@@ -189,7 +189,9 @@ throw new Error('Failed to update settings');
           <div className='space-y-4'>
             <div className='flex items-center gap-2'>
               <Settings className='h-4 w-4 text-muted-foreground' />
-              <Label className='text-base font-semibold'>General Settings</Label>
+              <Label className='text-base font-semibold'>
+                General Settings
+              </Label>
             </div>
 
             <div className='space-y-3 pl-6'>
@@ -247,7 +249,9 @@ throw new Error('Failed to update settings');
           <div className='space-y-4'>
             <div className='flex items-center gap-2'>
               <Shield className='h-4 w-4 text-muted-foreground' />
-              <Label className='text-base font-semibold'>Default Permissions</Label>
+              <Label className='text-base font-semibold'>
+                Default Permissions
+              </Label>
             </div>
 
             <div className='space-y-3 pl-6'>
@@ -264,14 +268,18 @@ throw new Error('Failed to update settings');
                       if (checked) {
                         setSettings({
                           ...settings,
-                          defaultPermissions: [...settings.defaultPermissions, perm.id],
+                          defaultPermissions: [
+                            ...settings.defaultPermissions,
+                            perm.id,
+                          ],
                         });
                       } else {
                         setSettings({
                           ...settings,
-                          defaultPermissions: settings.defaultPermissions.filter(
-                            p => p !== perm.id,
-                          ),
+                          defaultPermissions:
+                            settings.defaultPermissions.filter(
+                              p => p !== perm.id
+                            ),
                         });
                       }
                     }}

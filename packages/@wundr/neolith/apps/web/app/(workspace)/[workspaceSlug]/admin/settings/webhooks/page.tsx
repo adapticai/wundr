@@ -99,7 +99,7 @@ export default function WebhooksSettingsPage() {
   // Delivery History Dialog State
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [selectedWebhookId, setSelectedWebhookId] = useState<string | null>(
-    null,
+    null
   );
   const [deliveryLogs, setDeliveryLogs] = useState<DeliveryLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
@@ -211,7 +211,7 @@ export default function WebhooksSettingsPage() {
         `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}`,
         {
           method: 'DELETE',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -241,7 +241,7 @@ export default function WebhooksSettingsPage() {
         `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/test`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -273,7 +273,7 @@ export default function WebhooksSettingsPage() {
 
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/deliveries`,
+        `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/deliveries`
       );
       if (!response.ok) {
         throw new Error('Failed to load delivery logs');
@@ -296,7 +296,7 @@ export default function WebhooksSettingsPage() {
 
   const toggleEvent = (event: string) => {
     setFormEvents(prev =>
-      prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event],
+      prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event]
     );
   };
 
@@ -541,13 +541,13 @@ export default function WebhooksSettingsPage() {
                 onClick={() => setFormActive(!formActive)}
                 className={cn(
                   'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-                  formActive ? 'bg-primary' : 'bg-muted',
+                  formActive ? 'bg-primary' : 'bg-muted'
                 )}
               >
                 <span
                   className={cn(
                     'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-                    formActive ? 'translate-x-6' : 'translate-x-1',
+                    formActive ? 'translate-x-6' : 'translate-x-1'
                   )}
                 />
               </Button>

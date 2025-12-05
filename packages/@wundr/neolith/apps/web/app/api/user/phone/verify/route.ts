@@ -41,7 +41,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'No pending phone change request',
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Verification code has expired',
           code: SECURITY_ERROR_CODES.INVALID_CODE,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Too many failed attempts',
           code: SECURITY_ERROR_CODES.RATE_LIMIT_EXCEEDED,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid verification code',
           code: SECURITY_ERROR_CODES.INVALID_CODE,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -152,8 +152,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       select: { preferences: true },
     });
 
-    const currentPrefs =
-      (user?.preferences as Record<string, unknown>) || {};
+    const currentPrefs = (user?.preferences as Record<string, unknown>) || {};
 
     // Update user phone number in preferences
     await prisma.user.update({
@@ -200,7 +199,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

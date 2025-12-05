@@ -107,7 +107,7 @@ export function CapabilitySettings({
   const fetchCapabilities = async () => {
     try {
       const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/capabilities`,
+        `/api/orchestrators/${orchestratorId}/capabilities`
       );
       if (response.ok) {
         const data = await response.json();
@@ -115,7 +115,7 @@ export function CapabilitySettings({
           (data.data?.enabledCapabilities as Record<
             string,
             CapabilityConfig
-          >) || {},
+          >) || {}
         );
       }
     } catch (error) {
@@ -139,7 +139,7 @@ export function CapabilitySettings({
 
   const handlePermissionChange = (
     type: string,
-    permissionLevel: PermissionLevel,
+    permissionLevel: PermissionLevel
   ) => {
     setCapabilities(prev => ({
       ...prev,
@@ -154,7 +154,7 @@ export function CapabilitySettings({
   const handleRateLimitChange = (
     type: string,
     field: string,
-    value: string,
+    value: string
   ) => {
     setCapabilities(prev => ({
       ...prev,
@@ -175,7 +175,7 @@ export function CapabilitySettings({
     try {
       // Convert capabilities object to array for API
       const capabilitiesArray = Object.values(capabilities).filter(
-        cap => cap.enabled,
+        cap => cap.enabled
       );
 
       const response = await fetch(
@@ -186,7 +186,7 @@ export function CapabilitySettings({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ capabilities: capabilitiesArray }),
-        },
+        }
       );
 
       if (!response.ok) {

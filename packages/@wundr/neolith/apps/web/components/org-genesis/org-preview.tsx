@@ -159,7 +159,7 @@ export function OrgPreview({
         <TabsContent value='details' className='space-y-4 mt-6'>
           {orchestrators.map((orch: any) => {
             const orchDisciplines = disciplines.filter(
-              (d: any) => d.orchestratorId === orch.id,
+              (d: any) => d.orchestratorId === orch.id
             );
 
             return (
@@ -211,7 +211,7 @@ export function OrgPreview({
                       <div className='space-y-3'>
                         {orchDisciplines.map((discipline: any) => {
                           const disciplineAgents = agents.filter(
-                            (a: any) => a.disciplineId === discipline.id,
+                            (a: any) => a.disciplineId === discipline.id
                           );
 
                           return (
@@ -248,7 +248,7 @@ export function OrgPreview({
                                       >
                                         {cap}
                                       </span>
-                                    ),
+                                    )
                                   )}
                                 </div>
                               )}
@@ -268,7 +268,8 @@ export function OrgPreview({
       {/* Actions */}
       <div className='flex items-center justify-between gap-4 rounded-lg border bg-muted/50 p-4'>
         <div className='text-sm text-muted-foreground'>
-          Ready to create this organization? You can regenerate if needed, or create it to start using it.
+          Ready to create this organization? You can regenerate if needed, or
+          create it to start using it.
         </div>
         <div className='flex gap-3'>
           <Button

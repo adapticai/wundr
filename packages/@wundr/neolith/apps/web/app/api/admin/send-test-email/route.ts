@@ -68,7 +68,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (!session?.user?.id) {
         return NextResponse.json(
           { error: 'Authentication required' },
-          { status: 401 },
+          { status: 401 }
         );
       }
 
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (!isAdmin) {
         return NextResponse.json(
           { error: 'Admin access required' },
-          { status: 403 },
+          { status: 403 }
         );
       }
     }
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!template || !to) {
       return NextResponse.json(
         { error: 'Missing required fields: template and to are required' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!emailRegex.test(to)) {
       return NextResponse.json(
         { error: 'Invalid email address' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         result = await sendNotificationEmail(
           to,
           props.title || 'Test Notification',
-          props.message || 'This is a test notification.',
+          props.message || 'This is a test notification.'
         );
         break;
 
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               'password-changed',
             ],
           },
-          { status: 400 },
+          { status: 400 }
         );
     }
 
@@ -168,7 +168,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           template,
           messageId: result.messageId,
         },
-        { status: 200 },
+        { status: 200 }
       );
     } else {
       return NextResponse.json(
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Failed to send email',
           details: result.error,
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
   } catch (error) {
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'Internal server error',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

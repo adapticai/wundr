@@ -92,7 +92,7 @@ function getSeverity(action: string): 'info' | 'warning' | 'critical' {
  * Format changes from metadata
  */
 function extractChanges(
-  metadata: unknown,
+  metadata: unknown
 ): Array<{ field: string; oldValue: unknown; newValue: unknown }> | undefined {
   if (!metadata || typeof metadata !== 'object') {
     return undefined;
@@ -159,7 +159,7 @@ function extractChanges(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse<AuditLogResponse | { error: string; code?: string }>> {
   try {
     // Authentication check
@@ -167,7 +167,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -187,7 +187,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied', code: 'FORBIDDEN' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -198,7 +198,7 @@ export async function GET(
           error: 'Only admins and owners can view audit logs',
           code: 'FORBIDDEN',
         },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -207,7 +207,7 @@ export async function GET(
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const pageSize = Math.min(
       100,
-      Math.max(1, parseInt(searchParams.get('limit') || '50', 10)),
+      Math.max(1, parseInt(searchParams.get('limit') || '50', 10))
     );
     const search = searchParams.get('search') || undefined;
     const category = searchParams.get('category') || undefined;
@@ -225,7 +225,7 @@ export async function GET(
       if (isNaN(startDate.getTime())) {
         return NextResponse.json(
           { error: 'Invalid startDate format', code: 'VALIDATION_ERROR' },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -235,7 +235,7 @@ export async function GET(
       if (isNaN(endDate.getTime())) {
         return NextResponse.json(
           { error: 'Invalid endDate format', code: 'VALIDATION_ERROR' },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -322,7 +322,9 @@ export async function GET(
 
     // Fetch actor details for user/orchestrator types
     const userActorIds = logs
-      .filter(log => log.actorType === 'user' || log.actorType === 'orchestrator')
+      .filter(
+        log => log.actorType === 'user' || log.actorType === 'orchestrator'
+      )
       .map(log => log.actorId);
 
     const uniqueActorIds = [...new Set(userActorIds)];
@@ -344,7 +346,11 @@ export async function GET(
         createdAt: log.createdAt.toISOString(),
         action: log.action,
         actorId: log.actorId,
-        actorType: log.actorType as 'user' | 'orchestrator' | 'daemon' | 'system',
+        actorType: log.actorType as
+          | 'user'
+          | 'orchestrator'
+          | 'daemon'
+          | 'system',
         resourceType: log.resourceType,
         resourceId: log.resourceId,
         metadata: log.metadata as Record<string, unknown> | null,
@@ -372,11 +378,11 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/audit-log] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       { error: 'Failed to fetch audit log', code: 'INTERNAL_ERROR' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

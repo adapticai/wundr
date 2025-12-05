@@ -50,18 +50,18 @@ export function WorkflowExecutionHistoryDialog({
 
   const fetchExecutions = async () => {
     if (!workflowId) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/workflows/${workflowId}/executions?limit=50`,
+        `/api/workspaces/${workspaceSlug}/admin/workflows/${workflowId}/executions?limit=50`
       );
 
       if (!response.ok) {
-throw new Error('Failed to fetch executions');
-}
+        throw new Error('Failed to fetch executions');
+      }
 
       const data = await response.json();
       setExecutions(data.executions || []);
@@ -153,7 +153,9 @@ throw new Error('Failed to fetch executions');
                   </div>
 
                   <div className='text-sm'>
-                    <span className='text-muted-foreground'>Triggered by: </span>
+                    <span className='text-muted-foreground'>
+                      Triggered by:{' '}
+                    </span>
                     <span className='font-medium'>{execution.triggeredBy}</span>
                   </div>
 

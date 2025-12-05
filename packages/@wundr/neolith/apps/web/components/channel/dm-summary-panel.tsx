@@ -83,7 +83,7 @@ export function DMSummaryPanel({
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.error?.message || 'Failed to generate summary',
+          errorData.error?.message || 'Failed to generate summary'
         );
       }
 
@@ -161,15 +161,18 @@ export function DMSummaryPanel({
     generateSummary();
   }, [isOpen, generateSummary]);
 
-  const handlePeriodChange = useCallback((newPeriod: TimePeriod) => {
-    setPeriod(newPeriod);
-    // Auto-regenerate if summary was already generated
-    if (hasGenerated && !isLoading) {
-      setTimeout(() => {
-        generateSummary();
-      }, 100);
-    }
-  }, [hasGenerated, isLoading, generateSummary]);
+  const handlePeriodChange = useCallback(
+    (newPeriod: TimePeriod) => {
+      setPeriod(newPeriod);
+      // Auto-regenerate if summary was already generated
+      if (hasGenerated && !isLoading) {
+        setTimeout(() => {
+          generateSummary();
+        }, 100);
+      }
+    },
+    [hasGenerated, isLoading, generateSummary]
+  );
 
   return (
     <Collapsible
@@ -208,7 +211,7 @@ export function DMSummaryPanel({
                       <SelectItem key={key} value={key} className='text-xs'>
                         {TIME_PERIOD_LABELS[key]}
                       </SelectItem>
-                    ),
+                    )
                   )}
                 </SelectContent>
               </Select>
@@ -324,7 +327,9 @@ export function DMSummaryPanel({
           {!isLoading && !summary && !error && (
             <div className='py-6 text-center text-sm text-muted-foreground'>
               <Sparkles className='mx-auto mb-2 h-8 w-8 opacity-50' />
-              <p>Click "Generate" to create an AI summary of this conversation</p>
+              <p>
+                Click "Generate" to create an AI summary of this conversation
+              </p>
               <p className='text-xs mt-1'>
                 Select a time period to focus the summary
               </p>

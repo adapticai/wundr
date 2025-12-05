@@ -156,7 +156,7 @@ export function CharterVersionHistory({
       }
 
       const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/charters/${charterId}/versions?${params}`,
+        `/api/orchestrators/${orchestratorId}/charters/${charterId}/versions?${params}`
       );
 
       if (!response.ok) {
@@ -272,7 +272,7 @@ export function CharterVersionHistory({
         `/api/orchestrators/${orchestratorId}/charters/${charterId}/versions/${version.version}/activate`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -302,7 +302,7 @@ export function CharterVersionHistory({
             targetVersion: version.version,
             changeLog: `Rolled back to version ${version.version}`,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -327,7 +327,7 @@ export function CharterVersionHistory({
       <ArrowUpDown
         className={cn(
           'ml-2 h-4 w-4',
-          sortConfig.order === 'asc' ? 'rotate-180' : '',
+          sortConfig.order === 'asc' ? 'rotate-180' : ''
         )}
       />
     );
@@ -557,7 +557,7 @@ export function CharterVersionHistory({
                 }}
                 aria-disabled={currentPage === 1}
                 className={cn(
-                  currentPage === 1 && 'pointer-events-none opacity-50',
+                  currentPage === 1 && 'pointer-events-none opacity-50'
                 )}
               />
             </PaginationItem>
@@ -606,7 +606,7 @@ export function CharterVersionHistory({
                 }}
                 aria-disabled={currentPage === totalPages}
                 className={cn(
-                  currentPage === totalPages && 'pointer-events-none opacity-50',
+                  currentPage === totalPages && 'pointer-events-none opacity-50'
                 )}
               />
             </PaginationItem>

@@ -212,7 +212,7 @@ async function fetcher<T>(url: string): Promise<T> {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
       errorData.error?.message ||
-        `Request failed: ${response.status} ${response.statusText}`,
+        `Request failed: ${response.status} ${response.statusText}`
     );
   }
 
@@ -407,7 +407,7 @@ export interface UseOrchestratorHealthListReturn {
  * ```
  */
 export function useOrchestratorHealthList(
-  filters: OrchestratorHealthFilters = {},
+  filters: OrchestratorHealthFilters = {}
 ): UseOrchestratorHealthListReturn {
   const queryString = useMemo(() => buildFilterQueryString(filters), [filters]);
   const url = queryString
@@ -425,7 +425,7 @@ export function useOrchestratorHealthList(
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
           errorData.error?.message ||
-            `Request failed: ${response.status} ${response.statusText}`,
+            `Request failed: ${response.status} ${response.statusText}`
         );
       }
 
@@ -443,7 +443,7 @@ export function useOrchestratorHealthList(
               : 'Unable to fetch orchestrator health data',
         });
       },
-    },
+    }
   );
 
   const refetch = useCallback(() => {
@@ -520,7 +520,7 @@ export interface UseMetricsChartReturn {
  * ```
  */
 export function useMetricsChart(
-  initialTimeRange: HealthTimeRange = '24h',
+  initialTimeRange: HealthTimeRange = '24h'
 ): UseMetricsChartReturn {
   const [timeRange, setTimeRange] = useState<HealthTimeRange>(initialTimeRange);
   const url = `/api/admin/health/metrics?timeRange=${timeRange}`;
@@ -538,7 +538,7 @@ export function useMetricsChart(
             err instanceof Error ? err.message : 'Unable to fetch metrics data',
         });
       },
-    },
+    }
   );
 
   // Transform data for recharts compatibility
@@ -577,7 +577,7 @@ export function useMetricsChart(
  */
 function formatTimestamp(
   timestamp: string,
-  timeRange: HealthTimeRange,
+  timeRange: HealthTimeRange
 ): string {
   const date = new Date(timestamp);
 
@@ -688,7 +688,7 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
               : 'Unable to fetch health alerts',
         });
       },
-    },
+    }
   );
 
   // Mutation for acknowledging an alert
@@ -700,18 +700,18 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-        },
+        }
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error?.message || 'Failed to acknowledge alert',
+          errorData.error?.message || 'Failed to acknowledge alert'
         );
       }
 
       return response.json();
-    },
+    }
   );
 
   const acknowledgeAlert = useCallback(
@@ -725,9 +725,9 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
             currentData?.map(alert =>
               alert.id === alertId
                 ? { ...alert, acknowledged: true, acknowledgedAt: new Date() }
-                : alert,
+                : alert
             ),
-          { revalidate: true },
+          { revalidate: true }
         );
 
         toast({
@@ -743,7 +743,7 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
         throw err;
       }
     },
-    [triggerAcknowledge, mutate],
+    [triggerAcknowledge, mutate]
   );
 
   const filterBySeverity = useCallback(
@@ -756,7 +756,7 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
       }
       return data.filter(alert => alert.severity === severity);
     },
-    [data],
+    [data]
   );
 
   const refetch = useCallback(() => {

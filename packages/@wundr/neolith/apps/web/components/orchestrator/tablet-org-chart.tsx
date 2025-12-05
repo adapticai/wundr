@@ -78,7 +78,7 @@ export function TabletOrgChart({
   const orientation = useOrientation();
   const isTouch = useTouchDevice();
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(
-    new Set(defaultExpanded ? [data.id] : []),
+    new Set(defaultExpanded ? [data.id] : [])
   );
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -130,7 +130,7 @@ export function TabletOrgChart({
                 'p-2 rounded-lg border border-border bg-background',
                 'hover:bg-muted transition-colors',
                 'min-w-[44px] min-h-[44px] touch-manipulation',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
+                'disabled:opacity-50 disabled:cursor-not-allowed'
               )}
               aria-label='Zoom out'
             >
@@ -142,7 +142,7 @@ export function TabletOrgChart({
               className={cn(
                 'px-3 py-2 rounded-lg border border-border bg-background',
                 'hover:bg-muted transition-colors text-sm font-medium',
-                'min-w-[44px] min-h-[44px] touch-manipulation',
+                'min-w-[44px] min-h-[44px] touch-manipulation'
               )}
             >
               {Math.round(scale * 100)}%
@@ -155,7 +155,7 @@ export function TabletOrgChart({
                 'p-2 rounded-lg border border-border bg-background',
                 'hover:bg-muted transition-colors',
                 'min-w-[44px] min-h-[44px] touch-manipulation',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
+                'disabled:opacity-50 disabled:cursor-not-allowed'
               )}
               aria-label='Zoom in'
             >
@@ -228,7 +228,7 @@ function OrgChartNode({
     <div
       className={cn(
         'flex',
-        layoutDirection === 'horizontal' ? 'flex-row gap-8' : 'flex-col gap-4',
+        layoutDirection === 'horizontal' ? 'flex-row gap-8' : 'flex-col gap-4'
       )}
     >
       {/* Node Card */}
@@ -239,7 +239,7 @@ function OrgChartNode({
             'bg-card border border-border rounded-lg p-4',
             'hover:border-primary/50 hover:shadow-md transition-all',
             'min-w-[160px] max-w-[240px]',
-            isTouch && 'min-h-[88px]', // Double touch target for cards
+            isTouch && 'min-h-[88px]' // Double touch target for cards
           )}
         >
           {/* Avatar and Status */}
@@ -265,7 +265,7 @@ function OrgChartNode({
                     'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card',
                     node.status === 'active' && 'bg-green-500',
                     node.status === 'inactive' && 'bg-gray-400',
-                    node.status === 'busy' && 'bg-yellow-500',
+                    node.status === 'busy' && 'bg-yellow-500'
                   )}
                 />
               )}
@@ -301,7 +301,7 @@ function OrgChartNode({
             className={cn(
               'mt-2 p-2 rounded-full border border-border bg-background',
               'hover:bg-muted transition-colors',
-              'min-w-[44px] min-h-[44px] touch-manipulation',
+              'min-w-[44px] min-h-[44px] touch-manipulation'
             )}
             aria-label={expanded ? 'Collapse' : 'Expand'}
           >
@@ -322,7 +322,7 @@ function OrgChartNode({
             layoutDirection === 'horizontal'
               ? 'flex-col'
               : 'flex-row flex-wrap',
-            'pl-8', // Indent children
+            'pl-8' // Indent children
           )}
         >
           {node.children!.map(child => (

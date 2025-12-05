@@ -43,7 +43,7 @@ export async function GET(): Promise<NextResponse> {
     console.error('[GET /api/users/me/current-workspace] Error:', error);
     return NextResponse.json(
       { error: 'Failed to get current workspace' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -70,7 +70,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (!workspaceSlug || typeof workspaceSlug !== 'string') {
       return NextResponse.json(
         { error: 'workspaceSlug is required' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (!membership) {
       return NextResponse.json(
         { error: 'You do not have access to this workspace' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -106,7 +106,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     console.error('[PUT /api/users/me/current-workspace] Error:', error);
     return NextResponse.json(
       { error: 'Failed to update current workspace' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -37,7 +37,10 @@ import {
   WORKFLOW_ERROR_CODES,
 } from '@/lib/validations/workflow';
 import { validateCronExpression } from '@/lib/workflow/cron-validator';
-import { checkRateLimit, getRateLimitStatus } from '@/lib/workflow/rate-limiter';
+import {
+  checkRateLimit,
+  getRateLimitStatus,
+} from '@/lib/workflow/rate-limiter';
 import {
   extractBearerToken,
   verifyApiKey,
@@ -82,12 +85,13 @@ async function logTriggerAttempt(
   data: Record<string, unknown>,
   error?: string,
   executionId?: string,
-  request?: NextRequest,
+  request?: NextRequest
 ): Promise<void> {
   try {
-    const ipAddress = request?.headers.get('x-forwarded-for') ||
-                      request?.headers.get('x-real-ip') ||
-                      'unknown';
+    const ipAddress =
+      request?.headers.get('x-forwarded-for') ||
+      request?.headers.get('x-real-ip') ||
+      'unknown';
     const userAgent = request?.headers.get('user-agent') || 'unknown';
 
     const currentWorkflow = await prisma.workflow.findUnique({
@@ -95,7 +99,10 @@ async function logTriggerAttempt(
       select: { metadata: true },
     });
 
-    const currentMetadata = (currentWorkflow?.metadata || {}) as Record<string, any>;
+    const currentMetadata = (currentWorkflow?.metadata || {}) as Record<
+      string,
+      any
+    >;
     const triggerHistory = (currentMetadata.triggerHistory || []).slice(0, 99);
 
     // Store in workflow metadata as trigger history
@@ -130,7 +137,7 @@ async function logTriggerAttempt(
  * Type guard to check if a value is a valid condition object
  */
 function isValidCondition(
-  value: unknown,
+  value: unknown
 ): value is { field: string; operator: string; value?: unknown } {
   if (!value || typeof value !== 'object') {
     return false;
@@ -144,7 +151,7 @@ function isValidCondition(
  */
 function checkTriggerConditions(
   trigger: WorkflowTrigger,
-  eventData: Record<string, unknown>,
+  eventData: Record<string, unknown>
 ): boolean {
   if (!trigger.conditions || trigger.conditions.length === 0) {
     return true;
@@ -161,71 +168,71 @@ function checkTriggerConditions(
     switch (condition.operator) {
       case 'equals':
         if (fieldValue !== condition.value) {
-return false;
-}
+          return false;
+        }
         break;
       case 'not_equals':
         if (fieldValue === condition.value) {
-return false;
-}
+          return false;
+        }
         break;
       case 'contains':
         if (
           typeof fieldValue !== 'string' ||
           !fieldValue.includes(String(condition.value))
         ) {
-return false;
-}
+          return false;
+        }
         break;
       case 'not_contains':
         if (
           typeof fieldValue === 'string' &&
           fieldValue.includes(String(condition.value))
         ) {
-return false;
-}
+          return false;
+        }
         break;
       case 'greater_than':
         if (
           typeof fieldValue !== 'number' ||
           fieldValue <= Number(condition.value)
         ) {
-return false;
-}
+          return false;
+        }
         break;
       case 'less_than':
         if (
           typeof fieldValue !== 'number' ||
           fieldValue >= Number(condition.value)
         ) {
-return false;
-}
+          return false;
+        }
         break;
       case 'exists':
         if (fieldValue === undefined || fieldValue === null) {
-return false;
-}
+          return false;
+        }
         break;
       case 'not_exists':
         if (fieldValue !== undefined && fieldValue !== null) {
-return false;
-}
+          return false;
+        }
         break;
       case 'in':
         if (
           !Array.isArray(condition.value) ||
           !condition.value.includes(fieldValue as string)
         ) {
-return false;
-}
+          return false;
+        }
         break;
       case 'not_in':
         if (
           Array.isArray(condition.value) &&
           condition.value.includes(fieldValue as string)
         ) {
-return false;
-}
+          return false;
+        }
         break;
       default:
         break;
@@ -252,7 +259,7 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
  */
 function checkTriggerFilters(
   trigger: WorkflowTrigger,
-  eventData: Record<string, unknown>,
+  eventData: Record<string, unknown>
 ): boolean {
   if (!trigger.filters) {
     return true;
@@ -297,7 +304,7 @@ async function executeWorkflow(
   workspaceSlug: string,
   triggerType: string,
   triggerData: Record<string, unknown>,
-  triggeredBy: string,
+  triggeredBy: string
 ): Promise<{ executionId: string; success: boolean }> {
   const startedAt = new Date();
 
@@ -389,7 +396,7 @@ async function executeWorkflow(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -397,9 +404,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -414,9 +421,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -433,9 +440,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -446,9 +453,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -458,9 +465,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -499,7 +506,7 @@ export async function POST(
             input.data ?? {},
             'Rate limit exceeded',
             undefined,
-            request,
+            request
           );
           return;
         }
@@ -509,7 +516,7 @@ export async function POST(
           workspaceId,
           input.event,
           input.data ?? {},
-          session.user.id,
+          session.user.id
         );
         executions.push(result.executionId);
 
@@ -521,10 +528,11 @@ export async function POST(
           input.data ?? {},
           undefined,
           result.executionId,
-          request,
+          request
         );
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
         await logTriggerAttempt(
           workspaceId,
           workflow.id,
@@ -533,7 +541,7 @@ export async function POST(
           input.data ?? {},
           errorMessage,
           undefined,
-          request,
+          request
         );
       }
     });
@@ -549,9 +557,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -563,7 +571,7 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -571,9 +579,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -588,9 +596,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -617,7 +625,7 @@ export async function GET(
           ...entry,
           workflowId: workflow.id,
           workflowName: workflow.name,
-        })),
+        }))
       );
     }
 
@@ -658,9 +666,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

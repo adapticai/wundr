@@ -91,7 +91,9 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isLoadingChannels, setIsLoadingChannels] = useState(true);
   const [errors, setErrors] = useState<DashboardErrors>({});
-  const [activityFilter, setActivityFilter] = useState<'all' | 'channels' | 'dms'>('all');
+  const [activityFilter, setActivityFilter] = useState<
+    'all' | 'channels' | 'dms'
+  >('all');
 
   // Determine if user is admin
   const isAdmin = role === 'OWNER' || role === 'ADMIN';
@@ -116,11 +118,11 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
     const fetchActivities = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/dashboard/activity?limit=10&type=all`,
+          `/api/workspaces/${workspaceId}/dashboard/activity?limit=10&type=all`
         );
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch activities: ${response.status} ${response.statusText}`,
+            `Failed to fetch activities: ${response.status} ${response.statusText}`
           );
         }
         const result = await response.json();
@@ -144,11 +146,11 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
     const fetchStats = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/dashboard/stats?includeActivity=false`,
+          `/api/workspaces/${workspaceId}/dashboard/stats?includeActivity=false`
         );
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch stats: ${response.status} ${response.statusText}`,
+            `Failed to fetch stats: ${response.status} ${response.statusText}`
           );
         }
         const result = await response.json();
@@ -171,11 +173,11 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
     const fetchChannels = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/channels?limit=6`,
+          `/api/workspaces/${workspaceId}/channels?limit=6`
         );
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch channels: ${response.status} ${response.statusText}`,
+            `Failed to fetch channels: ${response.status} ${response.statusText}`
           );
         }
         const result = await response.json();
@@ -231,7 +233,10 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
       return activity.target?.type === 'channel';
     }
     if (activityFilter === 'dms') {
-      return activity.target?.type === 'direct_message' || activity.type === 'direct_message';
+      return (
+        activity.target?.type === 'direct_message' ||
+        activity.type === 'direct_message'
+      );
     }
     return true;
   });
@@ -290,7 +295,9 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
                     All
                   </Button>
                   <Button
-                    variant={activityFilter === 'channels' ? 'outline' : 'ghost'}
+                    variant={
+                      activityFilter === 'channels' ? 'outline' : 'ghost'
+                    }
                     size='sm'
                     onClick={() => setActivityFilter('channels')}
                   >

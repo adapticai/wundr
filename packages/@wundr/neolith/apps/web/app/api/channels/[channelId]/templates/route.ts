@@ -48,7 +48,10 @@ function createErrorResponse(message: string, code?: string) {
 /**
  * Check if user is an admin/creator of the channel
  */
-async function checkChannelAdmin(channelId: string, userId: string): Promise<boolean> {
+async function checkChannelAdmin(
+  channelId: string,
+  userId: string
+): Promise<boolean> {
   const membership = await prisma.channelMember.findUnique({
     where: {
       channelId_userId: {
@@ -106,7 +109,7 @@ async function checkChannelMembership(channelId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -114,7 +117,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Authentication required', 'UNAUTHORIZED'),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -123,19 +126,19 @@ export async function GET(
     if (!params.channelId) {
       return NextResponse.json(
         createErrorResponse('Invalid channel ID', 'VALIDATION_ERROR'),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check channel membership
     const membership = await checkChannelMembership(
       params.channelId,
-      session.user.id,
+      session.user.id
     );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse('Not a member of this channel', 'FORBIDDEN'),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -170,7 +173,7 @@ export async function GET(
     console.error('[GET /api/channels/:channelId/templates] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', 'INTERNAL_ERROR'),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -187,7 +190,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -195,7 +198,7 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Authentication required', 'UNAUTHORIZED'),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -204,7 +207,7 @@ export async function POST(
     if (!params.channelId) {
       return NextResponse.json(
         createErrorResponse('Invalid channel ID', 'VALIDATION_ERROR'),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -214,9 +217,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Only channel admins can create templates',
-          'FORBIDDEN',
+          'FORBIDDEN'
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -227,7 +230,7 @@ export async function POST(
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', 'VALIDATION_ERROR'),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -236,7 +239,7 @@ export async function POST(
     if (!parseResult.success) {
       return NextResponse.json(
         createErrorResponse('Validation failed', 'VALIDATION_ERROR'),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -256,9 +259,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'A template with this name already exists',
-          'DUPLICATE_NAME',
+          'DUPLICATE_NAME'
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -292,7 +295,7 @@ export async function POST(
         data: template,
         message: 'Template created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/channels/:channelId/templates] Error:', error);
@@ -305,16 +308,16 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'A template with this name already exists',
-            'DUPLICATE_NAME',
+            'DUPLICATE_NAME'
           ),
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
 
     return NextResponse.json(
       createErrorResponse('An internal error occurred', 'INTERNAL_ERROR'),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

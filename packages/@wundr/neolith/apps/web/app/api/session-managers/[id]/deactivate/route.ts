@@ -34,7 +34,7 @@ interface RouteContext {
  */
 async function getSessionManagerWithAccessCheck(
   sessionManagerId: string,
-  userId: string,
+  userId: string
 ) {
   // Get user's organization memberships
   const userOrganizations = await prisma.organizationMember.findMany({
@@ -71,7 +71,7 @@ async function getSessionManagerWithAccessCheck(
 
   // Find user's role in the orchestrator's organization
   const membership = userOrganizations.find(
-    m => m.organizationId === sessionManager.orchestrator.organizationId,
+    m => m.organizationId === sessionManager.orchestrator.organizationId
   );
 
   return { sessionManager, role: membership?.role ?? null };
@@ -91,7 +91,7 @@ async function getSessionManagerWithAccessCheck(
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -100,9 +100,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED,
+          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -113,25 +113,25 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid session manager ID format',
-          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get session manager with access check
     const result = await getSessionManagerWithAccessCheck(
       params.id,
-      session.user.id,
+      session.user.id
     );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Session manager not found or access denied',
-          SESSION_MANAGER_ERROR_CODES.NOT_FOUND,
+          SESSION_MANAGER_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -140,9 +140,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to deactivate this session manager',
-          SESSION_MANAGER_ERROR_CODES.FORBIDDEN,
+          SESSION_MANAGER_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -216,9 +216,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR,
+        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

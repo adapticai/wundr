@@ -47,7 +47,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -65,11 +65,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         // Filtered query
         const whereConditions = [`user_id = ${session.user.id}`];
         if (eventType) {
-whereConditions.push(`event_type = '${eventType}'`);
-}
+          whereConditions.push(`event_type = '${eventType}'`);
+        }
         if (severity) {
-whereConditions.push(`severity = '${severity}'`);
-}
+          whereConditions.push(`severity = '${severity}'`);
+        }
 
         logs = await prisma.$queryRawUnsafe<
           Array<{
@@ -91,7 +91,7 @@ whereConditions.push(`severity = '${severity}'`);
           ORDER BY created_at DESC
           LIMIT ${limit}
           OFFSET ${offset}
-        `,
+        `
         );
       } else {
         logs = await prisma.$queryRaw<
@@ -155,7 +155,7 @@ whereConditions.push(`severity = '${severity}'`);
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

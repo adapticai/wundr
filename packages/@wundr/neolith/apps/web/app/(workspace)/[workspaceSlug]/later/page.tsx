@@ -132,7 +132,7 @@ export default function LaterPage() {
       });
       setShareDialogOpen(true);
     },
-    [],
+    []
   );
 
   // Fetch saved items
@@ -143,7 +143,7 @@ export default function LaterPage() {
 
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/saved-items?status=${status}&limit=50`,
+          `/api/workspaces/${workspaceSlug}/saved-items?status=${status}&limit=50`
         );
 
         if (!response.ok) {
@@ -151,7 +151,7 @@ export default function LaterPage() {
           console.error('Saved items API error:', response.status, errorData);
           throw new Error(
             errorData.error ||
-              `Failed to fetch saved items (${response.status})`,
+              `Failed to fetch saved items (${response.status})`
           );
         }
 
@@ -165,7 +165,7 @@ export default function LaterPage() {
         setIsLoading(false);
       }
     },
-    [workspaceSlug],
+    [workspaceSlug]
   );
 
   // Fetch counts for all tabs
@@ -173,13 +173,13 @@ export default function LaterPage() {
     try {
       const [inProgressRes, completedRes, archivedRes] = await Promise.all([
         fetch(
-          `/api/workspaces/${workspaceSlug}/saved-items?status=IN_PROGRESS&limit=1`,
+          `/api/workspaces/${workspaceSlug}/saved-items?status=IN_PROGRESS&limit=1`
         ),
         fetch(
-          `/api/workspaces/${workspaceSlug}/saved-items?status=COMPLETED&limit=1`,
+          `/api/workspaces/${workspaceSlug}/saved-items?status=COMPLETED&limit=1`
         ),
         fetch(
-          `/api/workspaces/${workspaceSlug}/saved-items?status=ARCHIVED&limit=1`,
+          `/api/workspaces/${workspaceSlug}/saved-items?status=ARCHIVED&limit=1`
         ),
       ]);
 
@@ -222,7 +222,7 @@ export default function LaterPage() {
   // Update item status
   const updateItemStatus = async (
     itemId: string,
-    newStatus: SavedItemStatus,
+    newStatus: SavedItemStatus
   ) => {
     try {
       const response = await fetch(
@@ -231,7 +231,7 @@ export default function LaterPage() {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: newStatus }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -250,7 +250,7 @@ export default function LaterPage() {
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/saved-items/${itemId}`,
-        { method: 'DELETE' },
+        { method: 'DELETE' }
       );
 
       if (!response.ok) {
@@ -451,7 +451,7 @@ function SavedItemsList({
 
   // Group items by type
   const messages = items.filter(
-    item => item.itemType === 'MESSAGE' && item.message,
+    item => item.itemType === 'MESSAGE' && item.message
   );
   const files = items.filter(item => item.itemType === 'FILE' && item.file);
 
@@ -822,7 +822,7 @@ function SavedFileCard({
   const handlePreview = async () => {
     try {
       const response = await fetch(
-        `/api/files/${file.id}/download?inline=true`,
+        `/api/files/${file.id}/download?inline=true`
       );
       const data = await response.json();
       if (data.data?.url) {
@@ -893,7 +893,7 @@ function SavedFileCard({
   const handleOpenInNewTab = async () => {
     try {
       const response = await fetch(
-        `/api/files/${file.id}/download?inline=true`,
+        `/api/files/${file.id}/download?inline=true`
       );
       const data = await response.json();
       if (data.data?.url) {
@@ -907,7 +907,7 @@ function SavedFileCard({
   const handleCopyLink = async () => {
     try {
       const response = await fetch(
-        `/api/files/${file.id}/download?inline=true`,
+        `/api/files/${file.id}/download?inline=true`
       );
       const data = await response.json();
       if (data.data?.url) {
@@ -923,7 +923,7 @@ function SavedFileCard({
   const handleDownload = async () => {
     try {
       const response = await fetch(
-        `/api/files/${file.id}/download?download=true`,
+        `/api/files/${file.id}/download?download=true`
       );
       const data = await response.json();
       if (data.data?.url) {

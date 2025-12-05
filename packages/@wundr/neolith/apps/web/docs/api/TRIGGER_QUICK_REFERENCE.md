@@ -3,24 +3,28 @@
 ## Endpoints
 
 ### Webhook Trigger
+
 ```bash
 POST /api/workspaces/:workspaceId/workflows/trigger/webhook/:token
 GET  /api/workspaces/:workspaceId/workflows/trigger/webhook/:token (test)
 ```
 
 ### API Key Trigger
+
 ```bash
 POST /api/workspaces/:workspaceId/workflows/trigger/api
 Header: Authorization: Bearer wf_...
 ```
 
 ### Event Trigger (Internal)
+
 ```bash
 POST /api/workspaces/:workspaceId/workflows/trigger
 Auth: Session
 ```
 
 ### Configuration
+
 ```bash
 GET  /api/workspaces/:workspaceId/workflows/trigger/config/:workflowId
 PUT  /api/workspaces/:workspaceId/workflows/trigger/config/:workflowId
@@ -28,22 +32,24 @@ POST /api/workspaces/:workspaceId/workflows/trigger/config/:workflowId/regenerat
 ```
 
 ### Logs
+
 ```bash
 GET /api/workspaces/:workspaceId/workflows/trigger/logs?status=success&page=1&limit=20
 ```
 
 ## Rate Limits
 
-| Type     | Limit              |
-|----------|--------------------|
-| webhook  | 100/min            |
-| api      | 1000/min           |
-| schedule | 10/min             |
-| event    | 500/min            |
+| Type     | Limit    |
+| -------- | -------- |
+| webhook  | 100/min  |
+| api      | 1000/min |
+| schedule | 10/min   |
+| event    | 500/min  |
 
 ## Webhook Signature
 
 ### Generate (Node.js)
+
 ```javascript
 const crypto = require('crypto');
 const signature = crypto
@@ -53,6 +59,7 @@ const signature = crypto
 ```
 
 ### Send
+
 ```bash
 curl -X POST webhook_url \
   -H "X-Webhook-Signature: $signature" \
@@ -71,20 +78,21 @@ curl -X POST webhook_url \
 
 ## Error Codes
 
-| Code                  | Status | Description           |
-|-----------------------|--------|-----------------------|
-| UNAUTHORIZED          | 401    | Auth failed           |
-| WORKSPACE_NOT_FOUND   | 404    | No access             |
-| WORKFLOW_NOT_FOUND    | 404    | Workflow missing      |
-| WORKFLOW_INACTIVE     | 400    | Workflow not active   |
-| VALIDATION_ERROR      | 400    | Invalid input         |
-| VALIDATION_ERROR      | 429    | Rate limit exceeded   |
-| EXECUTION_FAILED      | 500    | Execution error       |
-| INTERNAL_ERROR        | 500    | Server error          |
+| Code                | Status | Description         |
+| ------------------- | ------ | ------------------- |
+| UNAUTHORIZED        | 401    | Auth failed         |
+| WORKSPACE_NOT_FOUND | 404    | No access           |
+| WORKFLOW_NOT_FOUND  | 404    | Workflow missing    |
+| WORKFLOW_INACTIVE   | 400    | Workflow not active |
+| VALIDATION_ERROR    | 400    | Invalid input       |
+| VALIDATION_ERROR    | 429    | Rate limit exceeded |
+| EXECUTION_FAILED    | 500    | Execution error     |
+| INTERNAL_ERROR      | 500    | Server error        |
 
 ## Response Format
 
 ### Success
+
 ```json
 {
   "success": true,
@@ -96,13 +104,16 @@ curl -X POST webhook_url \
 ```
 
 ### Rate Limited
+
 ```json
 {
   "error": "VALIDATION_ERROR",
   "message": "Rate limit exceeded"
 }
 ```
+
 Headers:
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 0
@@ -112,6 +123,7 @@ X-RateLimit-Reset: 1640000000000
 ## Quick Start
 
 ### 1. Setup Webhook
+
 ```bash
 # Get config to see webhook URL
 curl GET /api/.../trigger/config/wf_123
@@ -122,6 +134,7 @@ curl POST /api/.../trigger/config/wf_123/regenerate \
 ```
 
 ### 2. Generate API Key
+
 ```bash
 curl POST /api/.../trigger/config/wf_123/regenerate \
   -d '{"type": "api_key"}'
@@ -129,12 +142,14 @@ curl POST /api/.../trigger/config/wf_123/regenerate \
 ```
 
 ### 3. Test Webhook
+
 ```bash
 curl GET webhook_url
 # Should return: {"message": "Webhook endpoint is active"}
 ```
 
 ### 4. Trigger Workflow
+
 ```bash
 # Via webhook
 curl POST webhook_url -d '{"test": true}'
@@ -146,6 +161,7 @@ curl POST /api/.../trigger/api \
 ```
 
 ### 5. Check Logs
+
 ```bash
 curl GET '/api/.../trigger/logs?status=success&limit=10'
 ```
@@ -188,18 +204,21 @@ REDIS_URL=redis://localhost:6379
 ## Common Issues
 
 ### Rate Limited
+
 ```
 Status: 429
 Solution: Wait until X-RateLimit-Reset or increase limits
 ```
 
 ### Invalid Signature
+
 ```
 Status: 401, "Invalid webhook signature"
 Solution: Verify secret and signature generation
 ```
 
 ### Workflow Inactive
+
 ```
 Status: 400, "Only active workflows can be executed"
 Solution: Activate workflow first

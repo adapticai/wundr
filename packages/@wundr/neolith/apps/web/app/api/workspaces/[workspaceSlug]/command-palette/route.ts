@@ -108,7 +108,7 @@ interface CommandPaletteSuggestions {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -117,9 +117,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED,
+          ORG_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -130,19 +130,19 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const channelLimit = Math.min(
       parseInt(searchParams.get('channelLimit') || '5', 10),
-      10,
+      10
     );
     const dmLimit = Math.min(
       parseInt(searchParams.get('dmLimit') || '5', 10),
-      10,
+      10
     );
     const personLimit = Math.min(
       parseInt(searchParams.get('personLimit') || '5', 10),
-      10,
+      10
     );
     const fileLimit = Math.min(
       parseInt(searchParams.get('fileLimit') || '3', 10),
-      10,
+      10
     );
 
     // Get workspace by ID or slug
@@ -157,9 +157,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -176,7 +176,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         createErrorResponse('Access denied', ORG_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -480,7 +480,7 @@ export async function GET(
           icon: 'settings',
           shortcut: '⌘,',
           path: `/${workspaceSlug}/settings`,
-        },
+        }
       );
     }
 
@@ -496,14 +496,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/command-palette] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

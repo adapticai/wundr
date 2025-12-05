@@ -25,11 +25,7 @@ const [condition, setCondition] = useState<ConditionGroup>({
 ### 3. Render the Component
 
 ```tsx
-<ConditionBuilder
-  value={condition}
-  onChange={setCondition}
-  variables={workflowVariables}
-/>
+<ConditionBuilder value={condition} onChange={setCondition} variables={workflowVariables} />
 ```
 
 ## Common Use Cases
@@ -141,7 +137,7 @@ import { explainConditionGroup } from '@/components/workflow';
 const explanation = explainConditionGroup(condition, variables);
 
 // Display to user
-<pre className="text-sm">{explanation}</pre>
+<pre className='text-sm'>{explanation}</pre>;
 ```
 
 ## Enable Templates
@@ -151,7 +147,7 @@ const explanation = explainConditionGroup(condition, variables);
   value={condition}
   onChange={setCondition}
   variables={variables}
-  showTemplates={true}  // Show template button
+  showTemplates={true} // Show template button
 />
 ```
 
@@ -162,27 +158,31 @@ const explanation = explainConditionGroup(condition, variables);
   value={condition}
   onChange={setCondition}
   variables={variables}
-  readOnly={true}  // Disable editing
+  readOnly={true} // Disable editing
 />
 ```
 
 ## Operator Reference (Quick)
 
 ### String
+
 - `equals`, `not_equals`
 - `contains`, `not_contains`
 - `starts_with`, `ends_with`
 - `matches_regex`
 
 ### Number
+
 - `equals`, `not_equals`
 - `greater_than`, `greater_than_or_equal`
 - `less_than`, `less_than_or_equal`
 
 ### Any Type
+
 - `is_empty`, `is_not_empty`
 
 ### Array
+
 - `contains`, `not_contains`
 - `in_array`, `not_in_array`
 
@@ -228,26 +228,26 @@ const explanation = explainConditionGroup(condition, variables);
 ## Troubleshooting
 
 ### Issue: Operator not showing
+
 **Solution**: Check variable type matches operator's supported types
 
 ### Issue: Validation error
+
 **Solution**: Ensure variable exists in variables array
 
 ### Issue: Value required error
+
 **Solution**: Some operators need values, others don't (like `is_empty`)
 
 ### Issue: Preview not updating
+
 **Solution**: Check that `showPreview` prop is true
 
 ## TypeScript Tips
 
 ```tsx
 // Import types
-import type {
-  Condition,
-  ConditionGroup,
-  ComparisonOperator,
-} from '@/components/workflow';
+import type { Condition, ConditionGroup, ComparisonOperator } from '@/components/workflow';
 
 // Type-safe condition creation
 const condition: Condition = {
@@ -262,19 +262,19 @@ const condition: Condition = {
 ## Performance Tips
 
 1. Memoize validation:
+
 ```tsx
-const errors = useMemo(
-  () => validateConditionGroup(condition, variables),
-  [condition, variables]
-);
+const errors = useMemo(() => validateConditionGroup(condition, variables), [condition, variables]);
 ```
 
 2. Debounce onChange:
+
 ```tsx
 const debouncedOnChange = useDebouncedCallback(onChange, 300);
 ```
 
 3. Use read-only for display:
+
 ```tsx
 <ConditionBuilder readOnly={true} ... />
 ```
@@ -289,6 +289,7 @@ const debouncedOnChange = useDebouncedCallback(onChange, 300);
 ## Support
 
 For issues or questions:
+
 1. Check the full README
 2. Review test cases for examples
 3. Examine demo component
@@ -296,4 +297,5 @@ For issues or questions:
 
 ---
 
-**Pro Tip**: Use the template button to quickly start with common patterns, then customize from there!
+**Pro Tip**: Use the template button to quickly start with common patterns, then customize from
+there!

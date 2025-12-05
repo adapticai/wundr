@@ -27,7 +27,9 @@ export interface UseNotificationPreferencesReturn {
   /** Error loading preferences */
   error: Error | null;
   /** Update notification preferences */
-  updatePreferences: (updates: Partial<NotificationPreferences>) => Promise<void>;
+  updatePreferences: (
+    updates: Partial<NotificationPreferences>
+  ) => Promise<void>;
   /** Whether update is in progress */
   isUpdating: boolean;
   /** Toggle email notifications */
@@ -37,7 +39,11 @@ export interface UseNotificationPreferencesReturn {
   /** Toggle desktop notifications */
   toggleDesktopNotifications: (enabled: boolean) => Promise<void>;
   /** Enable Do Not Disturb mode */
-  enableDoNotDisturb: (startTime: string, endTime: string, days?: number[]) => Promise<void>;
+  enableDoNotDisturb: (
+    startTime: string,
+    endTime: string,
+    days?: number[]
+  ) => Promise<void>;
   /** Disable Do Not Disturb mode */
   disableDoNotDisturb: () => Promise<void>;
   /** Whether DND is currently active */
@@ -130,7 +136,7 @@ export function useNotificationPreferences(): UseNotificationPreferencesReturn {
         notifications: updates,
       });
     },
-    [updateSettings],
+    [updateSettings]
   );
 
   // Toggle email notifications
@@ -145,7 +151,7 @@ export function useNotificationPreferences(): UseNotificationPreferencesReturn {
         },
       });
     },
-    [updatePreferences],
+    [updatePreferences]
   );
 
   // Toggle push notifications
@@ -160,7 +166,7 @@ export function useNotificationPreferences(): UseNotificationPreferencesReturn {
         },
       });
     },
-    [updatePreferences],
+    [updatePreferences]
   );
 
   // Toggle desktop notifications
@@ -174,7 +180,7 @@ export function useNotificationPreferences(): UseNotificationPreferencesReturn {
         },
       });
     },
-    [updatePreferences],
+    [updatePreferences]
   );
 
   // Enable Do Not Disturb
@@ -189,7 +195,7 @@ export function useNotificationPreferences(): UseNotificationPreferencesReturn {
         },
       });
     },
-    [updatePreferences],
+    [updatePreferences]
   );
 
   // Disable Do Not Disturb

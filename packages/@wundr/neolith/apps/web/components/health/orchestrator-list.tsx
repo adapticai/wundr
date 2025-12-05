@@ -69,7 +69,7 @@ const StatusBadge: React.FC<{ status: OrchestratorStatus }> = ({ status }) => {
           status === 'active' && 'bg-green-500',
           status === 'idle' && 'bg-gray-400',
           status === 'error' && 'bg-red-500',
-          status === 'maintenance' && 'bg-orange-500',
+          status === 'maintenance' && 'bg-orange-500'
         )}
       />
       {label}
@@ -301,7 +301,7 @@ export const OrchestratorList: React.FC<OrchestratorListProps> = ({
                                   </div>
                                   <div className='text-sm'>
                                     {orchestrator.metadata.memoryUsage.toFixed(
-                                      1,
+                                      1
                                     )}
                                     %
                                   </div>

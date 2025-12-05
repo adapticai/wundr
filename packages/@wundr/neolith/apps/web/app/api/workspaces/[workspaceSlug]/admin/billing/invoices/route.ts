@@ -13,7 +13,10 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { createAdminErrorResponse, ADMIN_ERROR_CODES } from '@/lib/validations/admin';
+import {
+  createAdminErrorResponse,
+  ADMIN_ERROR_CODES,
+} from '@/lib/validations/admin';
 
 /**
  * Route context with workspace slug parameter
@@ -39,13 +42,19 @@ interface Invoice {
  *
  * Get billing invoices for workspace. Requires admin role.
  */
-export async function GET(_request: Request, context: RouteContext): Promise<NextResponse> {
+export async function GET(
+  _request: Request,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -57,15 +66,22 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
       include: { workspace: true },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
     // Get invoices from workspace settings
-    const settings = (membership.workspace.settings as Record<string, unknown>) || {};
+    const settings =
+      (membership.workspace.settings as Record<string, unknown>) || {};
     const billingSettings = (settings.billing as Record<string, unknown>) || {};
     const invoices = (billingSettings.invoices as Invoice[]) || [];
 
@@ -79,9 +95,21 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
           amount: 2900,
           currency: 'usd',
           status: 'paid',
-          date: new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString(),
-          periodStart: new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString(),
-          periodEnd: new Date(now.getFullYear(), now.getMonth() - 1, 0).toISOString(),
+          date: new Date(
+            now.getFullYear(),
+            now.getMonth() - 1,
+            1
+          ).toISOString(),
+          periodStart: new Date(
+            now.getFullYear(),
+            now.getMonth() - 2,
+            1
+          ).toISOString(),
+          periodEnd: new Date(
+            now.getFullYear(),
+            now.getMonth() - 1,
+            0
+          ).toISOString(),
           pdfUrl: '#',
         },
         {
@@ -91,8 +119,16 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
           currency: 'usd',
           status: 'paid',
           date: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(),
-          periodStart: new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString(),
-          periodEnd: new Date(now.getFullYear(), now.getMonth(), 0).toISOString(),
+          periodStart: new Date(
+            now.getFullYear(),
+            now.getMonth() - 1,
+            1
+          ).toISOString(),
+          periodEnd: new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            0
+          ).toISOString(),
           pdfUrl: '#',
         },
       ];
@@ -102,10 +138,16 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
 
     return NextResponse.json({ invoices });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/admin/billing/invoices] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/admin/billing/invoices] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to fetch invoices', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to fetch invoices',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

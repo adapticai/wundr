@@ -89,7 +89,7 @@ describe('POST /api/workspaces/generate-org', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(mockInput),
-        },
+        }
       );
 
       const response = await POST(request as any);
@@ -109,7 +109,7 @@ describe('POST /api/workspaces/generate-org', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(mockInput),
-        },
+        }
       );
 
       const response = await POST(request as any);
@@ -135,7 +135,7 @@ describe('POST /api/workspaces/generate-org', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(mockInput),
-        },
+        }
       );
 
       const response = await POST(request as any);
@@ -165,7 +165,7 @@ describe('POST /api/workspaces/generate-org', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: 'invalid json',
-        },
+        }
       );
 
       const response = await POST(request as any);
@@ -187,7 +187,7 @@ describe('POST /api/workspaces/generate-org', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(invalidInput),
-        },
+        }
       );
 
       const response = await POST(request as any);
@@ -210,7 +210,7 @@ describe('POST /api/workspaces/generate-org', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(invalidInput),
-        },
+        }
       );
 
       const response = await POST(request as any);
@@ -232,7 +232,7 @@ describe('POST /api/workspaces/generate-org', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(invalidInput),
-        },
+        }
       );
 
       const response = await POST(request as any);
@@ -254,7 +254,7 @@ describe('POST /api/workspaces/generate-org', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(invalidInput),
-        },
+        }
       );
 
       const response = await POST(request as any);
@@ -297,7 +297,7 @@ describe('POST /api/workspaces/generate-org', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(mockInput),
-        },
+        }
       );
 
       const response = await POST(request as any);
@@ -334,7 +334,7 @@ describe('POST /api/workspaces/generate-org', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(mockInput),
-        },
+        }
       );
 
       const response = await POST(request as any);
@@ -378,7 +378,7 @@ describe('POST /api/workspaces/generate-org', () => {
 
       vi.mocked(createGenesisEngine).mockReturnValue(mockEngine as any);
       vi.mocked(migrateOrgGenesisResult).mockRejectedValue(
-        new Error('Migration failed'),
+        new Error('Migration failed')
       );
 
       const request = new Request(
@@ -387,7 +387,7 @@ describe('POST /api/workspaces/generate-org', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(mockInput),
-        },
+        }
       );
 
       const response = await POST(request as any);
@@ -518,7 +518,7 @@ describe('POST /api/workspaces/generate-org', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(mockInput),
-        },
+        }
       );
 
       const response = await POST(request as any);
@@ -532,7 +532,7 @@ describe('POST /api/workspaces/generate-org', () => {
       expect(data.migration).toBeDefined();
       expect(data.migration.status).toBe('complete');
       expect(data.message).toBe(
-        'Workspace created successfully with organizational structure',
+        'Workspace created successfully with organizational structure'
       );
     });
   });

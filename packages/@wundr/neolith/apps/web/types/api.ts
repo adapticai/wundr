@@ -553,7 +553,7 @@ export function isChartDataPoint(value: unknown): value is ChartDataPoint {
         typeof v === 'number' ||
         typeof v === 'boolean' ||
         v === null ||
-        v === undefined,
+        v === undefined
     )
   );
 }
@@ -565,7 +565,7 @@ export function isChartDataPoint(value: unknown): value is ChartDataPoint {
  * @returns True if value is a valid OrchestratorStatus
  */
 export function isOrchestratorStatus(
-  value: unknown,
+  value: unknown
 ): value is OrchestratorStatus {
   return (
     typeof value === 'string' &&
@@ -577,7 +577,7 @@ export function isOrchestratorStatus(
  * Type guard to check if a value is a valid OrchestratorApiResponse
  */
 export function isOrchestratorApiResponse(
-  value: unknown,
+  value: unknown
 ): value is OrchestratorApiResponse {
   if (typeof value !== 'object' || value === null) {
     return false;

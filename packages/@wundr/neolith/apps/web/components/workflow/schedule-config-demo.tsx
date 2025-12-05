@@ -3,13 +3,18 @@
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { ScheduleConfig } from './schedule-config';
 
 import type { Schedule } from './schedule-config';
-
 
 /**
  * Demo component showcasing the ScheduleConfig component
@@ -90,22 +95,17 @@ export function ScheduleConfigDemo() {
 
   const handleScheduleUpdate = (
     scheduleId: string,
-    updates: Partial<Schedule>,
+    updates: Partial<Schedule>
   ) => {
     setSchedules(
-      schedules.map((s) =>
-        s.id === scheduleId ? { ...s, ...updates } : s,
-      ),
+      schedules.map(s => (s.id === scheduleId ? { ...s, ...updates } : s))
     );
-    const schedule = schedules.find((s) => s.id === scheduleId);
+    const schedule = schedules.find(s => s.id === scheduleId);
     if (schedule) {
       if ('enabled' in updates) {
-        toast.success(
-          `Schedule ${updates.enabled ? 'enabled' : 'disabled'}`,
-          {
-            description: `"${schedule.name}" is now ${updates.enabled ? 'active' : 'paused'}`,
-          },
-        );
+        toast.success(`Schedule ${updates.enabled ? 'enabled' : 'disabled'}`, {
+          description: `"${schedule.name}" is now ${updates.enabled ? 'active' : 'paused'}`,
+        });
       } else {
         toast.success('Schedule updated', {
           description: `"${schedule.name}" has been modified`,
@@ -115,8 +115,8 @@ export function ScheduleConfigDemo() {
   };
 
   const handleScheduleDelete = (scheduleId: string) => {
-    const schedule = schedules.find((s) => s.id === scheduleId);
-    setSchedules(schedules.filter((s) => s.id !== scheduleId));
+    const schedule = schedules.find(s => s.id === scheduleId);
+    setSchedules(schedules.filter(s => s.id !== scheduleId));
     if (schedule) {
       toast.success('Schedule deleted', {
         description: `"${schedule.name}" has been removed`,
@@ -125,24 +125,27 @@ export function ScheduleConfigDemo() {
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className='container mx-auto py-8 space-y-8'>
       <div>
-        <h1 className="text-3xl font-bold mb-2">Workflow Schedule Configuration</h1>
-        <p className="text-muted-foreground">
-          Configure when workflows should run automatically using cron expressions
+        <h1 className='text-3xl font-bold mb-2'>
+          Workflow Schedule Configuration
+        </h1>
+        <p className='text-muted-foreground'>
+          Configure when workflows should run automatically using cron
+          expressions
         </p>
       </div>
 
-      <Tabs defaultValue="interactive" className="space-y-4">
+      <Tabs defaultValue='interactive' className='space-y-4'>
         <TabsList>
-          <TabsTrigger value="interactive">Interactive Demo</TabsTrigger>
-          <TabsTrigger value="examples">Usage Examples</TabsTrigger>
-          <TabsTrigger value="features">Features</TabsTrigger>
+          <TabsTrigger value='interactive'>Interactive Demo</TabsTrigger>
+          <TabsTrigger value='examples'>Usage Examples</TabsTrigger>
+          <TabsTrigger value='features'>Features</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="interactive" className="space-y-4">
+        <TabsContent value='interactive' className='space-y-4'>
           <ScheduleConfig
-            workflowId="demo-workflow"
+            workflowId='demo-workflow'
             schedules={schedules}
             onScheduleAdd={handleScheduleAdd}
             onScheduleUpdate={handleScheduleUpdate}
@@ -151,7 +154,7 @@ export function ScheduleConfigDemo() {
           />
         </TabsContent>
 
-        <TabsContent value="examples" className="space-y-4">
+        <TabsContent value='examples' className='space-y-4'>
           <Card>
             <CardHeader>
               <CardTitle>Usage Examples</CardTitle>
@@ -159,11 +162,11 @@ export function ScheduleConfigDemo() {
                 Common patterns for using the ScheduleConfig component
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className='space-y-6'>
               <div>
-                <h3 className="font-semibold mb-2">Basic Usage</h3>
-                <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs">
-{`import { ScheduleConfig } from '@/components/workflow/schedule-config';
+                <h3 className='font-semibold mb-2'>Basic Usage</h3>
+                <pre className='bg-muted p-4 rounded-lg overflow-x-auto text-xs'>
+                  {`import { ScheduleConfig } from '@/components/workflow/schedule-config';
 
 function MyWorkflowEditor() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -197,9 +200,9 @@ function MyWorkflowEditor() {
               </div>
 
               <div>
-                <h3 className="font-semibold mb-2">With API Integration</h3>
-                <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs">
-{`import { ScheduleConfig } from '@/components/workflow/schedule-config';
+                <h3 className='font-semibold mb-2'>With API Integration</h3>
+                <pre className='bg-muted p-4 rounded-lg overflow-x-auto text-xs'>
+                  {`import { ScheduleConfig } from '@/components/workflow/schedule-config';
 import { useSchedules } from '@/hooks/use-schedules';
 
 function WorkflowScheduler({ workflowId }: { workflowId: string }) {
@@ -227,31 +230,31 @@ function WorkflowScheduler({ workflowId }: { workflowId: string }) {
               </div>
 
               <div>
-                <h3 className="font-semibold mb-2">Common Cron Patterns</h3>
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <code className="bg-muted p-2 rounded">* * * * *</code>
+                <h3 className='font-semibold mb-2'>Common Cron Patterns</h3>
+                <div className='space-y-2'>
+                  <div className='grid grid-cols-2 gap-2 text-sm'>
+                    <code className='bg-muted p-2 rounded'>* * * * *</code>
                     <span>Every minute</span>
 
-                    <code className="bg-muted p-2 rounded">*/5 * * * *</code>
+                    <code className='bg-muted p-2 rounded'>*/5 * * * *</code>
                     <span>Every 5 minutes</span>
 
-                    <code className="bg-muted p-2 rounded">0 * * * *</code>
+                    <code className='bg-muted p-2 rounded'>0 * * * *</code>
                     <span>Every hour</span>
 
-                    <code className="bg-muted p-2 rounded">0 9 * * *</code>
+                    <code className='bg-muted p-2 rounded'>0 9 * * *</code>
                     <span>Every day at 9 AM</span>
 
-                    <code className="bg-muted p-2 rounded">0 9 * * 1</code>
+                    <code className='bg-muted p-2 rounded'>0 9 * * 1</code>
                     <span>Every Monday at 9 AM</span>
 
-                    <code className="bg-muted p-2 rounded">0 9 1 * *</code>
+                    <code className='bg-muted p-2 rounded'>0 9 1 * *</code>
                     <span>First day of month at 9 AM</span>
 
-                    <code className="bg-muted p-2 rounded">0 0 * * 0</code>
+                    <code className='bg-muted p-2 rounded'>0 0 * * 0</code>
                     <span>Every Sunday at midnight</span>
 
-                    <code className="bg-muted p-2 rounded">0 12 1 1 *</code>
+                    <code className='bg-muted p-2 rounded'>0 12 1 1 *</code>
                     <span>January 1st at noon</span>
                   </div>
                 </div>
@@ -260,17 +263,19 @@ function WorkflowScheduler({ workflowId }: { workflowId: string }) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="features" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+        <TabsContent value='features' className='space-y-4'>
+          <div className='grid gap-4 md:grid-cols-2'>
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Visual Cron Builder</CardTitle>
+                <CardTitle className='text-base'>Visual Cron Builder</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm space-y-2">
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+              <CardContent className='text-sm space-y-2'>
+                <ul className='list-disc list-inside space-y-1 text-muted-foreground'>
                   <li>Preset schedules for common patterns</li>
                   <li>Advanced mode for custom cron expressions</li>
-                  <li>Individual field configuration (minute, hour, day, etc.)</li>
+                  <li>
+                    Individual field configuration (minute, hour, day, etc.)
+                  </li>
                   <li>Real-time validation and preview</li>
                   <li>Human-readable schedule descriptions</li>
                 </ul>
@@ -279,10 +284,10 @@ function WorkflowScheduler({ workflowId }: { workflowId: string }) {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Schedule Preview</CardTitle>
+                <CardTitle className='text-base'>Schedule Preview</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm space-y-2">
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+              <CardContent className='text-sm space-y-2'>
+                <ul className='list-disc list-inside space-y-1 text-muted-foreground'>
                   <li>Shows next 5 scheduled runs</li>
                   <li>Date and time formatting</li>
                   <li>Timezone-aware calculations</li>
@@ -294,10 +299,10 @@ function WorkflowScheduler({ workflowId }: { workflowId: string }) {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Timezone Support</CardTitle>
+                <CardTitle className='text-base'>Timezone Support</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm space-y-2">
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+              <CardContent className='text-sm space-y-2'>
+                <ul className='list-disc list-inside space-y-1 text-muted-foreground'>
                   <li>10+ common timezones</li>
                   <li>Timezone-aware scheduling</li>
                   <li>Automatic DST handling</li>
@@ -309,10 +314,10 @@ function WorkflowScheduler({ workflowId }: { workflowId: string }) {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Schedule Management</CardTitle>
+                <CardTitle className='text-base'>Schedule Management</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm space-y-2">
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+              <CardContent className='text-sm space-y-2'>
+                <ul className='list-disc list-inside space-y-1 text-muted-foreground'>
                   <li>Multiple schedules per workflow</li>
                   <li>Enable/disable schedules</li>
                   <li>Schedule descriptions and metadata</li>
@@ -324,10 +329,10 @@ function WorkflowScheduler({ workflowId }: { workflowId: string }) {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Calendar View</CardTitle>
+                <CardTitle className='text-base'>Calendar View</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm space-y-2">
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+              <CardContent className='text-sm space-y-2'>
+                <ul className='list-disc list-inside space-y-1 text-muted-foreground'>
                   <li>Visual calendar with scheduled dates</li>
                   <li>Highlights days with runs</li>
                   <li>Click to view schedules for date</li>
@@ -339,10 +344,10 @@ function WorkflowScheduler({ workflowId }: { workflowId: string }) {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">User Experience</CardTitle>
+                <CardTitle className='text-base'>User Experience</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm space-y-2">
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+              <CardContent className='text-sm space-y-2'>
+                <ul className='list-disc list-inside space-y-1 text-muted-foreground'>
                   <li>Responsive design (mobile-friendly)</li>
                   <li>Dark mode support</li>
                   <li>Toast notifications for actions</li>

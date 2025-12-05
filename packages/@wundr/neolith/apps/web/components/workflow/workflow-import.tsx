@@ -40,7 +40,12 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
-import type { Workflow, CreateWorkflowInput, TriggerConfig, ActionConfig } from '@/types/workflow';
+import type {
+  Workflow,
+  CreateWorkflowInput,
+  TriggerConfig,
+  ActionConfig,
+} from '@/types/workflow';
 
 /**
  * Import result for a single workflow
@@ -107,8 +112,11 @@ export function WorkflowImport({
   const [isDragging, setIsDragging] = useState(false);
   const [parsedWorkflows, setParsedWorkflows] = useState<ParsedWorkflow[]>([]);
   const [importResults, setImportResults] = useState<ImportResult[]>([]);
-  const [conflictResolution, setConflictResolution] = useState<ConflictResolution>('rename');
-  const [selectedWorkflows, setSelectedWorkflows] = useState<Set<number>>(new Set());
+  const [conflictResolution, setConflictResolution] =
+    useState<ConflictResolution>('rename');
+  const [selectedWorkflows, setSelectedWorkflows] = useState<Set<number>>(
+    new Set()
+  );
   const [showDetails, setShowDetails] = useState<Set<number>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -148,7 +156,7 @@ export function WorkflowImport({
           message: 'Workflow name is required',
           severity: 'error',
         });
-      } else if (existingWorkflows.some((w) => w.name === workflowData.name)) {
+      } else if (existingWorkflows.some(w => w.name === workflowData.name)) {
         warnings.push({
           field: 'name',
           message: `A workflow named "${workflowData.name}" already exists`,
@@ -226,7 +234,7 @@ export function WorkflowImport({
         warnings,
       };
     },
-    [existingWorkflows],
+    [existingWorkflows]
   );
 
   const handleFileSelect = useCallback(
@@ -241,10 +249,15 @@ export function WorkflowImport({
 
         setParsedWorkflows(parsed);
         // Select all valid workflows by default
-        setSelectedWorkflows(new Set(parsed.map((_, i) => i).filter((i) => parsed[i].isValid)));
+        setSelectedWorkflows(
+          new Set(parsed.map((_, i) => i).filter(i => parsed[i].isValid))
+        );
         setImportResults([]);
       } catch (error) {
-        const err = error instanceof Error ? error : new Error('Failed to parse JSON file');
+        const err =
+          error instanceof Error
+            ? error
+            : new Error('Failed to parse JSON file');
         onImportError?.(err);
         setParsedWorkflows([
           {
@@ -264,7 +277,7 @@ export function WorkflowImport({
         ]);
       }
     },
-    [validateWorkflow, onImportError],
+    [validateWorkflow, onImportError]
   );
 
   const handleDrop = useCallback(
@@ -277,7 +290,7 @@ export function WorkflowImport({
         handleFileSelect(file);
       }
     },
-    [handleFileSelect],
+    [handleFileSelect]
   );
 
   const handleFileInputChange = useCallback(
@@ -287,11 +300,11 @@ export function WorkflowImport({
         handleFileSelect(file);
       }
     },
-    [handleFileSelect],
+    [handleFileSelect]
   );
 
   const toggleWorkflowSelection = useCallback((index: number) => {
-    setSelectedWorkflows((prev) => {
+    setSelectedWorkflows(prev => {
       const next = new Set(prev);
       if (next.has(index)) {
         next.delete(index);
@@ -303,7 +316,7 @@ export function WorkflowImport({
   }, []);
 
   const toggleDetails = useCallback((index: number) => {
-    setShowDetails((prev) => {
+    setShowDetails(prev => {
       const next = new Set(prev);
       if (next.has(index)) {
         next.delete(index);
@@ -334,7 +347,7 @@ export function WorkflowImport({
         try {
           // Check for name conflicts
           let finalName = workflow.name;
-          if (existingWorkflows.some((w) => w.name === finalName)) {
+          if (existingWorkflows.some(w => w.name === finalName)) {
             if (conflictResolution === 'skip') {
               results.push({
                 success: false,
@@ -344,7 +357,11 @@ export function WorkflowImport({
               continue;
             } else if (conflictResolution === 'rename') {
               let counter = 1;
-              while (existingWorkflows.some((w) => w.name === `${finalName} (${counter})`)) {
+              while (
+                existingWorkflows.some(
+                  w => w.name === `${finalName} (${counter})`
+                )
+              ) {
                 counter++;
               }
               finalName = `${finalName} (${counter})`;
@@ -361,13 +378,16 @@ export function WorkflowImport({
             status: 'DRAFT',
           };
 
-          const response = await fetch(`/api/workspaces/${workspaceSlug}/workflows`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody),
-          });
+          const response = await fetch(
+            `/api/workspaces/${workspaceSlug}/workflows`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(requestBody),
+            }
+          );
 
           if (!response.ok) {
             const error = await response.json();
@@ -384,10 +404,11 @@ export function WorkflowImport({
             success: true,
             workflowName: workflow.name,
             workflowId: createdWorkflow.id,
-            warnings: workflow.warnings.map((w) => w.message),
+            warnings: workflow.warnings.map(w => w.message),
           });
         } catch (error) {
-          const err = error instanceof Error ? error : new Error('Unknown error');
+          const err =
+            error instanceof Error ? error : new Error('Unknown error');
           results.push({
             success: false,
             workflowName: workflow.name,
@@ -400,7 +421,7 @@ export function WorkflowImport({
       onImportComplete?.(results);
 
       // Close dialog after successful import if all succeeded
-      if (results.every((r) => r.success)) {
+      if (results.every(r => r.success)) {
         setTimeout(() => {
           setIsOpen(false);
           setParsedWorkflows([]);
@@ -425,9 +446,12 @@ export function WorkflowImport({
 
   const stats = useMemo(() => {
     const total = parsedWorkflows.length;
-    const valid = parsedWorkflows.filter((w) => w.isValid).length;
+    const valid = parsedWorkflows.filter(w => w.isValid).length;
     const invalid = total - valid;
-    const warnings = parsedWorkflows.reduce((sum, w) => sum + w.warnings.length, 0);
+    const warnings = parsedWorkflows.reduce(
+      (sum, w) => sum + w.warnings.length,
+      0
+    );
 
     return { total, valid, invalid, warnings };
   }, [parsedWorkflows]);
@@ -436,26 +460,26 @@ export function WorkflowImport({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm">
-            <Upload className="h-4 w-4 mr-2" />
+          <Button variant='outline' size='sm'>
+            <Upload className='h-4 w-4 mr-2' />
             Import
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh]">
+      <DialogContent className='max-w-3xl max-h-[90vh]'>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileJson className="h-5 w-5" />
+          <DialogTitle className='flex items-center gap-2'>
+            <FileJson className='h-5 w-5' />
             Import Workflows
           </DialogTitle>
           <DialogDescription>
-            Import workflows from JSON file. Existing workflows will be handled according to your
-            conflict resolution strategy.
+            Import workflows from JSON file. Existing workflows will be handled
+            according to your conflict resolution strategy.
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-200px)]">
-          <div className="space-y-6 py-4">
+        <ScrollArea className='max-h-[calc(90vh-200px)]'>
+          <div className='space-y-6 py-4'>
             {/* File Upload Area */}
             {parsedWorkflows.length === 0 && (
               <div
@@ -463,33 +487,35 @@ export function WorkflowImport({
                   'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
                   isDragging
                     ? 'border-primary bg-primary/5'
-                    : 'border-muted-foreground/25 hover:border-muted-foreground/50',
+                    : 'border-muted-foreground/25 hover:border-muted-foreground/50'
                 )}
-                onDragOver={(e) => {
+                onDragOver={e => {
                   e.preventDefault();
                   setIsDragging(true);
                 }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
               >
-                <FileJson className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Drop JSON file here</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <FileJson className='h-12 w-12 mx-auto mb-4 text-muted-foreground' />
+                <h3 className='text-lg font-semibold mb-2'>
+                  Drop JSON file here
+                </h3>
+                <p className='text-sm text-muted-foreground mb-4'>
                   or click to browse your files
                 </p>
                 <Button
-                  variant="outline"
+                  variant='outline'
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isImporting}
                 >
-                  <Upload className="h-4 w-4 mr-2" />
+                  <Upload className='h-4 w-4 mr-2' />
                   Select File
                 </Button>
                 <input
                   ref={fileInputRef}
-                  type="file"
-                  accept=".json"
-                  className="hidden"
+                  type='file'
+                  accept='.json'
+                  className='hidden'
                   onChange={handleFileInputChange}
                 />
               </div>
@@ -499,26 +525,32 @@ export function WorkflowImport({
             {parsedWorkflows.length > 0 && (
               <>
                 {/* Stats */}
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="p-3 bg-muted/50 rounded-lg">
-                    <div className="text-xs text-muted-foreground">Total</div>
-                    <div className="text-2xl font-bold">{stats.total}</div>
+                <div className='grid grid-cols-4 gap-4'>
+                  <div className='p-3 bg-muted/50 rounded-lg'>
+                    <div className='text-xs text-muted-foreground'>Total</div>
+                    <div className='text-2xl font-bold'>{stats.total}</div>
                   </div>
-                  <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
-                    <div className="text-xs text-green-600 dark:text-green-400">Valid</div>
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  <div className='p-3 bg-green-50 dark:bg-green-950/30 rounded-lg'>
+                    <div className='text-xs text-green-600 dark:text-green-400'>
+                      Valid
+                    </div>
+                    <div className='text-2xl font-bold text-green-600 dark:text-green-400'>
                       {stats.valid}
                     </div>
                   </div>
-                  <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-lg">
-                    <div className="text-xs text-red-600 dark:text-red-400">Invalid</div>
-                    <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                  <div className='p-3 bg-red-50 dark:bg-red-950/30 rounded-lg'>
+                    <div className='text-xs text-red-600 dark:text-red-400'>
+                      Invalid
+                    </div>
+                    <div className='text-2xl font-bold text-red-600 dark:text-red-400'>
                       {stats.invalid}
                     </div>
                   </div>
-                  <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg">
-                    <div className="text-xs text-yellow-600 dark:text-yellow-400">Warnings</div>
-                    <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                  <div className='p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg'>
+                    <div className='text-xs text-yellow-600 dark:text-yellow-400'>
+                      Warnings
+                    </div>
+                    <div className='text-2xl font-bold text-yellow-600 dark:text-yellow-400'>
                       {stats.warnings}
                     </div>
                   </div>
@@ -527,21 +559,30 @@ export function WorkflowImport({
                 <Separator />
 
                 {/* Conflict Resolution */}
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="conflict-resolution" className="text-base font-medium">
+                <div className='flex items-center justify-between'>
+                  <Label
+                    htmlFor='conflict-resolution'
+                    className='text-base font-medium'
+                  >
                     If workflow exists:
                   </Label>
                   <Select
                     value={conflictResolution}
-                    onValueChange={(value) => setConflictResolution(value as ConflictResolution)}
+                    onValueChange={value =>
+                      setConflictResolution(value as ConflictResolution)
+                    }
                   >
-                    <SelectTrigger className="w-[200px]">
+                    <SelectTrigger className='w-[200px]'>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="skip">Skip (don't import)</SelectItem>
-                      <SelectItem value="rename">Rename (add counter)</SelectItem>
-                      <SelectItem value="overwrite">Overwrite existing</SelectItem>
+                      <SelectItem value='skip'>Skip (don't import)</SelectItem>
+                      <SelectItem value='rename'>
+                        Rename (add counter)
+                      </SelectItem>
+                      <SelectItem value='overwrite'>
+                        Overwrite existing
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -549,11 +590,11 @@ export function WorkflowImport({
                 <Separator />
 
                 {/* Workflows List */}
-                <div className="space-y-3">
-                  <Label className="text-base font-medium">
+                <div className='space-y-3'>
+                  <Label className='text-base font-medium'>
                     Workflows ({selectedWorkflows.size} selected)
                   </Label>
-                  <div className="space-y-2">
+                  <div className='space-y-2'>
                     {parsedWorkflows.map((workflow, index) => (
                       <div
                         key={index}
@@ -561,79 +602,95 @@ export function WorkflowImport({
                           'border rounded-lg p-4 transition-colors',
                           workflow.isValid
                             ? 'bg-background hover:bg-muted/50'
-                            : 'bg-destructive/5 border-destructive/20',
+                            : 'bg-destructive/5 border-destructive/20'
                         )}
                       >
-                        <div className="flex items-start gap-3">
+                        <div className='flex items-start gap-3'>
                           <Checkbox
                             checked={selectedWorkflows.has(index)}
-                            onCheckedChange={() => toggleWorkflowSelection(index)}
+                            onCheckedChange={() =>
+                              toggleWorkflowSelection(index)
+                            }
                             disabled={!workflow.isValid}
-                            className="mt-1"
+                            className='mt-1'
                           />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-semibold truncate">{workflow.name}</h4>
+                          <div className='flex-1 min-w-0'>
+                            <div className='flex items-center gap-2 mb-1'>
+                              <h4 className='font-semibold truncate'>
+                                {workflow.name}
+                              </h4>
                               {workflow.isValid ? (
-                                <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                <CheckCircle2 className='h-4 w-4 text-green-600 flex-shrink-0' />
                               ) : (
-                                <XCircle className="h-4 w-4 text-destructive flex-shrink-0" />
+                                <XCircle className='h-4 w-4 text-destructive flex-shrink-0' />
                               )}
                               {workflow.warnings.length > 0 && (
-                                <Badge variant="outline" className="text-yellow-600 border-yellow-600">
-                                  {workflow.warnings.length} warning{workflow.warnings.length !== 1 ? 's' : ''}
+                                <Badge
+                                  variant='outline'
+                                  className='text-yellow-600 border-yellow-600'
+                                >
+                                  {workflow.warnings.length} warning
+                                  {workflow.warnings.length !== 1 ? 's' : ''}
                                 </Badge>
                               )}
                             </div>
                             {workflow.description && (
-                              <p className="text-sm text-muted-foreground mb-2">
+                              <p className='text-sm text-muted-foreground mb-2'>
                                 {workflow.description}
                               </p>
                             )}
-                            <div className="flex gap-2 text-xs text-muted-foreground">
+                            <div className='flex gap-2 text-xs text-muted-foreground'>
                               <span>{workflow.actions.length} actions</span>
                               <span>·</span>
                               <span>{workflow.trigger.type} trigger</span>
                             </div>
 
                             {/* Errors and Warnings */}
-                            {(workflow.errors.length > 0 || workflow.warnings.length > 0) && (
-                              <div className="mt-3">
+                            {(workflow.errors.length > 0 ||
+                              workflow.warnings.length > 0) && (
+                              <div className='mt-3'>
                                 <Button
-                                  variant="ghost"
-                                  size="sm"
+                                  variant='ghost'
+                                  size='sm'
                                   onClick={() => toggleDetails(index)}
-                                  className="h-6 px-2 text-xs"
+                                  className='h-6 px-2 text-xs'
                                 >
                                   {showDetails.has(index) ? (
                                     <>
-                                      <ChevronUp className="h-3 w-3 mr-1" />
+                                      <ChevronUp className='h-3 w-3 mr-1' />
                                       Hide details
                                     </>
                                   ) : (
                                     <>
-                                      <ChevronDown className="h-3 w-3 mr-1" />
+                                      <ChevronDown className='h-3 w-3 mr-1' />
                                       Show details
                                     </>
                                   )}
                                 </Button>
 
                                 {showDetails.has(index) && (
-                                  <div className="mt-2 space-y-2">
+                                  <div className='mt-2 space-y-2'>
                                     {workflow.errors.map((error, i) => (
-                                      <Alert key={`error-${i}`} variant="destructive">
-                                        <AlertCircle className="h-4 w-4" />
-                                        <AlertTitle className="text-sm">{error.field}</AlertTitle>
-                                        <AlertDescription className="text-xs">
+                                      <Alert
+                                        key={`error-${i}`}
+                                        variant='destructive'
+                                      >
+                                        <AlertCircle className='h-4 w-4' />
+                                        <AlertTitle className='text-sm'>
+                                          {error.field}
+                                        </AlertTitle>
+                                        <AlertDescription className='text-xs'>
                                           {error.message}
                                         </AlertDescription>
                                       </Alert>
                                     ))}
                                     {workflow.warnings.map((warning, i) => (
                                       <Alert key={`warning-${i}`}>
-                                        <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                                        <AlertTitle className="text-sm">{warning.field}</AlertTitle>
-                                        <AlertDescription className="text-xs">
+                                        <AlertTriangle className='h-4 w-4 text-yellow-600' />
+                                        <AlertTitle className='text-sm'>
+                                          {warning.field}
+                                        </AlertTitle>
+                                        <AlertDescription className='text-xs'>
                                           {warning.message}
                                         </AlertDescription>
                                       </Alert>
@@ -653,18 +710,20 @@ export function WorkflowImport({
                 {importResults.length > 0 && (
                   <>
                     <Separator />
-                    <div className="space-y-3">
-                      <Label className="text-base font-medium">Import Results</Label>
-                      <div className="space-y-2">
+                    <div className='space-y-3'>
+                      <Label className='text-base font-medium'>
+                        Import Results
+                      </Label>
+                      <div className='space-y-2'>
                         {importResults.map((result, index) => (
                           <Alert
                             key={index}
                             variant={result.success ? 'default' : 'destructive'}
                           >
                             {result.success ? (
-                              <CheckCircle2 className="h-4 w-4" />
+                              <CheckCircle2 className='h-4 w-4' />
                             ) : (
-                              <XCircle className="h-4 w-4" />
+                              <XCircle className='h-4 w-4' />
                             )}
                             <AlertTitle>{result.workflowName}</AlertTitle>
                             <AlertDescription>
@@ -683,11 +742,11 @@ export function WorkflowImport({
           </div>
         </ScrollArea>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className='gap-2'>
           {parsedWorkflows.length > 0 && (
             <>
               <Button
-                variant="outline"
+                variant='outline'
                 onClick={() => {
                   setParsedWorkflows([]);
                   setSelectedWorkflows(new Set());
@@ -703,13 +762,14 @@ export function WorkflowImport({
               >
                 {isImporting ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className='h-4 w-4 mr-2 animate-spin' />
                     Importing...
                   </>
                 ) : (
                   <>
-                    <Download className="h-4 w-4 mr-2" />
-                    Import {selectedWorkflows.size} Workflow{selectedWorkflows.size !== 1 ? 's' : ''}
+                    <Download className='h-4 w-4 mr-2' />
+                    Import {selectedWorkflows.size} Workflow
+                    {selectedWorkflows.size !== 1 ? 's' : ''}
                   </>
                 )}
               </Button>

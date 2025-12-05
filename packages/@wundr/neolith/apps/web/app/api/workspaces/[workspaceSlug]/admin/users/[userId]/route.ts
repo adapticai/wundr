@@ -32,15 +32,12 @@ interface RouteContext {
  */
 export async function DELETE(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { workspaceSlug, userId } = await context.params;
@@ -54,7 +51,7 @@ export async function DELETE(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -66,10 +63,13 @@ export async function DELETE(
       },
     });
 
-    if (!adminMembership || !['ADMIN', 'OWNER'].includes(adminMembership.role)) {
+    if (
+      !adminMembership ||
+      !['ADMIN', 'OWNER'].includes(adminMembership.role)
+    ) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -77,7 +77,7 @@ export async function DELETE(
     if (userId === session.user.id) {
       return NextResponse.json(
         { error: 'Cannot remove yourself from the workspace' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -92,7 +92,7 @@ export async function DELETE(
     if (!targetMembership) {
       return NextResponse.json(
         { error: 'User not found in workspace' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -100,7 +100,7 @@ export async function DELETE(
     if (targetMembership.role === 'OWNER' && adminMembership.role !== 'OWNER') {
       return NextResponse.json(
         { error: 'Only owners can remove other owners' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -117,7 +117,7 @@ export async function DELETE(
     console.error('Failed to remove user:', error);
     return NextResponse.json(
       { error: 'Failed to remove user' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

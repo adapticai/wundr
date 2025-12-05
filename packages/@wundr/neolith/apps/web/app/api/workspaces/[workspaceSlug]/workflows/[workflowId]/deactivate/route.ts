@@ -38,7 +38,7 @@ interface RouteContext {
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -47,9 +47,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -66,9 +66,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -85,9 +85,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -105,9 +105,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to deactivate workflows',
-          WORKFLOW_ERROR_CODES.FORBIDDEN,
+          WORKFLOW_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -123,9 +123,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workflow not found',
-          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -142,9 +142,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Cannot deactivate an archived workflow',
-          WORKFLOW_ERROR_CODES.WORKFLOW_INACTIVE,
+          WORKFLOW_ERROR_CODES.WORKFLOW_INACTIVE
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -168,14 +168,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/workflows/:workflowId/deactivate] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

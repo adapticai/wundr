@@ -49,7 +49,7 @@ export type AnalyticsErrorCode =
 export function createAnalyticsErrorResponse(
   message: string,
   code: AnalyticsErrorCode,
-  extraData?: Record<string, unknown>,
+  extraData?: Record<string, unknown>
 ): { error: AnalyticsErrorCode; message: string } & Record<string, unknown> {
   return {
     error: code,
@@ -154,7 +154,7 @@ export const timeRangeSchema = z
     {
       message: 'Start date must be before end date',
       path: ['start'],
-    },
+    }
   )
   .refine(
     data => {
@@ -166,7 +166,7 @@ export const timeRangeSchema = z
     {
       message: 'Date range cannot exceed 1 year',
       path: ['end'],
-    },
+    }
   );
 
 export type TimeRange = z.infer<typeof timeRangeSchema>;
@@ -202,7 +202,7 @@ export const dateRangeSchema = z.union([
       {
         message: 'Start date must be before end date',
         path: ['start'],
-      },
+      }
     )
     .refine(
       data => {
@@ -214,7 +214,7 @@ export const dateRangeSchema = z.union([
       {
         message: 'Date range cannot exceed 1 year',
         path: ['end'],
-      },
+      }
     ),
 ]);
 
@@ -281,13 +281,14 @@ export type FilterGroup = z.infer<typeof baseFilterGroupSchema> & {
   conditions: (FilterCondition | FilterGroup)[];
 };
 
-export const filterGroupSchema: z.ZodType<FilterGroup> = baseFilterGroupSchema.extend({
-  conditions: z.lazy(() =>
-    z.array(
-      z.union([filterConditionSchema, filterGroupSchema]),
-    ).min(1, 'At least one condition is required'),
-  ),
-}) as z.ZodType<FilterGroup>;
+export const filterGroupSchema: z.ZodType<FilterGroup> =
+  baseFilterGroupSchema.extend({
+    conditions: z.lazy(() =>
+      z
+        .array(z.union([filterConditionSchema, filterGroupSchema]))
+        .min(1, 'At least one condition is required')
+    ),
+  }) as z.ZodType<FilterGroup>;
 
 /**
  * Main filters schema supporting both simple and complex queries
@@ -296,7 +297,13 @@ export const filtersSchema = z.union([
   // Simple filters (key-value pairs)
   z.record(
     z.string(),
-    z.union([z.string(), z.number(), z.boolean(), z.array(z.string()), z.null()]),
+    z.union([
+      z.string(),
+      z.number(),
+      z.boolean(),
+      z.array(z.string()),
+      z.null(),
+    ])
   ),
   // Complex filters (with operators and logical grouping)
   z.object({
@@ -360,7 +367,10 @@ export const analyticsQuerySchema = z.object({
     .max(5, 'Maximum 5 group by fields allowed')
     .optional(),
   aggregation: z.enum(AGGREGATION_FUNCTIONS).optional().default('sum'),
-  sortBy: z.array(sortOrderSchema).max(3, 'Maximum 3 sort orders allowed').optional(),
+  sortBy: z
+    .array(sortOrderSchema)
+    .max(3, 'Maximum 3 sort orders allowed')
+    .optional(),
   limit: z.coerce
     .number()
     .int()
@@ -416,7 +426,7 @@ export const analyticsReportSchema = z.object({
           average: z.number(),
           min: z.number(),
           max: z.number(),
-        }),
+        })
       ),
     })
     .optional(),
@@ -477,7 +487,10 @@ export type JsonExportOptions = z.infer<typeof jsonExportOptionsSchema>;
  * Excel export options
  */
 export const xlsxExportOptionsSchema = z.object({
-  sheetName: z.string().max(31, 'Sheet name cannot exceed 31 characters').optional(),
+  sheetName: z
+    .string()
+    .max(31, 'Sheet name cannot exceed 31 characters')
+    .optional(),
   includeCharts: z.boolean().default(false),
   autoFilter: z.boolean().default(true),
   freezeHeader: z.boolean().default(true),
@@ -509,7 +522,7 @@ export const exportRequestSchema = z.object({
     .max(255, 'Filename cannot exceed 255 characters')
     .regex(
       /^[a-zA-Z0-9_\-. ]+$/,
-      'Filename can only contain alphanumeric characters, spaces, dots, hyphens, and underscores',
+      'Filename can only contain alphanumeric characters, spaces, dots, hyphens, and underscores'
     )
     .optional(),
   compression: z.enum(COMPRESSION_TYPES).optional().default('none'),
@@ -723,7 +736,7 @@ export function parseDateRange(input: DateRange): {
 export function validateDateRangeLimit(
   start: Date,
   end: Date,
-  maxDays: number = 365,
+  maxDays: number = 365
 ): boolean {
   const diffMs = end.getTime() - start.getTime();
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
@@ -738,19 +751,19 @@ export function getRecommendedGranularity(start: Date, end: Date): Granularity {
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
   if (diffDays <= 1) {
-return 'hour';
-}
+    return 'hour';
+  }
   if (diffDays <= 7) {
-return 'day';
-}
+    return 'day';
+  }
   if (diffDays <= 31) {
-return 'day';
-}
+    return 'day';
+  }
   if (diffDays <= 90) {
-return 'week';
-}
+    return 'week';
+  }
   if (diffDays <= 365) {
-return 'month';
-}
+    return 'month';
+  }
   return 'quarter';
 }

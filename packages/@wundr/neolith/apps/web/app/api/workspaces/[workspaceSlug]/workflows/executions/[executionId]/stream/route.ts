@@ -33,7 +33,7 @@ interface RouteContext {
 function sendSSE(
   controller: ReadableStreamDefaultController,
   event: string,
-  data: unknown,
+  data: unknown
 ): void {
   const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
   controller.enqueue(new TextEncoder().encode(message));
@@ -73,7 +73,7 @@ function sendSSE(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<Response> {
   try {
     // Authenticate user
@@ -83,10 +83,10 @@ export async function GET(
         JSON.stringify(
           createErrorResponse(
             'Authentication required',
-            WORKFLOW_ERROR_CODES.UNAUTHORIZED,
-          ),
+            WORKFLOW_ERROR_CODES.UNAUTHORIZED
+          )
         ),
-        { status: 401, headers: { 'Content-Type': 'application/json' } },
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -104,10 +104,10 @@ export async function GET(
         JSON.stringify(
           createErrorResponse(
             'Workspace not found',
-            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
-          ),
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+          )
         ),
-        { status: 404, headers: { 'Content-Type': 'application/json' } },
+        { status: 404, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -125,10 +125,10 @@ export async function GET(
         JSON.stringify(
           createErrorResponse(
             'Workspace not found or access denied',
-            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
-          ),
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
+          )
         ),
-        { status: 404, headers: { 'Content-Type': 'application/json' } },
+        { status: 404, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -145,10 +145,10 @@ export async function GET(
         JSON.stringify(
           createErrorResponse(
             'Execution not found',
-            WORKFLOW_ERROR_CODES.EXECUTION_NOT_FOUND,
-          ),
+            WORKFLOW_ERROR_CODES.EXECUTION_NOT_FOUND
+          )
         ),
-        { status: 404, headers: { 'Content-Type': 'application/json' } },
+        { status: 404, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -195,10 +195,10 @@ export async function GET(
 
             // Calculate and send progress
             const completedSteps = steps.filter(
-              s => s.status === 'success' || s.status === 'failed',
+              s => s.status === 'success' || s.status === 'failed'
             ).length;
             const successfulSteps = steps.filter(
-              s => s.status === 'success',
+              s => s.status === 'success'
             ).length;
             const failedSteps = steps.filter(s => s.status === 'failed').length;
 
@@ -218,7 +218,7 @@ export async function GET(
             if (
               !isComplete &&
               ['COMPLETED', 'FAILED', 'CANCELLED'].includes(
-                currentExecution.status,
+                currentExecution.status
               )
             ) {
               isComplete = true;
@@ -239,8 +239,7 @@ export async function GET(
             console.error('[Execution Stream] Poll error:', error);
             clearInterval(pollInterval);
             sendSSE(controller, 'error', {
-              message:
-                error instanceof Error ? error.message : 'Unknown error',
+              message: error instanceof Error ? error.message : 'Unknown error',
             });
             controller.close();
           }
@@ -265,16 +264,16 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/workflows/executions/:executionId/stream] Error:',
-      error,
+      error
     );
     return new Response(
       JSON.stringify(
         createErrorResponse(
           'An internal error occurred',
-          WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
-        ),
+          WORKFLOW_ERROR_CODES.INTERNAL_ERROR
+        )
       ),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

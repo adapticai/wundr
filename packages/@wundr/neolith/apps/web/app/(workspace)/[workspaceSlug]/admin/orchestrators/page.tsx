@@ -140,7 +140,7 @@ export default function AdminOrchestratorsManagementPage() {
   useEffect(() => {
     setPageHeader(
       'Orchestrator Management',
-      'Manage orchestrators, budgets, permissions, and analytics',
+      'Manage orchestrators, budgets, permissions, and analytics'
     );
   }, [setPageHeader]);
 
@@ -149,18 +149,18 @@ export default function AdminOrchestratorsManagementPage() {
     try {
       const params = new URLSearchParams();
       if (statusFilter !== 'all') {
-params.set('status', statusFilter);
-}
+        params.set('status', statusFilter);
+      }
       if (disciplineFilter !== 'all') {
-params.set('discipline', disciplineFilter);
-}
+        params.set('discipline', disciplineFilter);
+      }
       if (searchQuery) {
-params.set('search', searchQuery);
-}
+        params.set('search', searchQuery);
+      }
       params.set('limit', '100');
 
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/orchestrators?${params}`,
+        `/api/workspaces/${workspaceSlug}/admin/orchestrators?${params}`
       );
 
       if (!response.ok) {
@@ -196,7 +196,7 @@ params.set('search', searchQuery);
         setSelectedIds(new Set());
       }
     },
-    [orchestrators],
+    [orchestrators]
   );
 
   const handleSelectOne = useCallback((id: string, checked: boolean) => {
@@ -225,12 +225,12 @@ params.set('search', searchQuery);
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus }),
-          },
+          }
         );
 
         if (!response.ok) {
-throw new Error('Failed to update status');
-}
+          throw new Error('Failed to update status');
+        }
 
         toast({
           title: 'Success',
@@ -246,7 +246,7 @@ throw new Error('Failed to update status');
         });
       }
     },
-    [workspaceSlug, toast, fetchOrchestrators],
+    [workspaceSlug, toast, fetchOrchestrators]
   );
 
   const handleBulkToggle = useCallback(
@@ -261,12 +261,12 @@ throw new Error('Failed to update status');
               orchestratorIds: Array.from(selectedIds),
               action: enable ? 'enable' : 'disable',
             }),
-          },
+          }
         );
 
         if (!response.ok) {
-throw new Error('Failed to bulk update');
-}
+          throw new Error('Failed to bulk update');
+        }
 
         toast({
           title: 'Success',
@@ -283,7 +283,7 @@ throw new Error('Failed to bulk update');
         });
       }
     },
-    [workspaceSlug, selectedIds, toast, fetchOrchestrators],
+    [workspaceSlug, selectedIds, toast, fetchOrchestrators]
   );
 
   const handleDelete = useCallback(
@@ -293,12 +293,12 @@ throw new Error('Failed to bulk update');
           `/api/workspaces/${workspaceSlug}/admin/orchestrators/${id}`,
           {
             method: 'DELETE',
-          },
+          }
         );
 
         if (!response.ok) {
-throw new Error('Failed to delete');
-}
+          throw new Error('Failed to delete');
+        }
 
         toast({
           title: 'Success',
@@ -314,18 +314,18 @@ throw new Error('Failed to delete');
         });
       }
     },
-    [workspaceSlug, toast, fetchOrchestrators],
+    [workspaceSlug, toast, fetchOrchestrators]
   );
 
   const handleExport = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/orchestrators/export`,
+        `/api/workspaces/${workspaceSlug}/admin/orchestrators/export`
       );
 
       if (!response.ok) {
-throw new Error('Failed to export');
-}
+        throw new Error('Failed to export');
+      }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -379,8 +379,8 @@ throw new Error('Failed to export');
     const disciplines = new Set<string>();
     orchestrators.forEach(o => {
       if (o.discipline) {
-disciplines.add(o.discipline);
-}
+        disciplines.add(o.discipline);
+      }
     });
     return Array.from(disciplines).sort();
   }, [orchestrators]);
@@ -480,9 +480,7 @@ disciplines.add(o.discipline);
               Defaults
             </Button>
             <Button
-              onClick={() =>
-                router.push(`/${workspaceSlug}/orchestrators/new`)
-              }
+              onClick={() => router.push(`/${workspaceSlug}/orchestrators/new`)}
             >
               <Plus className='h-4 w-4 mr-2' />
               New Orchestrator
@@ -642,7 +640,7 @@ disciplines.add(o.discipline);
                         <DropdownMenuItem
                           onClick={() =>
                             router.push(
-                              `/${workspaceSlug}/admin/orchestrators/${orchestrator.id}`,
+                              `/${workspaceSlug}/admin/orchestrators/${orchestrator.id}`
                             )
                           }
                         >
@@ -680,7 +678,7 @@ disciplines.add(o.discipline);
                           onClick={() =>
                             handleToggleStatus(
                               orchestrator.id,
-                              orchestrator.status,
+                              orchestrator.status
                             )
                           }
                         >

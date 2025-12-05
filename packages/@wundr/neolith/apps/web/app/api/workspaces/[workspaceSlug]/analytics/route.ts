@@ -151,7 +151,7 @@ function parseAnalyticsQuery(searchParams: URLSearchParams): AnalyticsQuery {
   const page = parseInt(searchParams.get('page') || '1', 10);
   const limit = Math.min(
     parseInt(searchParams.get('limit') || '100', 10),
-    1000,
+    1000
   );
 
   // Validate granularity
@@ -207,7 +207,7 @@ function calculateDateRange(query: AnalyticsQuery): { start: Date; end: Date } {
 function generateTimeBuckets(
   start: Date,
   end: Date,
-  granularity: 'daily' | 'weekly' | 'monthly',
+  granularity: 'daily' | 'weekly' | 'monthly'
 ): Date[] {
   const buckets: Date[] = [];
   const current = new Date(start);
@@ -247,7 +247,7 @@ function generateTimeBuckets(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -256,9 +256,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED,
+          ORG_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -269,9 +269,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid workspace ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -281,9 +281,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -296,9 +296,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           error instanceof Error ? error.message : 'Invalid query parameters',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -402,7 +402,7 @@ export async function GET(
     const timeBuckets = generateTimeBuckets(
       start,
       end,
-      query.granularity || 'daily',
+      query.granularity || 'daily'
     );
 
     // Fetch time series data for messages
@@ -425,7 +425,7 @@ export async function GET(
           timestamp: bucketStart.toISOString(),
           value: count,
         };
-      }),
+      })
     );
 
     // Fetch time series data for task completion
@@ -446,7 +446,7 @@ export async function GET(
           timestamp: bucketStart.toISOString(),
           value: count,
         };
-      }),
+      })
     );
 
     // Fetch time series data for workflow execution
@@ -467,7 +467,7 @@ export async function GET(
           timestamp: bucketStart.toISOString(),
           value: count,
         };
-      }),
+      })
     );
 
     // Fetch Orchestrator activity metrics
@@ -536,7 +536,7 @@ export async function GET(
           completedTasks: completedTaskCount,
           status: orchestrator.status,
         };
-      }),
+      })
     );
 
     // Fetch channel engagement metrics
@@ -658,21 +658,21 @@ export async function GET(
         select: {
           durationMs: true,
         },
-      },
+      }
     );
 
     let averageDurationMs: number | undefined;
     if (completedworkflowExecutions.length > 0) {
       const totalDuration = completedworkflowExecutions.reduce(
         (sum, exec) => sum + (exec.durationMs || 0),
-        0,
+        0
       );
       averageDurationMs = totalDuration / completedworkflowExecutions.length;
     }
 
     const totalworkflowExecutions = workflowsByStatus.reduce(
       (sum, group) => sum + group._count,
-      0,
+      0
     );
     const successRate =
       totalworkflowExecutions > 0
@@ -707,23 +707,23 @@ export async function GET(
         workflowExecution: workflowTimeSeries,
       },
       orchestratorActivity: orchestratorActivity.sort(
-        (a, b) => b.messageCount - a.messageCount,
+        (a, b) => b.messageCount - a.messageCount
       ),
       channelEngagement: channelEngagement.sort(
-        (a, b) => b.messageCount - a.messageCount,
+        (a, b) => b.messageCount - a.messageCount
       ),
       taskMetrics: {
         byStatus: Object.fromEntries(
-          tasksByStatus.map(group => [group.status, group._count]),
+          tasksByStatus.map(group => [group.status, group._count])
         ),
         byPriority: Object.fromEntries(
-          tasksByPriority.map(group => [group.priority, group._count]),
+          tasksByPriority.map(group => [group.priority, group._count])
         ),
         ...(averageCompletionHours !== undefined && { averageCompletionHours }),
       },
       workflowMetrics: {
         byStatus: Object.fromEntries(
-          workflowsByStatus.map(group => [group.status, group._count]),
+          workflowsByStatus.map(group => [group.status, group._count])
         ),
         successRate: Math.round(successRate * 100) / 100,
         ...(averageDurationMs !== undefined && { averageDurationMs }),
@@ -736,9 +736,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred while fetching analytics',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

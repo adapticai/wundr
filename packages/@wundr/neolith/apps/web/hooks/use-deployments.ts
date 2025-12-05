@@ -67,7 +67,7 @@ export interface UseDeploymentsReturn {
  */
 export function useDeployments(
   workspaceId: string,
-  filters?: DeploymentFilters,
+  filters?: DeploymentFilters
 ): UseDeploymentsReturn {
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -111,7 +111,7 @@ export function useDeployments(
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
         throw new Error(
-          `Failed to fetch deployments (${response.status}): ${errorText}`,
+          `Failed to fetch deployments (${response.status}): ${errorText}`
         );
       }
 
@@ -159,13 +159,13 @@ export function useDeployments(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(input),
-          },
+          }
         );
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => 'Unknown error');
           throw new Error(
-            `Failed to create deployment (${response.status}): ${errorText}`,
+            `Failed to create deployment (${response.status}): ${errorText}`
           );
         }
 
@@ -173,7 +173,7 @@ export function useDeployments(
 
         if (!data || !data.deployment) {
           throw new Error(
-            'Invalid response format: expected deployment object',
+            'Invalid response format: expected deployment object'
           );
         }
 
@@ -185,7 +185,7 @@ export function useDeployments(
         return null;
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   return {
@@ -235,7 +235,7 @@ export interface UseDeploymentReturn {
  */
 export function useDeployment(
   workspaceId: string,
-  deploymentId: string,
+  deploymentId: string
 ): UseDeploymentReturn {
   const [deployment, setDeployment] = useState<Deployment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -261,7 +261,7 @@ export function useDeployment(
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceId}/deployments/${deploymentId}`,
-        { signal },
+        { signal }
       );
 
       if (!response.ok) {
@@ -270,7 +270,7 @@ export function useDeployment(
         }
         const errorText = await response.text().catch(() => 'Unknown error');
         throw new Error(
-          `Failed to fetch deployment (${response.status}): ${errorText}`,
+          `Failed to fetch deployment (${response.status}): ${errorText}`
         );
       }
 
@@ -312,13 +312,13 @@ export function useDeployment(
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(input),
-          },
+          }
         );
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => 'Unknown error');
           throw new Error(
-            `Failed to update deployment (${response.status}): ${errorText}`,
+            `Failed to update deployment (${response.status}): ${errorText}`
           );
         }
 
@@ -326,7 +326,7 @@ export function useDeployment(
 
         if (!data || !data.deployment) {
           throw new Error(
-            'Invalid response format: expected deployment object',
+            'Invalid response format: expected deployment object'
           );
         }
 
@@ -338,7 +338,7 @@ export function useDeployment(
         return null;
       }
     },
-    [workspaceId, deploymentId],
+    [workspaceId, deploymentId]
   );
 
   const deleteDeployment = useCallback(async (): Promise<boolean> => {
@@ -347,13 +347,13 @@ export function useDeployment(
         `/api/workspaces/${workspaceId}/deployments/${deploymentId}`,
         {
           method: 'DELETE',
-        },
+        }
       );
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
         throw new Error(
-          `Failed to delete deployment (${response.status}): ${errorText}`,
+          `Failed to delete deployment (${response.status}): ${errorText}`
         );
       }
 
@@ -372,13 +372,13 @@ export function useDeployment(
         `/api/workspaces/${workspaceId}/deployments/${deploymentId}/restart`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
         throw new Error(
-          `Failed to restart deployment (${response.status}): ${errorText}`,
+          `Failed to restart deployment (${response.status}): ${errorText}`
         );
       }
 
@@ -398,13 +398,13 @@ export function useDeployment(
         `/api/workspaces/${workspaceId}/deployments/${deploymentId}/stop`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
         throw new Error(
-          `Failed to stop deployment (${response.status}): ${errorText}`,
+          `Failed to stop deployment (${response.status}): ${errorText}`
         );
       }
 
@@ -473,7 +473,7 @@ export interface UseDeploymentLogsReturn {
 export function useDeploymentLogs(
   workspaceId: string,
   deploymentId: string,
-  options?: UseDeploymentLogsOptions,
+  options?: UseDeploymentLogsOptions
 ): UseDeploymentLogsReturn {
   const [logs, setLogs] = useState<DeploymentLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -518,7 +518,7 @@ export function useDeploymentLogs(
         if (!response.ok) {
           const errorText = await response.text().catch(() => 'Unknown error');
           throw new Error(
-            `Failed to fetch logs (${response.status}): ${errorText}`,
+            `Failed to fetch logs (${response.status}): ${errorText}`
           );
         }
 
@@ -541,7 +541,7 @@ export function useDeploymentLogs(
         setIsLoading(false);
       }
     },
-    [workspaceId, deploymentId, options?.level, options?.limit, cursor],
+    [workspaceId, deploymentId, options?.level, options?.limit, cursor]
   );
 
   useEffect(() => {

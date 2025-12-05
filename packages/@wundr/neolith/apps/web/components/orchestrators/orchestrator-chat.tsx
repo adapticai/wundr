@@ -39,7 +39,7 @@ function getMessageContent(message: UIMessage): string {
   }
   return message.parts
     .filter(
-      (part): part is { type: 'text'; text: string } => part.type === 'text',
+      (part): part is { type: 'text'; text: string } => part.type === 'text'
     )
     .map(part => part.text)
     .join('');
@@ -89,7 +89,7 @@ export function OrchestratorChat({
       setInput('');
       await chat.sendMessage({ text: message });
     },
-    [input, chat],
+    [input, chat]
   );
 
   // Suggested prompts
@@ -100,15 +100,12 @@ export function OrchestratorChat({
       'Help me write a better charter',
       'What operational settings should I use?',
     ],
-    [],
+    []
   );
 
-  const handleSuggestedPrompt = React.useCallback(
-    (prompt: string) => {
-      setInput(prompt);
-    },
-    [],
-  );
+  const handleSuggestedPrompt = React.useCallback((prompt: string) => {
+    setInput(prompt);
+  }, []);
 
   if (!isOpen) {
     return null;
@@ -121,7 +118,7 @@ export function OrchestratorChat({
     <Card
       className={cn(
         'flex h-full w-[450px] flex-col border-l shadow-lg',
-        className,
+        className
       )}
     >
       {/* Header */}
@@ -189,7 +186,7 @@ export function OrchestratorChat({
                     key={message.id}
                     className={cn(
                       'flex gap-3',
-                      isUser ? 'flex-row-reverse' : 'flex-row',
+                      isUser ? 'flex-row-reverse' : 'flex-row'
                     )}
                   >
                     {!isUser && (
@@ -202,7 +199,7 @@ export function OrchestratorChat({
                         'rounded-lg px-4 py-3 max-w-[85%]',
                         isUser
                           ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted',
+                          : 'bg-muted'
                       )}
                     >
                       <p className='text-sm whitespace-pre-wrap break-words leading-relaxed'>

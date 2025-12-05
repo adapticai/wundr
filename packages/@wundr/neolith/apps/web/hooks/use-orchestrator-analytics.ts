@@ -65,10 +65,10 @@ export function useOrchestratorAnalytics(
     includeDaily?: boolean;
     includeWeekly?: boolean;
     includeMonthly?: boolean;
-  },
+  }
 ): UseOrchestratorAnalyticsReturn {
   const [analytics, setAnalytics] = useState<OrchestratorAnalytics | null>(
-    null,
+    null
   );
   const [metrics, setMetrics] = useState<OrchestratorMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -100,14 +100,14 @@ export function useOrchestratorAnalytics(
 
         const response = await fetch(
           `/api/orchestrators/${orchestratorId}/analytics?${params.toString()}`,
-          { signal },
+          { signal }
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to fetch analytics: ${response.status}`,
+              `Failed to fetch analytics: ${response.status}`
           );
         }
 
@@ -122,13 +122,13 @@ export function useOrchestratorAnalytics(
         setError(
           err instanceof Error
             ? err
-            : new Error('Unknown error occurred while fetching analytics'),
+            : new Error('Unknown error occurred while fetching analytics')
         );
       } finally {
         setIsLoading(false);
       }
     },
-    [orchestratorId, timeRange, options],
+    [orchestratorId, timeRange, options]
   );
 
   useEffect(() => {
@@ -198,7 +198,7 @@ export interface UseSessionManagerMetricsReturn {
  * ```
  */
 export function useSessionManagerMetrics(
-  orchestratorId: string,
+  orchestratorId: string
 ): UseSessionManagerMetricsReturn {
   const [metrics, setMetrics] = useState<SessionManagerMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -216,14 +216,14 @@ export function useSessionManagerMetrics(
       try {
         const response = await fetch(
           `/api/orchestrators/${orchestratorId}/session-managers`,
-          { signal },
+          { signal }
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to fetch session managers: ${response.status}`,
+              `Failed to fetch session managers: ${response.status}`
           );
         }
 
@@ -233,17 +233,17 @@ export function useSessionManagerMetrics(
         // Calculate metrics from session managers
         const totalSessionManagers = sessionManagers.length;
         const activeSessions = sessionManagers.filter(
-          (sm: { status: string }) => sm.status === 'ACTIVE',
+          (sm: { status: string }) => sm.status === 'ACTIVE'
         ).length;
         const totalSubagents = sessionManagers.reduce(
           (sum: number, sm: { subagents: unknown[] }) =>
             sum + (sm.subagents?.length || 0),
-          0,
+          0
         );
         const totalTokenBudgetPerHour = sessionManagers.reduce(
           (sum: number, sm: { tokenBudgetPerHour: number }) =>
             sum + (sm.tokenBudgetPerHour || 0),
-          0,
+          0
         );
 
         setMetrics({
@@ -260,13 +260,13 @@ export function useSessionManagerMetrics(
         setError(
           err instanceof Error
             ? err
-            : new Error('Unknown error occurred while fetching metrics'),
+            : new Error('Unknown error occurred while fetching metrics')
         );
       } finally {
         setIsLoading(false);
       }
     },
-    [orchestratorId],
+    [orchestratorId]
   );
 
   useEffect(() => {

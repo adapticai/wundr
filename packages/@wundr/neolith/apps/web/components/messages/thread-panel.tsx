@@ -85,7 +85,9 @@ export const ThreadPanel = memo(function ThreadPanel({
 
   // Get unique participants from replies
   const participants = Array.from(
-    new Set([parentMessage.author, ...replies.map(r => r.author)].filter(Boolean)),
+    new Set(
+      [parentMessage.author, ...replies.map(r => r.author)].filter(Boolean)
+    )
   );
 
   const handleSubmitReply = async (e: React.FormEvent) => {
@@ -248,7 +250,15 @@ export const ThreadPanel = memo(function ThreadPanel({
               />
               <div className='flex items-center justify-between'>
                 <span className='text-xs text-muted-foreground'>
-                  Press <kbd className='rounded bg-muted px-1 py-0.5 text-xs font-semibold'>Enter</kbd> to send, <kbd className='rounded bg-muted px-1 py-0.5 text-xs font-semibold'>Shift+Enter</kbd> for new line
+                  Press{' '}
+                  <kbd className='rounded bg-muted px-1 py-0.5 text-xs font-semibold'>
+                    Enter
+                  </kbd>{' '}
+                  to send,{' '}
+                  <kbd className='rounded bg-muted px-1 py-0.5 text-xs font-semibold'>
+                    Shift+Enter
+                  </kbd>{' '}
+                  for new line
                 </span>
                 <button
                   type='submit'

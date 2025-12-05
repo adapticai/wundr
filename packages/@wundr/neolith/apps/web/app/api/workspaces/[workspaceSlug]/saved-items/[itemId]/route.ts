@@ -63,14 +63,14 @@ async function getWorkspaceWithAccess(workspaceSlug: string, userId: string) {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required', code: 'UNAUTHORIZED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -80,7 +80,7 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied', code: 'NOT_FOUND' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -130,7 +130,7 @@ export async function GET(
     if (!savedItem) {
       return NextResponse.json(
         { error: 'Saved item not found', code: 'NOT_FOUND' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -149,11 +149,11 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/saved-items/:itemId] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       { error: 'An internal error occurred', code: 'INTERNAL_ERROR' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -170,14 +170,14 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required', code: 'UNAUTHORIZED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -187,7 +187,7 @@ export async function PATCH(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied', code: 'NOT_FOUND' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -203,7 +203,7 @@ export async function PATCH(
     if (!existing) {
       return NextResponse.json(
         { error: 'Saved item not found', code: 'NOT_FOUND' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -218,7 +218,7 @@ export async function PATCH(
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON body', code: 'VALIDATION_ERROR' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -231,7 +231,7 @@ export async function PATCH(
           error: 'Invalid status. Must be IN_PROGRESS, ARCHIVED, or COMPLETED.',
           code: 'VALIDATION_ERROR',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -327,11 +327,11 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/workspaces/:workspaceSlug/saved-items/:itemId] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       { error: 'An internal error occurred', code: 'INTERNAL_ERROR' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -343,14 +343,14 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required', code: 'UNAUTHORIZED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -360,7 +360,7 @@ export async function DELETE(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied', code: 'NOT_FOUND' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -376,7 +376,7 @@ export async function DELETE(
     if (!existing) {
       return NextResponse.json(
         { error: 'Saved item not found', code: 'NOT_FOUND' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -390,11 +390,11 @@ export async function DELETE(
   } catch (error) {
     console.error(
       '[DELETE /api/workspaces/:workspaceSlug/saved-items/:itemId] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       { error: 'An internal error occurred', code: 'INTERNAL_ERROR' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

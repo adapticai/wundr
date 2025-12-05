@@ -43,7 +43,7 @@ interface RouteContext {
  */
 async function getOrchestratorWithAdminCheck(
   orchestratorId: string,
-  userId: string,
+  userId: string
 ) {
   const userOrganizations = await prisma.organizationMember.findMany({
     where: { userId },
@@ -78,7 +78,7 @@ async function getOrchestratorWithAdminCheck(
   }
 
   const membership = userOrganizations.find(
-    m => m.organizationId === orchestrator.organizationId,
+    m => m.organizationId === orchestrator.organizationId
   );
 
   return { orchestrator, role: membership?.role ?? null };
@@ -90,7 +90,7 @@ async function getOrchestratorWithAdminCheck(
 async function getAlertHistory(
   orchestratorId: string,
   limit: number = 50,
-  status?: AlertStatus,
+  status?: AlertStatus
 ): Promise<Alert[]> {
   // This assumes there's a budget_alerts table
   // If not available, this would return empty array or mock data
@@ -156,7 +156,7 @@ async function getAlertHistory(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -165,9 +165,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          BUDGET_ERROR_CODES.UNAUTHORIZED,
+          BUDGET_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -178,25 +178,25 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid orchestrator ID format',
-          BUDGET_ERROR_CODES.VALIDATION_ERROR,
+          BUDGET_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get orchestrator with access check (any member can view alerts)
     const result = await getOrchestratorWithAdminCheck(
       params.orchestratorId,
-      session.user.id,
+      session.user.id
     );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -215,9 +215,9 @@ export async function GET(
         return NextResponse.json(
           createErrorResponse(
             'Invalid status value',
-            BUDGET_ERROR_CODES.VALIDATION_ERROR,
+            BUDGET_ERROR_CODES.VALIDATION_ERROR
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
       status = statusResult.data;
@@ -246,7 +246,7 @@ export async function GET(
     // Calculate summary statistics
     const activeAlerts = alerts.filter(a => a.status === 'ACTIVE').length;
     const acknowledgedAlerts = alerts.filter(
-      a => a.status === 'ACKNOWLEDGED',
+      a => a.status === 'ACKNOWLEDGED'
     ).length;
     const resolvedAlerts = alerts.filter(a => a.status === 'RESOLVED').length;
 
@@ -270,14 +270,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/orchestrators/:orchestratorId/budget/alerts] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        BUDGET_ERROR_CODES.INTERNAL_ERROR,
+        BUDGET_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -294,7 +294,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -303,9 +303,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          BUDGET_ERROR_CODES.UNAUTHORIZED,
+          BUDGET_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -316,9 +316,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid orchestrator ID format',
-          BUDGET_ERROR_CODES.VALIDATION_ERROR,
+          BUDGET_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -330,9 +330,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          BUDGET_ERROR_CODES.VALIDATION_ERROR,
+          BUDGET_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -343,9 +343,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           BUDGET_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -354,16 +354,16 @@ export async function POST(
     // Get orchestrator with admin access check
     const result = await getOrchestratorWithAdminCheck(
       params.orchestratorId,
-      session.user.id,
+      session.user.id
     );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          BUDGET_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -374,9 +374,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to configure alerts',
-          BUDGET_ERROR_CODES.FORBIDDEN,
+          BUDGET_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -445,14 +445,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/orchestrators/:orchestratorId/budget/alerts] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        BUDGET_ERROR_CODES.INTERNAL_ERROR,
+        BUDGET_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

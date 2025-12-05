@@ -34,7 +34,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: 'UNAUTHORIZED',
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -52,7 +52,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
           error: 'User not found',
           code: 'NOT_FOUND',
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -75,7 +75,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: 'INTERNAL_ERROR',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

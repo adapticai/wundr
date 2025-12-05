@@ -74,7 +74,7 @@ function computeDiff(
   oldValue: unknown,
   newValue: unknown,
   path: string,
-  label: string,
+  label: string
 ): DiffChange | null {
   // Handle arrays
   if (Array.isArray(oldValue) && Array.isArray(newValue)) {
@@ -131,7 +131,7 @@ function computeDiff(
  */
 function computeCharterDiff(
   oldCharter: OrchestratorCharter,
-  newCharter: OrchestratorCharter,
+  newCharter: OrchestratorCharter
 ): SectionDiff[] {
   const sections: SectionDiff[] = [];
 
@@ -141,13 +141,13 @@ function computeCharterDiff(
     oldCharter.mission,
     newCharter.mission,
     'mission',
-    'Mission',
+    'Mission'
   );
   const visionDiff = computeDiff(
     oldCharter.vision,
     newCharter.vision,
     'vision',
-    'Vision',
+    'Vision'
   );
 
   if (missionDiff) {
@@ -170,7 +170,7 @@ function computeCharterDiff(
     oldCharter.values,
     newCharter.values,
     'values',
-    'Values',
+    'Values'
   );
   if (valuesDiff) {
     sections.push({
@@ -186,25 +186,25 @@ function computeCharterDiff(
     oldCharter.personality.traits,
     newCharter.personality.traits,
     'personality.traits',
-    'Personality Traits',
+    'Personality Traits'
   );
   const commStyleDiff = computeDiff(
     oldCharter.personality.communicationStyle,
     newCharter.personality.communicationStyle,
     'personality.communicationStyle',
-    'Communication Style',
+    'Communication Style'
   );
   const decisionStyleDiff = computeDiff(
     oldCharter.personality.decisionMakingStyle,
     newCharter.personality.decisionMakingStyle,
     'personality.decisionMakingStyle',
-    'Decision Making Style',
+    'Decision Making Style'
   );
   const backgroundDiff = computeDiff(
     oldCharter.personality.background,
     newCharter.personality.background,
     'personality.background',
-    'Background',
+    'Background'
   );
 
   if (traitsDiff) {
@@ -233,7 +233,7 @@ function computeCharterDiff(
     oldCharter.expertise,
     newCharter.expertise,
     'expertise',
-    'Expertise',
+    'Expertise'
   );
   if (expertiseDiff) {
     sections.push({
@@ -249,25 +249,25 @@ function computeCharterDiff(
     oldCharter.communicationPreferences.tone,
     newCharter.communicationPreferences.tone,
     'communicationPreferences.tone',
-    'Tone',
+    'Tone'
   );
   const lengthDiff = computeDiff(
     oldCharter.communicationPreferences.responseLength,
     newCharter.communicationPreferences.responseLength,
     'communicationPreferences.responseLength',
-    'Response Length',
+    'Response Length'
   );
   const formalityDiff = computeDiff(
     oldCharter.communicationPreferences.formality,
     newCharter.communicationPreferences.formality,
     'communicationPreferences.formality',
-    'Formality',
+    'Formality'
   );
   const emojiDiff = computeDiff(
     oldCharter.communicationPreferences.useEmoji,
     newCharter.communicationPreferences.useEmoji,
     'communicationPreferences.useEmoji',
-    'Use Emoji',
+    'Use Emoji'
   );
 
   if (toneDiff) {
@@ -297,37 +297,37 @@ function computeCharterDiff(
     oldCharter.operationalSettings.workHours.start,
     newCharter.operationalSettings.workHours.start,
     'operationalSettings.workHours.start',
-    'Work Hours Start',
+    'Work Hours Start'
   );
   const workHoursEndDiff = computeDiff(
     oldCharter.operationalSettings.workHours.end,
     newCharter.operationalSettings.workHours.end,
     'operationalSettings.workHours.end',
-    'Work Hours End',
+    'Work Hours End'
   );
   const timezoneDiff = computeDiff(
     oldCharter.operationalSettings.workHours.timezone,
     newCharter.operationalSettings.workHours.timezone,
     'operationalSettings.workHours.timezone',
-    'Timezone',
+    'Timezone'
   );
   const responseTargetDiff = computeDiff(
     oldCharter.operationalSettings.responseTimeTarget,
     newCharter.operationalSettings.responseTimeTarget,
     'operationalSettings.responseTimeTarget',
-    'Response Time Target',
+    'Response Time Target'
   );
   const autoEscalationDiff = computeDiff(
     oldCharter.operationalSettings.autoEscalation,
     newCharter.operationalSettings.autoEscalation,
     'operationalSettings.autoEscalation',
-    'Auto Escalation',
+    'Auto Escalation'
   );
   const escalationThresholdDiff = computeDiff(
     oldCharter.operationalSettings.escalationThreshold,
     newCharter.operationalSettings.escalationThreshold,
     'operationalSettings.escalationThreshold',
-    'Escalation Threshold',
+    'Escalation Threshold'
   );
 
   if (workHoursStartDiff) {
@@ -379,7 +379,7 @@ function computeStats(changes: DiffChange[]): {
       }
       return acc;
     },
-    { added: 0, removed: 0, modified: 0 },
+    { added: 0, removed: 0, modified: 0 }
   );
 }
 
@@ -389,7 +389,7 @@ function computeStats(changes: DiffChange[]): {
 function DiffChangeItem({ change }: { change: DiffChange }) {
   const renderValue = (
     value: string | string[] | undefined,
-    type: 'old' | 'new',
+    type: 'old' | 'new'
   ) => {
     if (!value) {
       return null;
@@ -587,7 +587,7 @@ export function CharterDiff({
 }: CharterDiffProps) {
   const sectionDiffs = React.useMemo(
     () => computeCharterDiff(oldCharter, newCharter),
-    [oldCharter, newCharter],
+    [oldCharter, newCharter]
   );
 
   const totalStats = React.useMemo(() => {
@@ -597,7 +597,7 @@ export function CharterDiff({
         removed: acc.removed + section.stats.removed,
         modified: acc.modified + section.stats.modified,
       }),
-      { added: 0, removed: 0, modified: 0 },
+      { added: 0, removed: 0, modified: 0 }
     );
   }, [sectionDiffs]);
 

@@ -72,7 +72,7 @@ export function ThreadPanel({
     (content: string, mentions: string[], attachments: File[]) => {
       onSendReply(content, mentions, attachments);
     },
-    [onSendReply],
+    [onSendReply]
   );
 
   const replyCount = thread?.messages?.length || 0;
@@ -144,7 +144,9 @@ export function ThreadPanel({
                 <div className='flex flex-1 items-center justify-center py-12'>
                   <div className='text-center'>
                     <MessageSquare className='mx-auto mb-3 h-10 w-10 text-muted-foreground opacity-50' />
-                    <p className='font-medium text-foreground'>No replies yet</p>
+                    <p className='font-medium text-foreground'>
+                      No replies yet
+                    </p>
                     <p className='mt-1 text-sm text-muted-foreground'>
                       Be the first to reply to this message!
                     </p>

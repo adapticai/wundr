@@ -42,11 +42,11 @@ export interface SparklineChartProps {
 
 function formatValue(
   value: number | string,
-  format: SparklineChartProps['format'] = 'number',
+  format: SparklineChartProps['format'] = 'number'
 ): string {
   if (typeof value === 'string') {
-return value;
-}
+    return value;
+  }
 
   switch (format) {
     case 'currency':
@@ -60,14 +60,14 @@ return value;
       return `${value.toFixed(1)}%`;
     case 'compact':
       if (value < 1000) {
-return value.toLocaleString();
-}
+        return value.toLocaleString();
+      }
       if (value < 1000000) {
-return `${(value / 1000).toFixed(1)}K`;
-}
+        return `${(value / 1000).toFixed(1)}K`;
+      }
       if (value < 1000000000) {
-return `${(value / 1000000).toFixed(1)}M`;
-}
+        return `${(value / 1000000).toFixed(1)}M`;
+      }
       return `${(value / 1000000000).toFixed(1)}B`;
     default:
       return value.toLocaleString();
@@ -109,13 +109,13 @@ function generatePath(
   data: SparklineDataPoint[],
   width: number,
   height: number,
-  filled: boolean = false,
+  filled: boolean = false
 ): string {
   if (data.length === 0) {
-return '';
-}
+    return '';
+  }
 
-  const values = data.map((d) => d.y);
+  const values = data.map(d => d.y);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
@@ -157,14 +157,18 @@ export function SparklineChart({
   onHover,
 }: SparklineChartProps) {
   const svgRef = React.useRef<SVGSVGElement>(null);
-  const [hoveredPoint, setHoveredPoint] = React.useState<SparklineDataPoint | null>(null);
-  const [mousePosition, setMousePosition] = React.useState<{ x: number; y: number } | null>(null);
+  const [hoveredPoint, setHoveredPoint] =
+    React.useState<SparklineDataPoint | null>(null);
+  const [mousePosition, setMousePosition] = React.useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   const handleMouseMove = React.useCallback(
     (e: React.MouseEvent<SVGSVGElement>) => {
       if (!svgRef.current || data.length === 0) {
-return;
-}
+        return;
+      }
 
       const rect = svgRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -176,7 +180,7 @@ return;
       setMousePosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
       onHover?.(point);
     },
-    [data, onHover],
+    [data, onHover]
   );
 
   const handleMouseLeave = React.useCallback(() => {
@@ -202,7 +206,7 @@ return;
   const viewBoxHeight = height;
   const path = generatePath(data, viewBoxWidth, viewBoxHeight, filled);
 
-  const values = data.map((d) => d.y);
+  const values = data.map(d => d.y);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
@@ -246,10 +250,7 @@ return;
             {/* Line */}
             <path
               d={path}
-              className={cn(
-                colorClasses.stroke,
-                'transition-all duration-300',
-              )}
+              className={cn(colorClasses.stroke, 'transition-all duration-300')}
               fill='none'
               strokeWidth='2'
               strokeLinecap='round'
@@ -270,7 +271,7 @@ return;
                     r='2'
                     className={cn(
                       colorClasses.point,
-                      'transition-all duration-300',
+                      'transition-all duration-300'
                     )}
                   />
                 );
@@ -280,9 +281,17 @@ return;
             {mousePosition && hoveredPoint && (
               <>
                 <line
-                  x1={mousePosition.x * (viewBoxWidth / (svgRef.current?.getBoundingClientRect().width || 1))}
+                  x1={
+                    mousePosition.x *
+                    (viewBoxWidth /
+                      (svgRef.current?.getBoundingClientRect().width || 1))
+                  }
                   y1='0'
-                  x2={mousePosition.x * (viewBoxWidth / (svgRef.current?.getBoundingClientRect().width || 1))}
+                  x2={
+                    mousePosition.x *
+                    (viewBoxWidth /
+                      (svgRef.current?.getBoundingClientRect().width || 1))
+                  }
                   y2={viewBoxHeight}
                   stroke='currentColor'
                   strokeWidth='1'
@@ -290,8 +299,15 @@ return;
                   className='opacity-50'
                 />
                 <circle
-                  cx={mousePosition.x * (viewBoxWidth / (svgRef.current?.getBoundingClientRect().width || 1))}
-                  cy={viewBoxHeight - ((hoveredPoint.y - min) / range) * viewBoxHeight}
+                  cx={
+                    mousePosition.x *
+                    (viewBoxWidth /
+                      (svgRef.current?.getBoundingClientRect().width || 1))
+                  }
+                  cy={
+                    viewBoxHeight -
+                    ((hoveredPoint.y - min) / range) * viewBoxHeight
+                  }
                   r='4'
                   className={cn(colorClasses.point, 'stroke-background')}
                   strokeWidth='2'

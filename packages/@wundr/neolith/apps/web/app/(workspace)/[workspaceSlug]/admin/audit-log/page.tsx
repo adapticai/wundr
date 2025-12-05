@@ -180,7 +180,7 @@ export default function AuditLogPage() {
         }
 
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/audit-log?${params}`,
+          `/api/workspaces/${workspaceSlug}/audit-log?${params}`
         );
         if (!response.ok) {
           throw new Error('Failed to fetch audit logs');
@@ -226,16 +226,20 @@ export default function AuditLogPage() {
   // Infinite scroll observer
   useEffect(() => {
     if (!enableInfiniteScroll) {
-return;
-}
+      return;
+    }
 
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0]?.isIntersecting && !isLoading && logs.length < totalCount) {
+        if (
+          entries[0]?.isIntersecting &&
+          !isLoading &&
+          logs.length < totalCount
+        ) {
           setCurrentPage(prev => prev + 1);
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     if (observerTarget.current) {
@@ -301,7 +305,7 @@ return;
       }
 
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/audit-log/export?${params}`,
+        `/api/workspaces/${workspaceSlug}/audit-log/export?${params}`
       );
       if (!response.ok) {
         throw new Error('Failed to export audit logs');
@@ -372,16 +376,28 @@ return;
   };
 
   const getCategoryFromAction = (action: string): string => {
-    if (action.includes('user') || action.includes('member') || action.includes('role')) {
+    if (
+      action.includes('user') ||
+      action.includes('member') ||
+      action.includes('role')
+    ) {
       return 'User Management';
     }
     if (action.includes('settings') || action.includes('config')) {
       return 'Settings';
     }
-    if (action.includes('security') || action.includes('auth') || action.includes('permission')) {
+    if (
+      action.includes('security') ||
+      action.includes('auth') ||
+      action.includes('permission')
+    ) {
       return 'Security';
     }
-    if (action.includes('data') || action.includes('export') || action.includes('delete')) {
+    if (
+      action.includes('data') ||
+      action.includes('export') ||
+      action.includes('delete')
+    ) {
       return 'Data';
     }
     return 'General';
@@ -598,7 +614,10 @@ return;
                   </TableHeader>
                   <TableBody>
                     {logs.map(log => (
-                      <TableRow key={log.id} className='cursor-pointer hover:bg-muted/50'>
+                      <TableRow
+                        key={log.id}
+                        className='cursor-pointer hover:bg-muted/50'
+                      >
                         <TableCell className='whitespace-nowrap'>
                           <div className='flex items-center gap-2 text-sm'>
                             <Calendar className='h-4 w-4 text-muted-foreground' />
@@ -616,7 +635,7 @@ return;
                                 variant='secondary'
                                 className={cn(
                                   'text-xs mt-1',
-                                  ACTOR_TYPE_COLORS[log.actorType],
+                                  ACTOR_TYPE_COLORS[log.actorType]
                                 )}
                               >
                                 {log.actorType}
@@ -686,7 +705,9 @@ return;
                     <Button
                       variant='outline'
                       size='sm'
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      onClick={() =>
+                        setCurrentPage(prev => Math.max(1, prev - 1))
+                      }
                       disabled={currentPage === 1}
                     >
                       Previous
@@ -742,7 +763,9 @@ return;
                   <p className='text-sm font-medium text-muted-foreground mb-1'>
                     Timestamp
                   </p>
-                  <p className='text-sm'>{formatTimestamp(selectedLog.createdAt)}</p>
+                  <p className='text-sm'>
+                    {formatTimestamp(selectedLog.createdAt)}
+                  </p>
                 </div>
                 <div>
                   <p className='text-sm font-medium text-muted-foreground mb-1'>
@@ -762,7 +785,7 @@ return;
                       variant='secondary'
                       className={cn(
                         'text-xs',
-                        ACTOR_TYPE_COLORS[selectedLog.actorType],
+                        ACTOR_TYPE_COLORS[selectedLog.actorType]
                       )}
                     >
                       {selectedLog.actorType}
@@ -820,7 +843,9 @@ return;
                   <div className='border rounded-lg divide-y'>
                     {selectedLog.changes.map((change, idx) => (
                       <div key={idx} className='p-4'>
-                        <p className='text-sm font-medium mb-2'>{change.field}</p>
+                        <p className='text-sm font-medium mb-2'>
+                          {change.field}
+                        </p>
                         <div className='grid sm:grid-cols-2 gap-4'>
                           <div>
                             <p className='text-xs text-muted-foreground mb-1'>
@@ -846,16 +871,17 @@ return;
               )}
 
               {/* Metadata */}
-              {selectedLog.metadata && Object.keys(selectedLog.metadata).length > 0 && (
-                <div>
-                  <p className='text-sm font-medium text-muted-foreground mb-2'>
-                    Additional Metadata
-                  </p>
-                  <pre className='text-xs bg-muted p-4 rounded overflow-x-auto'>
-                    {JSON.stringify(selectedLog.metadata, null, 2)}
-                  </pre>
-                </div>
-              )}
+              {selectedLog.metadata &&
+                Object.keys(selectedLog.metadata).length > 0 && (
+                  <div>
+                    <p className='text-sm font-medium text-muted-foreground mb-2'>
+                      Additional Metadata
+                    </p>
+                    <pre className='text-xs bg-muted p-4 rounded overflow-x-auto'>
+                      {JSON.stringify(selectedLog.metadata, null, 2)}
+                    </pre>
+                  </div>
+                )}
 
               {/* User Agent */}
               {selectedLog.userAgent && (

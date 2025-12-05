@@ -77,7 +77,7 @@ export function useDesktopNotifications(): UseDesktopNotificationsReturn {
    */
   const sendNotification = useCallback(
     async (
-      options: DesktopNotificationOptions,
+      options: DesktopNotificationOptions
     ): Promise<Notification | null> => {
       if (!isSupported) {
         console.warn('Notifications are not supported in this browser');
@@ -136,7 +136,7 @@ export function useDesktopNotifications(): UseDesktopNotificationsReturn {
         return null;
       }
     },
-    [isSupported, permission, requestPermission],
+    [isSupported, permission, requestPermission]
   );
 
   return {
@@ -155,7 +155,7 @@ export function useDesktopNotifications(): UseDesktopNotificationsReturn {
 export function useNotificationOnCondition(
   condition: boolean,
   options: DesktopNotificationOptions,
-  deps: React.DependencyList = [],
+  deps: React.DependencyList = []
 ) {
   const { sendNotification, isPermissionGranted } = useDesktopNotifications();
 

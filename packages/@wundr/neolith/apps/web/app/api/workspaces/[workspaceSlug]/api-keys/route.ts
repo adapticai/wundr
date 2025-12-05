@@ -36,7 +36,9 @@ interface RouteContext {
  */
 function hashApiKey(key: string): string {
   const salt = crypto.randomBytes(16).toString('hex');
-  const hash = crypto.pbkdf2Sync(key, salt, 100000, 64, 'sha512').toString('hex');
+  const hash = crypto
+    .pbkdf2Sync(key, salt, 100000, 64, 'sha512')
+    .toString('hex');
   return `${salt}:${hash}`;
 }
 
@@ -52,8 +54,8 @@ function generateApiKey(): string {
  */
 function calculateExpiryDate(duration: string | null): Date | null {
   if (!duration || duration === 'never') {
-return null;
-}
+    return null;
+  }
 
   const now = new Date();
   const durationMap: Record<string, number> = {
@@ -65,8 +67,8 @@ return null;
 
   const days = durationMap[duration];
   if (!days) {
-return null;
-}
+    return null;
+  }
 
   return new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 }
@@ -93,7 +95,7 @@ const createApiKeySchema = z.object({
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Verify authentication
@@ -119,7 +121,7 @@ export async function GET(
     if (!workspace || workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -129,7 +131,7 @@ export async function GET(
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can view API keys' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -163,7 +165,7 @@ export async function GET(
         : [];
 
     // Map to response format (exclude keyHash, include masked key)
-    const apiKeys = apiKeysData.map((key) => ({
+    const apiKeys = apiKeysData.map(key => ({
       id: key.id,
       name: key.name,
       key: `${'•'.repeat(44)}${key.lastFourChars}`, // Masked key for display
@@ -180,10 +182,13 @@ export async function GET(
 
     return NextResponse.json({ data: apiKeys });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/api-keys] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/api-keys] Error:',
+      error
+    );
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -195,7 +200,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Verify authentication
@@ -221,7 +226,7 @@ export async function POST(
     if (!workspace || workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -231,7 +236,7 @@ export async function POST(
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can create API keys' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -273,7 +278,10 @@ export async function POST(
     };
 
     // Update workspace settings with new key
-    const currentSettings = workspace.settings as Record<string, unknown> | null;
+    const currentSettings = workspace.settings as Record<
+      string,
+      unknown
+    > | null;
     const existingKeys =
       currentSettings &&
       typeof currentSettings === 'object' &&
@@ -305,21 +313,24 @@ export async function POST(
       message: 'API key created successfully',
     });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceSlug/api-keys] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceSlug/api-keys] Error:',
+      error
+    );
 
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
-          error: `Validation error: ${error.errors.map((e) => e.message).join(', ')}`,
+          error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

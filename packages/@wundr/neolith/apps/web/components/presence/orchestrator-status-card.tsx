@@ -99,7 +99,7 @@ export function OrchestratorStatusCard({
         'rounded-lg border bg-card p-4 shadow-sm transition-all',
         orchestrator.daemonHealth === 'unhealthy' && 'border-red-500/50',
         orchestrator.daemonHealth === 'degraded' && 'border-yellow-500/50',
-        className,
+        className
       )}
     >
       {/* Header */}
@@ -143,7 +143,7 @@ export function OrchestratorStatusCard({
           className={cn(
             'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium font-sans',
             healthConfig.bgColor,
-            healthConfig.color,
+            healthConfig.color
           )}
         >
           <HealthIcon className='h-3.5 w-3.5' />
@@ -153,7 +153,7 @@ export function OrchestratorStatusCard({
         <div
           className={cn(
             'flex items-center gap-1 text-xs font-sans',
-            connectionConfig.color,
+            connectionConfig.color
           )}
         >
           <span
@@ -162,7 +162,7 @@ export function OrchestratorStatusCard({
               orchestrator.connectionStatus === 'connected' && 'bg-emerald-500',
               orchestrator.connectionStatus === 'disconnected' && 'bg-rose-500',
               orchestrator.connectionStatus === 'connecting' &&
-                'bg-amber-500 animate-pulse',
+                'bg-amber-500 animate-pulse'
             )}
           />
           {connectionConfig.label}
@@ -231,7 +231,7 @@ export function OrchestratorStatusCard({
             onClick={() => onViewDetails(orchestrator.id)}
             className={cn(
               'flex-1 rounded-md border border-border bg-background px-3 py-1.5 text-center text-sm font-medium',
-              'transition-colors hover:bg-accent',
+              'transition-colors hover:bg-accent'
             )}
           >
             View Details
@@ -243,7 +243,7 @@ export function OrchestratorStatusCard({
             onClick={() => onRestartDaemon(orchestrator.id)}
             className={cn(
               'rounded-md border border-border bg-background p-1.5 text-muted-foreground',
-              'transition-colors hover:bg-accent hover:text-foreground',
+              'transition-colors hover:bg-accent hover:text-foreground'
             )}
             aria-label='Restart daemon'
             title='Restart daemon'
@@ -275,7 +275,7 @@ function MetricItem({ label, value, status }: MetricItemProps) {
       <p
         className={cn(
           'text-sm font-medium font-sans',
-          status && statusColors[status],
+          status && statusColors[status]
         )}
       >
         {value}
@@ -305,7 +305,7 @@ function OrchestratorStatusDot({
       className={cn(
         'flex h-3 w-3 items-center justify-center rounded-full ring-2 ring-card',
         statusColors[status],
-        className,
+        className
       )}
     />
   );

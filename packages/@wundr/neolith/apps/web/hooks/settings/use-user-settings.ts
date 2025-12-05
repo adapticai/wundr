@@ -42,7 +42,9 @@ export interface UseUserSettingsReturn {
   /** Refresh settings from server */
   refresh: () => Promise<void>;
   /** Get a specific settings section */
-  getSection: <K extends keyof UserSettings>(section: K) => UserSettings[K] | null;
+  getSection: <K extends keyof UserSettings>(
+    section: K
+  ) => UserSettings[K] | null;
 }
 
 /**
@@ -70,7 +72,7 @@ export interface UseUserSettingsReturn {
  * ```
  */
 export function useUserSettings(
-  options: UseUserSettingsOptions = {},
+  options: UseUserSettingsOptions = {}
 ): UseUserSettingsReturn {
   const { enabled = true, pollInterval = 0, onLoad, onError } = options;
 
@@ -86,8 +88,8 @@ export function useUserSettings(
   // Fetch settings from API
   const fetchSettings = useCallback(async () => {
     if (!enabled) {
-return;
-}
+      return;
+    }
 
     try {
       // Cancel any in-flight requests
@@ -118,8 +120,8 @@ return;
       }
 
       if (!isMountedRef.current) {
-return;
-}
+        return;
+      }
 
       const fetchedSettings = result.data as UserSettings;
       setSettings(fetchedSettings);
@@ -136,8 +138,8 @@ return;
       const error = err instanceof Error ? err : new Error('Unknown error');
 
       if (!isMountedRef.current) {
-return;
-}
+        return;
+      }
 
       setError(error);
 
@@ -191,7 +193,7 @@ return;
     <K extends keyof UserSettings>(section: K): UserSettings[K] | null => {
       return settings?.[section] ?? null;
     },
-    [settings],
+    [settings]
   );
 
   return {

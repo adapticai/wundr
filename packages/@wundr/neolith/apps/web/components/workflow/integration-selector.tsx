@@ -33,7 +33,13 @@ import { z } from 'zod';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -101,8 +107,11 @@ export function IntegrationSelector({
   onConnectionDeleted,
 }: IntegrationSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState<IntegrationType | 'all'>('all');
-  const [selectedIntegration, setSelectedIntegration] = useState<BaseIntegration | null>(null);
+  const [selectedType, setSelectedType] = useState<IntegrationType | 'all'>(
+    'all'
+  );
+  const [selectedIntegration, setSelectedIntegration] =
+    useState<BaseIntegration | null>(null);
   const [showConnectionDialog, setShowConnectionDialog] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -121,7 +130,7 @@ export function IntegrationSelector({
         i =>
           i.name.toLowerCase().includes(query) ||
           i.description.toLowerCase().includes(query) ||
-          i.actions.some(a => a.name.toLowerCase().includes(query)),
+          i.actions.some(a => a.name.toLowerCase().includes(query))
       );
     }
 
@@ -133,7 +142,7 @@ export function IntegrationSelector({
     (integrationId: string) => {
       return existingConnections.filter(c => c.integrationId === integrationId);
     },
-    [existingConnections],
+    [existingConnections]
   );
 
   // Handle integration selection
@@ -146,12 +155,14 @@ export function IntegrationSelector({
   const handleActionSelect = useCallback(
     (action: IntegrationAction) => {
       if (!selectedIntegration) {
-return;
-}
+        return;
+      }
 
       // Check if integration requires connection
       if (selectedIntegration.requiresConnection) {
-        const connections = getConnectionsForIntegration(selectedIntegration.id);
+        const connections = getConnectionsForIntegration(
+          selectedIntegration.id
+        );
         if (connections.length === 0) {
           setShowConnectionDialog(true);
           return;
@@ -161,7 +172,7 @@ return;
       onSelect(selectedIntegration, action);
       setSelectedIntegration(null);
     },
-    [selectedIntegration, onSelect, getConnectionsForIntegration],
+    [selectedIntegration, onSelect, getConnectionsForIntegration]
   );
 
   // Handle new connection
@@ -183,7 +194,10 @@ return;
           />
         </div>
 
-        <Select value={selectedType} onValueChange={(v: IntegrationType | 'all') => setSelectedType(v)}>
+        <Select
+          value={selectedType}
+          onValueChange={(v: IntegrationType | 'all') => setSelectedType(v)}
+        >
           <SelectTrigger>
             <SelectValue placeholder='All integrations' />
           </SelectTrigger>
@@ -210,18 +224,24 @@ return;
               <Card
                 key={integration.id}
                 className={`cursor-pointer transition-all hover:border-primary ${
-                  selectedIntegration?.id === integration.id ? 'border-primary bg-accent' : ''
+                  selectedIntegration?.id === integration.id
+                    ? 'border-primary bg-accent'
+                    : ''
                 }`}
                 onClick={() => handleIntegrationClick(integration)}
               >
                 <CardHeader className='p-4'>
                   <div className='flex items-start justify-between'>
                     <div className='flex items-center gap-3'>
-                      <div className={`rounded-lg bg-background p-2 ${integration.color}`}>
+                      <div
+                        className={`rounded-lg bg-background p-2 ${integration.color}`}
+                      >
                         <Icon className='h-5 w-5' />
                       </div>
                       <div>
-                        <CardTitle className='text-sm'>{integration.name}</CardTitle>
+                        <CardTitle className='text-sm'>
+                          {integration.name}
+                        </CardTitle>
                         <CardDescription className='text-xs'>
                           {integration.description}
                         </CardDescription>
@@ -244,7 +264,9 @@ return;
           {filteredIntegrations.length === 0 && (
             <div className='flex flex-col items-center justify-center py-12 text-center'>
               <AlertCircle className='mb-2 h-8 w-8 text-muted-foreground' />
-              <p className='text-sm text-muted-foreground'>No integrations found</p>
+              <p className='text-sm text-muted-foreground'>
+                No integrations found
+              </p>
             </div>
           )}
         </div>
@@ -267,7 +289,9 @@ return;
                   </div>
                   <div>
                     <DialogTitle>{selectedIntegration.name}</DialogTitle>
-                    <DialogDescription>{selectedIntegration.description}</DialogDescription>
+                    <DialogDescription>
+                      {selectedIntegration.description}
+                    </DialogDescription>
                   </div>
                 </div>
               </DialogHeader>
@@ -277,9 +301,13 @@ return;
                   <TabsTrigger value='actions'>Actions</TabsTrigger>
                   <TabsTrigger value='connections'>
                     Connections
-                    {getConnectionsForIntegration(selectedIntegration.id).length > 0 && (
+                    {getConnectionsForIntegration(selectedIntegration.id)
+                      .length > 0 && (
                       <Badge variant='secondary' className='ml-2'>
-                        {getConnectionsForIntegration(selectedIntegration.id).length}
+                        {
+                          getConnectionsForIntegration(selectedIntegration.id)
+                            .length
+                        }
                       </Badge>
                     )}
                   </TabsTrigger>
@@ -300,7 +328,9 @@ return;
                               <div className='flex items-center gap-3'>
                                 <ActionIcon className='h-4 w-4 text-muted-foreground' />
                                 <div>
-                                  <CardTitle className='text-sm'>{action.name}</CardTitle>
+                                  <CardTitle className='text-sm'>
+                                    {action.name}
+                                  </CardTitle>
                                   <CardDescription className='text-xs'>
                                     {action.description}
                                   </CardDescription>
@@ -318,7 +348,9 @@ return;
                 <TabsContent value='connections' className='space-y-3'>
                   <ConnectionManager
                     integration={selectedIntegration}
-                    connections={getConnectionsForIntegration(selectedIntegration.id)}
+                    connections={getConnectionsForIntegration(
+                      selectedIntegration.id
+                    )}
                     onConnectionCreated={connection => {
                       onConnectionCreated?.(connection);
                       setShowConnectionDialog(false);
@@ -407,7 +439,8 @@ function ConnectionManager({
                 </p>
                 {connection.expiresAt && (
                   <Badge variant='outline' className='text-xs'>
-                    Expires {new Date(connection.expiresAt).toLocaleDateString()}
+                    Expires{' '}
+                    {new Date(connection.expiresAt).toLocaleDateString()}
                   </Badge>
                 )}
               </div>
@@ -468,15 +501,18 @@ function ConnectionDialog({
   onError,
 }: ConnectionDialogProps) {
   const [isConnecting, setIsConnecting] = useState(false);
-  const [validationResult, setValidationResult] = useState<{ valid: boolean; error?: string } | null>(
-    null,
-  );
+  const [validationResult, setValidationResult] = useState<{
+    valid: boolean;
+    error?: string;
+  } | null>(null);
 
   // Create dynamic form schema based on integration
   const formSchema = useMemo(() => {
-    return z.object({
-      name: z.string().min(1, 'Connection name is required'),
-    }).and(integration.configSchema);
+    return z
+      .object({
+        name: z.string().min(1, 'Connection name is required'),
+      })
+      .and(integration.configSchema);
   }, [integration]);
 
   const form = useForm<ConnectionFormData>({
@@ -491,17 +527,25 @@ function ConnectionDialog({
     // Generate state parameter for CSRF protection
     const state = Math.random().toString(36).substring(7);
     const redirectUri = `${window.location.origin}/api/integrations/oauth/callback`;
-    const clientId = process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID || 'YOUR_CLIENT_ID';
+    const clientId =
+      process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID || 'YOUR_CLIENT_ID';
 
     try {
-      const oauthUrl = getOAuthUrl(integration.id, clientId, redirectUri, state);
+      const oauthUrl = getOAuthUrl(
+        integration.id,
+        clientId,
+        redirectUri,
+        state
+      );
       // Store state in session storage
       sessionStorage.setItem('oauth_state', state);
       sessionStorage.setItem('oauth_integration', integration.id);
       // Redirect to OAuth provider
       window.location.href = oauthUrl;
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : 'Failed to start OAuth flow');
+      onError?.(
+        err instanceof Error ? err.message : 'Failed to start OAuth flow'
+      );
     }
   }, [integration, onError]);
 
@@ -537,7 +581,9 @@ function ConnectionDialog({
       onConnectionCreated(newConnection);
       form.reset();
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : 'Failed to create connection');
+      onError?.(
+        err instanceof Error ? err.message : 'Failed to create connection'
+      );
     } finally {
       setIsConnecting(false);
     }
@@ -560,8 +606,8 @@ function ConnectionDialog({
             <Alert>
               <AlertCircle className='h-4 w-4' />
               <AlertDescription>
-                You will be redirected to {integration.name} to authorize access. Make sure to grant
-                all requested permissions.
+                You will be redirected to {integration.name} to authorize
+                access. Make sure to grant all requested permissions.
               </AlertDescription>
             </Alert>
 
@@ -617,7 +663,9 @@ function ConnectionDialog({
               {validationResult && validationResult.valid && (
                 <Alert>
                   <Check className='h-4 w-4' />
-                  <AlertDescription>Connection validated successfully!</AlertDescription>
+                  <AlertDescription>
+                    Connection validated successfully!
+                  </AlertDescription>
                 </Alert>
               )}
 
@@ -631,7 +679,9 @@ function ConnectionDialog({
                   Cancel
                 </Button>
                 <Button type='submit' disabled={isConnecting}>
-                  {isConnecting && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+                  {isConnecting && (
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  )}
                   {isConnecting ? 'Connecting...' : 'Connect'}
                 </Button>
               </DialogFooter>
@@ -667,7 +717,11 @@ function IntegrationFields({ integration, form }: IntegrationFieldsProps) {
   }
 }
 
-function EmailFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormData>> }) {
+function EmailFields({
+  form,
+}: {
+  form: ReturnType<typeof useForm<ConnectionFormData>>;
+}) {
   return (
     <>
       <FormField
@@ -676,7 +730,10 @@ function EmailFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormD
         render={({ field }) => (
           <FormItem>
             <FormLabel>Email Provider</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value as string}>
+            <Select
+              onValueChange={field.onChange}
+              defaultValue={field.value as string}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder='Select provider' />
@@ -701,7 +758,12 @@ function EmailFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormD
           <FormItem>
             <FormLabel>From Email</FormLabel>
             <FormControl>
-              <Input type='email' placeholder='noreply@example.com' {...field} value={field.value as string} />
+              <Input
+                type='email'
+                placeholder='noreply@example.com'
+                {...field}
+                value={field.value as string}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -715,7 +777,11 @@ function EmailFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormD
           <FormItem>
             <FormLabel>SMTP Host</FormLabel>
             <FormControl>
-              <Input placeholder='smtp.gmail.com' {...field} value={field.value as string} />
+              <Input
+                placeholder='smtp.gmail.com'
+                {...field}
+                value={field.value as string}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -729,7 +795,11 @@ function EmailFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormD
           <FormItem>
             <FormLabel>Username</FormLabel>
             <FormControl>
-              <Input placeholder='user@example.com' {...field} value={field.value as string} />
+              <Input
+                placeholder='user@example.com'
+                {...field}
+                value={field.value as string}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -743,7 +813,12 @@ function EmailFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormD
           <FormItem>
             <FormLabel>Password</FormLabel>
             <FormControl>
-              <Input type='password' placeholder='••••••••' {...field} value={field.value as string} />
+              <Input
+                type='password'
+                placeholder='••••••••'
+                {...field}
+                value={field.value as string}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -753,7 +828,11 @@ function EmailFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormD
   );
 }
 
-function SlackFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormData>> }) {
+function SlackFields({
+  form,
+}: {
+  form: ReturnType<typeof useForm<ConnectionFormData>>;
+}) {
   return (
     <>
       <FormField
@@ -763,7 +842,12 @@ function SlackFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormD
           <FormItem>
             <FormLabel>Bot Token</FormLabel>
             <FormControl>
-              <Input placeholder='xoxb-...' type='password' {...field} value={field.value as string} />
+              <Input
+                placeholder='xoxb-...'
+                type='password'
+                {...field}
+                value={field.value as string}
+              />
             </FormControl>
             <FormDescription>Your Slack bot user OAuth token</FormDescription>
             <FormMessage />
@@ -778,7 +862,12 @@ function SlackFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormD
           <FormItem>
             <FormLabel>Signing Secret</FormLabel>
             <FormControl>
-              <Input placeholder='••••••••' type='password' {...field} value={field.value as string} />
+              <Input
+                placeholder='••••••••'
+                type='password'
+                {...field}
+                value={field.value as string}
+              />
             </FormControl>
             <FormDescription>Used to verify webhook requests</FormDescription>
             <FormMessage />
@@ -789,7 +878,11 @@ function SlackFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormD
   );
 }
 
-function GitHubFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormData>> }) {
+function GitHubFields({
+  form,
+}: {
+  form: ReturnType<typeof useForm<ConnectionFormData>>;
+}) {
   return (
     <FormField
       control={form.control}
@@ -798,7 +891,12 @@ function GitHubFields({ form }: { form: ReturnType<typeof useForm<ConnectionForm
         <FormItem>
           <FormLabel>Personal Access Token</FormLabel>
           <FormControl>
-            <Input placeholder='ghp_...' type='password' {...field} value={field.value as string} />
+            <Input
+              placeholder='ghp_...'
+              type='password'
+              {...field}
+              value={field.value as string}
+            />
           </FormControl>
           <FormDescription>
             Generate a token at{' '}
@@ -818,7 +916,11 @@ function GitHubFields({ form }: { form: ReturnType<typeof useForm<ConnectionForm
   );
 }
 
-function CalendarFields({ form }: { form: ReturnType<typeof useForm<ConnectionFormData>> }) {
+function CalendarFields({
+  form,
+}: {
+  form: ReturnType<typeof useForm<ConnectionFormData>>;
+}) {
   return (
     <FormField
       control={form.control}
@@ -826,7 +928,10 @@ function CalendarFields({ form }: { form: ReturnType<typeof useForm<ConnectionFo
       render={({ field }) => (
         <FormItem>
           <FormLabel>Calendar Provider</FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value as string}>
+          <Select
+            onValueChange={field.onChange}
+            defaultValue={field.value as string}
+          >
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder='Select provider' />
@@ -837,7 +942,9 @@ function CalendarFields({ form }: { form: ReturnType<typeof useForm<ConnectionFo
               <SelectItem value='outlook'>Outlook Calendar</SelectItem>
             </SelectContent>
           </Select>
-          <FormDescription>OAuth will be required after selecting provider</FormDescription>
+          <FormDescription>
+            OAuth will be required after selecting provider
+          </FormDescription>
           <FormMessage />
         </FormItem>
       )}

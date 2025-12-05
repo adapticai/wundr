@@ -210,7 +210,7 @@ export default function ReportsPage() {
 
   // Filter and search logic
   const filteredReports = useMemo(() => {
-    return reports.filter((report) => {
+    return reports.filter(report => {
       const matchesSearch =
         report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         report.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -230,7 +230,7 @@ export default function ReportsPage() {
   // Get unique creators for filter
   const creators = useMemo(() => {
     const uniqueCreators = Array.from(
-      new Map(reports.map((r) => [r.createdBy.id, r.createdBy])).values()
+      new Map(reports.map(r => [r.createdBy.id, r.createdBy])).values()
     );
     return uniqueCreators;
   }, [reports]);
@@ -251,7 +251,7 @@ export default function ReportsPage() {
 
   const confirmDelete = () => {
     if (selectedReport) {
-      setReports(reports.filter((r) => r.id !== selectedReport.id));
+      setReports(reports.filter(r => r.id !== selectedReport.id));
       setDeleteDialogOpen(false);
       setSelectedReport(null);
     }
@@ -327,17 +327,17 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className='flex flex-col gap-6 p-6'>
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
-          <p className="text-muted-foreground">
+          <h1 className='text-3xl font-bold tracking-tight'>Reports</h1>
+          <p className='text-muted-foreground'>
             Manage and create custom reports for your workspace
           </p>
         </div>
-        <Button onClick={handleCreateNew} size="lg">
-          <Plus className="mr-2 h-4 w-4" />
+        <Button onClick={handleCreateNew} size='lg'>
+          <Plus className='mr-2 h-4 w-4' />
           Create Report
         </Button>
       </div>
@@ -351,24 +351,24 @@ export default function ReportsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
-            {reportTemplates.map((template) => {
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5'>
+            {reportTemplates.map(template => {
               const Icon = template.icon;
               return (
                 <button
                   key={template.id}
                   onClick={() => handleCreateFromTemplate(template.id)}
-                  className="flex flex-col items-start gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-accent"
+                  className='flex flex-col items-start gap-3 rounded-lg border p-4 text-left transition-colors hover:bg-accent'
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <Icon className="h-5 w-5 text-primary" />
+                  <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10'>
+                    <Icon className='h-5 w-5 text-primary' />
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-sm">{template.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-1">
+                  <div className='flex-1'>
+                    <h4 className='font-semibold text-sm'>{template.title}</h4>
+                    <p className='text-xs text-muted-foreground mt-1'>
                       {template.description}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className='text-xs text-muted-foreground mt-2'>
                       {template.sectionsCount > 0
                         ? `${template.sectionsCount} sections`
                         : 'Customizable'}
@@ -383,52 +383,52 @@ export default function ReportsPage() {
 
       {/* Filters and Search */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <CardContent className='pt-6'>
+          <div className='flex flex-col gap-4 md:flex-row md:items-center'>
+            <div className='relative flex-1'>
+              <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
               <Input
-                placeholder="Search reports..."
+                placeholder='Search reports...'
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                onChange={e => setSearchQuery(e.target.value)}
+                className='pl-9'
               />
             </div>
 
-            <div className="flex gap-2">
+            <div className='flex gap-2'>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Type" />
+                <SelectTrigger className='w-[150px]'>
+                  <SelectValue placeholder='Type' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="performance">Performance</SelectItem>
-                  <SelectItem value="analytics">Analytics</SelectItem>
-                  <SelectItem value="engagement">Engagement</SelectItem>
-                  <SelectItem value="revenue">Revenue</SelectItem>
-                  <SelectItem value="custom">Custom</SelectItem>
+                  <SelectItem value='all'>All Types</SelectItem>
+                  <SelectItem value='performance'>Performance</SelectItem>
+                  <SelectItem value='analytics'>Analytics</SelectItem>
+                  <SelectItem value='engagement'>Engagement</SelectItem>
+                  <SelectItem value='revenue'>Revenue</SelectItem>
+                  <SelectItem value='custom'>Custom</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Status" />
+                <SelectTrigger className='w-[150px]'>
+                  <SelectValue placeholder='Status' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value='all'>All Status</SelectItem>
+                  <SelectItem value='draft'>Draft</SelectItem>
+                  <SelectItem value='published'>Published</SelectItem>
+                  <SelectItem value='scheduled'>Scheduled</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={creatorFilter} onValueChange={setCreatorFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Creator" />
+                <SelectTrigger className='w-[150px]'>
+                  <SelectValue placeholder='Creator' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Creators</SelectItem>
-                  {creators.map((creator) => (
+                  <SelectItem value='all'>All Creators</SelectItem>
+                  {creators.map(creator => (
                     <SelectItem key={creator.id} value={creator.id}>
                       {creator.name}
                     </SelectItem>
@@ -443,7 +443,7 @@ export default function ReportsPage() {
       {/* Reports List */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className='flex items-center justify-between'>
             <div>
               <CardTitle>Saved Reports</CardTitle>
               <CardDescription>
@@ -462,16 +462,16 @@ export default function ReportsPage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Creator</TableHead>
                 <TableHead>Last Updated</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className='text-right'>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredReports.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
-                    <div className="flex flex-col items-center gap-2">
-                      <FileText className="h-8 w-8 text-muted-foreground" />
-                      <p className="text-muted-foreground">
+                  <TableCell colSpan={6} className='text-center py-8'>
+                    <div className='flex flex-col items-center gap-2'>
+                      <FileText className='h-8 w-8 text-muted-foreground' />
+                      <p className='text-muted-foreground'>
                         No reports found. Create your first report to get
                         started.
                       </p>
@@ -479,25 +479,25 @@ export default function ReportsPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredReports.map((report) => (
-                  <TableRow key={report.id} className="group">
+                filteredReports.map(report => (
+                  <TableRow key={report.id} className='group'>
                     <TableCell>
-                      <div className="flex flex-col gap-1">
+                      <div className='flex flex-col gap-1'>
                         <button
                           onClick={() => handleViewReport(report.id)}
-                          className="font-medium text-left hover:underline"
+                          className='font-medium text-left hover:underline'
                         >
                           {report.title}
                         </button>
-                        <p className="text-sm text-muted-foreground">
+                        <p className='text-sm text-muted-foreground'>
                           {report.description}
                         </p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                        <div className='flex items-center gap-2 text-xs text-muted-foreground mt-1'>
                           <span>{report.sections} sections</span>
                           {report.lastViewed && (
                             <>
                               <span>•</span>
-                              <Clock className="h-3 w-3" />
+                              <Clock className='h-3 w-3' />
                               <span>
                                 Viewed {formatRelativeTime(report.lastViewed)}
                               </span>
@@ -508,82 +508,82 @@ export default function ReportsPage() {
                     </TableCell>
                     <TableCell>{getTypeBadge(report.type)}</TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-1">
+                      <div className='flex flex-col gap-1'>
                         {getStatusBadge(report.status)}
                         {report.scheduledFor && (
-                          <span className="text-xs text-muted-foreground">
+                          <span className='text-xs text-muted-foreground'>
                             {formatDate(report.scheduledFor)}
                           </span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-medium">
+                      <div className='flex items-center gap-2'>
+                        <div className='flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-medium'>
                           {report.createdBy.name
                             .split(' ')
-                            .map((n) => n[0])
+                            .map(n => n[0])
                             .join('')}
                         </div>
-                        <span className="text-sm">{report.createdBy.name}</span>
+                        <span className='text-sm'>{report.createdBy.name}</span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm">
+                      <div className='flex flex-col gap-1'>
+                        <span className='text-sm'>
                           {formatDate(report.updatedAt)}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className='text-xs text-muted-foreground'>
                           {formatRelativeTime(report.updatedAt)}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
+                    <TableCell className='text-right'>
+                      <div className='flex items-center justify-end gap-2'>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant='ghost'
+                          size='sm'
                           onClick={() => handleViewReport(report.id)}
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className='h-4 w-4' />
                         </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreVertical className="h-4 w-4" />
+                            <Button variant='ghost' size='sm'>
+                              <MoreVertical className='h-4 w-4' />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align='end'>
                             <DropdownMenuItem
                               onClick={() => handleViewReport(report.id)}
                             >
-                              <Eye className="mr-2 h-4 w-4" />
+                              <Eye className='mr-2 h-4 w-4' />
                               View
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleEditReport(report.id)}
                             >
-                              <Edit className="mr-2 h-4 w-4" />
+                              <Edit className='mr-2 h-4 w-4' />
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleScheduleReport(report.id)}
                             >
-                              <Calendar className="mr-2 h-4 w-4" />
+                              <Calendar className='mr-2 h-4 w-4' />
                               Schedule
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleExportReport(report.id)}
                             >
-                              <Download className="mr-2 h-4 w-4" />
+                              <Download className='mr-2 h-4 w-4' />
                               Export
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDeleteReport(report)}
-                              className="text-destructive"
+                              className='text-destructive'
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
+                              <Trash2 className='mr-2 h-4 w-4' />
                               Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -610,12 +610,12 @@ export default function ReportsPage() {
           </DialogHeader>
           <DialogFooter>
             <Button
-              variant="outline"
+              variant='outline'
               onClick={() => setDeleteDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
+            <Button variant='destructive' onClick={confirmDelete}>
               Delete Report
             </Button>
           </DialogFooter>

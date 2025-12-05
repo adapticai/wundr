@@ -18,14 +18,14 @@ const analyticsService = new AnalyticsServiceImpl({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     const session = await getServerSession();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'AUTH_REQUIRED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -37,7 +37,7 @@ export async function POST(
     if (!uuidRegex.test(workspaceId)) {
       return NextResponse.json(
         { error: 'Invalid workspace ID format', code: 'INVALID_ID' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -48,7 +48,7 @@ export async function POST(
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON body', code: 'INVALID_BODY' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -57,16 +57,23 @@ export async function POST(
     // Validate required fields
     if (!eventType || typeof eventType !== 'string') {
       return NextResponse.json(
-        { error: 'Event type required and must be a string', code: 'MISSING_EVENT_TYPE' },
-        { status: 400 },
+        {
+          error: 'Event type required and must be a string',
+          code: 'MISSING_EVENT_TYPE',
+        },
+        { status: 400 }
       );
     }
 
     // Validate event type format (alphanumeric, underscores, dots)
     if (!/^[a-zA-Z0-9._-]+$/.test(eventType)) {
       return NextResponse.json(
-        { error: 'Invalid event type format. Use alphanumeric characters, dots, underscores, or dashes', code: 'INVALID_EVENT_TYPE' },
-        { status: 400 },
+        {
+          error:
+            'Invalid event type format. Use alphanumeric characters, dots, underscores, or dashes',
+          code: 'INVALID_EVENT_TYPE',
+        },
+        { status: 400 }
       );
     }
 
@@ -74,7 +81,7 @@ export async function POST(
     if (eventData !== undefined && typeof eventData !== 'object') {
       return NextResponse.json(
         { error: 'Event data must be an object', code: 'INVALID_EVENT_DATA' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -82,7 +89,7 @@ export async function POST(
     if (sessionId !== undefined && typeof sessionId !== 'string') {
       return NextResponse.json(
         { error: 'Session ID must be a string', code: 'INVALID_SESSION_ID' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -97,7 +104,10 @@ export async function POST(
       workspaceId,
       userId: session.user.id,
       eventType: eventType as never,
-      eventData: (eventData || {}) as Record<string, string | number | boolean | undefined>,
+      eventData: (eventData || {}) as Record<
+        string,
+        string | number | boolean | undefined
+      >,
       sessionId: sessionId as string | undefined,
       metadata: {
         userAgent,
@@ -121,7 +131,7 @@ export async function POST(
         code: 'INTERNAL_ERROR',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

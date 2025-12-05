@@ -83,7 +83,7 @@ export function NotificationToast({
         // Audio not supported or other initialization errors
         console.debug(
           'Notification sound initialization failed:',
-          error instanceof Error ? error.message : 'Unknown error',
+          error instanceof Error ? error.message : 'Unknown error'
         );
       }
     }
@@ -97,7 +97,7 @@ export function NotificationToast({
           // Ignore cleanup errors
           console.debug(
             'Audio cleanup failed:',
-            error instanceof Error ? error.message : 'Unknown error',
+            error instanceof Error ? error.message : 'Unknown error'
           );
         }
         audioRef.current = null;
@@ -134,7 +134,7 @@ export function NotificationToast({
         isExiting
           ? 'translate-x-full opacity-0'
           : 'animate-in slide-in-from-right-full fade-in-0',
-        className,
+        className
       )}
     >
       <div className='p-4'>
@@ -255,7 +255,7 @@ export function ToastContainer({
       className={cn(
         'pointer-events-none fixed z-50 flex flex-col gap-2',
         positionClasses[position],
-        className,
+        className
       )}
       aria-live='polite'
       aria-atomic='true'
@@ -296,7 +296,7 @@ function ToastIcon({ type, priority }: ToastIconProps) {
         <div
           className={cn(
             baseClasses,
-            'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
+            'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
           )}
         >
           <PhoneIcon className='h-4 w-4' />
@@ -307,7 +307,7 @@ function ToastIcon({ type, priority }: ToastIconProps) {
         <div
           className={cn(
             baseClasses,
-            'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+            'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
           )}
         >
           <PhoneMissedIcon className='h-4 w-4' />
@@ -318,7 +318,7 @@ function ToastIcon({ type, priority }: ToastIconProps) {
         <div
           className={cn(
             baseClasses,
-            'bg-stone-100 text-stone-600 dark:bg-stone-900/30 dark:text-stone-400',
+            'bg-stone-100 text-stone-600 dark:bg-stone-900/30 dark:text-stone-400'
           )}
         >
           <UserPlusIcon className='h-4 w-4' />

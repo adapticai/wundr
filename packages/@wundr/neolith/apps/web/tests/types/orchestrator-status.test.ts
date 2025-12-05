@@ -64,18 +64,16 @@ describe('OrchestratorStatus Type Consistency', () => {
     test('API type guard matches main type guard', () => {
       ORCHESTRATOR_STATUS_VALUES.forEach(status => {
         expect(isOrchestratorStatus(status)).toBe(
-          isOrchestratorStatusApi(status),
+          isOrchestratorStatusApi(status)
         );
       });
 
       // Test invalid values
-      ['active', 'inactive', 'INVALID', null, undefined, 123].forEach(
-        value => {
-          expect(isOrchestratorStatus(value)).toBe(
-            isOrchestratorStatusApi(value),
-          );
-        },
-      );
+      ['active', 'inactive', 'INVALID', null, undefined, 123].forEach(value => {
+        expect(isOrchestratorStatus(value)).toBe(
+          isOrchestratorStatusApi(value)
+        );
+      });
     });
   });
 
@@ -91,7 +89,7 @@ describe('OrchestratorStatus Type Consistency', () => {
 
     test('Configuration keys match status values exactly', () => {
       const configKeys = Object.keys(
-        ORCHESTRATOR_STATUS_CONFIG,
+        ORCHESTRATOR_STATUS_CONFIG
       ) as OrchestratorStatus[];
       expect(configKeys.sort()).toEqual([...ORCHESTRATOR_STATUS_VALUES].sort());
     });

@@ -30,7 +30,7 @@ function MessageItemSkeleton({
     <div
       className={cn(
         'flex gap-3',
-        isOwnMessage ? 'flex-row-reverse' : 'flex-row',
+        isOwnMessage ? 'flex-row-reverse' : 'flex-row'
       )}
     >
       {/* Avatar */}
@@ -40,7 +40,7 @@ function MessageItemSkeleton({
       <div
         className={cn(
           'flex flex-col gap-2 max-w-[70%]',
-          isOwnMessage ? 'items-end' : 'items-start',
+          isOwnMessage ? 'items-end' : 'items-start'
         )}
       >
         {/* Header */}
@@ -53,7 +53,7 @@ function MessageItemSkeleton({
         <div
           className={cn(
             'space-y-2 w-full',
-            isOwnMessage ? 'items-end flex flex-col' : '',
+            isOwnMessage ? 'items-end flex flex-col' : ''
           )}
         >
           <Skeleton className={cn('h-4', isOwnMessage ? 'w-3/4' : 'w-full')} />

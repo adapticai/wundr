@@ -7,7 +7,7 @@ import type { Report, TableData } from '../types';
 
 export function exportToCSV(
   data: TableData | Report,
-  filename: string = 'report.csv',
+  filename: string = 'report.csv'
 ): void {
   let csvContent = '';
 
@@ -17,7 +17,7 @@ export function exportToCSV(
   } else if ('sections' in data) {
     // Full report - extract table sections
     const report = data as Report;
-    const tableSections = report.sections.filter((s) => s.type === 'table');
+    const tableSections = report.sections.filter(s => s.type === 'table');
 
     if (tableSections.length === 0) {
       throw new Error('No table data found in report');
@@ -25,11 +25,9 @@ export function exportToCSV(
 
     // If multiple tables, combine them with section headers
     csvContent = tableSections
-      .map((section) => {
+      .map(section => {
         const sectionHeader = `\n"${section.title}"\n`;
-        const tableContent = generateCSVFromTable(
-          section.content as TableData,
-        );
+        const tableContent = generateCSVFromTable(section.content as TableData);
         return sectionHeader + tableContent;
       })
       .join('\n\n');
@@ -51,12 +49,12 @@ export function exportToCSV(
 
 function generateCSVFromTable(tableData: TableData): string {
   // Generate header row
-  const headers = tableData.columns.map((col) => escapeCSVValue(col.header));
+  const headers = tableData.columns.map(col => escapeCSVValue(col.header));
   let csv = headers.join(',') + '\n';
 
   // Generate data rows
-  tableData.rows.forEach((row) => {
-    const values = tableData.columns.map((col) => {
+  tableData.rows.forEach(row => {
+    const values = tableData.columns.map(col => {
       const value = row[col.accessorKey];
       return escapeCSVValue(String(value ?? ''));
     });
@@ -81,7 +79,7 @@ function escapeCSVValue(value: string): string {
 
 export function convertChartDataToCSV(
   data: Array<Record<string, string | number>>,
-  filename: string = 'chart-data.csv',
+  filename: string = 'chart-data.csv'
 ): void {
   if (data.length === 0) {
     throw new Error('No data to export');
@@ -92,8 +90,8 @@ export function convertChartDataToCSV(
   let csv = headers.map(escapeCSVValue).join(',') + '\n';
 
   // Add data rows
-  data.forEach((row) => {
-    const values = headers.map((header) => {
+  data.forEach(row => {
+    const values = headers.map(header => {
       const value = row[header];
       return escapeCSVValue(String(value ?? ''));
     });
@@ -115,8 +113,11 @@ export function convertChartDataToCSV(
 }
 
 export function exportMultipleCSVs(
-  datasets: Array<{ name: string; data: TableData | Array<Record<string, string | number>> }>,
-  zipFilename: string = 'reports.zip',
+  datasets: Array<{
+    name: string;
+    data: TableData | Array<Record<string, string | number>>;
+  }>,
+  zipFilename: string = 'reports.zip'
 ): void {
   // This would require a zip library like JSZip
   // For now, export each as separate file

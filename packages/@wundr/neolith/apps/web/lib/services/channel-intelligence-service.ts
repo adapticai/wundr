@@ -102,7 +102,7 @@ export interface AutoJoinResult {
  */
 export async function autoJoinOrchestratorToChannel(
   orchestratorId: string,
-  channelId: string,
+  channelId: string
 ): Promise<AutoJoinResult> {
   try {
     // Fetch Orchestrator details
@@ -235,7 +235,7 @@ export async function autoJoinOrchestratorToChannel(
  */
 export async function getRelevantChannels(
   orchestratorId: string,
-  limit: number = 10,
+  limit: number = 10
 ): Promise<ChannelRelevance[]> {
   // Fetch Orchestrator details with discipline
   const orchestrator = await prisma.orchestrator.findUnique({
@@ -270,7 +270,7 @@ export async function getRelevantChannels(
 
   // Get channels Orchestrator is not already a member of
   const memberChannelIds = orchestrator.user.channelMembers.map(
-    m => m.channelId,
+    m => m.channelId
   );
 
   // Fetch all public channels in the Orchestrator's organization
@@ -303,7 +303,7 @@ export async function getRelevantChannels(
       channel,
       orchestrator.discipline,
       capabilities,
-      orchestrator.disciplineRef?.name,
+      orchestrator.disciplineRef?.name
     );
 
     if (relevanceScore.score > 0) {
@@ -346,7 +346,7 @@ async function calculateChannelRelevanceLegacy(
   },
   vpDiscipline: string,
   vpCapabilities: string[],
-  disciplineName?: string,
+  disciplineName?: string
 ): Promise<{
   score: number;
   matchedDisciplines: string[];
@@ -405,7 +405,7 @@ async function calculateChannelRelevanceLegacy(
     ) {
       const topicScore = Math.min(
         5,
-        Math.ceil((channelTopics.topicFrequency[topic] || 0) / 2),
+        Math.ceil((channelTopics.topicFrequency[topic] || 0) / 2)
       );
       score += topicScore;
       topicOverlap.push(topic);
@@ -440,7 +440,7 @@ export async function shouldNotifyOrchestrator(
     authorId: string;
     type: MessageType;
     metadata?: Record<string, unknown>;
-  },
+  }
 ): Promise<NotificationDecision> {
   // Fetch Orchestrator details
   const orchestrator = await prisma.orchestrator.findUnique({
@@ -604,7 +604,7 @@ export async function shouldNotifyOrchestrator(
 export async function extractChannelTopics(
   channelId: string,
   days: number = 7,
-  minFrequency: number = 2,
+  minFrequency: number = 2
 ): Promise<ChannelTopics> {
   const channel = await prisma.channel.findUnique({
     where: { id: channelId },
@@ -761,7 +761,7 @@ export async function extractChannelTopics(
     channelName: channel.name,
     topics,
     topicFrequency: Object.fromEntries(
-      Object.entries(topicFrequency).filter(([topic]) => topics.includes(topic)),
+      Object.entries(topicFrequency).filter(([topic]) => topics.includes(topic))
     ),
     lastAnalyzedAt: new Date(),
     messageCount: messages.length,
@@ -782,7 +782,7 @@ export async function extractChannelTopics(
  */
 export async function calculateChannelRelevance(
   orchestratorId: string,
-  channelId: string,
+  channelId: string
 ): Promise<ChannelRelevance> {
   // Fetch Orchestrator details
   const orchestrator = await prisma.orchestrator.findUnique({
@@ -861,7 +861,7 @@ export async function calculateChannelRelevance(
     roleMatch: calculateRoleMatch(orchestrator, channel),
     memberSimilarity: calculateMemberSimilarity(
       orchestrator,
-      channelWithMembers,
+      channelWithMembers
     ),
     activityLevel: calculateActivityLevel(channelWithCounts),
     channelAge: calculateChannelAge(channel),
@@ -887,7 +887,7 @@ export async function calculateChannelRelevance(
   const explanation = generateRelevanceExplanation(
     factors,
     orchestrator,
-    channel,
+    channel
   );
 
   return {
@@ -912,7 +912,7 @@ export async function getRecommendedChannels(
     limit?: number;
     excludeJoined?: boolean;
     channelType?: ChannelType;
-  } = {},
+  } = {}
 ): Promise<RecommendedChannel[]> {
   const {
     minScore = 0.5,
@@ -972,7 +972,7 @@ export async function getRecommendedChannels(
         }),
       ]);
       return { channelId: channel.id, memberCount, messageCount };
-    }),
+    })
   );
 
   const statsMap = new Map(channelStats.map(s => [s.channelId, s]));
@@ -982,7 +982,7 @@ export async function getRecommendedChannels(
     channels.map(async channel => {
       const relevance = await calculateChannelRelevance(
         orchestratorId,
-        channel.id,
+        channel.id
       );
       const stats = statsMap.get(channel.id) || {
         memberCount: 0,
@@ -1001,7 +1001,7 @@ export async function getRecommendedChannels(
         recentActivityCount: stats.messageCount,
         isArchived: channel.isArchived,
       };
-    }),
+    })
   );
 
   // Filter by minimum score and sort
@@ -1020,7 +1020,7 @@ export async function getRecommendedChannels(
  */
 export async function shouldAutoJoin(
   orchestratorId: string,
-  channelId: string,
+  channelId: string
 ): Promise<boolean> {
   const relevance = await calculateChannelRelevance(orchestratorId, channelId);
 
@@ -1036,7 +1036,7 @@ export async function shouldAutoJoin(
  * @param event - Activity event details
  */
 export async function trackChannelActivity(
-  event: ActivityEvent,
+  event: ActivityEvent
 ): Promise<void> {
   const {
     orchestratorId,
@@ -1084,7 +1084,7 @@ export async function trackChannelActivity(
     {
       metadata,
       timestamp,
-    },
+    }
   );
 }
 
@@ -1093,7 +1093,7 @@ export async function trackChannelActivity(
  */
 function calculateDisciplineMatch(
   vp: { discipline: string; disciplineRef: { name: string } | null },
-  channel: { name: string; description: string | null; topic: string | null },
+  channel: { name: string; description: string | null; topic: string | null }
 ): number {
   const vpDiscipline = (vp.disciplineRef?.name || vp.discipline).toLowerCase();
   const channelText =
@@ -1107,7 +1107,7 @@ function calculateDisciplineMatch(
   // Check for partial matches and related keywords
   const disciplineKeywords = vpDiscipline.split(/\s+/);
   const matchCount = disciplineKeywords.filter(keyword =>
-    channelText.includes(keyword),
+    channelText.includes(keyword)
   ).length;
 
   return matchCount / disciplineKeywords.length;
@@ -1118,7 +1118,7 @@ function calculateDisciplineMatch(
  */
 function calculateRoleMatch(
   vp: { role: string },
-  channel: { name: string; description: string | null },
+  channel: { name: string; description: string | null }
 ): number {
   const vpRole = vp.role.toLowerCase();
   const channelText =
@@ -1128,7 +1128,7 @@ function calculateRoleMatch(
   const roleKeywords = vpRole.split(/\s+/).filter(word => word.length > 3);
 
   const matchCount = roleKeywords.filter(keyword =>
-    channelText.includes(keyword),
+    channelText.includes(keyword)
   ).length;
 
   if (roleKeywords.length === 0) {
@@ -1153,7 +1153,7 @@ function calculateMemberSimilarity(
         } | null;
       };
     }>;
-  },
+  }
 ): number {
   const orchestratorDiscipline = orchestratorParam.discipline.toLowerCase();
 
@@ -1220,7 +1220,7 @@ function calculateChannelAge(channel: { createdAt: Date }): number {
 function generateRelevanceExplanation(
   factors: RelevanceFactors,
   vp: { discipline: string; role: string },
-  channel: { name: string; type: ChannelType },
+  channel: { name: string; type: ChannelType }
 ): string {
   const reasons: string[] = [];
 

@@ -14,7 +14,10 @@ import { prisma, Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { createErrorResponse, WORKFLOW_ERROR_CODES } from '@/lib/validations/workflow';
+import {
+  createErrorResponse,
+  WORKFLOW_ERROR_CODES,
+} from '@/lib/validations/workflow';
 
 import type { NextRequest } from 'next/server';
 
@@ -105,7 +108,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
 async function exportWorkflows(
   workspaceId: string,
   workflowIds: string[],
-  options: ExportOptions = {},
+  options: ExportOptions = {}
 ): Promise<ExportedWorkflow[]> {
   const {
     includeExecutionHistory = false,
@@ -135,12 +138,12 @@ async function exportWorkflows(
 
   // Export each workflow
   const exportedWorkflows = await Promise.all(
-    workflows.map(async (workflow) => {
+    workflows.map(async workflow => {
       const actions = workflow.actions as unknown as Array<{ type: string }>;
 
       // Map database status to frontend status
       const mapStatus = (
-        dbStatus: string,
+        dbStatus: string
       ): 'active' | 'inactive' | 'draft' | 'error' => {
         const statusMap: Record<
           string,
@@ -201,7 +204,7 @@ async function exportWorkflows(
           },
         });
 
-        exportData.executionHistory = executions.map((e) => ({
+        exportData.executionHistory = executions.map(e => ({
           id: e.id,
           status: e.status,
           startedAt: e.startedAt.toISOString(),
@@ -217,7 +220,7 @@ async function exportWorkflows(
       }
 
       return exportData;
-    }),
+    })
   );
 
   return exportedWorkflows;
@@ -239,7 +242,7 @@ async function exportWorkflows(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -248,9 +251,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -264,30 +267,33 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
     const idsParam = searchParams.get('ids');
-    const workflowIds = idsParam ? idsParam.split(',').map((id) => id.trim()) : [];
+    const workflowIds = idsParam
+      ? idsParam.split(',').map(id => id.trim())
+      : [];
 
     if (workflowIds.length === 0) {
       return NextResponse.json(
         createErrorResponse(
           'At least one workflow ID is required',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Parse export options from query params
     const options: ExportOptions = {
-      includeExecutionHistory: searchParams.get('includeExecutionHistory') === 'true',
+      includeExecutionHistory:
+        searchParams.get('includeExecutionHistory') === 'true',
       includeMetadata: searchParams.get('includeMetadata') !== 'false', // default true
       includeVariables: searchParams.get('includeVariables') !== 'false', // default true
       includePermissions: searchParams.get('includePermissions') === 'true',
@@ -295,7 +301,11 @@ export async function GET(
     };
 
     // Export workflows
-    const exportedWorkflows = await exportWorkflows(workspaceId, workflowIds, options);
+    const exportedWorkflows = await exportWorkflows(
+      workspaceId,
+      workflowIds,
+      options
+    );
 
     // Return single workflow or array based on count
     const responseData =
@@ -316,14 +326,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/workflows/export] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         error instanceof Error ? error.message : 'Export failed',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -354,7 +364,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -363,9 +373,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -379,9 +389,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -393,9 +403,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -405,14 +415,18 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'At least one workflow ID is required',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Export workflows
-    const exportedWorkflows = await exportWorkflows(workspaceId, workflowIds, options);
+    const exportedWorkflows = await exportWorkflows(
+      workspaceId,
+      workflowIds,
+      options
+    );
 
     // Return single workflow or array based on count
     const responseData =
@@ -433,14 +447,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceSlug/workflows/export] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         error instanceof Error ? error.message : 'Export failed',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

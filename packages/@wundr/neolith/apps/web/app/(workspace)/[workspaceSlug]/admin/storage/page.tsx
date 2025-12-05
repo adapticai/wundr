@@ -133,13 +133,13 @@ interface StorageData {
 }
 
 const FILE_TYPE_ICONS: Record<string, React.ReactNode> = {
-  Images: <FileImage className="h-4 w-4" />,
-  Videos: <FileVideo className="h-4 w-4" />,
-  Audio: <FileAudio className="h-4 w-4" />,
-  Documents: <FileText className="h-4 w-4" />,
-  Archives: <FileArchive className="h-4 w-4" />,
-  Code: <FileCode className="h-4 w-4" />,
-  Other: <File className="h-4 w-4" />,
+  Images: <FileImage className='h-4 w-4' />,
+  Videos: <FileVideo className='h-4 w-4' />,
+  Audio: <FileAudio className='h-4 w-4' />,
+  Documents: <FileText className='h-4 w-4' />,
+  Archives: <FileArchive className='h-4 w-4' />,
+  Code: <FileCode className='h-4 w-4' />,
+  Other: <File className='h-4 w-4' />,
 };
 
 const CHART_COLORS = [
@@ -187,7 +187,7 @@ export default function AdminStoragePage() {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/storage`,
+        `/api/workspaces/${workspaceSlug}/admin/storage`
       );
       if (!response.ok) {
         throw new Error('Failed to fetch storage data');
@@ -219,7 +219,7 @@ export default function AdminStoragePage() {
             autoCleanup,
             warningThreshold,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -255,7 +255,7 @@ export default function AdminStoragePage() {
           body: JSON.stringify({
             fileIds: Array.from(selectedFiles),
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -285,8 +285,8 @@ export default function AdminStoragePage() {
 
   const formatBytes = (bytes: number): string => {
     if (bytes === 0) {
-return '0 B';
-}
+      return '0 B';
+    }
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -313,47 +313,47 @@ return '0 B';
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className='flex items-center justify-center min-h-[400px]'>
+        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">Failed to load storage data</p>
+      <div className='flex items-center justify-center min-h-[400px]'>
+        <p className='text-muted-foreground'>Failed to load storage data</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className='space-y-6'>
+      <div className='flex items-center justify-between'>
         <div>
-          <h1 className="text-2xl font-bold">Storage Management</h1>
-          <p className="mt-1 text-muted-foreground">
+          <h1 className='text-2xl font-bold'>Storage Management</h1>
+          <p className='mt-1 text-muted-foreground'>
             Monitor and manage workspace storage usage
           </p>
         </div>
         <Button onClick={() => setShowSettingsDialog(true)}>
-          <Settings className="mr-2 h-4 w-4" />
+          <Settings className='mr-2 h-4 w-4' />
           Settings
         </Button>
       </div>
 
       {/* Alerts */}
       {data.alerts.length > 0 && (
-        <div className="space-y-2">
+        <div className='space-y-2'>
           {data.alerts.map(alert => (
             <Alert
               key={alert.id}
               variant={alert.type === 'critical' ? 'destructive' : 'default'}
             >
               {alert.type === 'critical' ? (
-                <AlertCircle className="h-4 w-4" />
+                <AlertCircle className='h-4 w-4' />
               ) : (
-                <AlertTriangle className="h-4 w-4" />
+                <AlertTriangle className='h-4 w-4' />
               )}
               <AlertTitle>
                 {alert.type === 'critical' ? 'Critical' : 'Warning'}
@@ -365,49 +365,46 @@ return '0 B';
       )}
 
       {/* Overview Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Storage</CardTitle>
-            <HardDrive className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Total Storage</CardTitle>
+            <HardDrive className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className='text-2xl font-bold'>
               {data.overview.totalSizeGB.toFixed(2)} GB
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className='text-xs text-muted-foreground'>
               of {data.overview.quota} GB quota
             </p>
-            <Progress
-              value={data.overview.usagePercentage}
-              className="mt-2"
-            />
+            <Progress value={data.overview.usagePercentage} className='mt-2' />
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">File Count</CardTitle>
-            <Database className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>File Count</CardTitle>
+            <Database className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className='text-2xl font-bold'>
               {data.overview.fileCount.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">Total files stored</p>
+            <p className='text-xs text-muted-foreground'>Total files stored</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Usage</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Usage</CardTitle>
+            <TrendingUp className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className='text-2xl font-bold'>
               {data.overview.usagePercentage.toFixed(1)}%
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className='text-xs text-muted-foreground'>
               {data.overview.usagePercentage >= data.settings.warningThreshold
                 ? 'Above threshold'
                 : 'Within limits'}
@@ -416,34 +413,34 @@ return '0 B';
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Size</CardTitle>
-            <File className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Average Size</CardTitle>
+            <File className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className='text-2xl font-bold'>
               {formatBytes(
                 data.overview.fileCount > 0
                   ? data.overview.totalSize / data.overview.fileCount
-                  : 0,
+                  : 0
               )}
             </div>
-            <p className="text-xs text-muted-foreground">Per file</p>
+            <p className='text-xs text-muted-foreground'>Per file</p>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="breakdown" className="space-y-6">
+      <Tabs defaultValue='breakdown' className='space-y-6'>
         <TabsList>
-          <TabsTrigger value="breakdown">Breakdown</TabsTrigger>
-          <TabsTrigger value="usage">Usage Over Time</TabsTrigger>
-          <TabsTrigger value="files">Large Files</TabsTrigger>
-          <TabsTrigger value="cleanup">Cleanup</TabsTrigger>
+          <TabsTrigger value='breakdown'>Breakdown</TabsTrigger>
+          <TabsTrigger value='usage'>Usage Over Time</TabsTrigger>
+          <TabsTrigger value='files'>Large Files</TabsTrigger>
+          <TabsTrigger value='cleanup'>Cleanup</TabsTrigger>
         </TabsList>
 
         {/* Storage Breakdown */}
-        <TabsContent value="breakdown" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+        <TabsContent value='breakdown' className='space-y-6'>
+          <div className='grid gap-6 md:grid-cols-2'>
             <Card>
               <CardHeader>
                 <CardTitle>Storage by File Type</CardTitle>
@@ -452,16 +449,16 @@ return '0 B';
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width='100%' height={300}>
                   <PieChart>
                     <Pie
                       data={data.breakdown}
-                      dataKey="size"
-                      nameKey="type"
-                      cx="50%"
-                      cy="50%"
+                      dataKey='size'
+                      nameKey='type'
+                      cx='50%'
+                      cy='50%'
                       outerRadius={100}
-                      label={(entry) =>
+                      label={entry =>
                         `${entry.type}: ${entry.percentage.toFixed(1)}%`
                       }
                     >
@@ -488,25 +485,25 @@ return '0 B';
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className='space-y-4'>
                   {data.breakdown.map((item, index) => (
-                    <div key={item.type} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                    <div key={item.type} className='space-y-2'>
+                      <div className='flex items-center justify-between'>
+                        <div className='flex items-center gap-2'>
                           {FILE_TYPE_ICONS[item.type] || (
-                            <File className="h-4 w-4" />
+                            <File className='h-4 w-4' />
                           )}
-                          <span className="font-medium">{item.type}</span>
+                          <span className='font-medium'>{item.type}</span>
                         </div>
-                        <Badge variant="secondary">{item.count} files</Badge>
+                        <Badge variant='secondary'>{item.count} files</Badge>
                       </div>
-                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <div className='flex items-center justify-between text-sm text-muted-foreground'>
                         <span>{formatBytes(item.size)}</span>
                         <span>{item.percentage.toFixed(1)}%</span>
                       </div>
                       <Progress
                         value={item.percentage}
-                        className="h-2"
+                        className='h-2'
                         style={{
                           backgroundColor: `${CHART_COLORS[index % CHART_COLORS.length]}20`,
                         }}
@@ -520,7 +517,7 @@ return '0 B';
         </TabsContent>
 
         {/* Usage Over Time */}
-        <TabsContent value="usage" className="space-y-6">
+        <TabsContent value='usage' className='space-y-6'>
           <Card>
             <CardHeader>
               <CardTitle>Storage Growth</CardTitle>
@@ -529,32 +526,35 @@ return '0 B';
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
+              <ResponsiveContainer width='100%' height={400}>
                 <AreaChart data={data.usageOverTime}>
                   <defs>
-                    <linearGradient id="colorSize" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    <linearGradient id='colorSize' x1='0' y1='0' x2='0' y2='1'>
+                      <stop offset='5%' stopColor='#3b82f6' stopOpacity={0.8} />
+                      <stop offset='95%' stopColor='#3b82f6' stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray='3 3' />
                   <XAxis
-                    dataKey="date"
-                    tickFormatter={(date) => formatDate(date)}
+                    dataKey='date'
+                    tickFormatter={date => formatDate(date)}
                   />
-                  <YAxis tickFormatter={(value) => `${value.toFixed(1)} GB`} />
+                  <YAxis tickFormatter={value => `${value.toFixed(1)} GB`} />
                   <Tooltip
-                    formatter={(value: number) => [`${value.toFixed(2)} GB`, 'Storage']}
-                    labelFormatter={(label) => formatDate(label)}
+                    formatter={(value: number) => [
+                      `${value.toFixed(2)} GB`,
+                      'Storage',
+                    ]}
+                    labelFormatter={label => formatDate(label)}
                   />
                   <Legend />
                   <Area
-                    type="monotone"
-                    dataKey="size"
-                    stroke="#3b82f6"
+                    type='monotone'
+                    dataKey='size'
+                    stroke='#3b82f6'
                     fillOpacity={1}
-                    fill="url(#colorSize)"
-                    name="Storage (GB)"
+                    fill='url(#colorSize)'
+                    name='Storage (GB)'
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -563,10 +563,10 @@ return '0 B';
         </TabsContent>
 
         {/* Large Files */}
-        <TabsContent value="files" className="space-y-6">
+        <TabsContent value='files' className='space-y-6'>
           <Card>
             <CardHeader>
-              <div className="flex items-start justify-between">
+              <div className='flex items-start justify-between'>
                 <div>
                   <CardTitle>Large Files</CardTitle>
                   <CardDescription>
@@ -575,11 +575,11 @@ return '0 B';
                 </div>
                 {selectedFiles.size > 0 && (
                   <Button
-                    variant="destructive"
-                    size="sm"
+                    variant='destructive'
+                    size='sm'
                     onClick={() => setShowCleanupDialog(true)}
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
+                    <Trash2 className='mr-2 h-4 w-4' />
                     Delete Selected ({selectedFiles.size})
                   </Button>
                 )}
@@ -589,13 +589,13 @@ return '0 B';
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12">
+                    <TableHead className='w-12'>
                       <Checkbox
                         checked={selectedFiles.size === data.largeFiles.length}
-                        onCheckedChange={(checked) => {
+                        onCheckedChange={checked => {
                           if (checked) {
                             setSelectedFiles(
-                              new Set(data.largeFiles.map((f) => f.id)),
+                              new Set(data.largeFiles.map(f => f.id))
                             );
                           } else {
                             setSelectedFiles(new Set());
@@ -611,7 +611,7 @@ return '0 B';
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.largeFiles.map((file) => (
+                  {data.largeFiles.map(file => (
                     <TableRow key={file.id}>
                       <TableCell>
                         <Checkbox
@@ -619,12 +619,10 @@ return '0 B';
                           onCheckedChange={() => toggleFileSelection(file.id)}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">
-                        {file.name}
-                      </TableCell>
+                      <TableCell className='font-medium'>{file.name}</TableCell>
                       <TableCell>{formatBytes(file.size)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">
+                        <Badge variant='outline'>
                           {file.type.split('/')[0] || 'unknown'}
                         </Badge>
                       </TableCell>
@@ -639,7 +637,7 @@ return '0 B';
         </TabsContent>
 
         {/* Cleanup Rules */}
-        <TabsContent value="cleanup" className="space-y-6">
+        <TabsContent value='cleanup' className='space-y-6'>
           <Card>
             <CardHeader>
               <CardTitle>Cleanup Rules</CardTitle>
@@ -647,17 +645,17 @@ return '0 B';
                 Configure automatic cleanup policies for your workspace
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
+            <CardContent className='space-y-4'>
+              <div className='flex items-center justify-between rounded-lg border p-4'>
+                <div className='space-y-0.5'>
                   <Label>Automatic Cleanup</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className='text-sm text-muted-foreground'>
                     Automatically delete files based on retention policies
                   </p>
                 </div>
                 <Switch
                   checked={data.settings.autoCleanup}
-                  onCheckedChange={(checked) => {
+                  onCheckedChange={checked => {
                     setAutoCleanup(checked);
                     handleUpdateSettings();
                   }}
@@ -666,23 +664,23 @@ return '0 B';
 
               <Separator />
 
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Retention Policy</h4>
-                <div className="rounded-lg border p-4 space-y-4">
-                  <div className="space-y-2">
+              <div className='space-y-4'>
+                <h4 className='text-sm font-medium'>Retention Policy</h4>
+                <div className='rounded-lg border p-4 space-y-4'>
+                  <div className='space-y-2'>
                     <Label>Delete files older than (days)</Label>
                     <Input
-                      type="number"
+                      type='number'
                       value={data.settings.retentionDays}
-                      onChange={(e) =>
+                      onChange={e =>
                         setRetentionDays(parseInt(e.target.value, 10))
                       }
                       min={1}
                     />
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Files older than this will be eligible for automatic
-                    cleanup if enabled
+                  <p className='text-sm text-muted-foreground'>
+                    Files older than this will be eligible for automatic cleanup
+                    if enabled
                   </p>
                 </div>
               </div>
@@ -690,17 +688,17 @@ return '0 B';
               {data.cleanupRules.length > 0 && (
                 <>
                   <Separator />
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium">Custom Rules</h4>
-                    <div className="space-y-2">
-                      {data.cleanupRules.map((rule) => (
+                  <div className='space-y-4'>
+                    <h4 className='text-sm font-medium'>Custom Rules</h4>
+                    <div className='space-y-2'>
+                      {data.cleanupRules.map(rule => (
                         <div
                           key={rule.id}
-                          className="flex items-center justify-between rounded-lg border p-4"
+                          className='flex items-center justify-between rounded-lg border p-4'
                         >
-                          <div className="space-y-0.5">
+                          <div className='space-y-0.5'>
                             <Label>{rule.name}</Label>
-                            <p className="text-sm text-muted-foreground">
+                            <p className='text-sm text-muted-foreground'>
                               {rule.fileType && `Type: ${rule.fileType} • `}
                               {rule.olderThanDays &&
                                 `Older than ${rule.olderThanDays} days • `}
@@ -729,52 +727,52 @@ return '0 B';
               Configure storage quota and retention policies
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="quota">Storage Quota (GB)</Label>
+          <div className='space-y-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='quota'>Storage Quota (GB)</Label>
               <Input
-                id="quota"
-                type="number"
+                id='quota'
+                type='number'
                 value={quota}
-                onChange={(e) => setQuota(parseInt(e.target.value, 10))}
+                onChange={e => setQuota(parseInt(e.target.value, 10))}
                 min={1}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="retention">Retention Period (days)</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='retention'>Retention Period (days)</Label>
               <Input
-                id="retention"
-                type="number"
+                id='retention'
+                type='number'
                 value={retentionDays}
-                onChange={(e) => setRetentionDays(parseInt(e.target.value, 10))}
+                onChange={e => setRetentionDays(parseInt(e.target.value, 10))}
                 min={1}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="threshold">Warning Threshold (%)</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='threshold'>Warning Threshold (%)</Label>
               <Input
-                id="threshold"
-                type="number"
+                id='threshold'
+                type='number'
                 value={warningThreshold}
-                onChange={(e) =>
+                onChange={e =>
                   setWarningThreshold(parseInt(e.target.value, 10))
                 }
                 min={1}
                 max={100}
               />
             </div>
-            <div className="flex items-center space-x-2">
+            <div className='flex items-center space-x-2'>
               <Switch
-                id="autoCleanup"
+                id='autoCleanup'
                 checked={autoCleanup}
                 onCheckedChange={setAutoCleanup}
               />
-              <Label htmlFor="autoCleanup">Enable automatic cleanup</Label>
+              <Label htmlFor='autoCleanup'>Enable automatic cleanup</Label>
             </div>
           </div>
           <DialogFooter>
             <Button
-              variant="outline"
+              variant='outline'
               onClick={() => setShowSettingsDialog(false)}
             >
               Cancel
@@ -785,7 +783,7 @@ return '0 B';
             >
               {processingAction === 'updateSettings' ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                   Saving...
                 </>
               ) : (
@@ -806,8 +804,8 @@ return '0 B';
               files? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+          <Alert variant='destructive'>
+            <AlertCircle className='h-4 w-4' />
             <AlertTitle>Warning</AlertTitle>
             <AlertDescription>
               This will permanently delete the selected files from storage.
@@ -815,24 +813,24 @@ return '0 B';
           </Alert>
           <DialogFooter>
             <Button
-              variant="outline"
+              variant='outline'
               onClick={() => setShowCleanupDialog(false)}
             >
               Cancel
             </Button>
             <Button
-              variant="destructive"
+              variant='destructive'
               onClick={handleCleanup}
               disabled={processingAction === 'cleanup'}
             >
               {processingAction === 'cleanup' ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                   Deleting...
                 </>
               ) : (
                 <>
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash2 className='mr-2 h-4 w-4' />
                   Delete Files
                 </>
               )}

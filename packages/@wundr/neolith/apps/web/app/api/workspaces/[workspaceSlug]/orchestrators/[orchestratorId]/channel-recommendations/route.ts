@@ -41,7 +41,7 @@ interface RouteContext {
 async function getOrchestratorWithWorkspaceAccess(
   workspaceId: string,
   orchestratorId: string,
-  userId: string,
+  userId: string
 ) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -110,7 +110,7 @@ async function getOrchestratorWithWorkspaceAccess(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -118,9 +118,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -131,9 +131,9 @@ export async function GET(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Invalid parameters',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.VALIDATION_ERROR,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -141,15 +141,15 @@ export async function GET(
     const result = await getOrchestratorWithWorkspaceAccess(
       workspaceId,
       orchestratorId,
-      session.user.id,
+      session.user.id
     );
     if (!result) {
       return NextResponse.json(
         createChannelIntelligenceError(
           'Orchestrator not found or access denied',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -178,7 +178,7 @@ export async function GET(
 
     // Apply additional filters
     let recommendations = baseRecommendations.filter(
-      rec => !excludeChannelIds.includes(rec.id),
+      rec => !excludeChannelIds.includes(rec.id)
     );
 
     // Filter by recent activity if specified
@@ -201,7 +201,7 @@ export async function GET(
 
       const activeChannelIds = new Set(activeChannels.map(c => c.id));
       recommendations = recommendations.filter(rec =>
-        activeChannelIds.has(rec.id),
+        activeChannelIds.has(rec.id)
       );
     }
 
@@ -234,14 +234,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/channel-recommendations] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createChannelIntelligenceError(
         'An internal error occurred',
-        CHANNEL_INTELLIGENCE_ERROR_CODES.INTERNAL_ERROR,
+        CHANNEL_INTELLIGENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

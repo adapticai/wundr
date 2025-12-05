@@ -11,8 +11,21 @@
  */
 'use client';
 
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
   CheckCircle2,
@@ -30,8 +43,21 @@ import React, { useState, useCallback, useEffect } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 import { BacklogItemCreateDialog } from './backlog-item-create-dialog';
@@ -73,7 +99,11 @@ const TASK_STATUS_CONFIG = {
 const PRIORITY_CONFIG = {
   CRITICAL: { label: 'Critical', color: 'text-red-600', bgColor: 'bg-red-100' },
   HIGH: { label: 'High', color: 'text-orange-600', bgColor: 'bg-orange-100' },
-  MEDIUM: { label: 'Medium', color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
+  MEDIUM: {
+    label: 'Medium',
+    color: 'text-yellow-600',
+    bgColor: 'bg-yellow-100',
+  },
   LOW: { label: 'Low', color: 'text-gray-600', bgColor: 'bg-gray-100' },
 } as const;
 
@@ -154,7 +184,7 @@ function SortableBacklogItem({
       className={cn(
         'group relative rounded-lg border bg-card p-4 transition-all',
         isDragging && 'opacity-50 shadow-lg',
-        !isDragging && 'hover:border-primary/50 hover:shadow-sm',
+        !isDragging && 'hover:border-primary/50 hover:shadow-sm'
       )}
     >
       {/* Drag Handle */}
@@ -172,7 +202,7 @@ function SortableBacklogItem({
           <div
             className={cn(
               'flex h-6 w-6 items-center justify-center rounded-full shrink-0 mt-0.5',
-              statusConfig.bgColor,
+              statusConfig.bgColor
             )}
           >
             <StatusIcon className={cn('h-4 w-4', statusConfig.color)} />
@@ -191,7 +221,13 @@ function SortableBacklogItem({
 
         {/* Metadata */}
         <div className='flex flex-wrap gap-2 mt-3 pl-9'>
-          <Badge className={cn(priorityConfig.bgColor, priorityConfig.color, 'text-xs')}>
+          <Badge
+            className={cn(
+              priorityConfig.bgColor,
+              priorityConfig.color,
+              'text-xs'
+            )}
+          >
             {priorityConfig.label}
           </Badge>
           <Badge variant='outline' className='text-xs'>
@@ -290,7 +326,7 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    }),
+    })
   );
 
   /**
@@ -316,7 +352,7 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
       params.set('limit', '100');
 
       const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/backlog?${params.toString()}`,
+        `/api/orchestrators/${orchestratorId}/backlog?${params.toString()}`
       );
 
       if (!response.ok) {
@@ -327,15 +363,18 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
       const tasks = result.data || [];
 
       // Convert tasks to backlog items format
-      const backlogItems: BacklogItem[] = tasks.map((task: Task, index: number) => ({
-        id: task.id,
-        position: index,
-        task,
-      }));
+      const backlogItems: BacklogItem[] = tasks.map(
+        (task: Task, index: number) => ({
+          id: task.id,
+          position: index,
+          task,
+        })
+      );
 
       setItems(backlogItems);
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch backlog');
+      const error =
+        err instanceof Error ? err : new Error('Failed to fetch backlog');
       setError(error);
       console.error('[BacklogList] Error:', error);
     } finally {
@@ -350,9 +389,9 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
     const { active, over } = event;
 
     if (active.id !== over.id) {
-      setItems((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
+      setItems(items => {
+        const oldIndex = items.findIndex(item => item.id === active.id);
+        const newIndex = items.findIndex(item => item.id === over.id);
 
         return arrayMove(items, oldIndex, newIndex);
       });
@@ -365,52 +404,60 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
   /**
    * Handle status change
    */
-  const handleStatusChange = useCallback(async (itemId: string, status: string) => {
-    try {
-      const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/backlog/${itemId}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status }),
-        },
-      );
+  const handleStatusChange = useCallback(
+    async (itemId: string, status: string) => {
+      try {
+        const response = await fetch(
+          `/api/orchestrators/${orchestratorId}/backlog/${itemId}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status }),
+          }
+        );
 
-      if (!response.ok) {
-        throw new Error('Failed to update status');
+        if (!response.ok) {
+          throw new Error('Failed to update status');
+        }
+
+        await fetchItems();
+      } catch (err) {
+        console.error('[BacklogList] Status update error:', err);
       }
-
-      await fetchItems();
-    } catch (err) {
-      console.error('[BacklogList] Status update error:', err);
-    }
-  }, [orchestratorId, fetchItems]);
+    },
+    [orchestratorId, fetchItems]
+  );
 
   /**
    * Handle delete
    */
-  const handleDelete = useCallback(async (itemId: string) => {
-    if (!confirm('Are you sure you want to remove this item from the backlog?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/backlog/${itemId}`,
-        {
-          method: 'DELETE',
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to delete item');
+  const handleDelete = useCallback(
+    async (itemId: string) => {
+      if (
+        !confirm('Are you sure you want to remove this item from the backlog?')
+      ) {
+        return;
       }
 
-      await fetchItems();
-    } catch (err) {
-      console.error('[BacklogList] Delete error:', err);
-    }
-  }, [orchestratorId, fetchItems]);
+      try {
+        const response = await fetch(
+          `/api/orchestrators/${orchestratorId}/backlog/${itemId}`,
+          {
+            method: 'DELETE',
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to delete item');
+        }
+
+        await fetchItems();
+      } catch (err) {
+        console.error('[BacklogList] Delete error:', err);
+      }
+    },
+    [orchestratorId, fetchItems]
+  );
 
   /**
    * Initial fetch
@@ -428,7 +475,7 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
         </CardHeader>
         <CardContent>
           <div className='space-y-3'>
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3].map(i => (
               <div key={i} className='h-20 bg-muted rounded-lg animate-pulse' />
             ))}
           </div>
@@ -447,9 +494,16 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
         <CardContent>
           <div className='text-center py-8'>
             <AlertCircle className='h-12 w-12 text-red-500 mx-auto mb-4' />
-            <p className='text-sm font-medium text-red-800'>Failed to load backlog</p>
+            <p className='text-sm font-medium text-red-800'>
+              Failed to load backlog
+            </p>
             <p className='text-xs text-red-600 mt-1'>{error.message}</p>
-            <Button variant='outline' size='sm' onClick={fetchItems} className='mt-4'>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={fetchItems}
+              className='mt-4'
+            >
               Try Again
             </Button>
           </div>
@@ -485,32 +539,34 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align='end' className='w-56'>
                   <DropdownMenuLabel>Status</DropdownMenuLabel>
-                  {Object.entries(TASK_STATUS_CONFIG).map(([status, config]) => (
-                    <DropdownMenuCheckboxItem
-                      key={status}
-                      checked={statusFilter.includes(status)}
-                      onCheckedChange={(checked) => {
-                        setStatusFilter((prev) =>
-                          checked
-                            ? [...prev, status]
-                            : prev.filter((s) => s !== status),
-                        );
-                      }}
-                    >
-                      {config.label}
-                    </DropdownMenuCheckboxItem>
-                  ))}
+                  {Object.entries(TASK_STATUS_CONFIG).map(
+                    ([status, config]) => (
+                      <DropdownMenuCheckboxItem
+                        key={status}
+                        checked={statusFilter.includes(status)}
+                        onCheckedChange={checked => {
+                          setStatusFilter(prev =>
+                            checked
+                              ? [...prev, status]
+                              : prev.filter(s => s !== status)
+                          );
+                        }}
+                      >
+                        {config.label}
+                      </DropdownMenuCheckboxItem>
+                    )
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>Priority</DropdownMenuLabel>
                   {Object.entries(PRIORITY_CONFIG).map(([priority, config]) => (
                     <DropdownMenuCheckboxItem
                       key={priority}
                       checked={priorityFilter.includes(priority)}
-                      onCheckedChange={(checked) => {
-                        setPriorityFilter((prev) =>
+                      onCheckedChange={checked => {
+                        setPriorityFilter(prev =>
                           checked
                             ? [...prev, priority]
-                            : prev.filter((p) => p !== priority),
+                            : prev.filter(p => p !== priority)
                         );
                       }}
                     >
@@ -562,11 +618,11 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={items.map((item) => item.id)}
+                items={items.map(item => item.id)}
                 strategy={verticalListSortingStrategy}
               >
                 <div className='space-y-2'>
-                  {items.map((item) => (
+                  {items.map(item => (
                     <SortableBacklogItem
                       key={item.id}
                       item={item}
@@ -596,7 +652,7 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
           orchestratorId={orchestratorId}
           item={editingItem}
           open={!!editingItem}
-          onOpenChange={(open) => !open && setEditingItem(null)}
+          onOpenChange={open => !open && setEditingItem(null)}
           onUpdated={fetchItems}
         />
       )}

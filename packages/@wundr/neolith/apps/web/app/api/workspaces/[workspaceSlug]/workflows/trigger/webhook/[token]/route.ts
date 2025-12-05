@@ -19,7 +19,10 @@ import {
 import { checkRateLimit } from '@/lib/workflow/rate-limiter';
 import { verifyWebhookSignature } from '@/lib/workflow/trigger-auth';
 
-import type { WorkflowAction, WorkflowStepResult } from '@/lib/validations/workflow';
+import type {
+  WorkflowAction,
+  WorkflowStepResult,
+} from '@/lib/validations/workflow';
 import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
@@ -37,12 +40,13 @@ async function logWebhookTrigger(
   data: Record<string, unknown>,
   error?: string,
   executionId?: string,
-  request?: NextRequest,
+  request?: NextRequest
 ): Promise<void> {
   try {
-    const ipAddress = request?.headers.get('x-forwarded-for') ||
-                      request?.headers.get('x-real-ip') ||
-                      'unknown';
+    const ipAddress =
+      request?.headers.get('x-forwarded-for') ||
+      request?.headers.get('x-real-ip') ||
+      'unknown';
     const userAgent = request?.headers.get('user-agent') || 'unknown';
 
     const currentWorkflow = await prisma.workflow.findUnique({
@@ -50,7 +54,10 @@ async function logWebhookTrigger(
       select: { metadata: true },
     });
 
-    const currentMetadata = (currentWorkflow?.metadata || {}) as Record<string, any>;
+    const currentMetadata = (currentWorkflow?.metadata || {}) as Record<
+      string,
+      any
+    >;
     const triggerHistory = (currentMetadata.triggerHistory || []).slice(0, 99);
 
     await prisma.workflow.update({
@@ -85,7 +92,7 @@ async function logWebhookTrigger(
  */
 async function executeWorkflowActions(
   actions: WorkflowAction[],
-  triggerData: Record<string, unknown>,
+  triggerData: Record<string, unknown>
 ): Promise<{ steps: WorkflowStepResult[]; success: boolean; error?: string }> {
   const steps: WorkflowStepResult[] = [];
   let success = true;
@@ -135,7 +142,7 @@ async function executeWorkflowActions(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   const startTime = Date.now();
 
@@ -160,9 +167,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid webhook token',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -176,13 +183,13 @@ export async function POST(
         {},
         'Rate limit exceeded',
         undefined,
-        request,
+        request
       );
 
       return NextResponse.json(
         createErrorResponse(
           'Rate limit exceeded',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
         ),
         {
           status: 429,
@@ -191,7 +198,7 @@ export async function POST(
             'X-RateLimit-Remaining': rateLimit.remaining.toString(),
             'X-RateLimit-Reset': rateLimit.reset.toString(),
           },
-        },
+        }
       );
     }
 
@@ -219,19 +226,23 @@ export async function POST(
                 data,
                 'Missing webhook signature',
                 undefined,
-                request,
+                request
               );
 
               return NextResponse.json(
                 createErrorResponse(
                   'Webhook signature required',
-                  WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+                  WORKFLOW_ERROR_CODES.UNAUTHORIZED
                 ),
-                { status: 401 },
+                { status: 401 }
               );
             }
 
-            const isValid = verifyWebhookSignature(text, signature, webhookSecret);
+            const isValid = verifyWebhookSignature(
+              text,
+              signature,
+              webhookSecret
+            );
             if (!isValid) {
               await logWebhookTrigger(
                 workspaceId,
@@ -240,15 +251,15 @@ export async function POST(
                 data,
                 'Invalid webhook signature',
                 undefined,
-                request,
+                request
               );
 
               return NextResponse.json(
                 createErrorResponse(
                   'Invalid webhook signature',
-                  WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+                  WORKFLOW_ERROR_CODES.UNAUTHORIZED
                 ),
-                { status: 401 },
+                { status: 401 }
               );
             }
           }
@@ -265,17 +276,14 @@ export async function POST(
     const startedAt = new Date();
     const actions = workflow.actions as unknown as WorkflowAction[];
 
-    const { steps, success, error } = await executeWorkflowActions(
-      actions,
-      {
-        ...data,
-        _webhook: {
-          token,
-          timestamp: startedAt.toISOString(),
-          headers: Object.fromEntries(request.headers.entries()),
-        },
+    const { steps, success, error } = await executeWorkflowActions(actions, {
+      ...data,
+      _webhook: {
+        token,
+        timestamp: startedAt.toISOString(),
+        headers: Object.fromEntries(request.headers.entries()),
       },
-    );
+    });
 
     const completedAt = new Date();
     const durationMs = completedAt.getTime() - startedAt.getTime();
@@ -318,7 +326,7 @@ export async function POST(
       data,
       undefined,
       execution.id,
-      request,
+      request
     );
 
     return NextResponse.json(
@@ -335,20 +343,21 @@ export async function POST(
           'X-RateLimit-Remaining': (rateLimit.remaining - 1).toString(),
           'X-RateLimit-Reset': rateLimit.reset.toString(),
         },
-      },
+      }
     );
   } catch (error) {
     console.error('[POST /workflows/trigger/webhook/:token] Error:', error);
 
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
 
     return NextResponse.json(
       createErrorResponse(
         'Failed to trigger workflow',
         WORKFLOW_ERROR_CODES.EXECUTION_FAILED,
-        { error: errorMessage },
+        { error: errorMessage }
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -360,7 +369,7 @@ export async function POST(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const params = await context.params;
@@ -387,9 +396,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid webhook token',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -407,9 +416,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

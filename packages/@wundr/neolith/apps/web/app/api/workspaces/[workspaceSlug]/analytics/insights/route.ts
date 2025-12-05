@@ -13,14 +13,14 @@ import type { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     const session = await getServerSession();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'AUTH_REQUIRED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -33,7 +33,7 @@ export async function GET(
     if (!uuidRegex.test(workspaceId)) {
       return NextResponse.json(
         { error: 'Invalid workspace ID format', code: 'INVALID_ID' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -44,7 +44,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Access denied to workspace', code: 'FORBIDDEN' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -63,7 +63,7 @@ export async function GET(
           error: `Invalid period. Must be one of: ${validPeriods.join(', ')}`,
           code: 'INVALID_PERIOD',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -74,7 +74,7 @@ export async function GET(
 
     const report = await analyticsService.generateInsightReport(
       workspaceId,
-      period,
+      period
     );
 
     return NextResponse.json({
@@ -86,14 +86,17 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/analytics/insights]', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/analytics/insights]',
+      error
+    );
     return NextResponse.json(
       {
         error: 'Failed to generate insights',
         code: 'INTERNAL_ERROR',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

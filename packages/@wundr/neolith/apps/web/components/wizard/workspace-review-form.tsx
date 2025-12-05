@@ -129,7 +129,7 @@ export function WorkspaceReviewForm({
                 onValueChange={value =>
                   form.setValue(
                     'teamSize',
-                    value as 'small' | 'medium' | 'large',
+                    value as 'small' | 'medium' | 'large'
                   )
                 }
                 disabled={isSubmitting}

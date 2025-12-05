@@ -95,7 +95,7 @@ export function DeploymentLogsPanel({
                 <span
                   className={cn(
                     'shrink-0 font-semibold',
-                    getLevelColor(log.level),
+                    getLevelColor(log.level)
                   )}
                 >
                   {log.level.toUpperCase().padEnd(5)}

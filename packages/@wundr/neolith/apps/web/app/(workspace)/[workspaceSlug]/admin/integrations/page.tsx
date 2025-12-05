@@ -35,7 +35,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { cn } from '@/lib/utils';
 
-
 type IntegrationProvider =
   | 'SLACK'
   | 'GITHUB'
@@ -191,7 +190,7 @@ export default function AdminIntegrationsPage() {
   useEffect(() => {
     setPageHeader(
       'Integrations',
-      'Connect third-party services and manage webhooks',
+      'Connect third-party services and manage webhooks'
     );
   }, [setPageHeader]);
 
@@ -206,11 +205,11 @@ export default function AdminIntegrationsPage() {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/integrations`,
+        `/api/workspaces/${workspaceSlug}/integrations`
       );
       if (!response.ok) {
-throw new Error('Failed to fetch integrations');
-}
+        throw new Error('Failed to fetch integrations');
+      }
       const data = await response.json();
       setIntegrations(data.integrations || []);
     } catch (error) {
@@ -224,11 +223,11 @@ throw new Error('Failed to fetch integrations');
   const fetchWebhooks = async () => {
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/integrations/webhooks`,
+        `/api/workspaces/${workspaceSlug}/integrations/webhooks`
       );
       if (!response.ok) {
-throw new Error('Failed to fetch webhooks');
-}
+        throw new Error('Failed to fetch webhooks');
+      }
       const data = await response.json();
       setWebhooks(data.webhooks || []);
     } catch (error) {
@@ -239,11 +238,11 @@ throw new Error('Failed to fetch webhooks');
   const fetchApiKeys = async () => {
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/integrations/api-keys`,
+        `/api/workspaces/${workspaceSlug}/integrations/api-keys`
       );
       if (!response.ok) {
-throw new Error('Failed to fetch API keys');
-}
+        throw new Error('Failed to fetch API keys');
+      }
       const data = await response.json();
       setApiKeys(data.apiKeys || []);
     } catch (error) {
@@ -256,11 +255,11 @@ throw new Error('Failed to fetch API keys');
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/integrations/oauth/${provider.toLowerCase()}`,
-        { method: 'POST' },
+        { method: 'POST' }
       );
       if (!response.ok) {
-throw new Error('Failed to initiate OAuth');
-}
+        throw new Error('Failed to initiate OAuth');
+      }
       const data = await response.json();
       window.location.href = data.authUrl;
     } catch (error) {
@@ -271,8 +270,8 @@ throw new Error('Failed to initiate OAuth');
 
   const handleConnectManual = async () => {
     if (!selectedProvider) {
-return;
-}
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -286,12 +285,12 @@ return;
               ?.name,
             providerConfig: configForm,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
-throw new Error('Failed to connect integration');
-}
+        throw new Error('Failed to connect integration');
+      }
       const data = await response.json();
 
       toast.success('Integration connected successfully');
@@ -308,11 +307,11 @@ throw new Error('Failed to connect integration');
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/integrations/${integrationId}`,
-        { method: 'DELETE' },
+        { method: 'DELETE' }
       );
       if (!response.ok) {
-throw new Error('Failed to disconnect');
-}
+        throw new Error('Failed to disconnect');
+      }
       toast.success('Integration disconnected');
       fetchIntegrations();
     } catch (error) {
@@ -325,11 +324,11 @@ throw new Error('Failed to disconnect');
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/integrations/${integrationId}/test`,
-        { method: 'POST' },
+        { method: 'POST' }
       );
       if (!response.ok) {
-throw new Error('Test failed');
-}
+        throw new Error('Test failed');
+      }
       const data = await response.json();
       toast.success(data.message || 'Integration test successful');
     } catch (error) {
@@ -342,11 +341,11 @@ throw new Error('Test failed');
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/integrations/${integrationId}/sync`,
-        { method: 'POST' },
+        { method: 'POST' }
       );
       if (!response.ok) {
-throw new Error('Sync failed');
-}
+        throw new Error('Sync failed');
+      }
       toast.success('Sync started successfully');
       fetchIntegrations();
     } catch (error) {
@@ -355,10 +354,7 @@ throw new Error('Sync failed');
     }
   };
 
-  const handleToggleSync = async (
-    integrationId: string,
-    enabled: boolean,
-  ) => {
+  const handleToggleSync = async (integrationId: string, enabled: boolean) => {
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/integrations/${integrationId}`,
@@ -366,11 +362,11 @@ throw new Error('Sync failed');
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ syncEnabled: enabled }),
-        },
+        }
       );
       if (!response.ok) {
-throw new Error('Failed to update');
-}
+        throw new Error('Failed to update');
+      }
       toast.success(`Auto-sync ${enabled ? 'enabled' : 'disabled'}`);
       fetchIntegrations();
     } catch (error) {
@@ -388,11 +384,11 @@ throw new Error('Failed to update');
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(webhookForm),
-        },
+        }
       );
       if (!response.ok) {
-throw new Error('Failed to create webhook');
-}
+        throw new Error('Failed to create webhook');
+      }
       const data = await response.json();
       toast.success(`Webhook created. Secret: ${data.secret}`);
       setShowWebhookModal(false);
@@ -408,11 +404,11 @@ throw new Error('Failed to create webhook');
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/integrations/webhooks/${webhookId}`,
-        { method: 'DELETE' },
+        { method: 'DELETE' }
       );
       if (!response.ok) {
-throw new Error('Failed to delete webhook');
-}
+        throw new Error('Failed to delete webhook');
+      }
       toast.success('Webhook deleted');
       fetchWebhooks();
     } catch (error) {
@@ -425,11 +421,11 @@ throw new Error('Failed to delete webhook');
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/integrations/webhooks/${webhookId}/test`,
-        { method: 'POST' },
+        { method: 'POST' }
       );
       if (!response.ok) {
-throw new Error('Test failed');
-}
+        throw new Error('Test failed');
+      }
       toast.success('Test webhook sent successfully');
     } catch (error) {
       console.error('Error testing webhook:', error);
@@ -446,11 +442,11 @@ throw new Error('Test failed');
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(apiKeyForm),
-        },
+        }
       );
       if (!response.ok) {
-throw new Error('Failed to create API key');
-}
+        throw new Error('Failed to create API key');
+      }
       const data = await response.json();
       toast.success(`API Key created: ${data.key}`);
       setShowApiKeyModal(false);
@@ -466,11 +462,11 @@ throw new Error('Failed to create API key');
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/integrations/api-keys/${keyId}`,
-        { method: 'DELETE' },
+        { method: 'DELETE' }
       );
       if (!response.ok) {
-throw new Error('Failed to revoke API key');
-}
+        throw new Error('Failed to revoke API key');
+      }
       toast.success('API key revoked');
       fetchApiKeys();
     } catch (error) {
@@ -479,11 +475,9 @@ throw new Error('Failed to revoke API key');
     }
   };
 
-  const connectedIntegrations = integrations.filter(
-    i => i.status === 'ACTIVE',
-  );
+  const connectedIntegrations = integrations.filter(i => i.status === 'ACTIVE');
   const availableProviders = INTEGRATION_PROVIDERS.filter(
-    p => !integrations.some(i => i.provider === p.id),
+    p => !integrations.some(i => i.provider === p.id)
   );
 
   return (
@@ -498,7 +492,9 @@ throw new Error('Failed to revoke API key');
             <PlugIcon className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{connectedIntegrations.length}</div>
+            <div className='text-2xl font-bold'>
+              {connectedIntegrations.length}
+            </div>
             <p className='text-xs text-muted-foreground'>
               {availableProviders.length} available
             </p>
@@ -507,7 +503,9 @@ throw new Error('Failed to revoke API key');
 
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Active Webhooks</CardTitle>
+            <CardTitle className='text-sm font-medium'>
+              Active Webhooks
+            </CardTitle>
             <WebhookIcon className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
@@ -552,7 +550,7 @@ throw new Error('Failed to revoke API key');
               <div className='grid gap-4 md:grid-cols-2'>
                 {connectedIntegrations.map(integration => {
                   const provider = INTEGRATION_PROVIDERS.find(
-                    p => p.id === integration.provider,
+                    p => p.id === integration.provider
                   );
                   return (
                     <Card key={integration.id}>
@@ -562,7 +560,7 @@ throw new Error('Failed to revoke API key');
                             <div
                               className={cn(
                                 'flex h-10 w-10 items-center justify-center rounded-lg text-xl',
-                                provider?.color,
+                                provider?.color
                               )}
                             >
                               {provider?.icon}
@@ -572,7 +570,8 @@ throw new Error('Failed to revoke API key');
                                 {integration.name}
                               </CardTitle>
                               <CardDescription>
-                                {integration.description || provider?.description}
+                                {integration.description ||
+                                  provider?.description}
                               </CardDescription>
                             </div>
                           </div>
@@ -618,14 +617,18 @@ throw new Error('Failed to revoke API key');
                           <Button
                             size='sm'
                             variant='outline'
-                            onClick={() => handleTestIntegration(integration.id)}
+                            onClick={() =>
+                              handleTestIntegration(integration.id)
+                            }
                           >
                             Test
                           </Button>
                           <Button
                             size='sm'
                             variant='outline'
-                            onClick={() => handleSyncIntegration(integration.id)}
+                            onClick={() =>
+                              handleSyncIntegration(integration.id)
+                            }
                           >
                             Sync Now
                           </Button>
@@ -669,7 +672,7 @@ throw new Error('Failed to revoke API key');
                         <div
                           className={cn(
                             'flex h-10 w-10 items-center justify-center rounded-lg text-xl',
-                            provider.color,
+                            provider.color
                           )}
                         >
                           {provider.icon}
@@ -724,7 +727,9 @@ throw new Error('Failed to revoke API key');
                 <CardHeader>
                   <div className='flex items-start justify-between'>
                     <div>
-                      <CardTitle className='text-base'>{webhook.name}</CardTitle>
+                      <CardTitle className='text-base'>
+                        {webhook.name}
+                      </CardTitle>
                       <CardDescription className='font-mono text-xs'>
                         {webhook.url}
                       </CardDescription>
@@ -842,9 +847,10 @@ throw new Error('Failed to revoke API key');
               <div className='space-y-4'>
                 {connectedIntegrations.map(integration => {
                   const provider = INTEGRATION_PROVIDERS.find(
-                    p => p.id === integration.provider,
+                    p => p.id === integration.provider
                   );
-                  const isHealthy = integration.status === 'ACTIVE' && !integration.syncError;
+                  const isHealthy =
+                    integration.status === 'ACTIVE' && !integration.syncError;
 
                   return (
                     <div
@@ -855,7 +861,7 @@ throw new Error('Failed to revoke API key');
                         <div
                           className={cn(
                             'h-2 w-2 rounded-full',
-                            isHealthy ? 'bg-green-500' : 'bg-red-500',
+                            isHealthy ? 'bg-green-500' : 'bg-red-500'
                           )}
                         />
                         <div>
@@ -872,7 +878,9 @@ throw new Error('Failed to revoke API key');
                         {integration.lastSyncAt && (
                           <p className='text-muted-foreground'>
                             Last sync:{' '}
-                            {new Date(integration.lastSyncAt).toLocaleTimeString()}
+                            {new Date(
+                              integration.lastSyncAt
+                            ).toLocaleTimeString()}
                           </p>
                         )}
                       </div>
@@ -942,7 +950,10 @@ throw new Error('Failed to revoke API key');
             </div>
           </div>
           <DialogFooter>
-            <Button variant='outline' onClick={() => setShowWebhookModal(false)}>
+            <Button
+              variant='outline'
+              onClick={() => setShowWebhookModal(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleCreateWebhook}>Create</Button>

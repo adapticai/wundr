@@ -2,7 +2,8 @@
 
 ## Overview
 
-The Workflow Execution Monitor provides real-time monitoring and management of workflow executions with automatic updates, step-by-step progress tracking, and interactive error handling.
+The Workflow Execution Monitor provides real-time monitoring and management of workflow executions
+with automatic updates, step-by-step progress tracking, and interactive error handling.
 
 ## Features
 
@@ -29,7 +30,7 @@ function WorkflowExecutionPage({ workspaceId, workflowId, executionId }) {
       workflowId={workflowId}
       executionId={executionId}
       enablePolling={true}
-      onComplete={(execution) => {
+      onComplete={execution => {
         console.log('Execution completed:', execution);
       }}
     />
@@ -66,13 +67,10 @@ function CustomExecutionMonitor({ workspaceId, workflowId, executionId }) {
       <h2>Execution Status: {execution?.status}</h2>
       {progress && (
         <div>
-          Progress: {progress.completedSteps}/{progress.totalSteps} steps
-          ({progress.percentage}%)
+          Progress: {progress.completedSteps}/{progress.totalSteps} steps ({progress.percentage}%)
         </div>
       )}
-      {canCancel && (
-        <button onClick={cancelExecution}>Cancel Execution</button>
-      )}
+      {canCancel && <button onClick={cancelExecution}>Cancel Execution</button>}
     </div>
   );
 }
@@ -82,42 +80,42 @@ function CustomExecutionMonitor({ workspaceId, workflowId, executionId }) {
 
 ### ExecutionMonitor Props
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `workspaceId` | string | Yes | Workspace containing the workflow |
-| `workflowId` | string | Yes | Workflow being executed |
-| `executionId` | string | Yes | Specific execution to monitor |
-| `enablePolling` | boolean | No | Enable automatic polling (default: true) |
-| `enableSSE` | boolean | No | Enable Server-Sent Events (default: false) |
-| `onComplete` | function | No | Callback when execution completes |
-| `onCancel` | function | No | Callback when execution is cancelled |
-| `className` | string | No | Additional CSS classes |
+| Prop            | Type     | Required | Description                                |
+| --------------- | -------- | -------- | ------------------------------------------ |
+| `workspaceId`   | string   | Yes      | Workspace containing the workflow          |
+| `workflowId`    | string   | Yes      | Workflow being executed                    |
+| `executionId`   | string   | Yes      | Specific execution to monitor              |
+| `enablePolling` | boolean  | No       | Enable automatic polling (default: true)   |
+| `enableSSE`     | boolean  | No       | Enable Server-Sent Events (default: false) |
+| `onComplete`    | function | No       | Callback when execution completes          |
+| `onCancel`      | function | No       | Callback when execution is cancelled       |
+| `className`     | string   | No       | Additional CSS classes                     |
 
 ### useWorkflowExecution Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enablePolling` | boolean | true | Enable real-time polling for running executions |
-| `pollingInterval` | number | 2000 | Polling interval in milliseconds |
-| `enableSSE` | boolean | false | Enable Server-Sent Events for real-time updates |
-| `autoRefreshOnComplete` | boolean | true | Auto-refresh when execution completes |
+| Option                  | Type    | Default | Description                                     |
+| ----------------------- | ------- | ------- | ----------------------------------------------- |
+| `enablePolling`         | boolean | true    | Enable real-time polling for running executions |
+| `pollingInterval`       | number  | 2000    | Polling interval in milliseconds                |
+| `enableSSE`             | boolean | false   | Enable Server-Sent Events for real-time updates |
+| `autoRefreshOnComplete` | boolean | true    | Auto-refresh when execution completes           |
 
 ### useWorkflowExecution Return Values
 
-| Value | Type | Description |
-|-------|------|-------------|
-| `execution` | WorkflowExecution \| null | Current execution data |
-| `isLoading` | boolean | Whether data is loading |
-| `error` | Error \| null | Any error that occurred |
-| `progress` | ExecutionProgress \| null | Progress information |
-| `isRunning` | boolean | Whether execution is currently running |
-| `canCancel` | boolean | Whether execution can be cancelled |
-| `canRetry` | boolean | Whether execution can be retried |
-| `cancelExecution` | () => Promise<boolean> | Cancel the running execution |
-| `retryStep` | (actionId: string) => Promise<boolean> | Retry a specific failed step |
-| `retryExecution` | () => Promise<WorkflowExecution \| null> | Retry entire execution |
-| `refreshExecution` | () => void | Manually refresh execution data |
-| `getActionResult` | (actionId: string) => ActionResult \| null | Get result for specific action |
+| Value              | Type                                       | Description                            |
+| ------------------ | ------------------------------------------ | -------------------------------------- |
+| `execution`        | WorkflowExecution \| null                  | Current execution data                 |
+| `isLoading`        | boolean                                    | Whether data is loading                |
+| `error`            | Error \| null                              | Any error that occurred                |
+| `progress`         | ExecutionProgress \| null                  | Progress information                   |
+| `isRunning`        | boolean                                    | Whether execution is currently running |
+| `canCancel`        | boolean                                    | Whether execution can be cancelled     |
+| `canRetry`         | boolean                                    | Whether execution can be retried       |
+| `cancelExecution`  | () => Promise<boolean>                     | Cancel the running execution           |
+| `retryStep`        | (actionId: string) => Promise<boolean>     | Retry a specific failed step           |
+| `retryExecution`   | () => Promise<WorkflowExecution \| null>   | Retry entire execution                 |
+| `refreshExecution` | () => void                                 | Manually refresh execution data        |
+| `getActionResult`  | (actionId: string) => ActionResult \| null | Get result for specific action         |
 
 ## Usage Examples
 
@@ -128,7 +126,7 @@ import { ExecutionMonitor } from '@/components/workflows';
 
 export default function ExecutionPage({ params }) {
   return (
-    <div className="p-6">
+    <div className='p-6'>
       <h1>Workflow Execution</h1>
       <ExecutionMonitor
         workspaceId={params.workspaceId}
@@ -149,7 +147,7 @@ export default function ExecutionPage({ params }) {
   executionId={executionId}
   enableSSE={true}
   enablePolling={false}
-  onComplete={(execution) => {
+  onComplete={execution => {
     toast.success('Workflow completed successfully!');
   }}
 />
@@ -169,8 +167,8 @@ function CustomProgressMonitor({ workspaceId, workflowId, executionId }) {
   );
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between'>
         <span>
           {progress?.completedSteps} / {progress?.totalSteps} steps
         </span>
@@ -178,7 +176,7 @@ function CustomProgressMonitor({ workspaceId, workflowId, executionId }) {
       </div>
       <Progress value={progress?.percentage} />
       {isRunning && progress?.estimatedTimeRemaining && (
-        <p className="text-sm text-muted-foreground">
+        <p className='text-sm text-muted-foreground'>
           Estimated time remaining: {formatDuration(progress.estimatedTimeRemaining)}
         </p>
       )}
@@ -195,45 +193,37 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
 function ExecutionWithErrorHandling({ workspaceId, workflowId, executionId }) {
-  const {
-    execution,
-    error,
-    canRetry,
-    retryExecution,
-    retryStep,
-  } = useWorkflowExecution(workspaceId, workflowId, executionId);
-
-  const failedSteps = execution?.actionResults.filter(
-    (result) => result.status === 'failed'
+  const { execution, error, canRetry, retryExecution, retryStep } = useWorkflowExecution(
+    workspaceId,
+    workflowId,
+    executionId
   );
+
+  const failedSteps = execution?.actionResults.filter(result => result.status === 'failed');
 
   if (error) {
     return (
-      <Alert variant="destructive">
+      <Alert variant='destructive'>
         <AlertDescription>{error.message}</AlertDescription>
       </Alert>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {execution?.error && (
-        <Alert variant="destructive">
+        <Alert variant='destructive'>
           <AlertDescription>{execution.error}</AlertDescription>
         </Alert>
       )}
 
       {failedSteps && failedSteps.length > 0 && (
-        <div className="space-y-2">
+        <div className='space-y-2'>
           <h3>Failed Steps</h3>
-          {failedSteps.map((step) => (
-            <div key={step.actionId} className="flex items-center justify-between">
+          {failedSteps.map(step => (
+            <div key={step.actionId} className='flex items-center justify-between'>
               <span>{step.error}</span>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => retryStep(step.actionId)}
-              >
+              <Button size='sm' variant='outline' onClick={() => retryStep(step.actionId)}>
                 Retry Step
               </Button>
             </div>
@@ -241,9 +231,7 @@ function ExecutionWithErrorHandling({ workspaceId, workflowId, executionId }) {
         </div>
       )}
 
-      {canRetry && (
-        <Button onClick={retryExecution}>Retry Entire Execution</Button>
-      )}
+      {canRetry && <Button onClick={retryExecution}>Retry Entire Execution</Button>}
     </div>
   );
 }
@@ -256,22 +244,16 @@ import { useWorkflowExecutions } from '@/hooks';
 import { ExecutionMonitor } from '@/components/workflows';
 
 function MultipleExecutionsMonitor({ workspaceId, workflowId }) {
-  const { executions, isLoading } = useWorkflowExecutions(
-    workspaceId,
-    workflowId,
-    { limit: 5 }
-  );
+  const { executions, isLoading } = useWorkflowExecutions(workspaceId, workflowId, { limit: 5 });
 
-  const runningExecutions = executions.filter(
-    (e) => e.status === 'running'
-  );
+  const runningExecutions = executions.filter(e => e.status === 'running');
 
   if (isLoading) return <div>Loading...</div>;
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <h2>Running Executions ({runningExecutions.length})</h2>
-      {runningExecutions.map((execution) => (
+      {runningExecutions.map(execution => (
         <ExecutionMonitor
           key={execution.id}
           workspaceId={workspaceId}
@@ -293,11 +275,7 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 function ExecutionWithNotifications({ workspaceId, workflowId, executionId }) {
-  const { execution, progress } = useWorkflowExecution(
-    workspaceId,
-    workflowId,
-    executionId
-  );
+  const { execution, progress } = useWorkflowExecution(workspaceId, workflowId, executionId);
 
   useEffect(() => {
     if (execution?.status === 'completed') {
@@ -312,11 +290,7 @@ function ExecutionWithNotifications({ workspaceId, workflowId, executionId }) {
   }, [execution?.status, execution?.error, progress?.totalSteps]);
 
   return (
-    <ExecutionMonitor
-      workspaceId={workspaceId}
-      workflowId={workflowId}
-      executionId={executionId}
-    />
+    <ExecutionMonitor workspaceId={workspaceId} workflowId={workflowId} executionId={executionId} />
   );
 }
 ```
@@ -372,7 +346,8 @@ Retries a specific failed step:
 
 ## Best Practices
 
-1. **Use Polling for Short Executions**: For workflows that complete quickly (< 1 minute), polling is sufficient
+1. **Use Polling for Short Executions**: For workflows that complete quickly (< 1 minute), polling
+   is sufficient
 2. **Use SSE for Long Executions**: For long-running workflows, SSE provides better performance
 3. **Handle Errors Gracefully**: Always display error messages and provide retry options
 4. **Show Progress**: Keep users informed with progress bars and estimated completion times

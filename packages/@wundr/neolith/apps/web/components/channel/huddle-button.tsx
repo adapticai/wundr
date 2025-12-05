@@ -59,7 +59,7 @@ export function HuddleButton({
         disabled={isLoading}
         className={cn(
           'gap-2 bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20 hover:bg-green-500/20',
-          className,
+          className
         )}
       >
         <div className='flex items-center gap-2'>
@@ -86,7 +86,7 @@ export function HuddleButton({
             disabled={isLoading}
             className={cn(
               'gap-2 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 hover:bg-blue-500/20',
-              className,
+              className
             )}
           >
             <Mic className='h-4 w-4' />

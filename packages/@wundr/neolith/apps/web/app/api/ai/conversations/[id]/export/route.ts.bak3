@@ -1,0 +1,300 @@
+/**
+ * AI Conversation Export API Route
+ *
+ * Handles exporting conversations in various formats.
+ *
+ * Routes:
+ * - GET /api/ai/conversations/[id]/export - Export conversation
+ *
+ * @module app/api/ai/conversations/[id]/export/route
+ */
+
+import { prisma } from '@neolith/database';
+import { NextResponse } from 'next/server';
+
+import { auth } from '@/lib/auth';
+import {
+  createErrorResponse,
+  ORG_ERROR_CODES,
+} from '@/lib/validations/organization';
+
+import type {
+  ExportFormat,
+  AIConversationMetadata,
+  AIMessage,
+} from '@/types/ai-conversation';
+import type { NextRequest } from 'next/server';
+
+/**
+ * Route context with conversation ID parameter
+ */
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
+import type { NextRequest } from 'next/server';
+
+/**
+ * Export conversation as JSON
+ */
+function exportAsJSON(
+  conversation: any,
+  messages: AIMessage[],
+  includeMetadata: boolean,
+): string {
+  const data = {
+    id: conversation.id,
+    title: conversation.title,
+    createdAt: conversation.createdAt,
+    updatedAt: conversation.updatedAt,
+    ...(includeMetadata && { metadata: conversation.metadata }),
+    messages: messages.map(msg => ({
+      role: msg.role,
+      content: msg.content,
+      createdAt: msg.createdAt,
+      ...(includeMetadata && { tokens: msg.tokens, model: msg.model }),
+    })),
+  };
+
+  return JSON.stringify(data, null, 2);
+}
+
+/**
+ * Export conversation as Markdown
+ */
+function exportAsMarkdown(
+  conversation: any,
+  messages: AIMessage[],
+  includeTimestamps: boolean,
+  includeMetadata: boolean,
+): string {
+  let markdown = `# ${conversation.title}\n\n`;
+
+  if (includeMetadata) {
+    markdown += `**Created:** ${new Date(conversation.createdAt).toLocaleString()}\n`;
+    markdown += `**Updated:** ${new Date(conversation.updatedAt).toLocaleString()}\n`;
+    if (conversation.metadata.model) {
+      markdown += `**Model:** ${conversation.metadata.model}\n`;
+    }
+    if (conversation.metadata.tags && conversation.metadata.tags.length > 0) {
+      markdown += `**Tags:** ${conversation.metadata.tags.join(', ')}\n`;
+    }
+    markdown += '\n---\n\n';
+  }
+
+  messages.forEach(msg => {
+    if (msg.role === 'system') {
+      markdown += `> **System Prompt:**\n> ${msg.content.split('\n').join('\n> ')}\n\n`;
+    } else {
+      const roleLabel = msg.role === 'user' ? 'User' : 'Assistant';
+      markdown += `## ${roleLabel}`;
+
+      if (includeTimestamps) {
+        markdown += ` (${new Date(msg.createdAt).toLocaleString()})`;
+      }
+
+      markdown += '\n\n';
+      markdown += `${msg.content}\n\n`;
+    }
+  });
+
+  return markdown;
+}
+
+/**
+ * Export conversation as plain text
+ */
+function exportAsText(
+  conversation: any,
+  messages: AIMessage[],
+  includeTimestamps: boolean,
+): string {
+  let text = `${conversation.title}\n${'='.repeat(conversation.title.length)}\n\n`;
+
+  messages.forEach(msg => {
+    const roleLabel = msg.role === 'user' ? 'User' : msg.role === 'assistant' ? 'Assistant' : 'System';
+
+    if (includeTimestamps) {
+      text += `[${new Date(msg.createdAt).toLocaleString()}] `;
+    }
+
+    text += `${roleLabel}: ${msg.content}\n\n`;
+  });
+
+  return text;
+}
+
+/**
+ * GET /api/ai/conversations/[id]/export
+ *
+ * Export a conversation in various formats.
+ *
+ * @param request - Next.js request object
+ * @param params - Route parameters with conversation ID
+ * @returns Exported conversation data
+ *
+ * @example
+ * ```
+ * GET /api/ai/conversations/conv_123/export?format=markdown&includeMetadata=true
+ * GET /api/ai/conversations/conv_123/export?format=json
+ * ```
+ */
+export async function GET(
+  request: NextRequest,
+  context: RouteContext,
+): Promise<NextResponse> {
+  try {
+    // Authenticate user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Authentication required',
+          ORG_ERROR_CODES.UNAUTHORIZED,
+        ),
+        { status: 401 },
+      );
+    }
+
+    const { id: conversationId } = await context.params;
+
+    // Parse query parameters
+    const searchParams = request.nextUrl.searchParams;
+    const format = (searchParams.get('format') || 'json') as ExportFormat;
+    const includeMetadata = searchParams.get('includeMetadata') === 'true';
+    const includeSystemMessages = searchParams.get('includeSystemMessages') !== 'false';
+    const includeTimestamps = searchParams.get('includeTimestamps') === 'true';
+
+    // Validate format
+    if (!['json', 'markdown', 'text'].includes(format)) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Invalid format. Must be json, markdown, or text',
+          ORG_ERROR_CODES.VALIDATION_ERROR,
+        ),
+        { status: 400 },
+      );
+    }
+
+    // Fetch conversation
+    const channel = await prisma.channel.findUnique({
+      where: { id: conversationId },
+      include: {
+        channelMembers: {
+          where: { userId: session.user.id },
+        },
+        messages: {
+          where: { isDeleted: false },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+
+    if (!channel) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Conversation not found',
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+        ),
+        { status: 404 },
+      );
+    }
+
+    if (channel.channelMembers.length === 0) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Access denied',
+          ORG_ERROR_CODES.FORBIDDEN,
+        ),
+        { status: 403 },
+      );
+    }
+
+    // Transform messages
+    let messages: AIMessage[] = channel.messages.map((msg: any) => ({
+      id: msg.id,
+      role: (msg.metadata as any)?.role || 'user',
+      content: msg.content,
+      createdAt: msg.createdAt.toISOString(),
+      tokens: (msg.metadata as any)?.tokens,
+      model: (msg.metadata as any)?.model,
+      metadata: msg.metadata as any,
+    }));
+
+    // Filter system messages if requested
+    if (!includeSystemMessages) {
+      messages = messages.filter(msg => msg.role !== 'system');
+    }
+
+    // Prepare conversation object
+    const settings = (channel.settings as Record<string, unknown>) || {};
+    const metadata = (settings.aiMetadata as AIConversationMetadata) || {};
+
+    const conversation = {
+      id: channel.id,
+      title: metadata.title || 'New Conversation',
+      createdAt: channel.createdAt.toISOString(),
+      updatedAt: channel.updatedAt.toISOString(),
+      metadata,
+    };
+
+    // Export based on format
+    let content: string;
+    let contentType: string;
+    let filename: string;
+
+    switch (format) {
+      case 'json':
+        content = exportAsJSON(conversation, messages, includeMetadata);
+        contentType = 'application/json';
+        filename = `${conversation.title.replace(/[^a-zA-Z0-9]/g, '-')}.json`;
+        break;
+
+      case 'markdown':
+        content = exportAsMarkdown(
+          conversation,
+          messages,
+          includeTimestamps,
+          includeMetadata,
+        );
+        contentType = 'text/markdown';
+        filename = `${conversation.title.replace(/[^a-zA-Z0-9]/g, '-')}.md`;
+        break;
+
+      case 'text':
+        content = exportAsText(conversation, messages, includeTimestamps);
+        contentType = 'text/plain';
+        filename = `${conversation.title.replace(/[^a-zA-Z0-9]/g, '-')}.txt`;
+        break;
+
+      default:
+        return NextResponse.json(
+          createErrorResponse(
+            'Invalid export format',
+            ORG_ERROR_CODES.VALIDATION_ERROR,
+          ),
+          { status: 400 },
+        );
+    }
+
+    // Return file download
+    return new NextResponse(content, {
+      headers: {
+        'Content-Type': contentType,
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'no-cache',
+      },
+    });
+  } catch (error) {
+    console.error(
+      `[GET /api/ai/conversations/${params.id}/export] Error:`,
+      error,
+    );
+    return NextResponse.json(
+      createErrorResponse(
+        'An internal error occurred',
+        ORG_ERROR_CODES.INTERNAL_ERROR,
+      ),
+      { status: 500 },
+    );
+  }
+}

@@ -66,104 +66,115 @@ export function ReportBuilderCanvas() {
     })
   );
 
-  const selectedWidget = widgets.find((w) => w.id === selectedWidgetId);
+  const selectedWidget = widgets.find(w => w.id === selectedWidgetId);
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    const { active } = event;
-    const widgetType = active.data.current?.widgetType as WidgetType;
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const { active } = event;
+      const widgetType = active.data.current?.widgetType as WidgetType;
 
-    if (widgetType) {
-      // Dragging from palette
-      const newWidget: ReportWidget = {
-        id: generateWidgetId(),
-        type: widgetType,
-        position: { x: 0, y: 0 },
-        size: active.data.current?.defaultSize || { width: 400, height: 300 },
-        config: {},
-      };
-      setActiveWidget(newWidget);
-    } else {
-      // Dragging existing widget
-      const widget = widgets.find((w) => w.id === active.id);
-      if (widget) {
-        setActiveWidget(widget);
+      if (widgetType) {
+        // Dragging from palette
+        const newWidget: ReportWidget = {
+          id: generateWidgetId(),
+          type: widgetType,
+          position: { x: 0, y: 0 },
+          size: active.data.current?.defaultSize || { width: 400, height: 300 },
+          config: {},
+        };
+        setActiveWidget(newWidget);
+      } else {
+        // Dragging existing widget
+        const widget = widgets.find(w => w.id === active.id);
+        if (widget) {
+          setActiveWidget(widget);
+        }
       }
-    }
-  }, [widgets]);
+    },
+    [widgets]
+  );
 
   const handleDragOver = useCallback((event: DragOverEvent) => {
     // Could add visual feedback here
   }, []);
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, delta, over } = event;
-    const widgetType = active.data.current?.widgetType as WidgetType;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, delta, over } = event;
+      const widgetType = active.data.current?.widgetType as WidgetType;
 
-    if (widgetType) {
-      // Dropped from palette - create new widget
-      const canvasRect = document.getElementById('report-canvas')?.getBoundingClientRect();
-      if (!canvasRect) return;
+      if (widgetType) {
+        // Dropped from palette - create new widget
+        const canvasRect = document
+          .getElementById('report-canvas')
+          ?.getBoundingClientRect();
+        if (!canvasRect) return;
 
-      const newWidget: ReportWidget = {
-        id: generateWidgetId(),
-        type: widgetType,
-        position: {
-          x: Math.max(0, delta.x),
-          y: Math.max(0, delta.y),
-        },
-        size: active.data.current?.defaultSize || { width: 400, height: 300 },
-        config: {
-          title: `New ${widgetType.replace('-', ' ')}`,
-        },
-      };
+        const newWidget: ReportWidget = {
+          id: generateWidgetId(),
+          type: widgetType,
+          position: {
+            x: Math.max(0, delta.x),
+            y: Math.max(0, delta.y),
+          },
+          size: active.data.current?.defaultSize || { width: 400, height: 300 },
+          config: {
+            title: `New ${widgetType.replace('-', ' ')}`,
+          },
+        };
 
-      setWidgets((prev) => [...prev, newWidget]);
-      setSelectedWidgetId(newWidget.id);
+        setWidgets(prev => [...prev, newWidget]);
+        setSelectedWidgetId(newWidget.id);
 
-      toast({
-        title: 'Widget added',
-        description: `${widgetType} added to canvas`,
-      });
-    } else {
-      // Moved existing widget
-      const widgetId = active.id as string;
-      setWidgets((prev) =>
-        prev.map((w) =>
-          w.id === widgetId
-            ? {
-                ...w,
-                position: {
-                  x: Math.max(0, w.position.x + delta.x),
-                  y: Math.max(0, w.position.y + delta.y),
-                },
-              }
-            : w
-        )
-      );
-    }
+        toast({
+          title: 'Widget added',
+          description: `${widgetType} added to canvas`,
+        });
+      } else {
+        // Moved existing widget
+        const widgetId = active.id as string;
+        setWidgets(prev =>
+          prev.map(w =>
+            w.id === widgetId
+              ? {
+                  ...w,
+                  position: {
+                    x: Math.max(0, w.position.x + delta.x),
+                    y: Math.max(0, w.position.y + delta.y),
+                  },
+                }
+              : w
+          )
+        );
+      }
 
-    setActiveWidget(null);
-  }, [toast]);
+      setActiveWidget(null);
+    },
+    [toast]
+  );
 
   const handleWidgetUpdate = useCallback(
     (widgetId: string, updates: Partial<ReportWidget>) => {
-      setWidgets((prev) =>
-        prev.map((w) => (w.id === widgetId ? { ...w, ...updates } : w))
+      setWidgets(prev =>
+        prev.map(w => (w.id === widgetId ? { ...w, ...updates } : w))
       );
     },
     []
   );
 
-  const handleWidgetDelete = useCallback((widgetId: string) => {
-    setWidgets((prev) => prev.filter((w) => w.id !== widgetId));
-    if (selectedWidgetId === widgetId) {
-      setSelectedWidgetId(null);
-    }
-    toast({
-      title: 'Widget deleted',
-      description: 'Widget removed from canvas',
-    });
-  }, [selectedWidgetId, toast]);
+  const handleWidgetDelete = useCallback(
+    (widgetId: string) => {
+      setWidgets(prev => prev.filter(w => w.id !== widgetId));
+      if (selectedWidgetId === widgetId) {
+        setSelectedWidgetId(null);
+      }
+      toast({
+        title: 'Widget deleted',
+        description: 'Widget removed from canvas',
+      });
+    },
+    [selectedWidgetId, toast]
+  );
 
   const handleWidgetResize = useCallback(
     (widgetId: string, size: { width: number; height: number }) => {
@@ -243,48 +254,48 @@ export function ReportBuilderCanvas() {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="h-full flex">
+      <div className='h-full flex'>
         {/* Left Sidebar - Widget Palette */}
-        <div className="w-64 border-r bg-muted/10 overflow-y-auto">
+        <div className='w-64 border-r bg-muted/10 overflow-y-auto'>
           <WidgetPalette />
         </div>
 
         {/* Main Canvas Area */}
-        <div className="flex-1 flex flex-col">
+        <div className='flex-1 flex flex-col'>
           {/* Toolbar */}
-          <div className="border-b bg-background px-4 py-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className='border-b bg-background px-4 py-2 flex items-center justify-between'>
+            <div className='flex items-center gap-2'>
               <input
-                type="text"
+                type='text'
                 value={reportName}
-                onChange={(e) => setReportName(e.target.value)}
-                className="text-lg font-semibold bg-transparent border-none outline-none focus:ring-2 focus:ring-primary/20 rounded px-2 py-1"
-                placeholder="Report Name"
+                onChange={e => setReportName(e.target.value)}
+                className='text-lg font-semibold bg-transparent border-none outline-none focus:ring-2 focus:ring-primary/20 rounded px-2 py-1'
+                placeholder='Report Name'
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleSave}>
-                <Save className="h-4 w-4 mr-2" />
+            <div className='flex items-center gap-2'>
+              <Button variant='outline' size='sm' onClick={handleSave}>
+                <Save className='h-4 w-4 mr-2' />
                 Save
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExport}>
-                <Download className="h-4 w-4 mr-2" />
+              <Button variant='outline' size='sm' onClick={handleExport}>
+                <Download className='h-4 w-4 mr-2' />
                 Export
               </Button>
               <Button
-                variant="outline"
-                size="sm"
+                variant='outline'
+                size='sm'
                 onClick={() => setShowScheduleDialog(true)}
               >
-                <Calendar className="h-4 w-4 mr-2" />
+                <Calendar className='h-4 w-4 mr-2' />
                 Schedule
               </Button>
               <Button
-                variant="outline"
-                size="sm"
+                variant='outline'
+                size='sm'
                 onClick={() => setShowSettingsPanel(!showSettingsPanel)}
               >
-                <Settings className="h-4 w-4 mr-2" />
+                <Settings className='h-4 w-4 mr-2' />
                 Settings
               </Button>
             </div>
@@ -292,22 +303,24 @@ export function ReportBuilderCanvas() {
 
           {/* Canvas */}
           <div
-            id="report-canvas"
-            className="flex-1 overflow-auto bg-muted/5 p-8 relative"
+            id='report-canvas'
+            className='flex-1 overflow-auto bg-muted/5 p-8 relative'
           >
-            <div className="min-h-full bg-background rounded-lg shadow-sm p-6 relative">
+            <div className='min-h-full bg-background rounded-lg shadow-sm p-6 relative'>
               {widgets.length === 0 && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center text-muted-foreground">
-                    <p className="text-lg font-medium">Start building your report</p>
-                    <p className="text-sm mt-2">
+                <div className='absolute inset-0 flex items-center justify-center'>
+                  <div className='text-center text-muted-foreground'>
+                    <p className='text-lg font-medium'>
+                      Start building your report
+                    </p>
+                    <p className='text-sm mt-2'>
                       Drag widgets from the palette to get started
                     </p>
                   </div>
                 </div>
               )}
 
-              {widgets.map((widget) => (
+              {widgets.map(widget => (
                 <WidgetRenderer
                   key={widget.id}
                   widget={widget}
@@ -324,27 +337,27 @@ export function ReportBuilderCanvas() {
 
         {/* Right Sidebar - Properties Panel */}
         {selectedWidget && (
-          <div className="w-80 border-l bg-muted/10 overflow-y-auto">
-            <div className="p-4 space-y-4">
+          <div className='w-80 border-l bg-muted/10 overflow-y-auto'>
+            <div className='p-4 space-y-4'>
               <DataSourcePanel
                 widget={selectedWidget}
                 dataSources={dataSources}
-                onDataSourceChange={(dataSource) =>
+                onDataSourceChange={dataSource =>
                   handleWidgetUpdate(selectedWidget.id, { dataSource })
                 }
-                onAddDataSource={(ds) => setDataSources((prev) => [...prev, ds])}
+                onAddDataSource={ds => setDataSources(prev => [...prev, ds])}
               />
               <FilterPanel
                 widget={selectedWidget}
                 filters={selectedWidget.filters || []}
-                onFiltersChange={(filters) =>
+                onFiltersChange={filters =>
                   handleWidgetUpdate(selectedWidget.id, { filters })
                 }
               />
               {showSettingsPanel && (
                 <SettingsPanel
                   widget={selectedWidget}
-                  onUpdate={(config) =>
+                  onUpdate={config =>
                     handleWidgetUpdate(selectedWidget.id, { config })
                   }
                 />
@@ -365,7 +378,7 @@ export function ReportBuilderCanvas() {
       {/* Drag Overlay */}
       <DragOverlay>
         {activeWidget && (
-          <div className="opacity-50">
+          <div className='opacity-50'>
             <WidgetRenderer
               widget={activeWidget}
               isSelected={false}

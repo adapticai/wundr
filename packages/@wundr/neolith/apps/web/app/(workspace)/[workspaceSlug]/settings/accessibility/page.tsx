@@ -37,11 +37,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 
-type ColorBlindnessMode =
-  | 'none'
-  | 'deuteranopia'
-  | 'protanopia'
-  | 'tritanopia';
+type ColorBlindnessMode = 'none' | 'deuteranopia' | 'protanopia' | 'tritanopia';
 type FocusStyle = 'default' | 'thick' | 'high-contrast' | 'rounded';
 
 interface AccessibilitySettings {
@@ -144,8 +140,8 @@ export default function AccessibilitySettingsPage() {
 
   const handleToggle = async (key: keyof AccessibilitySettings) => {
     if (typeof settings[key] !== 'boolean') {
-return;
-}
+      return;
+    }
 
     const newValue = !settings[key];
     const newSettings = {
@@ -187,7 +183,7 @@ return;
 
   const handleSelectChange = async <K extends keyof AccessibilitySettings>(
     key: K,
-    value: AccessibilitySettings[K],
+    value: AccessibilitySettings[K]
   ) => {
     const newSettings = {
       ...settings,
@@ -228,7 +224,7 @@ return;
 
   const handleSliderChange = async <K extends keyof AccessibilitySettings>(
     key: K,
-    value: number,
+    value: number
   ) => {
     const newSettings = {
       ...settings,
@@ -240,7 +236,7 @@ return;
   };
 
   const handleSliderCommit = async <K extends keyof AccessibilitySettings>(
-    key: K,
+    key: K
   ) => {
     try {
       const response = await fetch('/api/user/accessibility', {
@@ -269,7 +265,7 @@ return;
 
   const applyAccessibilitySettings = <K extends keyof AccessibilitySettings>(
     key: K,
-    value: AccessibilitySettings[K],
+    value: AccessibilitySettings[K]
   ) => {
     const root = document.documentElement;
 
@@ -311,7 +307,7 @@ return;
       case 'letterSpacing':
         root.style.setProperty(
           '--letter-spacing',
-          `${(value as number) / 100}em`,
+          `${(value as number) / 100}em`
         );
         break;
     }
@@ -321,7 +317,7 @@ return;
     Object.entries(allSettings).forEach(([key, value]) => {
       applyAccessibilitySettings(
         key as keyof AccessibilitySettings,
-        value as any,
+        value as any
       );
     });
   };
@@ -779,8 +775,7 @@ return;
           <div className='space-y-3'>
             <div className='flex items-center justify-between'>
               <Label htmlFor='letter-spacing'>
-                Letter spacing:{' '}
-                {settings.letterSpacing > 0 ? '+' : ''}
+                Letter spacing: {settings.letterSpacing > 0 ? '+' : ''}
                 {settings.letterSpacing}
               </Label>
               <span
@@ -874,9 +869,7 @@ return;
 
           <div className='flex items-center justify-between'>
             <div className='space-y-0.5 flex-1'>
-              <Label htmlFor='transcript-autoload'>
-                Auto-load transcripts
-              </Label>
+              <Label htmlFor='transcript-autoload'>Auto-load transcripts</Label>
               <p className='text-sm text-muted-foreground'>
                 Automatically load transcripts for audio and video content
               </p>
@@ -895,9 +888,7 @@ return;
       <Card>
         <CardHeader>
           <CardTitle>Actions</CardTitle>
-          <CardDescription>
-            Manage your accessibility settings.
-          </CardDescription>
+          <CardDescription>Manage your accessibility settings.</CardDescription>
         </CardHeader>
         <CardContent className='space-y-3'>
           <Button

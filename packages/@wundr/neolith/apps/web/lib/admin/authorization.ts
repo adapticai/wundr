@@ -20,7 +20,7 @@ export class AuthorizationError extends Error {
   constructor(
     message: string,
     public code: string,
-    public status: number,
+    public status: number
   ) {
     super(message);
     this.name = 'AuthorizationError';
@@ -45,7 +45,7 @@ export async function requireWorkspaceAdmin(workspaceSlug: string): Promise<{
     throw new AuthorizationError(
       'Unauthorized',
       ADMIN_ERROR_CODES.UNAUTHORIZED,
-      401,
+      401
     );
   }
 
@@ -59,7 +59,7 @@ export async function requireWorkspaceAdmin(workspaceSlug: string): Promise<{
     throw new AuthorizationError(
       'Workspace not found',
       ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND,
-      404,
+      404
     );
   }
 
@@ -73,7 +73,7 @@ export async function requireWorkspaceAdmin(workspaceSlug: string): Promise<{
     throw new AuthorizationError(
       'Admin access required',
       ADMIN_ERROR_CODES.FORBIDDEN,
-      403,
+      403
     );
   }
 
@@ -92,13 +92,14 @@ export async function requireWorkspaceOwner(workspaceSlug: string): Promise<{
   workspace: { id: string; slug: string; name: string };
   membership: { id: string; role: string; userId: string; workspaceId: string };
 }> {
-  const { session, workspace, membership } = await requireWorkspaceAdmin(workspaceSlug);
+  const { session, workspace, membership } =
+    await requireWorkspaceAdmin(workspaceSlug);
 
   if (membership.role !== 'OWNER') {
     throw new AuthorizationError(
       'Owner access required',
       ADMIN_ERROR_CODES.FORBIDDEN,
-      403,
+      403
     );
   }
 
@@ -112,7 +113,10 @@ export async function requireWorkspaceOwner(workspaceSlug: string): Promise<{
  * @param targetRole - Role of the user being modified
  * @returns True if allowed
  */
-export function canModifyMember(actorRole: string, targetRole: string): boolean {
+export function canModifyMember(
+  actorRole: string,
+  targetRole: string
+): boolean {
   const roleHierarchy: Record<string, number> = {
     OWNER: 3,
     ADMIN: 2,
@@ -163,13 +167,8 @@ export function hasPermission(role: string, action: string): boolean {
       'admin.actions',
       'audit.view',
     ],
-    MEMBER: [
-      'channels.create',
-      'messages.send',
-    ],
-    GUEST: [
-      'messages.view',
-    ],
+    MEMBER: ['channels.create', 'messages.send'],
+    GUEST: ['messages.view'],
   };
 
   const allowedActions = permissions[role] || [];
@@ -187,7 +186,7 @@ export function hasPermission(role: string, action: string): boolean {
 export function validateSelfModification(
   actorId: string,
   targetId: string,
-  action: 'suspend' | 'remove' | 'change_role',
+  action: 'suspend' | 'remove' | 'change_role'
 ): void {
   if (actorId === targetId) {
     const errorMessages: Record<string, string> = {
@@ -199,7 +198,7 @@ export function validateSelfModification(
     throw new AuthorizationError(
       errorMessages[action],
       ADMIN_ERROR_CODES.CANNOT_SUSPEND_SELF,
-      403,
+      403
     );
   }
 }

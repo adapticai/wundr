@@ -121,9 +121,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'Invalid JSON body',
-          AUTH_ERROR_CODES.VALIDATION_ERROR,
+          AUTH_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -136,9 +136,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           AUTH_ERROR_CODES.VALIDATION_ERROR,
           {
             errors: parseResult.error.flatten().fieldErrors,
-          },
+          }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -153,9 +153,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'A user with this email already exists',
-          AUTH_ERROR_CODES.EMAIL_ALREADY_EXISTS,
+          AUTH_ERROR_CODES.EMAIL_ALREADY_EXISTS
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -198,7 +198,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         // Generate verification token
         verificationToken = generateVerificationToken();
         const expiresAt = new Date(
-          Date.now() + TOKEN_EXPIRATION_HOURS * 60 * 60 * 1000,
+          Date.now() + TOKEN_EXPIRATION_HOURS * 60 * 60 * 1000
         );
 
         // Store verification token in database
@@ -224,19 +224,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             if (process.env.NODE_ENV === 'development') {
               console.error(
                 '[POST /api/auth/register] Verification email failed:',
-                emailError,
+                emailError
               );
             } else {
               console.error(
-                '[POST /api/auth/register] Verification email failed',
+                '[POST /api/auth/register] Verification email failed'
               );
             }
-          },
+          }
         );
 
         if (process.env.NODE_ENV === 'development') {
           console.log(
-            `[POST /api/auth/register] Verification token created for: ${newUser.email}`,
+            `[POST /api/auth/register] Verification token created for: ${newUser.email}`
           );
         }
       } catch (tokenError) {
@@ -244,11 +244,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         if (process.env.NODE_ENV === 'development') {
           console.error(
             '[POST /api/auth/register] Verification token creation failed:',
-            tokenError,
+            tokenError
           );
         } else {
           console.error(
-            '[POST /api/auth/register] Verification token creation failed',
+            '[POST /api/auth/register] Verification token creation failed'
           );
         }
       }
@@ -262,12 +262,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         if (process.env.NODE_ENV === 'development') {
           console.error(
             '[POST /api/auth/register] Welcome email failed:',
-            emailError,
+            emailError
           );
         } else {
           console.error('[POST /api/auth/register] Welcome email failed');
         }
-      },
+      }
     );
 
     // Generate fallback avatar with user's name or email
@@ -301,14 +301,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           message,
           requiresVerification: EMAIL_VERIFICATION_REQUIRED,
         },
-        { status: 201 },
+        { status: 201 }
       );
     } catch (avatarError) {
       // Only log error message in production, not full error object
       if (process.env.NODE_ENV === 'development') {
         console.error(
           '[POST /api/auth/register] Avatar generation failed:',
-          avatarError,
+          avatarError
         );
       } else {
         console.error('[POST /api/auth/register] Avatar generation failed');
@@ -336,7 +336,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           message,
           requiresVerification: EMAIL_VERIFICATION_REQUIRED,
         },
-        { status: 201 },
+        { status: 201 }
       );
     }
   } catch (error) {
@@ -355,18 +355,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'A user with this email already exists',
-          AUTH_ERROR_CODES.EMAIL_ALREADY_EXISTS,
+          AUTH_ERROR_CODES.EMAIL_ALREADY_EXISTS
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
       createAuthErrorResponse(
         'An internal error occurred',
-        AUTH_ERROR_CODES.INTERNAL_ERROR,
+        AUTH_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

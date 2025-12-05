@@ -32,10 +32,7 @@ interface RouteContext {
 /**
  * Helper to check if user owns orchestrator
  */
-async function checkOrchestratorAccess(
-  orchestratorId: string,
-  userId: string,
-) {
+async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
   const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
@@ -80,7 +77,7 @@ function getSystemPrompt(
   capabilities: any,
   charter: any,
   config: any,
-  sessionManagerCount: number,
+  sessionManagerCount: number
 ): string {
   const baseContext = `You are an AI assistant helping manage the "${role}" orchestrator${discipline ? ` specializing in ${discipline}` : ''}.`;
 
@@ -181,7 +178,7 @@ export async function POST(req: Request, context: RouteContext) {
     // Verify orchestrator access
     const hasAccess = await checkOrchestratorAccess(
       orchestratorId,
-      session.user.id,
+      session.user.id
     );
     if (!hasAccess) {
       return new Response('Access denied', { status: 403 });
@@ -197,7 +194,7 @@ export async function POST(req: Request, context: RouteContext) {
     if (!Array.isArray(uiMessages)) {
       return new Response(
         JSON.stringify({ error: 'messages array is required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } },
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -221,7 +218,7 @@ export async function POST(req: Request, context: RouteContext) {
       orchestrator.capabilities,
       latestCharter,
       orchestrator.config,
-      orchestrator._count.sessionManagers,
+      orchestrator._count.sessionManagers
     );
 
     // Convert UI messages to model messages
@@ -233,20 +230,20 @@ export async function POST(req: Request, context: RouteContext) {
     // Validate API keys
     if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
       console.error(
-        '[POST /api/orchestrators/:orchestratorId/ai] OPENAI_API_KEY not configured',
+        '[POST /api/orchestrators/:orchestratorId/ai] OPENAI_API_KEY not configured'
       );
       return new Response(
         JSON.stringify({ error: 'OpenAI API key not configured' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } },
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
     if (provider !== 'openai' && !process.env.ANTHROPIC_API_KEY) {
       console.error(
-        '[POST /api/orchestrators/:orchestratorId/ai] ANTHROPIC_API_KEY not configured',
+        '[POST /api/orchestrators/:orchestratorId/ai] ANTHROPIC_API_KEY not configured'
       );
       return new Response(
         JSON.stringify({ error: 'Anthropic API key not configured' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } },
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -272,7 +269,7 @@ export async function POST(req: Request, context: RouteContext) {
         error:
           error instanceof Error ? error.message : 'An internal error occurred',
       }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

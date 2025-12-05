@@ -93,7 +93,7 @@ export function HuddlePip({
         'transition-shadow',
         isHovered && 'shadow-3xl',
         isDragging && 'cursor-grabbing',
-        className,
+        className
       )}
       style={{
         left: `${position.x}px`,
@@ -107,7 +107,7 @@ export function HuddlePip({
         className={cn(
           'flex items-center justify-between gap-2 px-3 py-2',
           'border-b bg-muted/50 rounded-t-lg',
-          'cursor-grab active:cursor-grabbing',
+          'cursor-grab active:cursor-grabbing'
         )}
         onMouseDown={handleMouseDown}
       >
@@ -163,7 +163,7 @@ export function HuddlePip({
                     />
                   ) : (
                     getInitials(
-                      participant.displayName ?? participant.user?.name ?? '?',
+                      participant.displayName ?? participant.user?.name ?? '?'
                     )
                   )}
                 </div>

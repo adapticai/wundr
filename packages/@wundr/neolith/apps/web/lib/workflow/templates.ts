@@ -35,7 +35,7 @@ export const NEW_MEMBER_ONBOARDING_TEMPLATE: WorkflowTemplate = {
       config: {
         userId: '{{trigger.user.id}}',
         message:
-          'Welcome to {{workspace.name}}! 🎉\n\nWe\'re excited to have you here. I\'ve added you to a few key channels to help you get started.\n\nIf you need any help, just mention me or reach out in #general!',
+          "Welcome to {{workspace.name}}! 🎉\n\nWe're excited to have you here. I've added you to a few key channels to help you get started.\n\nIf you need any help, just mention me or reach out in #general!",
       },
     },
     {
@@ -555,21 +555,17 @@ export const WORKFLOW_TEMPLATES: readonly WorkflowTemplate[] = [
 /**
  * Get a template by ID
  */
-export function getTemplateById(
-  id: string,
-): WorkflowTemplate | undefined {
-  return WORKFLOW_TEMPLATES.find((template) => template.id === id);
+export function getTemplateById(id: string): WorkflowTemplate | undefined {
+  return WORKFLOW_TEMPLATES.find(template => template.id === id);
 }
 
 /**
  * Get templates by category
  */
 export function getTemplatesByCategory(
-  category: WorkflowTemplate['category'],
+  category: WorkflowTemplate['category']
 ): readonly WorkflowTemplate[] {
-  return WORKFLOW_TEMPLATES.filter(
-    (template) => template.category === category,
-  );
+  return WORKFLOW_TEMPLATES.filter(template => template.category === category);
 }
 
 /**
@@ -578,10 +574,10 @@ export function getTemplatesByCategory(
 export function searchTemplates(query: string): readonly WorkflowTemplate[] {
   const lowerQuery = query.toLowerCase();
   return WORKFLOW_TEMPLATES.filter(
-    (template) =>
+    template =>
       template.name.toLowerCase().includes(lowerQuery) ||
       template.description.toLowerCase().includes(lowerQuery) ||
-      template.tags.some((tag) => tag.toLowerCase().includes(lowerQuery)),
+      template.tags.some(tag => tag.toLowerCase().includes(lowerQuery))
   );
 }
 
@@ -589,7 +585,7 @@ export function searchTemplates(query: string): readonly WorkflowTemplate[] {
  * Get most popular templates (sorted by usage count)
  */
 export function getPopularTemplates(
-  limit: number = 3,
+  limit: number = 3
 ): readonly WorkflowTemplate[] {
   return [...WORKFLOW_TEMPLATES]
     .sort((a, b) => b.usageCount - a.usageCount)
@@ -611,6 +607,6 @@ export function getTemplatesByCategories(): Record<
       acc[template.category].push(template);
       return acc;
     },
-    {} as Record<WorkflowTemplate['category'], WorkflowTemplate[]>,
+    {} as Record<WorkflowTemplate['category'], WorkflowTemplate[]>
   );
 }

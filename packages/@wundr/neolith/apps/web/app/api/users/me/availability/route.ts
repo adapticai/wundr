@@ -40,7 +40,7 @@ export async function GET() {
     console.error('Error fetching availability settings:', error);
     return NextResponse.json(
       { error: 'Failed to fetch availability settings' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

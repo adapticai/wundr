@@ -93,17 +93,19 @@ interface DashboardMetrics {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
-): Promise<NextResponse<DashboardMetrics | ReturnType<typeof createAdminErrorResponse>>> {
+  context: RouteContext
+): Promise<
+  NextResponse<DashboardMetrics | ReturnType<typeof createAdminErrorResponse>>
+> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED,
+          ADMIN_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -118,9 +120,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Workspace not found',
-          ADMIN_ERROR_CODES.NOT_FOUND,
+          ADMIN_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -136,9 +138,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN,
+          ADMIN_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -148,7 +150,11 @@ export async function GET(
     const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
 
     // Fetch user metrics
     const [totalUsers, activeUsers, suspendedUsers] = await Promise.all([
@@ -189,26 +195,33 @@ export async function GET(
       }),
     ]);
 
-    const userTrend = previousUsers > 0
-      ? ((recentUsers - previousUsers) / previousUsers) * 100
-      : recentUsers > 0 ? 100 : 0;
+    const userTrend =
+      previousUsers > 0
+        ? ((recentUsers - previousUsers) / previousUsers) * 100
+        : recentUsers > 0
+          ? 100
+          : 0;
 
     // Fetch session metrics (using message activity as proxy)
     const [todaySessions, activeSessions] = await Promise.all([
-      prisma.message.groupBy({
-        by: ['authorId'],
-        where: {
-          channel: { workspaceId: workspace.id },
-          createdAt: { gte: todayStart },
-        },
-      }).then(groups => groups.length),
-      prisma.message.groupBy({
-        by: ['authorId'],
-        where: {
-          channel: { workspaceId: workspace.id },
-          createdAt: { gte: new Date(now.getTime() - 15 * 60 * 1000) }, // Last 15 minutes
-        },
-      }).then(groups => groups.length),
+      prisma.message
+        .groupBy({
+          by: ['authorId'],
+          where: {
+            channel: { workspaceId: workspace.id },
+            createdAt: { gte: todayStart },
+          },
+        })
+        .then(groups => groups.length),
+      prisma.message
+        .groupBy({
+          by: ['authorId'],
+          where: {
+            channel: { workspaceId: workspace.id },
+            createdAt: { gte: new Date(now.getTime() - 15 * 60 * 1000) }, // Last 15 minutes
+          },
+        })
+        .then(groups => groups.length),
     ]);
 
     // Fetch invite metrics (using workspaceMember as proxy since workspaceInvite may not exist)
@@ -218,9 +231,12 @@ export async function GET(
     // Calculate invite trend
     const [recentInvites, previousInvites] = [0, 0];
 
-    const inviteTrend = previousInvites > 0
-      ? ((recentInvites - previousInvites) / previousInvites) * 100
-      : recentInvites > 0 ? 100 : 0;
+    const inviteTrend =
+      previousInvites > 0
+        ? ((recentInvites - previousInvites) / previousInvites) * 100
+        : recentInvites > 0
+          ? 100
+          : 0;
 
     // Fetch storage metrics
     const files = await prisma.file.aggregate({
@@ -241,7 +257,11 @@ export async function GET(
     const activityData: ActivityDataPoint[] = [];
     for (let i = 29; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const dateStart = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+      );
       const dateEnd = new Date(dateStart.getTime() + 24 * 60 * 60 * 1000);
 
       const [actionCount, userCount] = await Promise.all([
@@ -251,13 +271,15 @@ export async function GET(
             createdAt: { gte: dateStart, lt: dateEnd },
           },
         }),
-        prisma.message.groupBy({
-          by: ['authorId'],
-          where: {
-            channel: { workspaceId: workspace.id },
-            createdAt: { gte: dateStart, lt: dateEnd },
-          },
-        }).then(groups => groups.length),
+        prisma.message
+          .groupBy({
+            by: ['authorId'],
+            where: {
+              channel: { workspaceId: workspace.id },
+              createdAt: { gte: dateStart, lt: dateEnd },
+            },
+          })
+          .then(groups => groups.length),
       ]);
 
       activityData.push({
@@ -307,9 +329,19 @@ export async function GET(
     // Check system health
     const apiLatency = 0; // Would measure actual API response time
     const health: SystemHealth = {
-      status: storagePercentage > 90 ? 'critical' : storagePercentage > 75 ? 'warning' : 'healthy',
+      status:
+        storagePercentage > 90
+          ? 'critical'
+          : storagePercentage > 75
+            ? 'warning'
+            : 'healthy',
       database: 'connected',
-      storage: storagePercentage > 90 ? 'full' : storagePercentage > 75 ? 'limited' : 'available',
+      storage:
+        storagePercentage > 90
+          ? 'full'
+          : storagePercentage > 75
+            ? 'limited'
+            : 'available',
       apiLatency,
     };
 
@@ -345,14 +377,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/admin/metrics] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to fetch metrics',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR,
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -77,7 +77,7 @@ export function useSecurityAudit(initialLimit = 20): UseSecurityAuditReturn {
         setIsLoading(false);
       }
     },
-    [limit],
+    [limit]
   );
 
   // Initial fetch
@@ -92,8 +92,8 @@ export function useSecurityAudit(initialLimit = 20): UseSecurityAuditReturn {
 
   const loadMore = useCallback(async () => {
     if (!hasMore || isLoading) {
-return;
-}
+      return;
+    }
     const newOffset = offset + limit;
     setOffset(newOffset);
     await fetchAudit(newOffset, filters);
@@ -105,7 +105,7 @@ return;
       setFilters({ eventType, severity });
       await fetchAudit(0, { eventType, severity });
     },
-    [fetchAudit],
+    [fetchAudit]
   );
 
   return {

@@ -2,15 +2,18 @@
 
 ## Overview
 
-The Workflow AI Assistant is a fully functional AI-powered component that helps users create, optimize, and troubleshoot workflows using natural language processing.
+The Workflow AI Assistant is a fully functional AI-powered component that helps users create,
+optimize, and troubleshoot workflows using natural language processing.
 
 ## Features
 
 ### 1. Natural Language Workflow Creation
 
-Users can describe workflows in plain English, and the AI will parse them into structured workflow configurations.
+Users can describe workflows in plain English, and the AI will parse them into structured workflow
+configurations.
 
 **Example:**
+
 ```
 User: "When a message is received in #support, assign to on-call engineer"
 
@@ -22,11 +25,13 @@ AI Response: Creates workflow with:
 ### 2. Workflow Optimization Suggestions
 
 The AI analyzes existing workflows and suggests improvements for:
+
 - **Performance**: Reduce execution time, optimize actions
 - **Reliability**: Add error handling, retry logic
 - **Best Practices**: Use proper naming, add documentation
 
 **Example suggestions:**
+
 ```json
 {
   "type": "reliability",
@@ -39,11 +44,13 @@ The AI analyzes existing workflows and suggests improvements for:
 ### 3. Error Diagnosis
 
 When workflows fail, the AI provides:
+
 - **Root cause analysis**: What went wrong
 - **Solution**: How to fix it
 - **Prevention tips**: How to avoid it in the future
 
 **Example diagnosis:**
+
 ```json
 {
   "cause": "HTTP request timed out after 30 seconds",
@@ -59,11 +66,13 @@ When workflows fail, the AI provides:
 ### 4. Step Recommendations
 
 The AI suggests additional steps to enhance workflows based on:
+
 - Current workflow structure
 - Common patterns
 - Best practices
 
 **Example recommendations:**
+
 ```json
 {
   "stepType": "wait",
@@ -87,12 +96,10 @@ function WorkflowPage() {
 
   return (
     <>
-      <Button onClick={() => setIsAssistantOpen(true)}>
-        Open AI Assistant
-      </Button>
+      <Button onClick={() => setIsAssistantOpen(true)}>Open AI Assistant</Button>
 
       <WorkflowAIAssistant
-        workspaceSlug="my-workspace"
+        workspaceSlug='my-workspace'
         isOpen={isAssistantOpen}
         onClose={() => setIsAssistantOpen(false)}
       />
@@ -105,11 +112,11 @@ function WorkflowPage() {
 
 ```tsx
 <WorkflowAIAssistant
-  workspaceSlug="my-workspace"
+  workspaceSlug='my-workspace'
   workflow={currentWorkflow}
   isOpen={isAssistantOpen}
   onClose={() => setIsAssistantOpen(false)}
-  onWorkflowUpdate={(updates) => {
+  onWorkflowUpdate={updates => {
     // Handle workflow updates suggested by AI
     updateWorkflow(updates);
   }}
@@ -120,7 +127,7 @@ function WorkflowPage() {
 
 ```tsx
 <WorkflowAIAssistant
-  workspaceSlug="my-workspace"
+  workspaceSlug='my-workspace'
   workflow={currentWorkflow}
   execution={failedExecution}
   isOpen={isAssistantOpen}
@@ -135,6 +142,7 @@ function WorkflowPage() {
 **Method:** POST
 
 **Request Body:**
+
 ```json
 {
   "messages": [
@@ -156,6 +164,7 @@ function WorkflowPage() {
 The API uses structured tool calling for precise extraction:
 
 #### 1. `create_workflow`
+
 Extracts workflow structure from natural language.
 
 ```json
@@ -182,6 +191,7 @@ Extracts workflow structure from natural language.
 ```
 
 #### 2. `suggest_optimizations`
+
 Provides optimization suggestions.
 
 ```json
@@ -198,6 +208,7 @@ Provides optimization suggestions.
 ```
 
 #### 3. `diagnose_error`
+
 Analyzes execution errors.
 
 ```json
@@ -212,6 +223,7 @@ Analyzes execution errors.
 ```
 
 #### 4. `recommend_steps`
+
 Suggests additional workflow steps.
 
 ```json
@@ -238,7 +250,7 @@ The system includes a comprehensive natural language parser for common workflow 
 ```typescript
 import { detectTriggerType, parseTriggerFromText } from '@/lib/workflow/natural-language-parser';
 
-const text = "When a message is posted in #support";
+const text = 'When a message is posted in #support';
 const triggerType = detectTriggerType(text); // "message"
 const trigger = parseTriggerFromText(text);
 // { type: "message", message: { channelIds: ["support"] } }
@@ -249,7 +261,7 @@ const trigger = parseTriggerFromText(text);
 ```typescript
 import { detectActionTypes, suggestActionsFromText } from '@/lib/workflow/natural-language-parser';
 
-const text = "Send a message to #general and notify @admin";
+const text = 'Send a message to #general and notify @admin';
 const actions = detectActionTypes(text); // ["send_message", "send_dm"]
 const suggestions = suggestActionsFromText(text);
 // [
@@ -263,7 +275,7 @@ const suggestions = suggestActionsFromText(text);
 ```typescript
 import { extractSchedule } from '@/lib/workflow/natural-language-parser';
 
-const text = "Every day at 9:00 AM";
+const text = 'Every day at 9:00 AM';
 const schedule = extractSchedule(text);
 // { cron: "0 9 * * *", description: "Daily at 9:00 AM" }
 ```
@@ -274,7 +286,7 @@ const schedule = extractSchedule(text);
 import { analyzeWorkflowDescription } from '@/lib/workflow/natural-language-parser';
 
 const analysis = analyzeWorkflowDescription(
-  "When a message is posted in #support, send a DM to @admin"
+  'When a message is posted in #support, send a DM to @admin'
 );
 // {
 //   confidence: 1.0,
@@ -292,6 +304,7 @@ const analysis = analyzeWorkflowDescription(
 **User:** "When a new user joins, send them a welcome message in #general"
 
 **AI Response:**
+
 ```
 I'll help you create a welcome workflow. Here's what I understand:
 
@@ -306,7 +319,8 @@ Would you like me to:
 
 **User:** "Add a DM with onboarding instructions"
 
-**AI Response:** *(Creates workflow with tool call)*
+**AI Response:** _(Creates workflow with tool call)_
+
 ```json
 {
   "name": "New User Welcome",
@@ -336,7 +350,8 @@ Would you like me to:
 
 **User:** "Optimize this workflow"
 
-**AI Response:** *(Analyzes and provides suggestions)*
+**AI Response:** _(Analyzes and provides suggestions)_
+
 ```
 I've analyzed your workflow and found 3 optimization opportunities:
 
@@ -359,7 +374,8 @@ Would you like me to apply these optimizations?
 
 **User:** "Why did the last execution fail?"
 
-**AI Response:** *(Analyzes execution logs)*
+**AI Response:** _(Analyzes execution logs)_
+
 ```
 I've diagnosed the issue:
 
@@ -390,6 +406,7 @@ Would you like me to update the workflow with these improvements?
 ## Supported Patterns
 
 ### Triggers
+
 - Schedule (cron-based)
 - Message events
 - Keyword detection
@@ -400,6 +417,7 @@ Would you like me to update the workflow with these improvements?
 - Webhooks
 
 ### Actions
+
 - Send messages
 - Direct messages
 - Create channels

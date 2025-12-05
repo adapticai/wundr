@@ -2,11 +2,14 @@
 
 ## Overview
 
-The `ErrorHandlingConfig` component provides a comprehensive error handling configuration interface for workflow steps, enabling robust error recovery strategies, retry mechanisms, fallback execution, and dead letter queue (DLQ) management.
+The `ErrorHandlingConfig` component provides a comprehensive error handling configuration interface
+for workflow steps, enabling robust error recovery strategies, retry mechanisms, fallback execution,
+and dead letter queue (DLQ) management.
 
 ## Features
 
 ### 1. Error Retry Settings
+
 - **Configurable retry attempts** (1-10 attempts)
 - **Multiple backoff strategies**:
   - Fixed delay
@@ -18,12 +21,14 @@ The `ErrorHandlingConfig` component provides a comprehensive error handling conf
 - **Visual retry schedule preview**
 
 ### 2. Fallback Step Configuration
+
 - Execute alternative steps on failure
 - Conditional fallback execution
 - Support for graceful degradation patterns
 - Integration with workflow step selection
 
 ### 3. Error Notification Rules
+
 - **Multiple notification channels**:
   - Email
   - Slack
@@ -36,6 +41,7 @@ The `ErrorHandlingConfig` component provides a comprehensive error handling conf
 - **Recipient management**
 
 ### 4. Dead Letter Queue (DLQ) Viewer
+
 - View failed workflow executions
 - Display error details and stack traces
 - Manual retry interface
@@ -44,12 +50,14 @@ The `ErrorHandlingConfig` component provides a comprehensive error handling conf
 - Error categorization
 
 ### 5. Circuit Breaker Pattern
+
 - Prevent cascading failures
 - Configurable failure/success thresholds
 - Half-open state support
 - Automatic service protection
 
 ### 6. Error Recovery Wizard
+
 - Step-by-step configuration guide
 - Pre-configured templates
 - Quick setup for common scenarios
@@ -148,7 +156,9 @@ function WorkflowErrorManagement() {
 ## Error Handling Strategies
 
 ### 1. Stop Workflow
-Immediately stops workflow execution on error. Best for critical operations where proceeding would be unsafe.
+
+Immediately stops workflow execution on error. Best for critical operations where proceeding would
+be unsafe.
 
 ```tsx
 const config: StepErrorConfig = {
@@ -159,6 +169,7 @@ const config: StepErrorConfig = {
 ```
 
 ### 2. Continue Workflow
+
 Logs the error and continues to the next step. Ideal for non-critical operations.
 
 ```tsx
@@ -174,6 +185,7 @@ const config: StepErrorConfig = {
 ```
 
 ### 3. Retry Step
+
 Automatically retries the failed step with configurable backoff.
 
 ```tsx
@@ -192,6 +204,7 @@ const config: StepErrorConfig = {
 ```
 
 ### 4. Execute Fallback
+
 Executes an alternative step when the primary step fails.
 
 ```tsx
@@ -206,6 +219,7 @@ const config: StepErrorConfig = {
 ```
 
 ### 5. Circuit Breaker
+
 Temporarily disables the step after repeated failures to prevent cascading issues.
 
 ```tsx
@@ -224,34 +238,38 @@ const config: StepErrorConfig = {
 ## Backoff Strategies
 
 ### Fixed Delay
+
 Same delay between all retry attempts.
 
 ```tsx
-backoffStrategy: 'fixed'
+backoffStrategy: 'fixed';
 // Delays: 1s, 1s, 1s, 1s
 ```
 
 ### Linear Backoff
+
 Delay increases linearly with attempt number.
 
 ```tsx
-backoffStrategy: 'linear'
+backoffStrategy: 'linear';
 // Delays: 1s, 2s, 3s, 4s
 ```
 
 ### Exponential Backoff
+
 Delay doubles with each attempt (recommended for most use cases).
 
 ```tsx
-backoffStrategy: 'exponential'
+backoffStrategy: 'exponential';
 // Delays: 1s, 2s, 4s, 8s, 16s
 ```
 
 ### Fibonacci Backoff
+
 Delay follows Fibonacci sequence.
 
 ```tsx
-backoffStrategy: 'fibonacci'
+backoffStrategy: 'fibonacci';
 // Delays: 1s, 1s, 2s, 3s, 5s, 8s
 ```
 
@@ -274,15 +292,15 @@ The component supports categorizing and handling different error types:
 
 #### `ErrorHandlingConfigProps`
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `config` | `StepErrorConfig` | Yes | Current error handling configuration |
-| `availableSteps` | `Array<{id: string, name: string}>` | Yes | List of available steps for fallback |
-| `dlqEntries` | `DLQEntry[]` | No | Dead letter queue entries to display |
-| `onConfigChange` | `(config: StepErrorConfig) => void` | Yes | Callback when configuration changes |
-| `onRetryDLQEntry` | `(entryId: string, fixedPayload?: unknown) => Promise<void>` | No | Callback to retry a DLQ entry |
-| `onDeleteDLQEntry` | `(entryId: string) => Promise<void>` | No | Callback to delete a DLQ entry |
-| `readOnly` | `boolean` | No | Whether the component is in read-only mode |
+| Prop               | Type                                                         | Required | Description                                |
+| ------------------ | ------------------------------------------------------------ | -------- | ------------------------------------------ |
+| `config`           | `StepErrorConfig`                                            | Yes      | Current error handling configuration       |
+| `availableSteps`   | `Array<{id: string, name: string}>`                          | Yes      | List of available steps for fallback       |
+| `dlqEntries`       | `DLQEntry[]`                                                 | No       | Dead letter queue entries to display       |
+| `onConfigChange`   | `(config: StepErrorConfig) => void`                          | Yes      | Callback when configuration changes        |
+| `onRetryDLQEntry`  | `(entryId: string, fixedPayload?: unknown) => Promise<void>` | No       | Callback to retry a DLQ entry              |
+| `onDeleteDLQEntry` | `(entryId: string) => Promise<void>`                         | No       | Callback to delete a DLQ entry             |
+| `readOnly`         | `boolean`                                                    | No       | Whether the component is in read-only mode |
 
 ### Types
 
@@ -377,7 +395,8 @@ See `error-handling-config-demo.tsx` for comprehensive examples of all features 
 
 ## Styling
 
-The component uses Tailwind CSS and shadcn/ui components. It automatically adapts to light and dark themes.
+The component uses Tailwind CSS and shadcn/ui components. It automatically adapts to light and dark
+themes.
 
 ## Accessibility
 
@@ -402,4 +421,5 @@ The component uses Tailwind CSS and shadcn/ui components. It automatically adapt
 
 ## Support
 
-For issues or questions, please refer to the main workflow components documentation or contact the development team.
+For issues or questions, please refer to the main workflow components documentation or contact the
+development team.

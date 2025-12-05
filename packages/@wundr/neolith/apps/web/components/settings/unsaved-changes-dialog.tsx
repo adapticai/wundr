@@ -30,8 +30,8 @@ export function UnsavedChangesDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
+          <AlertDialogTitle className='flex items-center gap-2'>
+            <AlertTriangle className='h-5 w-5 text-amber-500' />
             Unsaved Changes
           </AlertDialogTitle>
           <AlertDialogDescription>
@@ -43,9 +43,7 @@ export function UnsavedChangesDialog({
           <AlertDialogCancel onClick={onDiscard}>
             Discard Changes
           </AlertDialogCancel>
-          <AlertDialogAction onClick={onSave}>
-            Save Changes
-          </AlertDialogAction>
+          <AlertDialogAction onClick={onSave}>Save Changes</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

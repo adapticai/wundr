@@ -61,7 +61,7 @@ function groupReactions(
     userId: string;
     user: { id: string; name: string | null };
   }>,
-  currentUserId: string,
+  currentUserId: string
 ): Array<{
   emoji: string;
   count: number;
@@ -139,7 +139,7 @@ async function checkChannelMembership(channelId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -148,9 +148,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED,
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -161,9 +161,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid channel ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -176,9 +176,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           MESSAGE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -187,15 +187,15 @@ export async function GET(
     // Check channel membership
     const membership = await checkChannelMembership(
       params.channelId,
-      session.user.id,
+      session.user.id
     );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -325,7 +325,7 @@ export async function GET(
                 size: Number(attachment.file.size),
               }
             : null,
-        }),
+        })
       ),
     }));
 
@@ -342,9 +342,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -373,7 +373,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -382,9 +382,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED,
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -395,9 +395,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid channel ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -409,9 +409,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -422,9 +422,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           MESSAGE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -433,15 +433,15 @@ export async function POST(
     // Check channel membership
     const membership = await checkChannelMembership(
       params.channelId,
-      session.user.id,
+      session.user.id
     );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -456,9 +456,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Parent message not found',
-            MESSAGE_ERROR_CODES.INVALID_PARENT,
+            MESSAGE_ERROR_CODES.INVALID_PARENT
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
 
@@ -466,9 +466,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Parent message belongs to a different channel',
-            MESSAGE_ERROR_CODES.INVALID_PARENT,
+            MESSAGE_ERROR_CODES.INVALID_PARENT
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -477,9 +477,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Cannot reply to a thread reply',
-            MESSAGE_ERROR_CODES.INVALID_PARENT,
+            MESSAGE_ERROR_CODES.INVALID_PARENT
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -571,7 +571,7 @@ export async function POST(
           }).catch((err: unknown) => {
             console.error(
               '[POST /api/channels/:channelId/messages] Failed to send mention notification:',
-              err,
+              err
             );
           });
         }
@@ -602,7 +602,7 @@ export async function POST(
         }).catch((err: unknown) => {
           console.error(
             '[POST /api/channels/:channelId/messages] Failed to send thread reply notification:',
-            err,
+            err
           );
         });
       }
@@ -622,13 +622,13 @@ export async function POST(
                 size: Number(attachment.file.size),
               }
             : null,
-        }),
+        })
       ),
     };
 
     return NextResponse.json(
       { data: transformedMessage, message: 'Message sent successfully' },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('[POST /api/channels/:channelId/messages] Error:', error);
@@ -637,11 +637,11 @@ export async function POST(
     if (error instanceof Error) {
       console.error(
         '[POST /api/channels/:channelId/messages] Error message:',
-        error.message,
+        error.message
       );
       console.error(
         '[POST /api/channels/:channelId/messages] Error stack:',
-        error.stack,
+        error.stack
       );
     }
 
@@ -653,11 +653,11 @@ export async function POST(
       };
       console.error(
         '[POST /api/channels/:channelId/messages] Prisma error code:',
-        prismaError.code,
+        prismaError.code
       );
       console.error(
         '[POST /api/channels/:channelId/messages] Prisma error meta:',
-        prismaError.meta,
+        prismaError.meta
       );
 
       if (prismaError.code === 'P2003') {
@@ -665,9 +665,9 @@ export async function POST(
           createErrorResponse(
             'Invalid file attachment ID - file may not exist',
             MESSAGE_ERROR_CODES.VALIDATION_ERROR,
-            { prismaCode: prismaError.code, meta: prismaError.meta },
+            { prismaCode: prismaError.code, meta: prismaError.meta }
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -675,9 +675,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

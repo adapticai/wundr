@@ -283,7 +283,7 @@ export function getAllCapabilityDefinitions(): CapabilityDefinition[] {
  * Get capabilities by category
  */
 export function getCapabilitiesByCategory(
-  category: CapabilityCategory,
+  category: CapabilityCategory
 ): CapabilityDefinition[] {
   return CAPABILITY_DEFINITIONS[category] || [];
 }
@@ -292,7 +292,7 @@ export function getCapabilitiesByCategory(
  * Get capability definition by ID
  */
 export function getCapabilityDefinition(
-  id: string,
+  id: string
 ): CapabilityDefinition | undefined {
   return getAllCapabilityDefinitions().find(def => def.id === id);
 }
@@ -301,7 +301,7 @@ export function getCapabilityDefinition(
  * Create default capability from definition
  */
 export function createDefaultCapability(
-  definition: CapabilityDefinition,
+  definition: CapabilityDefinition
 ): OrchestratorCapability {
   return {
     id: definition.id,

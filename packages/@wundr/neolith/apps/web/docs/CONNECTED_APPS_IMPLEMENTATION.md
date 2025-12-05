@@ -2,14 +2,17 @@
 
 ## Overview
 
-A comprehensive connected applications management system for the Neolith web app, providing users with full control over third-party app integrations, API keys, webhooks, and activity monitoring.
+A comprehensive connected applications management system for the Neolith web app, providing users
+with full control over third-party app integrations, API keys, webhooks, and activity monitoring.
 
 ## Created Files
 
 ### 1. Main Component
+
 **File:** `/components/settings/connected-apps.tsx`
 
 A fully functional React component (2,600+ lines) that provides:
+
 - Connected apps management with OAuth integration
 - Personal API key generation and management
 - Webhook configuration and monitoring
@@ -17,9 +20,11 @@ A fully functional React component (2,600+ lines) that provides:
 - Security warnings and permission reviews
 
 ### 2. Settings Page
+
 **File:** `/app/(workspace)/[workspaceSlug]/settings/connected-apps/page.tsx`
 
 Next.js page component that:
+
 - Integrates the ConnectedApps component
 - Handles data fetching via existing hooks
 - Manages OAuth flows and API calls
@@ -28,6 +33,7 @@ Next.js page component that:
 ## Features Implemented
 
 ### 1. Connected Applications (Tab 1)
+
 - **View all connected third-party apps** organized by category:
   - Calendar Integrations (Google Calendar, Outlook)
   - File Storage (Dropbox, Google Drive)
@@ -39,6 +45,7 @@ Next.js page component that:
 - **Quick actions dropdown**: View permissions, refresh connection, disconnect
 
 ### 2. API Keys Management (Tab 2)
+
 - **Generate personal API keys** for programmatic access
 - **Scope-based permissions**: Select specific permissions for each key
 - **Key visibility controls**: Show/hide full keys
@@ -49,6 +56,7 @@ Next.js page component that:
 - **Key management**: Regenerate, copy, revoke operations
 
 ### 3. Webhooks Management (Tab 3)
+
 - **Create and configure webhooks** for personal automations
 - **Event subscription**: Select from available event types
 - **Endpoint configuration**: Set target URLs
@@ -57,6 +65,7 @@ Next.js page component that:
 - **Quick actions**: Test webhook, view deliveries, delete
 
 ### 4. Activity Log (Tab 4)
+
 - **Real-time activity tracking** for all connected apps
 - **Event severity indicators**: Info, Warning, Error
 - **Detailed activity information**: Action, description, timestamp
@@ -66,12 +75,14 @@ Next.js page component that:
 ### 5. Security Features
 
 #### Security Warning Banner
+
 - Prominent orange alert at the top of the page
 - Clear messaging about data access risks
 - Encourages regular permission reviews
 - Advises immediate revocation on suspicious activity
 
 #### Permission Management Dialog
+
 - **View all permissions** granted to each app
 - **Permission details**: Name, description, requirement status
 - **Toggle permissions**: Enable/disable optional permissions
@@ -79,12 +90,14 @@ Next.js page component that:
 - **Connection status**: Created date, last sync, error messages
 
 #### API Key Security
+
 - **Secure storage warnings**: Prominently displayed
 - **One-time display**: Keys only shown once after creation
 - **Scope-based access**: Granular permission control
 - **Expiration tracking**: Automatic expiration warnings
 
 ### 6. App Connection Features
+
 - **App categories**: Calendar, Storage, Communication, Development
 - **Provider information**: Name, description, category badges
 - **OAuth flow initiation**: Seamless authorization redirects
@@ -95,18 +108,21 @@ Next.js page component that:
 ### 7. User Interface Components
 
 #### Main Layout
+
 - **Tabbed interface**: 4 main tabs for different management areas
 - **Responsive design**: Mobile-friendly layouts
 - **Icon-based navigation**: Clear visual indicators
 - **Breadcrumb navigation**: Easy navigation back to settings
 
 #### App Connection Cards
+
 - **Visual status indicators**: Color-coded badges
 - **Quick information**: Name, status, last sync
 - **Action menu**: Dropdown with management options
 - **Error display**: Inline error messages
 
 #### API Key Cards
+
 - **Masked display**: Hidden by default for security
 - **Show/hide toggle**: View full key when needed
 - **Scope badges**: Visual representation of permissions
@@ -114,6 +130,7 @@ Next.js page component that:
 - **Action menu**: Copy, regenerate, revoke options
 
 #### Webhook Cards
+
 - **Status indicator**: Color-coded dot
 - **URL display**: Truncated for readability
 - **Event badges**: Show subscribed events
@@ -121,6 +138,7 @@ Next.js page component that:
 - **Action menu**: Test, view deliveries, delete
 
 #### Activity Log Cards
+
 - **Severity icons**: Visual severity indicators
 - **App identification**: Clear app name display
 - **Action descriptions**: Detailed event information
@@ -129,6 +147,7 @@ Next.js page component that:
 ### 8. Dialogs and Modals
 
 #### App Details Dialog
+
 - **Full permission list**: All granted permissions
 - **Connection information**: Status, dates, sync history
 - **Permission toggles**: Enable/disable optional permissions
@@ -136,6 +155,7 @@ Next.js page component that:
 - **Action buttons**: Refresh connection, disconnect
 
 #### Connect App Dialog
+
 - **Available apps grid**: 2-column responsive layout
 - **Provider information**: Name, description, category
 - **Visual indicators**: App icons and chevrons
@@ -143,6 +163,7 @@ Next.js page component that:
 - **Click to connect**: Initiate OAuth flow
 
 #### Generate API Key Dialog
+
 - **Name input**: Custom key naming
 - **Scope selection**: Checkbox list of available permissions
 - **Scope categories**: Organized by feature area
@@ -150,6 +171,7 @@ Next.js page component that:
 - **Action buttons**: Cancel, generate
 
 #### Create Webhook Dialog
+
 - **Name input**: Custom webhook naming
 - **URL input**: Endpoint configuration
 - **Description textarea**: Optional webhook description
@@ -159,6 +181,7 @@ Next.js page component that:
 ## Technical Implementation
 
 ### Component Architecture
+
 ```
 ConnectedApps (Main Component)
 ├── Tabs Navigation
@@ -177,6 +200,7 @@ ConnectedApps (Main Component)
 ```
 
 ### Data Flow
+
 1. **Page Component**: Fetches data using existing hooks
 2. **Props Passing**: Passes data and handlers to ConnectedApps
 3. **State Management**: Local state for modals and UI interactions
@@ -184,6 +208,7 @@ ConnectedApps (Main Component)
 5. **Optimistic Updates**: Immediate UI feedback on actions
 
 ### Integration Points
+
 - **Hooks**: Uses existing `useIntegrations`, `useWebhooks` hooks
 - **Types**: Leverages existing `IntegrationConfig`, `WebhookConfig` types
 - **UI Components**: Uses shadcn/ui components (Button, Card, Dialog, etc.)
@@ -192,6 +217,7 @@ ConnectedApps (Main Component)
 - **Toast Notifications**: Uses existing toast system
 
 ### Security Considerations
+
 1. **API Key Security**:
    - Keys masked by default
    - One-time display warning
@@ -214,7 +240,9 @@ ConnectedApps (Main Component)
    - Review and revocation capabilities
 
 ### Mock Data (Development)
+
 The component includes mock data for:
+
 - **Personal API Keys**: 2 sample keys with different scopes and expiration
 - **Activity Log**: 4 sample entries with various severities
 - **Permissions**: Sample permissions for app detail views
@@ -229,7 +257,7 @@ import { ConnectedApps } from '@/components/settings/connected-apps';
 function SettingsPage() {
   return (
     <ConnectedApps
-      workspaceId="workspace-123"
+      workspaceId='workspace-123'
       integrations={integrations}
       webhooks={webhooks}
       onConnectApp={handleConnectApp}
@@ -243,11 +271,13 @@ function SettingsPage() {
 ## Routing
 
 Access the page at:
+
 ```
 /{workspaceSlug}/settings/connected-apps
 ```
 
 Example:
+
 ```
 /my-workspace/settings/connected-apps
 ```
@@ -255,6 +285,7 @@ Example:
 ## Future Enhancements
 
 ### Suggested Improvements
+
 1. **Advanced Filtering**: Filter apps by status, category, or date
 2. **Bulk Operations**: Disconnect multiple apps at once
 3. **Export Data**: Export activity logs or webhook deliveries
@@ -267,6 +298,7 @@ Example:
 10. **Rate Limiting**: Display API usage and rate limits
 
 ### API Endpoints Needed
+
 The following API endpoints should be implemented:
 
 ```typescript
@@ -301,6 +333,7 @@ GET    /api/workspaces/:workspaceId/activity-logs
 ```
 
 ## Accessibility Features
+
 - **Keyboard Navigation**: Full keyboard support for all interactions
 - **ARIA Labels**: Proper labeling for screen readers
 - **Focus Management**: Logical focus order and visible indicators
@@ -308,12 +341,14 @@ GET    /api/workspaces/:workspaceId/activity-logs
 - **Screen Reader Support**: Semantic HTML and ARIA attributes
 
 ## Responsive Design
+
 - **Mobile First**: Optimized for mobile devices
 - **Tablet Layout**: Responsive grid adjustments
 - **Desktop Experience**: Full-featured desktop interface
 - **Breakpoints**: Tailwind standard breakpoints (sm, md, lg, xl)
 
 ## Performance Considerations
+
 - **Code Splitting**: Component lazy loading where appropriate
 - **Memoization**: React.memo and useCallback for optimization
 - **Virtual Scrolling**: For long activity logs
@@ -323,18 +358,21 @@ GET    /api/workspaces/:workspaceId/activity-logs
 ## Testing Recommendations
 
 ### Unit Tests
+
 - Component rendering
 - User interactions (clicks, form submissions)
 - State management
 - Error handling
 
 ### Integration Tests
+
 - API call handling
 - OAuth flow simulation
 - Toast notifications
 - Dialog interactions
 
 ### E2E Tests
+
 - Complete user workflows
 - App connection flow
 - API key generation flow
@@ -342,12 +380,14 @@ GET    /api/workspaces/:workspaceId/activity-logs
 - Activity log display
 
 ## Documentation
+
 - Component props documented with JSDoc
 - Type definitions for all interfaces
 - Code comments for complex logic
 - README for implementation details
 
 ## Compliance and Security
+
 - **GDPR**: User data control and deletion
 - **OAuth 2.0**: Standard OAuth implementation
 - **API Security**: Token-based authentication
@@ -356,7 +396,9 @@ GET    /api/workspaces/:workspaceId/activity-logs
 
 ## Summary
 
-This implementation provides a production-ready, fully functional connected apps management system with:
+This implementation provides a production-ready, fully functional connected apps management system
+with:
+
 - **2,600+ lines** of TypeScript/React code
 - **Zero placeholders or stubs** - everything is functional
 - **Comprehensive security features** with proper warnings
@@ -366,6 +408,7 @@ This implementation provides a production-ready, fully functional connected apps
 - **Extensible architecture** for future enhancements
 
 The component is ready for production use pending:
+
 1. Backend API implementation for the listed endpoints
 2. Integration testing with real OAuth providers
 3. User acceptance testing

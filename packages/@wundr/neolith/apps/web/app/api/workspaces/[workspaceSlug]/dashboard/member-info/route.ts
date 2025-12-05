@@ -134,7 +134,7 @@ async function checkWorkspaceAccess(workspaceSlug: string, userId: string) {
 async function generateChecklist(
   userId: string,
   workspaceId: string,
-  workspaceSlug: string,
+  workspaceSlug: string
 ): Promise<ChecklistItem[]> {
   // Fetch user profile completeness
   const user = await prisma.user.findUnique({
@@ -222,7 +222,7 @@ async function generateChecklist(
  */
 async function getSuggestedChannels(
   userId: string,
-  workspaceId: string,
+  workspaceId: string
 ): Promise<SuggestedChannel[]> {
   // Get channels user hasn't joined yet
   const channels = await prisma.channel.findMany({
@@ -267,7 +267,7 @@ async function getSuggestedChannels(
  */
 async function getRecommendedOrchestrators(
   workspaceId: string,
-  userId: string,
+  userId: string
 ): Promise<RecommendedOrchestrator[]> {
   // Get orchestrators in the workspace that user hasn't interacted with much
   const orchestrators = await prisma.orchestrator.findMany({
@@ -298,7 +298,7 @@ async function getRecommendedOrchestrators(
  */
 async function getTeamSpotlight(
   workspaceId: string,
-  userId: string,
+  userId: string
 ): Promise<TeamMember[]> {
   // Get workspace members who are active, excluding the current user and orchestrators
   const members = await prisma.workspaceMember.findMany({
@@ -353,7 +353,7 @@ async function getTeamSpotlight(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -362,9 +362,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED,
+          ORG_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -377,9 +377,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -393,13 +393,17 @@ export async function GET(
     const isNewMember = joinedDate > sevenDaysAgo;
 
     // Fetch all data in parallel for performance
-    const [checklist, suggestedChannels, recommendedOrchestrators, teamSpotlight] =
-      await Promise.all([
-        generateChecklist(session.user.id, workspaceId, workspaceSlugResolved),
-        getSuggestedChannels(session.user.id, workspaceId),
-        getRecommendedOrchestrators(workspaceId, session.user.id),
-        getTeamSpotlight(workspaceId, session.user.id),
-      ]);
+    const [
+      checklist,
+      suggestedChannels,
+      recommendedOrchestrators,
+      teamSpotlight,
+    ] = await Promise.all([
+      generateChecklist(session.user.id, workspaceId, workspaceSlugResolved),
+      getSuggestedChannels(session.user.id, workspaceId),
+      getRecommendedOrchestrators(workspaceId, session.user.id),
+      getTeamSpotlight(workspaceId, session.user.id),
+    ]);
 
     const data: MemberDashboardData = {
       isNewMember,
@@ -416,14 +420,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/dashboard/member-info] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

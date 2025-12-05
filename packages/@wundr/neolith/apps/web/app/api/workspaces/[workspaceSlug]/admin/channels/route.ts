@@ -39,7 +39,7 @@ interface RouteContext {
  */
 export async function GET(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -47,14 +47,13 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED,
+          ADMIN_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     const { workspaceSlug: workspaceId } = await context.params;
-
 
     // Verify admin access
     const membership = await prisma.workspaceMember.findFirst({
@@ -68,9 +67,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN,
+          ADMIN_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -171,7 +170,7 @@ export async function GET(
           activeMembers,
           recentMessages,
         };
-      }),
+      })
     );
 
     return NextResponse.json({
@@ -184,9 +183,9 @@ export async function GET(
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to fetch channels',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR,
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -202,7 +201,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -210,14 +209,13 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED,
+          ADMIN_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     const { workspaceSlug: workspaceId } = await context.params;
-
 
     // Verify admin access
     const membership = await prisma.workspaceMember.findFirst({
@@ -231,9 +229,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN,
+          ADMIN_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -244,9 +242,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Channel name is required',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR,
+          ADMIN_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -265,9 +263,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Channel with this name already exists',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR,
+          ADMIN_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -308,9 +306,9 @@ export async function POST(
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to create channel',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR,
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

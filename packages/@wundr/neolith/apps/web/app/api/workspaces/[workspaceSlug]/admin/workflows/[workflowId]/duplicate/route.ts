@@ -30,8 +30,8 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -56,7 +56,7 @@ return null;
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -71,7 +71,7 @@ export async function POST(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or insufficient permissions' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -81,7 +81,10 @@ export async function POST(
     });
 
     if (!originalWorkflow || originalWorkflow.workspaceId !== workspaceId) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Workflow not found' },
+        { status: 404 }
+      );
     }
 
     // Create duplicate
@@ -89,11 +92,14 @@ export async function POST(
       data: {
         name: `${originalWorkflow.name} (Copy)`,
         description: originalWorkflow.description,
-        trigger: (originalWorkflow.trigger ?? Prisma.JsonNull) as Prisma.InputJsonValue,
-        actions: (originalWorkflow.actions ?? Prisma.JsonNull) as Prisma.InputJsonValue,
+        trigger: (originalWorkflow.trigger ??
+          Prisma.JsonNull) as Prisma.InputJsonValue,
+        actions: (originalWorkflow.actions ??
+          Prisma.JsonNull) as Prisma.InputJsonValue,
         status: 'DRAFT', // Always start as draft
         tags: Array.isArray(originalWorkflow.tags) ? originalWorkflow.tags : [],
-        metadata: (originalWorkflow.metadata ?? Prisma.JsonNull) as Prisma.InputJsonValue,
+        metadata: (originalWorkflow.metadata ??
+          Prisma.JsonNull) as Prisma.InputJsonValue,
         workspaceId: originalWorkflow.workspaceId,
         createdBy: session.user.id,
       },
@@ -101,10 +107,13 @@ export async function POST(
 
     return NextResponse.json({ workflow: duplicatedWorkflow });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceSlug/admin/workflows/:workflowId/duplicate]', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceSlug/admin/workflows/:workflowId/duplicate]',
+      error
+    );
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

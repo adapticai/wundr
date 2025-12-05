@@ -1,6 +1,13 @@
 'use client';
 
-import { TrendingUp, Activity, DollarSign, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import {
+  TrendingUp,
+  Activity,
+  DollarSign,
+  Clock,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 import {
@@ -61,13 +68,13 @@ export function OrchestratorAnalytics({
 
   const fetchAnalytics = async () => {
     if (!orchestratorId) {
-return;
-}
+      return;
+    }
 
     setLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/orchestrators/${orchestratorId}/analytics`,
+        `/api/workspaces/${workspaceSlug}/admin/orchestrators/${orchestratorId}/analytics`
       );
 
       if (response.ok) {
@@ -82,7 +89,10 @@ return;
   };
 
   const successRate = analytics
-    ? ((analytics.usage.successfulRequests / analytics.usage.totalRequests) * 100).toFixed(1)
+    ? (
+        (analytics.usage.successfulRequests / analytics.usage.totalRequests) *
+        100
+      ).toFixed(1)
     : '0';
 
   const budgetUsagePercent = analytics
@@ -123,7 +133,9 @@ return;
                     <Activity className='h-4 w-4 text-muted-foreground' />
                     <span className='text-sm font-medium'>Total Requests</span>
                   </div>
-                  <p className='text-3xl font-bold'>{analytics.usage.totalRequests}</p>
+                  <p className='text-3xl font-bold'>
+                    {analytics.usage.totalRequests}
+                  </p>
                   <p className='text-sm text-muted-foreground mt-1'>
                     {successRate}% success rate
                   </p>
@@ -132,7 +144,9 @@ return;
                 <div className='rounded-lg border p-4'>
                   <div className='flex items-center gap-2 mb-2'>
                     <Clock className='h-4 w-4 text-muted-foreground' />
-                    <span className='text-sm font-medium'>Avg Response Time</span>
+                    <span className='text-sm font-medium'>
+                      Avg Response Time
+                    </span>
                   </div>
                   <p className='text-3xl font-bold'>
                     {analytics.usage.avgResponseTime.toFixed(0)}ms
@@ -218,7 +232,10 @@ return;
                     Remaining Budget
                   </span>
                   <p className='text-2xl font-bold mt-2'>
-                    ${(analytics.budget.limit - analytics.budget.spent).toFixed(2)}
+                    $
+                    {(analytics.budget.limit - analytics.budget.spent).toFixed(
+                      2
+                    )}
                   </p>
                 </div>
               </div>
@@ -236,7 +253,9 @@ return;
                         {new Date(item.date).toLocaleDateString()}
                       </span>
                       <div className='text-right'>
-                        <p className='text-sm font-medium'>{item.requests} requests</p>
+                        <p className='text-sm font-medium'>
+                          {item.requests} requests
+                        </p>
                         <p className='text-xs text-muted-foreground'>
                           ${item.cost.toFixed(2)}
                         </p>
@@ -254,7 +273,9 @@ return;
                   <span className='text-sm font-medium text-muted-foreground'>
                     Total Tasks
                   </span>
-                  <p className='text-3xl font-bold mt-2'>{analytics.tasks.total}</p>
+                  <p className='text-3xl font-bold mt-2'>
+                    {analytics.tasks.total}
+                  </p>
                 </div>
                 <div className='rounded-lg border p-4'>
                   <span className='text-sm font-medium text-muted-foreground'>
@@ -262,7 +283,10 @@ return;
                   </span>
                   <p className='text-3xl font-bold mt-2'>
                     {analytics.tasks.total > 0
-                      ? ((analytics.tasks.completed / analytics.tasks.total) * 100).toFixed(1)
+                      ? (
+                          (analytics.tasks.completed / analytics.tasks.total) *
+                          100
+                        ).toFixed(1)
                       : 0}
                     %
                   </p>

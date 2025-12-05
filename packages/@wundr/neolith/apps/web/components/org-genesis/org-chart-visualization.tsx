@@ -24,7 +24,7 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
       acc[discipline.orchestratorId].push(discipline);
       return acc;
     },
-    {} as Record<string, typeof disciplines>,
+    {} as Record<string, typeof disciplines>
   );
 
   // Count agents by discipline
@@ -33,7 +33,7 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
       acc[agent.disciplineId] = (acc[agent.disciplineId] || 0) + 1;
       return acc;
     },
-    {} as Record<string, number>,
+    {} as Record<string, number>
   );
 
   return (

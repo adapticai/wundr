@@ -128,7 +128,7 @@ function calculateDateRange(query: UsageQuery): { start: Date; end: Date } {
 function generateTimeBuckets(
   start: Date,
   end: Date,
-  granularity: 'daily' | 'weekly' | 'monthly',
+  granularity: 'daily' | 'weekly' | 'monthly'
 ): Date[] {
   const buckets: Date[] = [];
   const current = new Date(start);
@@ -155,7 +155,11 @@ function generateTimeBuckets(
 /**
  * Calculate storage usage by file type
  */
-async function calculateStorageUsage(workspaceId: string, start: Date, end: Date) {
+async function calculateStorageUsage(
+  workspaceId: string,
+  start: Date,
+  end: Date
+) {
   // Get all files in workspace
   const files = await prisma.file.findMany({
     where: {
@@ -217,7 +221,7 @@ async function calculateStorageUsage(workspaceId: string, start: Date, end: Date
 async function calculateApiCallsMetrics(
   workspaceId: string,
   start: Date,
-  end: Date,
+  end: Date
 ) {
   // Count messages as API calls (simplified)
   const totalCalls = await prisma.message.count({
@@ -255,7 +259,7 @@ async function calculateApiCallsMetrics(
 async function calculateBandwidthUsage(
   workspaceId: string,
   start: Date,
-  end: Date,
+  end: Date
 ) {
   // Get file uploads (simplified calculation)
   const files = await prisma.file.findMany({
@@ -294,7 +298,7 @@ async function calculateBandwidthUsage(
 async function calculateComputeTimeUsage(
   workspaceId: string,
   start: Date,
-  end: Date,
+  end: Date
 ) {
   // Get workflow executions
   const workflows = await prisma.workflowExecution.findMany({
@@ -312,7 +316,7 @@ async function calculateComputeTimeUsage(
 
   const workflowsTime = workflows.reduce(
     (sum, w) => sum + (w.durationMs || 0),
-    0,
+    0
   );
 
   // Estimate orchestrator compute time (simplified)
@@ -347,7 +351,7 @@ async function calculateComputeTimeUsage(
 async function calculateFeatureAdoption(
   workspaceId: string,
   start: Date,
-  end: Date,
+  end: Date
 ) {
   // Previous period for comparison
   const timeRange = end.getTime() - start.getTime();
@@ -386,21 +390,25 @@ async function calculateFeatureAdoption(
     where: { workspaceId },
   });
 
-  const activeWorkflows = await prisma.workflowExecution.groupBy({
-    by: ['workflowId'],
-    where: {
-      workspaceId,
-      startedAt: { gte: start, lte: end },
-    },
-  }).then(results => results.length);
+  const activeWorkflows = await prisma.workflowExecution
+    .groupBy({
+      by: ['workflowId'],
+      where: {
+        workspaceId,
+        startedAt: { gte: start, lte: end },
+      },
+    })
+    .then(results => results.length);
 
-  const prevActiveWorkflows = await prisma.workflowExecution.groupBy({
-    by: ['workflowId'],
-    where: {
-      workspaceId,
-      startedAt: { gte: prevStart, lte: prevEnd },
-    },
-  }).then(results => results.length);
+  const prevActiveWorkflows = await prisma.workflowExecution
+    .groupBy({
+      by: ['workflowId'],
+      where: {
+        workspaceId,
+        startedAt: { gte: prevStart, lte: prevEnd },
+      },
+    })
+    .then(results => results.length);
 
   const workflowChange =
     prevActiveWorkflows > 0
@@ -412,23 +420,27 @@ async function calculateFeatureAdoption(
     where: { workspaceId, isArchived: false },
   });
 
-  const activeChannels = await prisma.message.groupBy({
-    by: ['channelId'],
-    where: {
-      channel: { workspaceId },
-      createdAt: { gte: start, lte: end },
-      isDeleted: false,
-    },
-  }).then(results => results.length);
+  const activeChannels = await prisma.message
+    .groupBy({
+      by: ['channelId'],
+      where: {
+        channel: { workspaceId },
+        createdAt: { gte: start, lte: end },
+        isDeleted: false,
+      },
+    })
+    .then(results => results.length);
 
-  const prevActiveChannels = await prisma.message.groupBy({
-    by: ['channelId'],
-    where: {
-      channel: { workspaceId },
-      createdAt: { gte: prevStart, lte: prevEnd },
-      isDeleted: false,
-    },
-  }).then(results => results.length);
+  const prevActiveChannels = await prisma.message
+    .groupBy({
+      by: ['channelId'],
+      where: {
+        channel: { workspaceId },
+        createdAt: { gte: prevStart, lte: prevEnd },
+        isDeleted: false,
+      },
+    })
+    .then(results => results.length);
 
   const channelChange =
     prevActiveChannels > 0
@@ -529,7 +541,7 @@ async function calculateUsageTrends(
   workspaceId: string,
   start: Date,
   end: Date,
-  granularity: 'daily' | 'weekly' | 'monthly',
+  granularity: 'daily' | 'weekly' | 'monthly'
 ) {
   const buckets = generateTimeBuckets(start, end, granularity);
 
@@ -564,7 +576,10 @@ async function calculateUsageTrends(
         },
         select: { size: true },
       });
-      const upload = uploadedFiles.reduce((sum, f) => sum + Number(f.size || 0), 0);
+      const upload = uploadedFiles.reduce(
+        (sum, f) => sum + Number(f.size || 0),
+        0
+      );
       const bandwidth = upload * 4; // Upload + 3x download estimate
 
       // Compute time (in bucket)
@@ -577,7 +592,7 @@ async function calculateUsageTrends(
       });
       const computeTime = workflows.reduce(
         (sum, w) => sum + (w.durationMs || 0),
-        0,
+        0
       );
 
       return {
@@ -587,7 +602,7 @@ async function calculateUsageTrends(
         bandwidth,
         computeTime,
       };
-    }),
+    })
   );
 
   return { daily };
@@ -602,7 +617,7 @@ async function calculateCostAnalysis(
   bandwidthTotal: number,
   computeTimeTotal: number,
   start: Date,
-  end: Date,
+  end: Date
 ) {
   // Pricing (example rates per unit)
   const STORAGE_COST_PER_GB = 0.023; // $0.023 per GB per month
@@ -621,12 +636,22 @@ async function calculateCostAnalysis(
   const total = storageCost + apiCallsCost + bandwidthCost + computeCost;
 
   // Project to full month
-  const daysInPeriod = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-  const projectedMonthly = daysInPeriod > 0 ? (total / daysInPeriod) * 30 : total;
+  const daysInPeriod =
+    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+  const projectedMonthly =
+    daysInPeriod > 0 ? (total / daysInPeriod) * 30 : total;
 
   // Calculate trend (simplified - compare to projected)
-  const trend = total > projectedMonthly * 0.8 ? ('up' as const) : total < projectedMonthly * 0.6 ? ('down' as const) : ('stable' as const);
-  const changePercent = projectedMonthly > 0 ? ((total - projectedMonthly * 0.7) / (projectedMonthly * 0.7)) * 100 : 0;
+  const trend =
+    total > projectedMonthly * 0.8
+      ? ('up' as const)
+      : total < projectedMonthly * 0.6
+        ? ('down' as const)
+        : ('stable' as const);
+  const changePercent =
+    projectedMonthly > 0
+      ? ((total - projectedMonthly * 0.7) / (projectedMonthly * 0.7)) * 100
+      : 0;
 
   return {
     total,
@@ -648,7 +673,7 @@ async function calculateCostAnalysis(
 async function getTopResourceConsumers(
   workspaceId: string,
   start: Date,
-  end: Date,
+  end: Date
 ) {
   // Top storage users
   const filesByUser = await prisma.file.groupBy({
@@ -681,7 +706,7 @@ async function getTopResourceConsumers(
         value: item._sum.size || 0,
         type: 'user' as const,
       };
-    }),
+    })
   );
 
   // Top API callers (by message count)
@@ -714,7 +739,7 @@ async function getTopResourceConsumers(
         value: item._count,
         type: 'user' as const,
       };
-    }),
+    })
   );
 
   // Top compute time users (by workflow execution)
@@ -748,7 +773,7 @@ async function getTopResourceConsumers(
         value: item._sum?.durationMs || 0,
         type: 'workflow' as const,
       };
-    }),
+    })
   );
 
   return {
@@ -774,7 +799,7 @@ async function getTopResourceConsumers(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -783,9 +808,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED,
+          ORG_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -796,9 +821,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid workspace ID format',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -808,9 +833,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -823,9 +848,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           error instanceof Error ? error.message : 'Invalid query parameters',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -847,7 +872,12 @@ export async function GET(
       calculateBandwidthUsage(workspaceId, start, end),
       calculateComputeTimeUsage(workspaceId, start, end),
       calculateFeatureAdoption(workspaceId, start, end),
-      calculateUsageTrends(workspaceId, start, end, query.granularity || 'daily'),
+      calculateUsageTrends(
+        workspaceId,
+        start,
+        end,
+        query.granularity || 'daily'
+      ),
       getTopResourceConsumers(workspaceId, start, end),
     ]);
 
@@ -858,7 +888,7 @@ export async function GET(
       resourceUsageBandwidth.total,
       resourceUsageComputeTime.total,
       start,
-      end,
+      end
     );
 
     // Build response
@@ -887,14 +917,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/analytics/usage] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred while fetching usage analytics',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

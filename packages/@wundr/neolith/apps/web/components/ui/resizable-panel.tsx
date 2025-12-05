@@ -85,7 +85,7 @@ export function ResizablePanel({
       newSize = Math.max(minSize, Math.min(maxSize, newSize));
       setSize(newSize);
     },
-    [isResizing, side, minSize, maxSize],
+    [isResizing, side, minSize, maxSize]
   );
 
   const handleMouseUp = React.useCallback(() => {
@@ -127,7 +127,7 @@ export function ResizablePanel({
         className={cn(
           'absolute top-0 bottom-0 w-1 group',
           'hover:bg-primary/20 transition-colors',
-          isResizing && 'bg-primary/30',
+          isResizing && 'bg-primary/30'
         )}
         style={handleStyle}
         onMouseDown={handleMouseDown}
@@ -139,7 +139,7 @@ export function ResizablePanel({
             'p-1 rounded',
             'opacity-0 group-hover:opacity-100 transition-opacity',
             'bg-background border border-border shadow-sm',
-            isResizing && 'opacity-100',
+            isResizing && 'opacity-100'
           )}
         >
           <GripVertical className='h-4 w-4 text-muted-foreground' />

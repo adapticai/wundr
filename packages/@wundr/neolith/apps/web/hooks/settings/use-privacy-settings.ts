@@ -41,11 +41,17 @@ export interface UsePrivacySettingsReturn {
   /** Toggle analytics */
   toggleAnalytics: () => Promise<void>;
   /** Set who can send messages */
-  setWhoCanSendMessages: (value: 'everyone' | 'workspace-members' | 'connections') => Promise<void>;
+  setWhoCanSendMessages: (
+    value: 'everyone' | 'workspace-members' | 'connections'
+  ) => Promise<void>;
   /** Set who can see posts */
-  setWhoCanSeePosts: (value: 'public' | 'workspace' | 'private') => Promise<void>;
+  setWhoCanSeePosts: (
+    value: 'public' | 'workspace' | 'private'
+  ) => Promise<void>;
   /** Set data retention policy */
-  setDataRetention: (value: 'forever' | '1-year' | '6-months' | '3-months') => Promise<void>;
+  setDataRetention: (
+    value: 'forever' | '1-year' | '6-months' | '3-months'
+  ) => Promise<void>;
   /** Enable maximum privacy mode */
   enableMaxPrivacy: () => Promise<void>;
   /** Disable all privacy restrictions */
@@ -109,7 +115,7 @@ export function usePrivacySettings(): UsePrivacySettingsReturn {
         privacy: updates,
       });
     },
-    [updateSettings],
+    [updateSettings]
   );
 
   // Toggle online status
@@ -147,7 +153,7 @@ export function usePrivacySettings(): UsePrivacySettingsReturn {
     async (value: 'everyone' | 'workspace-members' | 'connections') => {
       await updatePrivacy({ whoCanSendMessages: value });
     },
-    [updatePrivacy],
+    [updatePrivacy]
   );
 
   // Set who can see posts
@@ -155,7 +161,7 @@ export function usePrivacySettings(): UsePrivacySettingsReturn {
     async (value: 'public' | 'workspace' | 'private') => {
       await updatePrivacy({ whoCanSeePosts: value });
     },
-    [updatePrivacy],
+    [updatePrivacy]
   );
 
   // Set data retention
@@ -163,7 +169,7 @@ export function usePrivacySettings(): UsePrivacySettingsReturn {
     async (value: 'forever' | '1-year' | '6-months' | '3-months') => {
       await updatePrivacy({ dataRetention: value });
     },
-    [updatePrivacy],
+    [updatePrivacy]
   );
 
   // Enable maximum privacy mode

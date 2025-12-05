@@ -85,7 +85,7 @@ function ParticipantItem({
       className={clsx(
         'flex items-center gap-3 p-3 rounded-lg transition-colors relative group',
         'hover:bg-muted',
-        hasRaisedHand && 'bg-yellow-500/10 border border-yellow-500/20',
+        hasRaisedHand && 'bg-yellow-500/10 border border-yellow-500/20'
       )}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
@@ -97,7 +97,7 @@ function ParticipantItem({
           hasVideo
             ? 'bg-green-500/10 text-green-700 dark:text-green-300'
             : 'bg-stone-500/10 text-stone-700 dark:text-stone-300',
-          participant.isSpeaking && !isMuted && 'ring-2 ring-green-500',
+          participant.isSpeaking && !isMuted && 'ring-2 ring-green-500'
         )}
       >
         {getInitials(participant.name || participant.identity)}
@@ -144,7 +144,7 @@ function ParticipantItem({
                 key={bar}
                 className={clsx(
                   'w-0.5 rounded-full',
-                  bar <= 3 ? 'bg-green-500' : 'bg-muted',
+                  bar <= 3 ? 'bg-green-500' : 'bg-muted'
                 )}
                 style={{ height: `${bar * 2}px` }}
               />
@@ -309,7 +309,7 @@ export function ParticipantList({
     <div
       className={clsx(
         'flex flex-col h-full bg-card rounded-lg border border-border overflow-hidden',
-        className,
+        className
       )}
       role='complementary'
       aria-label='Participants list'

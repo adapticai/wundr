@@ -5,9 +5,11 @@ This document outlines the API endpoints needed for the Security Settings page t
 ## Sessions Management
 
 ### GET /api/user/sessions
+
 Fetch all active sessions for the current user.
 
 **Response:**
+
 ```json
 {
   "sessions": [
@@ -26,9 +28,11 @@ Fetch all active sessions for the current user.
 ```
 
 ### DELETE /api/user/sessions/:sessionId
+
 Revoke a specific session.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -37,9 +41,11 @@ Revoke a specific session.
 ```
 
 ### POST /api/user/sessions/revoke-all
+
 Revoke all sessions except the current one.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -51,9 +57,11 @@ Revoke all sessions except the current one.
 ## Connected Accounts Management
 
 ### GET /api/user/connected-accounts
+
 Fetch all connected social accounts for the current user.
 
 **Response:**
+
 ```json
 {
   "accounts": [
@@ -68,12 +76,15 @@ Fetch all connected social accounts for the current user.
 ```
 
 ### DELETE /api/user/social/:provider
+
 Disconnect a social account provider.
 
 **Parameters:**
+
 - `provider`: The social provider name (e.g., "google", "github")
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -104,6 +115,7 @@ Disconnect a social account provider.
 ## Current Hook Behavior
 
 Until these endpoints are implemented, the hooks will:
+
 - Return empty arrays (`sessions: []`, `accounts: []`)
 - Set `isLoading: false` after failed fetch
 - Set appropriate error messages in `error` property

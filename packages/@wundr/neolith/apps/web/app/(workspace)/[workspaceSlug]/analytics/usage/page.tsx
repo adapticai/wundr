@@ -29,7 +29,10 @@ export default function UsageAnalyticsPage(): JSX.Element {
 
   // Set page header
   useEffect(() => {
-    setPageHeader('Usage Analytics', 'Monitor resource usage, costs, and feature adoption');
+    setPageHeader(
+      'Usage Analytics',
+      'Monitor resource usage, costs, and feature adoption'
+    );
   }, [setPageHeader]);
 
   return (

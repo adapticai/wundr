@@ -31,7 +31,10 @@ interface UseKeyboardShortcutsReturn {
   resetAll: () => void;
   applyPreset: (presetId: string) => void;
   toggleCategory: (category: ShortcutCategory, enabled: boolean) => void;
-  conflicts: Array<{ shortcut1: KeyboardShortcut; shortcut2: KeyboardShortcut }>;
+  conflicts: Array<{
+    shortcut1: KeyboardShortcut;
+    shortcut2: KeyboardShortcut;
+  }>;
   exportConfig: () => string;
   importConfig: (json: string) => { success: boolean; error?: string };
   filterByCategory: (category: ShortcutCategory) => KeyboardShortcut[];
@@ -59,8 +62,8 @@ export function useKeyboardShortcuts(): UseKeyboardShortcutsReturn {
   const updateShortcut = useCallback((id: string, keys: string[]) => {
     setShortcuts(prev =>
       prev.map(shortcut =>
-        shortcut.id === id ? { ...shortcut, keys } : shortcut,
-      ),
+        shortcut.id === id ? { ...shortcut, keys } : shortcut
+      )
     );
   }, []);
 
@@ -70,8 +73,8 @@ export function useKeyboardShortcuts(): UseKeyboardShortcutsReturn {
       prev.map(shortcut =>
         shortcut.id === id
           ? { ...shortcut, enabled: !shortcut.enabled }
-          : shortcut,
-      ),
+          : shortcut
+      )
     );
   }, []);
 
@@ -83,8 +86,8 @@ export function useKeyboardShortcuts(): UseKeyboardShortcutsReturn {
         prev.map(shortcut =>
           shortcut.id === id
             ? { ...shortcut, keys: [...defaultShortcut.defaultKeys] }
-            : shortcut,
-        ),
+            : shortcut
+        )
       );
     }
   }, []);
@@ -92,7 +95,7 @@ export function useKeyboardShortcuts(): UseKeyboardShortcutsReturn {
   // Reset all shortcuts to defaults
   const resetAll = useCallback(() => {
     setShortcuts(
-      DEFAULT_SHORTCUTS.map(s => ({ ...s, keys: [...s.defaultKeys] })),
+      DEFAULT_SHORTCUTS.map(s => ({ ...s, keys: [...s.defaultKeys] }))
     );
   }, []);
 
@@ -106,10 +109,8 @@ export function useKeyboardShortcuts(): UseKeyboardShortcutsReturn {
     setShortcuts(prev =>
       prev.map(shortcut => {
         const presetKeys = preset.shortcuts[shortcut.id];
-        return presetKeys
-          ? { ...shortcut, keys: [...presetKeys] }
-          : shortcut;
-      }),
+        return presetKeys ? { ...shortcut, keys: [...presetKeys] } : shortcut;
+      })
     );
   }, []);
 
@@ -118,11 +119,11 @@ export function useKeyboardShortcuts(): UseKeyboardShortcutsReturn {
     (category: ShortcutCategory, enabled: boolean) => {
       setShortcuts(prev =>
         prev.map(shortcut =>
-          shortcut.category === category ? { ...shortcut, enabled } : shortcut,
-        ),
+          shortcut.category === category ? { ...shortcut, enabled } : shortcut
+        )
       );
     },
-    [],
+    []
   );
 
   // Find conflicts
@@ -141,7 +142,7 @@ export function useKeyboardShortcuts(): UseKeyboardShortcutsReturn {
         })),
       },
       null,
-      2,
+      2
     );
   }, [shortcuts]);
 
@@ -157,7 +158,7 @@ export function useKeyboardShortcuts(): UseKeyboardShortcutsReturn {
 
         const imported = DEFAULT_SHORTCUTS.map(defaultShortcut => {
           const importedShortcut = data.shortcuts.find(
-            (s: { id: string }) => s.id === defaultShortcut.id,
+            (s: { id: string }) => s.id === defaultShortcut.id
           );
           if (importedShortcut) {
             return {
@@ -182,7 +183,7 @@ export function useKeyboardShortcuts(): UseKeyboardShortcutsReturn {
         };
       }
     },
-    [],
+    []
   );
 
   // Filter shortcuts by category
@@ -190,7 +191,7 @@ export function useKeyboardShortcuts(): UseKeyboardShortcutsReturn {
     (category: ShortcutCategory) => {
       return shortcuts.filter(s => s.category === category);
     },
-    [shortcuts],
+    [shortcuts]
   );
 
   // Filter shortcuts by context
@@ -198,7 +199,7 @@ export function useKeyboardShortcuts(): UseKeyboardShortcutsReturn {
     (context: ShortcutContext) => {
       return shortcuts.filter(s => s.context === context);
     },
-    [shortcuts],
+    [shortcuts]
   );
 
   // Search shortcuts
@@ -209,10 +210,10 @@ export function useKeyboardShortcuts(): UseKeyboardShortcutsReturn {
         s =>
           s.description.toLowerCase().includes(lowerQuery) ||
           s.category.toLowerCase().includes(lowerQuery) ||
-          s.keys.some(k => k.toLowerCase().includes(lowerQuery)),
+          s.keys.some(k => k.toLowerCase().includes(lowerQuery))
       );
     },
-    [shortcuts],
+    [shortcuts]
   );
 
   return {
@@ -333,7 +334,7 @@ export function useIsMac(): boolean {
   useEffect(() => {
     setIsMac(
       typeof window !== 'undefined' &&
-        navigator.platform.toUpperCase().indexOf('MAC') >= 0,
+        navigator.platform.toUpperCase().indexOf('MAC') >= 0
     );
   }, []);
 

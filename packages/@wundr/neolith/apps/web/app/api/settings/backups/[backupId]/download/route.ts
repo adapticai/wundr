@@ -7,11 +7,11 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ backupId: string }> },
+  { params }: { params: Promise<{ backupId: string }> }
 ) {
   try {
     const session = await auth();
@@ -45,7 +45,7 @@ export async function GET(
     console.error('Download error:', error);
     return NextResponse.json(
       { error: 'Failed to download backup' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

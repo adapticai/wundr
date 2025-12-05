@@ -37,7 +37,10 @@ import { cn } from '@/lib/utils';
 import { QuickSettingsModal } from './quick-settings-modal';
 import { SettingsHeader } from './settings-header';
 
-import type { NavSection, NavItem } from '../../app/(workspace)/[workspaceSlug]/settings/layout';
+import type {
+  NavSection,
+  NavItem,
+} from '../../app/(workspace)/[workspaceSlug]/settings/layout';
 
 interface EnhancedSettingsLayoutProps {
   children: React.ReactNode;
@@ -80,7 +83,7 @@ export function EnhancedSettingsLayout({
 }: EnhancedSettingsLayoutProps) {
   const [quickSettingsOpen, setQuickSettingsOpen] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
 
   const toggleSection = (sectionTitle: string) => {
@@ -97,9 +100,9 @@ export function EnhancedSettingsLayout({
 
   return (
     <TooltipProvider>
-      <div className="flex min-h-screen bg-background">
+      <div className='flex min-h-screen bg-background'>
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:border-r lg:bg-muted/30">
+        <aside className='hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:border-r lg:bg-muted/30'>
           <SettingsSidebar
             workspaceSlug={workspaceSlug}
             workspaceName={workspaceName}
@@ -111,25 +114,25 @@ export function EnhancedSettingsLayout({
         </aside>
 
         {/* Mobile Header */}
-        <div className="lg:hidden fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="flex h-14 items-center justify-between px-4">
+        <div className='lg:hidden fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+          <div className='flex h-14 items-center justify-between px-4'>
             <Link
               href={`/${workspaceSlug}/dashboard`}
-              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className='flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors'
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className='h-4 w-4' />
               <span>Back to workspace</span>
             </Link>
 
-            <div className="flex items-center gap-2">
+            <div className='flex items-center gap-2'>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="ghost"
-                    size="icon"
+                    variant='ghost'
+                    size='icon'
                     onClick={() => setQuickSettingsOpen(true)}
                   >
-                    <Zap className="h-5 w-5" />
+                    <Zap className='h-5 w-5' />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Quick Settings</TooltipContent>
@@ -137,11 +140,11 @@ export function EnhancedSettingsLayout({
 
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Menu className="h-5 w-5" />
+                  <Button variant='ghost' size='icon'>
+                    <Menu className='h-5 w-5' />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-64 p-0">
+                <SheetContent side='left' className='w-64 p-0'>
                   <SettingsSidebar
                     workspaceSlug={workspaceSlug}
                     workspaceName={workspaceName}
@@ -157,9 +160,9 @@ export function EnhancedSettingsLayout({
         </div>
 
         {/* Main Content */}
-        <main className="flex-1 lg:pl-64">
-          <div className="pt-14 lg:pt-0">
-            <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <main className='flex-1 lg:pl-64'>
+          <div className='pt-14 lg:pt-0'>
+            <div className='mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8'>
               {/* Page Header with Breadcrumb */}
               {pageTitle && (
                 <SettingsHeader
@@ -171,33 +174,33 @@ export function EnhancedSettingsLayout({
 
               {/* Quick Actions Bar */}
               {showQuickActions && (onSave || onReset) && (
-                <div className="flex items-center justify-between border-b pb-4 mb-6">
-                  <div className="flex items-center gap-2">
+                <div className='flex items-center justify-between border-b pb-4 mb-6'>
+                  <div className='flex items-center gap-2'>
                     {hasUnsavedChanges && (
-                      <span className="text-sm text-amber-600 dark:text-amber-500 font-medium">
+                      <span className='text-sm text-amber-600 dark:text-amber-500 font-medium'>
                         Unsaved changes
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className='flex items-center gap-2'>
                     {onReset && (
                       <Button
-                        variant="outline"
-                        size="sm"
+                        variant='outline'
+                        size='sm'
                         onClick={onReset}
                         disabled={!hasUnsavedChanges || isSaving}
                       >
-                        <RotateCcw className="h-4 w-4 mr-2" />
+                        <RotateCcw className='h-4 w-4 mr-2' />
                         Reset
                       </Button>
                     )}
                     {onSave && (
                       <Button
-                        size="sm"
+                        size='sm'
                         onClick={onSave}
                         disabled={!hasUnsavedChanges || isSaving}
                       >
-                        <Save className="h-4 w-4 mr-2" />
+                        <Save className='h-4 w-4 mr-2' />
                         {isSaving ? 'Saving...' : 'Save Changes'}
                       </Button>
                     )}
@@ -206,7 +209,7 @@ export function EnhancedSettingsLayout({
               )}
 
               {/* Page Content */}
-              <div className="space-y-6">{children}</div>
+              <div className='space-y-6'>{children}</div>
             </div>
           </div>
         </main>
@@ -238,19 +241,19 @@ function SettingsSidebar({
   onQuickSettings,
 }: SettingsSidebarProps) {
   return (
-    <div className="flex h-full flex-col">
+    <div className='flex h-full flex-col'>
       {/* Header */}
-      <div className="flex h-14 items-center justify-between border-b px-6">
-        <h2 className="text-lg font-semibold tracking-tight">Settings</h2>
+      <div className='flex h-14 items-center justify-between border-b px-6'>
+        <h2 className='text-lg font-semibold tracking-tight'>Settings</h2>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
+              variant='ghost'
+              size='icon'
+              className='h-8 w-8'
               onClick={onQuickSettings}
             >
-              <Zap className="h-4 w-4" />
+              <Zap className='h-4 w-4' />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Quick Settings (⌘,)</TooltipContent>
@@ -258,19 +261,19 @@ function SettingsSidebar({
       </div>
 
       {/* Back to Workspace Link */}
-      <div className="border-b px-4 py-3">
+      <div className='border-b px-4 py-3'>
         <Link
           href={`/${workspaceSlug}/dashboard`}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+          className='flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group'
         >
-          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-          <span className="truncate">{workspaceName}</span>
+          <ArrowLeft className='h-4 w-4 transition-transform group-hover:-translate-x-0.5' />
+          <span className='truncate'>{workspaceName}</span>
         </Link>
       </div>
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-6">
+      <ScrollArea className='flex-1 px-3 py-4'>
+        <nav className='space-y-6'>
           {sections.map(section => (
             <SettingsNavSection
               key={section.title}
@@ -283,15 +286,15 @@ function SettingsSidebar({
       </ScrollArea>
 
       {/* Footer */}
-      <div className="border-t px-4 py-4">
-        <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">
+      <div className='border-t px-4 py-4'>
+        <div className='space-y-2'>
+          <p className='text-xs text-muted-foreground'>
             Changes are saved automatically
           </p>
-          <div className="flex flex-wrap gap-1 text-xs text-muted-foreground">
-            <kbd className="px-1.5 py-0.5 rounded bg-muted border">⌘K</kbd>
+          <div className='flex flex-wrap gap-1 text-xs text-muted-foreground'>
+            <kbd className='px-1.5 py-0.5 rounded bg-muted border'>⌘K</kbd>
             <span>to search</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-muted border">⌘,</kbd>
+            <kbd className='px-1.5 py-0.5 rounded bg-muted border'>⌘,</kbd>
             <span>quick settings</span>
           </div>
         </div>
@@ -312,21 +315,21 @@ function SettingsNavSection({
   onToggle,
 }: SettingsNavSectionProps) {
   return (
-    <div className="space-y-1">
+    <div className='space-y-1'>
       <button
         onClick={onToggle}
-        className="flex w-full items-center justify-between px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors group"
+        className='flex w-full items-center justify-between px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors group'
       >
         <span>{section.title}</span>
         <ChevronDown
           className={cn(
             'h-3.5 w-3.5 transition-transform duration-200',
-            isCollapsed && '-rotate-90',
+            isCollapsed && '-rotate-90'
           )}
         />
       </button>
       {!isCollapsed && (
-        <div className="space-y-0.5">
+        <div className='space-y-0.5'>
           {section.items.map(item => (
             <SettingsNavItem key={item.href} item={item} />
           ))}
@@ -357,7 +360,7 @@ function SettingsNavItem({ item }: SettingsNavItemProps) {
         'hover:bg-accent hover:text-accent-foreground',
         isActive
           ? 'bg-accent text-accent-foreground shadow-sm'
-          : 'text-muted-foreground',
+          : 'text-muted-foreground'
       )}
     >
       <Icon className={cn('h-4 w-4', isActive && 'text-primary')} />

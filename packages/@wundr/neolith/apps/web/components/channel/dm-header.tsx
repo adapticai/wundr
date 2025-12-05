@@ -145,7 +145,7 @@ function StackedAvatars({
             <Avatar
               className={cn(
                 sizeClasses[size],
-                'border-2 border-background ring-0',
+                'border-2 border-background ring-0'
               )}
             >
               <AvatarImage
@@ -167,7 +167,7 @@ function StackedAvatars({
               <span
                 className={cn(
                   'absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background',
-                  statusColors[participant.status],
+                  statusColors[participant.status]
                 )}
               />
             )}
@@ -184,7 +184,7 @@ function StackedAvatars({
           <div
             className={cn(
               sizeClasses[size],
-              'flex items-center justify-center rounded-full bg-muted border-2 border-background font-medium text-muted-foreground',
+              'flex items-center justify-center rounded-full bg-muted border-2 border-background font-medium text-muted-foreground'
             )}
             style={{ zIndex: 0 }}
           >
@@ -280,7 +280,7 @@ export function DMHeader({
       setLocalNotificationSetting(setting);
       onNotificationChange?.(setting);
     },
-    [onNotificationChange],
+    [onNotificationChange]
   );
 
   const isGroupDM = participants.length > 1;
@@ -333,7 +333,7 @@ export function DMHeader({
                 className={cn(
                   'h-8 gap-2',
                   hasActiveHuddle &&
-                    'bg-green-600 hover:bg-green-700 text-white',
+                    'bg-green-600 hover:bg-green-700 text-white'
                 )}
               >
                 <Headphones className='h-4 w-4' />
@@ -403,7 +403,7 @@ export function DMHeader({
               <DropdownMenuItem
                 onClick={() => handleNotificationChange('muted')}
                 className={cn(
-                  localNotificationSetting === 'muted' && 'bg-accent',
+                  localNotificationSetting === 'muted' && 'bg-accent'
                 )}
               >
                 <BellOff className='mr-2 h-4 w-4' />
@@ -463,7 +463,7 @@ export function DMHeader({
                 <Star
                   className={cn(
                     'mr-2 h-4 w-4',
-                    isStarred && 'fill-yellow-400 text-yellow-400',
+                    isStarred && 'fill-yellow-400 text-yellow-400'
                   )}
                 />
                 {isStarred ? 'Unstar conversation' : 'Star conversation'}
@@ -537,7 +537,7 @@ export function LegacyDMHeader({
       <div
         className={cn(
           'flex h-12 items-center justify-between border-b px-4',
-          className,
+          className
         )}
       >
         <span className='text-sm text-muted-foreground'>Loading...</span>

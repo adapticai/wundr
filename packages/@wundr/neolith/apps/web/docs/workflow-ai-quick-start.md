@@ -3,6 +3,7 @@
 ## What You Get
 
 A fully functional AI-powered workflow assistant that:
+
 - Creates workflows from natural language
 - Suggests optimizations
 - Diagnoses errors
@@ -47,11 +48,11 @@ export default function WorkflowBuilderPage() {
   const { workspaceSlug } = useParams();
 
   return (
-    <div className="flex h-screen">
+    <div className='flex h-screen'>
       {/* Main workflow builder */}
-      <div className="flex-1">
+      <div className='flex-1'>
         <Button onClick={() => setIsAIOpen(true)}>
-          <Bot className="h-4 w-4 mr-2" />
+          <Bot className='h-4 w-4 mr-2' />
           Open AI Assistant
         </Button>
         {/* Your workflow canvas */}
@@ -62,7 +63,7 @@ export default function WorkflowBuilderPage() {
         workspaceSlug={workspaceSlug}
         isOpen={isAIOpen}
         onClose={() => setIsAIOpen(false)}
-        onWorkflowCreate={(workflow) => {
+        onWorkflowCreate={workflow => {
           // Handle new workflow from AI
           createWorkflow(workflow);
         }}
@@ -81,7 +82,7 @@ export default function WorkflowBuilderPage() {
   execution={lastExecution} // Latest execution for error diagnosis
   isOpen={isAIOpen}
   onClose={() => setIsAIOpen(false)}
-  onWorkflowUpdate={(updates) => {
+  onWorkflowUpdate={updates => {
     updateWorkflow(updates);
   }}
 />
@@ -138,7 +139,7 @@ import {
 } from '@/lib/workflow/natural-language-parser';
 
 // Detect patterns
-const text = "When a message is posted in #support at 9am";
+const text = 'When a message is posted in #support at 9am';
 const trigger = detectTriggerType(text); // "message"
 const actions = detectActionTypes(text); // []
 const schedule = extractSchedule(text); // { cron: "0 9 * * *", ... }
@@ -154,17 +155,17 @@ console.log(analysis.suggestions); // Array of what's missing
 ### POST `/api/workspaces/[workspaceSlug]/workflows/ai`
 
 **Headers:**
+
 ```
 Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
 **Body:**
+
 ```json
 {
-  "messages": [
-    { "role": "user", "content": "Create a welcome workflow" }
-  ],
+  "messages": [{ "role": "user", "content": "Create a welcome workflow" }],
   "workflowId": "optional-workflow-id",
   "executionId": "optional-execution-id"
 }
@@ -177,6 +178,7 @@ Content-Type: application/json
 The AI uses 4 structured tools:
 
 ### 1. `create_workflow`
+
 ```json
 {
   "name": "Workflow Name",
@@ -187,6 +189,7 @@ The AI uses 4 structured tools:
 ```
 
 ### 2. `suggest_optimizations`
+
 ```json
 {
   "suggestions": [
@@ -201,6 +204,7 @@ The AI uses 4 structured tools:
 ```
 
 ### 3. `diagnose_error`
+
 ```json
 {
   "cause": "Root cause",
@@ -210,6 +214,7 @@ The AI uses 4 structured tools:
 ```
 
 ### 4. `recommend_steps`
+
 ```json
 {
   "recommendations": [
@@ -225,12 +230,14 @@ The AI uses 4 structured tools:
 ## Environment Variables
 
 Required:
+
 ```bash
 OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-4o-mini # Default, supports tool calling
 ```
 
 Optional:
+
 ```bash
 DEFAULT_LLM_PROVIDER=openai # Used by other endpoints
 ```
@@ -273,6 +280,7 @@ npm run build      # ✓ Compiled successfully
 ## Support
 
 For issues or questions:
+
 - See full documentation: `docs/workflow-ai-assistant-usage.md`
 - Check natural language parser: `lib/workflow/natural-language-parser.ts`
 - Review API implementation: `app/api/workspaces/[workspaceSlug]/workflows/ai/route.ts`

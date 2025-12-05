@@ -66,7 +66,7 @@ class PerformanceMonitor {
   recordMetric(
     name: string,
     value: number,
-    metadata?: Record<string, unknown>,
+    metadata?: Record<string, unknown>
   ): void {
     console.log('[Performance] Recording metric:', name, value);
 
@@ -227,7 +227,7 @@ class PerformanceMonitor {
     }
 
     const [navigation] = performance.getEntriesByType(
-      'navigation',
+      'navigation'
     ) as PerformanceNavigationTiming[];
     return navigation || null;
   }
@@ -241,7 +241,7 @@ class PerformanceMonitor {
     }
 
     return performance.getEntriesByType(
-      'resource',
+      'resource'
     ) as PerformanceResourceTiming[];
   }
 
@@ -292,7 +292,7 @@ const performanceMonitor = new PerformanceMonitor();
 export function recordMetric(
   name: string,
   value: number,
-  metadata?: Record<string, unknown>,
+  metadata?: Record<string, unknown>
 ): void {
   performanceMonitor.recordMetric(name, value, metadata);
 }
@@ -316,7 +316,7 @@ export function endMeasure(name: string): number | null {
  */
 export function measureAsync<T>(
   name: string,
-  fn: () => Promise<T>,
+  fn: () => Promise<T>
 ): Promise<T> {
   return performanceMonitor.measureAsync(name, fn);
 }
@@ -398,7 +398,7 @@ export async function measureWebVitals(): Promise<Partial<CoreWebVitals>> {
       if (typeof performance !== 'undefined' && performance.getEntriesByType) {
         const paintEntries = performance.getEntriesByType('paint');
         const fcpEntry = paintEntries.find(
-          entry => entry.name === 'first-contentful-paint',
+          entry => entry.name === 'first-contentful-paint'
         );
         if (fcpEntry) {
           vitals.FCP = fcpEntry.startTime;
@@ -415,7 +415,7 @@ export async function measureWebVitals(): Promise<Partial<CoreWebVitals>> {
  */
 export function getPerformanceRating(
   metric: keyof CoreWebVitals,
-  value: number,
+  value: number
 ): PerformanceRating {
   // Thresholds based on Web Vitals recommendations
   const thresholds: Record<
@@ -532,7 +532,7 @@ export function isUnderMemoryPressure(threshold = 0.9): boolean {
  */
 export function requestIdleCallbackPolyfill(
   callback: () => void,
-  options?: { timeout?: number },
+  options?: { timeout?: number }
 ): number {
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
     return window.requestIdleCallback(callback, options);
@@ -561,7 +561,7 @@ export function cancelIdleCallbackPolyfill(handle: number): void {
  */
 export function createLazyObserver(
   onVisible: () => void,
-  options: IntersectionObserverInit = {},
+  options: IntersectionObserverInit = {}
 ): IntersectionObserver | null {
   if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
     return null;

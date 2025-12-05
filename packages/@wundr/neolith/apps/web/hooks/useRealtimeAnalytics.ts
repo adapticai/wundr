@@ -112,7 +112,10 @@ export interface UseRealtimeAnalyticsReturn {
   /** Manually disconnect */
   disconnect: () => void;
   /** Track a custom event */
-  trackEvent: (eventType: string, eventData?: Record<string, unknown>) => Promise<void>;
+  trackEvent: (
+    eventType: string,
+    eventData?: Record<string, unknown>
+  ) => Promise<void>;
 }
 
 // =============================================================================
@@ -128,7 +131,7 @@ export interface UseRealtimeAnalyticsReturn {
  */
 export function useRealtimeAnalytics(
   workspaceId: string,
-  options: UseRealtimeAnalyticsOptions = {},
+  options: UseRealtimeAnalyticsOptions = {}
 ): UseRealtimeAnalyticsReturn {
   const {
     enabled = true,
@@ -215,25 +218,32 @@ export function useRealtimeAnalytics(
         onError?.(new Error(errorMessage));
 
         // Attempt reconnection
-        if (autoReconnect && reconnectAttemptsRef.current < maxReconnectAttempts) {
+        if (
+          autoReconnect &&
+          reconnectAttemptsRef.current < maxReconnectAttempts
+        ) {
           reconnectAttemptsRef.current += 1;
-          const delay = reconnectDelay * Math.pow(2, reconnectAttemptsRef.current - 1);
+          const delay =
+            reconnectDelay * Math.pow(2, reconnectAttemptsRef.current - 1);
 
           console.log(
-            `[SSE] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts})`,
+            `[SSE] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts})`
           );
 
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, delay);
         } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
-          setError('Max reconnection attempts reached. Please refresh the page.');
+          setError(
+            'Max reconnection attempts reached. Please refresh the page.'
+          );
           eventSource.close();
           onDisconnect?.();
         }
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to connect';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to connect';
       setError(errorMessage);
       onError?.(err instanceof Error ? err : new Error(errorMessage));
     }
@@ -294,7 +304,7 @@ export function useRealtimeAnalytics(
               eventData: eventData || {},
               sessionId: `session_${Date.now()}`,
             }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -308,7 +318,7 @@ export function useRealtimeAnalytics(
         throw err;
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   // Connect on mount and when dependencies change
@@ -346,7 +356,7 @@ export function useRealtimeAnalytics(
  */
 export function useRealtimeAnalyticsPolling(
   workspaceId: string,
-  interval: number = 5000,
+  interval: number = 5000
 ): Omit<UseRealtimeAnalyticsReturn, 'disconnect' | 'reconnect'> {
   const [stats, setStats] = useState<RealtimeStats | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -366,7 +376,7 @@ export function useRealtimeAnalyticsPolling(
               eventType,
               eventData: eventData || {},
             }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -377,7 +387,7 @@ export function useRealtimeAnalyticsPolling(
         throw err;
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   useEffect(() => {
@@ -386,7 +396,7 @@ export function useRealtimeAnalyticsPolling(
     const fetchStats = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/analytics/realtime`,
+          `/api/workspaces/${workspaceId}/analytics/realtime`
         );
 
         if (!response.ok) {
@@ -400,7 +410,9 @@ export function useRealtimeAnalyticsPolling(
         }
       } catch (err) {
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to fetch stats');
+          setError(
+            err instanceof Error ? err.message : 'Failed to fetch stats'
+          );
         }
       }
     };

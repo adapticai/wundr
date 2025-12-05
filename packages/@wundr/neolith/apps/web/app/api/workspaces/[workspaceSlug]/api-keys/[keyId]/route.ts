@@ -51,7 +51,7 @@ const updateApiKeySchema = z.object({
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Verify authentication
@@ -77,7 +77,7 @@ export async function PATCH(
     if (!workspace || workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -87,7 +87,7 @@ export async function PATCH(
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can update API keys' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -102,7 +102,10 @@ export async function PATCH(
     const updates = updateApiKeySchema.parse(body);
 
     // Get current API keys
-    const currentSettings = workspace.settings as Record<string, unknown> | null;
+    const currentSettings = workspace.settings as Record<
+      string,
+      unknown
+    > | null;
     const apiKeys =
       currentSettings &&
       typeof currentSettings === 'object' &&
@@ -133,7 +136,7 @@ export async function PATCH(
         : [];
 
     // Find the key to update
-    const keyIndex = apiKeys.findIndex((k) => k.id === keyId);
+    const keyIndex = apiKeys.findIndex(k => k.id === keyId);
     if (keyIndex === -1) {
       return NextResponse.json({ error: 'API key not found' }, { status: 404 });
     }
@@ -172,22 +175,22 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/workspaces/:workspaceSlug/api-keys/:keyId] Error:',
-      error,
+      error
     );
 
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
-          error: `Validation error: ${error.errors.map((e) => e.message).join(', ')}`,
+          error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -199,7 +202,7 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Verify authentication
@@ -225,7 +228,7 @@ export async function DELETE(
     if (!workspace || workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -235,12 +238,15 @@ export async function DELETE(
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can delete API keys' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Get current API keys
-    const currentSettings = workspace.settings as Record<string, unknown> | null;
+    const currentSettings = workspace.settings as Record<
+      string,
+      unknown
+    > | null;
     const apiKeys =
       currentSettings &&
       typeof currentSettings === 'object' &&
@@ -249,7 +255,7 @@ export async function DELETE(
         : [];
 
     // Filter out the key to delete
-    const updatedKeys = apiKeys.filter((k) => k.id !== keyId);
+    const updatedKeys = apiKeys.filter(k => k.id !== keyId);
 
     if (updatedKeys.length === apiKeys.length) {
       return NextResponse.json({ error: 'API key not found' }, { status: 404 });
@@ -273,11 +279,11 @@ export async function DELETE(
   } catch (error) {
     console.error(
       '[DELETE /api/workspaces/:workspaceSlug/api-keys/:keyId] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

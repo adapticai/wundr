@@ -81,7 +81,7 @@ export function ToolHeader({
     <CollapsibleTrigger
       className={cn(
         'flex items-center justify-between w-full px-3 py-2 hover:bg-muted/50 transition-colors',
-        className,
+        className
       )}
     >
       <div className='flex items-center gap-2'>
@@ -180,7 +180,7 @@ export function ToolError({
     <div
       className={cn(
         'rounded-lg bg-destructive/10 text-destructive p-2',
-        className,
+        className
       )}
     >
       <div className='flex items-center gap-2 text-sm'>
@@ -223,7 +223,7 @@ export function ToolInline({
     <div
       className={cn(
         'inline-flex items-center gap-2 px-2 py-1 rounded-md bg-muted text-sm',
-        className,
+        className
       )}
     >
       <Wrench className='h-3 w-3' />

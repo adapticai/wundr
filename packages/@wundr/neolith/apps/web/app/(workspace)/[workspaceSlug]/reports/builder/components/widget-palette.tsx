@@ -143,14 +143,14 @@ function DraggableWidget({
         isDragging && 'opacity-50'
       )}
     >
-      <CardContent className="p-3">
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 p-2 rounded-md bg-primary/10">
-            <Icon className="h-5 w-5 text-primary" />
+      <CardContent className='p-3'>
+        <div className='flex items-start gap-3'>
+          <div className='flex-shrink-0 p-2 rounded-md bg-primary/10'>
+            <Icon className='h-5 w-5 text-primary' />
           </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-medium truncate">{label}</h4>
-            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+          <div className='flex-1 min-w-0'>
+            <h4 className='text-sm font-medium truncate'>{label}</h4>
+            <p className='text-xs text-muted-foreground mt-0.5 line-clamp-2'>
               {description}
             </p>
           </div>
@@ -162,23 +162,23 @@ function DraggableWidget({
 
 export function WidgetPalette() {
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 border-b">
-        <h2 className="font-semibold">Widget Palette</h2>
-        <p className="text-xs text-muted-foreground mt-1">
+    <div className='h-full flex flex-col'>
+      <div className='p-4 border-b'>
+        <h2 className='font-semibold'>Widget Palette</h2>
+        <p className='text-xs text-muted-foreground mt-1'>
           Drag widgets onto the canvas
         </p>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="p-4 space-y-6">
-          {WIDGET_PALETTES.map((palette) => (
+      <ScrollArea className='flex-1'>
+        <div className='p-4 space-y-6'>
+          {WIDGET_PALETTES.map(palette => (
             <div key={palette.category}>
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">
+              <h3 className='text-sm font-medium text-muted-foreground mb-3'>
                 {palette.category}
               </h3>
-              <div className="space-y-2">
-                {palette.items.map((item) => (
+              <div className='space-y-2'>
+                {palette.items.map(item => (
                   <DraggableWidget key={item.type} {...item} />
                 ))}
               </div>

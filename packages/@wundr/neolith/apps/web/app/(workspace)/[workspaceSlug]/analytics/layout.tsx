@@ -229,18 +229,18 @@ export default function AnalyticsLayout({
 
   // Sidebar content component (used in both desktop and mobile views)
   const FilterSidebar = () => (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">Quick Filters</h3>
-        <p className="text-xs text-muted-foreground">
+    <div className='space-y-4'>
+      <div className='space-y-2'>
+        <h3 className='text-sm font-semibold text-foreground'>Quick Filters</h3>
+        <p className='text-xs text-muted-foreground'>
           Filter data by common patterns
         </p>
       </div>
 
       <Separator />
 
-      <ScrollArea className="h-[calc(100vh-20rem)] md:h-[calc(100vh-16rem)]">
-        <div className="space-y-1">
+      <ScrollArea className='h-[calc(100vh-20rem)] md:h-[calc(100vh-16rem)]'>
+        <div className='space-y-1'>
           {quickFilters.map(filter => (
             <button
               key={filter.id}
@@ -253,8 +253,8 @@ export default function AnalyticsLayout({
                   : 'text-muted-foreground'
               )}
             >
-              <span className="font-medium">{filter.label}</span>
-              <span className="text-xs opacity-80">{filter.description}</span>
+              <span className='font-medium'>{filter.label}</span>
+              <span className='text-xs opacity-80'>{filter.description}</span>
             </button>
           ))}
         </div>
@@ -262,53 +262,55 @@ export default function AnalyticsLayout({
 
       <Separator />
 
-      <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-foreground">
+      <div className='space-y-3'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Additional Filters
         </h4>
 
-        <div className="space-y-2">
-          <label className="text-xs text-muted-foreground">Metric Type</label>
-          <Select defaultValue="all">
-            <SelectTrigger className="h-9">
-              <SelectValue placeholder="Select metric" />
+        <div className='space-y-2'>
+          <label className='text-xs text-muted-foreground'>Metric Type</label>
+          <Select defaultValue='all'>
+            <SelectTrigger className='h-9'>
+              <SelectValue placeholder='Select metric' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Metrics</SelectItem>
-              <SelectItem value="engagement">Engagement</SelectItem>
-              <SelectItem value="conversion">Conversion</SelectItem>
-              <SelectItem value="retention">Retention</SelectItem>
-              <SelectItem value="growth">Growth</SelectItem>
+              <SelectItem value='all'>All Metrics</SelectItem>
+              <SelectItem value='engagement'>Engagement</SelectItem>
+              <SelectItem value='conversion'>Conversion</SelectItem>
+              <SelectItem value='retention'>Retention</SelectItem>
+              <SelectItem value='growth'>Growth</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-xs text-muted-foreground">Data Granularity</label>
-          <Select defaultValue="daily">
-            <SelectTrigger className="h-9">
-              <SelectValue placeholder="Select granularity" />
+        <div className='space-y-2'>
+          <label className='text-xs text-muted-foreground'>
+            Data Granularity
+          </label>
+          <Select defaultValue='daily'>
+            <SelectTrigger className='h-9'>
+              <SelectValue placeholder='Select granularity' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="hourly">Hourly</SelectItem>
-              <SelectItem value="daily">Daily</SelectItem>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value='hourly'>Hourly</SelectItem>
+              <SelectItem value='daily'>Daily</SelectItem>
+              <SelectItem value='weekly'>Weekly</SelectItem>
+              <SelectItem value='monthly'>Monthly</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-xs text-muted-foreground">Comparison</label>
-          <Select defaultValue="none">
-            <SelectTrigger className="h-9">
-              <SelectValue placeholder="Compare with" />
+        <div className='space-y-2'>
+          <label className='text-xs text-muted-foreground'>Comparison</label>
+          <Select defaultValue='none'>
+            <SelectTrigger className='h-9'>
+              <SelectValue placeholder='Compare with' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">No Comparison</SelectItem>
-              <SelectItem value="previous">Previous Period</SelectItem>
-              <SelectItem value="year-ago">Year Ago</SelectItem>
-              <SelectItem value="custom">Custom Period</SelectItem>
+              <SelectItem value='none'>No Comparison</SelectItem>
+              <SelectItem value='previous'>Previous Period</SelectItem>
+              <SelectItem value='year-ago'>Year Ago</SelectItem>
+              <SelectItem value='custom'>Custom Period</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -317,46 +319,42 @@ export default function AnalyticsLayout({
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className='flex min-h-screen flex-col bg-background'>
       {/* Header */}
-      <div className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center gap-4 px-4 md:px-8">
+      <div className='sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+        <div className='container flex h-16 items-center gap-4 px-4 md:px-8'>
           {/* Mobile Filter Drawer */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="md:hidden"
-              >
-                <Filter className="h-4 w-4" />
-                <span className="sr-only">Toggle filters</span>
+              <Button variant='outline' size='icon' className='md:hidden'>
+                <Filter className='h-4 w-4' />
+                <span className='sr-only'>Toggle filters</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+            <SheetContent side='left' className='w-[300px] sm:w-[400px]'>
               <SheetHeader>
                 <SheetTitle>Filters</SheetTitle>
                 <SheetDescription>
                   Apply filters to refine your analytics data
                 </SheetDescription>
               </SheetHeader>
-              <div className="mt-6">
+              <div className='mt-6'>
                 <FilterSidebar />
               </div>
             </SheetContent>
           </Sheet>
 
           {/* Title */}
-          <div className="flex flex-1 items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
-            <h1 className="text-lg font-semibold md:text-xl">Analytics</h1>
+          <div className='flex flex-1 items-center gap-2'>
+            <BarChart3 className='h-5 w-5 text-primary' />
+            <h1 className='text-lg font-semibold md:text-xl'>Analytics</h1>
           </div>
 
           {/* Date Range Selector */}
-          <div className="hidden items-center gap-2 sm:flex">
+          <div className='hidden items-center gap-2 sm:flex'>
             <Select value={timeRange} onValueChange={handleTimeRangeChange}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Time range" />
+              <SelectTrigger className='w-[140px]'>
+                <SelectValue placeholder='Time range' />
               </SelectTrigger>
               <SelectContent>
                 {timeRangePresets.map(preset => (
@@ -370,13 +368,13 @@ export default function AnalyticsLayout({
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  variant="outline"
+                  variant='outline'
                   className={cn(
                     'w-[240px] justify-start text-left font-normal',
                     !date && 'text-muted-foreground'
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className='mr-2 h-4 w-4' />
                   {date?.from ? (
                     date.to ? (
                       <>
@@ -391,9 +389,9 @@ export default function AnalyticsLayout({
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
+              <PopoverContent className='w-auto p-0' align='end'>
                 <Calendar
-                  mode="range"
+                  mode='range'
                   defaultMonth={date?.from}
                   selected={date}
                   onSelect={setDate}
@@ -406,23 +404,23 @@ export default function AnalyticsLayout({
           {/* Export Button */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="default" size="default" className="gap-2">
-                <Download className="h-4 w-4" />
-                <span className="hidden sm:inline">Export</span>
+              <Button variant='default' size='default' className='gap-2'>
+                <Download className='h-4 w-4' />
+                <span className='hidden sm:inline'>Export</span>
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-56" align="end">
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <h4 className="text-sm font-semibold">Export Data</h4>
-                  <p className="text-xs text-muted-foreground">
+            <PopoverContent className='w-56' align='end'>
+              <div className='space-y-3'>
+                <div className='space-y-1'>
+                  <h4 className='text-sm font-semibold'>Export Data</h4>
+                  <p className='text-xs text-muted-foreground'>
                     Choose format and download
                   </p>
                 </div>
                 <Separator />
                 <Select value={exportFormat} onValueChange={setExportFormat}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select format" />
+                    <SelectValue placeholder='Select format' />
                   </SelectTrigger>
                   <SelectContent>
                     {exportFormats.map(format => (
@@ -432,7 +430,7 @@ export default function AnalyticsLayout({
                     ))}
                   </SelectContent>
                 </Select>
-                <Button onClick={handleExport} className="w-full">
+                <Button onClick={handleExport} className='w-full'>
                   Download
                 </Button>
               </div>
@@ -441,10 +439,10 @@ export default function AnalyticsLayout({
         </div>
 
         {/* Tab Navigation */}
-        <div className="container px-4 md:px-8">
-          <Tabs value={activeView} className="w-full">
-            <ScrollArea className="w-full">
-              <TabsList className="inline-flex h-12 w-full justify-start gap-1 bg-transparent p-0">
+        <div className='container px-4 md:px-8'>
+          <Tabs value={activeView} className='w-full'>
+            <ScrollArea className='w-full'>
+              <TabsList className='inline-flex h-12 w-full justify-start gap-1 bg-transparent p-0'>
                 {analyticsViews.map(view => {
                   const Icon = view.icon;
                   const href = `/${workspaceSlug}/analytics/${view.href}`;
@@ -462,8 +460,8 @@ export default function AnalyticsLayout({
                           !isActive && 'text-muted-foreground'
                         )}
                       >
-                        <Icon className="h-4 w-4" />
-                        <span className="hidden sm:inline">{view.label}</span>
+                        <Icon className='h-4 w-4' />
+                        <span className='hidden sm:inline'>{view.label}</span>
                       </TabsTrigger>
                     </Link>
                   );
@@ -475,30 +473,30 @@ export default function AnalyticsLayout({
       </div>
 
       {/* Main Content Area */}
-      <div className="container flex flex-1 gap-6 px-4 py-6 md:px-8">
+      <div className='container flex flex-1 gap-6 px-4 py-6 md:px-8'>
         {/* Desktop Sidebar */}
-        <aside className="hidden w-64 shrink-0 md:block">
-          <Card className="sticky top-24">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">Filters</CardTitle>
-              <CardDescription className="text-xs">
+        <aside className='hidden w-64 shrink-0 md:block'>
+          <Card className='sticky top-24'>
+            <CardHeader className='pb-4'>
+              <CardTitle className='text-base'>Filters</CardTitle>
+              <CardDescription className='text-xs'>
                 Refine your analytics view
               </CardDescription>
             </CardHeader>
-            <CardContent className="pb-4">
+            <CardContent className='pb-4'>
               <FilterSidebar />
             </CardContent>
           </Card>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 space-y-6">
+        <main className='flex-1 space-y-6'>
           {/* Mobile Date Range Selector */}
-          <Card className="sm:hidden">
-            <CardContent className="space-y-3 p-4">
+          <Card className='sm:hidden'>
+            <CardContent className='space-y-3 p-4'>
               <Select value={timeRange} onValueChange={handleTimeRangeChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Time range" />
+                  <SelectValue placeholder='Time range' />
                 </SelectTrigger>
                 <SelectContent>
                   {timeRangePresets.map(preset => (
@@ -512,13 +510,13 @@ export default function AnalyticsLayout({
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant='outline'
                     className={cn(
                       'w-full justify-start text-left font-normal',
                       !date && 'text-muted-foreground'
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className='mr-2 h-4 w-4' />
                     {date?.from ? (
                       date.to ? (
                         <>
@@ -533,9 +531,9 @@ export default function AnalyticsLayout({
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className='w-auto p-0' align='start'>
                   <Calendar
-                    mode="range"
+                    mode='range'
                     defaultMonth={date?.from}
                     selected={date}
                     onSelect={setDate}

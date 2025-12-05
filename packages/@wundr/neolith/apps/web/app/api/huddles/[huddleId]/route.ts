@@ -190,7 +190,7 @@ async function getHuddleWithAccess(huddleId: string, userId: string) {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -199,9 +199,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED,
+          CALL_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -212,9 +212,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid huddle ID format',
-          CALL_ERROR_CODES.VALIDATION_ERROR,
+          CALL_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -224,9 +224,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Huddle not found or access denied',
-          CALL_ERROR_CODES.HUDDLE_NOT_FOUND,
+          CALL_ERROR_CODES.HUDDLE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -250,9 +250,9 @@ export async function GET(
         return NextResponse.json(
           createErrorResponse(
             'Access denied to private huddle',
-            CALL_ERROR_CODES.HUDDLE_PRIVATE,
+            CALL_ERROR_CODES.HUDDLE_PRIVATE
           ),
-          { status: 403 },
+          { status: 403 }
         );
       }
     }
@@ -352,9 +352,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR,
+        CALL_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -370,7 +370,7 @@ export async function GET(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -379,9 +379,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED,
+          CALL_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -392,9 +392,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Invalid huddle ID format',
-          CALL_ERROR_CODES.VALIDATION_ERROR,
+          CALL_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -404,9 +404,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Huddle not found or access denied',
-          CALL_ERROR_CODES.HUDDLE_NOT_FOUND,
+          CALL_ERROR_CODES.HUDDLE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -415,9 +415,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Huddle has already ended',
-          CALL_ERROR_CODES.HUDDLE_ALREADY_ENDED,
+          CALL_ERROR_CODES.HUDDLE_ALREADY_ENDED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -446,9 +446,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Only the huddle creator or an admin can end this huddle',
-          CALL_ERROR_CODES.FORBIDDEN,
+          CALL_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -468,7 +468,7 @@ export async function DELETE(
         settings?.huddles?.map(h =>
           h.id === params.huddleId
             ? { ...h, status: 'ended' as const, endedAt: now.toISOString() }
-            : h,
+            : h
         ) ?? [];
 
       const updatedSettings: Prisma.InputJsonValue = toJsonValue({
@@ -513,9 +513,9 @@ export async function DELETE(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR,
+        CALL_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

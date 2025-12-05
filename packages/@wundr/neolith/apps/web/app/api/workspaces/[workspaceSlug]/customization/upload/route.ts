@@ -52,7 +52,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -60,7 +60,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (!member || (member.role !== 'ADMIN' && member.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Insufficient permissions' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -80,10 +80,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: 'Invalid file type' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
     }
 
     // Validate file size
@@ -138,7 +135,7 @@ export async function POST(request: Request, context: RouteContext) {
     console.error('Error uploading file:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

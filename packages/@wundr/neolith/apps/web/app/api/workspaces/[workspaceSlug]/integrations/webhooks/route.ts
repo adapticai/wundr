@@ -30,7 +30,7 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -38,9 +38,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          INTEGRATION_ERROR_CODES.UNAUTHORIZED,
+          INTEGRATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -49,9 +49,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace ID is required',
-          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -60,9 +60,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -82,15 +82,15 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const { webhooks, total } = await listWebhooks(
       workspaceId,
-      parseResult.data,
+      parseResult.data
     );
 
     return NextResponse.json({
@@ -103,13 +103,16 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/[workspaceSlug]/integrations/webhooks] Error:', error);
+    console.error(
+      '[GET /api/workspaces/[workspaceSlug]/integrations/webhooks] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        INTEGRATION_ERROR_CODES.INTERNAL_ERROR,
+        INTEGRATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -121,7 +124,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -129,9 +132,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          INTEGRATION_ERROR_CODES.UNAUTHORIZED,
+          INTEGRATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -140,9 +143,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace ID is required',
-          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -151,9 +154,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -161,9 +164,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Admin permission required to create webhooks',
-          INTEGRATION_ERROR_CODES.FORBIDDEN,
+          INTEGRATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -174,9 +177,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -186,16 +189,16 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const { webhook, secret } = await createWebhook(
       workspaceId,
       parseResult.data,
-      session.user.id,
+      session.user.id
     );
 
     return NextResponse.json(
@@ -204,16 +207,19 @@ export async function POST(
         secret,
         message: 'Webhook created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
-    console.error('[POST /api/workspaces/[workspaceSlug]/integrations/webhooks] Error:', error);
+    console.error(
+      '[POST /api/workspaces/[workspaceSlug]/integrations/webhooks] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        INTEGRATION_ERROR_CODES.INTERNAL_ERROR,
+        INTEGRATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

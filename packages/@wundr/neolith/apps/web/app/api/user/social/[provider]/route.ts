@@ -33,7 +33,7 @@ interface RouteContext {
  */
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -45,7 +45,7 @@ export async function DELETE(
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -69,7 +69,7 @@ export async function DELETE(
           error: 'User not found',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -82,13 +82,13 @@ export async function DELETE(
           error: 'Provider not connected',
           code: SECURITY_ERROR_CODES.PROVIDER_NOT_CONNECTED,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check if user has password set (credentials account exists)
     const hasPassword = user.accounts.some(
-      acc => acc.provider === 'credentials' && acc.type === 'credentials',
+      acc => acc.provider === 'credentials' && acc.type === 'credentials'
     );
 
     // Don't allow disconnecting if it's the only auth method and no password
@@ -100,7 +100,7 @@ export async function DELETE(
             'Cannot disconnect last authentication method. Please set a password first.',
           code: SECURITY_ERROR_CODES.LAST_AUTH_METHOD,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -135,7 +135,7 @@ export async function DELETE(
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

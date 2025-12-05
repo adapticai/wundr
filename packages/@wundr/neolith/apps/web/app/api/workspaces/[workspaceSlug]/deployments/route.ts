@@ -44,7 +44,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -52,7 +52,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -183,7 +183,7 @@ export async function GET(
     console.error('Error fetching deployments:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -212,7 +212,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -220,7 +220,7 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -240,7 +240,7 @@ export async function POST(
     if (!body.name || !body.type || !body.environment || !body.config) {
       return NextResponse.json(
         { error: 'Missing required fields' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -267,7 +267,7 @@ export async function POST(
             status: 'unknown',
             lastCheck: null,
             uptime: 0,
-          }),
+          })
         ),
         stats: JSON.parse(
           JSON.stringify({
@@ -275,7 +275,7 @@ export async function POST(
             errors: 0,
             latencyP50: 0,
             latencyP99: 0,
-          }),
+          })
         ),
         createdById: session.user.id,
       },
@@ -335,13 +335,13 @@ export async function POST(
         deployment: transformedDeployment,
         message: 'Deployment created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('Error creating deployment:', error);
     return NextResponse.json(
       { error: 'An internal error occurred' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

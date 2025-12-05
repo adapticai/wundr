@@ -137,7 +137,7 @@ interface DashboardStats {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -145,9 +145,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED,
+          ADMIN_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -162,9 +162,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Workspace not found',
-          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ADMIN_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -173,22 +173,23 @@ export async function GET(
       where: { workspaceId: workspace.id, userId: session.user.id },
     });
 
-    if (
-      !membership ||
-      !['ADMIN', 'OWNER'].includes(membership.role)
-    ) {
+    if (!membership || !['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN,
+          ADMIN_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Calculate time ranges
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
     const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const lastWeekStart = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -245,9 +246,12 @@ export async function GET(
       }),
     ]);
 
-    const memberGrowthPercentage = membersLastWeek > 0
-      ? ((membersThisWeek - membersLastWeek) / membersLastWeek) * 100
-      : membersThisWeek > 0 ? 100 : 0;
+    const memberGrowthPercentage =
+      membersLastWeek > 0
+        ? ((membersThisWeek - membersLastWeek) / membersLastWeek) * 100
+        : membersThisWeek > 0
+          ? 100
+          : 0;
 
     const memberStats: MemberStats = {
       total: totalMembers,
@@ -259,9 +263,7 @@ export async function GET(
         lastWeek: membersLastWeek,
         percentageChange: Math.round(memberGrowthPercentage * 100) / 100,
       },
-      byRole: Object.fromEntries(
-        membersByRole.map(m => [m.role, m._count]),
-      ),
+      byRole: Object.fromEntries(membersByRole.map(m => [m.role, m._count])),
     };
 
     // Fetch channel statistics
@@ -299,9 +301,12 @@ export async function GET(
       }),
     ]);
 
-    const channelGrowthPercentage = channelsLastMonth > 0
-      ? ((channelsThisMonth - channelsLastMonth) / channelsLastMonth) * 100
-      : channelsThisMonth > 0 ? 100 : 0;
+    const channelGrowthPercentage =
+      channelsLastMonth > 0
+        ? ((channelsThisMonth - channelsLastMonth) / channelsLastMonth) * 100
+        : channelsThisMonth > 0
+          ? 100
+          : 0;
 
     const channelStats: ChannelStats = {
       total: totalChannels,
@@ -377,9 +382,12 @@ export async function GET(
       messageCount: c._count,
     }));
 
-    const messageGrowthPercentage = messagesLastWeek > 0
-      ? ((messagesThisWeek - messagesLastWeek) / messagesLastWeek) * 100
-      : messagesThisWeek > 0 ? 100 : 0;
+    const messageGrowthPercentage =
+      messagesLastWeek > 0
+        ? ((messagesThisWeek - messagesLastWeek) / messagesLastWeek) * 100
+        : messagesThisWeek > 0
+          ? 100
+          : 0;
 
     const averagePerDay = Math.round(messagesThisMonth / now.getDate());
 
@@ -491,9 +499,12 @@ export async function GET(
 
     const thisMonthSize = Number(filesThisMonth._sum.size || 0);
     const lastMonthSize = Number(filesLastMonth._sum.size || 0);
-    const storageGrowthPercentage = lastMonthSize > 0
-      ? ((thisMonthSize - lastMonthSize) / lastMonthSize) * 100
-      : thisMonthSize > 0 ? 100 : 0;
+    const storageGrowthPercentage =
+      lastMonthSize > 0
+        ? ((thisMonthSize - lastMonthSize) / lastMonthSize) * 100
+        : thisMonthSize > 0
+          ? 100
+          : 0;
 
     const byType: Record<string, { count: number; size: number }> = {};
     filesByType.forEach(f => {
@@ -530,14 +541,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/admin/stats] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to fetch dashboard statistics',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR,
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

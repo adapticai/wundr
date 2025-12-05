@@ -143,7 +143,7 @@ export interface UseMentionSuggestionsReturn {
  */
 export function useMessages(
   channelId: string,
-  filters?: MessageFilters,
+  filters?: MessageFilters
 ): UseMessagesReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -188,7 +188,7 @@ export function useMessages(
         }
 
         const response = await fetch(
-          `/api/channels/${channelId}/messages?${params.toString()}`,
+          `/api/channels/${channelId}/messages?${params.toString()}`
         );
         if (!response.ok) {
           throw new Error('Failed to fetch messages');
@@ -236,7 +236,7 @@ export function useMessages(
 
         // Helper to determine attachment type from mimeType
         const getAttachmentType = (
-          mimeType: string,
+          mimeType: string
         ): 'image' | 'video' | 'audio' | 'file' => {
           if (mimeType.startsWith('image/')) {
             return 'image';
@@ -265,7 +265,7 @@ export function useMessages(
 
         // Transform messageAttachments to UI-expected format
         const transformAttachments = (
-          messageAttachments?: ApiMessageAttachment[],
+          messageAttachments?: ApiMessageAttachment[]
         ): Attachment[] => {
           if (!messageAttachments || messageAttachments.length === 0) {
             return [];
@@ -319,7 +319,7 @@ export function useMessages(
       filters?.before,
       filters?.after,
       filters?.search,
-    ],
+    ]
   );
 
   // Initial fetch
@@ -340,7 +340,7 @@ export function useMessages(
 
     const subscribe = (): (() => void) | null => {
       const eventSource = new EventSource(
-        `/api/channels/${channelId}/subscribe`,
+        `/api/channels/${channelId}/subscribe`
       );
 
       // Handle error events from server
@@ -424,8 +424,8 @@ export function useMessages(
                           }
                         : m.author,
                     }
-                  : m,
-              ),
+                  : m
+              )
             );
           } else if (data.type === 'message_deleted') {
             setMessages(prev => prev.filter(m => m.id !== data.messageId));
@@ -433,7 +433,7 @@ export function useMessages(
         } catch (parseError) {
           console.error(
             '[Channel Subscribe] Failed to parse message:',
-            parseError,
+            parseError
           );
         }
       };
@@ -446,10 +446,10 @@ export function useMessages(
           reconnectAttempts++;
           const backoffTime = Math.min(
             1000 * Math.pow(2, reconnectAttempts),
-            30000,
+            30000
           );
           console.warn(
-            `[Channel Subscribe] Reconnecting in ${backoffTime}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`,
+            `[Channel Subscribe] Reconnecting in ${backoffTime}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`
           );
 
           setTimeout(() => {
@@ -459,10 +459,10 @@ export function useMessages(
           }, backoffTime);
         } else if (reconnectAttempts >= maxReconnectAttempts) {
           console.error(
-            '[Channel Subscribe] Max reconnection attempts reached',
+            '[Channel Subscribe] Max reconnection attempts reached'
           );
           setError(
-            new Error('Real-time connection failed after multiple attempts'),
+            new Error('Real-time connection failed after multiple attempts')
           );
         }
       };
@@ -497,10 +497,10 @@ export function useMessages(
   const updateOptimisticMessage = useCallback(
     (messageId: string, updates: Partial<Message>) => {
       setMessages(prev =>
-        prev.map(m => (m.id === messageId ? { ...m, ...updates } : m)),
+        prev.map(m => (m.id === messageId ? { ...m, ...updates } : m))
       );
     },
-    [],
+    []
   );
 
   // Remove message optimistically
@@ -613,7 +613,7 @@ export function useThread(parentId: string): UseThreadReturn {
 
       // Helper to determine attachment type from mimeType
       const getAttachmentType = (
-        mimeType: string,
+        mimeType: string
       ): 'image' | 'video' | 'audio' | 'file' => {
         if (mimeType.startsWith('image/')) {
           return 'image';
@@ -642,7 +642,7 @@ export function useThread(parentId: string): UseThreadReturn {
 
       // Transform messageAttachments to UI-expected format
       const transformAttachments = (
-        messageAttachments?: ApiThreadMessageAttachment[],
+        messageAttachments?: ApiThreadMessageAttachment[]
       ): Attachment[] => {
         if (!messageAttachments || messageAttachments.length === 0) {
           return [];
@@ -673,7 +673,7 @@ export function useThread(parentId: string): UseThreadReturn {
           mentions: result.data.parentMessage.mentions || [],
           // Transform messageAttachments from API to flat attachments format for UI
           attachments: transformAttachments(
-            result.data.parentMessage.messageAttachments,
+            result.data.parentMessage.messageAttachments
           ),
         } as Message,
         messages: result.data.replies.map((m: ApiThreadMessage) => ({
@@ -693,7 +693,7 @@ export function useThread(parentId: string): UseThreadReturn {
             ...p,
             name: p.name || 'Unknown',
             image: p.avatarUrl || p.image,
-          }),
+          })
         ),
       });
     } catch (err) {
@@ -741,7 +741,7 @@ export function useSendMessage(): UseSendMessageReturn {
     async (
       input: SendMessageInput,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      _currentUser: User,
+      _currentUser: User
     ): Promise<{ optimisticId: string; message: Message | null }> => {
       setIsSending(true);
       setError(null);
@@ -765,7 +765,7 @@ export function useSendMessage(): UseSendMessageReturn {
               metadata: input.metadata || {},
               attachmentIds: input.attachmentIds || [],
             }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -776,7 +776,7 @@ export function useSendMessage(): UseSendMessageReturn {
 
         // Helper to determine attachment type from mimeType
         const getAttachmentType = (
-          mimeType: string,
+          mimeType: string
         ): 'image' | 'video' | 'audio' | 'file' => {
           if (mimeType.startsWith('image/')) {
             return 'image';
@@ -792,7 +792,7 @@ export function useSendMessage(): UseSendMessageReturn {
 
         // Helper to generate file URL
         const getFileUrl = (
-          file: { id: string; s3Key?: string; s3Bucket?: string } | null,
+          file: { id: string; s3Key?: string; s3Bucket?: string } | null
         ): string => {
           if (!file) {
             return '';
@@ -821,7 +821,7 @@ export function useSendMessage(): UseSendMessageReturn {
         }
 
         const transformAttachments = (
-          messageAttachments?: ApiSendMessageAttachment[],
+          messageAttachments?: ApiSendMessageAttachment[]
         ): Attachment[] => {
           if (!messageAttachments || messageAttachments.length === 0) {
             return [];
@@ -865,13 +865,13 @@ export function useSendMessage(): UseSendMessageReturn {
         setIsSending(false);
       }
     },
-    [],
+    []
   );
 
   const editMessage = useCallback(
     async (
       messageId: string,
-      input: UpdateMessageInput,
+      input: UpdateMessageInput
     ): Promise<Message | null> => {
       setIsSending(true);
       setError(null);
@@ -909,7 +909,7 @@ export function useSendMessage(): UseSendMessageReturn {
         setIsSending(false);
       }
     },
-    [],
+    []
   );
 
   const deleteMessage = useCallback(
@@ -934,7 +934,7 @@ export function useSendMessage(): UseSendMessageReturn {
         setIsSending(false);
       }
     },
-    [],
+    []
   );
 
   return {
@@ -985,7 +985,7 @@ export function useReactions(messageId: string): UseReactionsReturn {
           `/api/messages/${messageId}/reactions`,
           {
             signal: abortController.signal,
-          },
+          }
         );
 
         if (!getResponse.ok) {
@@ -994,7 +994,7 @@ export function useReactions(messageId: string): UseReactionsReturn {
 
         const getResult = await getResponse.json();
         const existingReaction = getResult.data?.find(
-          (r: ApiReaction) => r.emoji === emoji && r.hasReacted,
+          (r: ApiReaction) => r.emoji === emoji && r.hasReacted
         );
 
         // If exists, delete it; otherwise, add it
@@ -1004,7 +1004,7 @@ export function useReactions(messageId: string): UseReactionsReturn {
             {
               method: 'DELETE',
               signal: abortController.signal,
-            },
+            }
           );
           if (!deleteResponse.ok) {
             throw new Error('Failed to remove reaction');
@@ -1017,7 +1017,7 @@ export function useReactions(messageId: string): UseReactionsReturn {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ emoji }),
               signal: abortController.signal,
-            },
+            }
           );
           if (!addResponse.ok) {
             throw new Error('Failed to add reaction');
@@ -1029,7 +1029,7 @@ export function useReactions(messageId: string): UseReactionsReturn {
           `/api/messages/${messageId}/reactions`,
           {
             signal: abortController.signal,
-          },
+          }
         );
         if (!finalResponse.ok) {
           throw new Error('Failed to fetch reactions');
@@ -1051,7 +1051,7 @@ export function useReactions(messageId: string): UseReactionsReturn {
         setIsToggling(false);
       }
     },
-    [messageId],
+    [messageId]
   );
 
   // Cleanup on unmount
@@ -1075,7 +1075,7 @@ export function useReactions(messageId: string): UseReactionsReturn {
  */
 export function useTypingIndicator(
   channelId: string,
-  currentUserId: string,
+  currentUserId: string
 ): UseTypingIndicatorReturn {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -1110,7 +1110,7 @@ export function useTypingIndicator(
               },
               channelId,
               timestamp: Date.now(),
-            })),
+            }))
         );
       } catch {
         // Silently fail - typing indicators are non-critical
@@ -1201,7 +1201,7 @@ export function useTypingIndicator(
   // Filter out current user from typing users
   const otherTypingUsers = useMemo(
     () => typingUsers.filter(t => t.user.id !== currentUserId),
-    [typingUsers, currentUserId],
+    [typingUsers, currentUserId]
   );
 
   // Generate typing text
@@ -1277,7 +1277,7 @@ export function useChannel(channelId: string): UseChatChannelReturn {
  * Hook for mention suggestions
  */
 export function useMentionSuggestions(
-  channelId: string,
+  channelId: string
 ): UseMentionSuggestionsReturn {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -1311,7 +1311,7 @@ export function useMentionSuggestions(
         try {
           const response = await fetch(
             `/api/channels/${channelId}/members?search=${encodeURIComponent(query)}`,
-            { signal: abortController.signal },
+            { signal: abortController.signal }
           );
           if (!response.ok) {
             throw new Error('Failed to search users');
@@ -1334,7 +1334,7 @@ export function useMentionSuggestions(
         }
       }, 300);
     },
-    [channelId],
+    [channelId]
   );
 
   // Cleanup on unmount

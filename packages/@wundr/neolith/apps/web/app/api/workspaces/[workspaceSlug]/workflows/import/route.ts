@@ -123,7 +123,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -132,9 +132,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -148,9 +148,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -159,9 +159,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to import workflows',
-          WORKFLOW_ERROR_CODES.FORBIDDEN,
+          WORKFLOW_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -173,9 +173,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -189,9 +189,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'At least one workflow is required',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -223,7 +223,7 @@ export async function POST(
               (data && typeof data === 'object' && 'name' in data
                 ? String(data.name)
                 : 'Unknown') || 'Unknown',
-            error: `Validation failed: ${parseResult.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
+            error: `Validation failed: ${parseResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
           });
           continue;
         }
@@ -233,7 +233,7 @@ export async function POST(
         const warnings: string[] = [];
 
         // Check for name conflicts
-        const nameExists = existingWorkflows.some((w) => w.name === finalName);
+        const nameExists = existingWorkflows.some(w => w.name === finalName);
         if (nameExists) {
           if (conflictResolution === 'skip') {
             results.push({
@@ -245,26 +245,26 @@ export async function POST(
           } else if (conflictResolution === 'rename') {
             let counter = 1;
             while (
-              existingWorkflows.some((w) => w.name === `${input.name} (${counter})`)
+              existingWorkflows.some(
+                w => w.name === `${input.name} (${counter})`
+              )
             ) {
               counter++;
             }
             finalName = `${input.name} (${counter})`;
             warnings.push(
-              `Workflow renamed from "${input.name}" to "${finalName}" due to name conflict`,
+              `Workflow renamed from "${input.name}" to "${finalName}" due to name conflict`
             );
           } else if (conflictResolution === 'overwrite') {
             // Find and delete existing workflow
             const existingWorkflow = existingWorkflows.find(
-              (w) => w.name === finalName,
+              w => w.name === finalName
             );
             if (existingWorkflow) {
               await prisma.workflow.delete({
                 where: { id: existingWorkflow.id },
               });
-              warnings.push(
-                `Existing workflow "${finalName}" was overwritten`,
-              );
+              warnings.push(`Existing workflow "${finalName}" was overwritten`);
             }
           }
         }
@@ -333,11 +333,11 @@ export async function POST(
     }
 
     // Calculate summary stats
-    const successCount = results.filter((r) => r.success).length;
+    const successCount = results.filter(r => r.success).length;
     const failureCount = results.length - successCount;
     const warningCount = results.reduce(
       (sum, r) => sum + (r.warnings?.length || 0),
-      0,
+      0
     );
 
     return NextResponse.json(
@@ -354,19 +354,19 @@ export async function POST(
           warnings: warningCount,
         },
       },
-      { status: failureCount === 0 ? 200 : 207 }, // 207 Multi-Status for partial success
+      { status: failureCount === 0 ? 200 : 207 } // 207 Multi-Status for partial success
     );
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceSlug/workflows/import] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred during import',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

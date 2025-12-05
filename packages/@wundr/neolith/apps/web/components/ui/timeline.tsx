@@ -8,11 +8,7 @@ const Timeline = React.forwardRef<
   HTMLOListElement,
   React.HTMLAttributes<HTMLOListElement>
 >(({ className, ...props }, ref) => (
-  <ol
-    ref={ref}
-    className={cn('relative space-y-8', className)}
-    {...props}
-  />
+  <ol ref={ref} className={cn('relative space-y-8', className)} {...props} />
 ));
 Timeline.displayName = 'Timeline';
 
@@ -28,7 +24,7 @@ const TimelineItem = React.forwardRef<
     className={cn(
       'relative flex gap-4',
       align === 'right' && 'flex-row-reverse',
-      className,
+      className
     )}
     {...props}
   />
@@ -42,9 +38,12 @@ const timelineDotVariants = cva(
     variants: {
       variant: {
         default: 'border-muted-foreground/50 text-muted-foreground',
-        success: 'border-green-500 bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
-        warning: 'border-yellow-500 bg-yellow-50 text-yellow-600 dark:bg-yellow-950 dark:text-yellow-400',
-        error: 'border-red-500 bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400',
+        success:
+          'border-green-500 bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
+        warning:
+          'border-yellow-500 bg-yellow-50 text-yellow-600 dark:bg-yellow-950 dark:text-yellow-400',
+        error:
+          'border-red-500 bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400',
         info: 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400',
         primary: 'border-primary bg-primary/10 text-primary',
       },
@@ -52,11 +51,12 @@ const timelineDotVariants = cva(
     defaultVariants: {
       variant: 'default',
     },
-  },
+  }
 );
 
 export interface TimelineDotProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof timelineDotVariants> {
   icon?: React.ReactNode;
 }
@@ -68,11 +68,9 @@ const TimelineDot = React.forwardRef<HTMLDivElement, TimelineDotProps>(
       className={cn(timelineDotVariants({ variant }), className)}
       {...props}
     >
-      {icon || children || (
-        <div className="h-2 w-2 rounded-full bg-current" />
-      )}
+      {icon || children || <div className='h-2 w-2 rounded-full bg-current' />}
     </div>
-  ),
+  )
 );
 TimelineDot.displayName = 'TimelineDot';
 
@@ -87,8 +85,9 @@ const TimelineConnector = React.forwardRef<
     ref={ref}
     className={cn(
       'absolute left-4 top-8 h-[calc(100%+2rem)] w-px -translate-x-1/2 bg-border',
-      variant === 'dashed' && 'bg-[linear-gradient(to_bottom,var(--border)_50%,transparent_50%)] bg-[length:1px_8px]',
-      className,
+      variant === 'dashed' &&
+        'bg-[linear-gradient(to_bottom,var(--border)_50%,transparent_50%)] bg-[length:1px_8px]',
+      className
     )}
     {...props}
   />

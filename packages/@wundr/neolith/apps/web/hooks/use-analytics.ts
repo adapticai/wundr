@@ -363,7 +363,7 @@ export function useAnalytics(workspaceId: string): UseAnalyticsReturn {
         // Silently fail analytics tracking to avoid disrupting user experience
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   const trackPageView = useCallback(
@@ -373,7 +373,7 @@ export function useAnalytics(workspaceId: string): UseAnalyticsReturn {
         eventData: { page, url: window.location.href },
       });
     },
-    [track],
+    [track]
   );
 
   const trackClick = useCallback(
@@ -383,7 +383,7 @@ export function useAnalytics(workspaceId: string): UseAnalyticsReturn {
         eventData: { element, ...metadata },
       });
     },
-    [track],
+    [track]
   );
 
   return { track, trackPageView, trackClick, sessionId: sessionId.current };
@@ -440,7 +440,7 @@ export function useAnalytics(workspaceId: string): UseAnalyticsReturn {
  */
 export function useWorkspaceAnalytics(
   workspaceId: string,
-  initialParams: AnalyticsQueryParams = {},
+  initialParams: AnalyticsQueryParams = {}
 ): UseWorkspaceAnalyticsReturn {
   const [data, setData] = useState<WorkspaceAnalytics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -472,7 +472,7 @@ export function useWorkspaceAnalytics(
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error || `Failed to fetch analytics: ${response.statusText}`,
+          errorData.error || `Failed to fetch analytics: ${response.statusText}`
         );
       }
 
@@ -540,14 +540,14 @@ export function useWorkspaceAnalytics(
         setIsExporting(false);
       }
     },
-    [workspaceId, params],
+    [workspaceId, params]
   );
 
   const updateParams = useCallback(
     (newParams: Partial<AnalyticsQueryParams>): void => {
       setParams(prev => ({ ...prev, ...newParams }));
     },
-    [],
+    []
   );
 
   useEffect(() => {
@@ -598,7 +598,7 @@ export function useWorkspaceAnalytics(
  */
 export function useMetrics(
   workspaceId: string,
-  period: string = 'month',
+  period: string = 'month'
 ): UseMetricsReturn {
   const [metrics, setMetrics] = useState<UsageMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -610,13 +610,13 @@ export function useMetrics(
 
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/analytics/metrics?period=${period}`,
+        `/api/workspaces/${workspaceId}/analytics/metrics?period=${period}`
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error || `Failed to fetch metrics: ${response.statusText}`,
+          errorData.error || `Failed to fetch metrics: ${response.statusText}`
         );
       }
 
@@ -668,7 +668,7 @@ export function useMetrics(
  */
 export function useRealTimeStats(
   workspaceId: string,
-  refreshInterval = 10000,
+  refreshInterval = 10000
 ): UseRealTimeStatsReturn {
   const [stats, setStats] = useState<RealTimeStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -677,7 +677,7 @@ export function useRealTimeStats(
     const fetchStats = async (): Promise<void> => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/analytics/realtime`,
+          `/api/workspaces/${workspaceId}/analytics/realtime`
         );
         if (response.ok) {
           const data: RealTimeStats = await response.json();

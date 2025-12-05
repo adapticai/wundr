@@ -104,11 +104,11 @@ export function DateRangePicker({
 
   const formatDateRange = (range: DateRange | undefined) => {
     if (!range?.from) {
-return placeholder;
-}
+      return placeholder;
+    }
     if (!range.to) {
-return format(range.from, 'MMM dd, yyyy');
-}
+      return format(range.from, 'MMM dd, yyyy');
+    }
     return `${format(range.from, 'MMM dd, yyyy')} - ${format(range.to, 'MMM dd, yyyy')}`;
   };
 
@@ -116,29 +116,29 @@ return format(range.from, 'MMM dd, yyyy');
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant='outline'
           className={cn(
             'justify-start text-left font-normal',
             !date && 'text-muted-foreground',
-            className,
+            className
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
+          <CalendarIcon className='mr-2 h-4 w-4' />
           {formatDateRange(date)}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <div className="flex">
+      <PopoverContent className='w-auto p-0' align='start'>
+        <div className='flex'>
           {showPresets && (
-            <div className="border-r">
-              <div className="flex flex-col gap-1 p-3">
-                <div className="text-sm font-medium mb-2">Presets</div>
-                {presetOptions.map((preset) => (
+            <div className='border-r'>
+              <div className='flex flex-col gap-1 p-3'>
+                <div className='text-sm font-medium mb-2'>Presets</div>
+                {presetOptions.map(preset => (
                   <Button
                     key={preset.value}
-                    variant="ghost"
-                    size="sm"
-                    className="justify-start"
+                    variant='ghost'
+                    size='sm'
+                    className='justify-start'
                     onClick={() => handlePresetClick(preset)}
                   >
                     {preset.label}
@@ -149,19 +149,15 @@ return format(range.from, 'MMM dd, yyyy');
           )}
           <div>
             <Calendar
-              mode="range"
-              selected={
-                date
-                  ? { from: date.from, to: date.to }
-                  : undefined
-              }
-              onSelect={(range) => {
+              mode='range'
+              selected={date ? { from: date.from, to: date.to } : undefined}
+              onSelect={range => {
                 if (range?.from && range?.to) {
                   handleSelect({ from: range.from, to: range.to });
                 }
               }}
               numberOfMonths={2}
-              captionLayout="dropdown"
+              captionLayout='dropdown'
             />
           </div>
         </div>

@@ -59,12 +59,12 @@ export function WorkflowDefaultSettingsDialog({
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/workflows/settings`,
+        `/api/workspaces/${workspaceSlug}/admin/workflows/settings`
       );
 
       if (!response.ok) {
-throw new Error('Failed to fetch settings');
-}
+        throw new Error('Failed to fetch settings');
+      }
 
       const data = await response.json();
       setSettings(data.settings || settings);
@@ -88,12 +88,12 @@ throw new Error('Failed to fetch settings');
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ settings }),
-        },
+        }
       );
 
       if (!response.ok) {
-throw new Error('Failed to update settings');
-}
+        throw new Error('Failed to update settings');
+      }
 
       toast({
         title: 'Success',

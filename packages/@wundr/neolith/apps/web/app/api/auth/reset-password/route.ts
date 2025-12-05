@@ -106,9 +106,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'Invalid JSON body',
-          AUTH_ERROR_CODES.VALIDATION_ERROR,
+          AUTH_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -121,9 +121,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           AUTH_ERROR_CODES.VALIDATION_ERROR,
           {
             errors: parseResult.error.flatten().fieldErrors,
-          },
+          }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -150,9 +150,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'Invalid or expired reset token',
-          AUTH_ERROR_CODES.INVALID_TOKEN,
+          AUTH_ERROR_CODES.INVALID_TOKEN
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -171,9 +171,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createAuthErrorResponse(
           'Reset token has expired',
-          AUTH_ERROR_CODES.TOKEN_EXPIRED,
+          AUTH_ERROR_CODES.TOKEN_EXPIRED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // eslint-disable-next-line no-console
       console.log(
         '[POST /api/auth/reset-password] Password reset successfully for user:',
-        account.user.email,
+        account.user.email
       );
     } else {
       // eslint-disable-next-line no-console
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: error.message,
           timestamp: timestamp.toISOString(),
           ipAddress,
-        },
+        }
       );
     });
 
@@ -225,7 +225,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         message:
           'Password reset successfully. You can now login with your new password.',
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     // Only log detailed error in development
@@ -238,9 +238,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createAuthErrorResponse(
         'An internal error occurred',
-        AUTH_ERROR_CODES.INTERNAL_ERROR,
+        AUTH_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

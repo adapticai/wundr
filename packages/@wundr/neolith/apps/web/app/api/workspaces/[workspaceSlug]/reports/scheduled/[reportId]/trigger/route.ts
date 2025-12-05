@@ -34,7 +34,7 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -58,7 +58,7 @@ export async function POST(
     if (!workspace || workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -70,7 +70,7 @@ export async function POST(
     if (!scheduledReport || scheduledReport.workspaceId !== workspace.id) {
       return NextResponse.json(
         { error: 'Scheduled report not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -85,8 +85,11 @@ export async function POST(
 
     if (runningExecutions > 0) {
       return NextResponse.json(
-        { error: 'A report of this type is already running. Please wait for it to complete.' },
-        { status: 409 },
+        {
+          error:
+            'A report of this type is already running. Please wait for it to complete.',
+        },
+        { status: 409 }
       );
     }
 
@@ -128,21 +131,27 @@ export async function POST(
     //   emailDelivery: scheduleConfig.emailDelivery,
     // });
 
-    return NextResponse.json({
-      success: true,
-      message: 'Report generation triggered successfully',
-      executionJob: {
-        id: executionJob.id,
-        status: executionJob.status,
-        progress: executionJob.progress,
-        createdAt: executionJob.createdAt,
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Report generation triggered successfully',
+        executionJob: {
+          id: executionJob.id,
+          status: executionJob.status,
+          progress: executionJob.progress,
+          createdAt: executionJob.createdAt,
+        },
       },
-    }, { status: 202 }); // 202 Accepted - request accepted for processing
+      { status: 202 }
+    ); // 202 Accepted - request accepted for processing
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceSlug/reports/scheduled/:reportId/trigger] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceSlug/reports/scheduled/:reportId/trigger] Error:',
+      error
+    );
     return NextResponse.json(
       { error: 'Failed to trigger report execution' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

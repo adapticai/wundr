@@ -54,7 +54,7 @@ type FlexibleMember = ChannelMember | (User & Partial<ChannelMember>);
  */
 function normalizeChannelMember(
   member: FlexibleMember,
-  currentUser: User | null,
+  currentUser: User | null
 ): User & { isOrchestrator: boolean } {
   // Type-safe extraction with fallbacks
   const memberId =
@@ -179,7 +179,7 @@ export default function DMPage() {
   // Typing indicator
   const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
     dmId,
-    currentUser?.id || '',
+    currentUser?.id || ''
   );
 
   // Thread state
@@ -320,7 +320,7 @@ export default function DMPage() {
             mentions,
             attachmentIds: uploadedFileIds,
           },
-          currentUser,
+          currentUser
         );
 
         // Replace optimistic message with real one
@@ -342,7 +342,7 @@ export default function DMPage() {
         // Remove optimistic message on error
         removeOptimisticMessage(optimisticId);
         toast.error(
-          error instanceof Error ? error.message : 'Failed to send message',
+          error instanceof Error ? error.message : 'Failed to send message'
         );
       }
     },
@@ -354,7 +354,7 @@ export default function DMPage() {
       addOptimisticMessage,
       updateOptimisticMessage,
       removeOptimisticMessage,
-    ],
+    ]
   );
 
   // Handle send thread reply
@@ -451,7 +451,7 @@ export default function DMPage() {
             mentions,
             attachmentIds: uploadedFileIds,
           },
-          currentUser,
+          currentUser
         );
 
         // Cleanup temporary blob URLs
@@ -466,11 +466,11 @@ export default function DMPage() {
         updateOptimisticMessage(activeThreadId, {
           replyCount: Math.max(
             0,
-            (messages.find(m => m.id === activeThreadId)?.replyCount || 1) - 1,
+            (messages.find(m => m.id === activeThreadId)?.replyCount || 1) - 1
           ),
         });
         toast.error(
-          error instanceof Error ? error.message : 'Failed to send reply',
+          error instanceof Error ? error.message : 'Failed to send reply'
         );
       }
     },
@@ -483,7 +483,7 @@ export default function DMPage() {
       addOptimisticReply,
       updateOptimisticMessage,
       messages,
-    ],
+    ]
   );
 
   // Handle edit message
@@ -496,7 +496,7 @@ export default function DMPage() {
         updateOptimisticMessage(message.id, result);
       }
     },
-    [editMessage, updateOptimisticMessage],
+    [editMessage, updateOptimisticMessage]
   );
 
   // Handle delete message
@@ -507,7 +507,7 @@ export default function DMPage() {
         removeOptimisticMessage(messageId);
       }
     },
-    [deleteMessage, removeOptimisticMessage],
+    [deleteMessage, removeOptimisticMessage]
   );
 
   // Handle reaction toggle
@@ -539,10 +539,10 @@ export default function DMPage() {
                     count: (r.count || 1) - 1,
                     hasReacted: false,
                     userIds: (r.userIds || []).filter(
-                      id => id !== currentUser.id,
+                      id => id !== currentUser.id
                     ),
                   }
-                : r,
+                : r
             );
           }
         } else {
@@ -555,7 +555,7 @@ export default function DMPage() {
                   hasReacted: true,
                   userIds: [...(r.userIds || []), currentUser.id],
                 }
-              : r,
+              : r
           );
         }
       } else {
@@ -579,7 +579,7 @@ export default function DMPage() {
             `/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`,
             {
               method: 'DELETE',
-            },
+            }
           );
         } else {
           response = await fetch(`/api/messages/${messageId}/reactions`, {
@@ -598,7 +598,7 @@ export default function DMPage() {
         updateOptimisticMessage(messageId, { reactions: message.reactions });
       }
     },
-    [currentUser, messages, updateOptimisticMessage],
+    [currentUser, messages, updateOptimisticMessage]
   );
 
   // Handle reply (open thread)
@@ -612,7 +612,7 @@ export default function DMPage() {
       '[DM] handleOpenThread called with message:',
       message.id,
       'replyCount:',
-      message.replyCount,
+      message.replyCount
     );
     setActiveThreadId(message.id);
   }, []);
@@ -679,7 +679,10 @@ export default function DMPage() {
         let snippet = msg.content;
         if (queryIndex !== -1 && msg.content.length > 100) {
           const start = Math.max(0, queryIndex - 40);
-          const end = Math.min(msg.content.length, queryIndex + query.length + 40);
+          const end = Math.min(
+            msg.content.length,
+            queryIndex + query.length + 40
+          );
           snippet =
             (start > 0 ? '...' : '') +
             msg.content.slice(start, end) +
@@ -719,7 +722,7 @@ export default function DMPage() {
     // Find message element and scroll to it
     setTimeout(() => {
       const messageElement = document.querySelector(
-        `[data-message-id="${messageId}"]`,
+        `[data-message-id="${messageId}"]`
       );
       if (messageElement) {
         messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -757,7 +760,7 @@ export default function DMPage() {
         toast.error('Failed to update star status');
       } else {
         toast.success(
-          newValue ? 'Conversation starred' : 'Conversation unstarred',
+          newValue ? 'Conversation starred' : 'Conversation unstarred'
         );
       }
     } catch (error) {
@@ -853,7 +856,7 @@ export default function DMPage() {
         toast.error('Failed to update notification preferences');
       }
     },
-    [dmId],
+    [dmId]
   );
 
   // Handle add people
@@ -866,13 +869,13 @@ export default function DMPage() {
           body: JSON.stringify({ userIds, includeHistory }),
         });
         toast.success(
-          `Added ${userIds.length} ${userIds.length === 1 ? 'person' : 'people'} to the conversation`,
+          `Added ${userIds.length} ${userIds.length === 1 ? 'person' : 'people'} to the conversation`
         );
       } catch {
         toast.error('Failed to add people to conversation');
       }
     },
-    [dmId],
+    [dmId]
   );
 
   // Handle start DM with member
@@ -880,18 +883,18 @@ export default function DMPage() {
     (userId: string) => {
       router.push(`/${workspaceSlug}/messages/new?to=${userId}`);
     },
-    [router, workspaceSlug],
+    [router, workspaceSlug]
   );
 
   // Handle tab change
   const handleTabChange = useCallback(
     (
-      tab: 'messages' | 'canvas' | 'files' | 'lists' | 'workflows' | 'bookmarks',
+      tab: 'messages' | 'canvas' | 'files' | 'lists' | 'workflows' | 'bookmarks'
     ) => {
       setActiveTab(tab);
       // TODO: Load content for the selected tab
     },
-    [],
+    []
   );
 
   // Handle add tab
@@ -1036,7 +1039,7 @@ export default function DMPage() {
           />
         )}
 
-                {activeTab === 'lists' && (
+        {activeTab === 'lists' && (
           <DMListsTab
             channelId={dmId}
             workspaceSlug={workspaceSlug}
@@ -1143,7 +1146,7 @@ export default function DMPage() {
                   day: 'numeric',
                   hour: 'numeric',
                   minute: '2-digit',
-                },
+                }
               );
               return (
                 <CommandItem

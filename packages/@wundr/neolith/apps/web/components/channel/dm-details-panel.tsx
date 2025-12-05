@@ -111,7 +111,7 @@ export function DMDetailsPanel({
         throw error;
       }
     },
-    [channelId, toast],
+    [channelId, toast]
   );
 
   const handleInviteByEmail = useCallback(
@@ -144,7 +144,7 @@ export function DMDetailsPanel({
         throw error;
       }
     },
-    [channelId, toast],
+    [channelId, toast]
   );
 
   return (
@@ -215,7 +215,7 @@ export function DMDetailsPanel({
                       <span
                         className={cn(
                           'absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background',
-                          statusColors[member.status],
+                          statusColors[member.status]
                         )}
                       />
                     )}

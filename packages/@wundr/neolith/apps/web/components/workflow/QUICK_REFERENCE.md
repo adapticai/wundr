@@ -31,10 +31,10 @@ import {
 ```tsx
 <VariablePicker
   variables={variables}
-  currentStepId="step1"
+  currentStepId='step1'
   value={selectedVar}
-  onSelect={(ref) => setSelectedVar(ref)}
-  placeholder="Select a variable"
+  onSelect={ref => setSelectedVar(ref)}
+  placeholder='Select a variable'
 />
 ```
 
@@ -45,20 +45,20 @@ import {
   value={message}
   onChange={setMessage}
   variables={variables}
-  currentStepId="step1"
+  currentStepId='step1'
   multiline
 />
 ```
 
 ## Variable Types
 
-| Type | Example Value | Icon |
-|------|---------------|------|
-| `string` | `"Hello"` | Aa |
-| `number` | `42` | 123 |
-| `boolean` | `true` | T/F |
-| `array` | `[1, 2, 3]` | [] |
-| `object` | `{"key": "value"}` | {} |
+| Type      | Example Value      | Icon |
+| --------- | ------------------ | ---- |
+| `string`  | `"Hello"`          | Aa   |
+| `number`  | `42`               | 123  |
+| `boolean` | `true`             | T/F  |
+| `array`   | `[1, 2, 3]`        | []   |
+| `object`  | `{"key": "value"}` | {}   |
 
 ## Variable Scopes
 
@@ -79,13 +79,13 @@ import {
 
 ```tsx
 // In text
-"Welcome ${variable.userName}!"
+'Welcome ${variable.userName}!';
 
 // In JSON
-'{"name": "${variable.userName}"}'
+'{"name": "${variable.userName}"}';
 
 // Multiple references
-"Hello ${variable.firstName} ${variable.lastName}"
+'Hello ${variable.firstName} ${variable.lastName}';
 ```
 
 ## Validation Functions
@@ -108,10 +108,7 @@ const refs = extractVariableReferences('${variable.a} ${variable.b}');
 // Returns: ['a', 'b']
 
 // Preview with actual values
-const preview = replaceVariableReferences(
-  '${variable.name}',
-  { name: 'John' }
-);
+const preview = replaceVariableReferences('${variable.name}', { name: 'John' });
 // Returns: 'John'
 ```
 
@@ -119,13 +116,13 @@ const preview = replaceVariableReferences(
 
 ```tsx
 interface ScopedWorkflowVariable {
-  id: string;                    // Unique identifier
-  name: string;                  // Variable name (alphanumeric + _)
-  type: VariableType;            // Type of variable
-  description?: string;          // Optional description
-  defaultValue?: any;            // Optional default value
-  scope: 'global' | 'step';      // Variable scope
-  stepId?: string;               // Required for step scope
+  id: string; // Unique identifier
+  name: string; // Variable name (alphanumeric + _)
+  type: VariableType; // Type of variable
+  description?: string; // Optional description
+  defaultValue?: any; // Optional default value
+  scope: 'global' | 'step'; // Variable scope
+  stepId?: string; // Required for step scope
 }
 ```
 
@@ -147,9 +144,7 @@ const newVariable: ScopedWorkflowVariable = {
 ### Update Variable
 
 ```tsx
-const updatedVariables = variables.map(v =>
-  v.id === targetId ? { ...v, name: 'newName' } : v
-);
+const updatedVariables = variables.map(v => (v.id === targetId ? { ...v, name: 'newName' } : v));
 ```
 
 ### Delete Variable
@@ -176,13 +171,16 @@ const stepVars = variables.filter(v => v.scope === 'step');
 ```tsx
 const byStep = variables
   .filter(v => v.scope === 'step')
-  .reduce((acc, v) => {
-    if (v.stepId) {
-      if (!acc[v.stepId]) acc[v.stepId] = [];
-      acc[v.stepId].push(v);
-    }
-    return acc;
-  }, {} as Record<string, ScopedWorkflowVariable[]>);
+  .reduce(
+    (acc, v) => {
+      if (v.stepId) {
+        if (!acc[v.stepId]) acc[v.stepId] = [];
+        acc[v.stepId].push(v);
+      }
+      return acc;
+    },
+    {} as Record<string, ScopedWorkflowVariable[]>
+  );
 ```
 
 ## Error Handling
@@ -208,21 +206,24 @@ if (!refValidation.isValid) {
 ## Best Practices
 
 1. **Always validate before save**
+
    ```tsx
    const result = validateWorkflowVariables(variables);
    if (!result.isValid) return;
    ```
 
 2. **Use descriptive names**
+
    ```tsx
    // Good
-   userName, userEmail, welcomeDelay
+   (userName, userEmail, welcomeDelay);
 
    // Avoid
-   u, e, d
+   (u, e, d);
    ```
 
 3. **Add descriptions**
+
    ```tsx
    {
      name: 'userName',
@@ -231,6 +232,7 @@ if (!refValidation.isValid) {
    ```
 
 4. **Provide defaults**
+
    ```tsx
    {
      name: 'welcomeDelay',
@@ -241,9 +243,7 @@ if (!refValidation.isValid) {
 5. **Check references exist**
    ```tsx
    const refs = extractVariableReferences(text);
-   const valid = refs.every(ref =>
-     variables.some(v => v.name === ref)
-   );
+   const valid = refs.every(ref => variables.some(v => v.name === ref));
    ```
 
 ## Demo Component
@@ -258,17 +258,18 @@ function DemoPage() {
 
 ## Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Escape` | Close dialogs/popovers |
-| `Enter` | Save variable (in dialog) |
-| `Tab` | Navigate fields |
-| `Arrow Up/Down` | Navigate picker items |
-| `Enter` | Select picker item |
+| Key             | Action                    |
+| --------------- | ------------------------- |
+| `Escape`        | Close dialogs/popovers    |
+| `Enter`         | Save variable (in dialog) |
+| `Tab`           | Navigate fields           |
+| `Arrow Up/Down` | Navigate picker items     |
+| `Enter`         | Select picker item        |
 
 ## Styling
 
 All components support:
+
 - `className` prop for custom styles
 - Dark mode (automatic)
 - Responsive design
@@ -290,6 +291,7 @@ All components support:
 ## Support
 
 For detailed documentation, see:
+
 - [README.md](./README.md) - Complete guide
 - [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) - Technical details
 

@@ -16,7 +16,6 @@ import { checkWorkspaceAccess } from '@/lib/services/integration-service';
 import { INTEGRATION_ERROR_CODES } from '@/lib/validations/integration';
 import { createErrorResponse } from '@/lib/validations/organization';
 
-
 import type { NextRequest } from 'next/server';
 
 /**
@@ -35,7 +34,7 @@ function generateApiKey(): { key: string; hash: string } {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -43,9 +42,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          INTEGRATION_ERROR_CODES.UNAUTHORIZED,
+          INTEGRATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -62,20 +61,17 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     const access = await checkWorkspaceAccess(workspace.id, session.user.id);
     if (!access) {
       return NextResponse.json(
-        createErrorResponse(
-          'Access denied',
-          INTEGRATION_ERROR_CODES.FORBIDDEN,
-        ),
-        { status: 403 },
+        createErrorResponse('Access denied', INTEGRATION_ERROR_CODES.FORBIDDEN),
+        { status: 403 }
       );
     }
 
@@ -94,13 +90,16 @@ export async function GET(
 
     return NextResponse.json({ apiKeys });
   } catch (error) {
-    console.error('[GET /api/workspaces/[workspaceSlug]/integrations/api-keys] Error:', error);
+    console.error(
+      '[GET /api/workspaces/[workspaceSlug]/integrations/api-keys] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        INTEGRATION_ERROR_CODES.INTERNAL_ERROR,
+        INTEGRATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -112,7 +111,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -120,9 +119,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          INTEGRATION_ERROR_CODES.UNAUTHORIZED,
+          INTEGRATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -139,9 +138,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -150,9 +149,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Admin permission required',
-          INTEGRATION_ERROR_CODES.FORBIDDEN,
+          INTEGRATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -163,9 +162,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -173,9 +172,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'API key name is required',
-          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -208,16 +207,19 @@ export async function POST(
         message:
           'API key generated successfully. Store this key securely, it will not be shown again.',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
-    console.error('[POST /api/workspaces/[workspaceSlug]/integrations/api-keys] Error:', error);
+    console.error(
+      '[POST /api/workspaces/[workspaceSlug]/integrations/api-keys] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        INTEGRATION_ERROR_CODES.INTERNAL_ERROR,
+        INTEGRATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

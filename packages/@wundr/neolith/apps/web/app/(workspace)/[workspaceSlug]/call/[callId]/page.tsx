@@ -65,7 +65,7 @@ function CallError({
               'px-4 py-2 rounded-lg',
               'bg-muted hover:bg-muted/80',
               'text-foreground font-medium',
-              'transition-colors',
+              'transition-colors'
             )}
           >
             Leave
@@ -76,7 +76,7 @@ function CallError({
               'px-4 py-2 rounded-lg',
               'bg-primary hover:bg-primary/90',
               'text-primary-foreground font-medium',
-              'transition-colors',
+              'transition-colors'
             )}
           >
             Try again
@@ -137,7 +137,7 @@ function CallEnded({
               'px-4 py-2 rounded-lg',
               'bg-muted hover:bg-muted/80',
               'text-foreground font-medium',
-              'transition-colors',
+              'transition-colors'
             )}
           >
             Back to workspace
@@ -148,7 +148,7 @@ function CallEnded({
               'px-4 py-2 rounded-lg',
               'bg-primary hover:bg-primary/90',
               'text-primary-foreground font-medium',
-              'transition-colors',
+              'transition-colors'
             )}
           >
             Rejoin call
@@ -187,7 +187,7 @@ export default function CallPage() {
 
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/calls/${callId}`,
+        `/api/workspaces/${workspaceId}/calls/${callId}`
       );
 
       if (!response.ok) {
@@ -235,7 +235,7 @@ export default function CallPage() {
       setPreJoinSettings(settings);
       setCallState('in-call');
     },
-    [],
+    []
   );
 
   // Handle cancel from pre-join
@@ -282,7 +282,7 @@ export default function CallPage() {
         // Handle silently or show toast
       }
     },
-    [workspaceId, callId],
+    [workspaceId, callId]
   );
 
   // Generate invite link

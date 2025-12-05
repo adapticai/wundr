@@ -100,7 +100,7 @@ export function PinnedMessagesPanel({
           `/api/channels/${channelId}/pins?messageId=${messageId}`,
           {
             method: 'DELETE',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -127,7 +127,7 @@ export function PinnedMessagesPanel({
         setUnpinningId(null);
       }
     },
-    [channelId, canManagePins, toast],
+    [channelId, canManagePins, toast]
   );
 
   // Handle message click - scroll to message in main chat
@@ -137,7 +137,7 @@ export function PinnedMessagesPanel({
       // Also close the panel after clicking
       onClose();
     },
-    [onMessageClick, onClose],
+    [onMessageClick, onClose]
   );
 
   const pinnedCount = pinnedMessages.length;
@@ -245,7 +245,7 @@ function PinnedMessageItem({
         hour: 'numeric',
         minute: '2-digit',
       }),
-    [message.createdAt],
+    [message.createdAt]
   );
 
   const author = message.author || {
@@ -268,7 +268,7 @@ function PinnedMessageItem({
     <div
       className={cn(
         'relative px-4 py-3 transition-colors hover:bg-accent/50 cursor-pointer',
-        isUnpinning && 'opacity-50',
+        isUnpinning && 'opacity-50'
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -322,7 +322,9 @@ function PinnedMessageItem({
               </svg>
               <span>
                 {message.attachments.length}{' '}
-                {message.attachments.length === 1 ? 'attachment' : 'attachments'}
+                {message.attachments.length === 1
+                  ? 'attachment'
+                  : 'attachments'}
               </span>
             </div>
           )}
@@ -336,7 +338,9 @@ function PinnedMessageItem({
                   className='inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs'
                 >
                   <span>{reaction.emoji}</span>
-                  <span className='text-muted-foreground'>{reaction.count}</span>
+                  <span className='text-muted-foreground'>
+                    {reaction.count}
+                  </span>
                 </span>
               ))}
               {message.reactions.length > 3 && (

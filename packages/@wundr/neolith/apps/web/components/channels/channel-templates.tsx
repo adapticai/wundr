@@ -58,8 +58,8 @@ export function ChannelTemplates({
   // Fetch templates when dialog opens
   const fetchTemplates = useCallback(async () => {
     if (!open) {
-return;
-}
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -99,7 +99,7 @@ return;
   return (
     <>
       <Dialog open={open && !showCreateForm} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogContent className='max-w-2xl max-h-[80vh] overflow-hidden flex flex-col'>
           <DialogHeader>
             <DialogTitle>Message Templates</DialogTitle>
             <DialogDescription>
@@ -107,27 +107,29 @@ return;
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto py-4">
+          <div className='flex-1 overflow-y-auto py-4'>
             {loading && (
-              <div className="flex items-center justify-center py-8">
+              <div className='flex items-center justify-center py-8'>
                 <LoadingSpinner />
-                <span className="ml-2 text-sm text-muted-foreground">Loading templates...</span>
+                <span className='ml-2 text-sm text-muted-foreground'>
+                  Loading templates...
+                </span>
               </div>
             )}
 
             {error && (
-              <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <p className="text-sm text-destructive">{error}</p>
+              <div className='p-4 bg-destructive/10 border border-destructive/20 rounded-lg'>
+                <p className='text-sm text-destructive'>{error}</p>
               </div>
             )}
 
             {!loading && !error && templates.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-sm text-muted-foreground mb-4">
+              <div className='text-center py-8'>
+                <p className='text-sm text-muted-foreground mb-4'>
                   No templates available yet
                 </p>
                 {isAdmin && (
-                  <Button onClick={handleCreateTemplate} variant="outline">
+                  <Button onClick={handleCreateTemplate} variant='outline'>
                     Create First Template
                   </Button>
                 )}
@@ -135,8 +137,8 @@ return;
             )}
 
             {!loading && !error && templates.length > 0 && (
-              <div className="grid gap-3">
-                {templates.map((template) => (
+              <div className='grid gap-3'>
+                {templates.map(template => (
                   <TemplateCard
                     key={template.id}
                     template={template}
@@ -147,13 +149,13 @@ return;
             )}
           </div>
 
-          <DialogFooter className="border-t pt-4">
+          <DialogFooter className='border-t pt-4'>
             {isAdmin && templates.length > 0 && (
-              <Button onClick={handleCreateTemplate} variant="outline">
+              <Button onClick={handleCreateTemplate} variant='outline'>
                 Create New Template
               </Button>
             )}
-            <Button onClick={onClose} variant="ghost">
+            <Button onClick={onClose} variant='ghost'>
               Cancel
             </Button>
           </DialogFooter>
@@ -186,29 +188,29 @@ function TemplateCard({ template, onSelect }: TemplateCardProps) {
   return (
     <button
       onClick={onSelect}
-      className="w-full text-left p-4 border rounded-lg hover:bg-accent hover:border-accent-foreground/20 transition-colors group"
+      className='w-full text-left p-4 border rounded-lg hover:bg-accent hover:border-accent-foreground/20 transition-colors group'
     >
-      <div className="flex items-start gap-3">
+      <div className='flex items-start gap-3'>
         {template.icon && (
-          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-xl">
+          <div className='flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-xl'>
             {template.icon}
           </div>
         )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-semibold text-sm">{template.name}</h4>
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center gap-2 mb-1'>
+            <h4 className='font-semibold text-sm'>{template.name}</h4>
             {template.isSystem && (
-              <span className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">
+              <span className='px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded'>
                 System
               </span>
             )}
           </div>
           {template.description && (
-            <p className="text-xs text-muted-foreground mb-2">
+            <p className='text-xs text-muted-foreground mb-2'>
               {template.description}
             </p>
           )}
-          <div className="text-xs font-mono bg-muted/50 rounded p-2 line-clamp-2 group-hover:bg-muted/70 transition-colors">
+          <div className='text-xs font-mono bg-muted/50 rounded p-2 line-clamp-2 group-hover:bg-muted/70 transition-colors'>
             {template.content}
           </div>
         </div>
@@ -226,7 +228,11 @@ interface CreateTemplateDialogProps {
   onClose: () => void;
 }
 
-function CreateTemplateDialog({ channelId, open, onClose }: CreateTemplateDialogProps) {
+function CreateTemplateDialog({
+  channelId,
+  open,
+  onClose,
+}: CreateTemplateDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
@@ -262,7 +268,9 @@ function CreateTemplateDialog({ channelId, open, onClose }: CreateTemplateDialog
 
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create template');
+      setError(
+        err instanceof Error ? err.message : 'Failed to create template'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -270,96 +278,131 @@ function CreateTemplateDialog({ channelId, open, onClose }: CreateTemplateDialog
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className='max-w-xl'>
         <DialogHeader>
           <DialogTitle>Create Message Template</DialogTitle>
           <DialogDescription>
-            Create a reusable template for common messages. Use placeholders like {'{'}date{'}'}, {'{'}user{'}'}, {'{'}time{'}'}.
+            Create a reusable template for common messages. Use placeholders
+            like {'{'}date{'}'}, {'{'}user{'}'}, {'{'}time{'}'}.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className='space-y-4 py-4'>
           {error && (
-            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <p className="text-sm text-destructive">{error}</p>
+            <div className='p-3 bg-destructive/10 border border-destructive/20 rounded-lg'>
+              <p className='text-sm text-destructive'>{error}</p>
             </div>
           )}
 
           <div>
-            <label htmlFor="template-name" className="block text-sm font-medium mb-1.5">
-              Template Name <span className="text-destructive">*</span>
+            <label
+              htmlFor='template-name'
+              className='block text-sm font-medium mb-1.5'
+            >
+              Template Name <span className='text-destructive'>*</span>
             </label>
             <input
-              id="template-name"
-              type="text"
+              id='template-name'
+              type='text'
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Daily Standup"
-              className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+              onChange={e => setName(e.target.value)}
+              placeholder='e.g., Daily Standup'
+              className='w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring'
               maxLength={100}
             />
           </div>
 
           <div>
-            <label htmlFor="template-icon" className="block text-sm font-medium mb-1.5">
+            <label
+              htmlFor='template-icon'
+              className='block text-sm font-medium mb-1.5'
+            >
               Icon (emoji)
             </label>
             <input
-              id="template-icon"
-              type="text"
+              id='template-icon'
+              type='text'
               value={icon}
-              onChange={(e) => setIcon(e.target.value)}
-              placeholder="📋"
-              className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+              onChange={e => setIcon(e.target.value)}
+              placeholder='📋'
+              className='w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring'
               maxLength={4}
             />
           </div>
 
           <div>
-            <label htmlFor="template-description" className="block text-sm font-medium mb-1.5">
+            <label
+              htmlFor='template-description'
+              className='block text-sm font-medium mb-1.5'
+            >
               Description
             </label>
             <input
-              id="template-description"
-              type="text"
+              id='template-description'
+              type='text'
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of when to use this template"
-              className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+              onChange={e => setDescription(e.target.value)}
+              placeholder='Brief description of when to use this template'
+              className='w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring'
               maxLength={200}
             />
           </div>
 
           <div>
-            <label htmlFor="template-content" className="block text-sm font-medium mb-1.5">
-              Template Content <span className="text-destructive">*</span>
+            <label
+              htmlFor='template-content'
+              className='block text-sm font-medium mb-1.5'
+            >
+              Template Content <span className='text-destructive'>*</span>
             </label>
             <textarea
-              id="template-content"
+              id='template-content'
               value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder={'Example:\n\nDaily Standup - {date}\n\nYesterday:\n- [What you did]\n\nToday:\n- [What you will do]\n\nBlockers:\n- [Any issues]'}
-              className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring font-mono text-sm min-h-[200px] resize-y"
+              onChange={e => setContent(e.target.value)}
+              placeholder={
+                'Example:\n\nDaily Standup - {date}\n\nYesterday:\n- [What you did]\n\nToday:\n- [What you will do]\n\nBlockers:\n- [Any issues]'
+              }
+              className='w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring font-mono text-sm min-h-[200px] resize-y'
               maxLength={2000}
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className='text-xs text-muted-foreground mt-1'>
               {content.length}/2000 characters
             </p>
           </div>
 
-          <div className="bg-muted/50 rounded-lg p-3">
-            <p className="text-xs font-medium mb-1">Available Placeholders:</p>
-            <div className="text-xs text-muted-foreground space-y-0.5">
-              <div><code className="bg-background px-1 rounded">{'{'}date{'}'}</code> - Current date</div>
-              <div><code className="bg-background px-1 rounded">{'{'}time{'}'}</code> - Current time</div>
-              <div><code className="bg-background px-1 rounded">{'{'}user{'}'}</code> - Your name</div>
-              <div><code className="bg-background px-1 rounded">{'{'}channel{'}'}</code> - Channel name</div>
+          <div className='bg-muted/50 rounded-lg p-3'>
+            <p className='text-xs font-medium mb-1'>Available Placeholders:</p>
+            <div className='text-xs text-muted-foreground space-y-0.5'>
+              <div>
+                <code className='bg-background px-1 rounded'>
+                  {'{'}date{'}'}
+                </code>{' '}
+                - Current date
+              </div>
+              <div>
+                <code className='bg-background px-1 rounded'>
+                  {'{'}time{'}'}
+                </code>{' '}
+                - Current time
+              </div>
+              <div>
+                <code className='bg-background px-1 rounded'>
+                  {'{'}user{'}'}
+                </code>{' '}
+                - Your name
+              </div>
+              <div>
+                <code className='bg-background px-1 rounded'>
+                  {'{'}channel{'}'}
+                </code>{' '}
+                - Channel name
+              </div>
             </div>
           </div>
         </div>
 
         <DialogFooter>
-          <Button onClick={onClose} variant="ghost" disabled={submitting}>
+          <Button onClick={onClose} variant='ghost' disabled={submitting}>
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={submitting}>
@@ -378,7 +421,10 @@ function processPlaceholders(content: string): string {
   const now = new Date();
   const placeholders: Record<string, string> = {
     '{date}': now.toLocaleDateString(),
-    '{time}': now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    '{time}': now.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
     '{user}': 'You',
     '{channel}': 'this channel',
   };
@@ -397,23 +443,23 @@ function processPlaceholders(content: string): string {
 function LoadingSpinner() {
   return (
     <svg
-      className="animate-spin h-5 w-5 text-muted-foreground"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
+      className='animate-spin h-5 w-5 text-muted-foreground'
+      xmlns='http://www.w3.org/2000/svg'
+      fill='none'
+      viewBox='0 0 24 24'
     >
       <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
+        className='opacity-25'
+        cx='12'
+        cy='12'
+        r='10'
+        stroke='currentColor'
+        strokeWidth='4'
       />
       <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        className='opacity-75'
+        fill='currentColor'
+        d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
       />
     </svg>
   );

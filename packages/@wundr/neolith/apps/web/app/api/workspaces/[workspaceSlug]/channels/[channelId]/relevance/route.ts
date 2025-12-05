@@ -77,7 +77,7 @@ async function getWorkspaceAccess(workspaceId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -85,9 +85,9 @@ export async function GET(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Authentication required',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.UNAUTHORIZED,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -98,24 +98,24 @@ export async function GET(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Invalid parameters',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.VALIDATION_ERROR,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Verify workspace access
     const workspaceAccess = await getWorkspaceAccess(
       workspaceId,
-      session.user.id,
+      session.user.id
     );
     if (!workspaceAccess) {
       return NextResponse.json(
         createChannelIntelligenceError(
           'Workspace not found or access denied',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -154,9 +154,9 @@ export async function GET(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Orchestrator not found or access denied',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -181,16 +181,16 @@ export async function GET(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Channel not found in workspace',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.CHANNEL_NOT_FOUND,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Calculate relevance
     const relevance = await calculateChannelRelevance(
       orchestratorId,
-      channelId,
+      channelId
     );
 
     // Build response
@@ -244,7 +244,7 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/channels/:channelId/relevance] Error:',
-      error,
+      error
     );
 
     // Handle specific calculation errors
@@ -253,18 +253,18 @@ export async function GET(
         return NextResponse.json(
           createChannelIntelligenceError(
             error.message,
-            CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+            CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
       if (error.message.includes('Channel not found')) {
         return NextResponse.json(
           createChannelIntelligenceError(
             error.message,
-            CHANNEL_INTELLIGENCE_ERROR_CODES.CHANNEL_NOT_FOUND,
+            CHANNEL_INTELLIGENCE_ERROR_CODES.CHANNEL_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -272,9 +272,9 @@ export async function GET(
     return NextResponse.json(
       createChannelIntelligenceError(
         'Relevance calculation failed',
-        CHANNEL_INTELLIGENCE_ERROR_CODES.CALCULATION_ERROR,
+        CHANNEL_INTELLIGENCE_ERROR_CODES.CALCULATION_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

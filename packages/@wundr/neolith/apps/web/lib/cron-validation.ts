@@ -16,7 +16,8 @@ import { z } from 'zod';
  * - "0 0 1 * *" - First day of every month at midnight
  * - "0 6 1 1 1" - Every 6 hours (example)
  */
-const CRON_REGEX = /^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])|\*\/([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])|\*\/([1-9]|1[0-2])) (\*|([0-6])|\*\/[0-6])$/;
+const CRON_REGEX =
+  /^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])|\*\/([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])|\*\/([1-9]|1[0-2])) (\*|([0-6])|\*\/[0-6])$/;
 
 /**
  * Common cron presets for easy scheduling
@@ -33,13 +34,19 @@ export const CRON_PRESETS = {
 /**
  * Frequency type for scheduling
  */
-export type ScheduleFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'custom';
+export type ScheduleFrequency =
+  | 'hourly'
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'quarterly'
+  | 'custom';
 
 /**
  * Cron expression validation schema
  */
 export const cronExpressionSchema = z.string().refine(
-  (value) => {
+  value => {
     // Check if it's a preset
     if (Object.values(CRON_PRESETS).includes(value as any)) {
       return true;
@@ -48,8 +55,9 @@ export const cronExpressionSchema = z.string().refine(
     return CRON_REGEX.test(value);
   },
   {
-    message: 'Invalid cron expression format. Use standard cron syntax (e.g., "0 9 * * 1") or a preset.',
-  },
+    message:
+      'Invalid cron expression format. Use standard cron syntax (e.g., "0 9 * * 1") or a preset.',
+  }
 );
 
 /**
@@ -97,7 +105,7 @@ export function frequencyToCron(
     minute?: number;
     dayOfWeek?: number;
     dayOfMonth?: number;
-  },
+  }
 ): string {
   const hour = options?.hour ?? 0;
   const minute = options?.minute ?? 0;
@@ -126,7 +134,10 @@ export function frequencyToCron(
  * @param fromDate - Starting date (defaults to now)
  * @returns Next execution date or null if invalid
  */
-export function getNextExecution(expression: string, fromDate: Date = new Date()): Date | null {
+export function getNextExecution(
+  expression: string,
+  fromDate: Date = new Date()
+): Date | null {
   const components = parseCronExpression(expression);
   if (!components) {
     return null;
@@ -231,14 +242,35 @@ export function describeCronExpression(expression: string): string {
 
   // Month
   if (components.month !== '*') {
-    const months = ['', 'January', 'February', 'March', 'April', 'May', 'June',
-                    'July', 'August', 'September', 'October', 'November', 'December'];
+    const months = [
+      '',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
     parts.push(`in ${months[parseInt(components.month)]}`);
   }
 
   // Day of week
   if (components.dayOfWeek !== '*') {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const days = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ];
     parts.push(`on ${days[parseInt(components.dayOfWeek)]}`);
   }
 
@@ -251,7 +283,10 @@ export function describeCronExpression(expression: string): string {
  * @param maxFrequencyMinutes - Maximum allowed frequency in minutes (default: 60)
  * @returns true if valid, false if too frequent
  */
-export function validateFrequencyLimit(expression: string, maxFrequencyMinutes: number = 60): boolean {
+export function validateFrequencyLimit(
+  expression: string,
+  maxFrequencyMinutes: number = 60
+): boolean {
   const components = parseCronExpression(expression);
   if (!components) {
     return false;

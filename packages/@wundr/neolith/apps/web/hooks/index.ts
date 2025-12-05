@@ -510,6 +510,70 @@ export { useRecoveryOptions } from './use-recovery-options';
 export type { UseRecoveryOptionsReturn } from './use-recovery-options';
 
 // =============================================================================
+// AI Assistant Hooks
+// =============================================================================
+export { useAIChat } from './use-ai-chat';
+export type {
+  AIError,
+  AIProvider,
+  MessageStatus,
+  LocalAIMessage,
+  TokenUsage,
+  ChatSession,
+  UseAIChatOptions,
+  UseAIChatReturn,
+} from './use-ai-chat';
+
+export { useAIStream } from './use-ai-stream';
+export type {
+  StreamStatus,
+  StreamEventType,
+  StreamEvent,
+  StreamChunk,
+  StreamError,
+  UseAIStreamOptions,
+  UseAIStreamReturn,
+} from './use-ai-stream';
+
+export { useAISuggestions } from './use-ai-suggestions';
+export type {
+  SuggestionSource,
+  SuggestionPriority,
+  Suggestion,
+  SuggestionCategory,
+  SuggestionContext,
+  UseAISuggestionsOptions,
+  UseAISuggestionsReturn,
+} from './use-ai-suggestions';
+
+export { useAIHistory } from './use-ai-history';
+export type {
+  Conversation,
+  HistoryFilters,
+  PaginationOptions,
+  ExportFormat,
+  ExportedConversation,
+  UseAIHistoryOptions,
+  UseAIHistoryReturn,
+} from './use-ai-history';
+
+export { useAIContext } from './use-ai-context';
+export type {
+  ContextSource,
+  ContextPriority,
+  ContextItem,
+  InjectionStrategy,
+  ContextConfig,
+  WorkspaceContext,
+  UserContext,
+  SessionContext,
+  UseAIContextOptions,
+  UseAIContextReturn,
+} from './use-ai-context';
+
+export { useAIWizardChat } from './use-ai-wizard-chat';
+
+// =============================================================================
 // Settings Hooks
 // =============================================================================
 export {

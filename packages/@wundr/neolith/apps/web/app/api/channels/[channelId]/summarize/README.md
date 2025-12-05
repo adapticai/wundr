@@ -8,18 +8,17 @@ AI-powered endpoint for generating concise summaries of channel conversations.
 
 Generate a summary of channel messages with automatic caching.
 
-**Authentication:** Required
-**Authorization:** User must be a channel member
+**Authentication:** Required **Authorization:** User must be a channel member
 
 #### Query Parameters
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `timeRange` | `'hour' \| 'today' \| 'week' \| 'custom'` | No | `'today'` | Predefined time range for messages |
-| `since` | ISO 8601 datetime | No | - | Custom range start (requires `timeRange=custom`) |
-| `until` | ISO 8601 datetime | No | - | Custom range end (requires `timeRange=custom`) |
-| `limit` | number (1-500) | No | 100 | Maximum messages to analyze |
-| `stream` | boolean | No | false | Enable streaming (deprecated, use POST instead) |
+| Parameter   | Type                                      | Required | Default   | Description                                      |
+| ----------- | ----------------------------------------- | -------- | --------- | ------------------------------------------------ |
+| `timeRange` | `'hour' \| 'today' \| 'week' \| 'custom'` | No       | `'today'` | Predefined time range for messages               |
+| `since`     | ISO 8601 datetime                         | No       | -         | Custom range start (requires `timeRange=custom`) |
+| `until`     | ISO 8601 datetime                         | No       | -         | Custom range end (requires `timeRange=custom`)   |
+| `limit`     | number (1-500)                            | No       | 100       | Maximum messages to analyze                      |
+| `stream`    | boolean                                   | No       | false     | Enable streaming (deprecated, use POST instead)  |
 
 #### Response (200 OK)
 
@@ -68,8 +67,7 @@ curl -H "Authorization: Bearer TOKEN" \
 
 Generate a streaming summary of channel messages for real-time display.
 
-**Authentication:** Required
-**Authorization:** User must be a channel member
+**Authentication:** Required **Authorization:** User must be a channel member
 
 #### Request Body
 
@@ -221,6 +219,7 @@ curl "http://localhost:3000/api/channels/YOUR_CHANNEL_ID/summarize?timeRange=tod
 ### "AI service not configured"
 
 Ensure the correct environment variables are set:
+
 - `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`
 - `DEFAULT_LLM_PROVIDER`
 
@@ -251,6 +250,7 @@ User must be added to the channel before requesting summaries.
 ## Support
 
 For issues or questions:
+
 - GitHub Issues: [neolith/issues](https://github.com/yourusername/neolith/issues)
 - Documentation: [docs.neolith.app](https://docs.neolith.app)
 - API Reference: [api.neolith.app](https://api.neolith.app)

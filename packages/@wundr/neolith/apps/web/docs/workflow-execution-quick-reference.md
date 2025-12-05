@@ -19,6 +19,7 @@ GET /api/workspaces/:slug/workflows/executions/:executionId
 ```
 
 Response includes:
+
 - Execution details
 - Progress metrics (percentage, step counts)
 - Timing information
@@ -54,6 +55,7 @@ GET /api/workspaces/:slug/workflows/:id/executions?status=COMPLETED&limit=20
 ```
 
 Response includes:
+
 - Paginated executions list
 - Status breakdown
 - Success rate
@@ -62,6 +64,7 @@ Response includes:
 ## Built-in Action Types
 
 ### send_notification
+
 ```json
 {
   "type": "send_notification",
@@ -73,6 +76,7 @@ Response includes:
 ```
 
 ### create_task
+
 ```json
 {
   "type": "create_task",
@@ -85,6 +89,7 @@ Response includes:
 ```
 
 ### call_api
+
 ```json
 {
   "type": "call_api",
@@ -98,6 +103,7 @@ Response includes:
 ```
 
 ### wait
+
 ```json
 {
   "type": "wait",
@@ -106,6 +112,7 @@ Response includes:
 ```
 
 ### condition
+
 ```json
 {
   "type": "condition",
@@ -123,8 +130,8 @@ Response includes:
 {
   "type": "action_type",
   "config": {},
-  "onError": "retry",    // "stop" | "continue" | "retry"
-  "timeout": 30000       // milliseconds
+  "onError": "retry", // "stop" | "continue" | "retry"
+  "timeout": 30000 // milliseconds
 }
 ```
 
@@ -141,7 +148,7 @@ registerActionHandler('custom_action', async (action, context) => {
   // Your custom logic
   return {
     success: true,
-    output: { result: 'data' }
+    output: { result: 'data' },
   };
 });
 ```
@@ -149,6 +156,7 @@ registerActionHandler('custom_action', async (action, context) => {
 ## Execution Context
 
 Actions receive context with:
+
 - `workspaceId` - Current workspace
 - `workflowId` - Current workflow
 - `executionId` - Current execution

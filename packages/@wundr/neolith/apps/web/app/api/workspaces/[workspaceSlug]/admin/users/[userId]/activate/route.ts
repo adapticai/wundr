@@ -32,15 +32,12 @@ interface RouteContext {
  */
 export async function POST(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { workspaceSlug, userId } = await context.params;
@@ -54,7 +51,7 @@ export async function POST(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -66,10 +63,13 @@ export async function POST(
       },
     });
 
-    if (!adminMembership || !['ADMIN', 'OWNER'].includes(adminMembership.role)) {
+    if (
+      !adminMembership ||
+      !['ADMIN', 'OWNER'].includes(adminMembership.role)
+    ) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -90,7 +90,7 @@ export async function POST(
     console.error('Failed to activate user:', error);
     return NextResponse.json(
       { error: 'Failed to activate user' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

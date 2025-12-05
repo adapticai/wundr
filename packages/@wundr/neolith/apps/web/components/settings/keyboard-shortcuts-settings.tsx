@@ -87,7 +87,6 @@ import type {
   ShortcutCategory,
 } from '@/lib/keyboard-shortcuts';
 
-
 const CATEGORY_ICONS: Record<ShortcutCategory, React.ElementType> = {
   navigation: Compass,
   actions: Zap,
@@ -236,7 +235,10 @@ export function KeyboardShortcutsSettings() {
     });
   };
 
-  const handleToggleCategory = (category: ShortcutCategory, enabled: boolean) => {
+  const handleToggleCategory = (
+    category: ShortcutCategory,
+    enabled: boolean
+  ) => {
     toggleCategory(category, enabled);
     toast({
       title: enabled ? 'Category Enabled' : 'Category Disabled',
@@ -353,7 +355,7 @@ export function KeyboardShortcutsSettings() {
                   'relative rounded-lg border-2 p-4 text-left transition-all hover:bg-accent',
                   selectedPreset === preset.id
                     ? 'border-primary bg-primary/5'
-                    : 'border-muted',
+                    : 'border-muted'
                 )}
               >
                 <div className='space-y-1'>
@@ -386,76 +388,81 @@ export function KeyboardShortcutsSettings() {
 
       {/* Shortcuts by Category */}
       <div className='space-y-4'>
-        {Object.entries(shortcutsByCategory).map(([category, categoryShortcuts]) => {
-          if (categoryShortcuts.length === 0) {
-            return null;
-          }
+        {Object.entries(shortcutsByCategory).map(
+          ([category, categoryShortcuts]) => {
+            if (categoryShortcuts.length === 0) {
+              return null;
+            }
 
-          const config = CATEGORY_CONFIG[category as ShortcutCategory];
-          const Icon = CATEGORY_ICONS[category as ShortcutCategory];
-          const isExpanded = expandedCategories.has(category);
-          const categoryEnabled = categoryShortcuts.some(s => s.enabled);
+            const config = CATEGORY_CONFIG[category as ShortcutCategory];
+            const Icon = CATEGORY_ICONS[category as ShortcutCategory];
+            const isExpanded = expandedCategories.has(category);
+            const categoryEnabled = categoryShortcuts.some(s => s.enabled);
 
-          return (
-            <Card key={category}>
-              <Collapsible
-                open={isExpanded}
-                onOpenChange={() => toggleCategoryExpanded(category)}
-              >
-                <CardHeader className='pb-3'>
-                  <div className='flex items-center justify-between'>
-                    <CollapsibleTrigger className='flex items-center gap-3 flex-1 text-left hover:opacity-80 transition-opacity'>
-                      <Icon className='h-5 w-5 text-primary' />
-                      <div className='flex-1'>
-                        <CardTitle className='text-base flex items-center gap-2'>
-                          {config.label}
-                          <Badge variant='outline' className='ml-2'>
-                            {categoryShortcuts.length}
-                          </Badge>
-                        </CardTitle>
-                        <CardDescription className='text-sm mt-1'>
-                          {config.description}
-                        </CardDescription>
-                      </div>
-                      {isExpanded ? (
-                        <ChevronDown className='h-5 w-5 text-muted-foreground' />
-                      ) : (
-                        <ChevronRight className='h-5 w-5 text-muted-foreground' />
-                      )}
-                    </CollapsibleTrigger>
-                    <Switch
-                      checked={categoryEnabled}
-                      onCheckedChange={enabled =>
-                        handleToggleCategory(category as ShortcutCategory, enabled)
-                      }
-                      onClick={e => e.stopPropagation()}
-                      className='ml-3'
-                    />
-                  </div>
-                </CardHeader>
-
-                <CollapsibleContent>
-                  <CardContent className='pt-0'>
-                    <div className='space-y-3'>
-                      {categoryShortcuts.map((shortcut, index) => (
-                        <ShortcutRow
-                          key={shortcut.id}
-                          shortcut={shortcut}
-                          isMac={isMac}
-                          hasConflict={conflictMap.has(shortcut.id)}
-                          onEdit={() => setEditingShortcut(shortcut)}
-                          onToggle={() => toggleShortcut(shortcut.id)}
-                          onReset={() => resetShortcut(shortcut.id)}
-                          showDivider={index < categoryShortcuts.length - 1}
-                        />
-                      ))}
+            return (
+              <Card key={category}>
+                <Collapsible
+                  open={isExpanded}
+                  onOpenChange={() => toggleCategoryExpanded(category)}
+                >
+                  <CardHeader className='pb-3'>
+                    <div className='flex items-center justify-between'>
+                      <CollapsibleTrigger className='flex items-center gap-3 flex-1 text-left hover:opacity-80 transition-opacity'>
+                        <Icon className='h-5 w-5 text-primary' />
+                        <div className='flex-1'>
+                          <CardTitle className='text-base flex items-center gap-2'>
+                            {config.label}
+                            <Badge variant='outline' className='ml-2'>
+                              {categoryShortcuts.length}
+                            </Badge>
+                          </CardTitle>
+                          <CardDescription className='text-sm mt-1'>
+                            {config.description}
+                          </CardDescription>
+                        </div>
+                        {isExpanded ? (
+                          <ChevronDown className='h-5 w-5 text-muted-foreground' />
+                        ) : (
+                          <ChevronRight className='h-5 w-5 text-muted-foreground' />
+                        )}
+                      </CollapsibleTrigger>
+                      <Switch
+                        checked={categoryEnabled}
+                        onCheckedChange={enabled =>
+                          handleToggleCategory(
+                            category as ShortcutCategory,
+                            enabled
+                          )
+                        }
+                        onClick={e => e.stopPropagation()}
+                        className='ml-3'
+                      />
                     </div>
-                  </CardContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </Card>
-          );
-        })}
+                  </CardHeader>
+
+                  <CollapsibleContent>
+                    <CardContent className='pt-0'>
+                      <div className='space-y-3'>
+                        {categoryShortcuts.map((shortcut, index) => (
+                          <ShortcutRow
+                            key={shortcut.id}
+                            shortcut={shortcut}
+                            isMac={isMac}
+                            hasConflict={conflictMap.has(shortcut.id)}
+                            onEdit={() => setEditingShortcut(shortcut)}
+                            onToggle={() => toggleShortcut(shortcut.id)}
+                            onReset={() => resetShortcut(shortcut.id)}
+                            showDivider={index < categoryShortcuts.length - 1}
+                          />
+                        ))}
+                      </div>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Collapsible>
+              </Card>
+            );
+          }
+        )}
       </div>
 
       {/* Edit Shortcut Dialog */}
@@ -463,7 +470,7 @@ export function KeyboardShortcutsSettings() {
         shortcut={editingShortcut}
         isMac={isMac}
         onClose={() => setEditingShortcut(null)}
-        onSave={(keys) => {
+        onSave={keys => {
           if (editingShortcut) {
             updateShortcut(editingShortcut.id, keys);
             setEditingShortcut(null);
@@ -481,8 +488,8 @@ export function KeyboardShortcutsSettings() {
           <AlertDialogHeader>
             <AlertDialogTitle>Reset All Shortcuts?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will reset all keyboard shortcuts to their default values. This
-              action cannot be undone.
+              This will reset all keyboard shortcuts to their default values.
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -565,7 +572,7 @@ function ShortcutRow({
                     hasConflict
                       ? 'bg-destructive/10 border-destructive text-destructive'
                       : 'bg-background border-border',
-                    !shortcut.enabled && 'opacity-50',
+                    !shortcut.enabled && 'opacity-50'
                   )}
                 >
                   {formatKeyForDisplay(key, isMac)}
@@ -642,9 +649,7 @@ function EditShortcutDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Keyboard Shortcut</DialogTitle>
-          <DialogDescription>
-            {shortcut?.description}
-          </DialogDescription>
+          <DialogDescription>{shortcut?.description}</DialogDescription>
         </DialogHeader>
 
         <div className='space-y-4 py-4'>
@@ -654,7 +659,9 @@ function EditShortcutDialog({
               {shortcut?.keys.map((key, index) => (
                 <React.Fragment key={index}>
                   {index > 0 && (
-                    <span className='text-xs text-muted-foreground mx-1'>+</span>
+                    <span className='text-xs text-muted-foreground mx-1'>
+                      +
+                    </span>
                   )}
                   <kbd className='px-2 py-1 text-xs font-semibold rounded border bg-background shadow-sm min-w-[2rem] text-center'>
                     {formatKeyForDisplay(key, isMac)}
@@ -671,7 +678,7 @@ function EditShortcutDialog({
                 'flex items-center justify-center gap-1 p-6 rounded-md border-2 border-dashed transition-colors cursor-pointer',
                 isCapturing
                   ? 'border-primary bg-primary/5'
-                  : 'border-muted hover:border-primary/50',
+                  : 'border-muted hover:border-primary/50'
               )}
               onClick={startCapture}
             >
@@ -679,7 +686,9 @@ function EditShortcutDialog({
                 capturedKeys.map((key, index) => (
                   <React.Fragment key={index}>
                     {index > 0 && (
-                      <span className='text-xs text-muted-foreground mx-1'>+</span>
+                      <span className='text-xs text-muted-foreground mx-1'>
+                        +
+                      </span>
                     )}
                     <kbd className='px-2 py-1 text-xs font-semibold rounded border bg-background shadow-sm min-w-[2rem] text-center'>
                       {formatKeyForDisplay(key, isMac)}
@@ -811,14 +820,14 @@ function CheatSheetDialog({
                   </div>
                 </div>
               );
-            },
+            }
           )}
         </div>
 
         <div className='mt-6 pt-4 border-t text-xs text-muted-foreground'>
           <p>
-            Press <kbd className='px-1.5 py-0.5 bg-muted rounded'>?</kbd> anytime to
-            open this cheat sheet
+            Press <kbd className='px-1.5 py-0.5 bg-muted rounded'>?</kbd>{' '}
+            anytime to open this cheat sheet
           </p>
         </div>
       </DialogContent>

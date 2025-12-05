@@ -56,7 +56,7 @@ function getTimeRangeBoundaries(timeRange: MetricTimeRange): {
  */
 export async function getOrchestratorMetrics(
   orchestratorId: string,
-  timeRange: MetricTimeRange = '7d',
+  timeRange: MetricTimeRange = '7d'
 ): Promise<OrchestratorMetrics | null> {
   try {
     const { start, end } = getTimeRangeBoundaries(timeRange);
@@ -80,7 +80,7 @@ export async function getOrchestratorMetrics(
     // Calculate task-related metrics
     const tasksCompleted = tasks.filter(t => t.status === 'DONE').length;
     const tasksInProgress = tasks.filter(
-      t => t.status === 'IN_PROGRESS',
+      t => t.status === 'IN_PROGRESS'
     ).length;
     const tasksFailed = tasks.filter(t => t.status === 'CANCELLED').length;
     const tasksCancelled = tasks.filter(t => t.status === 'CANCELLED').length;
@@ -96,7 +96,7 @@ export async function getOrchestratorMetrics(
 
     // Calculate average duration
     const completedWithDuration = tasks.filter(
-      t => t.status === 'DONE' && t.completedAt,
+      t => t.status === 'DONE' && t.completedAt
     );
 
     const avgDurationMinutes =
@@ -138,7 +138,7 @@ export async function getOrchestratorMetrics(
  * @returns Orchestrator analytics with daily/weekly/monthly trends
  */
 export async function getOrchestratorAnalytics(
-  orchestratorId: string,
+  orchestratorId: string
 ): Promise<OrchestratorAnalytics> {
   try {
     // Fetch all tasks for the orchestrator
@@ -161,13 +161,11 @@ export async function getOrchestratorAnalytics(
     const totalTasks = totalTasksCompleted + totalTasksFailed;
 
     const overallSuccessRate =
-      totalTasks > 0
-        ? Math.round((totalTasksCompleted / totalTasks) * 100)
-        : 0;
+      totalTasks > 0 ? Math.round((totalTasksCompleted / totalTasks) * 100) : 0;
 
     // Calculate average response time
     const completedWithDuration = completedTasks.filter(
-      t => t.completedAt && t.createdAt,
+      t => t.completedAt && t.createdAt
     );
 
     const avgResponseTimeMinutes =
@@ -200,7 +198,7 @@ export async function getOrchestratorAnalytics(
         const total = completed + failed;
 
         const durationTasks = dayTasks.filter(
-          t => t.status === 'DONE' && t.completedAt && t.createdAt,
+          t => t.status === 'DONE' && t.completedAt && t.createdAt
         );
 
         const avgDuration =
@@ -233,7 +231,7 @@ export async function getOrchestratorAnalytics(
 
     // Find most/least productive days
     const sortedDays = [...daily].sort(
-      (a, b) => b.tasksCompleted - a.tasksCompleted,
+      (a, b) => b.tasksCompleted - a.tasksCompleted
     );
     const mostProductiveDay = sortedDays[0]?.periodStart.toLocaleDateString();
     const leastProductiveDay =
@@ -299,7 +297,7 @@ export async function getOrchestratorAnalytics(
 export async function trackEvent(
   orchestratorId: string,
   eventType: string,
-  eventData: Record<string, unknown>,
+  eventData: Record<string, unknown>
 ): Promise<void> {
   console.log('[trackEvent] Event tracking not yet implemented:', {
     orchestratorId,
@@ -314,7 +312,7 @@ export async function trackEvent(
  */
 export async function generateAnalyticsReport(
   orchestratorId: string,
-  reportType: string,
+  reportType: string
 ): Promise<{
   orchestratorId: string;
   reportType: string;
@@ -382,7 +380,7 @@ export async function getPerformanceStats(orchestratorId: string): Promise<{
  */
 export async function calculateSuccessRate(
   orchestratorId: string,
-  timeRange: MetricTimeRange = '7d',
+  timeRange: MetricTimeRange = '7d'
 ): Promise<number> {
   const metrics = await getOrchestratorMetrics(orchestratorId, timeRange);
   return metrics?.successRate || 0;
@@ -394,7 +392,7 @@ export async function calculateSuccessRate(
 export async function getOrchestratorTrends(
   orchestratorId: string,
   metric: string,
-  timeRange: MetricTimeRange = '7d',
+  timeRange: MetricTimeRange = '7d'
 ): Promise<{
   orchestratorId: string;
   metric: string;
@@ -409,7 +407,7 @@ export async function getOrchestratorTrends(
 
     // Filter daily data to time range
     const relevantDays = analytics.daily.filter(
-      d => d.periodStart >= start && d.periodStart <= end,
+      d => d.periodStart >= start && d.periodStart <= end
     );
 
     // Extract data points based on metric type
@@ -438,11 +436,7 @@ export async function getOrchestratorTrends(
       : 0;
 
     const trend: 'up' | 'down' | 'stable' =
-      changePercentage > 10
-        ? 'up'
-        : changePercentage < -10
-          ? 'down'
-          : 'stable';
+      changePercentage > 10 ? 'up' : changePercentage < -10 ? 'down' : 'stable';
 
     return {
       orchestratorId,

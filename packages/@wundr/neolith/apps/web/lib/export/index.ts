@@ -18,7 +18,8 @@ import type {
   BulkExportOptions,
   CSVExportOptions,
   PDFExportOptions,
-  XLSXExportOptions} from './types';
+  XLSXExportOptions,
+} from './types';
 
 export * from './types';
 
@@ -32,11 +33,7 @@ export {
 } from './csv';
 
 // Export PDF functionality
-export {
-  exportToPDF,
-  exportReportToPDF,
-  exportWithTemplate,
-} from './pdf';
+export { exportToPDF, exportReportToPDF, exportWithTemplate } from './pdf';
 
 // Export XLSX functionality
 export {
@@ -97,7 +94,7 @@ export {
 export async function exportData<T extends Record<string, unknown>>(
   data: T[],
   format: ExportFormat,
-  options: ExportOptions = {},
+  options: ExportOptions = {}
 ): Promise<ExportResult> {
   switch (format) {
     case 'csv':
@@ -118,7 +115,7 @@ export async function exportData<T extends Record<string, unknown>>(
  */
 async function exportToJSON<T>(
   data: T,
-  options: ExportOptions = {},
+  options: ExportOptions = {}
 ): Promise<ExportResult> {
   const startTime = Date.now();
 
@@ -166,7 +163,7 @@ async function exportToJSON<T>(
  */
 export async function bulkExport<T extends Record<string, unknown>>(
   data: T[],
-  options: BulkExportOptions,
+  options: BulkExportOptions
 ): Promise<Record<ExportFormat, ExportResult>> {
   const { formats, baseFilename, parallel = true, onProgress } = options;
 
@@ -174,7 +171,7 @@ export async function bulkExport<T extends Record<string, unknown>>(
 
   if (parallel) {
     // Export all formats in parallel
-    const promises = formats.map(async (format) => {
+    const promises = formats.map(async format => {
       onProgress?.(format, { status: 'processing', progress: 0 });
 
       const filename = `${baseFilename}.${format}`;
@@ -220,7 +217,7 @@ export async function bulkExport<T extends Record<string, unknown>>(
 export async function exportWithRetry<T extends Record<string, unknown>>(
   data: T[],
   format: ExportFormat,
-  options: ExportOptions & { maxRetries?: number; retryDelay?: number } = {},
+  options: ExportOptions & { maxRetries?: number; retryDelay?: number } = {}
 ): Promise<ExportResult> {
   const { maxRetries = 3, retryDelay = 1000, ...exportOptions } = options;
 
@@ -240,7 +237,9 @@ export async function exportWithRetry<T extends Record<string, unknown>>(
     }
 
     if (attempt < maxRetries - 1) {
-      await new Promise(resolve => setTimeout(resolve, retryDelay * (attempt + 1)));
+      await new Promise(resolve =>
+        setTimeout(resolve, retryDelay * (attempt + 1))
+      );
     }
   }
 
@@ -272,7 +271,7 @@ export class ExportManager {
   add<T extends Record<string, unknown>>(
     data: T[],
     format: ExportFormat,
-    options: ExportOptions = {},
+    options: ExportOptions = {}
   ): Promise<ExportResult> {
     return new Promise((resolve, reject) => {
       this.queue.push(async () => {

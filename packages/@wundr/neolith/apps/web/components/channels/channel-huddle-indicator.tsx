@@ -88,7 +88,7 @@ export function ChannelHuddleIndicator({
             'h-8 gap-1.5 relative',
             hasActiveHuddle && 'bg-green-600 hover:bg-green-700 text-white',
             isInHuddle && 'ring-2 ring-green-400 ring-offset-2',
-            className,
+            className
           )}
           disabled={isLoading}
         >
@@ -126,7 +126,8 @@ export function ChannelHuddleIndicator({
               <div className='flex items-center gap-2 text-sm text-muted-foreground pl-4'>
                 <Users className='h-3.5 w-3.5' />
                 <span>
-                  {participantCount} {participantCount === 1 ? 'person' : 'people'} in huddle
+                  {participantCount}{' '}
+                  {participantCount === 1 ? 'person' : 'people'} in huddle
                 </span>
               </div>
 
@@ -178,7 +179,8 @@ export function ChannelHuddleIndicator({
               <div className='space-y-1'>
                 <span className='text-sm font-medium'>No active huddle</span>
                 <p className='text-xs text-muted-foreground'>
-                  Start a huddle to have a quick audio conversation with your team
+                  Start a huddle to have a quick audio conversation with your
+                  team
                 </p>
               </div>
 

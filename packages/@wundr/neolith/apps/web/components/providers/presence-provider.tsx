@@ -66,11 +66,11 @@ export function PresenceProvider({
   const [currentUserPresence, setCurrentUserPresence] =
     useState<UserPresence | null>(null);
   const [presenceMap, setPresenceMap] = useState<Map<string, UserPresence>>(
-    new Map(),
+    new Map()
   );
   const [isConnected, setIsConnected] = useState(false);
   const [subscribedUserIds, setSubscribedUserIds] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
 
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -120,14 +120,14 @@ export function PresenceProvider({
 
         if (response.ok) {
           setCurrentUserPresence(prev =>
-            prev ? { ...prev, status, updatedAt: new Date() } : null,
+            prev ? { ...prev, status, updatedAt: new Date() } : null
           );
         }
       } catch {
         // Silently fail
       }
     },
-    [userId],
+    [userId]
   );
 
   // Set custom status text
@@ -146,14 +146,14 @@ export function PresenceProvider({
 
         if (response.ok) {
           setCurrentUserPresence(prev =>
-            prev ? { ...prev, customStatus: text, updatedAt: new Date() } : null,
+            prev ? { ...prev, customStatus: text, updatedAt: new Date() } : null
           );
         }
       } catch {
         // Silently fail
       }
     },
-    [userId],
+    [userId]
   );
 
   // Clear custom status
@@ -171,7 +171,7 @@ export function PresenceProvider({
         setCurrentUserPresence(prev =>
           prev
             ? { ...prev, customStatus: undefined, updatedAt: new Date() }
-            : null,
+            : null
         );
       }
     } catch {
@@ -187,7 +187,7 @@ export function PresenceProvider({
       }
       return presenceMap.get(targetUserId);
     },
-    [userId, currentUserPresence, presenceMap],
+    [userId, currentUserPresence, presenceMap]
   );
 
   // Subscribe to presence updates for specific users
@@ -327,7 +327,7 @@ export function PresenceProvider({
     // Set up heartbeat interval
     heartbeatIntervalRef.current = setInterval(
       sendHeartbeat,
-      HEARTBEAT_INTERVAL,
+      HEARTBEAT_INTERVAL
     );
 
     // Handle visibility change
@@ -394,7 +394,7 @@ export function PresenceProvider({
       unsubscribeFromPresence,
       isConnected,
       reconnect,
-    ],
+    ]
   );
 
   return (
@@ -411,7 +411,7 @@ export function usePresenceContext(): PresenceContextValue {
   const context = useContext(PresenceContext);
   if (!context) {
     throw new Error(
-      'usePresenceContext must be used within a PresenceProvider',
+      'usePresenceContext must be used within a PresenceProvider'
     );
   }
   return context;

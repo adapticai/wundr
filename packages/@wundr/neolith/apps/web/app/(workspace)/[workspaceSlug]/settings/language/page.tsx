@@ -9,7 +9,8 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Language & Regional Settings',
-  description: 'Configure language, timezone, and regional formatting preferences',
+  description:
+    'Configure language, timezone, and regional formatting preferences',
 };
 
 export default function LanguagePage() {

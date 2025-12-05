@@ -48,7 +48,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -79,7 +79,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       });
     } catch (dbError) {
       // Table might not exist yet
-      console.warn('[GET /api/user/security-questions] Table not found:', dbError);
+      console.warn(
+        '[GET /api/user/security-questions] Table not found:',
+        dbError
+      );
       return NextResponse.json({
         success: true,
         data: {
@@ -95,7 +98,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -119,7 +122,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -135,7 +138,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -150,9 +153,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       // Insert new questions with hashed answers
       for (const q of questions) {
-        const hashedAnswer = await hashPassword(
-          q.answer.toLowerCase().trim(),
-        );
+        const hashedAnswer = await hashPassword(q.answer.toLowerCase().trim());
         await prisma.$executeRaw`
           INSERT INTO security_questions (id, user_id, question, answer_hash, created_at)
           VALUES (
@@ -172,7 +173,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Failed to save security questions',
           code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -183,8 +184,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       severity: 'info',
       description: `Updated ${questions.length} security questions`,
       metadata: { count: questions.length },
-      ipAddress:
-        request.headers.get('x-forwarded-for') || 'unknown',
+      ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
       userAgent: request.headers.get('user-agent') || undefined,
     });
 
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

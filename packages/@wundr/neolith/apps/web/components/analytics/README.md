@@ -1,6 +1,8 @@
 # Dashboard Metric Widgets
 
-Comprehensive set of dashboard metric widgets built with React, TypeScript, and shadcn/ui. These components provide real-time data visualization with proper accessibility, loading states, and responsive design.
+Comprehensive set of dashboard metric widgets built with React, TypeScript, and shadcn/ui. These
+components provide real-time data visualization with proper accessibility, loading states, and
+responsive design.
 
 ## Components
 
@@ -9,6 +11,7 @@ Comprehensive set of dashboard metric widgets built with React, TypeScript, and 
 Key Performance Indicator cards with trend indicators, targets, and status badges.
 
 **Features:**
+
 - Trend indicators with directional icons
 - Target progress visualization
 - Status badges (success, warning, danger, info)
@@ -17,14 +20,15 @@ Key Performance Indicator cards with trend indicators, targets, and status badge
 - Tooltips for additional context
 
 **Usage:**
+
 ```tsx
 import { KPICard } from '@/components/analytics';
 
 <KPICard
-  title="Total Revenue"
+  title='Total Revenue'
   value={124567}
-  format="currency"
-  icon={<DollarSign className="w-5 h-5" />}
+  format='currency'
+  icon={<DollarSign className='w-5 h-5' />}
   trend={{
     current: 124567,
     previous: 98234,
@@ -33,10 +37,10 @@ import { KPICard } from '@/components/analytics';
     isPositive: true,
   }}
   target={150000}
-  status="success"
+  status='success'
   updateInterval={5000}
   onRefresh={fetchLatestRevenue}
-/>
+/>;
 ```
 
 ### 2. Sparkline Chart (`sparkline-chart.tsx`)
@@ -44,6 +48,7 @@ import { KPICard } from '@/components/analytics';
 Miniature line charts for visualizing trends in a compact space.
 
 **Features:**
+
 - Smooth curve interpolation
 - Optional area fill
 - Data point markers
@@ -52,24 +57,25 @@ Miniature line charts for visualizing trends in a compact space.
 - Responsive scaling
 
 **Usage:**
+
 ```tsx
 import { SparklineChart } from '@/components/analytics';
 
 <SparklineChart
-  title="Revenue Trend"
+  title='Revenue Trend'
   currentValue={124567}
   data={[
     { x: 1, y: 80000, label: 'Jan' },
     { x: 2, y: 95000, label: 'Feb' },
-    { x: 3, y: 124567, label: 'Mar' }
+    { x: 3, y: 124567, label: 'Mar' },
   ]}
-  format="currency"
-  color="success"
+  format='currency'
+  color='success'
   filled={true}
   showPoints={false}
   height={60}
-  onHover={(point) => console.log(point)}
-/>
+  onHover={point => console.log(point)}
+/>;
 ```
 
 ### 3. Progress Ring (`progress-ring.tsx`)
@@ -77,6 +83,7 @@ import { SparklineChart } from '@/components/analytics';
 Circular progress indicators with animated values.
 
 **Features:**
+
 - Smooth animation with easing
 - Multiple color schemes (including adaptive gradient)
 - Customizable size and stroke width
@@ -85,6 +92,7 @@ Circular progress indicators with animated values.
 - Group component for multiple rings
 
 **Usage:**
+
 ```tsx
 import { ProgressRing, ProgressRingGroup } from '@/components/analytics';
 
@@ -116,6 +124,7 @@ import { ProgressRing, ProgressRingGroup } from '@/components/analytics';
 Period-over-period comparison cards with detailed breakdowns.
 
 **Features:**
+
 - Current vs previous period comparison
 - Absolute and percentage change indicators
 - Metadata display (count, average, peak)
@@ -124,11 +133,12 @@ Period-over-period comparison cards with detailed breakdowns.
 - Multiple comparison modes
 
 **Usage:**
+
 ```tsx
 import { StatComparisonCard } from '@/components/analytics';
 
 <StatComparisonCard
-  title="Revenue Comparison"
+  title='Revenue Comparison'
   current={{
     label: 'This Month',
     value: 124567,
@@ -136,7 +146,7 @@ import { StatComparisonCard } from '@/components/analytics';
       count: 1234,
       average: 100.95,
       peak: 5678,
-    }
+    },
   }}
   previous={{
     label: 'Last Month',
@@ -145,13 +155,13 @@ import { StatComparisonCard } from '@/components/analytics';
       count: 1056,
       average: 93.02,
       peak: 4523,
-    }
+    },
   }}
-  format="currency"
-  icon={<DollarSign className="w-5 h-5" />}
+  format='currency'
+  icon={<DollarSign className='w-5 h-5' />}
   showDetails={true}
-  mode="both"
-/>
+  mode='both'
+/>;
 ```
 
 ### 5. Real-time Metrics (`realtime-metrics.tsx`)
@@ -159,6 +169,7 @@ import { StatComparisonCard } from '@/components/analytics';
 Live-updating metric displays with activity feed.
 
 **Features:**
+
 - Auto-refresh with configurable intervals
 - Live/paused state toggle
 - Status indicators
@@ -167,6 +178,7 @@ Live-updating metric displays with activity feed.
 - Timestamp tracking
 
 **Usage:**
+
 ```tsx
 import { RealtimeMetrics, RealtimeActivityFeed } from '@/components/analytics';
 
@@ -208,7 +220,9 @@ import { RealtimeMetrics, RealtimeActivityFeed } from '@/components/analytics';
 ## Common Props
 
 ### Format Options
+
 All widgets support these format types:
+
 - `number` - Standard number formatting with locale support
 - `currency` - USD currency with $ symbol
 - `percentage` - Percentage with % symbol
@@ -216,7 +230,9 @@ All widgets support these format types:
 - `compact` - Compact notation (K, M, B suffixes)
 
 ### Color Schemes
+
 Standard color options across components:
+
 - `primary` - Theme primary color
 - `success` - Green/emerald
 - `warning` - Amber/yellow
@@ -225,14 +241,17 @@ Standard color options across components:
 - `gradient` - Adaptive gradient based on value
 
 ### Loading States
+
 All components support a loading state with skeleton placeholders:
+
 ```tsx
-<KPICard title="..." value={0} isLoading={true} />
+<KPICard title='...' value={0} isLoading={true} />
 ```
 
 ## Styling
 
 All components use shadcn/ui styling and support:
+
 - Dark mode via next-themes
 - Custom className props
 - Tailwind CSS classes
@@ -254,7 +273,7 @@ const [data, setData] = useState(initialData);
     const newData = await fetchData();
     setData(newData);
   }}
-/>
+/>;
 
 // Option 2: External update
 useEffect(() => {
@@ -269,6 +288,7 @@ useEffect(() => {
 ## Accessibility
 
 All components follow WCAG 2.1 guidelines:
+
 - Proper ARIA labels and roles
 - Keyboard navigation support
 - Screen reader announcements
@@ -279,6 +299,7 @@ All components follow WCAG 2.1 guidelines:
 ## Performance
 
 Optimizations included:
+
 - Memoized calculations
 - Request animation frame for smooth animations
 - CSS transitions over JS animations
@@ -287,7 +308,8 @@ Optimizations included:
 
 ## Examples
 
-See `/components/analytics/examples/dashboard-widgets-demo.tsx` for a comprehensive demo of all widgets with sample data.
+See `/components/analytics/examples/dashboard-widgets-demo.tsx` for a comprehensive demo of all
+widgets with sample data.
 
 ## TypeScript
 
@@ -306,6 +328,7 @@ import type {
 ## Dependencies
 
 Required packages (already included):
+
 - `@radix-ui/react-tooltip` - Tooltips
 - `@radix-ui/react-progress` - Progress primitives
 - `lucide-react` - Icons

@@ -41,9 +41,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Authentication required',
-          SETTINGS_ERROR_CODES.UNAUTHORIZED,
+          SETTINGS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -59,9 +59,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'User not found',
-          SETTINGS_ERROR_CODES.NOT_FOUND,
+          SETTINGS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -113,9 +113,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createSettingsErrorResponse(
         'An internal error occurred',
-        SETTINGS_ERROR_CODES.INTERNAL_ERROR,
+        SETTINGS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -136,9 +136,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Authentication required',
-          SETTINGS_ERROR_CODES.UNAUTHORIZED,
+          SETTINGS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -150,9 +150,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Invalid JSON body',
-          SETTINGS_ERROR_CODES.VALIDATION_ERROR,
+          SETTINGS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -162,9 +162,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         createSettingsErrorResponse(
           'Validation failed',
           SETTINGS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -180,9 +180,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'User not found',
-          SETTINGS_ERROR_CODES.NOT_FOUND,
+          SETTINGS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -194,7 +194,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (updates.email) {
       Object.entries(updates.email).forEach(([key, value]) => {
         if (value !== undefined) {
-          updatedPrefs[`email${key.charAt(0).toUpperCase()}${key.slice(1)}`] = value;
+          updatedPrefs[`email${key.charAt(0).toUpperCase()}${key.slice(1)}`] =
+            value;
         }
       });
     }
@@ -203,7 +204,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (updates.push) {
       Object.entries(updates.push).forEach(([key, value]) => {
         if (value !== undefined) {
-          updatedPrefs[`push${key.charAt(0).toUpperCase()}${key.slice(1)}`] = value;
+          updatedPrefs[`push${key.charAt(0).toUpperCase()}${key.slice(1)}`] =
+            value;
         }
       });
     }
@@ -212,7 +214,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (updates.inApp) {
       Object.entries(updates.inApp).forEach(([key, value]) => {
         if (value !== undefined) {
-          updatedPrefs[`inApp${key.charAt(0).toUpperCase()}${key.slice(1)}`] = value;
+          updatedPrefs[`inApp${key.charAt(0).toUpperCase()}${key.slice(1)}`] =
+            value;
         }
       });
     }
@@ -221,7 +224,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (updates.desktop) {
       Object.entries(updates.desktop).forEach(([key, value]) => {
         if (value !== undefined) {
-          updatedPrefs[`desktop${key.charAt(0).toUpperCase()}${key.slice(1)}`] = value;
+          updatedPrefs[`desktop${key.charAt(0).toUpperCase()}${key.slice(1)}`] =
+            value;
         }
       });
     }
@@ -230,7 +234,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (updates.doNotDisturb) {
       Object.entries(updates.doNotDisturb).forEach(([key, value]) => {
         if (value !== undefined) {
-          updatedPrefs[`dnd${key.charAt(0).toUpperCase()}${key.slice(1)}`] = value;
+          updatedPrefs[`dnd${key.charAt(0).toUpperCase()}${key.slice(1)}`] =
+            value;
         }
       });
     }
@@ -254,9 +259,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createSettingsErrorResponse(
         'An internal error occurred',
-        SETTINGS_ERROR_CODES.INTERNAL_ERROR,
+        SETTINGS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

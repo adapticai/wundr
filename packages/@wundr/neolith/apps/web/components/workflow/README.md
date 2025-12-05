@@ -1,10 +1,12 @@
 # Workflow Components
 
-Comprehensive React components for workflow automation including variable management, templates, and version control with full TypeScript support.
+Comprehensive React components for workflow automation including variable management, templates, and
+version control with full TypeScript support.
 
 ## Overview
 
 This module provides a complete solution for building and managing workflow automation systems:
+
 - **Variable Management**: Define and use variables across workflows
 - **Template System**: Pre-built workflow templates for common use cases
 - **Version Control**: Track, compare, and manage workflow versions with branching
@@ -16,6 +18,7 @@ This module provides a complete solution for building and managing workflow auto
 The main component for defining and managing workflow variables.
 
 **Features:**
+
 - Create, edit, and delete variables
 - Support for multiple variable types (string, number, boolean, array, object)
 - Global and step-scoped variables
@@ -51,6 +54,7 @@ function WorkflowEditor() {
 A dropdown component for selecting variables in step configurations.
 
 **Features:**
+
 - Searchable variable list
 - Grouped by scope (global/step)
 - Type badges and descriptions
@@ -68,10 +72,10 @@ function StepConfig() {
   return (
     <VariablePicker
       variables={variables}
-      currentStepId="step1"
+      currentStepId='step1'
       value={selectedVar}
-      onSelect={(ref) => setSelectedVar(ref)}
-      placeholder="Select a variable"
+      onSelect={ref => setSelectedVar(ref)}
+      placeholder='Select a variable'
     />
   );
 }
@@ -82,6 +86,7 @@ function StepConfig() {
 An enhanced input component that combines text input with variable insertion.
 
 **Features:**
+
 - Text input with variable reference support
 - Insert variables at cursor position
 - Display used variables with badges
@@ -102,8 +107,8 @@ function MessageConfig() {
       value={message}
       onChange={setMessage}
       variables={variables}
-      currentStepId="step1"
-      placeholder="Enter message..."
+      currentStepId='step1'
+      placeholder='Enter message...'
       multiline
     />
   );
@@ -114,22 +119,24 @@ function MessageConfig() {
 
 ### Supported Types
 
-| Type | Description | Example Default Value |
-|------|-------------|----------------------|
-| `string` | Text values | `"Hello World"` |
-| `number` | Numeric values | `42` |
-| `boolean` | True/false values | `true` |
-| `array` | JSON arrays | `[1, 2, 3]` |
-| `object` | JSON objects | `{"key": "value"}` |
+| Type      | Description       | Example Default Value |
+| --------- | ----------------- | --------------------- |
+| `string`  | Text values       | `"Hello World"`       |
+| `number`  | Numeric values    | `42`                  |
+| `boolean` | True/false values | `true`                |
+| `array`   | JSON arrays       | `[1, 2, 3]`           |
+| `object`  | JSON objects      | `{"key": "value"}`    |
 
 ### Variable Scopes
 
 #### Global Variables
+
 - Available in all workflow steps
 - Defined at workflow level
 - Can be referenced anywhere
 
 #### Step-Scoped Variables
+
 - Available only in specific steps
 - Defined per step
 - Useful for step-specific configuration
@@ -146,16 +153,16 @@ ${variable.variableName}
 
 ```typescript
 // Simple string interpolation
-"Welcome ${variable.userName}!"
+'Welcome ${variable.userName}!';
 
 // In JSON
-'{"name": "${variable.userName}", "email": "${variable.userEmail}"}'
+'{"name": "${variable.userName}", "email": "${variable.userEmail}"}';
 
 // Multiple variables
-"Hello ${variable.firstName} ${variable.lastName}"
+'Hello ${variable.firstName} ${variable.lastName}';
 
 // In URLs
-"https://api.example.com/users/${variable.userId}"
+'https://api.example.com/users/${variable.userId}';
 ```
 
 ## Validation
@@ -169,12 +176,14 @@ ${variable.variableName}
 - Must be unique
 
 **Valid names:**
+
 - `userName`
 - `user_email`
 - `_privateVar`
 - `config123`
 
 **Invalid names:**
+
 - `123user` (starts with number)
 - `user-name` (contains hyphen)
 - `trigger` (reserved keyword)
@@ -207,6 +216,7 @@ false
 ### Reference Validation
 
 The system validates that:
+
 - Referenced variables are defined
 - Variable names match exactly
 - No circular references exist
@@ -243,10 +253,7 @@ Validates variable references in text.
 ```typescript
 import { validateVariableReferences } from '@/components/workflow';
 
-const result = validateVariableReferences(
-  'Hello ${variable.userName}',
-  availableVariables
-);
+const result = validateVariableReferences('Hello ${variable.userName}', availableVariables);
 // Returns: { isValid: boolean, errors: ValidationError[] }
 ```
 
@@ -268,10 +275,7 @@ Replaces variable references with actual values (for preview).
 ```typescript
 import { replaceVariableReferences } from '@/components/workflow';
 
-const preview = replaceVariableReferences(
-  'Hello ${variable.userName}',
-  { userName: 'John' }
-);
+const preview = replaceVariableReferences('Hello ${variable.userName}', { userName: 'John' });
 // Returns: 'Hello John'
 ```
 
@@ -311,14 +315,14 @@ interface ValidationError {
 
 ```typescript
 // Good
-userName
-userEmail
-welcomeDelay
+userName;
+userEmail;
+welcomeDelay;
 
 // Avoid
-u
-e
-d
+u;
+e;
+d;
 ```
 
 ### 2. Add Descriptions
@@ -419,7 +423,7 @@ function WorkflowEditor() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Variable Management */}
       <section>
         <h2>Variables</h2>
@@ -433,16 +437,14 @@ function WorkflowEditor() {
       {/* Step Configuration */}
       <section>
         <h2>Step 1: Send Message</h2>
-        <div className="space-y-4">
+        <div className='space-y-4'>
           <div>
             <label>Message</label>
             <VariableInput
               value={stepConfig.message}
-              onChange={(value) =>
-                setStepConfig({ ...stepConfig, message: value })
-              }
+              onChange={value => setStepConfig({ ...stepConfig, message: value })}
               variables={variables}
-              currentStepId="step1"
+              currentStepId='step1'
               multiline
             />
           </div>
@@ -450,11 +452,9 @@ function WorkflowEditor() {
             <label>Channel ID</label>
             <VariableInput
               value={stepConfig.channelId}
-              onChange={(value) =>
-                setStepConfig({ ...stepConfig, channelId: value })
-              }
+              onChange={value => setStepConfig({ ...stepConfig, channelId: value })}
               variables={variables}
-              currentStepId="step1"
+              currentStepId='step1'
             />
           </div>
         </div>
@@ -469,6 +469,7 @@ function WorkflowEditor() {
 ## Demo Component
 
 A comprehensive demo is available in `variable-manager-demo.tsx` showing:
+
 - Variable management UI
 - Variable usage in steps
 - Preview and testing
@@ -487,6 +488,7 @@ function DemoPage() {
 ## Styling
 
 Components use shadcn/ui design system with Tailwind CSS. All components support:
+
 - Dark mode
 - Custom className props
 - Responsive design
@@ -495,6 +497,7 @@ Components use shadcn/ui design system with Tailwind CSS. All components support
 ## Accessibility
 
 Components follow WCAG guidelines:
+
 - Keyboard navigation
 - Screen reader support
 - Focus management
@@ -504,6 +507,7 @@ Components follow WCAG guidelines:
 ## Performance
 
 Optimizations include:
+
 - React.useMemo for expensive computations
 - Efficient filtering and grouping
 - Debounced search inputs
@@ -516,6 +520,7 @@ Optimizations include:
 Timeline-based version history with comprehensive change tracking and management.
 
 **Features:**
+
 - Timeline view of all workflow versions
 - Version comparison (side-by-side diff)
 - Restore to previous versions
@@ -551,7 +556,7 @@ function WorkflowVersions() {
 
   return (
     <VersionHistory
-      workflowId="workflow-123"
+      workflowId='workflow-123'
       versions={versions}
       currentVersionId={currentVersionId}
       onRestore={handleRestore}
@@ -570,6 +575,7 @@ function WorkflowVersions() {
 Visual diff viewer showing changes between two workflow versions.
 
 **Features:**
+
 - Side-by-side comparison
 - Syntax-highlighted JSON diff
 - Change categorization (metadata, trigger, actions, variables)
@@ -587,12 +593,7 @@ function VersionComparison() {
   const oldVersion = useVersion('v1');
   const newVersion = useVersion('v2');
 
-  return (
-    <WorkflowDiff
-      oldVersion={oldVersion}
-      newVersion={newVersion}
-    />
-  );
+  return <WorkflowDiff oldVersion={oldVersion} newVersion={newVersion} />;
 }
 ```
 
@@ -600,23 +601,23 @@ function VersionComparison() {
 
 ### Version States
 
-| State | Description | Actions Available |
-|-------|-------------|-------------------|
-| `draft` | Work in progress, not deployed | Edit, Publish, Delete |
-| `published` | Active version, deployed | View, Restore, Branch |
-| `archived` | Historical version, no longer active | View, Restore |
+| State       | Description                          | Actions Available     |
+| ----------- | ------------------------------------ | --------------------- |
+| `draft`     | Work in progress, not deployed       | Edit, Publish, Delete |
+| `published` | Active version, deployed             | View, Restore, Branch |
+| `archived`  | Historical version, no longer active | View, Restore         |
 
 ### Change Types
 
-| Type | Icon | Description |
-|------|------|-------------|
-| `created` | FileText | Initial workflow creation |
-| `updated` | Edit3 | Modifications to workflow |
-| `published` | CheckCircle2 | Draft promoted to published |
-| `branched` | GitBranch | New branch created from version |
-| `merged` | GitMerge | Branch merged into main |
-| `restored` | RotateCcw | Previous version restored |
-| `archived` | AlertCircle | Version archived |
+| Type        | Icon         | Description                     |
+| ----------- | ------------ | ------------------------------- |
+| `created`   | FileText     | Initial workflow creation       |
+| `updated`   | Edit3        | Modifications to workflow       |
+| `published` | CheckCircle2 | Draft promoted to published     |
+| `branched`  | GitBranch    | New branch created from version |
+| `merged`    | GitMerge     | Branch merged into main         |
+| `restored`  | RotateCcw    | Previous version restored       |
+| `archived`  | AlertCircle  | Version archived                |
 
 ### Version Branching
 
@@ -797,11 +798,7 @@ function WorkflowVersionManager() {
     }
   };
 
-  const handleCreateBranch = (
-    baseVersionId: string,
-    branchName: string,
-    description?: string
-  ) => {
+  const handleCreateBranch = (baseVersionId: string, branchName: string, description?: string) => {
     const branch: VersionBranch = {
       id: generateId(),
       name: branchName,
@@ -817,17 +814,15 @@ function WorkflowVersionManager() {
   };
 
   const handlePublish = (versionId: string, notes?: string) => {
-    setVersions(versions.map(v =>
-      v.id === versionId
-        ? { ...v, state: 'published', changeNotes: notes }
-        : v
-    ));
+    setVersions(
+      versions.map(v => (v.id === versionId ? { ...v, state: 'published', changeNotes: notes } : v))
+    );
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <VersionHistory
-        workflowId="workflow-123"
+        workflowId='workflow-123'
         versions={versions}
         branches={branches}
         currentVersionId={currentVersionId}
@@ -836,23 +831,15 @@ function WorkflowVersionManager() {
         onCreateBranch={handleCreateBranch}
         onPublish={handlePublish}
         onAddNotes={(versionId, notes) => {
-          setVersions(versions.map(v =>
-            v.id === versionId ? { ...v, changeNotes: notes } : v
-          ));
+          setVersions(versions.map(v => (v.id === versionId ? { ...v, changeNotes: notes } : v)));
         }}
       />
 
       {/* Compare dialog */}
       {compareVersions && (
-        <Dialog
-          open={!!compareVersions}
-          onOpenChange={() => setCompareVersions(null)}
-        >
-          <DialogContent className="max-w-6xl">
-            <WorkflowDiff
-              oldVersion={compareVersions.old}
-              newVersion={compareVersions.new}
-            />
+        <Dialog open={!!compareVersions} onOpenChange={() => setCompareVersions(null)}>
+          <DialogContent className='max-w-6xl'>
+            <WorkflowDiff oldVersion={compareVersions.old} newVersion={compareVersions.new} />
           </DialogContent>
         </Dialog>
       )}

@@ -24,7 +24,6 @@ import { Input } from '@/components/ui/input';
 
 import type { WorkflowTemplate, WorkflowVariable } from '@/types/workflow';
 
-
 interface TemplateConfiguratorProps {
   template: WorkflowTemplate;
   values: Record<string, string | number | boolean>;
@@ -61,7 +60,7 @@ export function TemplateConfigurator({
     }
 
     // Validate required variables
-    variables.forEach((variable) => {
+    variables.forEach(variable => {
       const value = values[variable.name];
       if (value === undefined || value === '') {
         newErrors[variable.name] = `${variable.name} is required`;
@@ -83,21 +82,21 @@ export function TemplateConfigurator({
     }
   };
 
-  const hasAllValues = variables.every((variable) => {
+  const hasAllValues = variables.every(variable => {
     const value = values[variable.name];
     return value !== undefined && value !== '';
   });
 
   return (
     <div className={className}>
-      <div className="space-y-6">
+      <div className='space-y-6'>
         {/* Header */}
         <div>
-          <div className="mb-2 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-bold">Configure Template</h2>
+          <div className='mb-2 flex items-center gap-2'>
+            <Sparkles className='h-5 w-5 text-primary' />
+            <h2 className='text-xl font-bold'>Configure Template</h2>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className='text-sm text-muted-foreground'>
             Fill in the required information to create your workflow from this
             template.
           </p>
@@ -106,29 +105,29 @@ export function TemplateConfigurator({
         {/* Workflow Name */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Workflow Name</CardTitle>
-            <CardDescription className="text-xs">
+            <CardTitle className='text-base'>Workflow Name</CardTitle>
+            <CardDescription className='text-xs'>
               Give your workflow a descriptive name
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Input
               value={workflowName}
-              onChange={(e) => {
+              onChange={e => {
                 setWorkflowName(e.target.value);
                 if (errors.workflowName) {
-                  setErrors((prev) => {
+                  setErrors(prev => {
                     const { workflowName: _, ...rest } = prev;
                     return rest;
                   });
                 }
               }}
-              placeholder="Enter workflow name"
+              placeholder='Enter workflow name'
               className={errors.workflowName ? 'border-destructive' : ''}
             />
             {errors.workflowName && (
-              <p className="mt-2 flex items-center gap-1 text-xs text-destructive">
-                <AlertCircle className="h-3 w-3" />
+              <p className='mt-2 flex items-center gap-1 text-xs text-destructive'>
+                <AlertCircle className='h-3 w-3' />
                 {errors.workflowName}
               </p>
             )}
@@ -139,29 +138,29 @@ export function TemplateConfigurator({
         {variables.length > 0 && (
           <Card>
             <CardHeader>
-              <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
+              <div className='flex items-center gap-2'>
+                <Settings className='h-4 w-4' />
                 <div>
-                  <CardTitle className="text-base">
+                  <CardTitle className='text-base'>
                     Template Variables ({variables.length})
                   </CardTitle>
-                  <CardDescription className="text-xs">
+                  <CardDescription className='text-xs'>
                     Configure the variables for this workflow
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {variables.map((variable) => (
+              <div className='space-y-4'>
+                {variables.map(variable => (
                   <VariableInput
                     key={variable.name}
                     variable={variable}
                     value={values[variable.name]}
-                    onChange={(value) => {
+                    onChange={value => {
                       onValueChange(variable.name, value);
                       if (errors[variable.name]) {
-                        setErrors((prev) => {
+                        setErrors(prev => {
                           const { [variable.name]: _, ...rest } = prev;
                           return rest;
                         });
@@ -183,28 +182,28 @@ export function TemplateConfigurator({
               : 'border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/20'
           }
         >
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
+          <CardContent className='pt-6'>
+            <div className='flex items-center gap-3'>
               {hasAllValues ? (
                 <>
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <CheckCircle2 className='h-5 w-5 text-green-600 dark:text-green-400' />
                   <div>
-                    <p className="font-semibold text-green-700 dark:text-green-400">
+                    <p className='font-semibold text-green-700 dark:text-green-400'>
                       Ready to create
                     </p>
-                    <p className="text-xs text-green-600 dark:text-green-500">
+                    <p className='text-xs text-green-600 dark:text-green-500'>
                       All required fields are filled
                     </p>
                   </div>
                 </>
               ) : (
                 <>
-                  <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                  <AlertCircle className='h-5 w-5 text-orange-600 dark:text-orange-400' />
                   <div>
-                    <p className="font-semibold text-orange-700 dark:text-orange-400">
+                    <p className='font-semibold text-orange-700 dark:text-orange-400'>
                       Configuration incomplete
                     </p>
-                    <p className="text-xs text-orange-600 dark:text-orange-500">
+                    <p className='text-xs text-orange-600 dark:text-orange-500'>
                       Please fill in all required fields
                     </p>
                   </div>
@@ -215,19 +214,19 @@ export function TemplateConfigurator({
         </Card>
 
         {/* Actions */}
-        <div className="flex gap-3">
+        <div className='flex gap-3'>
           <Button
-            variant="outline"
+            variant='outline'
             onClick={onCancel}
             disabled={isLoading}
-            className="flex-1"
+            className='flex-1'
           >
             Cancel
           </Button>
           <Button
             onClick={validateAndSubmit}
             disabled={isLoading}
-            className="flex-1"
+            className='flex-1'
           >
             {isLoading ? 'Creating...' : 'Create Workflow'}
           </Button>
@@ -247,15 +246,20 @@ interface VariableInputProps {
   error?: string;
 }
 
-function VariableInput({ variable, value, onChange, error }: VariableInputProps) {
+function VariableInput({
+  variable,
+  value,
+  onChange,
+  error,
+}: VariableInputProps) {
   const renderInput = () => {
     switch (variable.type) {
       case 'number':
         return (
           <Input
-            type="number"
+            type='number'
             value={value !== undefined ? String(value) : ''}
-            onChange={(e) => onChange(Number(e.target.value))}
+            onChange={e => onChange(Number(e.target.value))}
             placeholder={
               variable.defaultValue !== undefined
                 ? String(variable.defaultValue)
@@ -267,16 +271,14 @@ function VariableInput({ variable, value, onChange, error }: VariableInputProps)
 
       case 'boolean':
         return (
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             <input
-              type="checkbox"
+              type='checkbox'
               checked={Boolean(value)}
-              onChange={(e) => onChange(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300"
+              onChange={e => onChange(e.target.checked)}
+              className='h-4 w-4 rounded border-gray-300'
             />
-            <span className="text-sm">
-              {value ? 'Enabled' : 'Disabled'}
-            </span>
+            <span className='text-sm'>{value ? 'Enabled' : 'Disabled'}</span>
           </div>
         );
 
@@ -284,9 +286,9 @@ function VariableInput({ variable, value, onChange, error }: VariableInputProps)
       default:
         return (
           <Input
-            type="text"
+            type='text'
             value={value !== undefined ? String(value) : ''}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={e => onChange(e.target.value)}
             placeholder={
               variable.defaultValue !== undefined
                 ? String(variable.defaultValue)
@@ -299,29 +301,29 @@ function VariableInput({ variable, value, onChange, error }: VariableInputProps)
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium">
-            <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+    <div className='space-y-2'>
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-2'>
+          <label className='text-sm font-medium'>
+            <code className='rounded bg-muted px-1.5 py-0.5 text-xs'>
               {variable.name}
             </code>
           </label>
-          <Badge variant="outline" className="text-xs">
+          <Badge variant='outline' className='text-xs'>
             {variable.type}
           </Badge>
         </div>
       </div>
 
       {variable.description && (
-        <p className="text-xs text-muted-foreground">{variable.description}</p>
+        <p className='text-xs text-muted-foreground'>{variable.description}</p>
       )}
 
       {renderInput()}
 
       {error && (
-        <p className="flex items-center gap-1 text-xs text-destructive">
-          <AlertCircle className="h-3 w-3" />
+        <p className='flex items-center gap-1 text-xs text-destructive'>
+          <AlertCircle className='h-3 w-3' />
           {error}
         </p>
       )}

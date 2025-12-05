@@ -45,7 +45,7 @@ interface AccessTokenPayload {
  * Verify daemon token from Authorization header
  */
 async function verifyDaemonToken(
-  request: NextRequest,
+  request: NextRequest
 ): Promise<AccessTokenPayload> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: 'Failed to get channels',
         code: CHANNEL_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

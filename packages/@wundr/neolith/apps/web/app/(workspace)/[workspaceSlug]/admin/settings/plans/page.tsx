@@ -121,7 +121,7 @@ export default function PlansUsagePage() {
     const loadPlanData = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/billing/plan`,
+          `/api/workspaces/${workspaceSlug}/billing/plan`
         );
         if (!response.ok) {
           throw new Error('Failed to load plan data');
@@ -152,7 +152,7 @@ export default function PlansUsagePage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ planId }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -385,7 +385,7 @@ function UsageBar({
               className={cn(
                 'h-full transition-all',
                 nearLimit ? 'bg-yellow-500' : 'bg-primary',
-                percentage >= 100 && 'bg-red-500',
+                percentage >= 100 && 'bg-red-500'
               )}
               style={{ width: `${Math.min(percentage, 100)}%` }}
             />
@@ -416,7 +416,7 @@ function PlanCard({
     <div
       className={cn(
         'rounded-lg border p-4 transition-all',
-        isCurrentPlan && 'border-primary bg-primary/5',
+        isCurrentPlan && 'border-primary bg-primary/5'
       )}
     >
       <div className='space-y-4'>

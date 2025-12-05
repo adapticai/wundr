@@ -72,12 +72,18 @@ export default function ActivityPage() {
   }, [dateRange]);
 
   // Fetch activities
-  const { activities: baseActivities, isLoading, error, loadMore, hasMore, refresh } =
-    useActivity(workspaceId, {
-      type: typeFilter,
-      dateFrom: dateFilter,
-      limit: 20,
-    });
+  const {
+    activities: baseActivities,
+    isLoading,
+    error,
+    loadMore,
+    hasMore,
+    refresh,
+  } = useActivity(workspaceId, {
+    type: typeFilter,
+    dateFrom: dateFilter,
+    limit: 20,
+  });
 
   // Real-time activity updates
   const {
@@ -149,13 +155,17 @@ export default function ActivityPage() {
             className='inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl'
           >
             <ArrowUp className='h-4 w-4' />
-            {newActivityCount} new {newActivityCount === 1 ? 'activity' : 'activities'}
+            {newActivityCount} new{' '}
+            {newActivityCount === 1 ? 'activity' : 'activities'}
           </button>
         </div>
       )}
 
       {/* Page Header */}
-      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between' ref={activityListRef}>
+      <div
+        className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'
+        ref={activityListRef}
+      >
         <div>
           <h1 className='text-2xl font-bold text-foreground'>Activity Feed</h1>
           <p className='text-sm text-muted-foreground'>
@@ -176,7 +186,9 @@ export default function ActivityPage() {
             className='inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50'
             title='Check for new activities'
           >
-            <RefreshIcon className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+            <RefreshIcon
+              className={cn('h-4 w-4', isLoading && 'animate-spin')}
+            />
             Check Now
           </button>
           <button
@@ -185,7 +197,9 @@ export default function ActivityPage() {
             disabled={isLoading}
             className='inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50'
           >
-            <RefreshIcon className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+            <RefreshIcon
+              className={cn('h-4 w-4', isLoading && 'animate-spin')}
+            />
             Refresh
           </button>
         </div>
@@ -217,7 +231,7 @@ export default function ActivityPage() {
                 'inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 typeFilter === key
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               )}
             >
               <Icon className='h-3.5 w-3.5' />
@@ -227,7 +241,7 @@ export default function ActivityPage() {
                   'ml-1 rounded-full px-1.5 py-0.5 text-xs',
                   typeFilter === key
                     ? 'bg-primary-foreground/20 text-primary-foreground'
-                    : 'bg-background text-muted-foreground',
+                    : 'bg-background text-muted-foreground'
                 )}
               >
                 {activityCounts[key]}
@@ -257,7 +271,7 @@ export default function ActivityPage() {
                 'inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 dateRange === key
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               )}
             >
               <Calendar className='h-3.5 w-3.5' />
@@ -345,11 +359,9 @@ export default function ActivityPage() {
                         ) : (
                           <div className='flex h-6 w-6 items-center justify-center rounded-full bg-muted'>
                             <span className='text-xs font-medium text-muted-foreground'>
-                              {(
-                                activity.actor.displayName ||
+                              {(activity.actor.displayName ||
                                 activity.actor.name ||
-                                '?'
-                              )[0].toUpperCase()}
+                                '?')[0].toUpperCase()}
                             </span>
                           </div>
                         )}
@@ -424,7 +436,7 @@ export default function ActivityPage() {
  * Get timeline variant based on activity action
  */
 function getActivityVariant(
-  activity: ActivityEntry,
+  activity: ActivityEntry
 ): 'success' | 'info' | 'warning' | 'error' | 'default' {
   const action = activity.action.toLowerCase();
 
@@ -452,7 +464,7 @@ function getActivityVariant(
  * Get icon component based on activity type
  */
 function getActivityIconComponent(
-  type: ActivityType,
+  type: ActivityType
 ): React.ReactElement | undefined {
   const iconMap: Record<ActivityType, React.ComponentType<any>> = {
     message: MessageSquare,
@@ -550,7 +562,7 @@ function renderMetadataTags(activity: ActivityEntry): React.ReactNode {
           className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium'
         >
           {String(activity.metadata.priority).toUpperCase()}
-        </span>,
+        </span>
       );
     }
     if (activity.metadata.status) {
@@ -560,7 +572,7 @@ function renderMetadataTags(activity: ActivityEntry): React.ReactNode {
           className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium'
         >
           {String(activity.metadata.status)}
-        </span>,
+        </span>
       );
     }
   }
@@ -575,11 +587,11 @@ function renderMetadataTags(activity: ActivityEntry): React.ReactNode {
             'rounded-full px-2 py-0.5 text-xs font-medium',
             activity.metadata.status === 'COMPLETED'
               ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300'
-              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300',
+              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300'
           )}
         >
           {String(activity.metadata.status)}
-        </span>,
+        </span>
       );
     }
   }
@@ -596,7 +608,7 @@ function renderMetadataTags(activity: ActivityEntry): React.ReactNode {
           className='rounded-full bg-muted px-2 py-0.5 text-xs'
         >
           {activity.metadata.replyCount} replies
-        </span>,
+        </span>
       );
     }
   }

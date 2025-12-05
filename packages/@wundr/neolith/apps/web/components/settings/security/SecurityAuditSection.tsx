@@ -161,16 +161,17 @@ export function SecurityAuditSection() {
                             From: {entry.ipAddress}
                           </p>
                         )}
-                        {entry.metadata && Object.keys(entry.metadata).length > 0 && (
-                          <details className='mt-2'>
-                            <summary className='cursor-pointer text-xs text-muted-foreground hover:text-foreground'>
-                              View details
-                            </summary>
-                            <pre className='mt-2 rounded bg-black/5 p-2 text-xs dark:bg-white/5'>
-                              {JSON.stringify(entry.metadata, null, 2)}
-                            </pre>
-                          </details>
-                        )}
+                        {entry.metadata &&
+                          Object.keys(entry.metadata).length > 0 && (
+                            <details className='mt-2'>
+                              <summary className='cursor-pointer text-xs text-muted-foreground hover:text-foreground'>
+                                View details
+                              </summary>
+                              <pre className='mt-2 rounded bg-black/5 p-2 text-xs dark:bg-white/5'>
+                                {JSON.stringify(entry.metadata, null, 2)}
+                              </pre>
+                            </details>
+                          )}
                       </div>
                     </div>
                   </div>

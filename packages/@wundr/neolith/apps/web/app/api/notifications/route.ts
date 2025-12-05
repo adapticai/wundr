@@ -78,7 +78,7 @@ interface PaginationMeta {
  * @returns Paginated list of notifications
  */
 export async function GET(
-  request: NextRequest,
+  request: NextRequest
 ): Promise<
   NextResponse<
     | { data: NotificationResponse[]; pagination: PaginationMeta }
@@ -97,7 +97,7 @@ export async function GET(
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.min(
       100,
-      Math.max(1, parseInt(searchParams.get('limit') || '20', 10)),
+      Math.max(1, parseInt(searchParams.get('limit') || '20', 10))
     );
     const readFilter = searchParams.get('read');
     const typeFilter = searchParams.get('type');
@@ -165,7 +165,7 @@ export async function GET(
     console.error('[GET /api/notifications] Error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -184,7 +184,7 @@ export async function GET(
  * @returns Updated notification count
  */
 export async function PATCH(
-  request: NextRequest,
+  request: NextRequest
 ): Promise<
   NextResponse<{ data: { updatedCount: number } } | { error: string }>
 > {
@@ -244,13 +244,13 @@ export async function PATCH(
         {
           error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -268,7 +268,7 @@ export async function PATCH(
  * @returns Deleted notification count
  */
 export async function DELETE(
-  request: NextRequest,
+  request: NextRequest
 ): Promise<
   NextResponse<{ data: { deletedCount: number } } | { error: string }>
 > {
@@ -313,13 +313,13 @@ export async function DELETE(
         {
           error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -40,7 +40,7 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -49,9 +49,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED,
+          CALL_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -62,9 +62,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid call ID format',
-          CALL_ERROR_CODES.VALIDATION_ERROR,
+          CALL_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -76,9 +76,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          CALL_ERROR_CODES.VALIDATION_ERROR,
+          CALL_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -88,9 +88,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -165,7 +165,7 @@ export async function POST(
     if (!call) {
       return NextResponse.json(
         createErrorResponse('Call not found', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -174,9 +174,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Call has already ended',
-          CALL_ERROR_CODES.CALL_ALREADY_ENDED,
+          CALL_ERROR_CODES.CALL_ALREADY_ENDED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -190,9 +190,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Channel not found',
-          CALL_ERROR_CODES.CHANNEL_NOT_FOUND,
+          CALL_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -208,7 +208,7 @@ export async function POST(
     if (!orgMembership) {
       return NextResponse.json(
         createErrorResponse('Access denied', CALL_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -226,9 +226,9 @@ export async function POST(
         createErrorResponse(
           'Some users were not found',
           CALL_ERROR_CODES.USER_NOT_FOUND,
-          { invalidUserIds },
+          { invalidUserIds }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -277,9 +277,9 @@ export async function POST(
         createErrorResponse(
           'No invited users have access to this channel',
           CALL_ERROR_CODES.FORBIDDEN,
-          { usersWithoutAccess },
+          { usersWithoutAccess }
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -312,7 +312,7 @@ export async function POST(
       } catch (invitationError) {
         console.error(
           '[POST /api/calls/:callId/invite] Invitation tracking not available:',
-          invitationError,
+          invitationError
         );
         // Invitations table may not exist
       }
@@ -331,9 +331,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR,
+        CALL_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

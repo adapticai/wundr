@@ -46,7 +46,7 @@ function extractVariableReferences(text: string): string[] {
 function insertVariableAtCursor(
   currentValue: string,
   variableReference: string,
-  cursorPosition: number,
+  cursorPosition: number
 ): { newValue: string; newCursorPosition: number } {
   const before = currentValue.slice(0, cursorPosition);
   const after = currentValue.slice(cursorPosition);
@@ -83,7 +83,7 @@ export function VariableInput({
     const { newValue, newCursorPosition } = insertVariableAtCursor(
       value,
       variableReference,
-      cursorPosition,
+      cursorPosition
     );
     onChange(newValue);
 
@@ -91,7 +91,10 @@ export function VariableInput({
     setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
-        inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
+        inputRef.current.setSelectionRange(
+          newCursorPosition,
+          newCursorPosition
+        );
         setCursorPosition(newCursorPosition);
       }
     }, 0);
@@ -100,20 +103,20 @@ export function VariableInput({
   // Extract used variables
   const usedVariableNames = React.useMemo(
     () => extractVariableReferences(value),
-    [value],
+    [value]
   );
 
   // Find variable details
   const usedVariables = React.useMemo(() => {
     return usedVariableNames
-      .map((name) => variables.find((v) => v.name === name))
+      .map(name => variables.find(v => v.name === name))
       .filter((v): v is ScopedWorkflowVariable => v !== undefined);
   }, [usedVariableNames, variables]);
 
   // Check for undefined variables
   const undefinedVariables = React.useMemo(() => {
     return usedVariableNames.filter(
-      (name) => !variables.find((v) => v.name === name),
+      name => !variables.find(v => v.name === name)
     );
   }, [usedVariableNames, variables]);
 
@@ -121,12 +124,12 @@ export function VariableInput({
 
   return (
     <div className={cn('space-y-2', className)}>
-      <div className="flex gap-2">
-        <div className="flex-1">
+      <div className='flex gap-2'>
+        <div className='flex-1'>
           <InputComponent
             ref={inputRef as any}
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={e => onChange(e.target.value)}
             onSelect={handleSelectionChange}
             onClick={handleSelectionChange}
             onKeyUp={handleSelectionChange}
@@ -139,26 +142,26 @@ export function VariableInput({
           variables={variables}
           currentStepId={currentStepId}
           onSelect={handleVariableSelect}
-          placeholder="Insert variable"
-          className="w-[200px] shrink-0"
+          placeholder='Insert variable'
+          className='w-[200px] shrink-0'
         />
       </div>
 
       {/* Used Variables Display */}
       {usedVariables.length > 0 && (
-        <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-md border">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Code2 className="h-3 w-3" />
+        <div className='flex flex-wrap gap-2 p-2 bg-muted/50 rounded-md border'>
+          <div className='flex items-center gap-1 text-xs text-muted-foreground'>
+            <Code2 className='h-3 w-3' />
             <span>Variables used:</span>
           </div>
-          {usedVariables.map((variable) => (
+          {usedVariables.map(variable => (
             <Badge
               key={variable.id}
-              variant="secondary"
-              className="text-xs font-mono"
+              variant='secondary'
+              className='text-xs font-mono'
             >
               {variable.name}
-              <span className="ml-1 text-muted-foreground">
+              <span className='ml-1 text-muted-foreground'>
                 ({variable.type})
               </span>
             </Badge>
@@ -168,16 +171,16 @@ export function VariableInput({
 
       {/* Undefined Variables Warning */}
       {undefinedVariables.length > 0 && (
-        <div className="flex flex-wrap gap-2 p-2 bg-destructive/10 rounded-md border border-destructive/20">
-          <div className="flex items-center gap-1 text-xs text-destructive">
-            <Code2 className="h-3 w-3" />
+        <div className='flex flex-wrap gap-2 p-2 bg-destructive/10 rounded-md border border-destructive/20'>
+          <div className='flex items-center gap-1 text-xs text-destructive'>
+            <Code2 className='h-3 w-3' />
             <span>Undefined variables:</span>
           </div>
-          {undefinedVariables.map((name) => (
+          {undefinedVariables.map(name => (
             <Badge
               key={name}
-              variant="destructive"
-              className="text-xs font-mono"
+              variant='destructive'
+              className='text-xs font-mono'
             >
               {name}
             </Badge>
@@ -186,8 +189,9 @@ export function VariableInput({
       )}
 
       {/* Help Text */}
-      <p className="text-xs text-muted-foreground">
-        Use the "Insert variable" button to add variable references, or type ${'{'}
+      <p className='text-xs text-muted-foreground'>
+        Use the "Insert variable" button to add variable references, or type $
+        {'{'}
         variable.name{'}'} manually
       </p>
     </div>

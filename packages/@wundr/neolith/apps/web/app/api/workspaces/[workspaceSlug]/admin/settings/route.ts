@@ -41,7 +41,7 @@ export async function GET(_request: Request, context: RouteContext) {
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -100,7 +100,7 @@ export async function GET(_request: Request, context: RouteContext) {
     console.error('Error fetching settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -125,7 +125,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -224,7 +224,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     console.error('Error updating settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

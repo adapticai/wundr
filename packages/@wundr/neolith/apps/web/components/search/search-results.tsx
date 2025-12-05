@@ -160,7 +160,7 @@ function MessageResult({ result, workspaceId }: ResultRendererProps) {
       href={`/${workspaceId}/channel/${data.channelId}?message=${data.messageId}`}
       className={cn(
         'block p-4 rounded-lg',
-        'hover:bg-accent transition-colors',
+        'hover:bg-accent transition-colors'
       )}
     >
       <div className='flex items-start gap-3'>
@@ -230,7 +230,7 @@ function FileResult({ result }: ResultRendererProps) {
       onClick={handleClick}
       className={cn(
         'flex items-center gap-4 p-4 rounded-lg w-full text-left',
-        'hover:bg-accent transition-colors',
+        'hover:bg-accent transition-colors'
       )}
     >
       <div className='w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden'>
@@ -276,7 +276,7 @@ function ChannelResult({ result, workspaceId }: ResultRendererProps) {
       href={`/${workspaceId}/channel/${data.channelId}`}
       className={cn(
         'flex items-center gap-4 p-4 rounded-lg',
-        'hover:bg-accent transition-colors',
+        'hover:bg-accent transition-colors'
       )}
     >
       <div className='w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center'>
@@ -322,7 +322,7 @@ function UserResult({ result, workspaceId }: ResultRendererProps) {
       href={`/${workspaceId}/dm/${data.userId}`}
       className={cn(
         'flex items-center gap-4 p-4 rounded-lg',
-        'hover:bg-accent transition-colors',
+        'hover:bg-accent transition-colors'
       )}
     >
       <div className='w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden'>
@@ -359,7 +359,7 @@ function OrchestratorResult({ result, workspaceId }: ResultRendererProps) {
       href={`/${workspaceId}/vp/${data.orchestratorId}`}
       className={cn(
         'flex items-center gap-4 p-4 rounded-lg',
-        'hover:bg-accent transition-colors',
+        'hover:bg-accent transition-colors'
       )}
     >
       <div className='w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center'>
@@ -389,7 +389,7 @@ function OrchestratorResult({ result, workspaceId }: ResultRendererProps) {
               'px-1.5 py-0.5 text-xs rounded font-sans',
               data.status === 'active'
                 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400',
+                : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400'
             )}
           >
             {data.status}
@@ -448,7 +448,7 @@ export function SearchResults({
       }
 
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/search?${params.toString()}`,
+        `/api/workspaces/${workspaceId}/search?${params.toString()}`
       );
 
       if (!response.ok) {

@@ -43,7 +43,7 @@ export function OrchestratorStatusBadge({
         config.bgColor,
         config.color,
         sizeClasses[size],
-        className,
+        className
       )}
       role='status'
       aria-label={`Status: ${config.label}`}
@@ -132,7 +132,7 @@ export function OrchestratorStatusDot({
             'absolute inline-flex h-full w-full rounded-full opacity-75',
             status === 'ONLINE'
               ? 'animate-ping bg-green-400'
-              : 'animate-pulse bg-yellow-400',
+              : 'animate-pulse bg-yellow-400'
           )}
         />
       )}
@@ -140,7 +140,7 @@ export function OrchestratorStatusDot({
         className={cn(
           'relative inline-flex rounded-full',
           dotSizeClasses[size],
-          statusDotColors[status],
+          statusDotColors[status]
         )}
       />
     </span>

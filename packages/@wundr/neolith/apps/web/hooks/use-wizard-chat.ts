@@ -71,7 +71,7 @@ export function useWizardChat(options: UseWizardChatOptions = {}) {
 
       return message;
     },
-    [updateExtractedData],
+    [updateExtractedData]
   );
 
   // Handle streaming response
@@ -143,7 +143,7 @@ export function useWizardChat(options: UseWizardChatOptions = {}) {
         setStreamingContent('');
       }
     },
-    [updateExtractedData, onChunkReceived],
+    [updateExtractedData, onChunkReceived]
   );
 
   // Send message to wizard chat API
@@ -183,7 +183,7 @@ export function useWizardChat(options: UseWizardChatOptions = {}) {
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            errorData.error || `Request failed with status ${response.status}`,
+            errorData.error || `Request failed with status ${response.status}`
           );
         }
 
@@ -253,7 +253,7 @@ export function useWizardChat(options: UseWizardChatOptions = {}) {
       handleStreamingResponse,
       onComplete,
       onError,
-    ],
+    ]
   );
 
   // Cancel ongoing request

@@ -62,7 +62,7 @@ export function SecurityQuestionsSection() {
   const handleQuestionChange = (
     index: number,
     field: 'question' | 'answer',
-    value: string,
+    value: string
   ) => {
     const updated = [...questionInputs];
     updated[index][field] = value;
@@ -72,7 +72,7 @@ export function SecurityQuestionsSection() {
   const handleSave = async () => {
     // Validate
     const validQuestions = questionInputs.filter(
-      q => q.question.trim() && q.answer.trim(),
+      q => q.question.trim() && q.answer.trim()
     );
 
     if (validQuestions.length < 2) {
@@ -161,10 +161,7 @@ export function SecurityQuestionsSection() {
                   </div>
                 ))}
               </div>
-              <Button
-                variant='outline'
-                onClick={() => setShowSetupModal(true)}
-              >
+              <Button variant='outline' onClick={() => setShowSetupModal(true)}>
                 Update Questions
               </Button>
             </div>

@@ -1,14 +1,35 @@
 'use client';
 
-import { Shield, Lock, Key, AlertTriangle, Globe, Clock, Copy, Check } from 'lucide-react';
+import {
+  Shield,
+  Lock,
+  Key,
+  AlertTriangle,
+  Globe,
+  Clock,
+  Copy,
+  Check,
+} from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
@@ -136,7 +157,10 @@ export default function AdminSecurityPage() {
 
   // Set page header
   useEffect(() => {
-    setPageHeader('Security Settings', 'Configure comprehensive security policies and controls');
+    setPageHeader(
+      'Security Settings',
+      'Configure comprehensive security policies and controls'
+    );
   }, [setPageHeader]);
 
   // Load settings
@@ -147,7 +171,7 @@ export default function AdminSecurityPage() {
 
         // Load password policy
         const passwordPolicyRes = await fetch(
-          `/api/workspaces/${workspaceSlug}/security/password-policy`,
+          `/api/workspaces/${workspaceSlug}/security/password-policy`
         );
         if (passwordPolicyRes.ok) {
           const data = await passwordPolicyRes.json();
@@ -155,7 +179,9 @@ export default function AdminSecurityPage() {
         }
 
         // Load workspace settings for 2FA and SSO
-        const settingsRes = await fetch(`/api/workspaces/${workspaceSlug}/admin/settings`);
+        const settingsRes = await fetch(
+          `/api/workspaces/${workspaceSlug}/admin/settings`
+        );
         if (settingsRes.ok) {
           const data = await settingsRes.json();
           setTwoFactorRequired(data.settings?.twoFactorRequired || false);
@@ -165,7 +191,9 @@ export default function AdminSecurityPage() {
         }
 
         // Load IP restrictions
-        const ipRes = await fetch(`/api/workspaces/${workspaceSlug}/security/ip-allowlist`);
+        const ipRes = await fetch(
+          `/api/workspaces/${workspaceSlug}/security/ip-allowlist`
+        );
         if (ipRes.ok) {
           const data = await ipRes.json();
           setIpRestrictions(data.ipRestrictions);
@@ -174,21 +202,27 @@ export default function AdminSecurityPage() {
         }
 
         // Load login attempts
-        const loginRes = await fetch(`/api/workspaces/${workspaceSlug}/security/login-attempts`);
+        const loginRes = await fetch(
+          `/api/workspaces/${workspaceSlug}/security/login-attempts`
+        );
         if (loginRes.ok) {
           const data = await loginRes.json();
           setLoginAttempts(data.loginAttempts);
         }
 
         // Load API keys
-        const apiKeysRes = await fetch(`/api/workspaces/${workspaceSlug}/security/api-keys`);
+        const apiKeysRes = await fetch(
+          `/api/workspaces/${workspaceSlug}/security/api-keys`
+        );
         if (apiKeysRes.ok) {
           const data = await apiKeysRes.json();
           setApiKeys(data.apiKeys);
         }
 
         // Load security alerts
-        const alertsRes = await fetch(`/api/workspaces/${workspaceSlug}/security/alerts`);
+        const alertsRes = await fetch(
+          `/api/workspaces/${workspaceSlug}/security/alerts`
+        );
         if (alertsRes.ok) {
           const data = await alertsRes.json();
           setSecurityAlerts(data.securityAlerts);
@@ -211,15 +245,18 @@ export default function AdminSecurityPage() {
   const savePasswordPolicy = useCallback(async () => {
     try {
       setIsSaving(true);
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/security/password-policy`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(passwordPolicy),
-      });
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/security/password-policy`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(passwordPolicy),
+        }
+      );
 
       if (!res.ok) {
-throw new Error('Failed to save');
-}
+        throw new Error('Failed to save');
+      }
 
       toast({
         title: 'Success',
@@ -239,15 +276,18 @@ throw new Error('Failed to save');
   const save2FASettings = useCallback(async () => {
     try {
       setIsSaving(true);
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/admin/settings`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ twoFactorRequired }),
-      });
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/admin/settings`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ twoFactorRequired }),
+        }
+      );
 
       if (!res.ok) {
-throw new Error('Failed to save');
-}
+        throw new Error('Failed to save');
+      }
 
       toast({
         title: 'Success',
@@ -267,15 +307,18 @@ throw new Error('Failed to save');
   const saveSessionTimeout = useCallback(async () => {
     try {
       setIsSaving(true);
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/admin/settings`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionTimeout }),
-      });
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/admin/settings`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionTimeout }),
+        }
+      );
 
       if (!res.ok) {
-throw new Error('Failed to save');
-}
+        throw new Error('Failed to save');
+      }
 
       toast({
         title: 'Success',
@@ -295,24 +338,37 @@ throw new Error('Failed to save');
   const saveIPRestrictions = useCallback(async () => {
     try {
       setIsSaving(true);
-      const allowlist = allowlistInput.split('\n').map(ip => ip.trim()).filter(Boolean);
-      const blocklist = blocklistInput.split('\n').map(ip => ip.trim()).filter(Boolean);
+      const allowlist = allowlistInput
+        .split('\n')
+        .map(ip => ip.trim())
+        .filter(Boolean);
+      const blocklist = blocklistInput
+        .split('\n')
+        .map(ip => ip.trim())
+        .filter(Boolean);
 
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/security/ip-allowlist`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          allowlist,
-          blocklist,
-          enabled: ipRestrictions.enabled,
-        }),
-      });
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/security/ip-allowlist`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            allowlist,
+            blocklist,
+            enabled: ipRestrictions.enabled,
+          }),
+        }
+      );
 
       if (!res.ok) {
-throw new Error('Failed to save');
-}
+        throw new Error('Failed to save');
+      }
 
-      setIpRestrictions({ allowlist, blocklist, enabled: ipRestrictions.enabled });
+      setIpRestrictions({
+        allowlist,
+        blocklist,
+        enabled: ipRestrictions.enabled,
+      });
       toast({
         title: 'Success',
         description: 'IP restrictions updated successfully',
@@ -326,20 +382,29 @@ throw new Error('Failed to save');
     } finally {
       setIsSaving(false);
     }
-  }, [workspaceSlug, allowlistInput, blocklistInput, ipRestrictions.enabled, toast]);
+  }, [
+    workspaceSlug,
+    allowlistInput,
+    blocklistInput,
+    ipRestrictions.enabled,
+    toast,
+  ]);
 
   const saveLoginAttempts = useCallback(async () => {
     try {
       setIsSaving(true);
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/security/login-attempts`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(loginAttempts),
-      });
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/security/login-attempts`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(loginAttempts),
+        }
+      );
 
       if (!res.ok) {
-throw new Error('Failed to save');
-}
+        throw new Error('Failed to save');
+      }
 
       toast({
         title: 'Success',
@@ -359,19 +424,22 @@ throw new Error('Failed to save');
   const saveSSOSettings = useCallback(async () => {
     try {
       setIsSaving(true);
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/admin/settings`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ssoEnabled,
-          ssoProvider,
-          ssoConfig,
-        }),
-      });
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/admin/settings`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ssoEnabled,
+            ssoProvider,
+            ssoConfig,
+          }),
+        }
+      );
 
       if (!res.ok) {
-throw new Error('Failed to save');
-}
+        throw new Error('Failed to save');
+      }
 
       toast({
         title: 'Success',
@@ -400,25 +468,30 @@ throw new Error('Failed to save');
 
     try {
       setIsSaving(true);
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/security/api-keys`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newApiKeyName,
-          expiresInDays: 365,
-        }),
-      });
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/security/api-keys`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: newApiKeyName,
+            expiresInDays: 365,
+          }),
+        }
+      );
 
       if (!res.ok) {
-throw new Error('Failed to create');
-}
+        throw new Error('Failed to create');
+      }
 
       const data = await res.json();
       setNewApiKeyValue(data.apiKey);
       setNewApiKeyName('');
 
       // Reload API keys
-      const apiKeysRes = await fetch(`/api/workspaces/${workspaceSlug}/security/api-keys`);
+      const apiKeysRes = await fetch(
+        `/api/workspaces/${workspaceSlug}/security/api-keys`
+      );
       if (apiKeysRes.ok) {
         const keysData = await apiKeysRes.json();
         setApiKeys(keysData.apiKeys);
@@ -439,52 +512,64 @@ throw new Error('Failed to create');
     }
   }, [workspaceSlug, newApiKeyName, toast]);
 
-  const deleteApiKey = useCallback(async (keyId: string) => {
-    try {
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/security/api-keys/${keyId}`, {
-        method: 'DELETE',
-      });
+  const deleteApiKey = useCallback(
+    async (keyId: string) => {
+      try {
+        const res = await fetch(
+          `/api/workspaces/${workspaceSlug}/security/api-keys/${keyId}`,
+          {
+            method: 'DELETE',
+          }
+        );
 
-      if (!res.ok) {
-throw new Error('Failed to delete');
-}
+        if (!res.ok) {
+          throw new Error('Failed to delete');
+        }
 
-      setApiKeys(prev => prev.filter(k => k.id !== keyId));
+        setApiKeys(prev => prev.filter(k => k.id !== keyId));
+        toast({
+          title: 'Success',
+          description: 'API key revoked successfully',
+        });
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to revoke API key',
+          variant: 'destructive',
+        });
+      }
+    },
+    [workspaceSlug, toast]
+  );
+
+  const copyToClipboard = useCallback(
+    (text: string, keyId: string) => {
+      navigator.clipboard.writeText(text);
+      setCopiedKeyId(keyId);
+      setTimeout(() => setCopiedKeyId(null), 2000);
       toast({
-        title: 'Success',
-        description: 'API key revoked successfully',
+        title: 'Copied',
+        description: 'API key copied to clipboard',
       });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to revoke API key',
-        variant: 'destructive',
-      });
-    }
-  }, [workspaceSlug, toast]);
-
-  const copyToClipboard = useCallback((text: string, keyId: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKeyId(keyId);
-    setTimeout(() => setCopiedKeyId(null), 2000);
-    toast({
-      title: 'Copied',
-      description: 'API key copied to clipboard',
-    });
-  }, [toast]);
+    },
+    [toast]
+  );
 
   const saveSecurityAlerts = useCallback(async () => {
     try {
       setIsSaving(true);
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/security/alerts`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(securityAlerts),
-      });
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/security/alerts`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(securityAlerts),
+        }
+      );
 
       if (!res.ok) {
-throw new Error('Failed to save');
-}
+        throw new Error('Failed to save');
+      }
 
       toast({
         title: 'Success',
@@ -538,8 +623,11 @@ throw new Error('Failed to save');
                   <Label htmlFor='minLength'>Minimum Length</Label>
                   <Select
                     value={passwordPolicy.minLength.toString()}
-                    onValueChange={(value) =>
-                      setPasswordPolicy({ ...passwordPolicy, minLength: parseInt(value) })
+                    onValueChange={value =>
+                      setPasswordPolicy({
+                        ...passwordPolicy,
+                        minLength: parseInt(value),
+                      })
                     }
                   >
                     <SelectTrigger id='minLength' className='w-full'>
@@ -547,7 +635,9 @@ throw new Error('Failed to save');
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value='8'>8 characters</SelectItem>
-                      <SelectItem value='12'>12 characters (recommended)</SelectItem>
+                      <SelectItem value='12'>
+                        12 characters (recommended)
+                      </SelectItem>
                       <SelectItem value='16'>16 characters</SelectItem>
                       <SelectItem value='20'>20 characters</SelectItem>
                     </SelectContent>
@@ -555,23 +645,33 @@ throw new Error('Failed to save');
                 </div>
 
                 <div className='flex items-center justify-between'>
-                  <Label htmlFor='requireUppercase'>Require uppercase letters</Label>
+                  <Label htmlFor='requireUppercase'>
+                    Require uppercase letters
+                  </Label>
                   <Switch
                     id='requireUppercase'
                     checked={passwordPolicy.requireUppercase}
-                    onCheckedChange={(checked) =>
-                      setPasswordPolicy({ ...passwordPolicy, requireUppercase: checked })
+                    onCheckedChange={checked =>
+                      setPasswordPolicy({
+                        ...passwordPolicy,
+                        requireUppercase: checked,
+                      })
                     }
                   />
                 </div>
 
                 <div className='flex items-center justify-between'>
-                  <Label htmlFor='requireLowercase'>Require lowercase letters</Label>
+                  <Label htmlFor='requireLowercase'>
+                    Require lowercase letters
+                  </Label>
                   <Switch
                     id='requireLowercase'
                     checked={passwordPolicy.requireLowercase}
-                    onCheckedChange={(checked) =>
-                      setPasswordPolicy({ ...passwordPolicy, requireLowercase: checked })
+                    onCheckedChange={checked =>
+                      setPasswordPolicy({
+                        ...passwordPolicy,
+                        requireLowercase: checked,
+                      })
                     }
                   />
                 </div>
@@ -581,19 +681,27 @@ throw new Error('Failed to save');
                   <Switch
                     id='requireNumbers'
                     checked={passwordPolicy.requireNumbers}
-                    onCheckedChange={(checked) =>
-                      setPasswordPolicy({ ...passwordPolicy, requireNumbers: checked })
+                    onCheckedChange={checked =>
+                      setPasswordPolicy({
+                        ...passwordPolicy,
+                        requireNumbers: checked,
+                      })
                     }
                   />
                 </div>
 
                 <div className='flex items-center justify-between'>
-                  <Label htmlFor='requireSpecialChars'>Require special characters</Label>
+                  <Label htmlFor='requireSpecialChars'>
+                    Require special characters
+                  </Label>
                   <Switch
                     id='requireSpecialChars'
                     checked={passwordPolicy.requireSpecialChars}
-                    onCheckedChange={(checked) =>
-                      setPasswordPolicy({ ...passwordPolicy, requireSpecialChars: checked })
+                    onCheckedChange={checked =>
+                      setPasswordPolicy({
+                        ...passwordPolicy,
+                        requireSpecialChars: checked,
+                      })
                     }
                   />
                 </div>
@@ -602,8 +710,11 @@ throw new Error('Failed to save');
                   <Label htmlFor='expiryDays'>Password Expiry (days)</Label>
                   <Select
                     value={passwordPolicy.expiryDays.toString()}
-                    onValueChange={(value) =>
-                      setPasswordPolicy({ ...passwordPolicy, expiryDays: parseInt(value) })
+                    onValueChange={value =>
+                      setPasswordPolicy({
+                        ...passwordPolicy,
+                        expiryDays: parseInt(value),
+                      })
                     }
                   >
                     <SelectTrigger id='expiryDays' className='w-full'>
@@ -624,8 +735,11 @@ throw new Error('Failed to save');
                   <Label htmlFor='preventReuse'>Prevent password reuse</Label>
                   <Select
                     value={passwordPolicy.preventReuse.toString()}
-                    onValueChange={(value) =>
-                      setPasswordPolicy({ ...passwordPolicy, preventReuse: parseInt(value) })
+                    onValueChange={value =>
+                      setPasswordPolicy({
+                        ...passwordPolicy,
+                        preventReuse: parseInt(value),
+                      })
                     }
                   >
                     <SelectTrigger id='preventReuse' className='w-full'>
@@ -634,7 +748,9 @@ throw new Error('Failed to save');
                     <SelectContent>
                       <SelectItem value='0'>Disabled</SelectItem>
                       <SelectItem value='3'>Last 3 passwords</SelectItem>
-                      <SelectItem value='5'>Last 5 passwords (recommended)</SelectItem>
+                      <SelectItem value='5'>
+                        Last 5 passwords (recommended)
+                      </SelectItem>
                       <SelectItem value='10'>Last 10 passwords</SelectItem>
                       <SelectItem value='24'>Last 24 passwords</SelectItem>
                     </SelectContent>
@@ -699,7 +815,7 @@ throw new Error('Failed to save');
                 <Label htmlFor='sessionTimeout'>Session Timeout (days)</Label>
                 <Select
                   value={sessionTimeout.toString()}
-                  onValueChange={(value) => setSessionTimeout(parseInt(value))}
+                  onValueChange={value => setSessionTimeout(parseInt(value))}
                 >
                   <SelectTrigger id='sessionTimeout' className='w-full'>
                     <SelectValue />
@@ -767,7 +883,7 @@ throw new Error('Failed to save');
                     <Input
                       id='clientId'
                       value={ssoConfig.clientId}
-                      onChange={(e) =>
+                      onChange={e =>
                         setSsoConfig({ ...ssoConfig, clientId: e.target.value })
                       }
                       placeholder='Enter client ID'
@@ -780,8 +896,11 @@ throw new Error('Failed to save');
                       id='clientSecret'
                       type='password'
                       value={ssoConfig.clientSecret}
-                      onChange={(e) =>
-                        setSsoConfig({ ...ssoConfig, clientSecret: e.target.value })
+                      onChange={e =>
+                        setSsoConfig({
+                          ...ssoConfig,
+                          clientSecret: e.target.value,
+                        })
                       }
                       placeholder='Enter client secret'
                     />
@@ -792,7 +911,7 @@ throw new Error('Failed to save');
                     <Input
                       id='domain'
                       value={ssoConfig.domain}
-                      onChange={(e) =>
+                      onChange={e =>
                         setSsoConfig({ ...ssoConfig, domain: e.target.value })
                       }
                       placeholder='example.okta.com'
@@ -802,7 +921,10 @@ throw new Error('Failed to save');
               )}
 
               <div className='flex justify-end'>
-                <Button onClick={saveSSOSettings} disabled={isSaving || !ssoEnabled}>
+                <Button
+                  onClick={saveSSOSettings}
+                  disabled={isSaving || !ssoEnabled}
+                >
                   {isSaving ? 'Saving...' : 'Save SSO Settings'}
                 </Button>
               </div>
@@ -833,7 +955,7 @@ throw new Error('Failed to save');
                 </div>
                 <Switch
                   checked={ipRestrictions.enabled}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={checked =>
                     setIpRestrictions({ ...ipRestrictions, enabled: checked })
                   }
                 />
@@ -844,12 +966,13 @@ throw new Error('Failed to save');
                   <div>
                     <Label htmlFor='allowlist'>IP Allowlist</Label>
                     <p className='text-sm text-muted-foreground mb-2'>
-                      Enter one IP address per line (e.g., 192.168.1.1 or 10.0.0.0/24)
+                      Enter one IP address per line (e.g., 192.168.1.1 or
+                      10.0.0.0/24)
                     </p>
                     <Textarea
                       id='allowlist'
                       value={allowlistInput}
-                      onChange={(e) => setAllowlistInput(e.target.value)}
+                      onChange={e => setAllowlistInput(e.target.value)}
                       placeholder='192.168.1.1&#10;10.0.0.0/24'
                       rows={5}
                     />
@@ -863,7 +986,7 @@ throw new Error('Failed to save');
                     <Textarea
                       id='blocklist'
                       value={blocklistInput}
-                      onChange={(e) => setBlocklistInput(e.target.value)}
+                      onChange={e => setBlocklistInput(e.target.value)}
                       placeholder='203.0.113.0/24&#10;198.51.100.50'
                       rows={5}
                     />
@@ -895,8 +1018,11 @@ throw new Error('Failed to save');
                 <Label htmlFor='maxAttempts'>Maximum Failed Attempts</Label>
                 <Select
                   value={loginAttempts.maxAttempts.toString()}
-                  onValueChange={(value) =>
-                    setLoginAttempts({ ...loginAttempts, maxAttempts: parseInt(value) })
+                  onValueChange={value =>
+                    setLoginAttempts({
+                      ...loginAttempts,
+                      maxAttempts: parseInt(value),
+                    })
                   }
                 >
                   <SelectTrigger id='maxAttempts' className='w-full'>
@@ -912,11 +1038,16 @@ throw new Error('Failed to save');
               </div>
 
               <div>
-                <Label htmlFor='lockoutDuration'>Lockout Duration (minutes)</Label>
+                <Label htmlFor='lockoutDuration'>
+                  Lockout Duration (minutes)
+                </Label>
                 <Select
                   value={loginAttempts.lockoutDuration.toString()}
-                  onValueChange={(value) =>
-                    setLoginAttempts({ ...loginAttempts, lockoutDuration: parseInt(value) })
+                  onValueChange={value =>
+                    setLoginAttempts({
+                      ...loginAttempts,
+                      lockoutDuration: parseInt(value),
+                    })
                   }
                 >
                   <SelectTrigger id='lockoutDuration' className='w-full'>
@@ -933,11 +1064,16 @@ throw new Error('Failed to save');
               </div>
 
               <div>
-                <Label htmlFor='resetAfter'>Reset Counter After (minutes)</Label>
+                <Label htmlFor='resetAfter'>
+                  Reset Counter After (minutes)
+                </Label>
                 <Select
                   value={loginAttempts.resetAfter.toString()}
-                  onValueChange={(value) =>
-                    setLoginAttempts({ ...loginAttempts, resetAfter: parseInt(value) })
+                  onValueChange={value =>
+                    setLoginAttempts({
+                      ...loginAttempts,
+                      resetAfter: parseInt(value),
+                    })
                   }
                 >
                   <SelectTrigger id='resetAfter' className='w-full'>
@@ -961,8 +1097,11 @@ throw new Error('Failed to save');
                 </div>
                 <Switch
                   checked={loginAttempts.notifyOnLockout}
-                  onCheckedChange={(checked) =>
-                    setLoginAttempts({ ...loginAttempts, notifyOnLockout: checked })
+                  onCheckedChange={checked =>
+                    setLoginAttempts({
+                      ...loginAttempts,
+                      notifyOnLockout: checked,
+                    })
                   }
                 />
               </div>
@@ -996,10 +1135,13 @@ throw new Error('Failed to save');
                   <Input
                     placeholder='API key name (e.g., Production Bot)'
                     value={newApiKeyName}
-                    onChange={(e) => setNewApiKeyName(e.target.value)}
+                    onChange={e => setNewApiKeyName(e.target.value)}
                     className='flex-1'
                   />
-                  <Button onClick={createApiKey} disabled={isSaving || !newApiKeyName}>
+                  <Button
+                    onClick={createApiKey}
+                    disabled={isSaving || !newApiKeyName}
+                  >
                     Create Key
                   </Button>
                 </div>
@@ -1038,17 +1180,19 @@ throw new Error('Failed to save');
                   </p>
                 ) : (
                   <div className='space-y-2'>
-                    {apiKeys.map((key) => (
+                    {apiKeys.map(key => (
                       <div
                         key={key.id}
                         className={cn(
                           'flex items-center justify-between rounded-lg border p-4',
-                          !key.isActive && 'opacity-50',
+                          !key.isActive && 'opacity-50'
                         )}
                       >
                         <div className='flex-1'>
                           <div className='flex items-center gap-2'>
-                            <code className='text-sm font-mono'>{key.apiKey}...</code>
+                            <code className='text-sm font-mono'>
+                              {key.apiKey}...
+                            </code>
                             {!key.isActive && (
                               <span className='rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-800 dark:bg-red-900/20 dark:text-red-200'>
                                 Inactive
@@ -1056,9 +1200,12 @@ throw new Error('Failed to save');
                             )}
                           </div>
                           <p className='text-sm text-muted-foreground mt-1'>
-                            Created: {new Date(key.createdAt).toLocaleDateString()}
-                            {key.lastUsedAt && ` • Last used: ${new Date(key.lastUsedAt).toLocaleDateString()}`}
-                            {key.expiresAt && ` • Expires: ${new Date(key.expiresAt).toLocaleDateString()}`}
+                            Created:{' '}
+                            {new Date(key.createdAt).toLocaleDateString()}
+                            {key.lastUsedAt &&
+                              ` • Last used: ${new Date(key.lastUsedAt).toLocaleDateString()}`}
+                            {key.expiresAt &&
+                              ` • Expires: ${new Date(key.expiresAt).toLocaleDateString()}`}
                           </p>
                         </div>
                         <Button
@@ -1097,8 +1244,11 @@ throw new Error('Failed to save');
                   <Label>New device login</Label>
                   <Switch
                     checked={securityAlerts.newDeviceLogin}
-                    onCheckedChange={(checked) =>
-                      setSecurityAlerts({ ...securityAlerts, newDeviceLogin: checked })
+                    onCheckedChange={checked =>
+                      setSecurityAlerts({
+                        ...securityAlerts,
+                        newDeviceLogin: checked,
+                      })
                     }
                   />
                 </div>
@@ -1107,8 +1257,11 @@ throw new Error('Failed to save');
                   <Label>Failed login attempts</Label>
                   <Switch
                     checked={securityAlerts.failedLoginAttempts}
-                    onCheckedChange={(checked) =>
-                      setSecurityAlerts({ ...securityAlerts, failedLoginAttempts: checked })
+                    onCheckedChange={checked =>
+                      setSecurityAlerts({
+                        ...securityAlerts,
+                        failedLoginAttempts: checked,
+                      })
                     }
                   />
                 </div>
@@ -1117,8 +1270,11 @@ throw new Error('Failed to save');
                   <Label>Role changes</Label>
                   <Switch
                     checked={securityAlerts.roleChanges}
-                    onCheckedChange={(checked) =>
-                      setSecurityAlerts({ ...securityAlerts, roleChanges: checked })
+                    onCheckedChange={checked =>
+                      setSecurityAlerts({
+                        ...securityAlerts,
+                        roleChanges: checked,
+                      })
                     }
                   />
                 </div>
@@ -1127,8 +1283,11 @@ throw new Error('Failed to save');
                   <Label>API key created</Label>
                   <Switch
                     checked={securityAlerts.apiKeyCreated}
-                    onCheckedChange={(checked) =>
-                      setSecurityAlerts({ ...securityAlerts, apiKeyCreated: checked })
+                    onCheckedChange={checked =>
+                      setSecurityAlerts({
+                        ...securityAlerts,
+                        apiKeyCreated: checked,
+                      })
                     }
                   />
                 </div>
@@ -1137,8 +1296,11 @@ throw new Error('Failed to save');
                   <Label>API key revoked</Label>
                   <Switch
                     checked={securityAlerts.apiKeyRevoked}
-                    onCheckedChange={(checked) =>
-                      setSecurityAlerts({ ...securityAlerts, apiKeyRevoked: checked })
+                    onCheckedChange={checked =>
+                      setSecurityAlerts({
+                        ...securityAlerts,
+                        apiKeyRevoked: checked,
+                      })
                     }
                   />
                 </div>
@@ -1147,7 +1309,7 @@ throw new Error('Failed to save');
                   <Label>Security settings changed</Label>
                   <Switch
                     checked={securityAlerts.securitySettingsChanged}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={checked =>
                       setSecurityAlerts({
                         ...securityAlerts,
                         securitySettingsChanged: checked,
@@ -1160,8 +1322,11 @@ throw new Error('Failed to save');
                   <Label>Unusual activity detected</Label>
                   <Switch
                     checked={securityAlerts.unusualActivity}
-                    onCheckedChange={(checked) =>
-                      setSecurityAlerts({ ...securityAlerts, unusualActivity: checked })
+                    onCheckedChange={checked =>
+                      setSecurityAlerts({
+                        ...securityAlerts,
+                        unusualActivity: checked,
+                      })
                     }
                   />
                 </div>
@@ -1170,8 +1335,11 @@ throw new Error('Failed to save');
                   <Label>Data export requested</Label>
                   <Switch
                     checked={securityAlerts.dataExport}
-                    onCheckedChange={(checked) =>
-                      setSecurityAlerts({ ...securityAlerts, dataExport: checked })
+                    onCheckedChange={checked =>
+                      setSecurityAlerts({
+                        ...securityAlerts,
+                        dataExport: checked,
+                      })
                     }
                   />
                 </div>
@@ -1187,19 +1355,24 @@ throw new Error('Failed to save');
                     type='email'
                     placeholder='security@example.com'
                     value={securityAlerts.alertEmail || ''}
-                    onChange={(e) =>
-                      setSecurityAlerts({ ...securityAlerts, alertEmail: e.target.value })
+                    onChange={e =>
+                      setSecurityAlerts({
+                        ...securityAlerts,
+                        alertEmail: e.target.value,
+                      })
                     }
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor='alertSlackWebhook'>Slack Webhook URL (optional)</Label>
+                  <Label htmlFor='alertSlackWebhook'>
+                    Slack Webhook URL (optional)
+                  </Label>
                   <Input
                     id='alertSlackWebhook'
                     placeholder='https://hooks.slack.com/services/...'
                     value={securityAlerts.alertSlackWebhook || ''}
-                    onChange={(e) =>
+                    onChange={e =>
                       setSecurityAlerts({
                         ...securityAlerts,
                         alertSlackWebhook: e.target.value,

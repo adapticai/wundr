@@ -93,7 +93,7 @@ async function testWebhookOperations() {
       where: { webhookId: webhook.id },
     });
     console.log(
-      `✅ Verified cascade delete (remaining deliveries: ${remainingDeliveries.length})\n`,
+      `✅ Verified cascade delete (remaining deliveries: ${remainingDeliveries.length})\n`
     );
 
     console.log('All tests passed! ✅');

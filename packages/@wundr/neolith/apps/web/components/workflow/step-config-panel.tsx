@@ -129,11 +129,12 @@ export function StepConfigPanel({
   // Handle form submission
   const onSubmit = async (data: FormData) => {
     if (!step) {
-return;
-}
+      return;
+    }
 
     try {
-      const configData = (data as { config?: Record<string, unknown> }).config ?? {};
+      const configData =
+        (data as { config?: Record<string, unknown> }).config ?? {};
       await onSave?.(step.id, configData);
       reset(data); // Reset dirty state
     } catch (error) {
@@ -143,10 +144,12 @@ return;
 
   const handleDelete = () => {
     if (!step) {
-return;
-}
+      return;
+    }
     if (
-      window.confirm('Are you sure you want to delete this step? This action cannot be undone.')
+      window.confirm(
+        'Are you sure you want to delete this step? This action cannot be undone.'
+      )
     ) {
       onDelete?.(step.id);
     }
@@ -154,8 +157,8 @@ return;
 
   const handleDuplicate = () => {
     if (!step) {
-return;
-}
+      return;
+    }
     onDuplicate?.(step.id);
   };
 
@@ -165,7 +168,7 @@ return;
       <div
         className={cn(
           'flex h-full w-full flex-col items-center justify-center bg-muted/30 p-8',
-          className,
+          className
         )}
       >
         <Info className='mb-4 h-12 w-12 text-muted-foreground/50' />
@@ -186,14 +189,18 @@ return;
         <div
           className={cn(
             'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-            'bg-primary/10',
+            'bg-primary/10'
           )}
         >
           <Icon className={cn('h-5 w-5', stepType.color)} />
         </div>
         <div className='min-w-0 flex-1'>
-          <h2 className='truncate text-lg font-semibold text-foreground'>{step.name}</h2>
-          <p className='truncate text-xs text-muted-foreground'>{stepType.description}</p>
+          <h2 className='truncate text-lg font-semibold text-foreground'>
+            {step.name}
+          </h2>
+          <p className='truncate text-xs text-muted-foreground'>
+            {stepType.description}
+          </p>
         </div>
         <Button variant='ghost' size='icon' onClick={onClose}>
           <X className='h-4 w-4' />
@@ -215,15 +222,18 @@ return;
         <Alert variant='destructive' className='m-4 mb-0'>
           <AlertCircle className='h-4 w-4' />
           <AlertDescription>
-            This step is deprecated and may be removed in a future version. Please consider using
-            an alternative.
+            This step is deprecated and may be removed in a future version.
+            Please consider using an alternative.
           </AlertDescription>
         </Alert>
       )}
 
       {/* Form */}
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} className='flex flex-1 flex-col'>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className='flex flex-1 flex-col'
+        >
           <ScrollArea className='flex-1'>
             <div className='space-y-6 p-4'>
               {/* Step Info */}
@@ -242,8 +252,15 @@ return;
 
               {/* Configuration Form based on category */}
               <div className='space-y-4'>
-                <h3 className='text-sm font-semibold text-foreground'>Configuration</h3>
-                {renderConfigForm(stepType.category, stepType, availableVariables, readOnly)}
+                <h3 className='text-sm font-semibold text-foreground'>
+                  Configuration
+                </h3>
+                {renderConfigForm(
+                  stepType.category,
+                  stepType,
+                  availableVariables,
+                  readOnly
+                )}
               </div>
 
               {/* Advanced Settings */}
@@ -256,7 +273,8 @@ return;
                     <div className='space-y-4 pt-2'>
                       {/* Notes field could go here */}
                       <p className='text-xs text-muted-foreground'>
-                        Additional advanced settings will be available in future updates.
+                        Additional advanced settings will be available in future
+                        updates.
                       </p>
                     </div>
                   </AccordionContent>
@@ -278,7 +296,12 @@ return;
                   <Save className='mr-2 h-4 w-4' />
                   {isSubmitting ? 'Saving...' : 'Save Changes'}
                 </Button>
-                <Button type='button' variant='outline' onClick={() => reset()} disabled={!isDirty}>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={() => reset()}
+                  disabled={!isDirty}
+                >
                   Reset
                 </Button>
               </div>
@@ -324,7 +347,7 @@ function renderConfigForm(
   category: StepCategory,
   stepType: StepType<unknown>,
   availableVariables: ScopedWorkflowVariable[],
-  readOnly: boolean,
+  readOnly: boolean
 ) {
   const commonProps = {
     stepType,

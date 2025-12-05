@@ -36,13 +36,13 @@ export default function AdminActivityPage() {
   useEffect(() => {
     setPageHeader(
       'Activity Log',
-      'Review admin actions and audit trail for your workspace',
+      'Review admin actions and audit trail for your workspace'
     );
   }, [setPageHeader]);
 
   const [filterAction, setFilterAction] = useState<ActivityFilterType>('all');
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>(
-    '30d',
+    '30d'
   );
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -51,7 +51,7 @@ export default function AdminActivityPage() {
     {
       type: filterAction === 'all' ? undefined : (filterAction as any),
       limit: 50,
-    },
+    }
   );
 
   // Filter activities based on search and date
@@ -64,7 +64,7 @@ export default function AdminActivityPage() {
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - days);
       filtered = filtered.filter(
-        activity => new Date(activity.createdAt) >= cutoff,
+        activity => new Date(activity.createdAt) >= cutoff
       );
     }
 
@@ -76,7 +76,7 @@ export default function AdminActivityPage() {
           activity.actor?.name?.toLowerCase().includes(query) ||
           activity.action.toLowerCase().includes(query) ||
           activity.targetName?.toLowerCase().includes(query) ||
-          (activity.metadata?.reason as string)?.toLowerCase().includes(query),
+          (activity.metadata?.reason as string)?.toLowerCase().includes(query)
       );
     }
 
@@ -103,7 +103,7 @@ export default function AdminActivityPage() {
           activity.targetName || activity.targetType || '',
           (activity.metadata?.reason as string) || '',
           activity.ipAddress || '',
-        ].join(','),
+        ].join(',')
       ),
     ].join('\n');
 
@@ -147,7 +147,7 @@ export default function AdminActivityPage() {
           onClick={handleExport}
           className={cn(
             'inline-flex items-center gap-2 rounded-md border border-input',
-            'bg-background px-4 py-2 text-sm font-medium hover:bg-muted',
+            'bg-background px-4 py-2 text-sm font-medium hover:bg-muted'
           )}
         >
           <DownloadIcon className='h-4 w-4' />
@@ -166,7 +166,7 @@ export default function AdminActivityPage() {
             }
             className={cn(
               'rounded-md border border-input bg-background px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
             )}
           >
             {actionFilterOptions.map(option => (
@@ -182,7 +182,7 @@ export default function AdminActivityPage() {
             onChange={e => setDateRange(e.target.value as typeof dateRange)}
             className={cn(
               'rounded-md border border-input bg-background px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
             )}
           >
             {dateRangeOptions.map(option => (
@@ -205,7 +205,7 @@ export default function AdminActivityPage() {
               'w-full rounded-md border border-input bg-background py-2 pl-9 pr-4',
               'text-sm placeholder:text-muted-foreground',
               'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'lg:w-64',
+              'lg:w-64'
             )}
           />
         </div>
@@ -267,7 +267,7 @@ export default function AdminActivityPage() {
                   index === 0 ||
                   !isSameDay(
                     new Date(activity.createdAt),
-                    new Date(filteredActivities[index - 1].createdAt),
+                    new Date(filteredActivities[index - 1].createdAt)
                   )
                 }
               />
@@ -386,7 +386,7 @@ function ActivityRow({
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-xs font-medium',
-                actionConfig.className,
+                actionConfig.className
               )}
             >
               {actionConfig.label}

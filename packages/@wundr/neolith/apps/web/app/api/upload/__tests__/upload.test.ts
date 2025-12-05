@@ -155,7 +155,7 @@ function createMockStorageService() {
     getSignedDownloadUrl: vi
       .fn()
       .mockResolvedValue(
-        'https://bucket.s3.amazonaws.com/download?signature=mock',
+        'https://bucket.s3.amazonaws.com/download?signature=mock'
       ),
   };
 }
@@ -190,7 +190,7 @@ function createUploadHandler(deps: {
      * POST /api/upload - Request presigned upload URL
      */
     requestUpload: async (
-      input: UploadRequestInput,
+      input: UploadRequestInput
     ): Promise<
       ApiResponse<{
         url: string;
@@ -261,7 +261,7 @@ function createUploadHandler(deps: {
       // Generate signed URL
       const result = await deps.storageService.getSignedUploadUrl(
         `channels/${input.channelId}/files/${deps.currentUser.id}/${Date.now()}-${input.filename}`,
-        input.contentType,
+        input.contentType
       );
 
       return {
@@ -280,7 +280,7 @@ function createUploadHandler(deps: {
      * POST /api/upload/complete - Complete upload and create file record
      */
     completeUpload: async (
-      input: CompleteUploadInput,
+      input: CompleteUploadInput
     ): Promise<
       ApiResponse<{
         file: {
@@ -371,7 +371,7 @@ function createUploadHandler(deps: {
       }
 
       const downloadUrl = await deps.storageService.getSignedDownloadUrl(
-        input.key,
+        input.key
       );
 
       return {
@@ -733,10 +733,10 @@ describe('Upload API', () => {
       expect(response.status).toBe(200);
       expect(mockImageService.processImage).toHaveBeenCalledWith(input.key);
       expect(mockImageService.generateThumbnail).toHaveBeenCalledWith(
-        input.key,
+        input.key
       );
       expect(response.data!.file.thumbnailUrl).toBe(
-        'https://cdn.example.com/thumb.webp',
+        'https://cdn.example.com/thumb.webp'
       );
     });
 
@@ -781,7 +781,7 @@ describe('Upload API', () => {
         async (args: { data: Record<string, unknown> }) => ({
           id: 'file_123',
           ...args.data,
-        }),
+        })
       );
 
       const input: CompleteUploadInput = {
@@ -796,7 +796,7 @@ describe('Upload API', () => {
           data: expect.objectContaining({
             channelId: 'ch_456',
           }),
-        }),
+        })
       );
     });
 
@@ -856,7 +856,7 @@ describe('Upload API', () => {
         async (args: { data: Record<string, unknown> }) => ({
           id: 'file_123',
           ...args.data,
-        }),
+        })
       );
 
       const input: CompleteUploadInput = {
@@ -878,7 +878,7 @@ describe('Upload API', () => {
               tags: ['finance', 'quarterly'],
             },
           }),
-        }),
+        })
       );
     });
   });
@@ -922,7 +922,7 @@ describe('Upload API Error Handling', () => {
     });
 
     mockStorageService.getSignedUploadUrl.mockRejectedValue(
-      new Error('S3 Service Unavailable'),
+      new Error('S3 Service Unavailable')
     );
 
     const input: UploadRequestInput = {
@@ -933,13 +933,13 @@ describe('Upload API Error Handling', () => {
     };
 
     await expect(handler.requestUpload(input)).rejects.toThrow(
-      'S3 Service Unavailable',
+      'S3 Service Unavailable'
     );
   });
 
   it('handles database errors gracefully', async () => {
     mockPrisma.channelMember.findUnique.mockRejectedValue(
-      new Error('Database connection lost'),
+      new Error('Database connection lost')
     );
 
     const input: UploadRequestInput = {
@@ -950,7 +950,7 @@ describe('Upload API Error Handling', () => {
     };
 
     await expect(handler.requestUpload(input)).rejects.toThrow(
-      'Database connection lost',
+      'Database connection lost'
     );
   });
 
@@ -975,7 +975,7 @@ describe('Upload API Error Handling', () => {
 
     // Image processing fails
     mockImageService.processImage.mockRejectedValue(
-      new Error('Image processing failed'),
+      new Error('Image processing failed')
     );
 
     const input: CompleteUploadInput = {

@@ -66,7 +66,9 @@ export default function ChannelPage() {
   const [localIsStarred, setLocalIsStarred] = useState<boolean | null>(null);
 
   // Pinned messages state
-  const [pinnedMessageIds, setPinnedMessageIds] = useState<Set<string>>(new Set());
+  const [pinnedMessageIds, setPinnedMessageIds] = useState<Set<string>>(
+    new Set()
+  );
 
   // Convert auth user to chat User type
   const currentUser = useMemo<User | null>(() => {
@@ -90,10 +92,8 @@ export default function ChannelPage() {
   } = useChannel(channelId);
 
   // Fetch channel permissions
-  const {
-    permissions,
-    isLoading: isPermissionsLoading,
-  } = useChannelPermissions(channelId);
+  const { permissions, isLoading: isPermissionsLoading } =
+    useChannelPermissions(channelId);
 
   // Huddle management
   const {
@@ -143,7 +143,7 @@ export default function ChannelPage() {
   // Typing indicator
   const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
     channelId,
-    currentUser?.id || '',
+    currentUser?.id || ''
   );
 
   // Thread state
@@ -186,7 +186,9 @@ export default function ChannelPage() {
         throw new Error('Failed to fetch pinned messages');
       }
       const result = await response.json();
-      const pinnedIds = new Set<string>((result.data || []).map((msg: Message) => msg.id));
+      const pinnedIds = new Set<string>(
+        (result.data || []).map((msg: Message) => msg.id)
+      );
       setPinnedMessageIds(pinnedIds);
     } catch (error) {
       console.error('Failed to fetch pinned messages:', error);
@@ -224,14 +226,20 @@ export default function ChannelPage() {
             : `/api/channels/${channelId}/pins`,
           {
             method: isPinned ? 'DELETE' : 'POST',
-            headers: isPinned ? undefined : { 'Content-Type': 'application/json' },
-            body: isPinned ? undefined : JSON.stringify({ messageId, channelId }),
-          },
+            headers: isPinned
+              ? undefined
+              : { 'Content-Type': 'application/json' },
+            body: isPinned
+              ? undefined
+              : JSON.stringify({ messageId, channelId }),
+          }
         );
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.message || `Failed to ${isPinned ? 'unpin' : 'pin'} message`);
+          throw new Error(
+            error.message || `Failed to ${isPinned ? 'unpin' : 'pin'} message`
+          );
         }
 
         toast({
@@ -246,18 +254,22 @@ export default function ChannelPage() {
         toast({
           title: 'Error',
           description:
-            error instanceof Error ? error.message : `Failed to ${isPinned ? 'unpin' : 'pin'} message`,
+            error instanceof Error
+              ? error.message
+              : `Failed to ${isPinned ? 'unpin' : 'pin'} message`,
           variant: 'destructive',
         });
       }
     },
-    [channelId, pinnedMessageIds, toast],
+    [channelId, pinnedMessageIds, toast]
   );
 
   // Handle jump to message from pinned panel
   const handleJumpToMessage = useCallback((messageId: string) => {
     // Find the message element and scroll to it
-    const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+    const messageElement = document.querySelector(
+      `[data-message-id="${messageId}"]`
+    );
     if (messageElement) {
       messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       // Highlight the message briefly
@@ -349,7 +361,7 @@ export default function ChannelPage() {
         // Send message with file IDs
         const { message } = await sendMessage(
           { content, channelId, mentions, attachmentIds: uploadedFileIds },
-          currentUser,
+          currentUser
         );
 
         // Replace optimistic message with real one
@@ -387,7 +399,7 @@ export default function ChannelPage() {
       updateOptimisticMessage,
       removeOptimisticMessage,
       toast,
-    ],
+    ]
   );
 
   // Handle send thread reply
@@ -483,7 +495,7 @@ export default function ChannelPage() {
             mentions,
             attachmentIds: uploadedFileIds,
           },
-          currentUser,
+          currentUser
         );
 
         // Cleanup temporary blob URLs
@@ -498,7 +510,7 @@ export default function ChannelPage() {
         updateOptimisticMessage(activeThreadId, {
           replyCount: Math.max(
             0,
-            (messages.find(m => m.id === activeThreadId)?.replyCount || 1) - 1,
+            (messages.find(m => m.id === activeThreadId)?.replyCount || 1) - 1
           ),
         });
         toast({
@@ -519,7 +531,7 @@ export default function ChannelPage() {
       updateOptimisticMessage,
       messages,
       toast,
-    ],
+    ]
   );
 
   // Handle edit message
@@ -532,7 +544,7 @@ export default function ChannelPage() {
         updateOptimisticMessage(message.id, result);
       }
     },
-    [editMessage, updateOptimisticMessage],
+    [editMessage, updateOptimisticMessage]
   );
 
   // Handle delete message
@@ -543,7 +555,7 @@ export default function ChannelPage() {
         removeOptimisticMessage(messageId);
       }
     },
-    [deleteMessage, removeOptimisticMessage],
+    [deleteMessage, removeOptimisticMessage]
   );
 
   // Handle reaction toggle
@@ -575,10 +587,10 @@ export default function ChannelPage() {
                     count: r.count - 1,
                     hasReacted: false,
                     userIds: (r.userIds || []).filter(
-                      id => id !== currentUser.id,
+                      id => id !== currentUser.id
                     ),
                   }
-                : r,
+                : r
             );
           }
         } else {
@@ -591,7 +603,7 @@ export default function ChannelPage() {
                   hasReacted: true,
                   userIds: [...(r.userIds || []), currentUser.id],
                 }
-              : r,
+              : r
           );
         }
       } else {
@@ -615,7 +627,7 @@ export default function ChannelPage() {
             `/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`,
             {
               method: 'DELETE',
-            },
+            }
           );
         } else {
           response = await fetch(`/api/messages/${messageId}/reactions`, {
@@ -634,7 +646,7 @@ export default function ChannelPage() {
         updateOptimisticMessage(messageId, { reactions: message.reactions });
       }
     },
-    [currentUser, messages, updateOptimisticMessage],
+    [currentUser, messages, updateOptimisticMessage]
   );
 
   // Handle reply (open thread)
@@ -650,7 +662,7 @@ export default function ChannelPage() {
       'replyCount:',
       message.replyCount,
       'content:',
-      message.content?.slice(0, 50),
+      message.content?.slice(0, 50)
     );
     setActiveThreadId(message.id);
   }, []);
@@ -713,7 +725,7 @@ export default function ChannelPage() {
       // Refetch channel data
       await refetchChannel();
     },
-    [channelId, refetchChannel],
+    [channelId, refetchChannel]
   );
 
   // Remove member handler - must be before conditional returns
@@ -723,13 +735,13 @@ export default function ChannelPage() {
         `/api/channels/${channelId}/members/${userId}`,
         {
           method: 'DELETE',
-        },
+        }
       );
       if (!response.ok) {
         throw new Error('Failed to remove member');
       }
     },
-    [channelId],
+    [channelId]
   );
 
   // Change member role handler - must be before conditional returns
@@ -741,13 +753,13 @@ export default function ChannelPage() {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: role.toUpperCase() }),
-        },
+        }
       );
       if (!response.ok) {
         throw new Error('Failed to change member role');
       }
     },
-    [channelId],
+    [channelId]
   );
 
   // Invite members handler - must be before conditional returns
@@ -786,7 +798,7 @@ export default function ChannelPage() {
         throw error;
       }
     },
-    [channelId, refetchChannel, toast],
+    [channelId, refetchChannel, toast]
   );
 
   // Invite members by email handler - must be before conditional returns
@@ -824,7 +836,7 @@ export default function ChannelPage() {
         throw error;
       }
     },
-    [channelId, toast],
+    [channelId, toast]
   );
 
   // Tab change handler - filter to only supported tabs for channels
@@ -890,7 +902,11 @@ export default function ChannelPage() {
     setShowHuddleRoom(false);
   }, []);
 
-  const isLoading = isChannelLoading || isMessagesLoading || isAuthLoading || isPermissionsLoading;
+  const isLoading =
+    isChannelLoading ||
+    isMessagesLoading ||
+    isAuthLoading ||
+    isPermissionsLoading;
 
   if (isLoading) {
     return (

@@ -108,7 +108,7 @@ export function OrchestratorTaskAssignmentDialog({
 
   // Filter only online Orchestrators
   const activeOrchestrators = orchestrators.filter(
-    orchestrator => orchestrator.status === 'ONLINE',
+    orchestrator => orchestrator.status === 'ONLINE'
   );
 
   return (

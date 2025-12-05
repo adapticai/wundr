@@ -33,7 +33,7 @@ const ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: (typeof ERROR_CODES)[keyof typeof ERROR_CODES],
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) {
   return {
     error: {
@@ -77,9 +77,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ERROR_CODES.UNAUTHORIZED,
+          ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -105,9 +105,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Endpoint is required',
-          ERROR_CODES.VALIDATION_ERROR,
+          ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -121,11 +121,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (!user) {
       return NextResponse.json(
-        createErrorResponse(
-          'User not found',
-          ERROR_CODES.VALIDATION_ERROR,
-        ),
-        { status: 404 },
+        createErrorResponse('User not found', ERROR_CODES.VALIDATION_ERROR),
+        { status: 404 }
       );
     }
 
@@ -150,7 +147,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           sub !== null &&
           'endpoint' in sub &&
           sub.endpoint === endpoint
-        ),
+        )
     );
 
     // Update user preferences
@@ -175,9 +172,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

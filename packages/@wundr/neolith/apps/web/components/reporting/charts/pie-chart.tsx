@@ -78,13 +78,13 @@ export function PieChart({
   // Calculate total for percentage
   const total = React.useMemo(
     () => data.reduce((sum, item) => sum + item.value, 0),
-    [data],
+    [data]
   );
 
   const renderLabel = (entry: { name: string; value: number }) => {
     if (!showLabels) {
-return '';
-}
+      return '';
+    }
     const percent = ((entry.value / total) * 100).toFixed(0);
     return `${percent}%`;
   };
@@ -95,7 +95,7 @@ return '';
         <ChartTooltip
           content={
             <ChartTooltipContent
-              formatter={(value) => [
+              formatter={value => [
                 `${value} (${((Number(value) / total) * 100).toFixed(1)}%)`,
               ]}
             />
@@ -104,20 +104,17 @@ return '';
         {showLegend && <Legend />}
         <Pie
           data={data}
-          cx="50%"
-          cy="50%"
+          cx='50%'
+          cy='50%'
           labelLine={false}
           label={renderLabel}
           outerRadius={120}
           innerRadius={donut ? innerRadius : 0}
-          dataKey="value"
-          nameKey="name"
+          dataKey='value'
+          nameKey='name'
         >
           {data.map((entry, index) => (
-            <Cell
-              key={`cell-${index}`}
-              fill={colors[index % colors.length]}
-            />
+            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
           ))}
         </Pie>
       </RechartsPieChart>
@@ -133,7 +130,7 @@ return '';
         </CardHeader>
         <CardContent
           style={{ height }}
-          className="flex items-center justify-center"
+          className='flex items-center justify-center'
         >
           {content}
         </CardContent>
@@ -142,7 +139,7 @@ return '';
   }
 
   return (
-    <div style={{ height }} className="flex items-center justify-center">
+    <div style={{ height }} className='flex items-center justify-center'>
       {content}
     </div>
   );

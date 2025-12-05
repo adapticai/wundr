@@ -41,7 +41,14 @@ export interface DataTransform {
 
 export interface FilterConfig {
   field: string;
-  operator: 'equals' | 'not_equals' | 'contains' | 'gt' | 'lt' | 'between' | 'in';
+  operator:
+    | 'equals'
+    | 'not_equals'
+    | 'contains'
+    | 'gt'
+    | 'lt'
+    | 'between'
+    | 'in';
   value: unknown;
 }
 

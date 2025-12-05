@@ -63,7 +63,7 @@ function VerifyEmailContent() {
     if (!tokenParam) {
       setStatus('invalid');
       setError(
-        'No verification token provided. Please use the link from your email.',
+        'No verification token provided. Please use the link from your email.'
       );
       return;
     }
@@ -115,7 +115,7 @@ function VerifyEmailContent() {
       setError(
         err instanceof Error
           ? err.message
-          : 'An unexpected error occurred. Please try again.',
+          : 'An unexpected error occurred. Please try again.'
       );
     }
   };
@@ -146,7 +146,7 @@ function VerifyEmailContent() {
       setResendError(
         err instanceof Error
           ? err.message
-          : 'Failed to resend verification email',
+          : 'Failed to resend verification email'
       );
     } finally {
       setIsResending(false);

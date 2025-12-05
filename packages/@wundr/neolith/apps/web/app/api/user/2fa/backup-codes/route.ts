@@ -43,7 +43,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -54,7 +54,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     const prefs = (user?.preferences as Record<string, unknown>) || {};
-    const twoFactor = prefs.twoFactor as { enabled?: boolean; secret?: string; backupCodes?: string[] } | undefined;
+    const twoFactor = prefs.twoFactor as
+      | { enabled?: boolean; secret?: string; backupCodes?: string[] }
+      | undefined;
 
     if (!twoFactor?.enabled) {
       return NextResponse.json(
@@ -63,7 +65,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: '2FA is not enabled',
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -83,7 +85,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -107,7 +109,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -122,7 +124,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Password is required',
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -140,7 +142,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     const prefs = (user?.preferences as Record<string, unknown>) || {};
-    const twoFactor = prefs.twoFactor as { enabled?: boolean; secret?: string; backupCodes?: string[] } | undefined;
+    const twoFactor = prefs.twoFactor as
+      | { enabled?: boolean; secret?: string; backupCodes?: string[] }
+      | undefined;
     const passwordHash = user?.accounts[0]?.refreshToken;
 
     if (!twoFactor?.enabled || !passwordHash) {
@@ -150,7 +154,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: '2FA is not enabled',
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -163,7 +167,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid password',
           code: SECURITY_ERROR_CODES.INVALID_PASSWORD,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -212,7 +216,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

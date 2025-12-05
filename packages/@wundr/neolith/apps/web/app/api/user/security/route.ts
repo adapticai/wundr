@@ -42,7 +42,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -61,13 +61,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: 'User not found',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     const prefs = (user.preferences as Record<string, unknown>) || {};
     const twoFactor = prefs.twoFactor as { enabled?: boolean } | undefined;
-    const securitySettings = prefs.security as Record<string, unknown> | undefined;
+    const securitySettings = prefs.security as
+      | Record<string, unknown>
+      | undefined;
 
     return NextResponse.json({
       success: true,
@@ -88,7 +90,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -112,7 +114,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -128,7 +130,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -139,7 +141,8 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     });
 
     const prefs = (user?.preferences as Record<string, unknown>) || {};
-    const currentSecuritySettings = (prefs.security as Record<string, unknown>) || {};
+    const currentSecuritySettings =
+      (prefs.security as Record<string, unknown>) || {};
     const updatedSecuritySettings = {
       ...currentSecuritySettings,
       ...parseResult.data,
@@ -182,7 +185,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

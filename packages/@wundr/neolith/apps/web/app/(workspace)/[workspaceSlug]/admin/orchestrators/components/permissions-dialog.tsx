@@ -87,8 +87,12 @@ export function PermissionsDialog({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
-  const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
-  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());
+  const [selectedMembers, setSelectedMembers] = useState<Set<string>>(
+    new Set()
+  );
+  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
     if (open && orchestratorId) {
@@ -99,9 +103,7 @@ export function PermissionsDialog({
 
   const fetchMembers = async () => {
     try {
-      const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/members`,
-      );
+      const response = await fetch(`/api/workspaces/${workspaceSlug}/members`);
 
       if (response.ok) {
         const data = await response.json();
@@ -114,18 +116,20 @@ export function PermissionsDialog({
 
   const fetchPermissions = async () => {
     if (!orchestratorId) {
-return;
-}
+      return;
+    }
 
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/orchestrators/${orchestratorId}/permissions`,
+        `/api/workspaces/${workspaceSlug}/admin/orchestrators/${orchestratorId}/permissions`
       );
 
       if (response.ok) {
         const data = await response.json();
         setSelectedMembers(new Set(data.allowedUserIds || []));
-        setSelectedPermissions(new Set(data.permissions || ['orchestrator.use']));
+        setSelectedPermissions(
+          new Set(data.permissions || ['orchestrator.use'])
+        );
       }
     } catch (error) {
       console.error('Failed to fetch permissions:', error);
@@ -134,8 +138,8 @@ return;
 
   const handleSave = async () => {
     if (!orchestratorId) {
-return;
-}
+      return;
+    }
 
     setLoading(true);
     try {
@@ -148,12 +152,12 @@ return;
             allowedUserIds: Array.from(selectedMembers),
             permissions: Array.from(selectedPermissions),
           }),
-        },
+        }
       );
 
       if (!response.ok) {
-throw new Error('Failed to update permissions');
-}
+        throw new Error('Failed to update permissions');
+      }
 
       toast({
         title: 'Success',
@@ -224,18 +228,10 @@ throw new Error('Failed to update permissions');
                 Allowed Users ({selectedMembers.size})
               </Label>
               <div className='flex gap-2'>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={selectAllMembers}
-                >
+                <Button variant='ghost' size='sm' onClick={selectAllMembers}>
                   Select All
                 </Button>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={clearAllMembers}
-                >
+                <Button variant='ghost' size='sm' onClick={clearAllMembers}>
                   Clear
                 </Button>
               </div>
@@ -295,7 +291,7 @@ throw new Error('Failed to update permissions');
             <div className='space-y-2'>
               {['access', 'admin', 'data'].map(category => {
                 const categoryPerms = AVAILABLE_PERMISSIONS.filter(
-                  p => p.category === category,
+                  p => p.category === category
                 );
                 return (
                   <div key={category} className='space-y-2'>
@@ -311,7 +307,9 @@ throw new Error('Failed to update permissions');
                           <Checkbox
                             id={permission.id}
                             checked={selectedPermissions.has(permission.id)}
-                            onCheckedChange={() => togglePermission(permission.id)}
+                            onCheckedChange={() =>
+                              togglePermission(permission.id)
+                            }
                           />
                           <div className='flex-1'>
                             <label

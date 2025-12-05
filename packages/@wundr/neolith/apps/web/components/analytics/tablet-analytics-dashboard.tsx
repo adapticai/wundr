@@ -142,7 +142,7 @@ export function TabletAnalyticsDashboard({
                     selected={selectedMetric === metric.id}
                     onClick={() =>
                       setSelectedMetric(
-                        selectedMetric === metric.id ? null : metric.id,
+                        selectedMetric === metric.id ? null : metric.id
                       )
                     }
                   />
@@ -238,7 +238,7 @@ function AnalyticsMetricCard({
         'min-h-[100px] touch-manipulation',
         selected
           ? 'border-primary shadow-md ring-2 ring-primary/20'
-          : 'border-border hover:border-primary/50 hover:shadow-sm',
+          : 'border-border hover:border-primary/50 hover:shadow-sm'
       )}
     >
       <div className='flex items-start justify-between mb-2'>
@@ -261,7 +261,7 @@ function AnalyticsMetricCard({
             metric.change.trend === 'up' &&
               'text-green-600 dark:text-green-400',
             metric.change.trend === 'down' && 'text-red-600 dark:text-red-400',
-            metric.change.trend === 'stable' && 'text-muted-foreground',
+            metric.change.trend === 'stable' && 'text-muted-foreground'
           )}
         >
           {metric.change.trend === 'up' && <ArrowUpIcon />}
@@ -352,7 +352,7 @@ function TimeRangeSelector({
           className={cn(
             'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
             'min-h-[44px] min-w-[44px] touch-manipulation',
-            'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+            'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
           )}
         >
           {preset.label}

@@ -58,6 +58,7 @@
 ### Statistics Endpoint (/admin/stats)
 
 **Metrics Provided:**
+
 - Member statistics (total, active, suspended, growth trends)
 - Channel statistics (total, public/private, archived)
 - Message statistics (daily/weekly/monthly, top contributors)
@@ -65,6 +66,7 @@
 - Storage statistics (files, size, usage by type)
 
 **Features:**
+
 - Automatic trend calculation (week-over-week, month-over-month)
 - Growth percentage calculations
 - Role distribution analysis
@@ -73,16 +75,19 @@
 ### Health Endpoint (/admin/health)
 
 **Services Monitored:**
+
 - Database connectivity and latency
 - Redis connectivity and latency
 - Storage availability and usage
 
 **Thresholds:**
+
 - Database: healthy < 100ms, degraded < 500ms
 - Redis: healthy < 50ms, degraded < 200ms
 - Storage: healthy < 80%, degraded < 95%
 
 **Resources Tracked:**
+
 - Memory usage (heap used/total)
 - Storage usage (files size/limit)
 - System uptime
@@ -117,6 +122,7 @@
    - Export audit logs
 
 **Features:**
+
 - Input validation with Zod schemas
 - Automatic audit logging
 - Result reporting (success, affected count)
@@ -130,15 +136,15 @@
 OWNER (Level 3)
   ├─ Can modify: ADMIN, MEMBER, GUEST
   └─ Permissions: All permissions
-  
+
 ADMIN (Level 2)
   ├─ Can modify: MEMBER, GUEST
   └─ Permissions: Most admin operations
-  
+
 MEMBER (Level 1)
   ├─ Can modify: None
   └─ Permissions: Basic operations
-  
+
 GUEST (Level 0)
   ├─ Can modify: None
   └─ Permissions: Read-only
@@ -147,6 +153,7 @@ GUEST (Level 0)
 ### Permission Checks
 
 All routes use `requireWorkspaceAdmin()`:
+
 1. Check authentication (401 if not authenticated)
 2. Find workspace (404 if not found)
 3. Check membership (403 if not admin/owner)
@@ -155,6 +162,7 @@ All routes use `requireWorkspaceAdmin()`:
 ### Self-Modification Protection
 
 Prevents admins from:
+
 - Suspending themselves
 - Removing themselves
 - Changing their own role
@@ -164,6 +172,7 @@ Prevents admins from:
 ### Automatic Logging
 
 All admin actions are logged to the audit trail:
+
 - Actor (who performed the action)
 - Action type
 - Workspace context
@@ -183,6 +192,7 @@ All admin actions are logged to the audit trail:
 ### Log Severity
 
 All admin actions are logged as:
+
 - Category: `admin`
 - Severity: `high`
 
@@ -191,13 +201,13 @@ All admin actions are logged as:
 ### Error Codes
 
 ```typescript
-ADMIN_UNAUTHORIZED         // 401 - Not authenticated
-ADMIN_FORBIDDEN            // 403 - Not admin/owner
-ADMIN_WORKSPACE_NOT_FOUND  // 404 - Workspace not found
-ADMIN_INVALID_ACTION       // 400 - Invalid action type
-ADMIN_VALIDATION_ERROR     // 400 - Input validation failed
-ADMIN_CANNOT_SUSPEND_SELF  // 403 - Self-modification attempt
-ADMIN_INTERNAL_ERROR       // 500 - Server error
+ADMIN_UNAUTHORIZED; // 401 - Not authenticated
+ADMIN_FORBIDDEN; // 403 - Not admin/owner
+ADMIN_WORKSPACE_NOT_FOUND; // 404 - Workspace not found
+ADMIN_INVALID_ACTION; // 400 - Invalid action type
+ADMIN_VALIDATION_ERROR; // 400 - Input validation failed
+ADMIN_CANNOT_SUSPEND_SELF; // 403 - Self-modification attempt
+ADMIN_INTERNAL_ERROR; // 500 - Server error
 ```
 
 ### Error Response Format
@@ -223,6 +233,7 @@ All routes use comprehensive TypeScript interfaces:
 - `AdminActionLog` - Audit log entry
 
 Full type safety throughout:
+
 - Request parameters
 - Response bodies
 - Database queries
@@ -231,22 +242,26 @@ Full type safety throughout:
 ## Integration Points
 
 ### Database (Prisma)
+
 - Workspace, WorkspaceMember queries
 - User, Channel, Message aggregations
 - Orchestrator, WorkflowExecution stats
 - File storage metrics
 
 ### Redis (Cache)
+
 - Cache clearing operations
 - Health check (ping)
 - Pattern-based key deletion
 
 ### Audit Service
+
 - Log all admin actions
 - Query action history
 - Filter by date, actor, action type
 
 ### NextAuth
+
 - Session verification
 - User authentication
 - Role-based access control
@@ -254,6 +269,7 @@ Full type safety throughout:
 ## Testing
 
 Test suite covers:
+
 - All endpoint functionality
 - Authorization checks
 - Error handling
@@ -262,6 +278,7 @@ Test suite covers:
 - Self-modification prevention
 
 Run tests:
+
 ```bash
 npm test tests/admin-api-routes.test.ts
 ```
@@ -376,6 +393,7 @@ curl -X POST https://api.example.com/api/workspaces/my-workspace/admin/actions \
 ## Summary
 
 Created a comprehensive admin API system with:
+
 - ✅ 3 new API routes (stats, health, actions)
 - ✅ 2 utility libraries (authorization, audit-logger)
 - ✅ Full TypeScript type safety
@@ -386,6 +404,7 @@ Created a comprehensive admin API system with:
 - ✅ Test suite
 
 All routes follow existing patterns and integrate seamlessly with:
+
 - Prisma database
 - NextAuth authentication
 - Audit service

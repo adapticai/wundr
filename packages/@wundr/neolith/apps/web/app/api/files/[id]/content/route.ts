@@ -49,7 +49,7 @@ interface RouteContext {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -58,9 +58,9 @@ export async function GET(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Authentication required',
-          PROCESSING_ERROR_CODES.UNAUTHORIZED,
+          PROCESSING_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -71,9 +71,9 @@ export async function GET(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Invalid file ID format',
-          PROCESSING_ERROR_CODES.VALIDATION_ERROR,
+          PROCESSING_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -94,9 +94,9 @@ export async function GET(
       return NextResponse.json(
         createProcessingErrorResponse(
           'File not found',
-          PROCESSING_ERROR_CODES.FILE_NOT_FOUND,
+          PROCESSING_ERROR_CODES.FILE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -114,9 +114,9 @@ export async function GET(
       return NextResponse.json(
         createProcessingErrorResponse(
           'Not a member of this workspace',
-          PROCESSING_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          PROCESSING_ERROR_CODES.NOT_WORKSPACE_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -127,18 +127,18 @@ export async function GET(
     const extractionJobs = Array.from(processingJobs.values()).filter(
       job =>
         job.fileId === params.id &&
-        (job.type === 'text-extraction' || job.type === 'ocr'),
+        (job.type === 'text-extraction' || job.type === 'ocr')
     );
 
     const pendingJobs = extractionJobs.filter(
       job =>
         job.status === 'pending' ||
         job.status === 'queued' ||
-        job.status === 'processing',
+        job.status === 'processing'
     );
 
     const completedJobs = extractionJobs.filter(
-      job => job.status === 'completed',
+      job => job.status === 'completed'
     );
 
     if (!content && pendingJobs.length === 0 && completedJobs.length === 0) {
@@ -162,7 +162,7 @@ export async function GET(
 
     if (!content && pendingJobs.length > 0) {
       const latestJob = pendingJobs.sort(
-        (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
       )[0];
 
       return NextResponse.json({
@@ -207,7 +207,7 @@ export async function GET(
     if (completedJobs.length > 0) {
       const latestCompletedJob = completedJobs.sort(
         (a, b) =>
-          (b.completedAt?.getTime() ?? 0) - (a.completedAt?.getTime() ?? 0),
+          (b.completedAt?.getTime() ?? 0) - (a.completedAt?.getTime() ?? 0)
       )[0];
 
       const result = latestCompletedJob.result as Record<
@@ -257,9 +257,9 @@ export async function GET(
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',
-        PROCESSING_ERROR_CODES.INTERNAL_ERROR,
+        PROCESSING_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

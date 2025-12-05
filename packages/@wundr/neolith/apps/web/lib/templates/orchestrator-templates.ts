@@ -176,8 +176,7 @@ export const ORCHESTRATOR_TEMPLATES: OrchestratorTemplate[] = [
       charter: {
         mission:
           'Define and execute product strategy that delivers value to customers and business',
-        vision:
-          'Build products that solve real problems and delight customers',
+        vision: 'Build products that solve real problems and delight customers',
         values: [
           'Customer Value',
           'Data-Driven Decisions',
@@ -314,7 +313,12 @@ export const ORCHESTRATOR_TEMPLATES: OrchestratorTemplate[] = [
           'Drive operational efficiency and enable teams to work at their best',
         vision:
           'Create seamless workflows and processes that maximize productivity',
-        values: ['Efficiency', 'Process Excellence', 'Collaboration', 'Quality'],
+        values: [
+          'Efficiency',
+          'Process Excellence',
+          'Collaboration',
+          'Quality',
+        ],
         personality: {
           traits: ['Methodical', 'Proactive', 'Analytical', 'Strategic'],
           communicationStyle:
@@ -377,12 +381,7 @@ export const ORCHESTRATOR_TEMPLATES: OrchestratorTemplate[] = [
           'Unlock insights from data to drive better business decisions and outcomes',
         vision:
           'Build a data-driven culture with actionable insights and predictive models',
-        values: [
-          'Data Integrity',
-          'Scientific Rigor',
-          'Innovation',
-          'Clarity',
-        ],
+        values: ['Data Integrity', 'Scientific Rigor', 'Innovation', 'Clarity'],
         personality: {
           traits: ['Analytical', 'Methodical', 'Innovative', 'Detail-oriented'],
           communicationStyle:
@@ -433,7 +432,7 @@ export const ORCHESTRATOR_TEMPLATES: OrchestratorTemplate[] = [
  * Get template by ID
  */
 export function getTemplateById(
-  templateId: string,
+  templateId: string
 ): OrchestratorTemplate | undefined {
   return ORCHESTRATOR_TEMPLATES.find(t => t.id === templateId);
 }
@@ -442,7 +441,7 @@ export function getTemplateById(
  * Get templates by category
  */
 export function getTemplatesByCategory(
-  category: OrchestratorTemplate['category'],
+  category: OrchestratorTemplate['category']
 ): OrchestratorTemplate[] {
   return ORCHESTRATOR_TEMPLATES.filter(t => t.category === category);
 }
@@ -451,7 +450,7 @@ export function getTemplatesByCategory(
  * Get templates by discipline
  */
 export function getTemplatesByDiscipline(
-  discipline: OrchestratorDiscipline,
+  discipline: OrchestratorDiscipline
 ): OrchestratorTemplate[] {
   return ORCHESTRATOR_TEMPLATES.filter(t => t.discipline === discipline);
 }
@@ -465,6 +464,6 @@ export function searchTemplates(query: string): OrchestratorTemplate[] {
     t =>
       t.name.toLowerCase().includes(lowerQuery) ||
       t.description.toLowerCase().includes(lowerQuery) ||
-      t.tags.some(tag => tag.toLowerCase().includes(lowerQuery)),
+      t.tags.some(tag => tag.toLowerCase().includes(lowerQuery))
   );
 }

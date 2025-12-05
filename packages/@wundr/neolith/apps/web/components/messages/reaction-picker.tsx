@@ -37,20 +37,20 @@ export const ReactionPicker = memo(function ReactionPicker({
       onSelect(emoji);
       onClose();
     },
-    [onSelect, onClose],
+    [onSelect, onClose]
   );
 
   const filteredCategories = EMOJI_CATEGORIES.map(category => ({
     ...category,
     emojis: searchQuery
       ? category.emojis.filter(emoji =>
-          emoji.toLowerCase().includes(searchQuery.toLowerCase()),
+          emoji.toLowerCase().includes(searchQuery.toLowerCase())
         )
       : category.emojis,
   })).filter(category => category.emojis.length > 0);
 
   const currentCategory = filteredCategories.find(
-    c => c.id === selectedCategory,
+    c => c.id === selectedCategory
   );
 
   return (
@@ -96,7 +96,7 @@ export const ReactionPicker = memo(function ReactionPicker({
                 'shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
                 selectedCategory === category.id
                   ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
               )}
               title={category.name}
             >
@@ -187,7 +187,7 @@ export const ReactionPickerTrigger = memo(function ReactionPickerTrigger({
       onSelect(emoji);
       setIsOpen(false);
     },
-    [onSelect],
+    [onSelect]
   );
 
   return (

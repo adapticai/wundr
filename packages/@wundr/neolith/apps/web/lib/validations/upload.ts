@@ -115,7 +115,7 @@ export const uploadInitSchemaRefined = uploadSchema
     {
       message: 'Invalid file type',
       path: ['mimeType'],
-    },
+    }
   );
 
 export type UploadInitInput = z.infer<typeof uploadInitSchemaRefined>;
@@ -132,7 +132,7 @@ export const multipartCompleteSchema = z.object({
     z.object({
       partNumber: z.number().min(1).max(MAX_PARTS),
       eTag: z.string(),
-    }),
+    })
   ),
   metadata: z.record(z.unknown()).optional(),
 });
@@ -243,7 +243,7 @@ export interface ImageVariant {
 export function createUploadErrorResponse(
   code: UploadErrorCode,
   message: string,
-  status: number = 400,
+  status: number = 400
 ): Response {
   return new Response(JSON.stringify({ error: code, message }), {
     status,
@@ -261,7 +261,7 @@ export function createUploadErrorResponse(
 export function createErrorResponse(
   message: string,
   codeOrStatus: UploadErrorCode | number = 400,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ):
   | { error: string; message: string; details?: Record<string, unknown> }
   | { error: string } {
@@ -294,7 +294,7 @@ export function getFileCategory(mimeType: string): FileCategory | null {
  * Get maximum file size for a given category or mime type
  */
 export function getMaxFileSize(
-  categoryOrMimeType?: FileCategory | string,
+  categoryOrMimeType?: FileCategory | string
 ): number {
   // If it's a mime type, convert to category first
   let category: FileCategory | null = null;
@@ -338,7 +338,7 @@ export function getMaxFileSize(
  */
 export function generateFileUrl(
   storageKey: string,
-  options?: { expires?: number; download?: boolean } | string,
+  options?: { expires?: number; download?: boolean } | string
 ): string {
   const baseUrl = process.env.FILE_STORAGE_URL ?? '/api/files';
   const params = new URLSearchParams();

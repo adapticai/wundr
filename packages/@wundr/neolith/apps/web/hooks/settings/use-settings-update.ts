@@ -83,7 +83,7 @@ export interface UseSettingsUpdateReturn {
  * ```
  */
 export function useSettingsUpdate(
-  options: UseSettingsUpdateOptions = {},
+  options: UseSettingsUpdateOptions = {}
 ): UseSettingsUpdateReturn {
   const {
     debounceMs = 0,
@@ -162,7 +162,7 @@ export function useSettingsUpdate(
         }
       }
     },
-    [onSuccess, onError, onSettled],
+    [onSuccess, onError, onSettled]
   );
 
   // Update settings with debouncing and optimistic updates
@@ -195,7 +195,7 @@ export function useSettingsUpdate(
       // Otherwise, update immediately
       await performUpdate(updates);
     },
-    [debounceMs, optimistic, performUpdate],
+    [debounceMs, optimistic, performUpdate]
   );
 
   // Reset error and success states

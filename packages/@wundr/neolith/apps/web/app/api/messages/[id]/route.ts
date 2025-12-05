@@ -133,7 +133,7 @@ async function getMessageWithAccessCheck(messageId: string, userId: string) {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -142,9 +142,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED,
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -155,9 +155,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid message ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -168,9 +168,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Message not found or access denied',
-          MESSAGE_ERROR_CODES.NOT_FOUND,
+          MESSAGE_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -179,9 +179,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'This message has been deleted',
-          MESSAGE_ERROR_CODES.MESSAGE_DELETED,
+          MESSAGE_ERROR_CODES.MESSAGE_DELETED
         ),
-        { status: 410 },
+        { status: 410 }
       );
     }
 
@@ -191,9 +191,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -210,7 +210,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -219,9 +219,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED,
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -232,9 +232,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid message ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -246,9 +246,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -259,9 +259,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           MESSAGE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -274,9 +274,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Message not found or access denied',
-          MESSAGE_ERROR_CODES.NOT_FOUND,
+          MESSAGE_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -285,9 +285,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Cannot edit a deleted message',
-          MESSAGE_ERROR_CODES.MESSAGE_DELETED,
+          MESSAGE_ERROR_CODES.MESSAGE_DELETED
         ),
-        { status: 410 },
+        { status: 410 }
       );
     }
 
@@ -296,9 +296,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'You can only edit your own messages',
-          MESSAGE_ERROR_CODES.CANNOT_EDIT,
+          MESSAGE_ERROR_CODES.CANNOT_EDIT
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -400,9 +400,9 @@ export async function PATCH(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -424,7 +424,7 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -433,9 +433,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED,
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -446,9 +446,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Invalid message ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -459,9 +459,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Message not found or access denied',
-          MESSAGE_ERROR_CODES.NOT_FOUND,
+          MESSAGE_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -470,9 +470,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Message is already deleted',
-          MESSAGE_ERROR_CODES.MESSAGE_DELETED,
+          MESSAGE_ERROR_CODES.MESSAGE_DELETED
         ),
-        { status: 410 },
+        { status: 410 }
       );
     }
 
@@ -486,15 +486,15 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'You do not have permission to delete this message',
-          MESSAGE_ERROR_CODES.CANNOT_DELETE,
+          MESSAGE_ERROR_CODES.CANNOT_DELETE
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Get file IDs attached to this message
     const attachedFileIds = result.messageAttachments.map(
-      attachment => attachment.file.id,
+      attachment => attachment.file.id
     );
 
     // Use a transaction to ensure atomic operation
@@ -536,9 +536,9 @@ export async function DELETE(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

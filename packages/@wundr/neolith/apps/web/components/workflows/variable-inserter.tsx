@@ -54,7 +54,7 @@ export function VariableInserter({
       const matchingVars = vars.filter(
         v =>
           v.name.toLowerCase().includes(query) ||
-          v.description?.toLowerCase().includes(query),
+          v.description?.toLowerCase().includes(query)
       );
       if (matchingVars.length > 0) {
         filtered[source] = matchingVars;
@@ -74,7 +74,7 @@ export function VariableInserter({
 
   const totalVariables = Object.values(filteredGroups).reduce(
     (sum, vars) => sum + vars.length,
-    0,
+    0
   );
 
   return (
@@ -223,7 +223,7 @@ function VariableItem({ variable, onInsert, isCopied }: VariableItemProps) {
         'group flex w-full items-center justify-between rounded-md border p-2 text-left transition-colors',
         isCopied
           ? 'border-green-500 bg-green-500/10'
-          : 'border-border hover:border-primary/50 hover:bg-accent',
+          : 'border-border hover:border-primary/50 hover:bg-accent'
       )}
     >
       <div className='min-w-0 flex-1'>
@@ -275,7 +275,7 @@ function TypeBadge({ type }: TypeBadgeProps) {
     <span
       className={cn(
         'inline-flex rounded px-1.5 py-0.5 text-[10px] font-medium',
-        colorClasses[type],
+        colorClasses[type]
       )}
     >
       {type}
@@ -309,7 +309,7 @@ export function VariableInserterInline({
     return variables.filter(
       v =>
         v.name.toLowerCase().includes(query) ||
-        v.description?.toLowerCase().includes(query),
+        v.description?.toLowerCase().includes(query)
     );
   }, [variables, searchQuery]);
 
@@ -352,7 +352,7 @@ export function VariableInserterInline({
                 'flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-xs transition-colors',
                 copiedVariable === variable.name
                   ? 'bg-green-500/10 text-green-600 dark:text-green-400'
-                  : 'hover:bg-accent',
+                  : 'hover:bg-accent'
               )}
             >
               <span className='font-mono'>{`{{${variable.name}}}`}</span>

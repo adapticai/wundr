@@ -319,7 +319,7 @@ export function isNotificationType(value: unknown): value is NotificationType {
  * Type guard to check if a string is a valid NotificationPriority
  */
 export function isNotificationPriority(
-  value: unknown,
+  value: unknown
 ): value is NotificationPriority {
   return (
     typeof value === 'string' &&

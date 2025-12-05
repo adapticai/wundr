@@ -87,7 +87,7 @@ export function InviteDialog({
   const availableUsers = users.filter(
     u =>
       !existingMemberIds.includes(u.id) &&
-      !selectedUsers.some(s => s.id === u.id),
+      !selectedUsers.some(s => s.id === u.id)
   );
 
   const resetForm = useCallback(() => {
@@ -123,7 +123,7 @@ export function InviteDialog({
       if (inviteMode === 'users') {
         await onInvite(
           selectedUsers.map(u => u.id),
-          role,
+          role
         );
 
         // Show success toast for user invites
@@ -131,7 +131,7 @@ export function InviteDialog({
           toast.success(`Invitation sent to ${selectedUsers[0].name}`);
         } else {
           toast.success(
-            `${selectedUsers.length} invitations sent successfully`,
+            `${selectedUsers.length} invitations sent successfully`
           );
         }
       } else if (inviteMode === 'email' && onInviteByEmail) {
@@ -212,7 +212,7 @@ export function InviteDialog({
         handleAddEmail();
       }
     },
-    [handleAddEmail],
+    [handleAddEmail]
   );
 
   return (
@@ -238,7 +238,7 @@ export function InviteDialog({
                   'flex-1 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors',
                   inviteMode === 'users'
                     ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground',
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 Workspace Members
@@ -250,7 +250,7 @@ export function InviteDialog({
                   'flex-1 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors',
                   inviteMode === 'email'
                     ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground',
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 Invite by Email
@@ -298,7 +298,7 @@ export function InviteDialog({
                     'w-full rounded-md border bg-background py-2 pl-9 pr-20 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1',
                     emailError
                       ? 'border-destructive focus:border-destructive focus:ring-destructive'
-                      : 'border-input focus:border-primary focus:ring-primary',
+                      : 'border-input focus:border-primary focus:ring-primary'
                   )}
                   disabled={isLoading || isSubmitting}
                   aria-label='Enter email address'

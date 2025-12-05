@@ -29,7 +29,7 @@ export interface WorkspaceAccess {
 export async function getWorkspaceWithAccess(
   workspaceSlug: string,
   userId: string,
-  organizationId?: string,
+  organizationId?: string
 ): Promise<WorkspaceAccess | null> {
   try {
     // Find workspace by slug - need to filter by organizationId if provided
@@ -91,7 +91,7 @@ export async function getWorkspaceWithAccess(
  */
 export async function hasWorkspaceAccess(
   workspaceId: string,
-  userId: string,
+  userId: string
 ): Promise<boolean> {
   try {
     const membership = await prisma.workspaceMember.findUnique({
@@ -118,7 +118,7 @@ export async function hasWorkspaceAccess(
  */
 export async function getWorkspaceRole(
   workspaceId: string,
-  userId: string,
+  userId: string
 ): Promise<'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST' | null> {
   try {
     const membership = await prisma.workspaceMember.findUnique({

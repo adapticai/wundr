@@ -27,7 +27,7 @@ export function WorkspaceCreatorExample() {
   const handleAskAI = async (
     field: string,
     _currentValue: string,
-    context: EntityData,
+    context: EntityData
   ): Promise<string> => {
     // Mock AI response - replace with actual LLM API call
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -54,7 +54,7 @@ export function WorkspaceCreatorExample() {
 
   const handleSendMessage = async (
     message: string,
-    history: Message[],
+    history: Message[]
   ): Promise<{ response: string; extractedData?: EntityData }> => {
     // Mock LLM conversation - replace with actual API call
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -207,7 +207,7 @@ export function CustomAIExample() {
   const handleAskAI = async (
     field: string,
     currentValue: string,
-    context: EntityData,
+    context: EntityData
   ): Promise<string> => {
     // Call your actual LLM API
     const response = await fetch('/api/ai/suggest', {

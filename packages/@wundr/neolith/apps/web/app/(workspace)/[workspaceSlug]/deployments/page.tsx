@@ -26,12 +26,12 @@ export default function DeploymentsPage() {
   useEffect(() => {
     setPageHeader(
       'Deployments',
-      'Monitor and manage your deployed services and agents',
+      'Monitor and manage your deployed services and agents'
     );
   }, [setPageHeader]);
 
   const [environment, setEnvironment] = useState<DeploymentEnvironment | 'all'>(
-    'all',
+    'all'
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -50,7 +50,7 @@ export default function DeploymentsPage() {
     selectedDeploymentId ?? '',
     {
       limit: 200,
-    },
+    }
   );
 
   const handleCreateDeployment = async (input: CreateDeploymentInput) => {
@@ -69,7 +69,7 @@ export default function DeploymentsPage() {
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/deployments/${deploymentId}/restart`,
-        { method: 'POST' },
+        { method: 'POST' }
       );
 
       if (!response.ok) {
@@ -87,7 +87,7 @@ export default function DeploymentsPage() {
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/deployments/${deploymentId}/stop`,
-        { method: 'POST' },
+        { method: 'POST' }
       );
 
       if (!response.ok) {
@@ -104,7 +104,7 @@ export default function DeploymentsPage() {
   const handleDelete = async (deploymentId: string) => {
     if (
       !confirm(
-        'Are you sure you want to delete this deployment? This action cannot be undone.',
+        'Are you sure you want to delete this deployment? This action cannot be undone.'
       )
     ) {
       return;
@@ -113,7 +113,7 @@ export default function DeploymentsPage() {
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/deployments/${deploymentId}`,
-        { method: 'DELETE' },
+        { method: 'DELETE' }
       );
 
       if (!response.ok) {

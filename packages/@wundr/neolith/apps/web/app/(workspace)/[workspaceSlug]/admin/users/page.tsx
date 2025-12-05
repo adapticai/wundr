@@ -155,17 +155,17 @@ export default function AdminUsersPage() {
       });
 
       if (searchQuery) {
-params.set('search', searchQuery);
-}
+        params.set('search', searchQuery);
+      }
       if (roleFilter !== 'all') {
-params.set('role', roleFilter);
-}
+        params.set('role', roleFilter);
+      }
       if (statusFilter !== 'all') {
-params.set('status', statusFilter);
-}
+        params.set('status', statusFilter);
+      }
 
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/users?${params.toString()}`,
+        `/api/workspaces/${workspaceSlug}/admin/users?${params.toString()}`
       );
 
       if (response.ok) {
@@ -187,22 +187,25 @@ params.set('status', statusFilter);
     fetchUsers();
   }, [fetchUsers]);
 
-  const fetchUserActivity = useCallback(async (userId: string) => {
-    setLoadingActivity(true);
-    try {
-      const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/users/${userId}/activity`,
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setUserActivity(data.activities || []);
+  const fetchUserActivity = useCallback(
+    async (userId: string) => {
+      setLoadingActivity(true);
+      try {
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/admin/users/${userId}/activity`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setUserActivity(data.activities || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch activity:', error);
+      } finally {
+        setLoadingActivity(false);
       }
-    } catch (error) {
-      console.error('Failed to fetch activity:', error);
-    } finally {
-      setLoadingActivity(false);
-    }
-  }, [workspaceSlug]);
+    },
+    [workspaceSlug]
+  );
 
   const handleViewDetails = (user: WorkspaceUser) => {
     setSelectedUser(user);
@@ -217,7 +220,7 @@ params.set('status', statusFilter);
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: newRole }),
-        },
+        }
       );
 
       if (response.ok) {
@@ -237,7 +240,7 @@ params.set('status', statusFilter);
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/admin/users/${userId}/suspend`,
-        { method: 'POST' },
+        { method: 'POST' }
       );
 
       if (response.ok) {
@@ -256,7 +259,7 @@ params.set('status', statusFilter);
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/admin/users/${userId}/activate`,
-        { method: 'POST' },
+        { method: 'POST' }
       );
 
       if (response.ok) {
@@ -275,7 +278,7 @@ params.set('status', statusFilter);
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/admin/users/${userId}`,
-        { method: 'DELETE' },
+        { method: 'DELETE' }
       );
 
       if (response.ok) {
@@ -293,12 +296,12 @@ params.set('status', statusFilter);
   const handleBulkAction = async () => {
     const { action, targetRole } = bulkActionDialog;
     if (!action) {
-return;
-}
+      return;
+    }
 
     const selectedUserIds = Object.keys(rowSelection)
-      .filter((key) => rowSelection[key as keyof typeof rowSelection])
-      .map((index) => users[parseInt(index)].userId);
+      .filter(key => rowSelection[key as keyof typeof rowSelection])
+      .map(index => users[parseInt(index)].userId);
 
     if (selectedUserIds.length === 0) {
       toast.error('No users selected');
@@ -316,11 +319,13 @@ return;
             action,
             ...(targetRole && { role: targetRole }),
           }),
-        },
+        }
       );
 
       if (response.ok) {
-        toast.success(`Bulk action completed for ${selectedUserIds.length} user(s)`);
+        toast.success(
+          `Bulk action completed for ${selectedUserIds.length} user(s)`
+        );
         setRowSelection({});
         fetchUsers();
       } else {
@@ -337,7 +342,7 @@ return;
   const handleExport = async () => {
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/users/export`,
+        `/api/workspaces/${workspaceSlug}/admin/users/export`
       );
 
       if (response.ok) {
@@ -366,15 +371,15 @@ return;
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
+          onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
+          aria-label='Select all'
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          onCheckedChange={value => row.toggleSelected(!!value)}
+          aria-label='Select row'
         />
       ),
       enableSorting: false,
@@ -386,16 +391,16 @@ return;
       cell: ({ row }) => {
         const user = row.original.user;
         return (
-          <div className="flex items-center gap-3">
+          <div className='flex items-center gap-3'>
             <UserAvatar
               user={{ name: user.name, image: user.avatarUrl }}
-              size="lg"
+              size='lg'
             />
-            <div className="min-w-0">
-              <div className="font-medium truncate">
+            <div className='min-w-0'>
+              <div className='font-medium truncate'>
                 {user.displayName || user.name || 'Unknown'}
               </div>
-              <div className="text-sm text-muted-foreground truncate">
+              <div className='text-sm text-muted-foreground truncate'>
                 {user.email}
               </div>
             </div>
@@ -409,13 +414,17 @@ return;
       cell: ({ row }) => {
         const role = row.original.role;
         const roleColors = {
-          OWNER: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-          ADMIN: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-          MEMBER: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
-          GUEST: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+          OWNER:
+            'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+          ADMIN:
+            'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+          MEMBER:
+            'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+          GUEST:
+            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
         };
         return (
-          <Badge variant="outline" className={roleColors[role]}>
+          <Badge variant='outline' className={roleColors[role]}>
             {role}
           </Badge>
         );
@@ -432,22 +441,25 @@ return;
         const statusConfig = {
           ACTIVE: {
             icon: CheckCircle,
-            className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+            className:
+              'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
           },
           SUSPENDED: {
             icon: Ban,
-            className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+            className:
+              'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
           },
           PENDING: {
             icon: Clock,
-            className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+            className:
+              'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
           },
         };
         const config = statusConfig[status];
         const Icon = config.icon;
         return (
-          <Badge variant="outline" className={config.className}>
-            <Icon className="mr-1 h-3 w-3" />
+          <Badge variant='outline' className={config.className}>
+            <Icon className='mr-1 h-3 w-3' />
             {status}
           </Badge>
         );
@@ -459,7 +471,7 @@ return;
       cell: ({ row }) => {
         const date = new Date(row.original.joinedAt);
         return (
-          <div className="text-sm text-muted-foreground">
+          <div className='text-sm text-muted-foreground'>
             {date.toLocaleDateString()}
           </div>
         );
@@ -471,8 +483,8 @@ return;
       cell: ({ row }) => {
         const lastActivity = row.original.user.lastActiveAt;
         if (!lastActivity) {
-return <span className="text-sm text-muted-foreground">Never</span>;
-}
+          return <span className='text-sm text-muted-foreground'>Never</span>;
+        }
 
         const date = new Date(lastActivity);
         const now = new Date();
@@ -483,18 +495,20 @@ return <span className="text-sm text-muted-foreground">Never</span>;
 
         let displayText = '';
         if (diffMins < 1) {
-displayText = 'Just now';
-} else if (diffMins < 60) {
-displayText = `${diffMins}m ago`;
-} else if (diffHours < 24) {
-displayText = `${diffHours}h ago`;
-} else if (diffDays < 7) {
-displayText = `${diffDays}d ago`;
-} else {
-displayText = date.toLocaleDateString();
-}
+          displayText = 'Just now';
+        } else if (diffMins < 60) {
+          displayText = `${diffMins}m ago`;
+        } else if (diffHours < 24) {
+          displayText = `${diffHours}h ago`;
+        } else if (diffDays < 7) {
+          displayText = `${diffDays}d ago`;
+        } else {
+          displayText = date.toLocaleDateString();
+        }
 
-        return <div className="text-sm text-muted-foreground">{displayText}</div>;
+        return (
+          <div className='text-sm text-muted-foreground'>{displayText}</div>
+        );
       },
     },
     {
@@ -504,37 +518,43 @@ displayText = date.toLocaleDateString();
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+              <Button variant='ghost' className='h-8 w-8 p-0'>
+                <span className='sr-only'>Open menu</span>
+                <MoreHorizontal className='h-4 w-4' />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align='end'>
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => handleViewDetails(user)}>
                 View Details
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleUpdateRole(user.userId, 'ADMIN')}>
+              <DropdownMenuItem
+                onClick={() => handleUpdateRole(user.userId, 'ADMIN')}
+              >
                 Change Role
               </DropdownMenuItem>
               {user.status === 'ACTIVE' ? (
-                <DropdownMenuItem onClick={() => handleSuspendUser(user.userId)}>
-                  <Ban className="mr-2 h-4 w-4" />
+                <DropdownMenuItem
+                  onClick={() => handleSuspendUser(user.userId)}
+                >
+                  <Ban className='mr-2 h-4 w-4' />
                   Suspend User
                 </DropdownMenuItem>
               ) : (
-                <DropdownMenuItem onClick={() => handleActivateUser(user.userId)}>
-                  <CheckCircle className="mr-2 h-4 w-4" />
+                <DropdownMenuItem
+                  onClick={() => handleActivateUser(user.userId)}
+                >
+                  <CheckCircle className='mr-2 h-4 w-4' />
                   Activate User
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="text-red-600"
+                className='text-red-600'
                 onClick={() => handleRemoveUser(user.userId)}
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className='mr-2 h-4 w-4' />
                 Remove User
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -570,50 +590,50 @@ displayText = date.toLocaleDateString();
   const selectedCount = Object.keys(rowSelection).length;
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {/* Header Actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="relative w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-2'>
+          <div className='relative w-72'>
+            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
             <Input
-              placeholder="Search users..."
+              placeholder='Search users...'
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              onChange={e => setSearchQuery(e.target.value)}
+              className='pl-9'
             />
           </div>
           <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Role" />
+            <SelectTrigger className='w-32'>
+              <SelectValue placeholder='Role' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              <SelectItem value="OWNER">Owner</SelectItem>
-              <SelectItem value="ADMIN">Admin</SelectItem>
-              <SelectItem value="MEMBER">Member</SelectItem>
-              <SelectItem value="GUEST">Guest</SelectItem>
+              <SelectItem value='all'>All Roles</SelectItem>
+              <SelectItem value='OWNER'>Owner</SelectItem>
+              <SelectItem value='ADMIN'>Admin</SelectItem>
+              <SelectItem value='MEMBER'>Member</SelectItem>
+              <SelectItem value='GUEST'>Guest</SelectItem>
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Status" />
+            <SelectTrigger className='w-32'>
+              <SelectValue placeholder='Status' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="ACTIVE">Active</SelectItem>
-              <SelectItem value="SUSPENDED">Suspended</SelectItem>
-              <SelectItem value="PENDING">Pending</SelectItem>
+              <SelectItem value='all'>All Status</SelectItem>
+              <SelectItem value='ACTIVE'>Active</SelectItem>
+              <SelectItem value='SUSPENDED'>Suspended</SelectItem>
+              <SelectItem value='PENDING'>Pending</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="mr-2 h-4 w-4" />
+        <div className='flex items-center gap-2'>
+          <Button variant='outline' size='sm' onClick={handleExport}>
+            <Download className='mr-2 h-4 w-4' />
             Export
           </Button>
-          <Button size="sm">
-            <UserPlus className="mr-2 h-4 w-4" />
+          <Button size='sm'>
+            <UserPlus className='mr-2 h-4 w-4' />
             Invite Users
           </Button>
         </div>
@@ -621,60 +641,68 @@ displayText = date.toLocaleDateString();
 
       {/* Bulk Actions */}
       {selectedCount > 0 && (
-        <div className="flex items-center gap-2 rounded-lg bg-muted p-3">
-          <span className="text-sm font-medium">{selectedCount} selected</span>
+        <div className='flex items-center gap-2 rounded-lg bg-muted p-3'>
+          <span className='text-sm font-medium'>{selectedCount} selected</span>
           <Button
-            size="sm"
-            variant="outline"
+            size='sm'
+            variant='outline'
             onClick={() =>
-              setBulkActionDialog({ open: true, action: 'changeRole', targetRole: 'MEMBER' })
+              setBulkActionDialog({
+                open: true,
+                action: 'changeRole',
+                targetRole: 'MEMBER',
+              })
             }
           >
-            <Shield className="mr-2 h-4 w-4" />
+            <Shield className='mr-2 h-4 w-4' />
             Change Role
           </Button>
           <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setBulkActionDialog({ open: true, action: 'suspend' })}
+            size='sm'
+            variant='outline'
+            onClick={() =>
+              setBulkActionDialog({ open: true, action: 'suspend' })
+            }
           >
-            <Ban className="mr-2 h-4 w-4" />
+            <Ban className='mr-2 h-4 w-4' />
             Suspend
           </Button>
           <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setBulkActionDialog({ open: true, action: 'remove' })}
-            className="text-red-600 hover:text-red-700"
+            size='sm'
+            variant='outline'
+            onClick={() =>
+              setBulkActionDialog({ open: true, action: 'remove' })
+            }
+            className='text-red-600 hover:text-red-700'
           >
-            <Trash2 className="mr-2 h-4 w-4" />
+            <Trash2 className='mr-2 h-4 w-4' />
             Remove
           </Button>
           <Button
-            size="sm"
-            variant="ghost"
+            size='sm'
+            variant='ghost'
             onClick={() => setRowSelection({})}
-            className="ml-auto"
+            className='ml-auto'
           >
-            <X className="mr-2 h-4 w-4" />
+            <X className='mr-2 h-4 w-4' />
             Clear
           </Button>
         </div>
       )}
 
       {/* Data Table */}
-      <div className="rounded-lg border">
+      <div className='rounded-lg border'>
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext(),
+                          header.getContext()
                         )}
                   </TableHead>
                 ))}
@@ -687,27 +715,33 @@ displayText = date.toLocaleDateString();
                 <TableRow key={i}>
                   {columns.map((_, j) => (
                     <TableCell key={j}>
-                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className='h-8 w-full' />
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className='h-24 text-center'
+                >
                   No users found.
                 </TableCell>
               </TableRow>
@@ -717,41 +751,40 @@ displayText = date.toLocaleDateString();
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
+      <div className='flex items-center justify-between'>
+        <div className='text-sm text-muted-foreground'>
           Showing {pagination.pageIndex * pagination.pageSize + 1} to{' '}
-          {Math.min((pagination.pageIndex + 1) * pagination.pageSize, total)} of {total} users
+          {Math.min((pagination.pageIndex + 1) * pagination.pageSize, total)} of{' '}
+          {total} users
         </div>
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           <Select
             value={String(pagination.pageSize)}
-            onValueChange={(value) =>
-              table.setPageSize(Number(value))
-            }
+            onValueChange={value => table.setPageSize(Number(value))}
           >
-            <SelectTrigger className="w-24">
+            <SelectTrigger className='w-24'>
               <SelectValue placeholder={pagination.pageSize} />
             </SelectTrigger>
             <SelectContent>
-              {[10, 20, 30, 40, 50].map((pageSize) => (
+              {[10, 20, 30, 40, 50].map(pageSize => (
                 <SelectItem key={pageSize} value={String(pageSize)}>
                   {pageSize} rows
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <div className="flex gap-2">
+          <div className='flex gap-2'>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
               Previous
             </Button>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
@@ -763,7 +796,7 @@ displayText = date.toLocaleDateString();
 
       {/* User Detail Sidebar */}
       <Sheet open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
-        <SheetContent className="sm:max-w-lg overflow-y-auto">
+        <SheetContent className='sm:max-w-lg overflow-y-auto'>
           {selectedUser && (
             <>
               <SheetHeader>
@@ -772,70 +805,72 @@ displayText = date.toLocaleDateString();
                   View and manage user information
                 </SheetDescription>
               </SheetHeader>
-              <div className="mt-6 space-y-6">
+              <div className='mt-6 space-y-6'>
                 {/* User Info */}
-                <div className="flex items-start gap-4">
+                <div className='flex items-start gap-4'>
                   <UserAvatar
                     user={{
                       name: selectedUser.user.name,
                       image: selectedUser.user.avatarUrl,
                     }}
-                    size="xl"
+                    size='xl'
                   />
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold truncate">
+                  <div className='min-w-0 flex-1'>
+                    <h3 className='font-semibold truncate'>
                       {selectedUser.user.displayName || selectedUser.user.name}
                     </h3>
-                    <p className="text-sm text-muted-foreground truncate">
+                    <p className='text-sm text-muted-foreground truncate'>
                       {selectedUser.user.email}
                     </p>
-                    <div className="mt-2 flex gap-2">
-                      <Badge variant="outline">{selectedUser.role}</Badge>
-                      <Badge variant="outline">{selectedUser.status}</Badge>
+                    <div className='mt-2 flex gap-2'>
+                      <Badge variant='outline'>{selectedUser.role}</Badge>
+                      <Badge variant='outline'>{selectedUser.status}</Badge>
                     </div>
                   </div>
                 </div>
 
                 {/* Quick Actions */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium">Quick Actions</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <Mail className="mr-2 h-4 w-4" />
+                <div className='space-y-2'>
+                  <h4 className='text-sm font-medium'>Quick Actions</h4>
+                  <div className='grid grid-cols-2 gap-2'>
+                    <Button variant='outline' size='sm' className='w-full'>
+                      <Mail className='mr-2 h-4 w-4' />
                       Send Email
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full">
-                      <Shield className="mr-2 h-4 w-4" />
+                    <Button variant='outline' size='sm' className='w-full'>
+                      <Shield className='mr-2 h-4 w-4' />
                       Change Role
                     </Button>
                   </div>
                 </div>
 
                 {/* Activity Timeline */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium">Recent Activity</h4>
+                <div className='space-y-2'>
+                  <h4 className='text-sm font-medium'>Recent Activity</h4>
                   {loadingActivity ? (
-                    <div className="space-y-2">
+                    <div className='space-y-2'>
                       {Array.from({ length: 3 }).map((_, i) => (
-                        <Skeleton key={i} className="h-16 w-full" />
+                        <Skeleton key={i} className='h-16 w-full' />
                       ))}
                     </div>
                   ) : userActivity.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className='space-y-3'>
                       {userActivity.map((activity, i) => (
-                        <div key={i} className="flex gap-3 text-sm">
-                          <div className="flex flex-col items-center">
-                            <div className="rounded-full bg-primary/10 p-1">
-                              <AlertCircle className="h-3 w-3 text-primary" />
+                        <div key={i} className='flex gap-3 text-sm'>
+                          <div className='flex flex-col items-center'>
+                            <div className='rounded-full bg-primary/10 p-1'>
+                              <AlertCircle className='h-3 w-3 text-primary' />
                             </div>
                             {i < userActivity.length - 1 && (
-                              <div className="w-px flex-1 bg-border mt-1" />
+                              <div className='w-px flex-1 bg-border mt-1' />
                             )}
                           </div>
-                          <div className="flex-1 pb-3">
-                            <p className="font-medium">{activity.action}</p>
-                            <p className="text-muted-foreground">{activity.details}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
+                          <div className='flex-1 pb-3'>
+                            <p className='font-medium'>{activity.action}</p>
+                            <p className='text-muted-foreground'>
+                              {activity.details}
+                            </p>
+                            <p className='text-xs text-muted-foreground mt-1'>
                               {new Date(activity.date).toLocaleString()}
                             </p>
                           </div>
@@ -843,24 +878,28 @@ displayText = date.toLocaleDateString();
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">No recent activity</p>
+                    <p className='text-sm text-muted-foreground'>
+                      No recent activity
+                    </p>
                   )}
                 </div>
 
                 {/* Permissions */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium">Permissions</h4>
-                  <div className="rounded-lg border p-3 text-sm">
-                    <ul className="space-y-1">
+                <div className='space-y-2'>
+                  <h4 className='text-sm font-medium'>Permissions</h4>
+                  <div className='rounded-lg border p-3 text-sm'>
+                    <ul className='space-y-1'>
                       {selectedUser.permissions.length > 0 ? (
                         selectedUser.permissions.map((perm, i) => (
-                          <li key={i} className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          <li key={i} className='flex items-center gap-2'>
+                            <CheckCircle className='h-4 w-4 text-green-500' />
                             <span>{perm}</span>
                           </li>
                         ))
                       ) : (
-                        <li className="text-muted-foreground">No special permissions</li>
+                        <li className='text-muted-foreground'>
+                          No special permissions
+                        </li>
                       )}
                     </ul>
                   </div>
@@ -874,7 +913,7 @@ displayText = date.toLocaleDateString();
       {/* Bulk Action Confirmation Dialog */}
       <AlertDialog
         open={bulkActionDialog.open}
-        onOpenChange={(open) =>
+        onOpenChange={open =>
           !open && setBulkActionDialog({ open: false, action: null })
         }
       >

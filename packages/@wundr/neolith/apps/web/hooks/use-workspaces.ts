@@ -162,7 +162,7 @@ const userWorkspacesFetcher = async (url: string) => {
       updatedAt: new Date(workspace.updatedAt),
       settings: workspace.settings || {},
       visibility: workspace.visibility || 'PRIVATE',
-    }),
+    })
   );
 
   // Transform invites with date parsing
@@ -171,7 +171,7 @@ const userWorkspacesFetcher = async (url: string) => {
       ...invite,
       createdAt: new Date(invite.createdAt),
       expiresAt: invite.expiresAt ? new Date(invite.expiresAt) : null,
-    }),
+    })
   );
 
   return { workspaces: transformedWorkspaces, invites: transformedInvites };
@@ -281,7 +281,7 @@ export function useWorkspace(workspaceId: string | null): UseWorkspaceReturn {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error || `Failed to fetch workspace: ${response.statusText}`,
+          errorData.error || `Failed to fetch workspace: ${response.statusText}`
         );
       }
 

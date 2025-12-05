@@ -14,7 +14,7 @@ export function useUnsavedChanges(options: UseUnsavedChangesOptions = {}) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(
-    null,
+    null
   );
   const router = useRouter();
   const isNavigatingRef = useRef(false);
@@ -34,8 +34,8 @@ export function useUnsavedChanges(options: UseUnsavedChangesOptions = {}) {
   // Handle browser navigation
   useEffect(() => {
     if (!enabled || !hasUnsavedChanges) {
-return;
-}
+      return;
+    }
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -86,7 +86,7 @@ return;
       setPendingNavigation(href);
       setShowDialog(true);
     },
-    [enabled, hasUnsavedChanges, router],
+    [enabled, hasUnsavedChanges, router]
   );
 
   return {

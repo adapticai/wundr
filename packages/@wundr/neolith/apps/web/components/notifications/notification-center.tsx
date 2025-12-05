@@ -84,12 +84,12 @@ export function NotificationCenter({
         acc[tab.id] = unreadCount;
       } else {
         acc[tab.id] = notifications.filter(
-          n => !n.read && tab.types.includes(n.type),
+          n => !n.read && tab.types.includes(n.type)
         ).length;
       }
       return acc;
     },
-    {} as Record<NotificationTab, number>,
+    {} as Record<NotificationTab, number>
   );
 
   // Close on outside click
@@ -162,7 +162,7 @@ export function NotificationCenter({
             'absolute right-0 top-full mt-2 w-[380px] max-w-[calc(100vw-2rem)]',
             'rounded-lg border bg-popover shadow-lg',
             'z-50',
-            'animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200',
+            'animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200'
           )}
         >
           {/* Header */}
@@ -204,7 +204,7 @@ export function NotificationCenter({
                   'relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors rounded-none font-sans',
                   activeTab === tab.id
                     ? 'text-stone-900 dark:text-stone-100'
-                    : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100',
+                    : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100'
                 )}
               >
                 {tab.label}

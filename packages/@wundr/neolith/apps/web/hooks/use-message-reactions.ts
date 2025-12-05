@@ -29,8 +29,9 @@ export function useMessageReactions({
   currentUserId,
   onReactionToggle,
 }: UseMessageReactionsOptions) {
-  const [reactions, setReactions] =
-    useState<OptimisticReaction[]>([...initialReactions]);
+  const [reactions, setReactions] = useState<OptimisticReaction[]>([
+    ...initialReactions,
+  ]);
   const [isPending, startTransition] = useTransition();
 
   /**
@@ -48,7 +49,9 @@ export function useMessageReactions({
 
       // Create optimistic update
       const optimisticReactions = reactions.slice();
-      const reactionIndex = optimisticReactions.findIndex(r => r.emoji === emoji);
+      const reactionIndex = optimisticReactions.findIndex(
+        r => r.emoji === emoji
+      );
 
       if (hasReacted) {
         // Remove reaction optimistically
@@ -79,7 +82,10 @@ export function useMessageReactions({
             count: reaction.count + 1,
             hasReacted: true,
             users: reaction.users
-              ? [...reaction.users, { id: currentUserId, name: 'You', displayName: null }]
+              ? [
+                  ...reaction.users,
+                  { id: currentUserId, name: 'You', displayName: null },
+                ]
               : [{ id: currentUserId, name: 'You', displayName: null }],
             isOptimistic: true,
           };
@@ -103,16 +109,14 @@ export function useMessageReactions({
       try {
         await onReactionToggle(emoji);
         // On success, mark as no longer optimistic
-        setReactions(prev =>
-          prev.map(r => ({ ...r, isOptimistic: false })),
-        );
+        setReactions(prev => prev.map(r => ({ ...r, isOptimistic: false })));
       } catch (error) {
         // Rollback on error
         console.error('Failed to toggle reaction:', error);
         setReactions([...initialReactions]);
       }
     },
-    [reactions, currentUserId, onReactionToggle, initialReactions],
+    [reactions, currentUserId, onReactionToggle, initialReactions]
   );
 
   /**

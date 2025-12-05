@@ -74,8 +74,8 @@ interface DashboardMetrics {
 const fetcher = async (url: string) => {
   const res = await fetch(url);
   if (!res.ok) {
-throw new Error('Failed to fetch');
-}
+    throw new Error('Failed to fetch');
+  }
   return res.json();
 };
 
@@ -112,7 +112,7 @@ export default function AdminPage() {
   const { data: metrics, isLoading: metricsLoading } = useSWR<DashboardMetrics>(
     `/api/workspaces/${workspaceSlug}/admin/metrics`,
     fetcher,
-    { refreshInterval: 30000 }, // Refresh every 30 seconds
+    { refreshInterval: 30000 } // Refresh every 30 seconds
   );
 
   return (
@@ -122,9 +122,12 @@ export default function AdminPage() {
         <div
           className={cn(
             'rounded-lg border p-4',
-            metrics.health.status === 'critical' && 'border-red-500 bg-red-50 dark:bg-red-950',
-            metrics.health.status === 'warning' && 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950',
-            metrics.health.status === 'healthy' && 'border-green-500 bg-green-50 dark:bg-green-950',
+            metrics.health.status === 'critical' &&
+              'border-red-500 bg-red-50 dark:bg-red-950',
+            metrics.health.status === 'warning' &&
+              'border-yellow-500 bg-yellow-50 dark:bg-yellow-950',
+            metrics.health.status === 'healthy' &&
+              'border-green-500 bg-green-50 dark:bg-green-950'
           )}
         >
           <div className='flex items-center justify-between'>
@@ -132,17 +135,26 @@ export default function AdminPage() {
               <HealthIcon
                 className={cn(
                   'h-5 w-5',
-                  metrics.health.status === 'critical' && 'text-red-600 dark:text-red-400',
-                  metrics.health.status === 'warning' && 'text-yellow-600 dark:text-yellow-400',
-                  metrics.health.status === 'healthy' && 'text-green-600 dark:text-green-400',
+                  metrics.health.status === 'critical' &&
+                    'text-red-600 dark:text-red-400',
+                  metrics.health.status === 'warning' &&
+                    'text-yellow-600 dark:text-yellow-400',
+                  metrics.health.status === 'healthy' &&
+                    'text-green-600 dark:text-green-400'
                 )}
               />
               <div>
                 <h3 className='font-semibold'>
-                  System Status: {metrics.health.status === 'healthy' ? 'Healthy' : metrics.health.status === 'warning' ? 'Warning' : 'Critical'}
+                  System Status:{' '}
+                  {metrics.health.status === 'healthy'
+                    ? 'Healthy'
+                    : metrics.health.status === 'warning'
+                      ? 'Warning'
+                      : 'Critical'}
                 </h3>
                 <p className='text-sm text-muted-foreground'>
-                  Database: {metrics.health.database} • Storage: {metrics.health.storage}
+                  Database: {metrics.health.database} • Storage:{' '}
+                  {metrics.health.storage}
                 </p>
               </div>
             </div>
@@ -190,8 +202,8 @@ export default function AdminPage() {
             (metrics?.storage.percentage ?? 0) > 90
               ? 'text-red-600'
               : (metrics?.storage.percentage ?? 0) > 75
-              ? 'text-yellow-600'
-              : undefined
+                ? 'text-yellow-600'
+                : undefined
           }
         />
       </div>
@@ -210,19 +222,44 @@ export default function AdminPage() {
               <ResponsiveContainer width='100%' height='100%'>
                 <AreaChart data={metrics.activity}>
                   <defs>
-                    <linearGradient id='colorActions' x1='0' y1='0' x2='0' y2='1'>
-                      <stop offset='5%' stopColor='hsl(var(--primary))' stopOpacity={0.8} />
-                      <stop offset='95%' stopColor='hsl(var(--primary))' stopOpacity={0} />
+                    <linearGradient
+                      id='colorActions'
+                      x1='0'
+                      y1='0'
+                      x2='0'
+                      y2='1'
+                    >
+                      <stop
+                        offset='5%'
+                        stopColor='hsl(var(--primary))'
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset='95%'
+                        stopColor='hsl(var(--primary))'
+                        stopOpacity={0}
+                      />
                     </linearGradient>
                     <linearGradient id='colorUsers' x1='0' y1='0' x2='0' y2='1'>
-                      <stop offset='5%' stopColor='hsl(var(--chart-2))' stopOpacity={0.8} />
-                      <stop offset='95%' stopColor='hsl(var(--chart-2))' stopOpacity={0} />
+                      <stop
+                        offset='5%'
+                        stopColor='hsl(var(--chart-2))'
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset='95%'
+                        stopColor='hsl(var(--chart-2))'
+                        stopOpacity={0}
+                      />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
+                  <CartesianGrid
+                    strokeDasharray='3 3'
+                    className='stroke-muted'
+                  />
                   <XAxis
                     dataKey='date'
-                    tickFormatter={(value) => {
+                    tickFormatter={value => {
                       const date = new Date(value);
                       return `${date.getMonth() + 1}/${date.getDate()}`;
                     }}
@@ -235,7 +272,7 @@ export default function AdminPage() {
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '6px',
                     }}
-                    labelFormatter={(value) => {
+                    labelFormatter={value => {
                       const date = new Date(value);
                       return date.toLocaleDateString();
                     }}
@@ -272,14 +309,15 @@ export default function AdminPage() {
             </h2>
           </div>
           <div className='divide-y'>
-            {metrics.recentAlerts.map((alert) => (
+            {metrics.recentAlerts.map(alert => (
               <div
                 key={alert.id}
                 className={cn(
                   'flex items-start gap-4 px-6 py-4',
                   alert.type === 'error' && 'bg-red-50 dark:bg-red-950/20',
-                  alert.type === 'warning' && 'bg-yellow-50 dark:bg-yellow-950/20',
-                  alert.type === 'info' && 'bg-blue-50 dark:bg-blue-950/20',
+                  alert.type === 'warning' &&
+                    'bg-yellow-50 dark:bg-yellow-950/20',
+                  alert.type === 'info' && 'bg-blue-50 dark:bg-blue-950/20'
                 )}
               >
                 <div className='flex-shrink-0 mt-0.5'>
@@ -470,7 +508,7 @@ function StatCard({
       href={href}
       className={cn(
         'rounded-lg border bg-card p-6 transition-colors hover:bg-accent',
-        loading && 'pointer-events-none opacity-50',
+        loading && 'pointer-events-none opacity-50'
       )}
     >
       <div className='flex items-center justify-between'>
@@ -479,7 +517,7 @@ function StatCard({
           <div
             className={cn(
               'flex items-center gap-1 text-xs font-medium',
-              trend > 0 ? 'text-green-600' : 'text-red-600',
+              trend > 0 ? 'text-green-600' : 'text-red-600'
             )}
           >
             {trend > 0 ? (
@@ -612,8 +650,8 @@ function formatRelativeTime(timestamp: Date | string): string {
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) {
-return '0 B';
-}
+    return '0 B';
+  }
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));

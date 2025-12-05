@@ -62,7 +62,7 @@ interface UseHuddlesReturn {
  */
 export function useHuddles(
   workspaceSlug: string,
-  userId?: string,
+  userId?: string
 ): UseHuddlesReturn {
   const [huddles, setHuddles] = useState<Huddle[]>([]);
   const [activeHuddle, setActiveHuddle] = useState<Huddle | null>(null);
@@ -81,7 +81,7 @@ export function useHuddles(
     }
 
     const userHuddle = huddles.find(h =>
-      h.participants.some(p => p.user.id === userId),
+      h.participants.some(p => p.user.id === userId)
     );
     setActiveHuddle(userHuddle || null);
   }, [huddles, userId]);
@@ -139,7 +139,7 @@ export function useHuddles(
             // Update huddle with new participant state
             if (data.huddle) {
               setHuddles(prev =>
-                prev.map(h => (h.id === data.huddle!.id ? data.huddle! : h)),
+                prev.map(h => (h.id === data.huddle!.id ? data.huddle! : h))
               );
             }
             break;
@@ -191,7 +191,7 @@ export function useHuddles(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'create', name, channelId }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -207,7 +207,7 @@ export function useHuddles(
         return null;
       }
     },
-    [workspaceSlug],
+    [workspaceSlug]
   );
 
   const joinHuddle = useCallback(
@@ -219,7 +219,7 @@ export function useHuddles(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'join', huddleId }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -234,7 +234,7 @@ export function useHuddles(
         return false;
       }
     },
-    [workspaceSlug],
+    [workspaceSlug]
   );
 
   const leaveHuddle = useCallback(async (): Promise<boolean> => {
@@ -329,7 +329,7 @@ export function useHuddles(
               huddleId: activeHuddle.id,
               isSpeaking,
             }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -341,7 +341,7 @@ export function useHuddles(
         return false;
       }
     },
-    [workspaceSlug, activeHuddle],
+    [workspaceSlug, activeHuddle]
   );
 
   return {

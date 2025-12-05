@@ -55,7 +55,7 @@ export type OrgErrorCode =
 export function createErrorResponse(
   message: string,
   code: string,
-  extraData?: Record<string, unknown>,
+  extraData?: Record<string, unknown>
 ): { error: string; message: string } & Record<string, unknown> {
   return { error: code, message, ...extraData };
 }
@@ -66,7 +66,7 @@ export function createErrorResponse(
 export function createOrgErrorResponse(
   message: string,
   code: OrgErrorCode,
-  extraData?: Record<string, unknown>,
+  extraData?: Record<string, unknown>
 ): { error: OrgErrorCode; message: string } & Record<string, unknown> {
   return { error: code, message, ...extraData };
 }
@@ -84,7 +84,7 @@ export const workspaceSlugSchema = z
   .max(50, 'Slug must be less than 50 characters')
   .regex(
     /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-    'Slug must be lowercase letters, numbers, and hyphens only',
+    'Slug must be lowercase letters, numbers, and hyphens only'
   );
 
 /**
@@ -184,7 +184,7 @@ export const organizationSlugSchema = z
   .max(50, 'Slug must be less than 50 characters')
   .regex(
     /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-    'Slug must be lowercase letters, numbers, and hyphens only',
+    'Slug must be lowercase letters, numbers, and hyphens only'
   );
 
 /**

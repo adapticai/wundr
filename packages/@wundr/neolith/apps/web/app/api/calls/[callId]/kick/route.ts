@@ -45,7 +45,7 @@ interface KickParticipantBody {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -54,9 +54,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED,
+          CALL_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -67,9 +67,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid call ID format',
-          CALL_ERROR_CODES.VALIDATION_ERROR,
+          CALL_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -81,9 +81,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          CALL_ERROR_CODES.VALIDATION_ERROR,
+          CALL_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -92,9 +92,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Participant ID is required',
-          CALL_ERROR_CODES.VALIDATION_ERROR,
+          CALL_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -167,7 +167,7 @@ export async function POST(
     if (!call) {
       return NextResponse.json(
         createErrorResponse('Call not found', CALL_ERROR_CODES.CALL_NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -176,9 +176,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Call has already ended',
-          CALL_ERROR_CODES.CALL_ALREADY_ENDED,
+          CALL_ERROR_CODES.CALL_ALREADY_ENDED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -187,9 +187,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Only the call host can remove participants',
-          CALL_ERROR_CODES.FORBIDDEN,
+          CALL_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -200,14 +200,14 @@ export async function POST(
 
     if (!apiKey || !apiSecret) {
       console.error(
-        '[POST /api/calls/:callId/kick] LiveKit credentials not configured',
+        '[POST /api/calls/:callId/kick] LiveKit credentials not configured'
       );
       return NextResponse.json(
         createErrorResponse(
           'Server configuration error',
-          CALL_ERROR_CODES.LIVEKIT_ERROR,
+          CALL_ERROR_CODES.LIVEKIT_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -225,14 +225,14 @@ export async function POST(
             room: call.roomName,
             identity: participantId,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error(
           '[POST /api/calls/:callId/kick] LiveKit API error:',
-          errorText,
+          errorText
         );
         throw new Error(`LiveKit API error: ${response.status}`);
       }
@@ -249,7 +249,7 @@ export async function POST(
       } catch (updateError) {
         console.error(
           '[POST /api/calls/:callId/kick] Failed to update participant record:',
-          updateError,
+          updateError
         );
         // Don't fail the request if participant tracking isn't available
       }
@@ -265,14 +265,14 @@ export async function POST(
     } catch (livekitError) {
       console.error(
         '[POST /api/calls/:callId/kick] LiveKit error:',
-        livekitError,
+        livekitError
       );
       return NextResponse.json(
         createErrorResponse(
           'Failed to remove participant',
-          CALL_ERROR_CODES.LIVEKIT_ERROR,
+          CALL_ERROR_CODES.LIVEKIT_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
   } catch (error) {
@@ -280,9 +280,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR,
+        CALL_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

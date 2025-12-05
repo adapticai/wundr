@@ -23,26 +23,26 @@ export function SettingsHeader({
 
   return (
     <>
-      <div className="space-y-4 border-b pb-4">
-        <div className="flex items-center justify-between">
+      <div className='space-y-4 border-b pb-4'>
+        <div className='flex items-center justify-between'>
           <SettingsBreadcrumb workspaceSlug={workspaceSlug} />
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => setSearchOpen(true)}
-            className="gap-2"
+            className='gap-2'
           >
-            <Search className="h-4 w-4" />
-            <span className="hidden sm:inline">Search settings</span>
-            <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-              <span className="text-xs">⌘</span>K
+            <Search className='h-4 w-4' />
+            <span className='hidden sm:inline'>Search settings</span>
+            <kbd className='pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex'>
+              <span className='text-xs'>⌘</span>K
             </kbd>
           </Button>
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+          <h1 className='text-2xl font-bold tracking-tight'>{title}</h1>
           {description && (
-            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+            <p className='text-sm text-muted-foreground mt-1'>{description}</p>
           )}
         </div>
       </div>

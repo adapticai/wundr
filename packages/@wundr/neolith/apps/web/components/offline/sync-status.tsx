@@ -128,7 +128,7 @@ export function ConflictResolutionDialog({
       <div
         className={cn(
           'w-full max-w-lg rounded-lg bg-popover shadow-lg',
-          'animate-in fade-in-0 zoom-in-95 duration-200',
+          'animate-in fade-in-0 zoom-in-95 duration-200'
         )}
         role='dialog'
         aria-modal='true'
@@ -167,7 +167,7 @@ export function ConflictResolutionDialog({
               onClick={() => onResolve('local')}
               className={cn(
                 'flex items-start gap-3 rounded-lg border p-4 text-left transition-colors',
-                'hover:bg-accent hover:border-accent-foreground/20',
+                'hover:bg-accent hover:border-accent-foreground/20'
               )}
             >
               <div className='rounded-full bg-blue-100 p-2 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'>
@@ -187,7 +187,7 @@ export function ConflictResolutionDialog({
               onClick={() => onResolve('server')}
               className={cn(
                 'flex items-start gap-3 rounded-lg border p-4 text-left transition-colors',
-                'hover:bg-accent hover:border-accent-foreground/20',
+                'hover:bg-accent hover:border-accent-foreground/20'
               )}
             >
               <div className='rounded-full bg-green-100 p-2 text-green-600 dark:bg-green-900/30 dark:text-green-400'>
@@ -207,7 +207,7 @@ export function ConflictResolutionDialog({
               onClick={() => onResolve('merge')}
               className={cn(
                 'flex items-start gap-3 rounded-lg border p-4 text-left transition-colors',
-                'hover:bg-accent hover:border-accent-foreground/20',
+                'hover:bg-accent hover:border-accent-foreground/20'
               )}
             >
               <div className='rounded-full bg-purple-100 p-2 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'>
@@ -262,7 +262,7 @@ export function SyncStatusBadge({
         config.bgColor,
         config.textColor,
         sizeClasses,
-        className,
+        className
       )}
     >
       {status === 'syncing' ? (

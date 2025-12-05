@@ -16,7 +16,13 @@ import * as React from 'react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import {
@@ -302,15 +308,17 @@ export function ConditionBuilderDemo() {
               <div className='space-y-4'>
                 <Alert>
                   <AlertDescription>
-                    Click the "Templates" button in the condition builder to apply
-                    pre-built patterns including:
+                    Click the "Templates" button in the condition builder to
+                    apply pre-built patterns including:
                   </AlertDescription>
                 </Alert>
 
                 <div className='grid gap-4'>
                   <Card>
                     <CardHeader>
-                      <CardTitle className='text-lg'>Email Validation</CardTitle>
+                      <CardTitle className='text-lg'>
+                        Email Validation
+                      </CardTitle>
                       <CardDescription>
                         Comprehensive email validation with domain checking
                       </CardDescription>
@@ -320,7 +328,8 @@ export function ConditionBuilderDemo() {
                         <Badge>3 conditions</Badge>
                         <Badge variant='secondary'>AND logic</Badge>
                         <p className='text-sm text-muted-foreground mt-2'>
-                          Checks for non-empty email, valid format, and specific domain
+                          Checks for non-empty email, valid format, and specific
+                          domain
                         </p>
                       </div>
                     </CardContent>
@@ -328,7 +337,9 @@ export function ConditionBuilderDemo() {
 
                   <Card>
                     <CardHeader>
-                      <CardTitle className='text-lg'>Priority Routing</CardTitle>
+                      <CardTitle className='text-lg'>
+                        Priority Routing
+                      </CardTitle>
                       <CardDescription>
                         Route high-value or urgent items
                       </CardDescription>
@@ -338,7 +349,8 @@ export function ConditionBuilderDemo() {
                         <Badge>2 conditions</Badge>
                         <Badge variant='secondary'>OR logic</Badge>
                         <p className='text-sm text-muted-foreground mt-2'>
-                          Matches items with high priority or value above threshold
+                          Matches items with high priority or value above
+                          threshold
                         </p>
                       </div>
                     </CardContent>
@@ -364,7 +376,9 @@ export function ConditionBuilderDemo() {
 
                   <Card>
                     <CardHeader>
-                      <CardTitle className='text-lg'>Complex Business Logic</CardTitle>
+                      <CardTitle className='text-lg'>
+                        Complex Business Logic
+                      </CardTitle>
                       <CardDescription>
                         Advanced nested conditions for sophisticated routing
                       </CardDescription>

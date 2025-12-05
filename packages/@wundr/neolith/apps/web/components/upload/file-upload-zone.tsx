@@ -58,7 +58,7 @@ export function FileUploadZone({
 
         if (errorCode === 'file-too-large') {
           setError(
-            `File is too large. Maximum size is ${formatFileSize(maxSize)}.`,
+            `File is too large. Maximum size is ${formatFileSize(maxSize)}.`
           );
         } else if (errorCode === 'file-invalid-type') {
           setError('File type not supported.');
@@ -74,7 +74,7 @@ export function FileUploadZone({
         onFilesSelected(acceptedFiles);
       }
     },
-    [maxSize, maxFiles, onFilesSelected],
+    [maxSize, maxFiles, onFilesSelected]
   );
 
   const dropzoneOptions: DropzoneOptions = {
@@ -116,7 +116,7 @@ export function FileUploadZone({
             'border-primary bg-primary/5': isDragActive && isDragAccept,
             'border-destructive bg-destructive/5': isDragReject,
             'cursor-not-allowed opacity-50': disabled,
-          },
+          }
         )}
       >
         <input {...getInputProps()} aria-label='File upload input' />
@@ -131,7 +131,7 @@ export function FileUploadZone({
                 {
                   'bg-primary/10': isDragActive && isDragAccept,
                   'bg-destructive/10': isDragReject,
-                },
+                }
               )}
             >
               <svg

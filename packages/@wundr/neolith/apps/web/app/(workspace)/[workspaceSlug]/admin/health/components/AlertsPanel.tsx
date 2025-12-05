@@ -69,7 +69,7 @@ export function AlertsPanel({ alerts }: AlertsPanelProps) {
   });
 
   const unacknowledgedAlerts = filteredAlerts.filter(
-    alert => !alert.acknowledged,
+    alert => !alert.acknowledged
   );
   const acknowledgedAlerts = filteredAlerts.filter(alert => alert.acknowledged);
 

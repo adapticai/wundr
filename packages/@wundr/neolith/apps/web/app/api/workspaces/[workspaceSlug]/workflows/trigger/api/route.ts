@@ -21,7 +21,10 @@ import { checkRateLimit } from '@/lib/workflow/rate-limiter';
 import { extractBearerToken, verifyApiKey } from '@/lib/workflow/trigger-auth';
 
 import type { TriggerWithApiKeyInput } from '@/lib/validations/trigger';
-import type { WorkflowAction, WorkflowStepResult } from '@/lib/validations/workflow';
+import type {
+  WorkflowAction,
+  WorkflowStepResult,
+} from '@/lib/validations/workflow';
 import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
@@ -39,19 +42,23 @@ async function logApiTrigger(
   data: Record<string, unknown>,
   error?: string,
   executionId?: string,
-  request?: NextRequest,
+  request?: NextRequest
 ): Promise<void> {
   try {
-    const ipAddress = request?.headers.get('x-forwarded-for') ||
-                      request?.headers.get('x-real-ip') ||
-                      'unknown';
+    const ipAddress =
+      request?.headers.get('x-forwarded-for') ||
+      request?.headers.get('x-real-ip') ||
+      'unknown';
 
     const currentWorkflow = await prisma.workflow.findUnique({
       where: { id: workflowId },
       select: { metadata: true },
     });
 
-    const currentMetadata = (currentWorkflow?.metadata || {}) as Record<string, any>;
+    const currentMetadata = (currentWorkflow?.metadata || {}) as Record<
+      string,
+      any
+    >;
     const triggerHistory = (currentMetadata.triggerHistory || []).slice(0, 99);
 
     await prisma.workflow.update({
@@ -85,7 +92,7 @@ async function logApiTrigger(
  */
 async function executeWorkflowActions(
   actions: WorkflowAction[],
-  triggerData: Record<string, unknown>,
+  triggerData: Record<string, unknown>
 ): Promise<{ steps: WorkflowStepResult[]; success: boolean; error?: string }> {
   const steps: WorkflowStepResult[] = [];
   let success = true;
@@ -143,7 +150,7 @@ async function executeWorkflowActions(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   const startTime = Date.now();
 
@@ -159,9 +166,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'API key required in Authorization header',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -173,7 +180,7 @@ export async function POST(
       },
     });
 
-    let workflow: typeof workflows[0] | undefined;
+    let workflow: (typeof workflows)[0] | undefined;
     for (const wf of workflows) {
       const metadata = wf.metadata as any;
       const apiKeyHash = metadata?.apiKeyHash;
@@ -188,9 +195,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid API key',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -202,9 +209,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -215,9 +222,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -232,15 +239,15 @@ export async function POST(
         input.data ?? {},
         'Workflow ID mismatch',
         undefined,
-        request,
+        request
       );
 
       return NextResponse.json(
         createErrorResponse(
           'Workflow ID does not match API key',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -254,13 +261,13 @@ export async function POST(
         input.data ?? {},
         'Rate limit exceeded',
         undefined,
-        request,
+        request
       );
 
       return NextResponse.json(
         createErrorResponse(
           'Rate limit exceeded',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
         ),
         {
           status: 429,
@@ -269,7 +276,7 @@ export async function POST(
             'X-RateLimit-Remaining': rateLimit.remaining.toString(),
             'X-RateLimit-Reset': rateLimit.reset.toString(),
           },
-        },
+        }
       );
     }
 
@@ -277,16 +284,13 @@ export async function POST(
     const startedAt = new Date();
     const actions = workflow.actions as unknown as WorkflowAction[];
 
-    const { steps, success, error } = await executeWorkflowActions(
-      actions,
-      {
-        ...input.data,
-        _api: {
-          triggeredAt: startedAt.toISOString(),
-          workflowId: workflow.id,
-        },
+    const { steps, success, error } = await executeWorkflowActions(actions, {
+      ...input.data,
+      _api: {
+        triggeredAt: startedAt.toISOString(),
+        workflowId: workflow.id,
       },
-    );
+    });
 
     const completedAt = new Date();
     const durationMs = completedAt.getTime() - startedAt.getTime();
@@ -331,7 +335,7 @@ export async function POST(
       input.data ?? {},
       undefined,
       execution.id,
-      request,
+      request
     );
 
     return NextResponse.json(
@@ -351,20 +355,21 @@ export async function POST(
           'X-RateLimit-Remaining': (rateLimit.remaining - 1).toString(),
           'X-RateLimit-Reset': rateLimit.reset.toString(),
         },
-      },
+      }
     );
   } catch (error) {
     console.error('[POST /workflows/trigger/api] Error:', error);
 
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
 
     return NextResponse.json(
       createErrorResponse(
         'Failed to trigger workflow',
         WORKFLOW_ERROR_CODES.EXECUTION_FAILED,
-        { error: errorMessage },
+        { error: errorMessage }
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

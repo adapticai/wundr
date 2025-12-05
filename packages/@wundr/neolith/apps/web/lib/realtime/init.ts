@@ -255,7 +255,7 @@ class RealtimeConnection {
       this.config.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
 
     console.log(
-      `[Realtime] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`,
+      `[Realtime] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`
     );
     this.emit('reconnecting', { attempt: this.reconnectAttempts, delay });
 
@@ -356,7 +356,7 @@ export function initRealtime(config: RealtimeConfig): RealtimeConnection {
 export function getRealtime(): RealtimeConnection {
   if (!realtimeConnection) {
     throw new Error(
-      'Realtime connection not initialized. Call initRealtime() first.',
+      'Realtime connection not initialized. Call initRealtime() first.'
     );
   }
   return realtimeConnection;

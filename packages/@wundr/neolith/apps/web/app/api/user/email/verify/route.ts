@@ -40,7 +40,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid or expired verification token',
           code: SECURITY_ERROR_CODES.INVALID_TOKEN,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Verification token has expired',
           code: SECURITY_ERROR_CODES.INVALID_TOKEN,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

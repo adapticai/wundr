@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
-
 export interface ComparisonPeriod {
   /** Label for the period */
   label: string;
@@ -48,7 +47,7 @@ export interface StatComparisonCardProps {
 
 function formatValue(
   value: number,
-  format: StatComparisonCardProps['format'] = 'number',
+  format: StatComparisonCardProps['format'] = 'number'
 ): string {
   switch (format) {
     case 'currency':
@@ -62,22 +61,22 @@ function formatValue(
       return `${value.toFixed(1)}%`;
     case 'duration':
       if (value < 60) {
-return `${Math.round(value)}s`;
-}
+        return `${Math.round(value)}s`;
+      }
       if (value < 3600) {
-return `${Math.floor(value / 60)}m ${Math.round(value % 60)}s`;
-}
+        return `${Math.floor(value / 60)}m ${Math.round(value % 60)}s`;
+      }
       return `${Math.floor(value / 3600)}h ${Math.floor((value % 3600) / 60)}m`;
     case 'compact':
       if (value < 1000) {
-return value.toLocaleString();
-}
+        return value.toLocaleString();
+      }
       if (value < 1000000) {
-return `${(value / 1000).toFixed(1)}K`;
-}
+        return `${(value / 1000).toFixed(1)}K`;
+      }
       if (value < 1000000000) {
-return `${(value / 1000000).toFixed(1)}M`;
-}
+        return `${(value / 1000000).toFixed(1)}M`;
+      }
       return `${(value / 1000000000).toFixed(1)}B`;
     default:
       return value.toLocaleString();
@@ -180,9 +179,7 @@ export function StatComparisonCard({
                   <p>Count: {previous.metadata.count.toLocaleString()}</p>
                 )}
                 {previous.metadata.average !== undefined && (
-                  <p>
-                    Avg: {formatValue(previous.metadata.average, format)}
-                  </p>
+                  <p>Avg: {formatValue(previous.metadata.average, format)}</p>
                 )}
                 {previous.metadata.peak !== undefined && (
                   <p>Peak: {formatValue(previous.metadata.peak, format)}</p>
@@ -210,9 +207,7 @@ export function StatComparisonCard({
                   <p>Count: {current.metadata.count.toLocaleString()}</p>
                 )}
                 {current.metadata.average !== undefined && (
-                  <p>
-                    Avg: {formatValue(current.metadata.average, format)}
-                  </p>
+                  <p>Avg: {formatValue(current.metadata.average, format)}</p>
                 )}
                 {current.metadata.peak !== undefined && (
                   <p>Peak: {formatValue(current.metadata.peak, format)}</p>
@@ -264,14 +259,13 @@ export function StatComparisonCard({
                     ? 'bg-emerald-500'
                     : change.absolute < 0
                       ? 'bg-rose-500'
-                      : 'bg-muted-foreground',
+                      : 'bg-muted-foreground'
                 )}
                 style={{
                   width: `${Math.min(
-                    (previous.value /
-                      Math.max(current.value, previous.value)) *
+                    (previous.value / Math.max(current.value, previous.value)) *
                       100,
-                    100,
+                    100
                   )}%`,
                 }}
               />
@@ -282,14 +276,13 @@ export function StatComparisonCard({
                     ? 'bg-emerald-600'
                     : change.absolute < 0
                       ? 'bg-rose-600'
-                      : 'bg-muted-foreground',
+                      : 'bg-muted-foreground'
                 )}
                 style={{
                   width: `${Math.min(
-                    (current.value /
-                      Math.max(current.value, previous.value)) *
+                    (current.value / Math.max(current.value, previous.value)) *
                       100,
-                    100,
+                    100
                   )}%`,
                 }}
               />

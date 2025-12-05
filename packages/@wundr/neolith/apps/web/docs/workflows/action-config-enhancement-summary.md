@@ -2,11 +2,14 @@
 
 ## Summary
 
-Enhanced the Workflow Builder to provide detailed action configuration UI by integrating the ActionConfigPanel component into the modal workflow builder.
+Enhanced the Workflow Builder to provide detailed action configuration UI by integrating the
+ActionConfigPanel component into the modal workflow builder.
 
 ## Problem
 
-The audit found that action configuration UIs were simplified - showing only type selectors without detailed configuration options. Users couldn't configure:
+The audit found that action configuration UIs were simplified - showing only type selectors without
+detailed configuration options. Users couldn't configure:
+
 - send_message: channel selector, message template input
 - api_request (http_request): URL, method, headers, body inputs
 - delay (wait): duration input (minutes/hours/days)
@@ -34,9 +37,7 @@ import { ActionConfigPanel } from '@/components/workflows/action-config';
 const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
 
 // Compute selected action
-const selectedAction = selectedActionId
-  ? actions.find(a => a.id === selectedActionId)
-  : null;
+const selectedAction = selectedActionId ? actions.find(a => a.id === selectedActionId) : null;
 ```
 
 ### 3. Update Modal Layout
@@ -75,8 +76,8 @@ return (
 ```typescript
 interface ActionListProps {
   actions: ActionConfig[];
-  selectedActionId: string | null;  // ADD
-  onSelect: (id: string) => void;    // ADD
+  selectedActionId: string | null; // ADD
+  onSelect: (id: string) => void; // ADD
   onUpdate: (id: string, config: Partial<ActionConfig>) => void;
   onRemove: (id: string) => void;
 }
@@ -198,6 +199,7 @@ function ActionList({
 ## Features Provided
 
 ### Action Configuration UI
+
 The ActionConfigPanel (already existing in the codebase) provides:
 
 1. **send_message / send_dm**:
@@ -240,12 +242,15 @@ The ActionConfigPanel (already existing in the codebase) provides:
    - Context message textarea
 
 ### Error Handling Configuration
+
 All actions include:
+
 - On Error strategy (stop, continue, retry)
 - Retry count (if retry selected)
 - Retry delay (if retry selected)
 
 ### Variable Support
+
 - Variable inserter with copy-to-clipboard
 - Available variables list based on trigger type
 - Variable interpolation syntax {{variable.name}}
@@ -262,6 +267,7 @@ All actions include:
 ## Implementation Status
 
 All necessary components already exist:
+
 - `/components/workflows/action-config.tsx` - Complete ActionConfigPanel
 - `/types/workflow.ts` - DEFAULT_ACTION_CONFIGS with defaults for all types
 - `/hooks/use-workflows.ts` - useWorkflowBuilder hook with validation

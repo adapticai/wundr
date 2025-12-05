@@ -127,7 +127,7 @@ interface ActivityEntry {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -157,7 +157,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -180,7 +180,7 @@ export async function GET(
           error: 'Validation failed',
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -228,7 +228,7 @@ export async function GET(
           role: m.role,
         },
         createdAt: m.joinedAt,
-      })),
+      }))
     );
 
     // 2. Channel activities
@@ -260,11 +260,11 @@ export async function GET(
         ...channelActivities
           .filter(
             (
-              c,
+              c
             ): c is typeof c & {
               createdBy: NonNullable<typeof c.createdBy>;
               createdById: string;
-            } => c.createdBy !== null && c.createdById !== null,
+            } => c.createdBy !== null && c.createdById !== null
           )
           .map(c => ({
             id: `channel-${c.id}`,
@@ -279,7 +279,7 @@ export async function GET(
               isArchived: c.isArchived,
             },
             createdAt: c.createdAt,
-          })),
+          }))
       );
     }
 
@@ -323,7 +323,7 @@ export async function GET(
             status: f.status,
           },
           createdAt: f.createdAt,
-        })),
+        }))
       );
     }
 
@@ -369,7 +369,7 @@ export async function GET(
             dueDate: t.dueDate?.toISOString(),
           },
           createdAt: t.completedAt || t.createdAt,
-        })),
+        }))
       );
     }
 
@@ -388,7 +388,7 @@ export async function GET(
 
       // Fetch creators for workflows
       const creatorIds = Array.from(
-        new Set(workflowActivities.map(w => w.createdBy)),
+        new Set(workflowActivities.map(w => w.createdBy))
       );
       const creators = await prisma.user.findMany({
         where: { id: { in: creatorIds } },
@@ -429,13 +429,13 @@ export async function GET(
               },
               createdAt: w.createdAt,
             };
-          }),
+          })
       );
     }
 
     // Sort all activities by date (descending) and apply type filter if specified
     let sortedActivities = activities.sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
     );
 
     if (type) {
@@ -464,7 +464,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/activity] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch activity log' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

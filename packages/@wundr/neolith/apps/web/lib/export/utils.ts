@@ -4,7 +4,11 @@
 
 import { format } from 'date-fns';
 
-import type { ExportFormat, ExportMetadata, DataTransformOptions } from './types';
+import type {
+  ExportFormat,
+  ExportMetadata,
+  DataTransformOptions,
+} from './types';
 
 /**
  * Download blob as file
@@ -41,7 +45,7 @@ export function generateExportMetadata(
     dataSource?: string;
     rowCount?: number;
     columnCount?: number;
-  } = {},
+  } = {}
 ): ExportMetadata {
   return {
     exportId: generateExportId(),
@@ -64,7 +68,7 @@ export function generateExportId(): string {
  */
 export function formatDateForExport(
   date: Date | string,
-  dateFormat = 'yyyy-MM-dd HH:mm:ss',
+  dateFormat = 'yyyy-MM-dd HH:mm:ss'
 ): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
 
@@ -81,7 +85,7 @@ export function formatDateForExport(
 export function generateExportFilename(
   base: string,
   exportFormat: ExportFormat,
-  options: { includeTimestamp?: boolean; suffix?: string } = {},
+  options: { includeTimestamp?: boolean; suffix?: string } = {}
 ): string {
   const { includeTimestamp = true, suffix } = options;
 
@@ -120,7 +124,7 @@ export function getExportContentType(format: ExportFormat): string {
  */
 export function shouldUseAsyncExport(
   dataSize: number,
-  options: { threshold?: number } = {},
+  options: { threshold?: number } = {}
 ): boolean {
   const { threshold = 1000 } = options;
   return dataSize > threshold;
@@ -131,14 +135,14 @@ export function shouldUseAsyncExport(
  */
 export function flattenData<T extends Record<string, unknown>>(
   data: T[],
-  options: { maxDepth?: number; separator?: string } = {},
+  options: { maxDepth?: number; separator?: string } = {}
 ): Record<string, unknown>[] {
   const { maxDepth = 3, separator = '.' } = options;
 
   function flatten(
     obj: unknown,
     prefix = '',
-    depth = 0,
+    depth = 0
   ): Record<string, unknown> {
     if (depth >= maxDepth || obj === null || typeof obj !== 'object') {
       return prefix ? { [prefix]: obj } : (obj as Record<string, unknown>);
@@ -172,7 +176,7 @@ export function flattenData<T extends Record<string, unknown>>(
  */
 export function transformData<T extends Record<string, unknown>>(
   data: T[],
-  options: DataTransformOptions = {},
+  options: DataTransformOptions = {}
 ): Record<string, unknown>[] {
   const {
     flatten: shouldFlatten = false,
@@ -262,7 +266,7 @@ export function sanitizeFilename(filename: string): string {
  */
 export function estimateExportSize(
   data: unknown[],
-  format: ExportFormat,
+  format: ExportFormat
 ): number {
   const jsonSize = JSON.stringify(data).length;
 
@@ -284,7 +288,7 @@ export function estimateExportSize(
  */
 export function validateExportOptions(
   format: ExportFormat,
-  options: Record<string, unknown>,
+  options: Record<string, unknown>
 ): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
@@ -310,7 +314,12 @@ export function validateExportOptions(
 
     case 'png':
     case 'jpeg':
-      if (options.quality && (typeof options.quality !== 'number' || options.quality < 0 || options.quality > 1)) {
+      if (
+        options.quality &&
+        (typeof options.quality !== 'number' ||
+          options.quality < 0 ||
+          options.quality > 1)
+      ) {
         errors.push('Image quality must be a number between 0 and 1');
       }
       break;
@@ -327,7 +336,7 @@ export function validateExportOptions(
  */
 export function createProgressTracker(
   total: number,
-  onProgress?: (progress: number) => void,
+  onProgress?: (progress: number) => void
 ) {
   let current = 0;
 
@@ -370,7 +379,7 @@ export function formatFileSize(bytes: number): string {
 export async function* batchProcess<T, R>(
   data: T[],
   processor: (batch: T[]) => Promise<R>,
-  batchSize: number = 100,
+  batchSize: number = 100
 ): AsyncGenerator<R, void, unknown> {
   for (let i = 0; i < data.length; i += batchSize) {
     const batch = data.slice(i, i + batchSize);
@@ -384,7 +393,7 @@ export async function* batchProcess<T, R>(
 export async function retryExport<T>(
   operation: () => Promise<T>,
   maxRetries: number = 3,
-  delay: number = 1000,
+  delay: number = 1000
 ): Promise<T> {
   let lastError: Error | undefined;
 

@@ -29,7 +29,7 @@ import type { NextRequest } from 'next/server';
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -41,7 +41,7 @@ export async function DELETE(
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -60,7 +60,7 @@ export async function DELETE(
           error: 'Session not found',
           code: SECURITY_ERROR_CODES.SESSION_NOT_FOUND,
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -72,12 +72,14 @@ export async function DELETE(
           error: 'Not authorized to revoke this session',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Get current session token to prevent revoking current session
-    const currentSessionToken = request.cookies.get('authjs.session-token')?.value;
+    const currentSessionToken = request.cookies.get(
+      'authjs.session-token'
+    )?.value;
 
     if (sessionToRevoke.sessionToken === currentSessionToken) {
       return NextResponse.json(
@@ -86,7 +88,7 @@ export async function DELETE(
           error: 'Cannot revoke current session',
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -121,7 +123,7 @@ export async function DELETE(
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

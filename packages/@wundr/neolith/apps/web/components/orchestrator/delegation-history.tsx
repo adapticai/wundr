@@ -89,7 +89,7 @@ export function DelegationHistory({
     DelegationEntry[]
   >([]);
   const [activeView, setActiveView] = useState<'outgoing' | 'incoming'>(
-    'outgoing',
+    'outgoing'
   );
 
   const fetchDelegationHistory = useCallback(async () => {
@@ -100,7 +100,7 @@ export function DelegationHistory({
       // Since we don't have a dedicated delegation history endpoint yet,
       // we'll fetch tasks with delegation metadata
       const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/tasks?include_delegations=true`,
+        `/api/orchestrators/${orchestratorId}/tasks?include_delegations=true`
       );
 
       if (!response.ok) {
@@ -124,7 +124,8 @@ export function DelegationHistory({
             taskId: task.id,
             taskTitle: task.title,
             fromOrchestratorId: delegation.fromOrchestratorId,
-            fromOrchestratorTitle: delegation.fromOrchestratorTitle || 'Unknown',
+            fromOrchestratorTitle:
+              delegation.fromOrchestratorTitle || 'Unknown',
             toOrchestratorId: delegation.toOrchestratorId,
             toOrchestratorTitle: delegation.toOrchestratorTitle || 'Unknown',
             delegatedAt: delegation.delegatedAt,
@@ -144,13 +145,11 @@ export function DelegationHistory({
       // Sort by date (newest first)
       outgoing.sort(
         (a, b) =>
-          new Date(b.delegatedAt).getTime() -
-          new Date(a.delegatedAt).getTime(),
+          new Date(b.delegatedAt).getTime() - new Date(a.delegatedAt).getTime()
       );
       incoming.sort(
         (a, b) =>
-          new Date(b.delegatedAt).getTime() -
-          new Date(a.delegatedAt).getTime(),
+          new Date(b.delegatedAt).getTime() - new Date(a.delegatedAt).getTime()
       );
 
       setOutgoingDelegations(outgoing);
@@ -341,7 +340,7 @@ export function DelegationHistory({
                           className={cn(
                             statusConfig.bgColor,
                             statusConfig.color,
-                            'text-xs',
+                            'text-xs'
                           )}
                         >
                           {statusConfig.label}

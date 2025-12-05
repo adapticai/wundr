@@ -184,7 +184,7 @@ export function ChannelMembersPanel({
       member =>
         member.user.name?.toLowerCase().includes(query) ||
         member.user.displayName?.toLowerCase().includes(query) ||
-        member.user.email?.toLowerCase().includes(query),
+        member.user.email?.toLowerCase().includes(query)
     );
   }, [members, searchQuery]);
 
@@ -193,11 +193,11 @@ export function ChannelMembersPanel({
     return [...filteredMembers].sort((a, b) => {
       // Admins first
       if (a.role === 'ADMIN' && b.role !== 'ADMIN') {
-return -1;
-}
+        return -1;
+      }
       if (a.role !== 'ADMIN' && b.role === 'ADMIN') {
-return 1;
-}
+        return 1;
+      }
 
       // Then by join date (earliest first)
       const dateA = new Date(a.joinedAt).getTime();
@@ -365,8 +365,8 @@ function MemberRow({
   const handleRoleChange = useCallback(
     async (newRole: 'ADMIN' | 'MEMBER') => {
       if (newRole === member.role) {
-return;
-}
+        return;
+      }
 
       setIsUpdating(true);
 
@@ -377,7 +377,7 @@ return;
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ role: newRole }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -403,7 +403,7 @@ return;
         setIsUpdating(false);
       }
     },
-    [channelId, member.userId, member.role, displayName, onMemberUpdated, toast],
+    [channelId, member.userId, member.role, displayName, onMemberUpdated, toast]
   );
 
   // Remove member
@@ -415,7 +415,7 @@ return;
         `/api/channels/${channelId}/members/${member.userId}`,
         {
           method: 'DELETE',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -513,7 +513,9 @@ return;
               <DropdownMenuContent align='end'>
                 <DropdownMenuItem
                   onClick={() =>
-                    handleRoleChange(member.role === 'ADMIN' ? 'MEMBER' : 'ADMIN')
+                    handleRoleChange(
+                      member.role === 'ADMIN' ? 'MEMBER' : 'ADMIN'
+                    )
                   }
                   disabled={isLastAdmin}
                 >
@@ -550,8 +552,9 @@ return;
           <AlertDialogHeader>
             <AlertDialogTitle>Remove member?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove <strong>{displayName}</strong> from
-              this channel? They will lose access to all messages and files.
+              Are you sure you want to remove <strong>{displayName}</strong>{' '}
+              from this channel? They will lose access to all messages and
+              files.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -590,7 +593,7 @@ function InviteMembersDialog({
   onMembersAdded,
 }: InviteMembersDialogProps) {
   const [workspaceMembers, setWorkspaceMembers] = useState<WorkspaceMember[]>(
-    [],
+    []
   );
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -617,12 +620,12 @@ function InviteMembersDialog({
         const channelResult = await channelResponse.json();
 
         const channelMemberIds = new Set(
-          (channelResult.data || []).map((m: ChannelMember) => m.userId),
+          (channelResult.data || []).map((m: ChannelMember) => m.userId)
         );
 
         // Filter out users already in the channel
         const availableMembers = (wsResult.data || []).filter(
-          (m: WorkspaceMember) => !channelMemberIds.has(m.userId),
+          (m: WorkspaceMember) => !channelMemberIds.has(m.userId)
         );
 
         setWorkspaceMembers(availableMembers);
@@ -654,7 +657,7 @@ function InviteMembersDialog({
       member =>
         member.user.name?.toLowerCase().includes(query) ||
         member.user.displayName?.toLowerCase().includes(query) ||
-        member.user.email?.toLowerCase().includes(query),
+        member.user.email?.toLowerCase().includes(query)
     );
   }, [workspaceMembers, searchQuery]);
 
@@ -663,15 +666,15 @@ function InviteMembersDialog({
     setSelectedUserIds(prev =>
       prev.includes(userId)
         ? prev.filter(id => id !== userId)
-        : [...prev, userId],
+        : [...prev, userId]
     );
   }, []);
 
   // Add selected members
   const handleAddMembers = useCallback(async () => {
     if (selectedUserIds.length === 0) {
-return;
-}
+      return;
+    }
 
     setIsAdding(true);
 
@@ -761,7 +764,7 @@ return;
                       key={member.id}
                       className={cn(
                         'flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-accent transition-colors',
-                        isSelected && 'bg-accent/50',
+                        isSelected && 'bg-accent/50'
                       )}
                     >
                       <input
@@ -827,7 +830,10 @@ return;
             ) : (
               <>
                 <UserPlus className='h-4 w-4 mr-2' />
-                Add {selectedUserIds.length > 0 ? `(${selectedUserIds.length})` : ''}
+                Add{' '}
+                {selectedUserIds.length > 0
+                  ? `(${selectedUserIds.length})`
+                  : ''}
               </>
             )}
           </Button>

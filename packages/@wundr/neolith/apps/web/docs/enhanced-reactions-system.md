@@ -2,7 +2,8 @@
 
 ## Overview
 
-The enhanced message reactions system provides a complete solution for emoji reactions on messages with the following features:
+The enhanced message reactions system provides a complete solution for emoji reactions on messages
+with the following features:
 
 - **Tooltip-based User Display**: Hover over reactions to see who reacted
 - **Popover Emoji Picker**: Quick access to full emoji palette with search
@@ -19,13 +20,11 @@ Enhanced reaction display component with shadcn/ui Tooltip integration.
 ```tsx
 import { ReactionDisplay } from '@/components/chat/reaction-display';
 
-<ReactionDisplay
-  reactions={reactionsWithUsers}
-  onToggleReaction={handleToggleReaction}
-/>
+<ReactionDisplay reactions={reactionsWithUsers} onToggleReaction={handleToggleReaction} />;
 ```
 
 **Features:**
+
 - Shows reaction count and emoji
 - Tooltip displays user names on hover
 - Smart name formatting (1-5 users: all names, 6+: "Name1, Name2, Name3, and 5 others")
@@ -39,16 +38,13 @@ Compact emoji picker in a popover for quick reactions.
 ```tsx
 import { ReactionPickerPopover } from '@/components/chat/reaction-picker-popover';
 
-<ReactionPickerPopover
-  onSelect={handleEmojiSelect}
-  align='end'
-  side='top'
->
+<ReactionPickerPopover onSelect={handleEmojiSelect} align='end' side='top'>
   <button>Add Reaction</button>
-</ReactionPickerPopover>
+</ReactionPickerPopover>;
 ```
 
 **Features:**
+
 - Quick reactions bar with most common emojis
 - Category-based emoji browsing
 - Search functionality
@@ -67,10 +63,11 @@ import { EnhancedMessageReactions } from '@/components/chat/enhanced-message-rea
   message={message}
   currentUser={currentUser}
   workspaceSlug={workspaceSlug}
-/>
+/>;
 ```
 
 **Features:**
+
 - Automatic API integration
 - Optimistic UI updates with rollback
 - Fetches full user data for tooltips
@@ -88,7 +85,7 @@ const { reactions, toggleReaction, isPending } = useMessageReactions({
   messageId: message.id,
   initialReactions: message.reactions,
   currentUserId: currentUser.id,
-  onReactionToggle: async (emoji) => {
+  onReactionToggle: async emoji => {
     // API call
   },
 });
@@ -146,18 +143,16 @@ import { ReactionPickerPopover } from '@/components/chat/reaction-picker-popover
 
 function MessageItem({ message, currentUser }) {
   const handleToggleReaction = async (emoji: string) => {
-    const hasReacted = message.reactions.find(r =>
-      r.emoji === emoji && r.hasReacted
-    );
+    const hasReacted = message.reactions.find(r => r.emoji === emoji && r.hasReacted);
 
     if (hasReacted) {
       await fetch(`/api/messages/${message.id}/reactions?emoji=${emoji}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
     } else {
       await fetch(`/api/messages/${message.id}/reactions`, {
         method: 'POST',
-        body: JSON.stringify({ emoji })
+        body: JSON.stringify({ emoji }),
       });
     }
   };
@@ -167,8 +162,8 @@ function MessageItem({ message, currentUser }) {
     users: reaction.userIds?.map(id => ({
       id,
       name: id === currentUser.id ? 'You' : 'User',
-      displayName: null
-    }))
+      displayName: null,
+    })),
   }));
 
   return (
@@ -177,10 +172,7 @@ function MessageItem({ message, currentUser }) {
 
       {/* Reactions */}
       {reactionsWithUsers.length > 0 && (
-        <ReactionDisplay
-          reactions={reactionsWithUsers}
-          onToggleReaction={handleToggleReaction}
-        />
+        <ReactionDisplay reactions={reactionsWithUsers} onToggleReaction={handleToggleReaction} />
       )}
 
       {/* Add reaction button */}
@@ -202,30 +194,25 @@ function MessageWithOptimisticReactions({ message, currentUser }) {
     messageId: message.id,
     initialReactions: message.reactions,
     currentUserId: currentUser.id,
-    onReactionToggle: async (emoji) => {
-      const hasReacted = reactions.find(r =>
-        r.emoji === emoji && r.hasReacted
-      );
+    onReactionToggle: async emoji => {
+      const hasReacted = reactions.find(r => r.emoji === emoji && r.hasReacted);
 
       if (hasReacted) {
         await fetch(`/api/messages/${message.id}/reactions?emoji=${emoji}`, {
-          method: 'DELETE'
+          method: 'DELETE',
         });
       } else {
         await fetch(`/api/messages/${message.id}/reactions`, {
           method: 'POST',
-          body: JSON.stringify({ emoji })
+          body: JSON.stringify({ emoji }),
         });
       }
-    }
+    },
   });
 
   return (
     <div>
-      <ReactionDisplay
-        reactions={reactions}
-        onToggleReaction={toggleReaction}
-      />
+      <ReactionDisplay reactions={reactions} onToggleReaction={toggleReaction} />
       {isPending && <LoadingSpinner />}
     </div>
   );
@@ -260,7 +247,7 @@ All components use shadcn/ui and Tailwind CSS for styling:
 
 ```tsx
 // Modify the ReactionDisplay component
-className='flex flex-wrap gap-2' // Increase gap between reactions
+className = 'flex flex-wrap gap-2'; // Increase gap between reactions
 ```
 
 ### Customize Emoji Picker Size
@@ -300,6 +287,7 @@ The system is fully accessible:
 ## Browser Support
 
 Works in all modern browsers:
+
 - Chrome/Edge 90+
 - Firefox 88+
 - Safari 14+
@@ -315,16 +303,9 @@ import { ReactionDisplay } from './reaction-display';
 
 test('toggles reaction on click', async () => {
   const onToggle = jest.fn();
-  const reactions = [
-    { emoji: '👍', count: 2, hasReacted: false, users: [] }
-  ];
+  const reactions = [{ emoji: '👍', count: 2, hasReacted: false, users: [] }];
 
-  render(
-    <ReactionDisplay
-      reactions={reactions}
-      onToggleReaction={onToggle}
-    />
-  );
+  render(<ReactionDisplay reactions={reactions} onToggleReaction={onToggle} />);
 
   fireEvent.click(screen.getByText('👍'));
 
@@ -337,6 +318,7 @@ test('toggles reaction on click', async () => {
 ### From Old Reaction System
 
 1. **Update imports:**
+
 ```tsx
 // Old
 import { ReactionDisplay } from './reaction-display';
@@ -346,19 +328,21 @@ import { ReactionDisplay, type ReactionWithUsers } from './reaction-display';
 ```
 
 2. **Add user data to reactions:**
+
 ```tsx
 // Old
-<ReactionDisplay reactions={message.reactions} />
+<ReactionDisplay reactions={message.reactions} />;
 
 // New
 const reactionsWithUsers = message.reactions.map(r => ({
   ...r,
-  users: getUsersForReaction(r.userIds)
+  users: getUsersForReaction(r.userIds),
 }));
-<ReactionDisplay reactions={reactionsWithUsers} />
+<ReactionDisplay reactions={reactionsWithUsers} />;
 ```
 
 3. **Switch to popover picker:**
+
 ```tsx
 // Old
 <ReactionPickerTrigger />
@@ -372,6 +356,7 @@ const reactionsWithUsers = message.reactions.map(r => ({
 ### Tooltips not showing
 
 Ensure TooltipProvider is in the component tree:
+
 ```tsx
 <TooltipProvider>
   <ReactionDisplay ... />

@@ -7,11 +7,11 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ backupId: string }> },
+  { params }: { params: Promise<{ backupId: string }> }
 ) {
   try {
     const session = await auth();
@@ -31,7 +31,7 @@ export async function DELETE(
     console.error('Delete error:', error);
     return NextResponse.json(
       { error: 'Failed to delete backup' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

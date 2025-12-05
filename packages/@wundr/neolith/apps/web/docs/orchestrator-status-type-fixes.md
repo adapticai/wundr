@@ -2,7 +2,9 @@
 
 ## Overview
 
-Fixed type consistency issues between `OrchestratorStatus` definitions across the Neolith web application. The previous implementation had mismatched status values between the API types and frontend types, causing potential runtime errors and type safety issues.
+Fixed type consistency issues between `OrchestratorStatus` definitions across the Neolith web
+application. The previous implementation had mismatched status values between the API types and
+frontend types, causing potential runtime errors and type safety issues.
 
 ## Problem Statement
 
@@ -11,16 +13,19 @@ Fixed type consistency issues between `OrchestratorStatus` definitions across th
 The application had inconsistent `OrchestratorStatus` type definitions:
 
 **types/api.ts** (Incorrect):
+
 ```typescript
 export type OrchestratorStatus = 'active' | 'inactive' | 'archived' | 'draft';
 ```
 
 **types/orchestrator.ts** (Correct):
+
 ```typescript
 export type OrchestratorStatus = 'ONLINE' | 'OFFLINE' | 'BUSY' | 'AWAY';
 ```
 
 **lib/validations/orchestrator.ts** (Correct):
+
 ```typescript
 export const orchestratorStatusEnum = z.enum(['ONLINE', 'OFFLINE', 'BUSY', 'AWAY']);
 ```
@@ -41,17 +46,13 @@ export const orchestratorStatusEnum = z.enum(['ONLINE', 'OFFLINE', 'BUSY', 'AWAY
 Added a constant array to serve as the single source of truth:
 
 ```typescript
-export const ORCHESTRATOR_STATUS_VALUES = [
-  'ONLINE',
-  'OFFLINE',
-  'BUSY',
-  'AWAY',
-] as const;
+export const ORCHESTRATOR_STATUS_VALUES = ['ONLINE', 'OFFLINE', 'BUSY', 'AWAY'] as const;
 
 export type OrchestratorStatus = (typeof ORCHESTRATOR_STATUS_VALUES)[number];
 ```
 
 **Benefits**:
+
 - Single source of truth for all status values
 - Compile-time type safety
 - Easy to extend with new statuses
@@ -77,22 +78,15 @@ export type OrchestratorStatus = 'ONLINE' | 'OFFLINE' | 'BUSY' | 'AWAY';
 Added enhanced type guard:
 
 ```typescript
-export function isOrchestratorStatus(
-  value: unknown,
-): value is OrchestratorStatus {
-  return (
-    typeof value === 'string' &&
-    ['ONLINE', 'OFFLINE', 'BUSY', 'AWAY'].includes(value)
-  );
+export function isOrchestratorStatus(value: unknown): value is OrchestratorStatus {
+  return typeof value === 'string' && ['ONLINE', 'OFFLINE', 'BUSY', 'AWAY'].includes(value);
 }
 ```
 
 Updated `isOrchestratorApiResponse` to validate status:
 
 ```typescript
-export function isOrchestratorApiResponse(
-  value: unknown,
-): value is OrchestratorApiResponse {
+export function isOrchestratorApiResponse(value: unknown): value is OrchestratorApiResponse {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -137,7 +131,7 @@ export const orchestratorStatusEnum = z.enum(ORCHESTRATOR_STATUS_VALUES);
 
 Improved the type guard with better documentation and implementation:
 
-```typescript
+````typescript
 /**
  * Type guard to check if a value is a valid OrchestratorStatus
  *
@@ -153,15 +147,12 @@ Improved the type guard with better documentation and implementation:
  * }
  * ```
  */
-export function isOrchestratorStatus(
-  value: unknown,
-): value is OrchestratorStatus {
+export function isOrchestratorStatus(value: unknown): value is OrchestratorStatus {
   return (
-    typeof value === 'string' &&
-    (ORCHESTRATOR_STATUS_VALUES as readonly string[]).includes(value)
+    typeof value === 'string' && (ORCHESTRATOR_STATUS_VALUES as readonly string[]).includes(value)
   );
 }
-```
+````
 
 ## Files Modified
 
@@ -187,6 +178,7 @@ Created comprehensive test suite:
 **File**: `tests/types/orchestrator-status.test.ts`
 
 Test coverage includes:
+
 - Type compatibility across all definitions
 - Type guard validation for valid and invalid values
 - Zod schema validation
@@ -198,11 +190,13 @@ Test coverage includes:
 
 **None** - This is a bug fix that aligns types with existing runtime behavior.
 
-All components and API routes were already using the correct uppercase values (`ONLINE`, `OFFLINE`, `BUSY`, `AWAY`). The API type definition was simply incorrect and has been fixed.
+All components and API routes were already using the correct uppercase values (`ONLINE`, `OFFLINE`,
+`BUSY`, `AWAY`). The API type definition was simply incorrect and has been fixed.
 
 ## Migration Guide
 
-No migration needed. If you have any custom code that relied on the incorrect API type definition, update status checks to use:
+No migration needed. If you have any custom code that relied on the incorrect API type definition,
+update status checks to use:
 
 ```typescript
 // Before (incorrect)
@@ -215,12 +209,14 @@ if (orchestrator.status === 'ONLINE') { ... }
 ## Verification
 
 ### Type Checking
+
 ```bash
 cd packages/@wundr/neolith/apps/web
 npx tsc --noEmit types/orchestrator.ts types/api.ts lib/validations/orchestrator.ts
 ```
 
 ### Running Tests
+
 ```bash
 npm test tests/types/orchestrator-status.test.ts
 ```

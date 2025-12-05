@@ -97,7 +97,9 @@ export function ImportExportSettings() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // State
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(['all']);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([
+    'all',
+  ]);
   const [includeConversations, setIncludeConversations] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -213,12 +215,12 @@ export function ImportExportSettings() {
   };
 
   const handleFileSelect = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) {
-return;
-}
+      return;
+    }
 
     try {
       const content = await readSettingsFile(file);
@@ -243,8 +245,8 @@ return;
 
   const handleImport = async (overwrite: boolean) => {
     if (!importFile) {
-return;
-}
+      return;
+    }
 
     try {
       setIsImporting(true);
@@ -291,8 +293,8 @@ return;
 
   const handleRestoreBackup = async () => {
     if (!selectedBackup) {
-return;
-}
+      return;
+    }
 
     try {
       const result = await restoreFromBackup(selectedBackup);
@@ -321,8 +323,8 @@ return;
 
   const handleDeleteBackup = async () => {
     if (!selectedBackup) {
-return;
-}
+      return;
+    }
 
     try {
       await deleteBackup(selectedBackup);
@@ -404,43 +406,43 @@ return;
   const estimatedSize = estimateBackupSize(
     selectedCategories.includes('all')
       ? SETTINGS_CATEGORIES.map(c => c.id)
-      : selectedCategories,
+      : selectedCategories
   );
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <h1 className="text-2xl font-bold">Import/Export & Backup</h1>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className='text-2xl font-bold'>Import/Export & Backup</h1>
+        <p className='mt-1 text-muted-foreground'>
           Manage your settings backups and data exports
         </p>
       </div>
 
-      <Tabs defaultValue="export" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="export">Export</TabsTrigger>
-          <TabsTrigger value="import">Import</TabsTrigger>
-          <TabsTrigger value="backups">Backups</TabsTrigger>
+      <Tabs defaultValue='export' className='w-full'>
+        <TabsList className='grid w-full grid-cols-3'>
+          <TabsTrigger value='export'>Export</TabsTrigger>
+          <TabsTrigger value='import'>Import</TabsTrigger>
+          <TabsTrigger value='backups'>Backups</TabsTrigger>
         </TabsList>
 
         {/* Export Tab */}
-        <TabsContent value="export" className="space-y-4">
+        <TabsContent value='export' className='space-y-4'>
           <Card>
             <CardHeader>
-              <div className="flex items-center gap-2">
-                <Download className="h-5 w-5" />
+              <div className='flex items-center gap-2'>
+                <Download className='h-5 w-5' />
                 <CardTitle>Export Settings</CardTitle>
               </div>
               <CardDescription>
                 Download your settings and data in JSON format
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="export-all">Select all categories</Label>
+            <CardContent className='space-y-6'>
+              <div className='space-y-4'>
+                <div className='flex items-center justify-between'>
+                  <Label htmlFor='export-all'>Select all categories</Label>
                   <Checkbox
-                    id="export-all"
+                    id='export-all'
                     checked={selectedCategories.includes('all')}
                     onCheckedChange={() => toggleCategory('all')}
                   />
@@ -448,11 +450,11 @@ return;
 
                 <Separator />
 
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className='grid gap-3 sm:grid-cols-2'>
                   {SETTINGS_CATEGORIES.map(category => (
                     <div
                       key={category.id}
-                      className="flex items-start space-x-3 space-y-0"
+                      className='flex items-start space-x-3 space-y-0'
                     >
                       <Checkbox
                         id={`export-${category.id}`}
@@ -463,14 +465,14 @@ return;
                         onCheckedChange={() => toggleCategory(category.id)}
                         disabled={selectedCategories.includes('all')}
                       />
-                      <div className="space-y-1 leading-none">
+                      <div className='space-y-1 leading-none'>
                         <Label
                           htmlFor={`export-${category.id}`}
-                          className="font-medium"
+                          className='font-medium'
                         >
                           {category.label}
                         </Label>
-                        <p className="text-xs text-muted-foreground">
+                        <p className='text-xs text-muted-foreground'>
                           {category.description}
                         </p>
                       </div>
@@ -480,24 +482,24 @@ return;
 
                 <Separator />
 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="include-conversations">
+                <div className='flex items-center justify-between'>
+                  <div className='space-y-0.5'>
+                    <Label htmlFor='include-conversations'>
                       Include conversation history
                     </Label>
-                    <p className="text-xs text-muted-foreground">
+                    <p className='text-xs text-muted-foreground'>
                       Export all messages and chat history (may be large)
                     </p>
                   </div>
                   <Switch
-                    id="include-conversations"
+                    id='include-conversations'
                     checked={includeConversations}
                     onCheckedChange={setIncludeConversations}
                   />
                 </div>
 
                 <Alert>
-                  <Info className="h-4 w-4" />
+                  <Info className='h-4 w-4' />
                   <AlertDescription>
                     Estimated export size: <strong>{estimatedSize} KB</strong>
                     {includeConversations &&
@@ -506,7 +508,7 @@ return;
                 </Alert>
               </div>
 
-              <div className="flex justify-end gap-3">
+              <div className='flex justify-end gap-3'>
                 <Button
                   onClick={() => setExportDialogOpen(true)}
                   disabled={
@@ -517,12 +519,12 @@ return;
                 >
                   {isExporting ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                       Exporting...
                     </>
                   ) : (
                     <>
-                      <Download className="mr-2 h-4 w-4" />
+                      <Download className='mr-2 h-4 w-4' />
                       Export Settings
                     </>
                   )}
@@ -534,27 +536,27 @@ return;
           {/* Quick Export */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Quick Export</CardTitle>
+              <CardTitle className='text-base'>Quick Export</CardTitle>
               <CardDescription>
                 Commonly used export configurations
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className='grid gap-3 sm:grid-cols-2'>
                 <Button
-                  variant="outline"
-                  className="justify-start h-auto py-4"
+                  variant='outline'
+                  className='justify-start h-auto py-4'
                   onClick={async () => {
                     setSelectedCategories(['all']);
                     setIncludeConversations(false);
                     setExportDialogOpen(true);
                   }}
                 >
-                  <div className="flex items-start gap-3 text-left">
-                    <Settings2 className="h-5 w-5 mt-0.5" />
+                  <div className='flex items-start gap-3 text-left'>
+                    <Settings2 className='h-5 w-5 mt-0.5' />
                     <div>
-                      <div className="font-semibold">Settings Only</div>
-                      <div className="text-xs text-muted-foreground mt-1">
+                      <div className='font-semibold'>Settings Only</div>
+                      <div className='text-xs text-muted-foreground mt-1'>
                         Export all settings without conversations
                       </div>
                     </div>
@@ -562,19 +564,19 @@ return;
                 </Button>
 
                 <Button
-                  variant="outline"
-                  className="justify-start h-auto py-4"
+                  variant='outline'
+                  className='justify-start h-auto py-4'
                   onClick={async () => {
                     setSelectedCategories(['all']);
                     setIncludeConversations(true);
                     setExportDialogOpen(true);
                   }}
                 >
-                  <div className="flex items-start gap-3 text-left">
-                    <Database className="h-5 w-5 mt-0.5" />
+                  <div className='flex items-start gap-3 text-left'>
+                    <Database className='h-5 w-5 mt-0.5' />
                     <div>
-                      <div className="font-semibold">Complete Backup</div>
-                      <div className="text-xs text-muted-foreground mt-1">
+                      <div className='font-semibold'>Complete Backup</div>
+                      <div className='text-xs text-muted-foreground mt-1'>
                         Export everything including conversations
                       </div>
                     </div>
@@ -586,42 +588,42 @@ return;
         </TabsContent>
 
         {/* Import Tab */}
-        <TabsContent value="import" className="space-y-4">
+        <TabsContent value='import' className='space-y-4'>
           <Card>
             <CardHeader>
-              <div className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
+              <div className='flex items-center gap-2'>
+                <Upload className='h-5 w-5' />
                 <CardTitle>Import Settings</CardTitle>
               </div>
               <CardDescription>
                 Restore settings from a previously exported JSON file
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className='space-y-4'>
               <input
                 ref={fileInputRef}
-                type="file"
-                accept=".json"
+                type='file'
+                accept='.json'
                 onChange={handleFileSelect}
-                className="hidden"
+                className='hidden'
               />
 
               <Button
                 onClick={() => fileInputRef.current?.click()}
-                variant="outline"
-                className="w-full h-32 flex-col gap-2"
+                variant='outline'
+                className='w-full h-32 flex-col gap-2'
               >
-                <Upload className="h-8 w-8 text-muted-foreground" />
-                <div className="text-center">
-                  <div className="font-medium">Select JSON File</div>
-                  <div className="text-xs text-muted-foreground mt-1">
+                <Upload className='h-8 w-8 text-muted-foreground' />
+                <div className='text-center'>
+                  <div className='font-medium'>Select JSON File</div>
+                  <div className='text-xs text-muted-foreground mt-1'>
                     Choose a settings backup file to import
                   </div>
                 </div>
               </Button>
 
               <Alert>
-                <AlertCircle className="h-4 w-4" />
+                <AlertCircle className='h-4 w-4' />
                 <AlertDescription>
                   Importing will merge or overwrite your current settings. You
                   can choose the import mode in the next step.
@@ -633,27 +635,29 @@ return;
           {/* Import from other platforms */}
           <Card>
             <CardHeader>
-              <div className="flex items-center gap-2">
-                <Share2 className="h-5 w-5" />
-                <CardTitle className="text-base">Import from Other Platforms</CardTitle>
+              <div className='flex items-center gap-2'>
+                <Share2 className='h-5 w-5' />
+                <CardTitle className='text-base'>
+                  Import from Other Platforms
+                </CardTitle>
               </div>
               <CardDescription>
                 Import data from Slack, Discord, or other platforms
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Button variant="outline" disabled>
-                  <MessageSquare className="mr-2 h-4 w-4" />
+              <div className='grid gap-3 sm:grid-cols-2'>
+                <Button variant='outline' disabled>
+                  <MessageSquare className='mr-2 h-4 w-4' />
                   Slack Export
-                  <Badge variant="secondary" className="ml-2">
+                  <Badge variant='secondary' className='ml-2'>
                     Coming Soon
                   </Badge>
                 </Button>
-                <Button variant="outline" disabled>
-                  <MessageSquare className="mr-2 h-4 w-4" />
+                <Button variant='outline' disabled>
+                  <MessageSquare className='mr-2 h-4 w-4' />
                   Discord Export
-                  <Badge variant="secondary" className="ml-2">
+                  <Badge variant='secondary' className='ml-2'>
                     Coming Soon
                   </Badge>
                 </Button>
@@ -663,28 +667,28 @@ return;
         </TabsContent>
 
         {/* Backups Tab */}
-        <TabsContent value="backups" className="space-y-4">
+        <TabsContent value='backups' className='space-y-4'>
           {/* Auto Backup */}
           <Card>
             <CardHeader>
-              <div className="flex items-center gap-2">
-                <RefreshCw className="h-5 w-5" />
+              <div className='flex items-center gap-2'>
+                <RefreshCw className='h-5 w-5' />
                 <CardTitle>Automatic Backups</CardTitle>
               </div>
               <CardDescription>
                 Schedule automatic backups of your settings
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="auto-backup">Enable automatic backups</Label>
-                  <p className="text-sm text-muted-foreground">
+            <CardContent className='space-y-6'>
+              <div className='flex items-center justify-between'>
+                <div className='space-y-0.5'>
+                  <Label htmlFor='auto-backup'>Enable automatic backups</Label>
+                  <p className='text-sm text-muted-foreground'>
                     Automatically create backups on a schedule
                   </p>
                 </div>
                 <Switch
-                  id="auto-backup"
+                  id='auto-backup'
                   checked={autoBackupConfig.enabled}
                   onCheckedChange={enabled =>
                     setAutoBackupConfig(prev => ({ ...prev, enabled }))
@@ -696,31 +700,32 @@ return;
                 <>
                   <Separator />
 
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="backup-frequency">Backup Frequency</Label>
+                  <div className='space-y-4'>
+                    <div className='space-y-2'>
+                      <Label htmlFor='backup-frequency'>Backup Frequency</Label>
                       <Select
                         value={autoBackupConfig.frequency}
                         onValueChange={frequency =>
                           setAutoBackupConfig(prev => ({
                             ...prev,
-                            frequency: frequency as AutoBackupConfig['frequency'],
+                            frequency:
+                              frequency as AutoBackupConfig['frequency'],
                           }))
                         }
                       >
-                        <SelectTrigger id="backup-frequency">
+                        <SelectTrigger id='backup-frequency'>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="daily">Daily</SelectItem>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
+                          <SelectItem value='daily'>Daily</SelectItem>
+                          <SelectItem value='weekly'>Weekly</SelectItem>
+                          <SelectItem value='monthly'>Monthly</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="max-backups">Maximum Backups</Label>
+                    <div className='space-y-2'>
+                      <Label htmlFor='max-backups'>Maximum Backups</Label>
                       <Select
                         value={autoBackupConfig.maxBackups.toString()}
                         onValueChange={max =>
@@ -730,32 +735,32 @@ return;
                           }))
                         }
                       >
-                        <SelectTrigger id="max-backups">
+                        <SelectTrigger id='max-backups'>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="5">5 backups</SelectItem>
-                          <SelectItem value="10">10 backups</SelectItem>
-                          <SelectItem value="15">15 backups</SelectItem>
-                          <SelectItem value="30">30 backups</SelectItem>
+                          <SelectItem value='5'>5 backups</SelectItem>
+                          <SelectItem value='10'>10 backups</SelectItem>
+                          <SelectItem value='15'>15 backups</SelectItem>
+                          <SelectItem value='30'>30 backups</SelectItem>
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">
+                      <p className='text-xs text-muted-foreground'>
                         Older backups will be automatically deleted
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="auto-include-conversations">
+                    <div className='flex items-center justify-between'>
+                      <div className='space-y-0.5'>
+                        <Label htmlFor='auto-include-conversations'>
                           Include conversations
                         </Label>
-                        <p className="text-xs text-muted-foreground">
+                        <p className='text-xs text-muted-foreground'>
                           Backup conversation history
                         </p>
                       </div>
                       <Switch
-                        id="auto-include-conversations"
+                        id='auto-include-conversations'
                         checked={autoBackupConfig.includeConversations}
                         onCheckedChange={includeConversations =>
                           setAutoBackupConfig(prev => ({
@@ -767,14 +772,14 @@ return;
                     </div>
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className='flex justify-end'>
                     <Button
                       onClick={handleSaveAutoBackupConfig}
                       disabled={isSavingAutoConfig}
                     >
                       {isSavingAutoConfig ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                           Saving...
                         </>
                       ) : (
@@ -790,21 +795,21 @@ return;
           {/* Backup History */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Archive className="h-5 w-5" />
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center gap-2'>
+                  <Archive className='h-5 w-5' />
                   <CardTitle>Backup History</CardTitle>
                 </div>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant='outline'
+                  size='sm'
                   onClick={loadBackupHistory}
                   disabled={isLoadingHistory}
                 >
                   {isLoadingHistory ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className='h-4 w-4 animate-spin' />
                   ) : (
-                    <RefreshCw className="h-4 w-4" />
+                    <RefreshCw className='h-4 w-4' />
                   )}
                 </Button>
               </div>
@@ -814,71 +819,71 @@ return;
             </CardHeader>
             <CardContent>
               {isLoadingHistory ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <div className='flex items-center justify-center py-8'>
+                  <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
                 </div>
               ) : backupHistory.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <HardDrive className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <div className='text-center py-8 text-muted-foreground'>
+                  <HardDrive className='h-12 w-12 mx-auto mb-3 opacity-50' />
                   <p>No backups found</p>
-                  <p className="text-sm mt-1">
+                  <p className='text-sm mt-1'>
                     Create your first backup by exporting your settings
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className='space-y-3'>
                   {backupHistory.map(backup => (
                     <div
                       key={backup.id}
-                      className="flex items-center justify-between rounded-lg border p-4"
+                      className='flex items-center justify-between rounded-lg border p-4'
                     >
-                      <div className="flex items-start gap-3">
-                        <Clock className="h-5 w-5 mt-0.5 text-muted-foreground" />
+                      <div className='flex items-start gap-3'>
+                        <Clock className='h-5 w-5 mt-0.5 text-muted-foreground' />
                         <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">
+                          <div className='flex items-center gap-2'>
+                            <span className='font-medium'>
                               {new Date(backup.timestamp).toLocaleString()}
                             </span>
                             {backup.automatic && (
-                              <Badge variant="secondary" className="text-xs">
+                              <Badge variant='secondary' className='text-xs'>
                                 Auto
                               </Badge>
                             )}
                           </div>
-                          <div className="text-xs text-muted-foreground mt-1">
+                          <div className='text-xs text-muted-foreground mt-1'>
                             {backup.categories.length} categories •{' '}
                             {(backup.size / 1024).toFixed(2)} KB
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className='flex items-center gap-2'>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant='ghost'
+                          size='sm'
                           onClick={() => handleDownloadBackup(backup.id)}
                         >
-                          <Download className="h-4 w-4" />
+                          <Download className='h-4 w-4' />
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant='ghost'
+                          size='sm'
                           onClick={() => {
                             setSelectedBackup(backup.id);
                             setRestoreDialogOpen(true);
                           }}
                         >
-                          <RefreshCw className="h-4 w-4" />
+                          <RefreshCw className='h-4 w-4' />
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant='ghost'
+                          size='sm'
                           onClick={() => {
                             setSelectedBackup(backup.id);
                             setDeleteBackupDialogOpen(true);
                           }}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className='h-4 w-4' />
                         </Button>
                       </div>
                     </div>
@@ -901,16 +906,16 @@ return;
           </DialogHeader>
 
           {isExporting ? (
-            <div className="space-y-4 py-4">
+            <div className='space-y-4 py-4'>
               <Progress value={exportProgress} />
-              <p className="text-sm text-muted-foreground text-center">
+              <p className='text-sm text-muted-foreground text-center'>
                 Preparing export... {exportProgress}%
               </p>
             </div>
           ) : (
-            <div className="space-y-4 py-4">
+            <div className='space-y-4 py-4'>
               <Alert>
-                <FileJson className="h-4 w-4" />
+                <FileJson className='h-4 w-4' />
                 <AlertDescription>
                   A JSON file containing your selected settings will be
                   downloaded to your device.
@@ -921,7 +926,7 @@ return;
 
           <DialogFooter>
             <Button
-              variant="outline"
+              variant='outline'
               onClick={() => setExportDialogOpen(false)}
               disabled={isExporting}
             >
@@ -930,12 +935,12 @@ return;
             <Button onClick={handleExport} disabled={isExporting}>
               {isExporting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                   Exporting...
                 </>
               ) : (
                 <>
-                  <Download className="mr-2 h-4 w-4" />
+                  <Download className='mr-2 h-4 w-4' />
                   Export
                 </>
               )}
@@ -955,32 +960,32 @@ return;
           </DialogHeader>
 
           {isImporting ? (
-            <div className="space-y-4 py-4">
+            <div className='space-y-4 py-4'>
               <Progress value={importProgress} />
-              <p className="text-sm text-muted-foreground text-center">
+              <p className='text-sm text-muted-foreground text-center'>
                 Importing settings... {importProgress}%
               </p>
             </div>
           ) : importPreview ? (
-            <div className="space-y-4 py-4">
-              <div className="rounded-lg border p-4 space-y-3">
+            <div className='space-y-4 py-4'>
+              <div className='rounded-lg border p-4 space-y-3'>
                 <div>
-                  <p className="text-sm font-medium">File</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className='text-sm font-medium'>File</p>
+                  <p className='text-sm text-muted-foreground'>
                     {importFile?.name}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Created</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className='text-sm font-medium'>Created</p>
+                  <p className='text-sm text-muted-foreground'>
                     {new Date(importPreview.timestamp).toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Categories</p>
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <p className='text-sm font-medium'>Categories</p>
+                  <div className='flex flex-wrap gap-1 mt-1'>
                     {importPreview.categories.map(cat => (
-                      <Badge key={cat} variant="secondary" className="text-xs">
+                      <Badge key={cat} variant='secondary' className='text-xs'>
                         {cat}
                       </Badge>
                     ))}
@@ -988,7 +993,7 @@ return;
                 </div>
                 {importPreview.platform !== 'neolith' && (
                   <Alert>
-                    <Info className="h-4 w-4" />
+                    <Info className='h-4 w-4' />
                     <AlertDescription>
                       This backup was created from {importPreview.platform}.
                       Some data may be converted.
@@ -998,7 +1003,7 @@ return;
               </div>
 
               <Alert>
-                <AlertCircle className="h-4 w-4" />
+                <AlertCircle className='h-4 w-4' />
                 <AlertDescription>
                   Choose whether to merge with existing settings or overwrite
                   them completely.
@@ -1009,7 +1014,7 @@ return;
 
           <DialogFooter>
             <Button
-              variant="outline"
+              variant='outline'
               onClick={() => {
                 setImportDialogOpen(false);
                 setImportFile(null);
@@ -1020,7 +1025,7 @@ return;
               Cancel
             </Button>
             <Button
-              variant="outline"
+              variant='outline'
               onClick={() => handleImport(false)}
               disabled={isImporting}
             >
@@ -1029,7 +1034,7 @@ return;
             <Button onClick={() => handleImport(true)} disabled={isImporting}>
               {isImporting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                   Importing...
                 </>
               ) : (
@@ -1041,10 +1046,7 @@ return;
       </Dialog>
 
       {/* Restore Dialog */}
-      <AlertDialog
-        open={restoreDialogOpen}
-        onOpenChange={setRestoreDialogOpen}
-      >
+      <AlertDialog open={restoreDialogOpen} onOpenChange={setRestoreDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Restore Backup?</AlertDialogTitle>
@@ -1080,7 +1082,7 @@ return;
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteBackup}
-              className="bg-destructive hover:bg-destructive/90"
+              className='bg-destructive hover:bg-destructive/90'
             >
               Delete
             </AlertDialogAction>

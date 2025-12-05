@@ -89,7 +89,7 @@ async function checkWorkspaceAccess(workspaceSlug: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -98,9 +98,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED,
+          ORG_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -113,9 +113,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -125,7 +125,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const limit = Math.min(
       Math.max(1, parseInt(searchParams.get('limit') || '10', 10)),
-      50,
+      50
     );
 
     // Get channels where user is a member
@@ -216,7 +216,7 @@ export async function GET(
 
     // Calculate unread counts for each thread
     const channelLastReadMap = new Map(
-      userChannels.map(m => [m.channelId, m.lastReadAt]),
+      userChannels.map(m => [m.channelId, m.lastReadAt])
     );
 
     const threadsWithUnread = await Promise.all(
@@ -264,7 +264,7 @@ export async function GET(
         let otherUserName: string | undefined;
         if (isDm) {
           const otherParticipant = participants.find(
-            p => p.id !== session.user.id,
+            p => p.id !== session.user.id
           );
           otherUserName = otherParticipant?.name;
         }
@@ -286,7 +286,7 @@ export async function GET(
           timestamp: lastReplyAt.toISOString(),
           isUnread: unreadCount > 0,
         };
-      }),
+      })
     );
 
     // Calculate total unread count across all threads
@@ -301,9 +301,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

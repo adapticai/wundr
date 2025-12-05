@@ -118,7 +118,7 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -135,7 +135,7 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -176,9 +176,7 @@ export async function GET(
         where: {
           workspaceId,
           joinedAt: {
-            gte: new Date(
-              thirtyDaysAgo.getTime() - 30 * 24 * 60 * 60 * 1000,
-            ),
+            gte: new Date(thirtyDaysAgo.getTime() - 30 * 24 * 60 * 60 * 1000),
             lt: thirtyDaysAgo,
           },
         },
@@ -195,7 +193,7 @@ export async function GET(
         ? Math.round(
             ((currentMonthMembers - previousMonthMembers) /
               previousMonthMembers) *
-              100,
+              100
           )
         : currentMonthMembers > 0
           ? 100
@@ -215,8 +213,8 @@ export async function GET(
     if (totalMembers > 0 && currentMonthMembers === 0) {
       issues.push('No new members in the last 30 days');
       if (healthStatus === 'healthy') {
-healthStatus = 'warning';
-}
+        healthStatus = 'warning';
+      }
     }
 
     // Build admin stats response
@@ -247,11 +245,11 @@ healthStatus = 'warning';
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/dashboard/admin-stats] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       { error: 'Failed to fetch admin statistics' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -120,7 +120,7 @@ export function AdminSidebar({
   className,
 }: AdminSidebarProps) {
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
 
   const toggleSection = (sectionId: string) => {
@@ -143,7 +143,7 @@ export function AdminSidebar({
     <nav
       className={cn(
         'w-64 h-full border-r border-border bg-card overflow-y-auto',
-        className,
+        className
       )}
       aria-label='Admin navigation'
     >
@@ -169,7 +169,7 @@ export function AdminSidebar({
                 className={cn(
                   'w-full justify-between px-3 h-8',
                   'text-xs font-semibold uppercase tracking-wider',
-                  'text-muted-foreground hover:text-foreground',
+                  'text-muted-foreground hover:text-foreground'
                 )}
                 aria-expanded={!isCollapsed}
               >
@@ -177,7 +177,7 @@ export function AdminSidebar({
                 <ChevronIcon
                   className={cn(
                     'h-3 w-3 transition-transform',
-                    isCollapsed ? '-rotate-90' : '',
+                    isCollapsed ? '-rotate-90' : ''
                   )}
                 />
               </Button>
@@ -198,7 +198,7 @@ export function AdminSidebar({
                           'w-full justify-start gap-3 px-3 h-9',
                           'text-sm font-medium',
                           active &&
-                            'bg-stone-700/10 dark:bg-stone-300/10 text-stone-700 dark:text-stone-300 hover:bg-stone-700/15 dark:hover:bg-stone-300/15',
+                            'bg-stone-700/10 dark:bg-stone-300/10 text-stone-700 dark:text-stone-300 hover:bg-stone-700/15 dark:hover:bg-stone-300/15'
                         )}
                         aria-current={active ? 'page' : undefined}
                       >

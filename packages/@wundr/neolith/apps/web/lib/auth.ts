@@ -38,7 +38,7 @@ function getConfiguredProviders() {
   // Log which providers are available (helpful for debugging deployments)
   if (process.env.NODE_ENV !== 'production') {
     console.log(
-      `Auth providers configured: GitHub=${github}, Google=${google}`,
+      `Auth providers configured: GitHub=${github}, Google=${google}`
     );
   }
 
@@ -87,7 +87,7 @@ declare module 'next-auth/jwt' {
  */
 async function verifyPassword(
   password: string,
-  storedHash: string,
+  storedHash: string
 ): Promise<boolean> {
   return new Promise(resolve => {
     const [salt, hash] = storedHash.split(':');
@@ -114,7 +114,7 @@ async function verifyPassword(
  */
 async function verifyApiKey(
   providedKey: string,
-  storedHash: string,
+  storedHash: string
 ): Promise<boolean> {
   return new Promise(resolve => {
     const [salt, hash] = storedHash.split(':');
@@ -146,7 +146,7 @@ async function verifyApiKey(
         } catch {
           resolve(false);
         }
-      },
+      }
     );
   });
 }
@@ -292,11 +292,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                   'Orchestrator authentication failed: No API key hash configured',
                   {
                     orchestratorId,
-                  },
+                  }
                 );
               } else {
                 console.error(
-                  'Orchestrator authentication failed: Configuration error',
+                  'Orchestrator authentication failed: Configuration error'
                 );
               }
               return null;
@@ -305,7 +305,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             // Verify API key using constant-time comparison to prevent timing attacks
             const isValidKey = await verifyApiKey(
               apiKey,
-              orchestratorConfig.apiKeyHash,
+              orchestratorConfig.apiKeyHash
             );
 
             if (!isValidKey) {
@@ -314,7 +314,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                   'Orchestrator authentication failed: Invalid API key',
                   {
                     orchestratorId,
-                  },
+                  }
                 );
               } else {
                 console.error('Orchestrator authentication failed');
@@ -329,11 +329,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                   'Orchestrator authentication failed: Orchestrator is offline',
                   {
                     orchestratorId,
-                  },
+                  }
                 );
               } else {
                 console.error(
-                  'Orchestrator authentication failed: Service unavailable',
+                  'Orchestrator authentication failed: Service unavailable'
                 );
               }
               return null;
@@ -555,7 +555,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 provider: account.provider as 'google' | 'github',
               });
               console.log(
-                `Uploaded OAuth avatar for existing user ${user.id} from ${account.provider}`,
+                `Uploaded OAuth avatar for existing user ${user.id} from ${account.provider}`
               );
             }
           } catch (error: unknown) {
@@ -564,7 +564,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               error instanceof Error ? error.message : 'Unknown error';
             console.error(
               `Failed to upload OAuth avatar for user ${user.id}:`,
-              errorMessage,
+              errorMessage
             );
           }
         }
@@ -589,11 +589,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 error instanceof Error ? error.message : 'Unknown error';
               console.error(
                 'Failed to verify orchestrator status during sign-in:',
-                { error: errorMessage, userId: user.id },
+                { error: errorMessage, userId: user.id }
               );
             } else {
               console.error(
-                'Failed to verify orchestrator status during sign-in',
+                'Failed to verify orchestrator status during sign-in'
               );
             }
             return false;
@@ -668,7 +668,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             error instanceof Error ? error.message : 'Unknown error';
           console.error(
             `Failed to upload OAuth avatar for new user ${user.id}:`,
-            errorMessage,
+            errorMessage
           );
 
           // Generate fallback avatar if OAuth avatar fails
@@ -685,7 +685,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 : 'Unknown error';
             console.error(
               `Failed to generate fallback avatar for user ${user.id}:`,
-              fallbackErrMessage,
+              fallbackErrMessage
             );
           }
         }
@@ -702,7 +702,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             error instanceof Error ? error.message : 'Unknown error';
           console.error(
             `Failed to generate fallback avatar for user ${user.id}:`,
-            errorMessage,
+            errorMessage
           );
         }
       }
@@ -738,7 +738,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               provider: account.provider as 'google' | 'github',
             });
             console.log(
-              `Uploaded OAuth avatar from linked ${account.provider} account for user ${user.id}`,
+              `Uploaded OAuth avatar from linked ${account.provider} account for user ${user.id}`
             );
           }
         } catch (error: unknown) {
@@ -746,7 +746,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             error instanceof Error ? error.message : 'Unknown error';
           console.error(
             'Failed to upload avatar for linked account:',
-            errorMessage,
+            errorMessage
           );
         }
       }

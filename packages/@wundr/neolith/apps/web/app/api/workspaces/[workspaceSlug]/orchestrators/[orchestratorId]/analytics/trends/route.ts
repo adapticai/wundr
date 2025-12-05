@@ -41,7 +41,7 @@ interface RouteContext {
 async function verifyOrchestratorAccess(
   workspaceId: string,
   orchestratorId: string,
-  userId: string,
+  userId: string
 ) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -84,7 +84,7 @@ async function verifyOrchestratorAccess(
  */
 function calculateChange(
   current: number,
-  previous: number,
+  previous: number
 ): {
   value: number;
   percentage: number;
@@ -126,7 +126,7 @@ function calculateChange(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -135,9 +135,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -150,9 +150,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid parameters',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -160,15 +160,15 @@ export async function GET(
     const access = await verifyOrchestratorAccess(
       workspaceId,
       orchestratorId,
-      session.user.id,
+      session.user.id
     );
     if (!access) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -181,9 +181,9 @@ export async function GET(
         createAnalyticsErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -205,9 +205,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           error instanceof Error ? error.message : 'Invalid date range',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INVALID_TIME_RANGE,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INVALID_TIME_RANGE
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -215,7 +215,7 @@ export async function GET(
     const trendsData = await getOrchestratorTrends(
       orchestratorId,
       query.metric,
-      '30d', // Default time range for the service
+      '30d' // Default time range for the service
     );
 
     // For now, use empty array since the service returns stub data
@@ -255,7 +255,7 @@ export async function GET(
       });
 
       const previousCompleted = previousTasks.filter(
-        t => t.status === 'DONE',
+        t => t.status === 'DONE'
       ).length;
       const previousTotal = previousTasks.length;
       const previousSuccessRate =
@@ -264,11 +264,11 @@ export async function GET(
       // Calculate current period totals
       const currentCompleted = trends.reduce(
         (sum: number, t) => sum + t.tasksCompleted,
-        0,
+        0
       );
       const currentTotal = trends.reduce(
         (sum: number, t) => sum + t.tasksCompleted / (t.successRate / 100),
-        0,
+        0
       );
       const currentSuccessRate =
         currentTotal > 0 ? (currentCompleted / currentTotal) * 100 : 0;
@@ -286,7 +286,7 @@ export async function GET(
       const currentAvgResponseTime =
         trends.reduce(
           (sum: number, t) => sum + (t.avgDurationMinutes || 0),
-          0,
+          0
         ) / trends.length;
 
       comparison = {
@@ -294,7 +294,7 @@ export async function GET(
         successRate: calculateChange(currentSuccessRate, previousSuccessRate),
         avgResponseTime: calculateChange(
           currentAvgResponseTime,
-          previousAvgResponseTime || 0,
+          previousAvgResponseTime || 0
         ),
       };
     }
@@ -328,13 +328,13 @@ export async function GET(
         totalDataPoints: trends.length,
         totalTasksCompleted: trends.reduce(
           (sum, t) => sum + t.tasksCompleted,
-          0,
+          0
         ),
         avgSuccessRate:
           trends.length > 0
             ? Math.round(
                 trends.reduce((sum, t) => sum + t.successRate, 0) /
-                  trends.length,
+                  trends.length
               )
             : 0,
         avgResponseTimeMinutes:
@@ -342,8 +342,8 @@ export async function GET(
             ? Math.round(
                 trends.reduce(
                   (sum, t) => sum + (t.avgDurationMinutes || 0),
-                  0,
-                ) / trends.length,
+                  0
+                ) / trends.length
               )
             : null,
       },
@@ -356,14 +356,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/analytics/trends] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createAnalyticsErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

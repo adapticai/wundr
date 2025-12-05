@@ -129,10 +129,17 @@ export interface DataTransformOptions {
   undefinedValue?: string;
 }
 
-export type ExportHook = 'beforeExport' | 'afterExport' | 'onProgress' | 'onError';
+export type ExportHook =
+  | 'beforeExport'
+  | 'afterExport'
+  | 'onProgress'
+  | 'onError';
 
 export interface ExportHooks {
-  beforeExport?: (data: unknown, options: ExportOptions) => Promise<void> | void;
+  beforeExport?: (
+    data: unknown,
+    options: ExportOptions
+  ) => Promise<void> | void;
   afterExport?: (result: ExportResult) => Promise<void> | void;
   onProgress?: (progress: ExportProgress) => void;
   onError?: (error: Error) => void;

@@ -74,7 +74,7 @@ const createWorkflowSchema = z.object({
       z.object({
         action: z.string(),
         description: z.string(),
-      }),
+      })
     )
     .min(1, 'At least one action is required'),
 });
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -105,14 +105,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: { message: 'Invalid JSON body' } },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!body || typeof body !== 'object') {
       return NextResponse.json(
         { error: { message: 'Invalid request body' } },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             message: `Invalid entityType. Must be one of: ${validEntityTypes.join(', ')}`,
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -157,7 +157,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                   'User must belong to an organization to create a workspace',
               },
             },
-            { status: 400 },
+            { status: 400 }
           );
         }
 
@@ -220,7 +220,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         if (!workspace) {
           return NextResponse.json(
             { error: { message: 'Workspace not found or access denied' } },
-            { status: 404 },
+            { status: 404 }
           );
         }
 
@@ -280,7 +280,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         if (!workspace) {
           return NextResponse.json(
             { error: { message: 'Workspace not found' } },
-            { status: 404 },
+            { status: 404 }
           );
         }
 
@@ -305,13 +305,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           if (!orgMembership) {
             return NextResponse.json(
               { error: { message: 'Access denied' } },
-              { status: 403 },
+              { status: 403 }
             );
           }
         } else if (!hasAccess) {
           return NextResponse.json(
             { error: { message: 'Access denied' } },
-            { status: 403 },
+            { status: 403 }
           );
         }
 
@@ -332,7 +332,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                     'No orchestrators found in workspace. Create an orchestrator first.',
                 },
               },
-              { status: 400 },
+              { status: 400 }
             );
           }
 
@@ -386,7 +386,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         if (!workspace) {
           return NextResponse.json(
             { error: { message: 'Workspace not found or access denied' } },
-            { status: 404 },
+            { status: 404 }
           );
         }
 
@@ -403,7 +403,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             ({
               action: action.action,
               description: action.description,
-            }) satisfies Prisma.InputJsonObject,
+            }) satisfies Prisma.InputJsonObject
         );
 
         // Create workflow
@@ -430,7 +430,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       default:
         return NextResponse.json(
           { error: { message: 'Unknown entity type' } },
-          { status: 400 },
+          { status: 400 }
         );
     }
 
@@ -450,7 +450,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             details: error.errors,
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -460,13 +460,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (prismaError.code === 'P2002') {
         return NextResponse.json(
           { error: { message: 'An entity with this name already exists' } },
-          { status: 409 },
+          { status: 409 }
         );
       }
       if (prismaError.code === 'P2025') {
         return NextResponse.json(
           { error: { message: 'Required relation not found' } },
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -480,7 +480,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               : 'An internal error occurred',
         },
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

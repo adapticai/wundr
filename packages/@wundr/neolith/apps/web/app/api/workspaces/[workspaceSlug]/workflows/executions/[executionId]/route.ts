@@ -42,7 +42,7 @@ interface RouteContext {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -51,9 +51,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -70,9 +70,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -89,9 +89,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -118,9 +118,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Execution not found',
-          WORKFLOW_ERROR_CODES.EXECUTION_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.EXECUTION_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -128,7 +128,7 @@ export async function GET(
     const steps = (execution.steps as unknown as WorkflowStepResult[]) || [];
     const totalSteps = steps.length;
     const completedSteps = steps.filter(
-      s => s.status === 'success' || s.status === 'failed',
+      s => s.status === 'success' || s.status === 'failed'
     ).length;
     const successfulSteps = steps.filter(s => s.status === 'success').length;
     const failedSteps = steps.filter(s => s.status === 'failed').length;
@@ -155,20 +155,21 @@ export async function GET(
         startedAt: execution.startedAt.toISOString(),
         completedAt: execution.completedAt?.toISOString() || null,
         durationMs,
-        isRunning: execution.status === 'RUNNING' || execution.status === 'PENDING',
+        isRunning:
+          execution.status === 'RUNNING' || execution.status === 'PENDING',
       },
     });
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/workflows/executions/:executionId] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -184,7 +185,7 @@ export async function GET(
  */
 export async function POST(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -193,9 +194,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -212,9 +213,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -231,9 +232,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -251,9 +252,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to cancel executions',
-          WORKFLOW_ERROR_CODES.FORBIDDEN,
+          WORKFLOW_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -269,9 +270,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Execution not found',
-          WORKFLOW_ERROR_CODES.EXECUTION_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.EXECUTION_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -280,9 +281,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           `Cannot cancel execution with status: ${execution.status}`,
-          WORKFLOW_ERROR_CODES.EXECUTION_FAILED,
+          WORKFLOW_ERROR_CODES.EXECUTION_FAILED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -310,14 +311,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/workflows/executions/:executionId] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -333,7 +334,7 @@ export async function POST(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -342,9 +343,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -361,9 +362,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -380,9 +381,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -400,9 +401,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to cancel executions',
-          WORKFLOW_ERROR_CODES.FORBIDDEN,
+          WORKFLOW_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -418,9 +419,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Execution not found',
-          WORKFLOW_ERROR_CODES.EXECUTION_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.EXECUTION_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -429,9 +430,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           `Cannot cancel execution with status: ${execution.status}`,
-          WORKFLOW_ERROR_CODES.EXECUTION_FAILED,
+          WORKFLOW_ERROR_CODES.EXECUTION_FAILED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -459,14 +460,14 @@ export async function DELETE(
   } catch (error) {
     console.error(
       '[DELETE /api/workspaces/:workspaceId/workflows/executions/:executionId] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

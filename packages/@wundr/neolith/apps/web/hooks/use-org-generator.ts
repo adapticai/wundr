@@ -205,7 +205,7 @@ export function useOrgGenerator(): UseOrgGeneratorReturn {
         warnings: [...prev.warnings, ...warnings],
       }));
     },
-    [],
+    []
   );
 
   /**
@@ -296,7 +296,7 @@ export function useOrgGenerator(): UseOrgGeneratorReturn {
         throw error;
       }
     },
-    [simulateProgress, updateState],
+    [simulateProgress, updateState]
   );
 
   /**

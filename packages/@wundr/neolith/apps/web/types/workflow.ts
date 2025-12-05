@@ -833,7 +833,7 @@ export function isExecutionId(value: unknown): value is ExecutionId {
  * Type guard to check if a trigger config is a schedule trigger
  */
 export function isScheduleTrigger(
-  trigger: TriggerConfig,
+  trigger: TriggerConfig
 ): trigger is ScheduleTrigger {
   return trigger.type === 'schedule';
 }
@@ -842,7 +842,7 @@ export function isScheduleTrigger(
  * Type guard to check if an action is a send message action
  */
 export function isSendMessageAction(
-  action: ActionConfig,
+  action: ActionConfig
 ): action is SendMessageAction {
   return action.type === 'send_message';
 }
@@ -851,7 +851,7 @@ export function isSendMessageAction(
  * Type guard to check if an action is a condition action
  */
 export function isConditionAction(
-  action: ActionConfig,
+  action: ActionConfig
 ): action is ConditionAction {
   return action.type === 'condition';
 }

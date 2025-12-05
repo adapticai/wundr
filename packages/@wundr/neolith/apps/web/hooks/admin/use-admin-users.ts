@@ -58,7 +58,9 @@ const usersFetcher = async (url: string): Promise<PaginatedUsers> => {
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || 'Failed to fetch users');
+    throw new Error(
+      errorData.error || errorData.message || 'Failed to fetch users'
+    );
   }
 
   const result = await res.json();
@@ -122,7 +124,7 @@ const usersFetcher = async (url: string): Promise<PaginatedUsers> => {
  */
 export function useAdminUsers(
   workspaceId: string,
-  initialFilters: UserFilters = {},
+  initialFilters: UserFilters = {}
 ): UseAdminUsersReturn {
   const [filters, setFilters] = useState<UserFilters>({
     page: 1,
@@ -134,29 +136,33 @@ export function useAdminUsers(
   // Build query params from filters
   const queryParams = new URLSearchParams();
   if (filters.status) {
-queryParams.set('status', filters.status);
-}
+    queryParams.set('status', filters.status);
+  }
   if (filters.roleId) {
-queryParams.set('roleId', filters.roleId);
-}
+    queryParams.set('roleId', filters.roleId);
+  }
   if (filters.search) {
-queryParams.set('search', filters.search);
-}
+    queryParams.set('search', filters.search);
+  }
   if (filters.sortBy) {
-queryParams.set('sortBy', filters.sortBy);
-}
+    queryParams.set('sortBy', filters.sortBy);
+  }
   if (filters.sortOrder) {
-queryParams.set('sortOrder', filters.sortOrder);
-}
+    queryParams.set('sortOrder', filters.sortOrder);
+  }
   queryParams.set('page', String(filters.page ?? 1));
   queryParams.set('limit', String(filters.limit ?? 20));
 
   const url = `/api/workspaces/${workspaceId}/admin/users?${queryParams}`;
 
-  const { data, error, isLoading, mutate } = useSWR<PaginatedUsers>(url, usersFetcher, {
-    revalidateOnFocus: false,
-    keepPreviousData: true,
-  });
+  const { data, error, isLoading, mutate } = useSWR<PaginatedUsers>(
+    url,
+    usersFetcher,
+    {
+      revalidateOnFocus: false,
+      keepPreviousData: true,
+    }
+  );
 
   // Manual refresh
   const refresh = useCallback(async () => {
@@ -169,15 +175,20 @@ queryParams.set('sortOrder', filters.sortOrder);
       try {
         setIsUpdating(true);
 
-        const res = await fetch(`/api/workspaces/${workspaceId}/admin/users/${userId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updates),
-        });
+        const res = await fetch(
+          `/api/workspaces/${workspaceId}/admin/users/${userId}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates),
+          }
+        );
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Failed to update user');
+          throw new Error(
+            errorData.error || errorData.message || 'Failed to update user'
+          );
         }
 
         // Optimistic update
@@ -188,7 +199,7 @@ queryParams.set('sortOrder', filters.sortOrder);
         setIsUpdating(false);
       }
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   // Suspend user
@@ -203,12 +214,14 @@ queryParams.set('sortOrder', filters.sortOrder);
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ reason }),
-          },
+          }
         );
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Failed to suspend user');
+          throw new Error(
+            errorData.error || errorData.message || 'Failed to suspend user'
+          );
         }
 
         await mutate();
@@ -218,7 +231,7 @@ queryParams.set('sortOrder', filters.sortOrder);
         setIsUpdating(false);
       }
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   // Unsuspend user
@@ -231,22 +244,26 @@ queryParams.set('sortOrder', filters.sortOrder);
           `/api/workspaces/${workspaceId}/admin/users/${userId}/unsuspend`,
           {
             method: 'POST',
-          },
+          }
         );
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Failed to unsuspend user');
+          throw new Error(
+            errorData.error || errorData.message || 'Failed to unsuspend user'
+          );
         }
 
         await mutate();
       } catch (err) {
-        throw err instanceof Error ? err : new Error('Failed to unsuspend user');
+        throw err instanceof Error
+          ? err
+          : new Error('Failed to unsuspend user');
       } finally {
         setIsUpdating(false);
       }
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   // Delete user
@@ -255,13 +272,18 @@ queryParams.set('sortOrder', filters.sortOrder);
       try {
         setIsUpdating(true);
 
-        const res = await fetch(`/api/workspaces/${workspaceId}/admin/users/${userId}`, {
-          method: 'DELETE',
-        });
+        const res = await fetch(
+          `/api/workspaces/${workspaceId}/admin/users/${userId}`,
+          {
+            method: 'DELETE',
+          }
+        );
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Failed to delete user');
+          throw new Error(
+            errorData.error || errorData.message || 'Failed to delete user'
+          );
         }
 
         await mutate();
@@ -271,7 +293,7 @@ queryParams.set('sortOrder', filters.sortOrder);
         setIsUpdating(false);
       }
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   // Bulk update
@@ -280,25 +302,34 @@ queryParams.set('sortOrder', filters.sortOrder);
       try {
         setIsUpdating(true);
 
-        const res = await fetch(`/api/workspaces/${workspaceId}/admin/users/bulk`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userIds, updates }),
-        });
+        const res = await fetch(
+          `/api/workspaces/${workspaceId}/admin/users/bulk`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userIds, updates }),
+          }
+        );
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Failed to bulk update users');
+          throw new Error(
+            errorData.error ||
+              errorData.message ||
+              'Failed to bulk update users'
+          );
         }
 
         await mutate();
       } catch (err) {
-        throw err instanceof Error ? err : new Error('Failed to bulk update users');
+        throw err instanceof Error
+          ? err
+          : new Error('Failed to bulk update users');
       } finally {
         setIsUpdating(false);
       }
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   return {

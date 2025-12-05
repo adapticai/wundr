@@ -47,8 +47,8 @@ export function ImageCropDialog({
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (!isDragging || !dragStartRef.current) {
-return;
-}
+        return;
+      }
 
       const deltaX = e.clientX - dragStartRef.current.x;
       const deltaY = e.clientY - dragStartRef.current.y;
@@ -60,7 +60,7 @@ return;
 
       dragStartRef.current = { x: e.clientX, y: e.clientY };
     },
-    [isDragging],
+    [isDragging]
   );
 
   const handleMouseUp = useCallback(() => {
@@ -73,13 +73,13 @@ return;
     const image = imageRef.current;
 
     if (!canvas || !image) {
-return null;
-}
+      return null;
+    }
 
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-return null;
-}
+      return null;
+    }
 
     const outputSize = 512;
     canvas.width = outputSize;
@@ -116,7 +116,7 @@ return null;
           resolve(blob);
         },
         'image/jpeg',
-        0.95,
+        0.95
       );
     });
   }, [zoom, rotation, position]);
@@ -148,27 +148,27 @@ return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className='max-w-2xl'>
         <DialogHeader>
           <DialogTitle>Crop Profile Picture</DialogTitle>
           <DialogDescription>
-            Adjust your image by dragging, zooming, and rotating. Click crop when
-            ready.
+            Adjust your image by dragging, zooming, and rotating. Click crop
+            when ready.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className='space-y-4'>
           {/* Image preview area */}
           <div
             ref={containerRef}
-            className="relative mx-auto aspect-square w-full max-w-md cursor-move overflow-hidden rounded-lg border-2 border-dashed border-border bg-muted"
+            className='relative mx-auto aspect-square w-full max-w-md cursor-move overflow-hidden rounded-lg border-2 border-dashed border-border bg-muted'
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           >
             <div
-              className="absolute inset-0 flex items-center justify-center"
+              className='absolute inset-0 flex items-center justify-center'
               style={{
                 transform: `translate(${position.x}px, ${position.y}px) scale(${zoom}) rotate(${rotation}deg)`,
                 transition: isDragging ? 'none' : 'transform 0.1s ease-out',
@@ -177,25 +177,25 @@ return null;
               <img
                 ref={imageRef}
                 src={imageUrl}
-                alt="Crop preview"
-                className="max-h-full max-w-full object-contain"
+                alt='Crop preview'
+                className='max-h-full max-w-full object-contain'
                 draggable={false}
               />
             </div>
             {/* Crop overlay */}
-            <div className="pointer-events-none absolute inset-0 border-4 border-primary/50 rounded-full" />
+            <div className='pointer-events-none absolute inset-0 border-4 border-primary/50 rounded-full' />
           </div>
 
           {/* Controls */}
-          <div className="space-y-4">
+          <div className='space-y-4'>
             {/* Zoom control */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-sm font-medium">
-                  <ZoomIn className="h-4 w-4" />
+            <div className='space-y-2'>
+              <div className='flex items-center justify-between'>
+                <label className='flex items-center gap-2 text-sm font-medium'>
+                  <ZoomIn className='h-4 w-4' />
                   Zoom
                 </label>
-                <span className="text-sm text-muted-foreground">
+                <span className='text-sm text-muted-foreground'>
                   {Math.round(zoom * 100)}%
                 </span>
               </div>
@@ -205,25 +205,25 @@ return null;
                 min={0.5}
                 max={3}
                 step={0.1}
-                className="w-full"
+                className='w-full'
               />
             </div>
 
             {/* Action buttons */}
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
+            <div className='flex items-center justify-between'>
+              <div className='flex gap-2'>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant='outline'
+                  size='sm'
                   onClick={handleRotate}
                   disabled={isProcessing}
                 >
-                  <RotateCw className="h-4 w-4 mr-2" />
+                  <RotateCw className='h-4 w-4 mr-2' />
                   Rotate
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant='outline'
+                  size='sm'
                   onClick={handleReset}
                   disabled={isProcessing}
                 >
@@ -236,7 +236,7 @@ return null;
 
         <DialogFooter>
           <Button
-            variant="outline"
+            variant='outline'
             onClick={() => onOpenChange(false)}
             disabled={isProcessing}
           >
@@ -245,12 +245,12 @@ return null;
           <Button onClick={handleCrop} disabled={isProcessing}>
             {isProcessing ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                 Processing...
               </>
             ) : (
               <>
-                <Crop className="mr-2 h-4 w-4" />
+                <Crop className='mr-2 h-4 w-4' />
                 Crop & Save
               </>
             )}
@@ -258,7 +258,7 @@ return null;
         </DialogFooter>
 
         {/* Hidden canvas for image processing */}
-        <canvas ref={canvasRef} className="hidden" />
+        <canvas ref={canvasRef} className='hidden' />
       </DialogContent>
     </Dialog>
   );

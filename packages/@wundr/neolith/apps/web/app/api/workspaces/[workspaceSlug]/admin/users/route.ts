@@ -34,15 +34,12 @@ interface RouteContext {
  */
 export async function GET(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { workspaceSlug } = await context.params;
@@ -56,7 +53,7 @@ export async function GET(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -68,13 +65,10 @@ export async function GET(
       },
     });
 
-    if (
-      !membership ||
-      !['ADMIN', 'OWNER'].includes(membership.role)
-    ) {
+    if (!membership || !['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -178,7 +172,7 @@ export async function GET(
     console.error('Failed to fetch users:', error);
     return NextResponse.json(
       { error: 'Failed to fetch users' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

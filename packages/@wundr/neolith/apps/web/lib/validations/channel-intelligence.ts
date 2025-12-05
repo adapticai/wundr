@@ -194,7 +194,7 @@ export type ChannelIntelligenceError = z.infer<
 export function createChannelIntelligenceError(
   error: string,
   code: string,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ): ChannelIntelligenceError {
   return {
     error,

@@ -36,7 +36,7 @@ export type GenesisErrorCode =
 export function createGenesisErrorResponse(
   message: string,
   code: GenesisErrorCode,
-  extraData?: Record<string, unknown>,
+  extraData?: Record<string, unknown>
 ): { error: GenesisErrorCode; message: string } & Record<string, unknown> {
   return { error: code, message, ...extraData };
 }
@@ -104,7 +104,7 @@ export const genesisResultSchema = z.object({
         phase: z.string(),
         message: z.string(),
         recoverable: z.boolean(),
-      }),
+      })
     )
     .optional(),
   completedAt: z.string().datetime(),
@@ -140,7 +140,7 @@ export const generateOrgSchema = z.object({
     .max(50, 'Slug must be less than 50 characters')
     .regex(
       /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      'Slug must be lowercase letters, numbers, and hyphens only',
+      'Slug must be lowercase letters, numbers, and hyphens only'
     ),
   workspaceDescription: z.string().optional(),
   workspaceIconUrl: z.string().url().optional(),

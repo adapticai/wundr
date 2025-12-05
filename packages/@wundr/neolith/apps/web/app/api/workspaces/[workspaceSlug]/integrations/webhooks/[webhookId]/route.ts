@@ -30,7 +30,7 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; webhookId: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; webhookId: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -38,9 +38,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          INTEGRATION_ERROR_CODES.UNAUTHORIZED,
+          INTEGRATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -51,9 +51,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -62,21 +62,24 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Webhook not found',
-          INTEGRATION_ERROR_CODES.WEBHOOK_NOT_FOUND,
+          INTEGRATION_ERROR_CODES.WEBHOOK_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     return NextResponse.json({ webhook });
   } catch (error) {
-    console.error('[GET /api/workspaces/[workspaceSlug]/integrations/webhooks/[webhookId]] Error:', error);
+    console.error(
+      '[GET /api/workspaces/[workspaceSlug]/integrations/webhooks/[webhookId]] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        INTEGRATION_ERROR_CODES.INTERNAL_ERROR,
+        INTEGRATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -88,7 +91,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; webhookId: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; webhookId: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -96,9 +99,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          INTEGRATION_ERROR_CODES.UNAUTHORIZED,
+          INTEGRATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -109,9 +112,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Admin permission required',
-          INTEGRATION_ERROR_CODES.FORBIDDEN,
+          INTEGRATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -122,9 +125,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -134,16 +137,16 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const webhook = await updateWebhook(
       workspaceId,
       webhookId,
-      parseResult.data,
+      parseResult.data
     );
 
     return NextResponse.json({
@@ -151,13 +154,16 @@ export async function PATCH(
       message: 'Webhook updated successfully',
     });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/[workspaceSlug]/integrations/webhooks/[webhookId]] Error:', error);
+    console.error(
+      '[PATCH /api/workspaces/[workspaceSlug]/integrations/webhooks/[webhookId]] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        INTEGRATION_ERROR_CODES.INTERNAL_ERROR,
+        INTEGRATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -169,7 +175,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; webhookId: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; webhookId: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -177,9 +183,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          INTEGRATION_ERROR_CODES.UNAUTHORIZED,
+          INTEGRATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -190,9 +196,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Admin permission required',
-          INTEGRATION_ERROR_CODES.FORBIDDEN,
+          INTEGRATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -202,13 +208,16 @@ export async function DELETE(
       message: 'Webhook deleted successfully',
     });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/[workspaceSlug]/integrations/webhooks/[webhookId]] Error:', error);
+    console.error(
+      '[DELETE /api/workspaces/[workspaceSlug]/integrations/webhooks/[webhookId]] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        INTEGRATION_ERROR_CODES.INTERNAL_ERROR,
+        INTEGRATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

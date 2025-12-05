@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document describes the implementation of the workflow sharing and permissions management UI for the Wundr Neolith platform. The implementation provides comprehensive access control and collaboration features for workflows.
+This document describes the implementation of the workflow sharing and permissions management UI for
+the Wundr Neolith platform. The implementation provides comprehensive access control and
+collaboration features for workflows.
 
 ## Components
 
@@ -59,7 +61,11 @@ interface WorkflowPermissionsProps {
   isOwner?: boolean;
   onUpdatePermission: (permissionId: string, level: WorkflowPermissionLevel) => Promise<void>;
   onRemovePermission: (permissionId: string) => Promise<void>;
-  onAddPermission: (subjectType: PermissionSubjectType, subjectId: string, level: WorkflowPermissionLevel) => Promise<void>;
+  onAddPermission: (
+    subjectType: PermissionSubjectType,
+    subjectId: string,
+    level: WorkflowPermissionLevel
+  ) => Promise<void>;
   onUpdateSharingConfig: (config: Partial<WorkflowSharingConfig>) => Promise<void>;
   onGenerateShareLink: () => Promise<string>;
   onRevokeShareLink: () => Promise<void>;
@@ -153,8 +159,8 @@ function WorkflowHeader() {
       currentShares={currentShares}
       onShare={handleShare}
       onSearchEntities={handleSearchEntities}
-      variant="outline"
-      size="default"
+      variant='outline'
+      size='default'
       showLabel={true}
     />
   );
@@ -282,6 +288,7 @@ The implementation leverages the following shadcn/ui components:
 ## Styling and Theming
 
 All components support:
+
 - Light and dark mode via Tailwind CSS
 - Consistent color palette using theme variables
 - Responsive design for mobile and desktop
@@ -293,21 +300,25 @@ All components support:
 The components expect the following backend API endpoints:
 
 ### Permission Management
+
 - `GET /api/workspaces/{workspaceSlug}/workflows/{workflowId}/permissions`
 - `POST /api/workspaces/{workspaceSlug}/workflows/{workflowId}/permissions`
 - `PATCH /api/workspaces/{workspaceSlug}/workflows/{workflowId}/permissions/{permissionId}`
 - `DELETE /api/workspaces/{workspaceSlug}/workflows/{workflowId}/permissions/{permissionId}`
 
 ### Sharing
+
 - `POST /api/workspaces/{workspaceSlug}/workflows/{workflowId}/share`
 - `POST /api/workspaces/{workspaceSlug}/workflows/{workflowId}/share-link/generate`
 - `DELETE /api/workspaces/{workspaceSlug}/workflows/{workflowId}/share-link`
 
 ### Entity Search
+
 - `GET /api/workspaces/{workspaceSlug}/users/search?q={query}`
 - `GET /api/workspaces/{workspaceSlug}/teams/search?q={query}`
 
 ### Access Log
+
 - `GET /api/workspaces/{workspaceSlug}/workflows/{workflowId}/access-log`
 
 ## Security Considerations
@@ -353,18 +364,21 @@ Potential improvements for future versions:
 ## Testing Recommendations
 
 ### Unit Tests
+
 - Permission filtering logic
 - Time formatting utilities
 - Permission level validation
 - Search debouncing
 
 ### Integration Tests
+
 - Add/remove permissions flow
 - Share dialog complete workflow
 - Permission inheritance behavior
 - Access log recording
 
 ### E2E Tests
+
 - Complete sharing workflow
 - Permission level changes
 - Public link generation and access
@@ -379,9 +393,11 @@ Potential improvements for future versions:
 ## Build Verification
 
 Build completed successfully with no errors:
+
 ```bash
 npm run build
 # ✓ Build completed successfully
 ```
 
-All TypeScript types are properly exported and the components integrate seamlessly with the existing codebase.
+All TypeScript types are properly exported and the components integrate seamlessly with the existing
+codebase.

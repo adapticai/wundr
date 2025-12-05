@@ -25,16 +25,16 @@ export function SettingsTabs({ tabs, baseHref }: SettingsTabsProps) {
     tabs.find(tab => pathname === tab.href)?.value || tabs[0]?.value;
 
   return (
-    <Tabs value={activeTab} className="w-full">
-      <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
+    <Tabs value={activeTab} className='w-full'>
+      <TabsList className='w-full justify-start border-b rounded-none h-auto p-0 bg-transparent'>
         {tabs.map(tab => (
-          <Link key={tab.value} href={tab.href} className="flex-1 sm:flex-none">
+          <Link key={tab.value} href={tab.href} className='flex-1 sm:flex-none'>
             <TabsTrigger
               value={tab.value}
               className={cn(
                 'relative rounded-none border-b-2 border-transparent px-4 pb-3 pt-2 font-medium transition-colors',
                 'hover:text-foreground data-[state=active]:border-primary',
-                'data-[state=active]:shadow-none',
+                'data-[state=active]:shadow-none'
               )}
             >
               {tab.label}

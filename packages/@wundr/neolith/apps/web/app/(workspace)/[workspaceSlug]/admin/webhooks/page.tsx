@@ -112,7 +112,11 @@ const AVAILABLE_EVENTS = [
   { value: 'member.updated', label: 'Member Updated', category: 'Members' },
   { value: 'file.uploaded', label: 'File Uploaded', category: 'Files' },
   { value: 'file.deleted', label: 'File Deleted', category: 'Files' },
-  { value: 'workspace.updated', label: 'Workspace Updated', category: 'Workspace' },
+  {
+    value: 'workspace.updated',
+    label: 'Workspace Updated',
+    category: 'Workspace',
+  },
   { value: 'task.created', label: 'Task Created', category: 'Tasks' },
   { value: 'task.updated', label: 'Task Updated', category: 'Tasks' },
   { value: 'task.completed', label: 'Task Completed', category: 'Tasks' },
@@ -144,9 +148,8 @@ export default function AdminWebhooksPage() {
   const [selectedWebhook, setSelectedWebhook] = useState<Webhook | null>(null);
   const [deliveryLogs, setDeliveryLogs] = useState<WebhookDelivery[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
-  const [selectedDelivery, setSelectedDelivery] = useState<WebhookDelivery | null>(
-    null,
-  );
+  const [selectedDelivery, setSelectedDelivery] =
+    useState<WebhookDelivery | null>(null);
 
   // Secret Management State
   const [isSecretDialogOpen, setIsSecretDialogOpen] = useState(false);
@@ -304,7 +307,7 @@ export default function AdminWebhooksPage() {
         `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}`,
         {
           method: 'DELETE',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -334,7 +337,7 @@ export default function AdminWebhooksPage() {
         `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/test`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -369,7 +372,7 @@ export default function AdminWebhooksPage() {
 
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/webhooks/${webhook.id}/deliveries`,
+        `/api/workspaces/${workspaceSlug}/webhooks/${webhook.id}/deliveries`
       );
       if (!response.ok) {
         throw new Error('Failed to load delivery logs');
@@ -392,8 +395,8 @@ export default function AdminWebhooksPage() {
 
   const handleRetryDelivery = async (deliveryId: string) => {
     if (!selectedWebhook) {
-return;
-}
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -401,7 +404,7 @@ return;
         `/api/workspaces/${workspaceSlug}/webhooks/${selectedWebhook.id}/deliveries/${deliveryId}/retry`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -444,7 +447,7 @@ return;
 
   const toggleEvent = (event: string) => {
     setFormEvents(prev =>
-      prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event],
+      prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event]
     );
   };
 
@@ -482,7 +485,7 @@ return;
       acc[event.category].push(event);
       return acc;
     },
-    {} as Record<string, typeof AVAILABLE_EVENTS>,
+    {} as Record<string, typeof AVAILABLE_EVENTS>
   );
 
   if (isLoading) {
@@ -577,7 +580,9 @@ return;
               <TableBody>
                 {filteredWebhooks.map(webhook => (
                   <TableRow key={webhook.id}>
-                    <TableCell className='font-medium'>{webhook.name}</TableCell>
+                    <TableCell className='font-medium'>
+                      {webhook.name}
+                    </TableCell>
                     <TableCell className='font-mono text-sm max-w-xs truncate'>
                       {webhook.url}
                     </TableCell>
@@ -627,7 +632,7 @@ return;
                             <XCircle className='h-3 w-3 text-red-600' />
                           )}
                           {new Date(
-                            webhook.lastDelivery.createdAt,
+                            webhook.lastDelivery.createdAt
                           ).toLocaleString()}
                         </div>
                       ) : (
@@ -797,7 +802,10 @@ return;
             <div className='grid grid-cols-2 gap-4'>
               <div className='space-y-2'>
                 <Label htmlFor='webhook-status'>Status</Label>
-                <Select value={formStatus} onValueChange={v => setFormStatus(v as 'ACTIVE' | 'INACTIVE')}>
+                <Select
+                  value={formStatus}
+                  onValueChange={v => setFormStatus(v as 'ACTIVE' | 'INACTIVE')}
+                >
                   <SelectTrigger id='webhook-status'>
                     <SelectValue />
                   </SelectTrigger>
@@ -877,7 +885,9 @@ return;
       <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
         <DialogContent className='max-w-6xl max-h-[90vh] overflow-y-auto'>
           <DialogHeader>
-            <DialogTitle>Delivery History - {selectedWebhook?.name}</DialogTitle>
+            <DialogTitle>
+              Delivery History - {selectedWebhook?.name}
+            </DialogTitle>
             <DialogDescription>
               Recent webhook delivery attempts and their responses
             </DialogDescription>
@@ -1017,7 +1027,9 @@ return;
                   <p className='font-medium'>{selectedDelivery.event}</p>
                 </div>
                 <div>
-                  <Label className='text-xs text-muted-foreground'>Status</Label>
+                  <Label className='text-xs text-muted-foreground'>
+                    Status
+                  </Label>
                   <p className='font-medium'>{selectedDelivery.status}</p>
                 </div>
                 <div>

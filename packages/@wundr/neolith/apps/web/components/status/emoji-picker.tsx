@@ -4,7 +4,11 @@ import { Search } from 'lucide-react';
 import { useState, useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
@@ -806,13 +810,13 @@ export function EmojiPicker({ value, onChange, trigger }: EmojiPickerProps) {
 
   const filteredEmojis = useMemo(() => {
     if (!search) {
-return EMOJI_CATEGORIES;
-}
+      return EMOJI_CATEGORIES;
+    }
 
     const filtered: Record<string, string[]> = {};
     Object.entries(EMOJI_CATEGORIES).forEach(([category, emojis]) => {
       const matches = emojis.filter(emoji =>
-        emoji.toLowerCase().includes(search.toLowerCase()),
+        emoji.toLowerCase().includes(search.toLowerCase())
       );
       if (matches.length > 0) {
         filtered[category] = matches;
@@ -831,41 +835,45 @@ return EMOJI_CATEGORIES;
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm" className="h-10 w-16 text-2xl p-0">
+          <Button
+            variant='outline'
+            size='sm'
+            className='h-10 w-16 text-2xl p-0'
+          >
             {value || '😀'}
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="start">
-        <div className="p-3 border-b">
-          <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+      <PopoverContent className='w-80 p-0' align='start'>
+        <div className='p-3 border-b'>
+          <div className='relative'>
+            <Search className='absolute left-3 top-2.5 h-4 w-4 text-muted-foreground' />
             <input
-              type="text"
-              placeholder="Search emojis..."
+              type='text'
+              placeholder='Search emojis...'
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className='w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary'
             />
           </div>
         </div>
-        <ScrollArea className="h-72">
-          <div className="p-3 space-y-4">
+        <ScrollArea className='h-72'>
+          <div className='p-3 space-y-4'>
             {Object.entries(filteredEmojis).map(([category, emojis]) => (
               <div key={category}>
-                <h4 className="text-xs font-semibold text-muted-foreground mb-2">
+                <h4 className='text-xs font-semibold text-muted-foreground mb-2'>
                   {category}
                 </h4>
-                <div className="grid grid-cols-8 gap-1">
+                <div className='grid grid-cols-8 gap-1'>
                   {emojis.map(emoji => (
                     <button
                       key={emoji}
                       onClick={() => handleSelect(emoji)}
                       className={cn(
                         'h-8 w-8 flex items-center justify-center text-xl rounded hover:bg-accent transition-colors',
-                        value === emoji && 'bg-accent ring-2 ring-primary',
+                        value === emoji && 'bg-accent ring-2 ring-primary'
                       )}
-                      type="button"
+                      type='button'
                     >
                       {emoji}
                     </button>

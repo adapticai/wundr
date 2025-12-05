@@ -38,7 +38,7 @@ interface RouteContext {
  */
 export async function POST(
   _request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -59,7 +59,7 @@ export async function POST(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -76,7 +76,7 @@ export async function POST(
     ) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -89,13 +89,16 @@ export async function POST(
     });
 
     if (!delivery || delivery.webhook.workspaceId !== workspaceId) {
-      return NextResponse.json({ error: 'Delivery not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Delivery not found' },
+        { status: 404 }
+      );
     }
 
     if (delivery.webhookId !== webhookId) {
       return NextResponse.json(
         { error: 'Delivery does not belong to this webhook' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -103,7 +106,7 @@ export async function POST(
     if (delivery.webhook.status !== 'ACTIVE') {
       return NextResponse.json(
         { error: 'Webhook is not active' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -196,7 +199,7 @@ export async function POST(
     console.error('Failed to retry webhook delivery:', error);
     return NextResponse.json(
       { error: 'Failed to retry delivery' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

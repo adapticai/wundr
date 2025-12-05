@@ -188,7 +188,7 @@ describe('Workflow Execution Service', () => {
         actions,
         context,
         progressCallback,
-        cancellationSignal,
+        cancellationSignal
       );
 
       expect(result.success).toBe(false);
@@ -316,7 +316,7 @@ describe('Workflow Execution Service', () => {
             triggeredBy: 'user_test',
             triggerType: 'manual',
           }),
-        }),
+        })
       );
     });
   });
@@ -344,7 +344,7 @@ describe('Workflow Execution Service', () => {
           data: expect.objectContaining({
             status: 'COMPLETED',
           }),
-        }),
+        })
       );
 
       expect(prisma.workflow.update).toHaveBeenCalledWith(
@@ -352,7 +352,7 @@ describe('Workflow Execution Service', () => {
           data: expect.objectContaining({
             successCount: { increment: 1 },
           }),
-        }),
+        })
       );
     });
 
@@ -380,7 +380,7 @@ describe('Workflow Execution Service', () => {
             status: 'FAILED',
             error: 'Execution failed',
           }),
-        }),
+        })
       );
 
       expect(prisma.workflow.update).toHaveBeenCalledWith(
@@ -388,7 +388,7 @@ describe('Workflow Execution Service', () => {
           data: expect.objectContaining({
             failureCount: { increment: 1 },
           }),
-        }),
+        })
       );
     });
   });
@@ -407,7 +407,7 @@ describe('Workflow Execution Service', () => {
             status: 'CANCELLED',
             error: 'Cancelled by user',
           }),
-        }),
+        })
       );
     });
   });

@@ -88,7 +88,7 @@ export function Sidebar({
       console.log('[Sidebar] Found channel:', channel?.name);
       updateChannelStarStatus(channelId, isStarred, channel);
     },
-    [allChannels, updateChannelStarStatus],
+    [allChannels, updateChannelStarStatus]
   );
 
   // Handle DM star toggle with optimistic updates
@@ -98,7 +98,7 @@ export function Sidebar({
       const dm = directMessages.find(d => d.id === dmId);
       updateDMStarStatus(dmId, isStarred, dm);
     },
-    [directMessages, updateDMStarStatus],
+    [directMessages, updateDMStarStatus]
   );
   const { createChannel } = useChannelMutations();
 
@@ -113,7 +113,7 @@ export function Sidebar({
       // Refetch channels after creation
       await refetchChannels();
     },
-    [workspaceId, createChannel, refetchChannels],
+    [workspaceId, createChannel, refetchChannels]
   );
 
   const handleRetry = useCallback(async () => {
@@ -176,7 +176,7 @@ export function Sidebar({
             <ChevronDownIcon
               className={cn(
                 'h-4 w-4 text-stone-400 transition-transform',
-                showWorkspaceSwitcher && 'rotate-180',
+                showWorkspaceSwitcher && 'rotate-180'
               )}
             />
           </button>
@@ -196,7 +196,7 @@ export function Sidebar({
                     onClick={() => setShowWorkspaceSwitcher(false)}
                     className={cn(
                       'flex items-center gap-3 px-3 py-2 text-stone-100 hover:bg-stone-800',
-                      workspace.id === currentWorkspace?.id && 'bg-stone-800/50',
+                      workspace.id === currentWorkspace?.id && 'bg-stone-800/50'
                     )}
                   >
                     <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-sm font-bold text-stone-100'>
@@ -251,7 +251,7 @@ export function Sidebar({
                   pathname?.startsWith(`${item.href}/`)
                 }
               />
-            ),
+            )
           )}
         </nav>
 
@@ -322,7 +322,7 @@ function NavItem({ href, icon, label, isActive }: NavItemProps) {
         'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
         isActive
           ? 'bg-stone-900 text-stone-100'
-          : 'text-stone-400 hover:bg-stone-900 hover:text-stone-100',
+          : 'text-stone-400 hover:bg-stone-900 hover:text-stone-100'
       )}
     >
       <span className='flex h-5 w-5 items-center justify-center'>{icon}</span>
@@ -369,7 +369,7 @@ function LaterNavItem({
     if (isOpen && workspaceId) {
       setIsLoading(true);
       fetch(
-        `/api/workspaces/${workspaceId}/saved-items?status=IN_PROGRESS&limit=5`,
+        `/api/workspaces/${workspaceId}/saved-items?status=IN_PROGRESS&limit=5`
       )
         .then(res => res.json())
         .then(data => {
@@ -394,7 +394,7 @@ function LaterNavItem({
             'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
             isActive
               ? 'bg-stone-900 text-stone-100'
-              : 'text-stone-400 hover:bg-stone-900 hover:text-stone-100',
+              : 'text-stone-400 hover:bg-stone-900 hover:text-stone-100'
           )}
         >
           <span className='flex h-5 w-5 items-center justify-center'>

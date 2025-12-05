@@ -110,7 +110,7 @@ export function ScheduleDialog({
   };
 
   const handleRemoveRecipient = (email: string) => {
-    setRecipients(recipients.filter((r) => r !== email));
+    setRecipients(recipients.filter(r => r !== email));
   };
 
   const getScheduleSummary = () => {
@@ -134,7 +134,9 @@ export function ScheduleDialog({
     }
 
     if (recipients.length > 0) {
-      parts.push(`to ${recipients.length} recipient${recipients.length > 1 ? 's' : ''}`);
+      parts.push(
+        `to ${recipients.length} recipient${recipients.length > 1 ? 's' : ''}`
+      );
     }
 
     return parts.join(' ');
@@ -142,7 +144,7 @@ export function ScheduleDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className='max-w-2xl'>
         <DialogHeader>
           <DialogTitle>Schedule Report</DialogTitle>
           <DialogDescription>
@@ -150,12 +152,12 @@ export function ScheduleDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className='space-y-6 py-4'>
           {/* Enable/Disable */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
               <Label>Enable Scheduling</Label>
-              <div className="text-sm text-muted-foreground">
+              <div className='text-sm text-muted-foreground'>
                 Automatically generate and send this report
               </div>
             </div>
@@ -165,47 +167,47 @@ export function ScheduleDialog({
           <Separator />
 
           {/* Frequency */}
-          <div className="space-y-3">
+          <div className='space-y-3'>
             <Label>Frequency</Label>
             <Select
               value={frequency}
-              onValueChange={(v) => setFrequency(v as ScheduleFrequency)}
+              onValueChange={v => setFrequency(v as ScheduleFrequency)}
               disabled={!enabled}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-                <SelectItem value="custom">Custom (Cron)</SelectItem>
+                <SelectItem value='daily'>Daily</SelectItem>
+                <SelectItem value='weekly'>Weekly</SelectItem>
+                <SelectItem value='monthly'>Monthly</SelectItem>
+                <SelectItem value='custom'>Custom (Cron)</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Time */}
-          <div className="space-y-3">
+          <div className='space-y-3'>
             <Label>Time</Label>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
+            <div className='flex items-center gap-2'>
+              <Clock className='h-4 w-4 text-muted-foreground' />
               <Input
-                type="time"
+                type='time'
                 value={time}
-                onChange={(e) => setTime(e.target.value)}
+                onChange={e => setTime(e.target.value)}
                 disabled={!enabled || frequency === 'custom'}
-                className="max-w-[200px]"
+                className='max-w-[200px]'
               />
             </div>
           </div>
 
           {/* Weekly - Day of Week */}
           {frequency === 'weekly' && (
-            <div className="space-y-3">
+            <div className='space-y-3'>
               <Label>Day of Week</Label>
               <Select
                 value={String(dayOfWeek)}
-                onValueChange={(v) => setDayOfWeek(parseInt(v))}
+                onValueChange={v => setDayOfWeek(parseInt(v))}
                 disabled={!enabled}
               >
                 <SelectTrigger>
@@ -224,31 +226,31 @@ export function ScheduleDialog({
 
           {/* Monthly - Day of Month */}
           {frequency === 'monthly' && (
-            <div className="space-y-3">
+            <div className='space-y-3'>
               <Label>Day of Month</Label>
               <Input
-                type="number"
-                min="1"
-                max="31"
+                type='number'
+                min='1'
+                max='31'
                 value={dayOfMonth}
-                onChange={(e) => setDayOfMonth(parseInt(e.target.value))}
+                onChange={e => setDayOfMonth(parseInt(e.target.value))}
                 disabled={!enabled}
-                className="max-w-[200px]"
+                className='max-w-[200px]'
               />
             </div>
           )}
 
           {/* Custom - Cron Expression */}
           {frequency === 'custom' && (
-            <div className="space-y-3">
+            <div className='space-y-3'>
               <Label>Cron Expression</Label>
               <Input
-                placeholder="0 9 * * *"
+                placeholder='0 9 * * *'
                 value={cronExpression}
-                onChange={(e) => setCronExpression(e.target.value)}
+                onChange={e => setCronExpression(e.target.value)}
                 disabled={!enabled}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 Use standard cron syntax (minute hour day month weekday)
               </p>
             </div>
@@ -257,15 +259,15 @@ export function ScheduleDialog({
           <Separator />
 
           {/* Recipients */}
-          <div className="space-y-3">
+          <div className='space-y-3'>
             <Label>Recipients</Label>
-            <div className="flex gap-2">
+            <div className='flex gap-2'>
               <Input
-                type="email"
-                placeholder="email@example.com"
+                type='email'
+                placeholder='email@example.com'
                 value={recipientInput}
-                onChange={(e) => setRecipientInput(e.target.value)}
-                onKeyDown={(e) => {
+                onChange={e => setRecipientInput(e.target.value)}
+                onKeyDown={e => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
                     handleAddRecipient();
@@ -274,7 +276,7 @@ export function ScheduleDialog({
                 disabled={!enabled}
               />
               <Button
-                variant="outline"
+                variant='outline'
                 onClick={handleAddRecipient}
                 disabled={!enabled || !recipientInput}
               >
@@ -282,14 +284,14 @@ export function ScheduleDialog({
               </Button>
             </div>
             {recipients.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {recipients.map((email) => (
-                  <Badge key={email} variant="secondary">
-                    <Mail className="h-3 w-3 mr-1" />
+              <div className='flex flex-wrap gap-2'>
+                {recipients.map(email => (
+                  <Badge key={email} variant='secondary'>
+                    <Mail className='h-3 w-3 mr-1' />
                     {email}
                     <button
                       onClick={() => handleRemoveRecipient(email)}
-                      className="ml-2 hover:text-destructive"
+                      className='ml-2 hover:text-destructive'
                       disabled={!enabled}
                     >
                       ×
@@ -301,31 +303,31 @@ export function ScheduleDialog({
           </div>
 
           {/* Export Format */}
-          <div className="space-y-3">
+          <div className='space-y-3'>
             <Label>Export Format</Label>
             <Select
               value={format}
-              onValueChange={(v) => setFormat(v as 'pdf' | 'csv' | 'xlsx')}
+              onValueChange={v => setFormat(v as 'pdf' | 'csv' | 'xlsx')}
               disabled={!enabled}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pdf">PDF</SelectItem>
-                <SelectItem value="csv">CSV</SelectItem>
-                <SelectItem value="xlsx">Excel (XLSX)</SelectItem>
+                <SelectItem value='pdf'>PDF</SelectItem>
+                <SelectItem value='csv'>CSV</SelectItem>
+                <SelectItem value='xlsx'>Excel (XLSX)</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Summary */}
-          <div className="rounded-lg bg-muted p-4">
-            <div className="flex items-start gap-2">
-              <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+          <div className='rounded-lg bg-muted p-4'>
+            <div className='flex items-start gap-2'>
+              <Calendar className='h-5 w-5 text-muted-foreground mt-0.5' />
               <div>
-                <div className="font-medium">Schedule Summary</div>
-                <div className="text-sm text-muted-foreground mt-1">
+                <div className='font-medium'>Schedule Summary</div>
+                <div className='text-sm text-muted-foreground mt-1'>
                   {getScheduleSummary()}
                 </div>
               </div>
@@ -334,7 +336,7 @@ export function ScheduleDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant='outline' onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button onClick={handleSave}>Save Schedule</Button>

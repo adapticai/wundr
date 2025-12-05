@@ -167,51 +167,50 @@ const webhookTriggerSchema = z.object({
     .optional(),
 });
 
-export const WEBHOOK_TRIGGER: StepType<z.infer<typeof webhookTriggerSchema>> =
-  {
-    id: 'trigger.webhook',
-    name: 'Webhook',
-    description: 'Triggered when a webhook receives a request',
-    category: 'triggers',
-    icon: Webhook,
-    color: 'text-yellow-500',
-    inputs: [],
-    outputs: [
-      {
-        id: 'body',
-        label: 'Body',
-        type: 'data',
-        direction: 'output',
-        dataType: 'object',
-      },
-      {
-        id: 'headers',
-        label: 'Headers',
-        type: 'data',
-        direction: 'output',
-        dataType: 'object',
-      },
-      {
-        id: 'query',
-        label: 'Query',
-        type: 'data',
-        direction: 'output',
-        dataType: 'object',
-      },
-      {
-        id: 'flow',
-        label: 'On Success',
-        type: 'flow',
-        direction: 'output',
-      },
-    ],
-    configSchema: webhookTriggerSchema,
-    defaultConfig: {
-      method: 'POST',
-      authentication: { type: 'none' },
+export const WEBHOOK_TRIGGER: StepType<z.infer<typeof webhookTriggerSchema>> = {
+  id: 'trigger.webhook',
+  name: 'Webhook',
+  description: 'Triggered when a webhook receives a request',
+  category: 'triggers',
+  icon: Webhook,
+  color: 'text-yellow-500',
+  inputs: [],
+  outputs: [
+    {
+      id: 'body',
+      label: 'Body',
+      type: 'data',
+      direction: 'output',
+      dataType: 'object',
     },
-    tags: ['webhook', 'http', 'api'],
-  };
+    {
+      id: 'headers',
+      label: 'Headers',
+      type: 'data',
+      direction: 'output',
+      dataType: 'object',
+    },
+    {
+      id: 'query',
+      label: 'Query',
+      type: 'data',
+      direction: 'output',
+      dataType: 'object',
+    },
+    {
+      id: 'flow',
+      label: 'On Success',
+      type: 'flow',
+      direction: 'output',
+    },
+  ],
+  configSchema: webhookTriggerSchema,
+  defaultConfig: {
+    method: 'POST',
+    authentication: { type: 'none' },
+  },
+  tags: ['webhook', 'http', 'api'],
+};
 
 // Schedule Trigger
 const scheduleTriggerSchema = z.object({
@@ -227,40 +226,39 @@ const scheduleTriggerSchema = z.object({
   enabled: z.boolean().default(true),
 });
 
-export const SCHEDULE_TRIGGER: StepType<
-  z.infer<typeof scheduleTriggerSchema>
-> = {
-  id: 'trigger.schedule',
-  name: 'Schedule',
-  description: 'Triggered on a recurring schedule',
-  category: 'triggers',
-  icon: Calendar,
-  color: 'text-yellow-500',
-  inputs: [],
-  outputs: [
-    {
-      id: 'timestamp',
-      label: 'Timestamp',
-      type: 'data',
-      direction: 'output',
-      dataType: 'string',
+export const SCHEDULE_TRIGGER: StepType<z.infer<typeof scheduleTriggerSchema>> =
+  {
+    id: 'trigger.schedule',
+    name: 'Schedule',
+    description: 'Triggered on a recurring schedule',
+    category: 'triggers',
+    icon: Calendar,
+    color: 'text-yellow-500',
+    inputs: [],
+    outputs: [
+      {
+        id: 'timestamp',
+        label: 'Timestamp',
+        type: 'data',
+        direction: 'output',
+        dataType: 'string',
+      },
+      {
+        id: 'flow',
+        label: 'Execute',
+        type: 'flow',
+        direction: 'output',
+      },
+    ],
+    configSchema: scheduleTriggerSchema,
+    defaultConfig: {
+      type: 'interval',
+      interval: { value: 1, unit: 'hours' },
+      timezone: 'UTC',
+      enabled: true,
     },
-    {
-      id: 'flow',
-      label: 'Execute',
-      type: 'flow',
-      direction: 'output',
-    },
-  ],
-  configSchema: scheduleTriggerSchema,
-  defaultConfig: {
-    type: 'interval',
-    interval: { value: 1, unit: 'hours' },
-    timezone: 'UTC',
-    enabled: true,
-  },
-  tags: ['schedule', 'cron', 'time'],
-};
+    tags: ['schedule', 'cron', 'time'],
+  };
 
 // Message Received Trigger
 const messageReceivedTriggerSchema = z.object({
@@ -776,7 +774,7 @@ const ifElseConditionSchema = z.object({
         'not_exists',
       ]),
       value: z.any(),
-    }),
+    })
   ),
   logic: z.enum(['and', 'or']).default('and'),
 });
@@ -840,7 +838,7 @@ const switchCaseConditionSchema = z.object({
     z.object({
       value: z.any(),
       label: z.string().optional(),
-    }),
+    })
   ),
   defaultCase: z.boolean().default(true),
 });
@@ -1114,7 +1112,7 @@ const transformDataSchema = z.object({
         'format',
       ]),
       config: z.record(z.any()),
-    }),
+    })
   ),
 });
 
@@ -1182,7 +1180,7 @@ const filterDataSchema = z.object({
         'less_than',
       ]),
       value: z.any(),
-    }),
+    })
   ),
   logic: z.enum(['and', 'or']).default('and'),
 });
@@ -1377,7 +1375,9 @@ export const ALL_STEP_TYPES: StepType<unknown>[] = [
 ];
 
 // Helper function to get steps by category
-export function getStepsByCategory(category: StepCategory): StepType<unknown>[] {
+export function getStepsByCategory(
+  category: StepCategory
+): StepType<unknown>[] {
   return ALL_STEP_TYPES.filter(step => step.category === category);
 }
 
@@ -1393,6 +1393,6 @@ export function searchSteps(query: string): StepType<unknown>[] {
     step =>
       step.name.toLowerCase().includes(lowerQuery) ||
       step.description.toLowerCase().includes(lowerQuery) ||
-      step.tags?.some(tag => tag.toLowerCase().includes(lowerQuery)),
+      step.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
   );
 }

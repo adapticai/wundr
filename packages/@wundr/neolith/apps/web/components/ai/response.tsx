@@ -88,7 +88,7 @@ export function Response({
         'prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground',
         'prose-table:border prose-th:bg-muted prose-th:px-3 prose-th:py-2',
         'prose-td:px-3 prose-td:py-2 prose-td:border',
-        className,
+        className
       )}
       {...props}
     >
@@ -335,7 +335,7 @@ export function ResponseList({
       className={cn(
         ordered ? 'list-decimal' : 'list-disc',
         'list-inside space-y-1 text-sm',
-        className,
+        className
       )}
     >
       {items.map((item, index) => (

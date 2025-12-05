@@ -48,7 +48,7 @@ export function ActionConfigPanel({
   };
 
   const handleErrorHandlingChange = (
-    updates: Partial<NonNullable<ActionConfig['errorHandling']>>,
+    updates: Partial<NonNullable<ActionConfig['errorHandling']>>
   ) => {
     onChange({
       errorHandling: {
@@ -117,7 +117,7 @@ export function ActionConfigPanel({
           <ChevronIcon
             className={cn(
               'h-4 w-4 transition-transform',
-              showVariables && 'rotate-180',
+              showVariables && 'rotate-180'
             )}
           />
         </button>
@@ -540,7 +540,7 @@ interface HttpRequestConfigProps {
 
 function HttpRequestConfig({ config, onChange }: HttpRequestConfigProps) {
   const [headersText, setHeadersText] = useState(
-    config.headers ? JSON.stringify(config.headers, null, 2) : '{}',
+    config.headers ? JSON.stringify(config.headers, null, 2) : '{}'
   );
 
   const handleHeadersChange = (text: string) => {

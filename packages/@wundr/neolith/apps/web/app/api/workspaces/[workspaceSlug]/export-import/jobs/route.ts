@@ -13,7 +13,7 @@ import type { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -34,14 +34,14 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can view export jobs' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -64,7 +64,7 @@ export async function GET(
     console.error('Failed to fetch export jobs:', error);
     return NextResponse.json(
       { error: 'Failed to fetch export jobs' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

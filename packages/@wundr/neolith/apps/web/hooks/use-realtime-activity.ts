@@ -75,7 +75,8 @@ export function useRealtimeActivity({
   enabled = true,
   pollingInterval = 30000, // 30 seconds
 }: UseRealtimeActivityOptions): UseRealtimeActivityReturn {
-  const [activities, setActivities] = useState<ActivityEntry[]>(initialActivities);
+  const [activities, setActivities] =
+    useState<ActivityEntry[]>(initialActivities);
   const [newActivityCount, setNewActivityCount] = useState(0);
   const [isPolling, setIsPolling] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -123,7 +124,7 @@ export function useRealtimeActivity({
 
       return `/api/workspaces/${workspaceId}/dashboard/activity?${params.toString()}`;
     },
-    [workspaceId, typeFilter, dateFilter],
+    [workspaceId, typeFilter, dateFilter]
   );
 
   /**
@@ -157,7 +158,7 @@ export function useRealtimeActivity({
 
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch activities: ${response.status} ${response.statusText}`,
+          `Failed to fetch activities: ${response.status} ${response.statusText}`
         );
       }
 
@@ -175,7 +176,7 @@ export function useRealtimeActivity({
           // Deduplicate by ID
           const existingIds = new Set(prev.map(a => a.id));
           const uniqueNewActivities = newActivities.filter(
-            a => !existingIds.has(a.id),
+            a => !existingIds.has(a.id)
           );
 
           if (uniqueNewActivities.length === 0) {

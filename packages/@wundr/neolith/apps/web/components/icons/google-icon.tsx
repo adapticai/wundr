@@ -60,7 +60,7 @@ const GoogleIcon = React.forwardRef<SVGSVGElement, GoogleIconProps>(
         />
       </svg>
     );
-  },
+  }
 );
 
 GoogleIcon.displayName = 'GoogleIcon';

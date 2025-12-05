@@ -23,7 +23,7 @@ const scheduleSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -44,14 +44,14 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can view schedules' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -73,14 +73,14 @@ export async function GET(
     console.error('Failed to fetch backup schedules:', error);
     return NextResponse.json(
       { error: 'Failed to fetch backup schedules' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -101,14 +101,14 @@ export async function POST(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can create schedules' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -133,7 +133,8 @@ export async function POST(
         nextRun: nextRun.toISOString(),
         createdAt: new Date().toISOString(),
       },
-      message: 'Schedule created successfully. In production, this would be persisted to workspace settings.',
+      message:
+        'Schedule created successfully. In production, this would be persisted to workspace settings.',
     });
   } catch (error) {
     console.error('Failed to create backup schedule:', error);
@@ -143,20 +144,20 @@ export async function POST(
         {
           error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
       { error: 'Failed to create backup schedule' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 function calculateNextRun(
   frequency: 'daily' | 'weekly' | 'monthly',
-  time: string,
+  time: string
 ): Date {
   const [hours, minutes] = time.split(':').map(Number);
   const now = new Date();

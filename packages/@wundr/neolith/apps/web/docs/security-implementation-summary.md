@@ -1,16 +1,20 @@
 # Account Security Settings Implementation Summary
 
 ## Overview
-Comprehensive account security implementation for the Neolith web app with 10 major security features.
+
+Comprehensive account security implementation for the Neolith web app with 10 major security
+features.
 
 ## Implemented Features
 
 ### 1. Password Change with Verification
+
 - **File**: `components/settings/security/PasswordSection.tsx`
 - **API**: `/api/user/password` (PATCH)
 - **Features**: Current password verification, strong password requirements, security logging
 
 ### 2. Two-Factor Authentication (2FA)
+
 - **File**: `components/settings/security/TwoFactorSection.tsx`
 - **API Routes**:
   - `/api/user/2fa/setup` (POST) - Generate QR code
@@ -20,6 +24,7 @@ Comprehensive account security implementation for the Neolith web app with 10 ma
 - **Features**: TOTP-based, QR code generation, backup codes, reconfiguration
 
 ### 3. Session Management
+
 - **File**: `components/settings/security/SessionsList.tsx`
 - **API Routes**:
   - `/api/user/sessions` (GET) - List active sessions
@@ -28,18 +33,21 @@ Comprehensive account security implementation for the Neolith web app with 10 ma
 - **Features**: Device/browser info, IP addresses, current session identification
 
 ### 4. Login History
+
 - **File**: `components/settings/security/LoginHistorySection.tsx`
 - **API**: `/api/user/login-history` (GET)
 - **Hook**: `hooks/use-login-history.ts`
 - **Features**: Device type, location, status (success/failed/blocked), pagination
 
 ### 5. Security Questions
+
 - **File**: `components/settings/security/SecurityQuestionsSection.tsx`
 - **API**: `/api/user/security-questions` (GET/POST)
 - **Hook**: `hooks/use-security-questions.ts`
 - **Features**: 2-5 questions, hashed answers, account recovery
 
 ### 6. Email Change with Verification
+
 - **File**: `components/settings/security/EmailChangeSection.tsx`
 - **API Routes**:
   - `/api/user/email/change-request` (POST)
@@ -47,6 +55,7 @@ Comprehensive account security implementation for the Neolith web app with 10 ma
 - **Features**: Dual verification (old + new email), token-based, 24h expiration
 
 ### 7. Phone Number Verification
+
 - **File**: `components/settings/security/PhoneChangeSection.tsx`
 - **API Routes**:
   - `/api/user/phone/change-request` (POST)
@@ -54,12 +63,14 @@ Comprehensive account security implementation for the Neolith web app with 10 ma
 - **Features**: SMS verification, 6-digit code, rate limiting, 10min expiration
 
 ### 8. Account Recovery Options
+
 - **File**: `components/settings/security/RecoveryOptionsSection.tsx`
 - **API**: `/api/user/recovery-options` (GET/PATCH)
 - **Hook**: `hooks/use-recovery-options.ts`
 - **Features**: Recovery email, security questions, backup codes, phone recovery
 
 ### 9. OAuth Provider Management
+
 - **File**: Integrated in main security page
 - **API Routes**:
   - `/api/user/connected-accounts` (GET)
@@ -67,15 +78,18 @@ Comprehensive account security implementation for the Neolith web app with 10 ma
 - **Features**: Google/GitHub/Microsoft, prevent last auth method removal
 
 ### 10. Security Audit Log
+
 - **File**: `components/settings/security/SecurityAuditSection.tsx`
 - **API**: `/api/user/security-audit` (GET)
 - **Hook**: `hooks/use-security-audit.ts`
 - **Features**: Event filtering, severity levels, metadata, pagination
 
 ## Service Layer
+
 **File**: `lib/services/security.ts`
 
 Utilities:
+
 - Password hashing/verification (PBKDF2)
 - TOTP secret generation and verification
 - Backup code generation
@@ -86,12 +100,15 @@ Utilities:
 - Data cleanup functions
 
 ## Validation Schemas
+
 **File**: `lib/validations/security.ts`
 
 All operations have comprehensive Zod validation schemas with proper error codes.
 
 ## UI Organization
+
 The security page uses tabs to organize features:
+
 1. **Authentication Tab**: Password, email, phone, 2FA, OAuth providers, sessions, privacy settings
 2. **Recovery Tab**: Recovery options, security questions
 3. **Activity Tab**: Login history, security audit log
@@ -99,10 +116,11 @@ The security page uses tabs to organize features:
 ## Required Database Schema Changes
 
 ### New Fields on `User` table:
+
 ```prisma
 model User {
   // Existing fields...
-  
+
   // Security fields
   password              String?   // Password hash
   twoFactorEnabled      Boolean   @default(false)
@@ -118,6 +136,7 @@ model User {
 ### New Tables:
 
 #### sessions (may already exist)
+
 ```prisma
 model Session {
   id           String   @id @default(cuid())
@@ -127,14 +146,15 @@ model Session {
   createdAt    DateTime @default(now())
   userAgent    String?
   ipAddress    String?
-  
+
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
 }
 ```
 
 #### login_history
+
 ```sql
 CREATE TABLE login_history (
   id              TEXT PRIMARY KEY,
@@ -149,7 +169,7 @@ CREATE TABLE login_history (
   country         TEXT,
   failure_reason  TEXT,
   created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -157,6 +177,7 @@ CREATE INDEX idx_login_history_user ON login_history(user_id, created_at DESC);
 ```
 
 #### security_audit_logs
+
 ```sql
 CREATE TABLE security_audit_logs (
   id          TEXT PRIMARY KEY,
@@ -168,7 +189,7 @@ CREATE TABLE security_audit_logs (
   ip_address  TEXT,
   user_agent  TEXT,
   created_at  TIMESTAMP NOT NULL DEFAULT NOW(),
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -177,6 +198,7 @@ CREATE INDEX idx_audit_logs_type ON security_audit_logs(event_type);
 ```
 
 #### security_questions
+
 ```sql
 CREATE TABLE security_questions (
   id          TEXT PRIMARY KEY,
@@ -184,7 +206,7 @@ CREATE TABLE security_questions (
   question    TEXT NOT NULL,
   answer_hash TEXT NOT NULL,
   created_at  TIMESTAMP NOT NULL DEFAULT NOW(),
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -192,6 +214,7 @@ CREATE INDEX idx_security_questions_user ON security_questions(user_id);
 ```
 
 #### pending_email_changes
+
 ```sql
 CREATE TABLE pending_email_changes (
   id         TEXT PRIMARY KEY,
@@ -200,7 +223,7 @@ CREATE TABLE pending_email_changes (
   token      TEXT NOT NULL,
   expires_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -208,6 +231,7 @@ CREATE INDEX idx_pending_email_user ON pending_email_changes(user_id);
 ```
 
 #### pending_phone_changes
+
 ```sql
 CREATE TABLE pending_phone_changes (
   id         TEXT PRIMARY KEY,
@@ -217,7 +241,7 @@ CREATE TABLE pending_phone_changes (
   attempts   INTEGER NOT NULL DEFAULT 0,
   expires_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -225,13 +249,14 @@ CREATE INDEX idx_pending_phone_user ON pending_phone_changes(user_id);
 ```
 
 #### rate_limits (optional, can use Redis instead)
+
 ```sql
 CREATE TABLE rate_limits (
   id         TEXT PRIMARY KEY,
   user_id    TEXT NOT NULL,
   action     TEXT NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -239,7 +264,9 @@ CREATE INDEX idx_rate_limits_user_action ON rate_limits(user_id, action, created
 ```
 
 ## Dependencies
+
 All required dependencies are already in package.json:
+
 - `crypto` (built-in Node.js)
 - `zod` for validation
 - `@prisma/client` for database
@@ -247,7 +274,8 @@ All required dependencies are already in package.json:
 
 ## Production Considerations
 
-1. **2FA Implementation**: Replace simplified TOTP with a proper library like `otplib` or `speakeasy`
+1. **2FA Implementation**: Replace simplified TOTP with a proper library like `otplib` or
+   `speakeasy`
 2. **Email Sending**: Integrate email service (Resend, SendGrid) for verification emails
 3. **SMS Sending**: Integrate SMS service (Twilio, SNS) for phone verification
 4. **Geolocation**: Use MaxMind or similar for accurate IP geolocation
@@ -257,6 +285,7 @@ All required dependencies are already in package.json:
 8. **Monitoring**: Add monitoring for failed login attempts and security events
 
 ## File Structure
+
 ```
 apps/web/
 ├── app/

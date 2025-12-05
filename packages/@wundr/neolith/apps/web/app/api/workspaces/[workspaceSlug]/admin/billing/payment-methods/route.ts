@@ -14,7 +14,10 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { createAdminErrorResponse, ADMIN_ERROR_CODES } from '@/lib/validations/admin';
+import {
+  createAdminErrorResponse,
+  ADMIN_ERROR_CODES,
+} from '@/lib/validations/admin';
 
 import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
@@ -40,13 +43,19 @@ interface PaymentMethod {
  *
  * Get payment methods for workspace. Requires admin role.
  */
-export async function GET(_request: Request, context: RouteContext): Promise<NextResponse> {
+export async function GET(
+  _request: Request,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -58,24 +67,38 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
       include: { workspace: true },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
     // Get payment methods from workspace settings
-    const settings = (membership.workspace.settings as Record<string, unknown>) || {};
+    const settings =
+      (membership.workspace.settings as Record<string, unknown>) || {};
     const billingSettings = (settings.billing as Record<string, unknown>) || {};
-    const paymentMethods = (billingSettings.paymentMethods as PaymentMethod[]) || [];
+    const paymentMethods =
+      (billingSettings.paymentMethods as PaymentMethod[]) || [];
 
     return NextResponse.json({ paymentMethods });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/admin/billing/payment-methods] Error:', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/admin/billing/payment-methods] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to fetch payment methods', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to fetch payment methods',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }
@@ -85,13 +108,19 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
  *
  * Add a payment method. Requires owner role.
  */
-export async function POST(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function POST(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -105,12 +134,19 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     if (!membership || !['owner', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
-        createAdminErrorResponse('Only workspace owner can manage payment methods', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Only workspace owner can manage payment methods',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
-    const body = await request.json() as { cardNumber: string; expiry: string; cvc: string };
+    const body = (await request.json()) as {
+      cardNumber: string;
+      expiry: string;
+      cvc: string;
+    };
 
     // In production, this would integrate with Stripe/PayPal
     // For now, we'll store a mock payment method
@@ -123,9 +159,11 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       isDefault: true,
     };
 
-    const settings = (membership.workspace.settings as Record<string, unknown>) || {};
+    const settings =
+      (membership.workspace.settings as Record<string, unknown>) || {};
     const billingSettings = (settings.billing as Record<string, unknown>) || {};
-    const paymentMethods = (billingSettings.paymentMethods as PaymentMethod[]) || [];
+    const paymentMethods =
+      (billingSettings.paymentMethods as PaymentMethod[]) || [];
 
     // Set all existing methods to non-default
     paymentMethods.forEach(method => {
@@ -151,10 +189,16 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     return NextResponse.json({ paymentMethod: newMethod });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceSlug/admin/billing/payment-methods] Error:', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceSlug/admin/billing/payment-methods] Error:',
+      error
+    );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to add payment method', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to add payment method',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

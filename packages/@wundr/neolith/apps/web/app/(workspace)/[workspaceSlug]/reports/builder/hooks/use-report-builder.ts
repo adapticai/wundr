@@ -26,18 +26,20 @@ export function useReportBuilder(initialTemplate?: Partial<ReportTemplate>) {
   const [schedule, setSchedule] = useState<ReportSchedule | undefined>(
     initialTemplate?.schedule
   );
-  const [reportName, setReportName] = useState(initialTemplate?.name || 'Untitled Report');
+  const [reportName, setReportName] = useState(
+    initialTemplate?.name || 'Untitled Report'
+  );
   const [isDirty, setIsDirty] = useState(false);
 
   const addWidget = useCallback((widget: ReportWidget) => {
-    setWidgets((prev) => [...prev, widget]);
+    setWidgets(prev => [...prev, widget]);
     setIsDirty(true);
   }, []);
 
   const updateWidget = useCallback(
     (widgetId: string, updates: Partial<ReportWidget>) => {
-      setWidgets((prev) =>
-        prev.map((w) => (w.id === widgetId ? { ...w, ...updates } : w))
+      setWidgets(prev =>
+        prev.map(w => (w.id === widgetId ? { ...w, ...updates } : w))
       );
       setIsDirty(true);
     },
@@ -45,13 +47,13 @@ export function useReportBuilder(initialTemplate?: Partial<ReportTemplate>) {
   );
 
   const deleteWidget = useCallback((widgetId: string) => {
-    setWidgets((prev) => prev.filter((w) => w.id !== widgetId));
+    setWidgets(prev => prev.filter(w => w.id !== widgetId));
     setIsDirty(true);
   }, []);
 
   const duplicateWidget = useCallback((widgetId: string) => {
-    setWidgets((prev) => {
-      const widget = prev.find((w) => w.id === widgetId);
+    setWidgets(prev => {
+      const widget = prev.find(w => w.id === widgetId);
       if (!widget) return prev;
 
       const duplicate: ReportWidget = {
@@ -69,14 +71,14 @@ export function useReportBuilder(initialTemplate?: Partial<ReportTemplate>) {
   }, []);
 
   const addDataSource = useCallback((dataSource: DataSource) => {
-    setDataSources((prev) => [...prev, dataSource]);
+    setDataSources(prev => [...prev, dataSource]);
     setIsDirty(true);
   }, []);
 
   const updateDataSource = useCallback(
     (dataSourceId: string, updates: Partial<DataSource>) => {
-      setDataSources((prev) =>
-        prev.map((ds) => (ds.id === dataSourceId ? { ...ds, ...updates } : ds))
+      setDataSources(prev =>
+        prev.map(ds => (ds.id === dataSourceId ? { ...ds, ...updates } : ds))
       );
       setIsDirty(true);
     },
@@ -84,10 +86,10 @@ export function useReportBuilder(initialTemplate?: Partial<ReportTemplate>) {
   );
 
   const deleteDataSource = useCallback((dataSourceId: string) => {
-    setDataSources((prev) => prev.filter((ds) => ds.id !== dataSourceId));
+    setDataSources(prev => prev.filter(ds => ds.id !== dataSourceId));
     // Remove data source from widgets
-    setWidgets((prev) =>
-      prev.map((w) =>
+    setWidgets(prev =>
+      prev.map(w =>
         w.dataSource?.id === dataSourceId ? { ...w, dataSource: undefined } : w
       )
     );

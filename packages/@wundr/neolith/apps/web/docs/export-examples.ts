@@ -109,7 +109,9 @@ export async function example1_BasicCSVExport() {
   });
 
   if (result.success) {
-    console.log(`✓ Exported ${result.filename} (${formatFileSize(result.size)})`);
+    console.log(
+      `✓ Exported ${result.filename} (${formatFileSize(result.size)})`
+    );
   } else {
     console.error('✗ Export failed:', result.error?.message);
   }
@@ -135,7 +137,9 @@ export async function example2_PDFTableExport() {
   });
 
   if (result.success) {
-    console.log(`✓ Exported ${result.filename} (${formatFileSize(result.size)})`);
+    console.log(
+      `✓ Exported ${result.filename} (${formatFileSize(result.size)})`
+    );
   } else {
     console.error('✗ Export failed:', result.error?.message);
   }
@@ -164,7 +168,9 @@ export async function example3_ExcelExport() {
   });
 
   if (result.success) {
-    console.log(`✓ Exported ${result.filename} (${formatFileSize(result.size)})`);
+    console.log(
+      `✓ Exported ${result.filename} (${formatFileSize(result.size)})`
+    );
   } else {
     console.error('✗ Export failed:', result.error?.message);
   }
@@ -181,15 +187,18 @@ export async function example4_MultipleSheets() {
   const activeUsers = sampleUsers.filter(u => u.isActive);
   const inactiveUsers = sampleUsers.filter(u => !u.isActive);
 
-  const result = await exportMultipleSheetsToXLSX({
-    'Active Users': activeUsers as Record<string, unknown>[],
-    'Inactive Users': inactiveUsers as Record<string, unknown>[],
-    'All Users': sampleUsers as Record<string, unknown>[],
-  }, {
-    filename: 'users_complete.xlsx',
-    autoWidth: true,
-    freezeFirstRow: true,
-  });
+  const result = await exportMultipleSheetsToXLSX(
+    {
+      'Active Users': activeUsers as Record<string, unknown>[],
+      'Inactive Users': inactiveUsers as Record<string, unknown>[],
+      'All Users': sampleUsers as Record<string, unknown>[],
+    },
+    {
+      filename: 'users_complete.xlsx',
+      autoWidth: true,
+      freezeFirstRow: true,
+    }
+  );
 
   if (result.success) {
     console.log(`✓ Exported ${result.filename} with 3 sheets`);
@@ -263,9 +272,12 @@ export async function example7_DataTransformation() {
     undefinedValue: '',
   });
 
-  const result = await exportToXLSX(transformedData as Record<string, unknown>[], {
-    filename: 'users_transformed.xlsx',
-  });
+  const result = await exportToXLSX(
+    transformedData as Record<string, unknown>[],
+    {
+      filename: 'users_transformed.xlsx',
+    }
+  );
 
   if (result.success) {
     console.log(`✓ Exported transformed data to ${result.filename}`);
@@ -330,7 +342,7 @@ export async function example9_DashboardReport() {
       title: 'Q4 2024 User Analytics',
       description: 'Comprehensive user analytics for Q4',
       includeDataTables: true,
-    },
+    }
   );
 
   const sections = template.sections.map(section => {
@@ -411,7 +423,9 @@ export async function example11_BulkExport() {
   console.log('\nExport Results:');
   for (const [format, result] of Object.entries(results)) {
     if (result.success) {
-      console.log(`  ✓ ${format}: ${result.filename} (${formatFileSize(result.size)})`);
+      console.log(
+        `  ✓ ${format}: ${result.filename} (${formatFileSize(result.size)})`
+      );
     } else {
       console.log(`  ✗ ${format}: Failed - ${result.error?.message}`);
     }
@@ -431,9 +445,15 @@ export async function example12_ExportManager() {
   console.log('Adding exports to queue...');
 
   const promises = [
-    manager.add(sampleUsers as Record<string, unknown>[], 'csv', { filename: 'queue_export_1.csv' }),
-    manager.add(sampleUsers as Record<string, unknown>[], 'xlsx', { filename: 'queue_export_2.xlsx' }),
-    manager.add(sampleUsers as Record<string, unknown>[], 'pdf', { filename: 'queue_export_3.pdf' }),
+    manager.add(sampleUsers as Record<string, unknown>[], 'csv', {
+      filename: 'queue_export_1.csv',
+    }),
+    manager.add(sampleUsers as Record<string, unknown>[], 'xlsx', {
+      filename: 'queue_export_2.xlsx',
+    }),
+    manager.add(sampleUsers as Record<string, unknown>[], 'pdf', {
+      filename: 'queue_export_3.pdf',
+    }),
   ];
 
   console.log(`Queue size: ${manager.getQueueSize()}`);
@@ -458,11 +478,15 @@ export async function example12_ExportManager() {
 export async function example13_ExportWithRetry() {
   console.log('Example 13: Export with Retry Logic');
 
-  const result = await exportWithRetry(sampleUsers as Record<string, unknown>[], 'pdf', {
-    filename: 'retry_export.pdf',
-    maxRetries: 3,
-    retryDelay: 1000,
-  });
+  const result = await exportWithRetry(
+    sampleUsers as Record<string, unknown>[],
+    'pdf',
+    {
+      filename: 'retry_export.pdf',
+      maxRetries: 3,
+      retryDelay: 1000,
+    }
+  );
 
   if (result.success) {
     console.log(`✓ Export succeeded: ${result.filename}`);
@@ -479,7 +503,7 @@ export async function example13_ExportWithRetry() {
 export async function example14_ProgressTracking() {
   console.log('Example 14: Progress Tracking');
 
-  const tracker = createProgressTracker(sampleUsers.length, (progress) => {
+  const tracker = createProgressTracker(sampleUsers.length, progress => {
     console.log(`  Processing: ${progress}%`);
   });
 
@@ -546,7 +570,7 @@ export async function example17_CompositeChartExport() {
       filename: 'dashboard_composite.png',
       format: 'png',
       backgroundColor: '#f5f5f5',
-    },
+    }
   );
 
   if (result.success) {

@@ -16,7 +16,10 @@ export function validateCronExpression(expression: string): {
   error?: string;
 } {
   if (!expression || typeof expression !== 'string') {
-    return { valid: false, error: 'Cron expression must be a non-empty string' };
+    return {
+      valid: false,
+      error: 'Cron expression must be a non-empty string',
+    };
   }
 
   const fields = expression.trim().split(/\s+/);
@@ -29,22 +32,23 @@ export function validateCronExpression(expression: string): {
     };
   }
 
-  const ranges = fields.length === 6
-    ? [
-        { name: 'second', min: 0, max: 59 },
-        { name: 'minute', min: 0, max: 59 },
-        { name: 'hour', min: 0, max: 23 },
-        { name: 'day', min: 1, max: 31 },
-        { name: 'month', min: 1, max: 12 },
-        { name: 'weekday', min: 0, max: 7 },
-      ]
-    : [
-        { name: 'minute', min: 0, max: 59 },
-        { name: 'hour', min: 0, max: 23 },
-        { name: 'day', min: 1, max: 31 },
-        { name: 'month', min: 1, max: 12 },
-        { name: 'weekday', min: 0, max: 7 },
-      ];
+  const ranges =
+    fields.length === 6
+      ? [
+          { name: 'second', min: 0, max: 59 },
+          { name: 'minute', min: 0, max: 59 },
+          { name: 'hour', min: 0, max: 23 },
+          { name: 'day', min: 1, max: 31 },
+          { name: 'month', min: 1, max: 12 },
+          { name: 'weekday', min: 0, max: 7 },
+        ]
+      : [
+          { name: 'minute', min: 0, max: 59 },
+          { name: 'hour', min: 0, max: 23 },
+          { name: 'day', min: 1, max: 31 },
+          { name: 'month', min: 1, max: 12 },
+          { name: 'weekday', min: 0, max: 7 },
+        ];
 
   for (let i = 0; i < fields.length; i++) {
     const field = fields[i];
@@ -68,7 +72,7 @@ export function validateCronExpression(expression: string): {
 function validateCronField(
   field: string,
   min: number,
-  max: number,
+  max: number
 ): { valid: boolean; error?: string } {
   // Wildcard
   if (field === '*') {
@@ -167,7 +171,10 @@ export function getNextExecutionTime(cronExpression: string): Date | null {
 /**
  * Common cron expression presets
  */
-export const CRON_PRESETS: Record<string, { expression: string; description: string }> = {
+export const CRON_PRESETS: Record<
+  string,
+  { expression: string; description: string }
+> = {
   'every-minute': {
     expression: '* * * * *',
     description: 'Every minute',

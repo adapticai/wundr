@@ -32,7 +32,7 @@ const ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: (typeof ERROR_CODES)[keyof typeof ERROR_CODES],
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) {
   return {
     error: {
@@ -74,9 +74,9 @@ export async function POST(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ERROR_CODES.UNAUTHORIZED,
+          ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -94,7 +94,7 @@ export async function POST(_request: NextRequest): Promise<NextResponse> {
     if (!user) {
       return NextResponse.json(
         createErrorResponse('User not found', ERROR_CODES.NOT_FOUND),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -159,9 +159,7 @@ export async function POST(_request: NextRequest): Promise<NextResponse> {
       channels.push('email');
       // In production, this would trigger an email via your email service
       // For now, we just note that it would be sent
-      console.log(
-        `[Test Notification] Would send email to: ${user.email}`,
-      );
+      console.log(`[Test Notification] Would send email to: ${user.email}`);
     }
 
     return NextResponse.json({
@@ -174,9 +172,9 @@ export async function POST(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

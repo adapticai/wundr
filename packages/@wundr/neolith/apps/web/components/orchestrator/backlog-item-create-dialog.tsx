@@ -100,7 +100,10 @@ export function BacklogItemCreateDialog({
       try {
         // Parse tags
         const tags = data.tags
-          ? data.tags.split(',').map((t) => t.trim()).filter(Boolean)
+          ? data.tags
+              .split(',')
+              .map(t => t.trim())
+              .filter(Boolean)
           : [];
 
         // Prepare payload
@@ -120,12 +123,14 @@ export function BacklogItemCreateDialog({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
-          },
+          }
         );
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.error?.message || 'Failed to create backlog item');
+          throw new Error(
+            error.error?.message || 'Failed to create backlog item'
+          );
         }
 
         toast({
@@ -150,7 +155,7 @@ export function BacklogItemCreateDialog({
         setIsSubmitting(false);
       }
     },
-    [orchestratorId, form, onOpenChange, onCreated, toast],
+    [orchestratorId, form, onOpenChange, onCreated, toast]
   );
 
   return (

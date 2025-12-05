@@ -37,7 +37,7 @@ interface RouteContext {
  */
 async function getOrchestratorWithAccessCheck(
   orchestratorId: string,
-  userId: string,
+  userId: string
 ) {
   // Get user's organization memberships
   const userOrganizations = await prisma.organizationMember.findMany({
@@ -77,7 +77,7 @@ async function getOrchestratorWithAccessCheck(
 
   // Find user's role in the orchestrator's organization
   const membership = userOrganizations.find(
-    m => m.organizationId === orchestrator.organizationId,
+    m => m.organizationId === orchestrator.organizationId
   );
 
   return { orchestrator, role: membership?.role ?? null };
@@ -101,7 +101,7 @@ async function getOrchestratorWithAccessCheck(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -110,9 +110,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED,
+          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -123,25 +123,25 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid orchestrator ID format',
-          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get orchestrator with access check
     const result = await getOrchestratorWithAccessCheck(
       params.orchestratorId,
-      session.user.id,
+      session.user.id
     );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          SESSION_MANAGER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          SESSION_MANAGER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -192,14 +192,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/orchestrators/:id/session-managers] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR,
+        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -230,7 +230,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -239,9 +239,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED,
+          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -252,25 +252,25 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid orchestrator ID format',
-          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get orchestrator with access check
     const result = await getOrchestratorWithAccessCheck(
       params.orchestratorId,
-      session.user.id,
+      session.user.id
     );
 
     if (!result) {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          SESSION_MANAGER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          SESSION_MANAGER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -279,9 +279,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to create session managers',
-          SESSION_MANAGER_ERROR_CODES.FORBIDDEN,
+          SESSION_MANAGER_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -293,9 +293,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -306,9 +306,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -326,9 +326,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'A session manager with this name already exists for this orchestrator',
-          SESSION_MANAGER_ERROR_CODES.ALREADY_EXISTS,
+          SESSION_MANAGER_ERROR_CODES.ALREADY_EXISTS
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -337,9 +337,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'charterId is required',
-          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR,
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -376,19 +376,19 @@ export async function POST(
         data: sessionManager,
         message: 'Session manager created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error(
       '[POST /api/orchestrators/:id/session-managers] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR,
+        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

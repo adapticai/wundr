@@ -35,44 +35,53 @@ interface RouteContext {
  * Workflow creation tool - extracts workflow structure from natural language
  */
 const createWorkflowTool = tool({
-  description: 'Create a workflow from natural language description. Extract trigger and actions.',
+  description:
+    'Create a workflow from natural language description. Extract trigger and actions.',
   inputSchema: zodSchema(
     z.object({
       name: z.string().describe('Clear, concise workflow name'),
       description: z.string().describe('What the workflow does'),
       trigger: z.object({
-        type: z.enum([
-          'schedule',
-          'message',
-          'keyword',
-          'channel_join',
-          'channel_leave',
-          'user_join',
-          'reaction',
-          'mention',
-          'webhook',
-        ]).describe('Trigger type'),
-        config: z.record(z.unknown()).describe('Trigger configuration based on type'),
+        type: z
+          .enum([
+            'schedule',
+            'message',
+            'keyword',
+            'channel_join',
+            'channel_leave',
+            'user_join',
+            'reaction',
+            'mention',
+            'webhook',
+          ])
+          .describe('Trigger type'),
+        config: z
+          .record(z.unknown())
+          .describe('Trigger configuration based on type'),
       }),
-      actions: z.array(
-        z.object({
-          type: z.enum([
-            'send_message',
-            'send_dm',
-            'create_channel',
-            'invite_to_channel',
-            'assign_role',
-            'add_reaction',
-            'http_request',
-            'wait',
-            'condition',
-            'notify_orchestrator',
-          ]).describe('Action type'),
-          config: z.record(z.unknown()).describe('Action configuration'),
-          order: z.number().describe('Execution order (0-indexed)'),
-        }),
-      ).describe('Ordered list of actions to execute'),
-    }),
+      actions: z
+        .array(
+          z.object({
+            type: z
+              .enum([
+                'send_message',
+                'send_dm',
+                'create_channel',
+                'invite_to_channel',
+                'assign_role',
+                'add_reaction',
+                'http_request',
+                'wait',
+                'condition',
+                'notify_orchestrator',
+              ])
+              .describe('Action type'),
+            config: z.record(z.unknown()).describe('Action configuration'),
+            order: z.number().describe('Execution order (0-indexed)'),
+          })
+        )
+        .describe('Ordered list of actions to execute'),
+    })
   ),
 });
 
@@ -80,18 +89,21 @@ const createWorkflowTool = tool({
  * Workflow optimization tool - suggests improvements
  */
 const suggestOptimizationsTool = tool({
-  description: 'Analyze workflow and suggest optimizations for performance, reliability, and best practices.',
+  description:
+    'Analyze workflow and suggest optimizations for performance, reliability, and best practices.',
   inputSchema: zodSchema(
     z.object({
       suggestions: z.array(
         z.object({
-          type: z.enum(['performance', 'reliability', 'best-practice']).describe('Optimization category'),
+          type: z
+            .enum(['performance', 'reliability', 'best-practice'])
+            .describe('Optimization category'),
           title: z.string().describe('Short title'),
           description: z.string().describe('Detailed explanation'),
           impact: z.enum(['high', 'medium', 'low']).describe('Expected impact'),
-        }),
+        })
       ),
-    }),
+    })
   ),
 });
 
@@ -104,8 +116,10 @@ const diagnoseErrorTool = tool({
     z.object({
       cause: z.string().describe('Root cause of the error'),
       solution: z.string().describe('How to fix it'),
-      preventionTips: z.array(z.string()).describe('Tips to prevent similar errors'),
-    }),
+      preventionTips: z
+        .array(z.string())
+        .describe('Tips to prevent similar errors'),
+    })
   ),
 });
 
@@ -120,17 +134,23 @@ const recommendStepsTool = tool({
         z.object({
           stepType: z.string().describe('Type of step (action/condition/etc)'),
           reason: z.string().describe('Why this step would be beneficial'),
-          configuration: z.record(z.unknown()).optional().describe('Suggested configuration'),
-        }),
+          configuration: z
+            .record(z.unknown())
+            .optional()
+            .describe('Suggested configuration'),
+        })
       ),
-    }),
+    })
   ),
 });
 
 /**
  * Get system prompt based on context
  */
-function getWorkflowAIPrompt(workflowContext?: string, executionContext?: string): string {
+function getWorkflowAIPrompt(
+  workflowContext?: string,
+  executionContext?: string
+): string {
   let prompt = `You are an expert workflow automation assistant. You help users create, optimize, and troubleshoot workflows.
 
 Your capabilities:
@@ -257,7 +277,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
         JSON.stringify({
           error: 'messages array is required and must not be empty',
         }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } },
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -318,10 +338,12 @@ Error: ${execution.error || 'None'}`;
 
     // Validate API key
     if (!process.env.OPENAI_API_KEY) {
-      console.error('[POST /api/workspaces/[workspaceSlug]/workflows/ai] OPENAI_API_KEY not configured');
+      console.error(
+        '[POST /api/workspaces/[workspaceSlug]/workflows/ai] OPENAI_API_KEY not configured'
+      );
       return new Response(
         JSON.stringify({ error: 'OpenAI API key not configured' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } },
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -339,13 +361,16 @@ Error: ${execution.error || 'None'}`;
     // Return streaming response compatible with useChat hook
     return result.toTextStreamResponse();
   } catch (error) {
-    console.error('[POST /api/workspaces/[workspaceSlug]/workflows/ai] Error:', error);
+    console.error(
+      '[POST /api/workspaces/[workspaceSlug]/workflows/ai] Error:',
+      error
+    );
     return new Response(
       JSON.stringify({
         error:
           error instanceof Error ? error.message : 'An internal error occurred',
       }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

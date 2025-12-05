@@ -139,7 +139,10 @@ export function BacklogItemEditDialog({
       try {
         // Parse tags
         const tags = data.tags
-          ? data.tags.split(',').map((t) => t.trim()).filter(Boolean)
+          ? data.tags
+              .split(',')
+              .map(t => t.trim())
+              .filter(Boolean)
           : [];
 
         // Prepare payload
@@ -159,12 +162,14 @@ export function BacklogItemEditDialog({
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
-          },
+          }
         );
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.error?.message || 'Failed to update backlog item');
+          throw new Error(
+            error.error?.message || 'Failed to update backlog item'
+          );
         }
 
         toast({
@@ -188,7 +193,7 @@ export function BacklogItemEditDialog({
         setIsSubmitting(false);
       }
     },
-    [orchestratorId, item.id, onOpenChange, onUpdated, toast],
+    [orchestratorId, item.id, onOpenChange, onUpdated, toast]
   );
 
   return (

@@ -122,7 +122,7 @@ function buildCron(config: CronConfig): string {
 function calculateNextRuns(
   cron: string,
   timezone: string,
-  count: number = 5,
+  count: number = 5
 ): Date[] {
   // This is a simplified implementation
   // In production, use a library like 'cron-parser' or 'cronstrue'
@@ -172,7 +172,7 @@ function calculateNextRuns(
 
 // Get human-readable description of cron expression
 function describeCron(cron: string): string {
-  const presets = CRON_PRESETS.find((p) => p.value === cron);
+  const presets = CRON_PRESETS.find(p => p.value === cron);
   if (presets && presets.value !== 'custom') {
     return presets.label;
   }
@@ -223,10 +223,12 @@ function CronBuilder({
   onChange: (cron: string) => void;
 }) {
   const [preset, setPreset] = React.useState<string>(() => {
-    const found = CRON_PRESETS.find((p) => p.value === value);
+    const found = CRON_PRESETS.find(p => p.value === value);
     return found ? found.value : 'custom';
   });
-  const [config, setConfig] = React.useState<CronConfig>(() => parseCron(value));
+  const [config, setConfig] = React.useState<CronConfig>(() =>
+    parseCron(value)
+  );
   const [showAdvanced, setShowAdvanced] = React.useState(false);
 
   const handlePresetChange = (newPreset: string) => {
@@ -240,25 +242,22 @@ function CronBuilder({
     }
   };
 
-  const handleConfigChange = (
-    field: keyof CronConfig,
-    value: string,
-  ) => {
+  const handleConfigChange = (field: keyof CronConfig, value: string) => {
     const newConfig = { ...config, [field]: value };
     setConfig(newConfig);
     onChange(buildCron(newConfig));
   };
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
+    <div className='space-y-4'>
+      <div className='space-y-2'>
         <Label>Schedule Preset</Label>
         <Select value={preset} onValueChange={handlePresetChange}>
           <SelectTrigger>
-            <SelectValue placeholder="Select a preset" />
+            <SelectValue placeholder='Select a preset' />
           </SelectTrigger>
           <SelectContent>
-            {CRON_PRESETS.map((p) => (
+            {CRON_PRESETS.map(p => (
               <SelectItem key={p.value} value={p.value}>
                 {p.label}
               </SelectItem>
@@ -268,12 +267,14 @@ function CronBuilder({
       </div>
 
       {(showAdvanced || preset === 'custom') && (
-        <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-semibold">Advanced Configuration</Label>
+        <div className='space-y-4 p-4 border rounded-lg bg-muted/30'>
+          <div className='flex items-center justify-between'>
+            <Label className='text-sm font-semibold'>
+              Advanced Configuration
+            </Label>
             <Button
-              variant="ghost"
-              size="sm"
+              variant='ghost'
+              size='sm'
               onClick={() => setShowAdvanced(!showAdvanced)}
             >
               {showAdvanced ? 'Hide' : 'Show'}
@@ -281,79 +282,77 @@ function CronBuilder({
           </div>
 
           {showAdvanced && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="minute" className="text-xs">
+            <div className='grid grid-cols-2 gap-4'>
+              <div className='space-y-2'>
+                <Label htmlFor='minute' className='text-xs'>
                   Minute (0-59)
                 </Label>
                 <Input
-                  id="minute"
+                  id='minute'
                   value={config.minute}
-                  onChange={(e) =>
-                    handleConfigChange('minute', e.target.value)
-                  }
-                  placeholder="* or */5"
+                  onChange={e => handleConfigChange('minute', e.target.value)}
+                  placeholder='* or */5'
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="hour" className="text-xs">
+              <div className='space-y-2'>
+                <Label htmlFor='hour' className='text-xs'>
                   Hour (0-23)
                 </Label>
                 <Input
-                  id="hour"
+                  id='hour'
                   value={config.hour}
-                  onChange={(e) => handleConfigChange('hour', e.target.value)}
-                  placeholder="* or 9"
+                  onChange={e => handleConfigChange('hour', e.target.value)}
+                  placeholder='* or 9'
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="dayOfMonth" className="text-xs">
+              <div className='space-y-2'>
+                <Label htmlFor='dayOfMonth' className='text-xs'>
                   Day of Month (1-31)
                 </Label>
                 <Input
-                  id="dayOfMonth"
+                  id='dayOfMonth'
                   value={config.dayOfMonth}
-                  onChange={(e) =>
+                  onChange={e =>
                     handleConfigChange('dayOfMonth', e.target.value)
                   }
-                  placeholder="* or 1"
+                  placeholder='* or 1'
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="month" className="text-xs">
+              <div className='space-y-2'>
+                <Label htmlFor='month' className='text-xs'>
                   Month (1-12)
                 </Label>
                 <Input
-                  id="month"
+                  id='month'
                   value={config.month}
-                  onChange={(e) => handleConfigChange('month', e.target.value)}
-                  placeholder="* or 1"
+                  onChange={e => handleConfigChange('month', e.target.value)}
+                  placeholder='* or 1'
                 />
               </div>
 
-              <div className="space-y-2 col-span-2">
-                <Label htmlFor="dayOfWeek" className="text-xs">
+              <div className='space-y-2 col-span-2'>
+                <Label htmlFor='dayOfWeek' className='text-xs'>
                   Day of Week (0-6, 0=Sunday)
                 </Label>
                 <Input
-                  id="dayOfWeek"
+                  id='dayOfWeek'
                   value={config.dayOfWeek}
-                  onChange={(e) =>
+                  onChange={e =>
                     handleConfigChange('dayOfWeek', e.target.value)
                   }
-                  placeholder="* or 1"
+                  placeholder='* or 1'
                 />
               </div>
             </div>
           )}
 
-          <div className="pt-2">
+          <div className='pt-2'>
             <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription className="text-xs">
+              <Info className='h-4 w-4' />
+              <AlertDescription className='text-xs'>
                 Use * for any value, */n for intervals, or specific numbers
               </AlertDescription>
             </Alert>
@@ -361,12 +360,12 @@ function CronBuilder({
         </div>
       )}
 
-      <div className="p-3 bg-primary/5 rounded-md border">
-        <div className="flex items-center gap-2 mb-1">
-          <Clock className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Schedule Description</span>
+      <div className='p-3 bg-primary/5 rounded-md border'>
+        <div className='flex items-center gap-2 mb-1'>
+          <Clock className='h-4 w-4 text-muted-foreground' />
+          <span className='text-sm font-medium'>Schedule Description</span>
         </div>
-        <p className="text-sm text-muted-foreground">{describeCron(value)}</p>
+        <p className='text-sm text-muted-foreground'>{describeCron(value)}</p>
       </div>
     </div>
   );
@@ -382,51 +381,51 @@ function SchedulePreview({
 }) {
   const nextRuns = React.useMemo(
     () => calculateNextRuns(cron, timezone, 5),
-    [cron, timezone],
+    [cron, timezone]
   );
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Calendar className="h-4 w-4 text-muted-foreground" />
-        <Label className="text-sm font-medium">Next 5 Scheduled Runs</Label>
+    <div className='space-y-3'>
+      <div className='flex items-center gap-2'>
+        <Calendar className='h-4 w-4 text-muted-foreground' />
+        <Label className='text-sm font-medium'>Next 5 Scheduled Runs</Label>
       </div>
 
-      <div className="space-y-2">
+      <div className='space-y-2'>
         {nextRuns.map((run, index) => (
           <div
             key={index}
-            className="flex items-center justify-between p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors"
+            className='flex items-center justify-between p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors'
           >
-            <div className="flex items-center gap-3">
-              <div className="flex flex-col items-center justify-center w-12 h-12 bg-primary/10 rounded-md">
-                <span className="text-xs font-semibold text-primary">
+            <div className='flex items-center gap-3'>
+              <div className='flex flex-col items-center justify-center w-12 h-12 bg-primary/10 rounded-md'>
+                <span className='text-xs font-semibold text-primary'>
                   {format(run, 'MMM')}
                 </span>
-                <span className="text-lg font-bold text-primary">
+                <span className='text-lg font-bold text-primary'>
                   {format(run, 'd')}
                 </span>
               </div>
               <div>
-                <div className="text-sm font-medium">
+                <div className='text-sm font-medium'>
                   {format(run, 'EEEE, MMMM d, yyyy')}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className='text-xs text-muted-foreground'>
                   {format(run, 'h:mm:ss a')}
                 </div>
               </div>
             </div>
-            <Badge variant="outline" className="text-xs">
+            <Badge variant='outline' className='text-xs'>
               {index === 0 ? 'Next' : `+${index} run${index > 1 ? 's' : ''}`}
             </Badge>
           </div>
         ))}
       </div>
 
-      <div className="pt-2">
+      <div className='pt-2'>
         <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="text-xs">
+          <AlertCircle className='h-4 w-4' />
+          <AlertDescription className='text-xs'>
             Times shown in {timezone} timezone
           </AlertDescription>
         </Alert>
@@ -444,15 +443,15 @@ function ScheduleCalendar({
   timezone: string;
 }) {
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
-    new Date(),
+    new Date()
   );
 
   // Get all scheduled dates for the selected month
   const scheduledDates = React.useMemo(() => {
     const dates = new Set<string>();
-    schedules.forEach((schedule) => {
+    schedules.forEach(schedule => {
       if (schedule.enabled) {
-        schedule.nextRuns.forEach((run) => {
+        schedule.nextRuns.forEach(run => {
           dates.add(format(run, 'yyyy-MM-dd'));
         });
       }
@@ -463,77 +462,75 @@ function ScheduleCalendar({
   // Get schedules for selected date
   const schedulesForDate = React.useMemo(() => {
     if (!selectedDate) {
-return [];
-}
+      return [];
+    }
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    return schedules.filter((schedule) =>
-      schedule.nextRuns.some(
-        (run) => format(run, 'yyyy-MM-dd') === dateStr,
-      ),
+    return schedules.filter(schedule =>
+      schedule.nextRuns.some(run => format(run, 'yyyy-MM-dd') === dateStr)
     );
   }, [schedules, selectedDate]);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className='grid gap-4 lg:grid-cols-2'>
       <div>
         <CalendarComponent
-          mode="single"
+          mode='single'
           selected={selectedDate}
           onSelect={setSelectedDate}
           modifiers={{
-            scheduled: (date) => scheduledDates.has(format(date, 'yyyy-MM-dd')),
+            scheduled: date => scheduledDates.has(format(date, 'yyyy-MM-dd')),
           }}
           modifiersClassNames={{
             scheduled: 'bg-primary/20 font-bold',
           }}
-          className="rounded-md border"
+          className='rounded-md border'
         />
-        <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-primary/20 rounded" />
+        <div className='mt-4 flex items-center gap-2 text-xs text-muted-foreground'>
+          <div className='flex items-center gap-1'>
+            <div className='w-3 h-3 bg-primary/20 rounded' />
             <span>Has scheduled runs</span>
           </div>
         </div>
       </div>
 
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">
+      <div className='space-y-3'>
+        <Label className='text-sm font-medium'>
           Schedules for {selectedDate && format(selectedDate, 'MMM d, yyyy')}
         </Label>
         {schedulesForDate.length > 0 ? (
-          <div className="space-y-2">
-            {schedulesForDate.map((schedule) => {
+          <div className='space-y-2'>
+            {schedulesForDate.map(schedule => {
               const runsForDate = schedule.nextRuns.filter(
-                (run) =>
+                run =>
                   format(run, 'yyyy-MM-dd') ===
-                  format(selectedDate!, 'yyyy-MM-dd'),
+                  format(selectedDate!, 'yyyy-MM-dd')
               );
               return (
                 <Card key={schedule.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
+                  <CardContent className='p-4'>
+                    <div className='flex items-start justify-between mb-2'>
                       <div>
-                        <div className="font-medium text-sm">
+                        <div className='font-medium text-sm'>
                           {schedule.name}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className='text-xs text-muted-foreground'>
                           {describeCron(schedule.cron)}
                         </div>
                       </div>
                       <Badge
                         variant={schedule.enabled ? 'default' : 'secondary'}
-                        className="text-xs"
+                        className='text-xs'
                       >
                         {schedule.enabled ? 'Active' : 'Paused'}
                       </Badge>
                     </div>
-                    <div className="space-y-1">
+                    <div className='space-y-1'>
                       {runsForDate.map((run, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center gap-2 text-xs text-muted-foreground"
+                          className='flex items-center gap-2 text-xs text-muted-foreground'
                         >
-                          <Clock className="h-3 w-3" />
+                          <Clock className='h-3 w-3' />
                           {format(run, 'h:mm:ss a')}
                         </div>
                       ))}
@@ -544,9 +541,9 @@ return [];
             })}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center p-8 border rounded-lg bg-muted/30">
-            <Calendar className="h-12 w-12 text-muted-foreground/50 mb-3" />
-            <p className="text-sm text-muted-foreground text-center">
+          <div className='flex flex-col items-center justify-center p-8 border rounded-lg bg-muted/30'>
+            <Calendar className='h-12 w-12 text-muted-foreground/50 mb-3' />
+            <p className='text-sm text-muted-foreground text-center'>
               No scheduled runs for this date
             </p>
           </div>
@@ -602,12 +599,12 @@ export function ScheduleConfig({
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h3 className="text-lg font-semibold">Workflow Schedules</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className='text-lg font-semibold'>Workflow Schedules</h3>
+          <p className='text-sm text-muted-foreground'>
             Configure when this workflow should run automatically
           </p>
         </div>
@@ -615,40 +612,40 @@ export function ScheduleConfig({
           onClick={() => setIsAddingSchedule(true)}
           disabled={!canAddMore || isAddingSchedule}
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className='h-4 w-4 mr-2' />
           Add Schedule
         </Button>
       </div>
 
       {/* Add Schedule Form */}
       {isAddingSchedule && (
-        <Card className="border-primary">
+        <Card className='border-primary'>
           <CardHeader>
-            <CardTitle className="text-base">New Schedule</CardTitle>
+            <CardTitle className='text-base'>New Schedule</CardTitle>
             <CardDescription>
               Configure a new schedule for this workflow
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="schedule-name">Schedule Name *</Label>
+          <CardContent className='space-y-6'>
+            <div className='space-y-2'>
+              <Label htmlFor='schedule-name'>Schedule Name *</Label>
               <Input
-                id="schedule-name"
-                placeholder="e.g., Daily Morning Report"
+                id='schedule-name'
+                placeholder='e.g., Daily Morning Report'
                 value={newSchedule.name}
-                onChange={(e) =>
+                onChange={e =>
                   setNewSchedule({ ...newSchedule, name: e.target.value })
                 }
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="schedule-description">Description</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='schedule-description'>Description</Label>
               <Input
-                id="schedule-description"
-                placeholder="Optional description"
+                id='schedule-description'
+                placeholder='Optional description'
                 value={newSchedule.description}
-                onChange={(e) =>
+                onChange={e =>
                   setNewSchedule({
                     ...newSchedule,
                     description: e.target.value,
@@ -659,20 +656,20 @@ export function ScheduleConfig({
 
             <Separator />
 
-            <div className="space-y-2">
+            <div className='space-y-2'>
               <Label>Timezone</Label>
               <Select
                 value={newSchedule.timezone}
-                onValueChange={(value) =>
+                onValueChange={value =>
                   setNewSchedule({ ...newSchedule, timezone: value })
                 }
               >
                 <SelectTrigger>
-                  <Globe className="h-4 w-4 mr-2" />
+                  <Globe className='h-4 w-4 mr-2' />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TIMEZONES.map((tz) => (
+                  {TIMEZONES.map(tz => (
                     <SelectItem key={tz.value} value={tz.value}>
                       {tz.label}
                     </SelectItem>
@@ -685,7 +682,7 @@ export function ScheduleConfig({
 
             <CronBuilder
               value={newSchedule.cron}
-              onChange={(cron) => setNewSchedule({ ...newSchedule, cron })}
+              onChange={cron => setNewSchedule({ ...newSchedule, cron })}
             />
 
             <Separator />
@@ -695,24 +692,24 @@ export function ScheduleConfig({
               timezone={newSchedule.timezone}
             />
 
-            <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-              <div className="flex items-center gap-3">
+            <div className='flex items-center justify-between p-4 bg-muted/30 rounded-lg'>
+              <div className='flex items-center gap-3'>
                 <Switch
-                  id="schedule-enabled"
+                  id='schedule-enabled'
                   checked={newSchedule.enabled}
-                  onCheckedChange={(enabled) =>
+                  onCheckedChange={enabled =>
                     setNewSchedule({ ...newSchedule, enabled })
                   }
                 />
-                <Label htmlFor="schedule-enabled" className="cursor-pointer">
+                <Label htmlFor='schedule-enabled' className='cursor-pointer'>
                   Enable schedule immediately
                 </Label>
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-end gap-2">
+          <CardFooter className='flex justify-end gap-2'>
             <Button
-              variant="outline"
+              variant='outline'
               onClick={() => setIsAddingSchedule(false)}
             >
               Cancel
@@ -726,85 +723,87 @@ export function ScheduleConfig({
 
       {/* Existing Schedules */}
       {schedules.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-base font-semibold">
+        <div className='space-y-4'>
+          <div className='flex items-center justify-between'>
+            <Label className='text-base font-semibold'>
               Active Schedules ({schedules.length}/{maxSchedules})
             </Label>
           </div>
 
-          <div className="grid gap-4">
-            {schedules.map((schedule) => (
+          <div className='grid gap-4'>
+            {schedules.map(schedule => (
               <Card key={schedule.id}>
                 <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2">
+                  <div className='flex items-start justify-between'>
+                    <div className='space-y-1'>
+                      <CardTitle className='text-base flex items-center gap-2'>
                         {schedule.name}
                         <Badge
                           variant={schedule.enabled ? 'default' : 'secondary'}
-                          className="text-xs"
+                          className='text-xs'
                         >
                           {schedule.enabled ? 'Active' : 'Paused'}
                         </Badge>
                       </CardTitle>
                       {schedule.description && (
-                        <CardDescription>{schedule.description}</CardDescription>
+                        <CardDescription>
+                          {schedule.description}
+                        </CardDescription>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className='flex items-center gap-2'>
                       <Button
-                        variant="ghost"
-                        size="icon"
+                        variant='ghost'
+                        size='icon'
                         onClick={() =>
                           handleToggleSchedule(schedule.id, !schedule.enabled)
                         }
                       >
                         {schedule.enabled ? (
-                          <Pause className="h-4 w-4" />
+                          <Pause className='h-4 w-4' />
                         ) : (
-                          <Play className="h-4 w-4" />
+                          <Play className='h-4 w-4' />
                         )}
                       </Button>
                       <Button
-                        variant="ghost"
-                        size="icon"
+                        variant='ghost'
+                        size='icon'
                         onClick={() => onScheduleDelete?.(schedule.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className='h-4 w-4' />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4" />
-                        <span className="font-medium">Schedule:</span>
+                <CardContent className='space-y-4'>
+                  <div className='grid gap-4 md:grid-cols-2'>
+                    <div className='space-y-2'>
+                      <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                        <Clock className='h-4 w-4' />
+                        <span className='font-medium'>Schedule:</span>
                         {describeCron(schedule.cron)}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Globe className="h-4 w-4" />
-                        <span className="font-medium">Timezone:</span>
+                      <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                        <Globe className='h-4 w-4' />
+                        <span className='font-medium'>Timezone:</span>
                         {schedule.timezone}
                       </div>
-                      <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded">
+                      <div className='text-xs text-muted-foreground font-mono bg-muted p-2 rounded'>
                         {schedule.cron}
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-xs font-medium text-muted-foreground">
+                    <div className='space-y-2'>
+                      <Label className='text-xs font-medium text-muted-foreground'>
                         Next 3 Runs
                       </Label>
-                      <div className="space-y-1">
+                      <div className='space-y-1'>
                         {schedule.nextRuns.slice(0, 3).map((run, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center gap-2 text-sm"
+                            className='flex items-center gap-2 text-sm'
                           >
-                            <Calendar className="h-3 w-3 text-muted-foreground" />
+                            <Calendar className='h-3 w-3 text-muted-foreground' />
                             <span>
                               {format(run, 'MMM d, yyyy')} at{' '}
                               {format(run, 'h:mm a')}
@@ -825,14 +824,14 @@ export function ScheduleConfig({
       {schedules.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Schedule Calendar</CardTitle>
+            <CardTitle className='text-base'>Schedule Calendar</CardTitle>
             <CardDescription>
               View all scheduled runs in calendar format
             </CardDescription>
           </CardHeader>
           <CardContent>
             <ScheduleCalendar
-              schedules={schedules.filter((s) => s.enabled)}
+              schedules={schedules.filter(s => s.enabled)}
               timezone={schedules[0]?.timezone || 'UTC'}
             />
           </CardContent>
@@ -842,14 +841,15 @@ export function ScheduleConfig({
       {/* Empty State */}
       {schedules.length === 0 && !isAddingSchedule && (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Calendar className="h-16 w-16 text-muted-foreground/50 mb-4" />
-            <h4 className="text-lg font-semibold mb-2">No Schedules Yet</h4>
-            <p className="text-sm text-muted-foreground text-center mb-4 max-w-sm">
-              Add a schedule to run this workflow automatically at specific times
+          <CardContent className='flex flex-col items-center justify-center py-12'>
+            <Calendar className='h-16 w-16 text-muted-foreground/50 mb-4' />
+            <h4 className='text-lg font-semibold mb-2'>No Schedules Yet</h4>
+            <p className='text-sm text-muted-foreground text-center mb-4 max-w-sm'>
+              Add a schedule to run this workflow automatically at specific
+              times
             </p>
             <Button onClick={() => setIsAddingSchedule(true)}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className='h-4 w-4 mr-2' />
               Create First Schedule
             </Button>
           </CardContent>

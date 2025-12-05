@@ -21,7 +21,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -85,7 +89,7 @@ export function DMListsTab({
     try {
       setIsLoading(true);
       const response = await fetch(
-        `/api/tasks?channelId=${channelId}&workspaceId=${workspaceSlug}&includeCompleted=true`,
+        `/api/tasks?channelId=${channelId}&workspaceId=${workspaceSlug}&includeCompleted=true`
       );
 
       if (!response.ok) {
@@ -166,9 +170,7 @@ export function DMListsTab({
 
       const { data } = await response.json();
       setTasks(prev => prev.map(t => (t.id === task.id ? data : t)));
-      toast.success(
-        newStatus === 'DONE' ? 'Task completed' : 'Task reopened',
-      );
+      toast.success(newStatus === 'DONE' ? 'Task completed' : 'Task reopened');
     } catch (error) {
       console.error('Failed to update task:', error);
       toast.error('Failed to update task');
@@ -198,7 +200,10 @@ export function DMListsTab({
   };
 
   // Update task due date
-  const handleUpdateDueDate = async (taskId: string, date: Date | undefined) => {
+  const handleUpdateDueDate = async (
+    taskId: string,
+    date: Date | undefined
+  ) => {
     try {
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
@@ -248,8 +253,12 @@ export function DMListsTab({
     );
   }
 
-  const activeTasks = tasks.filter(t => t.status !== 'DONE' && t.status !== 'CANCELLED');
-  const completedTasks = tasks.filter(t => t.status === 'DONE' || t.status === 'CANCELLED');
+  const activeTasks = tasks.filter(
+    t => t.status !== 'DONE' && t.status !== 'CANCELLED'
+  );
+  const completedTasks = tasks.filter(
+    t => t.status === 'DONE' || t.status === 'CANCELLED'
+  );
 
   return (
     <div className='flex h-full flex-col p-4'>
@@ -354,7 +363,7 @@ export function DMListsTab({
                         onValueChange={value =>
                           handleAssignTask(
                             task.id,
-                            value === 'unassigned' ? '' : value,
+                            value === 'unassigned' ? '' : value
                           )
                         }
                       >
@@ -365,10 +374,15 @@ export function DMListsTab({
                         <SelectContent>
                           <SelectItem value='unassigned'>Unassigned</SelectItem>
                           {participants.map(participant => (
-                            <SelectItem key={participant.id} value={participant.id}>
+                            <SelectItem
+                              key={participant.id}
+                              value={participant.id}
+                            >
                               <div className='flex items-center gap-2'>
                                 <Avatar className='h-4 w-4'>
-                                  <AvatarImage src={participant.image || undefined} />
+                                  <AvatarImage
+                                    src={participant.image || undefined}
+                                  />
                                   <AvatarFallback className='text-xs'>
                                     {participant.name.charAt(0)}
                                   </AvatarFallback>
@@ -400,7 +414,9 @@ export function DMListsTab({
                             selected={
                               task.dueDate ? new Date(task.dueDate) : undefined
                             }
-                            onSelect={date => handleUpdateDueDate(task.id, date)}
+                            onSelect={date =>
+                              handleUpdateDueDate(task.id, date)
+                            }
                             initialFocus
                           />
                         </PopoverContent>
@@ -449,7 +465,9 @@ export function DMListsTab({
                     {task.assignedTo && (
                       <div className='mt-1 flex items-center gap-1 text-xs text-muted-foreground'>
                         <Avatar className='h-3 w-3'>
-                          <AvatarImage src={task.assignedTo.image || undefined} />
+                          <AvatarImage
+                            src={task.assignedTo.image || undefined}
+                          />
                           <AvatarFallback className='text-xs'>
                             {task.assignedTo.name.charAt(0)}
                           </AvatarFallback>

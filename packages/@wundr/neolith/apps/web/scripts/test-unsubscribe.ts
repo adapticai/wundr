@@ -66,7 +66,7 @@ invalidTokens.forEach(({ name, token }) => {
   const payload = verifyUnsubscribeToken(token);
   console.log(`\n${name}:`);
   console.log(
-    `  Result: ${payload ? '✅ Valid (UNEXPECTED!)' : '❌ Invalid (expected)'}`,
+    `  Result: ${payload ? '✅ Valid (UNEXPECTED!)' : '❌ Invalid (expected)'}`
   );
 });
 

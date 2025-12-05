@@ -2,7 +2,8 @@
 
 ## Overview
 
-The Workflow Triggers API provides comprehensive functionality for triggering workflows through multiple channels with robust authentication, rate limiting, and logging capabilities.
+The Workflow Triggers API provides comprehensive functionality for triggering workflows through
+multiple channels with robust authentication, rate limiting, and logging capabilities.
 
 ## Features
 
@@ -35,6 +36,7 @@ Trigger workflows by event type (internal API for other services).
 **Authentication:** Session-based (authenticated users)
 
 **Request Body:**
+
 ```json
 {
   "event": "message.created",
@@ -49,6 +51,7 @@ Trigger workflows by event type (internal API for other services).
 ```
 
 **Response:**
+
 ```json
 {
   "triggered": 2,
@@ -68,12 +71,14 @@ Trigger a workflow via webhook using its unique token.
 **Authentication:** Webhook token (no session required)
 
 **Optional Headers:**
+
 ```
 X-Webhook-Signature: sha256_signature_of_payload
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "key": "value",
@@ -82,6 +87,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -93,6 +99,7 @@ Content-Type: application/json
 ```
 
 **Headers:**
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 99
@@ -116,12 +123,14 @@ Trigger a workflow using API key authentication.
 **Authentication:** API key in Authorization header
 
 **Headers:**
+
 ```
 Authorization: Bearer wf_abc123...
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "workflowId": "wf_456",
@@ -133,6 +142,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -145,6 +155,7 @@ Content-Type: application/json
 ```
 
 **Example cURL:**
+
 ```bash
 curl -X POST https://api.example.com/api/workspaces/ws_123/workflows/trigger/api \
   -H "Authorization: Bearer wf_abc123..." \
@@ -165,6 +176,7 @@ Get trigger configuration for a workflow.
 **Authentication:** Session-based
 
 **Response:**
+
 ```json
 {
   "config": {
@@ -213,6 +225,7 @@ Update trigger configuration.
 **Authentication:** Session-based (workspace member)
 
 **Request Body:**
+
 ```json
 {
   "type": "webhook",
@@ -228,6 +241,7 @@ Update trigger configuration.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -244,13 +258,15 @@ Regenerate webhook token, secret, or API key.
 **Authentication:** Session-based (workspace member)
 
 **Request Body:**
+
 ```json
 {
-  "type": "webhook_token"  // or "webhook_secret" or "api_key"
+  "type": "webhook_token" // or "webhook_secret" or "api_key"
 }
 ```
 
 **Response (webhook_token):**
+
 ```json
 {
   "success": true,
@@ -262,6 +278,7 @@ Regenerate webhook token, secret, or API key.
 ```
 
 **Response (api_key):**
+
 ```json
 {
   "success": true,
@@ -283,6 +300,7 @@ Get trigger logs and history.
 **Authentication:** Session-based
 
 **Query Parameters:**
+
 ```
 status: success | failure | rate_limited | unauthorized (optional)
 from: ISO datetime (optional)
@@ -293,6 +311,7 @@ sortOrder: asc | desc (default: desc)
 ```
 
 **Response:**
+
 ```json
 {
   "logs": [
@@ -323,14 +342,15 @@ sortOrder: asc | desc (default: desc)
 
 Rate limits are applied per workflow and trigger type:
 
-| Trigger Type | Default Limit | Window |
-|--------------|---------------|--------|
+| Trigger Type | Default Limit | Window   |
+| ------------ | ------------- | -------- |
 | webhook      | 100 requests  | 1 minute |
 | api          | 1000 requests | 1 minute |
 | schedule     | 10 requests   | 1 minute |
 | event        | 500 requests  | 1 minute |
 
 **Rate Limit Headers:**
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
@@ -338,12 +358,14 @@ X-RateLimit-Reset: 1640000000000 (Unix timestamp)
 ```
 
 **Rate Limit Error Response:**
+
 ```json
 {
   "error": "VALIDATION_ERROR",
   "message": "Rate limit exceeded"
 }
 ```
+
 Status: `429 Too Many Requests`
 
 ---
@@ -353,6 +375,7 @@ Status: `429 Too Many Requests`
 When webhook signature verification is enabled, requests must include a valid signature.
 
 **1. Generate Signature:**
+
 ```javascript
 const crypto = require('crypto');
 const payload = JSON.stringify(requestBody);
@@ -364,6 +387,7 @@ const signature = crypto
 ```
 
 **2. Include in Request:**
+
 ```bash
 curl -X POST https://api.example.com/api/workspaces/ws_123/workflows/trigger/webhook/token_123 \
   -H "Content-Type: application/json" \
@@ -378,10 +402,12 @@ curl -X POST https://api.example.com/api/workspaces/ws_123/workflows/trigger/web
 Configure workflows to run on a schedule using cron expressions.
 
 **Supported Formats:**
+
 - 5-field: `minute hour day month weekday`
 - 6-field: `second minute hour day month weekday`
 
 **Examples:**
+
 ```
 */5 * * * *        Every 5 minutes
 0 9 * * 1-5        Weekdays at 9 AM
@@ -390,6 +416,7 @@ Configure workflows to run on a schedule using cron expressions.
 ```
 
 **Common Presets:**
+
 - `every-minute`: `* * * * *`
 - `every-5-minutes`: `*/5 * * * *`
 - `every-hour`: `0 * * * *`
@@ -398,6 +425,7 @@ Configure workflows to run on a schedule using cron expressions.
 - `weekdays-9am`: `0 9 * * 1-5`
 
 **Update Schedule:**
+
 ```json
 {
   "type": "schedule",
@@ -413,15 +441,15 @@ Configure workflows to run on a schedule using cron expressions.
 
 ## Error Codes
 
-| Code | Description |
-|------|-------------|
-| UNAUTHORIZED | Missing or invalid authentication |
-| WORKSPACE_NOT_FOUND | Workspace not found or access denied |
-| WORKFLOW_NOT_FOUND | Workflow not found |
-| WORKFLOW_INACTIVE | Workflow is not active |
-| VALIDATION_ERROR | Invalid request data or rate limit exceeded |
-| EXECUTION_FAILED | Workflow execution failed |
-| INTERNAL_ERROR | Internal server error |
+| Code                | Description                                 |
+| ------------------- | ------------------------------------------- |
+| UNAUTHORIZED        | Missing or invalid authentication           |
+| WORKSPACE_NOT_FOUND | Workspace not found or access denied        |
+| WORKFLOW_NOT_FOUND  | Workflow not found                          |
+| WORKFLOW_INACTIVE   | Workflow is not active                      |
+| VALIDATION_ERROR    | Invalid request data or rate limit exceeded |
+| EXECUTION_FAILED    | Workflow execution failed                   |
+| INTERNAL_ERROR      | Internal server error                       |
 
 ---
 
@@ -452,11 +480,13 @@ Configure workflows to run on a schedule using cron expressions.
 ## Examples
 
 ### Node.js Webhook Trigger
+
 ```javascript
 const axios = require('axios');
 const crypto = require('crypto');
 
-const webhookUrl = 'https://api.example.com/api/workspaces/ws_123/workflows/trigger/webhook/token_abc';
+const webhookUrl =
+  'https://api.example.com/api/workspaces/ws_123/workflows/trigger/webhook/token_abc';
 const webhookSecret = 'your_secret';
 const payload = { key: 'value' };
 
@@ -466,17 +496,19 @@ const signature = crypto
   .update(webhookSecret + payloadString)
   .digest('hex');
 
-axios.post(webhookUrl, payload, {
-  headers: {
-    'Content-Type': 'application/json',
-    'X-Webhook-Signature': signature,
-  },
-})
+axios
+  .post(webhookUrl, payload, {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Webhook-Signature': signature,
+    },
+  })
   .then(response => console.log('Success:', response.data))
   .catch(error => console.error('Error:', error.response.data));
 ```
 
 ### Python API Key Trigger
+
 ```python
 import requests
 
@@ -495,6 +527,7 @@ print(response.json())
 ```
 
 ### Bash Webhook Test
+
 ```bash
 #!/bin/bash
 

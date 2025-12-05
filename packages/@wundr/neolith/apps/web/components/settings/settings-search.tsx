@@ -134,7 +134,7 @@ export function SettingsSearch({
       onOpenChange(false);
       router.push(href);
     },
-    [onOpenChange, router],
+    [onOpenChange, router]
   );
 
   // Group items by category
@@ -146,12 +146,12 @@ export function SettingsSearch({
       acc[item.category].push(item);
       return acc;
     },
-    {} as Record<string, SearchItem[]>,
+    {} as Record<string, SearchItem[]>
   );
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder="Search settings..." />
+      <CommandInput placeholder='Search settings...' />
       <CommandList>
         <CommandEmpty>No settings found.</CommandEmpty>
         {Object.entries(groupedItems).map(([category, items]) => (
@@ -162,10 +162,10 @@ export function SettingsSearch({
                 value={`${item.label} ${item.description} ${item.keywords.join(' ')}`}
                 onSelect={() => handleSelect(item.href)}
               >
-                <item.icon className="mr-2 h-4 w-4" />
-                <div className="flex flex-col">
+                <item.icon className='mr-2 h-4 w-4' />
+                <div className='flex flex-col'>
                   <span>{item.label}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className='text-xs text-muted-foreground'>
                     {item.description}
                   </span>
                 </div>

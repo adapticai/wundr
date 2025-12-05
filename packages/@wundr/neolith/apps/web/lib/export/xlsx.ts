@@ -13,7 +13,7 @@ import type { XLSXExportOptions, ExportResult } from './types';
  */
 export async function exportToXLSX<T extends Record<string, unknown>>(
   data: T[],
-  options: XLSXExportOptions = {},
+  options: XLSXExportOptions = {}
 ): Promise<ExportResult> {
   const startTime = Date.now();
 
@@ -67,7 +67,12 @@ export async function exportToXLSX<T extends Record<string, unknown>>(
       worksheet['!freeze'] = {
         xSplit: freezeFirstColumn ? 1 : 0,
         ySplit: freezeFirstRow ? 1 : 0,
-        topLeftCell: freezeFirstColumn && freezeFirstRow ? 'B2' : freezeFirstRow ? 'A2' : 'B1',
+        topLeftCell:
+          freezeFirstColumn && freezeFirstRow
+            ? 'B2'
+            : freezeFirstRow
+              ? 'A2'
+              : 'B1',
         activePane: 'bottomRight',
         state: 'frozen',
       };
@@ -150,7 +155,7 @@ function formatValueForExcel(value: unknown): unknown {
  */
 function calculateColumnWidths(
   data: Record<string, unknown>[],
-  headers: string[],
+  headers: string[]
 ): Array<{ wch: number }> {
   return headers.map(header => {
     const maxLength = Math.max(
@@ -158,7 +163,7 @@ function calculateColumnWidths(
       ...data.map(row => {
         const value = String(row[header] || '');
         return value.length;
-      }),
+      })
     );
     return { wch: Math.min(maxLength + 2, 50) }; // Cap at 50 characters
   });
@@ -175,7 +180,7 @@ function applyHeaderStyles(
     fontSize?: number;
     backgroundColor?: string;
     fontColor?: string;
-  },
+  }
 ): void {
   const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
 
@@ -207,7 +212,7 @@ function applyHeaderStyles(
  */
 export async function exportMultipleSheetsToXLSX(
   sheets: Record<string, Record<string, unknown>[]>,
-  options: XLSXExportOptions = {},
+  options: XLSXExportOptions = {}
 ): Promise<ExportResult> {
   const startTime = Date.now();
 
@@ -229,8 +234,8 @@ export async function exportMultipleSheetsToXLSX(
 
     for (const [sheetName, data] of Object.entries(sheets)) {
       if (!data || data.length === 0) {
-continue;
-}
+        continue;
+      }
 
       const headers = Object.keys(data[0] || {});
       const processedData = data.map(row => {
@@ -308,7 +313,7 @@ continue;
 export async function exportToXLSXWithFormulas(
   data: Record<string, unknown>[],
   formulas: Record<string, string>,
-  options: XLSXExportOptions = {},
+  options: XLSXExportOptions = {}
 ): Promise<ExportResult> {
   const startTime = Date.now();
 
@@ -363,11 +368,13 @@ export async function exportToXLSXWithFormulas(
 /**
  * Parse Excel file to JSON
  */
-export function parseXLSX(file: File): Promise<Record<string, Record<string, unknown>[]>> {
+export function parseXLSX(
+  file: File
+): Promise<Record<string, Record<string, unknown>[]>> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = (e) => {
+    reader.onload = e => {
       try {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });

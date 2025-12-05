@@ -38,7 +38,9 @@ describe('WorkflowAIAssistant', () => {
     render(<WorkflowAIAssistant {...defaultProps} />);
 
     expect(screen.getByText('Workflow AI')).toBeInTheDocument();
-    expect(screen.getByText('Create, optimize, and troubleshoot workflows with AI')).toBeInTheDocument();
+    expect(
+      screen.getByText('Create, optimize, and troubleshoot workflows with AI')
+    ).toBeInTheDocument();
   });
 
   it('does not render when closed', () => {
@@ -116,7 +118,9 @@ describe('WorkflowAIAssistant', () => {
     const onClose = vi.fn();
     render(<WorkflowAIAssistant {...defaultProps} onClose={onClose} />);
 
-    const closeButton = screen.getByRole('button', { name: /close workflow ai/i });
+    const closeButton = screen.getByRole('button', {
+      name: /close workflow ai/i,
+    });
     await user.click(closeButton);
 
     expect(onClose).toHaveBeenCalled();

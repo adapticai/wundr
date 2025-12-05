@@ -85,7 +85,7 @@ export async function getTaskStatus(taskId: string): Promise<any> {
  */
 export async function retryTask(
   taskId: string,
-  retryConfig?: any,
+  retryConfig?: any
 ): Promise<any> {
   console.log('[TaskService] retryTask called with:', {
     taskId,
@@ -100,7 +100,7 @@ export async function retryTask(
  */
 export async function canTransitionToStatus(
   taskId: string,
-  newStatus: string,
+  newStatus: string
 ): Promise<{ allowed: boolean; reason?: string }> {
   console.log('[TaskService] canTransitionToStatus called with:', {
     taskId,
@@ -128,7 +128,7 @@ export async function canTransitionToStatus(
 export async function validateTaskDependencies(
   taskId: string,
   dependencies: string[],
-  workspaceId: string,
+  workspaceId: string
 ): Promise<{
   valid: boolean;
   errors?: string[];

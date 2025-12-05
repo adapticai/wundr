@@ -10,7 +10,7 @@
  * @module app/api/workspaces/[workspaceSlug]/orchestrators/templates/route
  */
 
-import { prisma , Prisma } from '@neolith/database';
+import { prisma, Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -100,7 +100,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -109,9 +109,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -125,9 +125,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -140,9 +140,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -152,12 +152,12 @@ export async function GET(
     let builtInTemplates = ORCHESTRATOR_TEMPLATES;
     if (filters.category) {
       builtInTemplates = builtInTemplates.filter(
-        t => t.category === filters.category,
+        t => t.category === filters.category
       );
     }
     if (filters.discipline) {
       builtInTemplates = builtInTemplates.filter(
-        t => t.discipline === filters.discipline,
+        t => t.discipline === filters.discipline
       );
     }
     if (filters.search) {
@@ -166,7 +166,7 @@ export async function GET(
         t =>
           t.name.toLowerCase().includes(searchLower) ||
           t.description.toLowerCase().includes(searchLower) ||
-          t.tags.some(tag => tag.toLowerCase().includes(searchLower)),
+          t.tags.some(tag => tag.toLowerCase().includes(searchLower))
       );
     }
 
@@ -182,14 +182,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/orchestrators/templates] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -229,7 +229,7 @@ type CreateFromTemplateInput = z.infer<typeof createFromTemplateSchema>;
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -238,9 +238,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -254,9 +254,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -265,9 +265,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions. Organization admin/owner required.',
-          ORCHESTRATOR_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -279,9 +279,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -292,9 +292,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -306,9 +306,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Template not found',
-          ORCHESTRATOR_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -369,7 +369,8 @@ export async function POST(
         data: {
           discipline: orchestratorInput.discipline,
           role: orchestratorInput.title,
-          capabilities: capabilitiesWithMeta as unknown as Prisma.InputJsonValue,
+          capabilities:
+            capabilitiesWithMeta as unknown as Prisma.InputJsonValue,
           status: 'OFFLINE',
           userId: user.id,
           organizationId: access.workspace.organizationId,
@@ -434,12 +435,12 @@ export async function POST(
           name: template.name,
         },
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceSlug/orchestrators/templates] Error:',
-      error,
+      error
     );
 
     // Handle Prisma unique constraint errors
@@ -450,18 +451,18 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'An orchestrator with these details already exists',
-          ORCHESTRATOR_ERROR_CODES.DUPLICATE_EMAIL,
+          ORCHESTRATOR_ERROR_CODES.DUPLICATE_EMAIL
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

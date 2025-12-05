@@ -82,7 +82,7 @@ export function DelegationDialog({
     setIsLoadingOrchestrators(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/orchestrators`,
+        `/api/workspaces/${workspaceSlug}/orchestrators`
       );
       if (response.ok) {
         const result = await response.json();
@@ -90,7 +90,7 @@ export function DelegationDialog({
         // Filter out current orchestrator
         const availableOrchestrators = allOrchestrators.filter(
           (o: OrchestratorOption) =>
-            o.id !== orchestratorId && o.status === 'ONLINE',
+            o.id !== orchestratorId && o.status === 'ONLINE'
         );
         setOrchestrators(availableOrchestrators);
       }
@@ -132,15 +132,14 @@ export function DelegationDialog({
             dueDate: formData.dueDate || undefined,
             note: formData.note || undefined,
           }),
-        },
+        }
       );
 
       if (response.ok) {
         const result = await response.json();
         toast({
           title: 'Task Delegated',
-          description:
-            result.message || 'Task has been successfully delegated',
+          description: result.message || 'Task has been successfully delegated',
         });
         onOpenChange(false);
         onDelegationSuccess?.();
@@ -275,9 +274,7 @@ export function DelegationDialog({
             <Textarea
               id='note'
               value={formData.note}
-              onChange={e =>
-                setFormData({ ...formData, note: e.target.value })
-              }
+              onChange={e => setFormData({ ...formData, note: e.target.value })}
               placeholder='Add delegation context or instructions...'
               rows={3}
             />

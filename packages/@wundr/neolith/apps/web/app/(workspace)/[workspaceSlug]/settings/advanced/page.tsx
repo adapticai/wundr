@@ -140,7 +140,10 @@ export default function AdvancedSettingsPage() {
   const [resetSettingsDialog, setResetSettingsDialog] = useState(false);
 
   useEffect(() => {
-    setPageHeader('Advanced Settings', 'Developer tools and advanced configuration');
+    setPageHeader(
+      'Advanced Settings',
+      'Developer tools and advanced configuration'
+    );
 
     // Load settings from localStorage
     const savedSettings = localStorage.getItem('advanced-settings');
@@ -321,9 +324,9 @@ export default function AdvancedSettingsPage() {
         <AlertCircle className='h-4 w-4' />
         <AlertTitle>Advanced Settings</AlertTitle>
         <AlertDescription>
-          These settings are intended for developers and advanced users. Changing
-          these settings may affect application behavior and performance. Proceed
-          with caution.
+          These settings are intended for developers and advanced users.
+          Changing these settings may affect application behavior and
+          performance. Proceed with caution.
         </AlertDescription>
       </Alert>
 
@@ -546,9 +549,7 @@ export default function AdvancedSettingsPage() {
                 id='api-endpoint'
                 type='url'
                 value={settings.apiEndpoint}
-                onChange={e =>
-                  updateSettings({ apiEndpoint: e.target.value })
-                }
+                onChange={e => updateSettings({ apiEndpoint: e.target.value })}
                 placeholder='https://api.neolith.app'
                 className='flex-1'
               />
@@ -611,7 +612,8 @@ export default function AdvancedSettingsPage() {
           <FlaskConical className='h-4 w-4' />
           <AlertTitle>Experimental</AlertTitle>
           <AlertDescription>
-            These features are in active development and may not work as expected.
+            These features are in active development and may not work as
+            expected.
           </AlertDescription>
         </Alert>
 
@@ -622,7 +624,10 @@ export default function AdvancedSettingsPage() {
               .replace(/^./, str => str.toUpperCase());
 
             return (
-              <div key={key} className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+              <div
+                key={key}
+                className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'
+              >
                 <div className='flex-1 space-y-1'>
                   <div className='flex items-center gap-2'>
                     <label
@@ -756,7 +761,11 @@ export default function AdvancedSettingsPage() {
           </Card>
 
           <div className='flex gap-2 pt-4'>
-            <Button variant='outline' onClick={copyDebugInfo} className='flex-1'>
+            <Button
+              variant='outline'
+              onClick={copyDebugInfo}
+              className='flex-1'
+            >
               <Database className='h-4 w-4 mr-2' />
               Copy Debug Info
             </Button>
@@ -802,8 +811,9 @@ export default function AdvancedSettingsPage() {
           <DialogHeader>
             <DialogTitle>Clear Application Cache?</DialogTitle>
             <DialogDescription>
-              This will remove all cached data except your authentication session.
-              You may need to reload the page for changes to take effect.
+              This will remove all cached data except your authentication
+              session. You may need to reload the page for changes to take
+              effect.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -827,8 +837,8 @@ export default function AdvancedSettingsPage() {
             <DialogTitle>Reset Advanced Settings?</DialogTitle>
             <DialogDescription>
               This will reset all advanced settings including feature flags,
-              experimental features, and developer options to their default values.
-              This action cannot be undone.
+              experimental features, and developer options to their default
+              values. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

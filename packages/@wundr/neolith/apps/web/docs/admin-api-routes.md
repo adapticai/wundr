@@ -5,6 +5,7 @@ Comprehensive admin API routes for workspace administration and monitoring.
 ## Overview
 
 The admin API provides powerful endpoints for workspace administrators and owners to:
+
 - Monitor dashboard statistics and metrics
 - Check system health status
 - Execute administrative actions
@@ -35,6 +36,7 @@ const { session, workspace, membership } = await requireWorkspaceAdmin(workspace
 ### Permissions
 
 Owners can:
+
 - Delete/transfer workspace
 - Modify billing settings
 - Manage all members and channels
@@ -42,6 +44,7 @@ Owners can:
 - Export audit logs
 
 Admins can:
+
 - Modify workspace settings
 - Invite/remove members
 - Create/archive channels
@@ -55,6 +58,7 @@ Admins can:
 Get comprehensive dashboard statistics.
 
 **Response:**
+
 ```typescript
 interface DashboardStats {
   members: {
@@ -124,6 +128,7 @@ interface DashboardStats {
 ```
 
 **Example:**
+
 ```bash
 curl -X GET https://api.example.com/api/workspaces/my-workspace/admin/stats \
   -H "Authorization: Bearer <token>"
@@ -136,6 +141,7 @@ curl -X GET https://api.example.com/api/workspaces/my-workspace/admin/stats \
 Get system health status for the workspace.
 
 **Response:**
+
 ```typescript
 interface SystemHealth {
   status: 'healthy' | 'degraded' | 'down';
@@ -177,11 +183,13 @@ interface SystemHealth {
 ```
 
 **Health Status Thresholds:**
+
 - Database: healthy < 100ms, degraded < 500ms, down >= 500ms
 - Redis: healthy < 50ms, degraded < 200ms, down >= 200ms
 - Storage: healthy < 80%, degraded < 95%, down >= 95%
 
 **Example:**
+
 ```bash
 curl -X GET https://api.example.com/api/workspaces/my-workspace/admin/health \
   -H "Authorization: Bearer <token>"
@@ -194,6 +202,7 @@ curl -X GET https://api.example.com/api/workspaces/my-workspace/admin/health \
 Execute administrative actions on the workspace.
 
 **Request Body:**
+
 ```typescript
 interface AdminActionRequest {
   action:
@@ -215,6 +224,7 @@ interface AdminActionRequest {
 ```
 
 **Response:**
+
 ```typescript
 interface ActionResult {
   success: boolean;
@@ -227,33 +237,41 @@ interface ActionResult {
 **Available Actions:**
 
 #### Maintenance Actions
+
 - `maintenance.enable` - Enable maintenance mode
 - `maintenance.disable` - Disable maintenance mode
 
 #### System Actions
+
 - `cache.clear` - Clear Redis cache for workspace
 - `analytics.regenerate` - Trigger analytics regeneration
 
 #### Member Actions (requires targetIds)
+
 - `members.bulk_suspend` - Suspend multiple members
 - `members.bulk_restore` - Restore suspended members
 
 #### Channel Actions (requires targetIds)
+
 - `channels.bulk_archive` - Archive multiple channels
 - `channels.bulk_unarchive` - Unarchive channels
 
 #### Orchestrator Actions
+
 - `orchestrators.restart_all` - Restart all orchestrators
 
 #### Storage Actions
+
 - `storage.cleanup_orphaned` - Remove orphaned files
 
 #### Audit Actions
+
 - `audit.export` - Export audit logs
 
 **Examples:**
 
 Enable maintenance mode:
+
 ```bash
 curl -X POST https://api.example.com/api/workspaces/my-workspace/admin/actions \
   -H "Authorization: Bearer <token>" \
@@ -265,6 +283,7 @@ curl -X POST https://api.example.com/api/workspaces/my-workspace/admin/actions \
 ```
 
 Bulk suspend members:
+
 ```bash
 curl -X POST https://api.example.com/api/workspaces/my-workspace/admin/actions \
   -H "Authorization: Bearer <token>" \
@@ -277,6 +296,7 @@ curl -X POST https://api.example.com/api/workspaces/my-workspace/admin/actions \
 ```
 
 Clear cache:
+
 ```bash
 curl -X POST https://api.example.com/api/workspaces/my-workspace/admin/actions \
   -H "Authorization: Bearer <token>" \
@@ -493,7 +513,9 @@ await logAdminAction({
   action: actionType,
   actorId: session.user.id,
   workspaceId: workspace.id,
-  metadata: { /* action details */ },
+  metadata: {
+    /* action details */
+  },
 });
 ```
 
@@ -523,10 +545,7 @@ try {
   // Action logic
 } catch (error) {
   console.error('[Admin Action] Error:', error);
-  return NextResponse.json(
-    { error: 'INTERNAL_ERROR', message: 'Action failed' },
-    { status: 500 }
-  );
+  return NextResponse.json({ error: 'INTERNAL_ERROR', message: 'Action failed' }, { status: 500 });
 }
 ```
 
@@ -548,6 +567,7 @@ if (!hasPermission(membership.role, 'members.suspend')) {
 See `/tests/admin-api-routes.test.ts` for comprehensive test suite.
 
 Run tests:
+
 ```bash
 npm test tests/admin-api-routes.test.ts
 ```
@@ -590,5 +610,6 @@ npm test tests/admin-api-routes.test.ts
 ## Support
 
 For issues or questions:
+
 - GitHub Issues: https://github.com/your-org/neolith/issues
 - Documentation: https://docs.example.com/admin-api

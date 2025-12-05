@@ -339,7 +339,7 @@ export function SecurityDashboard({
                     key={event.id}
                     className={cn(
                       'rounded-lg border p-4 transition-colors hover:bg-muted/50',
-                      selectedEvent?.id === event.id && 'border-primary',
+                      selectedEvent?.id === event.id && 'border-primary'
                     )}
                   >
                     <div className='flex items-start justify-between gap-4'>

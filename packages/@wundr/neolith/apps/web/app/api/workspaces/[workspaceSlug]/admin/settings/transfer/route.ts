@@ -36,7 +36,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (!newOwnerId || typeof newOwnerId !== 'string') {
       return NextResponse.json(
         { error: 'New owner ID is required' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -48,10 +48,7 @@ export async function POST(request: Request, context: RouteContext) {
       include: {
         workspaceMembers: {
           where: {
-            OR: [
-              { userId: session.user.id },
-              { userId: newOwnerId },
-            ],
+            OR: [{ userId: session.user.id }, { userId: newOwnerId }],
           },
           select: {
             id: true,
@@ -72,29 +69,29 @@ export async function POST(request: Request, context: RouteContext) {
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Check if current user is an owner
     const currentUserMember = workspace.workspaceMembers.find(
-      m => m.userId === session.user.id,
+      m => m.userId === session.user.id
     );
     if (!currentUserMember || currentUserMember.role !== 'OWNER') {
       return NextResponse.json(
         { error: 'Only workspace owners can transfer ownership' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Check if new owner exists in workspace
     const newOwnerMember = workspace.workspaceMembers.find(
-      m => m.userId === newOwnerId,
+      m => m.userId === newOwnerId
     );
     if (!newOwnerMember) {
       return NextResponse.json(
         { error: 'New owner must be a member of the workspace' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -102,7 +99,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (newOwnerId === session.user.id) {
       return NextResponse.json(
         { error: 'You are already the owner' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -133,10 +130,9 @@ export async function POST(request: Request, context: RouteContext) {
     console.error('Error transferring ownership:', error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : 'Internal server error',
+        error: error instanceof Error ? error.message : 'Internal server error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

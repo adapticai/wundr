@@ -31,8 +31,8 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -57,7 +57,7 @@ return null;
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -72,7 +72,7 @@ export async function PATCH(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or insufficient permissions' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -82,7 +82,10 @@ export async function PATCH(
     });
 
     if (!workflow || workflow.workspaceId !== workspaceId) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Workflow not found' },
+        { status: 404 }
+      );
     }
 
     const body = await request.json();
@@ -98,10 +101,13 @@ export async function PATCH(
 
     return NextResponse.json({ workflow: updatedWorkflow });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/:workspaceSlug/admin/workflows/:workflowId]', error);
+    console.error(
+      '[PATCH /api/workspaces/:workspaceSlug/admin/workflows/:workflowId]',
+      error
+    );
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -113,7 +119,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -128,7 +134,7 @@ export async function DELETE(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or insufficient permissions' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -138,7 +144,10 @@ export async function DELETE(
     });
 
     if (!workflow || workflow.workspaceId !== workspaceId) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Workflow not found' },
+        { status: 404 }
+      );
     }
 
     // Delete workflow executions first
@@ -153,10 +162,13 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:workspaceSlug/admin/workflows/:workflowId]', error);
+    console.error(
+      '[DELETE /api/workspaces/:workspaceSlug/admin/workflows/:workflowId]',
+      error
+    );
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

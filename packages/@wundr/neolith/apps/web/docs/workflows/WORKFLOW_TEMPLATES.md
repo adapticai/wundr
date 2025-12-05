@@ -1,6 +1,7 @@
 # Workflow Templates System
 
-A comprehensive system for creating, managing, and using pre-built workflow templates in the Genesis App.
+A comprehensive system for creating, managing, and using pre-built workflow templates in the Genesis
+App.
 
 ## Overview
 
@@ -21,6 +22,7 @@ The Workflow Templates system provides:
 The main component for browsing and selecting workflow templates.
 
 **Features:**
+
 - Search functionality
 - Category filtering
 - Popular templates view
@@ -28,6 +30,7 @@ The main component for browsing and selecting workflow templates.
 - Responsive grid layout
 
 **Usage:**
+
 ```tsx
 import { TemplateGallery } from '@/components/workflow';
 
@@ -45,6 +48,7 @@ function MyPage() {
 Displays a detailed preview of a workflow template.
 
 **Features:**
+
 - Trigger visualization
 - Action flow diagram
 - Variable requirements
@@ -52,6 +56,7 @@ Displays a detailed preview of a workflow template.
 - Error handling display
 
 **Usage:**
+
 ```tsx
 import { TemplatePreview } from '@/components/workflow';
 
@@ -65,6 +70,7 @@ function PreviewDialog({ template }) {
 Allows users to configure template variables before creating a workflow.
 
 **Features:**
+
 - Type-specific input controls
 - Real-time validation
 - Default value support
@@ -72,6 +78,7 @@ Allows users to configure template variables before creating a workflow.
 - Workflow naming
 
 **Usage:**
+
 ```tsx
 import { TemplateConfigurator } from '@/components/workflow';
 
@@ -81,7 +88,7 @@ function ConfigureTemplate({ template, values, onValueChange }) {
       template={template}
       values={values}
       onValueChange={onValueChange}
-      onComplete={(workflowName) => {
+      onComplete={workflowName => {
         // Create workflow
       }}
       onCancel={() => {
@@ -167,6 +174,7 @@ const grouped = getTemplatesByCategories();
 React hook for managing workflow template selection and creation.
 
 **Features:**
+
 - Template selection
 - Variable management
 - Workflow creation from template
@@ -174,6 +182,7 @@ React hook for managing workflow template selection and creation.
 - Error handling
 
 **Usage:**
+
 ```tsx
 import { useWorkflowTemplate } from '@/hooks/use-workflow-template';
 
@@ -289,6 +298,7 @@ Templates use a variable substitution syntax: `{{variable.name}}`
 ### Example
 
 **Template Definition:**
+
 ```typescript
 variables: [
   {
@@ -309,13 +319,15 @@ actions: [
 ```
 
 **User Configuration:**
+
 ```typescript
 variableValues = {
-  'user.id': 'user-123'
-}
+  'user.id': 'user-123',
+};
 ```
 
 **Result:**
+
 ```typescript
 {
   type: 'send_dm',
@@ -417,10 +429,10 @@ const response = await fetch('/api/workflows', {
     trigger: template.trigger,
     actions: template.actions.map(action => ({
       ...action,
-      config: substituteVariables(action.config, variableValues)
+      config: substituteVariables(action.config, variableValues),
     })),
-    variables: template.variables
-  })
+    variables: template.variables,
+  }),
 });
 ```
 
@@ -444,16 +456,19 @@ Potential improvements to the template system:
 ### Common Issues
 
 **Issue: Template not showing in gallery**
+
 - Verify template is added to `WORKFLOW_TEMPLATES` array
 - Check category is valid
 - Ensure template ID is unique
 
 **Issue: Variables not substituting**
+
 - Check variable name matches exactly (case-sensitive)
 - Verify variable is defined in template
 - Ensure substitution syntax is correct: `{{variable.name}}`
 
 **Issue: Workflow creation fails**
+
 - Verify all required variables have values
 - Check API endpoint is accessible
 - Review error messages in console
@@ -469,5 +484,4 @@ For questions or issues:
 
 ---
 
-**Last Updated:** 2025-12-05
-**Version:** 1.0.0
+**Last Updated:** 2025-12-05 **Version:** 1.0.0

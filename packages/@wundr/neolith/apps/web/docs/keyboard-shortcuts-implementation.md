@@ -2,11 +2,14 @@
 
 ## Overview
 
-A comprehensive keyboard shortcuts management system for the Neolith web application. This implementation provides full customization, conflict detection, preset schemes, and import/export capabilities.
+A comprehensive keyboard shortcuts management system for the Neolith web application. This
+implementation provides full customization, conflict detection, preset schemes, and import/export
+capabilities.
 
 ## Features Implemented
 
 ### 1. View All Available Keyboard Shortcuts by Category
+
 - Organized shortcuts into 7 categories:
   - Navigation
   - Actions
@@ -20,6 +23,7 @@ A comprehensive keyboard shortcuts management system for the Neolith web applica
 - Context badges (global, editor, chat, orchestrator)
 
 ### 2. Custom Shortcut Remapping
+
 - Interactive shortcut capture interface
 - Real-time key combination detection
 - Support for modifier keys (Meta/Cmd, Ctrl, Alt, Shift)
@@ -27,6 +31,7 @@ A comprehensive keyboard shortcuts management system for the Neolith web applica
 - Platform-aware key display (Mac vs Windows/Linux)
 
 ### 3. Shortcut Conflict Detection
+
 - Automatic conflict detection across all shortcuts
 - Visual warnings for conflicting shortcuts
 - Alert banner showing total conflicts
@@ -34,6 +39,7 @@ A comprehensive keyboard shortcuts management system for the Neolith web applica
 - Context-aware conflict checking
 
 ### 4. Preset Shortcut Schemes
+
 - **Default**: Standard keyboard shortcuts
 - **Vim**: Vim-inspired navigation and commands
 - **Emacs**: Emacs-style shortcuts
@@ -41,12 +47,14 @@ A comprehensive keyboard shortcuts management system for the Neolith web applica
 - Visual indication of active preset
 
 ### 5. Enable/Disable Specific Shortcut Groups
+
 - Category-level enable/disable toggle
 - Individual shortcut toggle switches
 - Disabled shortcuts visually indicated
 - State persisted to localStorage
 
 ### 6. Global vs Context-Specific Shortcuts Toggle
+
 - Shortcuts categorized by context:
   - Global: Available everywhere
   - Editor: Text editing contexts
@@ -56,6 +64,7 @@ A comprehensive keyboard shortcuts management system for the Neolith web applica
 - Conflict detection respects context
 
 ### 7. Shortcut Cheat Sheet Modal
+
 - Quick reference dialog
 - Organized by category
 - Keyboard shortcut (`?`) to open
@@ -63,6 +72,7 @@ A comprehensive keyboard shortcuts management system for the Neolith web applica
 - Platform-aware key display
 
 ### 8. Export/Import Shortcut Configurations
+
 - **Export**: JSON file download with timestamp
 - **Import**: JSON file upload with validation
 - Version tracking in export format
@@ -74,12 +84,14 @@ A comprehensive keyboard shortcuts management system for the Neolith web applica
   - Export timestamp
 
 ### 9. Reset Shortcuts to Default
+
 - Individual shortcut reset button
 - Reset all shortcuts with confirmation dialog
 - Visual indication of customized shortcuts
 - Restores default key combinations
 
 ### 10. Searchable Shortcut List
+
 - Real-time search across:
   - Shortcut descriptions
   - Categories
@@ -111,7 +123,9 @@ apps/web/
 ## Core Components
 
 ### KeyboardShortcutsSettings
+
 Main component with:
+
 - Search functionality
 - Preset selection
 - Category management
@@ -120,7 +134,9 @@ Main component with:
 - Reset functionality
 
 ### ShortcutRow
+
 Individual shortcut display with:
+
 - Description and context badge
 - Key combination display
 - Conflict warning
@@ -128,7 +144,9 @@ Individual shortcut display with:
 - Edit/reset/toggle controls
 
 ### EditShortcutDialog
+
 Modal for editing shortcuts:
+
 - Current shortcut display
 - Interactive capture area
 - Platform-aware key formatting
@@ -136,7 +154,9 @@ Modal for editing shortcuts:
 - Help text
 
 ### CheatSheetDialog
+
 Quick reference modal:
+
 - Category-organized view
 - Enabled shortcuts only
 - Platform-aware display
@@ -171,7 +191,9 @@ interface KeyboardShortcut {
 ### Hooks
 
 #### useKeyboardShortcuts
+
 Manages shortcut state and operations:
+
 - `shortcuts`: Current shortcut configuration
 - `updateShortcut`: Update a shortcut's keys
 - `toggleShortcut`: Enable/disable a shortcut
@@ -187,7 +209,9 @@ Manages shortcut state and operations:
 - `searchShortcuts`: Search shortcuts
 
 #### useShortcutCapture
+
 Handles keyboard input capture:
+
 - `isCapturing`: Capture state
 - `capturedKeys`: Currently captured keys
 - `startCapture`: Begin capturing
@@ -195,11 +219,13 @@ Handles keyboard input capture:
 - `clearCapture`: Clear captured keys
 
 #### useIsMac
+
 Platform detection for key display
 
 ## Default Shortcuts
 
 ### Navigation
+
 - `Cmd+K`: Open command palette
 - `?`: Show keyboard shortcuts
 - `Escape`: Close dialog/modal
@@ -207,6 +233,7 @@ Platform detection for key display
 - `Cmd+F`: Search
 
 ### Actions
+
 - `Cmd+N`: Create new item
 - `Cmd+S`: Save changes
 - `Cmd+Enter`: Submit/Send
@@ -214,6 +241,7 @@ Platform detection for key display
 - `Cmd+\`: Toggle sidebar
 
 ### Editing
+
 - `Cmd+Z`: Undo
 - `Cmd+Shift+Z`: Redo
 - `Cmd+C/X/V`: Copy/Cut/Paste
@@ -221,16 +249,19 @@ Platform detection for key display
 - `Cmd+B/I`: Bold/Italic
 
 ### Messaging
+
 - `Alt+↓/↑`: Next/Previous channel
 - `Escape`: Mark as read
 
 ### Orchestrators
+
 - `Cmd+Enter`: Run orchestrator
 - `Cmd+.`: Stop orchestrator
 
 ## Usage Example
 
 Navigate to Settings > Keyboard Shortcuts:
+
 1. Browse shortcuts by category
 2. Search for specific shortcuts
 3. Click "Edit" to customize a shortcut
@@ -244,7 +275,9 @@ Navigate to Settings > Keyboard Shortcuts:
 ## Integration Points
 
 ### Settings Navigation
+
 Added to preferences section in settings layout:
+
 ```typescript
 {
   href: `/${workspaceSlug}/settings/keyboard-shortcuts`,
@@ -254,6 +287,7 @@ Added to preferences section in settings layout:
 ```
 
 ### Future Enhancements
+
 1. Global keyboard event listener for actions
 2. Per-user server-side storage
 3. Additional preset schemes
@@ -323,5 +357,4 @@ Added to preferences section in settings layout:
 
 ---
 
-**Status**: ✅ Complete - Production Ready
-**Last Updated**: December 5, 2024
+**Status**: ✅ Complete - Production Ready **Last Updated**: December 5, 2024

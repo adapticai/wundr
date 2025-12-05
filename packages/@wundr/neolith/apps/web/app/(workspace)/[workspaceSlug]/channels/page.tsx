@@ -88,7 +88,7 @@ export default function ChannelsPage() {
     pollingInterval: 20000, // 20 seconds
     includeTyping: true,
     includeOnlineStatus: true,
-    onNewChannels: (newChannels) => {
+    onNewChannels: newChannels => {
       // Show toast for new channels
       newChannels.forEach(channel => {
         toast({
@@ -114,7 +114,7 @@ export default function ChannelsPage() {
         });
       }, 1000);
     },
-    onChannelsDeleted: (deletedIds) => {
+    onChannelsDeleted: deletedIds => {
       if (deletedIds.length > 0) {
         toast({
           title: 'Channel Deleted',
@@ -145,7 +145,7 @@ export default function ChannelsPage() {
 
   // Animation state for new channels
   const [animatingChannels, setAnimatingChannels] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
 
   // Sort state with localStorage persistence
@@ -234,7 +234,7 @@ export default function ChannelsPage() {
             description: formData.description.trim() || undefined,
             type: formData.type,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -263,7 +263,7 @@ export default function ChannelsPage() {
     } catch (error) {
       console.error('Failed to create channel:', error);
       setFormError(
-        error instanceof Error ? error.message : 'Failed to create channel',
+        error instanceof Error ? error.message : 'Failed to create channel'
       );
     } finally {
       setIsSubmitting(false);
@@ -300,7 +300,7 @@ export default function ChannelsPage() {
       result = result.filter(
         c =>
           c.name.toLowerCase().includes(query) ||
-          (c.description && c.description.toLowerCase().includes(query)),
+          (c.description && c.description.toLowerCase().includes(query))
       );
     }
 
@@ -319,12 +319,12 @@ export default function ChannelsPage() {
 
       case 'alphabetical-asc':
         return result.sort((a, b) =>
-          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
         );
 
       case 'alphabetical-desc':
         return result.sort((a, b) =>
-          b.name.localeCompare(a.name, undefined, { sensitivity: 'base' }),
+          b.name.localeCompare(a.name, undefined, { sensitivity: 'base' })
         );
 
       case 'member-count':
@@ -551,7 +551,7 @@ export default function ChannelsPage() {
                           new Date(channel.lastMessage.createdAt),
                           {
                             addSuffix: true,
-                          },
+                          }
                         )}
                       </span>
                     </div>

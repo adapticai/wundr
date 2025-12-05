@@ -1,9 +1,11 @@
 # Notification Preferences API Reference
 
 ## Base URL
+
 All endpoints are relative to: `/api/notifications`
 
 ## Authentication
+
 All endpoints require authentication via NextAuth session.
 
 ---
@@ -11,11 +13,13 @@ All endpoints require authentication via NextAuth session.
 ## Settings Management
 
 ### Get Notification Settings
+
 Retrieve complete notification preferences for the authenticated user.
 
 **Endpoint:** `GET /api/notifications/settings`
 
 **Response:**
+
 ```json
 {
   "enabled": true,
@@ -47,11 +51,13 @@ Retrieve complete notification preferences for the authenticated user.
 ---
 
 ### Update Notification Settings
+
 Update notification preferences (partial updates supported).
 
 **Endpoint:** `PUT /api/notifications/settings`
 
 **Request Body:**
+
 ```json
 {
   "enabled": true,
@@ -79,6 +85,7 @@ Update notification preferences (partial updates supported).
 **Response:** Same structure as GET response with updated values.
 
 **Validation Rules:**
+
 - `enabled`, `sound`, `desktop`, `mobile`, `email`: boolean
 - `digestFrequency`: "instant" | "hourly" | "daily" | "weekly" | "never"
 - `quietHours.start/end`: HH:mm format (24-hour)
@@ -90,11 +97,13 @@ Update notification preferences (partial updates supported).
 ## Testing
 
 ### Send Test Notification
+
 Send a test notification across all enabled channels.
 
 **Endpoint:** `POST /api/notifications/test`
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -104,6 +113,7 @@ Send a test notification across all enabled channels.
 ```
 
 The test notification:
+
 - Creates a real notification in the database
 - Attempts delivery via all enabled channels
 - Returns list of channels used
@@ -114,11 +124,13 @@ The test notification:
 ## Push Notifications
 
 ### Get VAPID Public Key
+
 Get the server's VAPID public key for push notification subscriptions.
 
 **Endpoint:** `GET /api/notifications/vapid-key`
 
 **Response:**
+
 ```json
 {
   "publicKey": "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFg..."
@@ -130,11 +142,13 @@ Get the server's VAPID public key for push notification subscriptions.
 ---
 
 ### Subscribe to Push Notifications
+
 Subscribe the current device to push notifications.
 
 **Endpoint:** `POST /api/notifications/subscribe`
 
 **Request Body:**
+
 ```json
 {
   "endpoint": "https://fcm.googleapis.com/fcm/send/...",
@@ -146,6 +160,7 @@ Subscribe the current device to push notifications.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -156,11 +171,13 @@ Subscribe the current device to push notifications.
 ---
 
 ### Unsubscribe from Push Notifications
+
 Remove push notification subscription for the current device.
 
 **Endpoint:** `POST /api/notifications/unsubscribe`
 
 **Request Body:**
+
 ```json
 {
   "endpoint": "https://fcm.googleapis.com/fcm/send/..."
@@ -168,6 +185,7 @@ Remove push notification subscription for the current device.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -181,19 +199,20 @@ Remove push notification subscription for the current device.
 
 All notification types support individual configuration:
 
-| Type | Label | Description |
-|------|-------|-------------|
-| `message` | Direct Messages | New messages in direct conversations |
-| `mention` | Mentions | When someone mentions you in a message |
-| `reaction` | Reactions | When someone reacts to your message |
-| `thread_reply` | Thread Replies | New replies to threads you are in |
-| `channel_invite` | Channel Invites | Invitations to join channels |
-| `call_incoming` | Incoming Calls | When someone calls you |
-| `call_missed` | Missed Calls | Notifications about missed calls |
-| `orchestrator_update` | Orchestrator Updates | Updates from your Orchestrators |
-| `system` | System Notifications | Important system announcements |
+| Type                  | Label                | Description                            |
+| --------------------- | -------------------- | -------------------------------------- |
+| `message`             | Direct Messages      | New messages in direct conversations   |
+| `mention`             | Mentions             | When someone mentions you in a message |
+| `reaction`            | Reactions            | When someone reacts to your message    |
+| `thread_reply`        | Thread Replies       | New replies to threads you are in      |
+| `channel_invite`      | Channel Invites      | Invitations to join channels           |
+| `call_incoming`       | Incoming Calls       | When someone calls you                 |
+| `call_missed`         | Missed Calls         | Notifications about missed calls       |
+| `orchestrator_update` | Orchestrator Updates | Updates from your Orchestrators        |
+| `system`              | System Notifications | Important system announcements         |
 
 Each type has three toggles:
+
 - `enabled`: Receive this type of notification
 - `sound`: Play sound for this notification type
 - `desktop`: Show desktop popup for this notification type
@@ -202,13 +221,13 @@ Each type has three toggles:
 
 ## Digest Frequency Options
 
-| Value | Description |
-|-------|-------------|
-| `instant` | Send notifications immediately |
-| `hourly` | Bundle notifications every hour |
-| `daily` | Send daily digest at configured time |
-| `weekly` | Send weekly digest on configured day |
-| `never` | Don't send email notifications |
+| Value     | Description                          |
+| --------- | ------------------------------------ |
+| `instant` | Send notifications immediately       |
+| `hourly`  | Bundle notifications every hour      |
+| `daily`   | Send daily digest at configured time |
+| `weekly`  | Send weekly digest on configured day |
+| `never`   | Don't send email notifications       |
 
 ---
 
@@ -230,6 +249,7 @@ All endpoints use standardized error format:
 ```
 
 **Error Codes:**
+
 - `UNAUTHORIZED` (401): Authentication required
 - `NOT_FOUND` (404): User not found
 - `VALIDATION_ERROR` (400): Invalid request data
@@ -241,6 +261,7 @@ All endpoints use standardized error format:
 ## Integration Examples
 
 ### React Hook Usage
+
 ```typescript
 import { useNotificationSettings } from '@/hooks/use-notifications';
 
@@ -277,15 +298,16 @@ function NotificationSettings() {
 ```
 
 ### Push Subscription Example
+
 ```typescript
 import { usePushNotifications } from '@/hooks/use-notifications';
 
 function PushNotificationToggle() {
-  const { 
-    isSupported, 
-    isEnabled, 
-    requestPermission, 
-    subscribeToPush 
+  const {
+    isSupported,
+    isEnabled,
+    requestPermission,
+    subscribeToPush
   } = usePushNotifications();
 
   const handleEnable = async () => {
@@ -320,6 +342,7 @@ All notification preferences are stored in the `user.preferences` JSON field:
 ```
 
 This allows for:
+
 - Schema flexibility
 - Easy versioning
 - Backward compatibility

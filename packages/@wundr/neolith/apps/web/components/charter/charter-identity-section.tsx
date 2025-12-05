@@ -132,7 +132,7 @@ export function CharterIdentitySection({
           onChange={handleNameChange}
           placeholder='e.g. Engineering Orchestrator'
           className={cn(
-            errors.name && 'border-destructive focus-visible:ring-destructive',
+            errors.name && 'border-destructive focus-visible:ring-destructive'
           )}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? 'name-error' : undefined}
@@ -157,7 +157,7 @@ export function CharterIdentitySection({
             placeholder='engineering-orchestrator'
             className={cn(
               'flex-1',
-              errors.slug && 'border-destructive focus-visible:ring-destructive',
+              errors.slug && 'border-destructive focus-visible:ring-destructive'
             )}
             aria-invalid={!!errors.slug}
             aria-describedby={errors.slug ? 'slug-error' : 'slug-hint'}
@@ -190,7 +190,7 @@ export function CharterIdentitySection({
           rows={4}
           className={cn(
             errors.persona &&
-              'border-destructive focus-visible:ring-destructive',
+              'border-destructive focus-visible:ring-destructive'
           )}
           aria-invalid={!!errors.persona}
           aria-describedby={errors.persona ? 'persona-error' : 'persona-hint'}
@@ -229,7 +229,7 @@ export function CharterIdentitySection({
             className={cn(
               'flex-1',
               errors.slackHandle &&
-                'border-destructive focus-visible:ring-destructive',
+                'border-destructive focus-visible:ring-destructive'
             )}
             aria-invalid={!!errors.slackHandle}
             aria-describedby={errors.slackHandle ? 'slack-error' : undefined}
@@ -258,7 +258,7 @@ export function CharterIdentitySection({
           placeholder='orchestrator@example.com'
           className={cn(
             (errors.email || emailError) &&
-              'border-destructive focus-visible:ring-destructive',
+              'border-destructive focus-visible:ring-destructive'
           )}
           aria-invalid={!!(errors.email || emailError)}
           aria-describedby={
@@ -288,7 +288,7 @@ export function CharterIdentitySection({
           placeholder='https://example.com/avatar.png'
           className={cn(
             errors.avatarUrl &&
-              'border-destructive focus-visible:ring-destructive',
+              'border-destructive focus-visible:ring-destructive'
           )}
           aria-invalid={!!errors.avatarUrl}
           aria-describedby={errors.avatarUrl ? 'avatar-error' : 'avatar-hint'}

@@ -35,7 +35,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: 'UNAUTHORIZED',
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid confirmation text',
           code: 'INVALID_CONFIRMATION',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'User not found',
           code: 'NOT_FOUND',
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -91,7 +91,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         resourceType: 'user',
         resourceId: session.user.id,
         metadata: {
-          message: 'Your account deletion request has been received. Your account and all associated data will be permanently deleted in 30 days. You can cancel this request from your settings.',
+          message:
+            'Your account deletion request has been received. Your account and all associated data will be permanently deleted in 30 days. You can cancel this request from your settings.',
         },
       },
     });
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: 'INTERNAL_ERROR',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -45,7 +45,7 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user (Orchestrator service account)
@@ -54,9 +54,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -69,9 +69,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid parameters',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -83,9 +83,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -96,9 +96,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           ORCHESTRATOR_CONVERSATION_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -114,9 +114,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -142,9 +142,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -153,9 +153,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Unauthorized: You can only post status updates as your own Orchestrator',
-          ORCHESTRATOR_CONVERSATION_ERROR_CODES.FORBIDDEN,
+          ORCHESTRATOR_CONVERSATION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -172,9 +172,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Task not found or not assigned to this Orchestrator',
-            ORCHESTRATOR_CONVERSATION_ERROR_CODES.TASK_NOT_FOUND,
+            ORCHESTRATOR_CONVERSATION_ERROR_CODES.TASK_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -196,9 +196,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'One or more channels not found',
-            ORCHESTRATOR_CONVERSATION_ERROR_CODES.CHANNEL_NOT_FOUND,
+            ORCHESTRATOR_CONVERSATION_ERROR_CODES.CHANNEL_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
 
@@ -222,9 +222,9 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'No assigned channels found for this Orchestrator',
-            ORCHESTRATOR_CONVERSATION_ERROR_CODES.NO_ASSIGNED_CHANNELS,
+            ORCHESTRATOR_CONVERSATION_ERROR_CODES.NO_ASSIGNED_CHANNELS
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -255,8 +255,8 @@ export async function POST(
               },
             },
           },
-        }),
-      ),
+        })
+      )
     );
 
     // Get all unique channel member IDs (excluding the Orchestrator)
@@ -304,19 +304,19 @@ export async function POST(
         },
         message: `Status update posted to ${messages.length} channel(s)`,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/status-update] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_CONVERSATION_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_CONVERSATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

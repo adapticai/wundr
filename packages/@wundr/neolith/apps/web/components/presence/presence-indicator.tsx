@@ -68,7 +68,7 @@ export function PresenceIndicator({
         <span
           className={cn(
             'absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping',
-            'bg-emerald-400',
+            'bg-emerald-400'
           )}
         />
       )}
@@ -76,7 +76,7 @@ export function PresenceIndicator({
         className={cn(
           'relative inline-flex rounded-full',
           sizeClasses[size],
-          statusColors[status],
+          statusColors[status]
         )}
       />
     </span>
@@ -86,7 +86,7 @@ export function PresenceIndicator({
 function getTooltipContent(
   status: PresenceStatus,
   lastSeen?: Date | null,
-  statusText?: string,
+  statusText?: string
 ): string {
   let content = statusLabels[status];
 
@@ -170,7 +170,7 @@ export function PresenceBadge({
         statusBgColors[status],
         statusTextColors[status],
         badgeSizeClasses[size],
-        className,
+        className
       )}
       role='status'
       aria-label={`Status: ${statusLabels[status]}`}

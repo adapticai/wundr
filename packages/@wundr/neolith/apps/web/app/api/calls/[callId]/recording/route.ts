@@ -60,7 +60,7 @@ interface CallAccessWithRecording {
  */
 async function getCallWithAccess(
   callId: string,
-  userId: string,
+  userId: string
 ): Promise<CallAccessWithRecording | null> {
   let call: {
     id: string;
@@ -205,7 +205,7 @@ async function getCallWithAccess(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -214,9 +214,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED,
+          CALL_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -227,9 +227,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid call ID format',
-          CALL_ERROR_CODES.VALIDATION_ERROR,
+          CALL_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -250,9 +250,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           CALL_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -264,9 +264,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Call not found or access denied',
-          CALL_ERROR_CODES.CALL_NOT_FOUND,
+          CALL_ERROR_CODES.CALL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -275,9 +275,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Only the call creator or an admin can manage recording',
-          CALL_ERROR_CODES.FORBIDDEN,
+          CALL_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -286,9 +286,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Can only record active calls',
-          CALL_ERROR_CODES.CALL_NOT_FOUND,
+          CALL_ERROR_CODES.CALL_NOT_FOUND
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -313,9 +313,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Recording is already active for this call',
-          CALL_ERROR_CODES.RECORDING_ALREADY_ACTIVE,
+          CALL_ERROR_CODES.RECORDING_ALREADY_ACTIVE
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -360,7 +360,7 @@ export async function POST(
     } catch (recordingError) {
       console.error(
         '[POST /api/calls/:callId/recording] Recording table not available:',
-        recordingError,
+        recordingError
       );
       // Table may not exist, store in call metadata
       try {
@@ -382,7 +382,7 @@ export async function POST(
       } catch (metadataError) {
         console.error(
           '[POST /api/calls/:callId/recording] Error storing in call metadata:',
-          metadataError,
+          metadataError
         );
         // Store in channel settings as last resort
       }
@@ -404,9 +404,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR,
+        CALL_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -422,7 +422,7 @@ export async function POST(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -431,9 +431,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED,
+          CALL_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -444,9 +444,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Invalid call ID format',
-          CALL_ERROR_CODES.VALIDATION_ERROR,
+          CALL_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -456,9 +456,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Call not found or access denied',
-          CALL_ERROR_CODES.CALL_NOT_FOUND,
+          CALL_ERROR_CODES.CALL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -467,9 +467,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Only the call creator or an admin can manage recording',
-          CALL_ERROR_CODES.FORBIDDEN,
+          CALL_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -494,9 +494,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'No active recording found',
-          CALL_ERROR_CODES.RECORDING_NOT_STARTED,
+          CALL_ERROR_CODES.RECORDING_NOT_STARTED
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -516,7 +516,7 @@ export async function DELETE(
     } catch (updateError) {
       console.error(
         '[DELETE /api/calls/:callId/recording] Error updating recording status:',
-        updateError,
+        updateError
       );
       // Table may not exist
     }
@@ -537,9 +537,9 @@ export async function DELETE(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR,
+        CALL_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -555,7 +555,7 @@ export async function DELETE(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -564,9 +564,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          CALL_ERROR_CODES.UNAUTHORIZED,
+          CALL_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -577,9 +577,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid call ID format',
-          CALL_ERROR_CODES.VALIDATION_ERROR,
+          CALL_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -589,9 +589,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Call not found or access denied',
-          CALL_ERROR_CODES.CALL_NOT_FOUND,
+          CALL_ERROR_CODES.CALL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -645,9 +645,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        CALL_ERROR_CODES.INTERNAL_ERROR,
+        CALL_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

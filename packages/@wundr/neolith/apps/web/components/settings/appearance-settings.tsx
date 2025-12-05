@@ -77,7 +77,12 @@ interface AppearancePreferences {
   showHelpfulHints: boolean;
 
   // Code
-  codeBlockTheme: 'github-light' | 'github-dark' | 'nord' | 'dracula' | 'monokai';
+  codeBlockTheme:
+    | 'github-light'
+    | 'github-dark'
+    | 'nord'
+    | 'dracula'
+    | 'monokai';
 
   // Advanced
   customCSS: string;
@@ -143,7 +148,10 @@ export function AppearanceSettings() {
   // Apply accent color to document
   React.useEffect(() => {
     if (mounted && preferences.accentColor) {
-      document.documentElement.style.setProperty('--accent-color', preferences.accentColor);
+      document.documentElement.style.setProperty(
+        '--accent-color',
+        preferences.accentColor
+      );
     }
   }, [mounted, preferences.accentColor]);
 
@@ -162,7 +170,10 @@ export function AppearanceSettings() {
   React.useEffect(() => {
     if (mounted) {
       if (preferences.reducedMotion) {
-        document.documentElement.style.setProperty('--animation-duration', '0.01ms');
+        document.documentElement.style.setProperty(
+          '--animation-duration',
+          '0.01ms'
+        );
       } else {
         document.documentElement.style.removeProperty('--animation-duration');
       }
@@ -172,13 +183,16 @@ export function AppearanceSettings() {
   // Apply display density
   React.useEffect(() => {
     if (mounted) {
-      document.documentElement.setAttribute('data-density', preferences.displayDensity);
+      document.documentElement.setAttribute(
+        'data-density',
+        preferences.displayDensity
+      );
     }
   }, [mounted, preferences.displayDensity]);
 
   const updatePreference = <K extends keyof AppearancePreferences>(
     key: K,
-    value: AppearancePreferences[K],
+    value: AppearancePreferences[K]
   ) => {
     setPreferences(prev => {
       const updated = { ...prev, [key]: value };
@@ -305,7 +319,7 @@ export function AppearanceSettings() {
                       key={value}
                       className={cn(
                         'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors',
-                        theme === value && 'border-primary bg-primary/5',
+                        theme === value && 'border-primary bg-primary/5'
                       )}
                     >
                       <RadioGroupItem value={value} className='sr-only' />
@@ -347,7 +361,9 @@ export function AppearanceSettings() {
                           >
                             <div
                               className='h-6 w-6 rounded border'
-                              style={{ backgroundColor: preferences.accentColor }}
+                              style={{
+                                backgroundColor: preferences.accentColor,
+                              }}
                             />
                             <span className='text-sm'>Pick</span>
                           </Button>
@@ -394,12 +410,14 @@ export function AppearanceSettings() {
                     {PRESET_COLORS.map(color => (
                       <button
                         key={color.value}
-                        onClick={() => updatePreference('accentColor', color.value)}
+                        onClick={() =>
+                          updatePreference('accentColor', color.value)
+                        }
                         className={cn(
                           'h-10 w-10 rounded-md border-2 transition-all hover:scale-110',
                           preferences.accentColor === color.value
                             ? 'border-foreground ring-2 ring-offset-2 ring-foreground'
-                            : 'border-muted hover:border-muted-foreground',
+                            : 'border-muted hover:border-muted-foreground'
                         )}
                         style={{ backgroundColor: color.value }}
                         title={color.name}
@@ -465,7 +483,7 @@ export function AppearanceSettings() {
                       className={cn(
                         'flex items-center gap-3 rounded-md border-2 p-3 cursor-pointer transition-colors hover:bg-accent',
                         preferences.codeBlockTheme === codeTheme.value &&
-                          'border-primary bg-primary/5',
+                          'border-primary bg-primary/5'
                       )}
                     >
                       <RadioGroupItem value={codeTheme.value} />
@@ -473,7 +491,9 @@ export function AppearanceSettings() {
                         className='h-8 w-12 rounded border'
                         style={{ backgroundColor: codeTheme.preview }}
                       />
-                      <span className='font-medium flex-1'>{codeTheme.label}</span>
+                      <span className='font-medium flex-1'>
+                        {codeTheme.label}
+                      </span>
                       {preferences.codeBlockTheme === codeTheme.value && (
                         <Check className='h-4 w-4 text-primary' />
                       )}
@@ -534,7 +554,7 @@ export function AppearanceSettings() {
                   <Select
                     value={preferences.displayDensity}
                     onValueChange={(
-                      value: 'compact' | 'comfortable' | 'spacious',
+                      value: 'compact' | 'comfortable' | 'spacious'
                     ) => updatePreference('displayDensity', value)}
                   >
                     <SelectTrigger id='display-density' className='w-40'>
@@ -695,9 +715,9 @@ export function AppearanceSettings() {
                   </div>
                   <Select
                     value={preferences.messageDensity}
-                    onValueChange={(value: 'compact' | 'cozy' | 'comfortable') =>
-                      updatePreference('messageDensity', value)
-                    }
+                    onValueChange={(
+                      value: 'compact' | 'cozy' | 'comfortable'
+                    ) => updatePreference('messageDensity', value)}
                   >
                     <SelectTrigger id='message-density' className='w-40'>
                       <SelectValue />
@@ -789,13 +809,16 @@ export function AppearanceSettings() {
                 <div className='space-y-2'>
                   <Label htmlFor='custom-css'>Custom Styles</Label>
                   <p className='text-sm text-muted-foreground mb-2'>
-                    Add custom CSS to personalize your experience (use with caution)
+                    Add custom CSS to personalize your experience (use with
+                    caution)
                   </p>
                   <Textarea
                     id='custom-css'
                     placeholder='/* Your custom CSS here */&#10;.my-class {&#10;  color: blue;&#10;}'
                     value={preferences.customCSS}
-                    onChange={e => updatePreference('customCSS', e.target.value)}
+                    onChange={e =>
+                      updatePreference('customCSS', e.target.value)
+                    }
                     className='font-mono text-sm min-h-[200px]'
                   />
                 </div>
@@ -844,9 +867,7 @@ export function AppearanceSettings() {
                 <Maximize2 className='h-5 w-5' />
                 <CardTitle>Live Preview</CardTitle>
               </div>
-              <CardDescription>
-                See your changes in real-time
-              </CardDescription>
+              <CardDescription>See your changes in real-time</CardDescription>
             </CardHeader>
             <CardContent>
               <ThemePreview
@@ -892,7 +913,7 @@ function ThemePreview({ preferences, currentTheme }: ThemePreviewProps) {
         className={cn(
           'rounded-lg border bg-background',
           densityClasses[preferences.displayDensity],
-          fontSizeClasses[preferences.fontSize],
+          fontSizeClasses[preferences.fontSize]
         )}
         style={{
           borderColor: preferences.highContrast ? '#000' : undefined,
@@ -926,7 +947,7 @@ function ThemePreview({ preferences, currentTheme }: ThemePreviewProps) {
           className={cn(
             'space-y-1',
             preferences.messageDensity === 'compact' && 'space-y-0.5',
-            preferences.messageDensity === 'comfortable' && 'space-y-2',
+            preferences.messageDensity === 'comfortable' && 'space-y-2'
           )}
         >
           <div className='h-2.5 w-full rounded bg-muted' />
@@ -945,7 +966,7 @@ function ThemePreview({ preferences, currentTheme }: ThemePreviewProps) {
           <div
             className={cn(
               'h-8 w-20 rounded flex items-center justify-center',
-              !preferences.enableAnimations && 'transition-none',
+              !preferences.enableAnimations && 'transition-none'
             )}
             style={{ backgroundColor: preferences.accentColor }}
           >

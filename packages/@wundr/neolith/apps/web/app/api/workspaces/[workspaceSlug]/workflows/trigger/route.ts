@@ -39,7 +39,7 @@ interface RouteContext {
  * Type guard to check if a value is a valid condition object
  */
 function isValidCondition(
-  value: unknown,
+  value: unknown
 ): value is { field: string; operator: string; value?: unknown } {
   if (!value || typeof value !== 'object') {
     return false;
@@ -53,7 +53,7 @@ function isValidCondition(
  */
 function checkTriggerConditions(
   trigger: WorkflowTrigger,
-  eventData: Record<string, unknown>,
+  eventData: Record<string, unknown>
 ): boolean {
   if (!trigger.conditions || trigger.conditions.length === 0) {
     return true;
@@ -162,7 +162,7 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
  */
 function checkTriggerFilters(
   trigger: WorkflowTrigger,
-  eventData: Record<string, unknown>,
+  eventData: Record<string, unknown>
 ): boolean {
   if (!trigger.filters) {
     return true;
@@ -210,7 +210,7 @@ async function executeWorkflow(
   workspaceSlug: string,
   triggerType: string,
   triggerData: Record<string, unknown>,
-  triggeredBy: string,
+  triggeredBy: string
 ): Promise<{ executionId: string; success: boolean }> {
   const startedAt = new Date();
 
@@ -314,7 +314,7 @@ async function executeWorkflow(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user (internal services should also authenticate)
@@ -323,9 +323,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -342,9 +342,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -361,9 +361,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -375,9 +375,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -388,9 +388,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -426,7 +426,7 @@ export async function POST(
           workspaceId,
           input.event,
           input.data ?? {},
-          session.user.id,
+          session.user.id
         );
         executions.push(result.executionId);
       } catch {
@@ -445,9 +445,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

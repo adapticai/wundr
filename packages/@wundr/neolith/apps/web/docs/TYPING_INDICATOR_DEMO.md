@@ -26,6 +26,7 @@
 ## States & Transitions
 
 ### State 1: No One Typing
+
 ```
 ┌─────────────────────────────┐
 │  [Message List]              │
@@ -38,6 +39,7 @@
 ```
 
 ### State 2: One User Typing
+
 ```
 ┌─────────────────────────────┐
 │  [Message List]              │
@@ -52,6 +54,7 @@
 ```
 
 ### State 3: Two Users Typing
+
 ```
 ┌─────────────────────────────┐
 │  [Message List]              │
@@ -67,6 +70,7 @@
 ```
 
 ### State 4: Multiple Users Typing
+
 ```
 ┌─────────────────────────────┐
 │  [Message List]              │
@@ -95,6 +99,7 @@ Frame 5:  • . .
 ```
 
 CSS implementation:
+
 - Dot 1: animation-delay: -0.3s
 - Dot 2: animation-delay: -0.15s
 - Dot 3: animation-delay: 0s
@@ -279,14 +284,14 @@ import { TypingIndicator } from '@/components/chat';
 await fetch(`/api/channels/${channelId}/typing`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ isTyping: true })
+  body: JSON.stringify({ isTyping: true }),
 });
 
 // Stop typing
 await fetch(`/api/channels/${channelId}/typing`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ isTyping: false })
+  body: JSON.stringify({ isTyping: false }),
 });
 
 // Get typing users
@@ -298,55 +303,61 @@ console.log(data.typingUsers); // [{ userId, userName }, ...]
 ## Accessibility Features
 
 ### Screen Reader Support
+
 - Typing indicator updates are announced via ARIA live regions
 - Format: "Alice is typing a message"
 - Updates are polite (non-interrupting)
 
 ### Keyboard Navigation
+
 - No keyboard focus required (passive indicator)
 - Doesn't interfere with message input focus
 - Automatically managed state
 
 ### Visual Accessibility
+
 - High contrast dots (meets WCAG standards)
 - Clear, readable text
 - Sufficient spacing for readability
 
 ## Browser Compatibility
 
-| Browser | Version | Status |
-|---------|---------|--------|
+| Browser | Version | Status  |
+| ------- | ------- | ------- |
 | Chrome  | 90+     | ✅ Full |
 | Firefox | 88+     | ✅ Full |
 | Safari  | 14+     | ✅ Full |
 | Edge    | 90+     | ✅ Full |
 
 All modern browsers support:
+
 - CSS animations (bounce effect)
 - Fetch API (polling)
 - ES6+ features (hook implementation)
 
 ## Performance Metrics
 
-| Metric | Value | Notes |
-|--------|-------|-------|
-| Polling frequency | 2s | Balanced performance |
-| Network payload | ~200B | Minimal bandwidth |
-| Render time | <5ms | Instant updates |
-| Memory usage | <1KB | Per typing user |
-| TTL duration | 5s | Auto-cleanup |
+| Metric            | Value | Notes                |
+| ----------------- | ----- | -------------------- |
+| Polling frequency | 2s    | Balanced performance |
+| Network payload   | ~200B | Minimal bandwidth    |
+| Render time       | <5ms  | Instant updates      |
+| Memory usage      | <1KB  | Per typing user      |
+| TTL duration      | 5s    | Auto-cleanup         |
 
 ## Troubleshooting
 
 ### Indicator Not Appearing
 
 **Check:**
+
 1. User is in the same channel
 2. Polling is active (check network tab)
 3. Current user is excluded from list
 4. WebSocket/SSE connection is healthy
 
 **Debug:**
+
 ```typescript
 // Enable debug logging
 const { typingUsers } = useTypingIndicator(channelId, userId);
@@ -356,12 +367,14 @@ console.log('Typing users:', typingUsers);
 ### Indicator Not Disappearing
 
 **Check:**
+
 1. TTL expiration (5 seconds)
 2. Network connectivity
 3. Cleanup intervals running
 4. stopTyping() being called
 
 **Debug:**
+
 ```typescript
 // Check typing state on server
 GET /api/channels/:channelId/typing
@@ -372,6 +385,7 @@ GET /api/channels/:channelId/typing
 **Issue:** Same user appears multiple times
 
 **Fix:**
+
 - Ensure unique user IDs in filter
 - Check currentUserId is correctly passed
 - Verify server-side deduplication
@@ -379,12 +393,14 @@ GET /api/channels/:channelId/typing
 ## Best Practices
 
 ### Do's ✅
+
 - Use the hook as provided (handles all logic)
 - Place indicator between message list and input
 - Let auto-expiration handle cleanup
 - Trust the debouncing mechanism
 
 ### Don'ts ❌
+
 - Don't poll faster than 2 seconds
 - Don't skip the currentUserId filter
 - Don't manually manage typing state
@@ -393,6 +409,7 @@ GET /api/channels/:channelId/typing
 ## Summary
 
 The typing indicator provides real-time feedback with:
+
 - 🎨 Smooth animations
 - ⚡ Efficient polling (2s)
 - 🔄 Auto-expiration (5s)

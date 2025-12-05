@@ -53,9 +53,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Authentication required',
-          SETTINGS_ERROR_CODES.UNAUTHORIZED,
+          SETTINGS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -71,9 +71,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'User not found',
-          SETTINGS_ERROR_CODES.NOT_FOUND,
+          SETTINGS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -94,9 +94,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createSettingsErrorResponse(
         'An internal error occurred',
-        SETTINGS_ERROR_CODES.INTERNAL_ERROR,
+        SETTINGS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -117,9 +117,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Authentication required',
-          SETTINGS_ERROR_CODES.UNAUTHORIZED,
+          SETTINGS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -131,9 +131,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Invalid JSON body',
-          SETTINGS_ERROR_CODES.VALIDATION_ERROR,
+          SETTINGS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -143,9 +143,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createSettingsErrorResponse(
           'Validation failed',
           SETTINGS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -161,14 +161,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'User not found',
-          SETTINGS_ERROR_CODES.NOT_FOUND,
+          SETTINGS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     const prefs = (user.preferences as Record<string, unknown>) || {};
-    const currentExportStatus = prefs.dataExportStatus as ExportStatus | undefined;
+    const currentExportStatus = prefs.dataExportStatus as
+      | ExportStatus
+      | undefined;
 
     // Check if export is already in progress
     if (
@@ -180,9 +182,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createSettingsErrorResponse(
           'Data export already in progress',
           SETTINGS_ERROR_CODES.EXPORT_IN_PROGRESS,
-          { currentStatus: currentExportStatus },
+          { currentStatus: currentExportStatus }
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -214,7 +216,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 5. Set expiration (e.g., 7 days)
 
     // For now, we'll simulate the job creation
-    console.log('[Data Export] Job created for user:', session.user.id, exportOptions);
+    console.log(
+      '[Data Export] Job created for user:',
+      session.user.id,
+      exportOptions
+    );
 
     // Simulate background processing (in production this would be a queue job)
     setTimeout(async () => {
@@ -266,16 +272,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         message: 'Data export requested successfully',
         data: newExportStatus,
       },
-      { status: 202 }, // Accepted
+      { status: 202 } // Accepted
     );
   } catch (error) {
     console.error('[POST /api/user/settings/export] Error:', error);
     return NextResponse.json(
       createSettingsErrorResponse(
         'An internal error occurred',
-        SETTINGS_ERROR_CODES.EXPORT_FAILED,
+        SETTINGS_ERROR_CODES.EXPORT_FAILED
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

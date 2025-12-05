@@ -4,11 +4,20 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useState, useMemo } from 'react';
 
 import { ExecutionHistory } from '@/components/workflows/execution-history';
-import { useWorkflows, useWorkflow, useWorkflowExecutions } from '@/hooks/use-workflows';
+import {
+  useWorkflows,
+  useWorkflow,
+  useWorkflowExecutions,
+} from '@/hooks/use-workflows';
 import { cn } from '@/lib/utils';
 import { WORKFLOW_STATUS_CONFIG, TRIGGER_TYPE_CONFIG } from '@/types/workflow';
 
-import type { Workflow, TriggerConfig, CreateWorkflowInput, WorkflowExecution } from '@/types/workflow';
+import type {
+  Workflow,
+  TriggerConfig,
+  CreateWorkflowInput,
+  WorkflowExecution,
+} from '@/types/workflow';
 
 export interface ChannelWorkflowsPanelProps {
   channelId: string;
@@ -17,7 +26,10 @@ export interface ChannelWorkflowsPanelProps {
   className?: string;
 }
 
-type QuickWorkflowType = 'notify_on_mention' | 'auto_reply' | 'reaction_trigger';
+type QuickWorkflowType =
+  | 'notify_on_mention'
+  | 'auto_reply'
+  | 'reaction_trigger';
 
 const CHANNEL_TRIGGER_TYPES = ['message', 'reaction', 'mention'] as const;
 
@@ -47,11 +59,17 @@ export function ChannelWorkflowsPanel({
 }: ChannelWorkflowsPanelProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
-  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(
+    null
+  );
   const [showQuickCreate, setShowQuickCreate] = useState(false);
 
   // Fetch all workflows for this workspace
-  const { workflows, isLoading: isLoadingWorkflows, mutate } = useWorkflows(workspaceId);
+  const {
+    workflows,
+    isLoading: isLoadingWorkflows,
+    mutate,
+  } = useWorkflows(workspaceId);
 
   // Filter workflows that are associated with this channel
   const channelWorkflows = useMemo(() => {
@@ -83,115 +101,130 @@ export function ChannelWorkflowsPanel({
   const { executions, isLoading: isLoadingExecutions } = useWorkflowExecutions(
     workspaceId,
     selectedWorkflowId || '',
-    { limit: 10 },
+    { limit: 10 }
   );
 
-  const handleToggleWorkflow = useCallback(async (workflow: Workflow) => {
-    const { workflow: updatedWorkflow, activateWorkflow, deactivateWorkflow } = useWorkflow(
-      workspaceId,
-      workflow.id,
-    );
+  const handleToggleWorkflow = useCallback(
+    async (workflow: Workflow) => {
+      const {
+        workflow: updatedWorkflow,
+        activateWorkflow,
+        deactivateWorkflow,
+      } = useWorkflow(workspaceId, workflow.id);
 
-    if (workflow.status === 'active') {
-      await deactivateWorkflow();
-    } else {
-      await activateWorkflow();
-    }
+      if (workflow.status === 'active') {
+        await deactivateWorkflow();
+      } else {
+        await activateWorkflow();
+      }
 
-    mutate();
-  }, [workspaceId, mutate]);
+      mutate();
+    },
+    [workspaceId, mutate]
+  );
 
-  const handleCreateQuickWorkflow = useCallback(async (type: QuickWorkflowType) => {
-    let workflowInput: CreateWorkflowInput | null = null;
+  const handleCreateQuickWorkflow = useCallback(
+    async (type: QuickWorkflowType) => {
+      let workflowInput: CreateWorkflowInput | null = null;
 
-    switch (type) {
-      case 'notify_on_mention':
-        workflowInput = {
-          name: `Notify on @channel in #${channelName}`,
-          description: 'Send notification when @channel is mentioned',
-          trigger: {
-            type: 'mention',
-            mention: {
-              orchestratorIds: [],
-            },
-          } as TriggerConfig,
-          actions: [
-            {
-              type: 'send_message',
-              order: 0,
-              config: {
-                channelId: channelId,
-                message: '@channel was mentioned by {{trigger.user.name}}',
+      switch (type) {
+        case 'notify_on_mention':
+          workflowInput = {
+            name: `Notify on @channel in #${channelName}`,
+            description: 'Send notification when @channel is mentioned',
+            trigger: {
+              type: 'mention',
+              mention: {
+                orchestratorIds: [],
               },
-            },
-          ],
-        };
-        break;
-
-      case 'auto_reply':
-        workflowInput = {
-          name: `Auto-reply in #${channelName}`,
-          description: 'Automatically reply to messages with specific keywords',
-          trigger: {
-            type: 'keyword',
-            keyword: {
-              keywords: ['help', 'support'],
-              matchType: 'contains',
-            },
-          } as TriggerConfig,
-          actions: [
-            {
-              type: 'send_message',
-              order: 0,
-              config: {
-                channelId: channelId,
-                message: 'Thanks for reaching out! Someone will assist you shortly.',
+            } as TriggerConfig,
+            actions: [
+              {
+                type: 'send_message',
+                order: 0,
+                config: {
+                  channelId: channelId,
+                  message: '@channel was mentioned by {{trigger.user.name}}',
+                },
               },
-            },
-          ],
-        };
-        break;
+            ],
+          };
+          break;
 
-      case 'reaction_trigger':
-        workflowInput = {
-          name: `Reaction alert in #${channelName}`,
-          description: 'Trigger action when specific reaction is added',
-          trigger: {
-            type: 'reaction',
-            reaction: {
-              emoji: '🚨',
-              channelIds: [channelId],
-            },
-          } as TriggerConfig,
-          actions: [
-            {
-              type: 'send_message',
-              order: 0,
-              config: {
-                channelId: channelId,
-                message: 'Alert: {{trigger.message.content}} was marked with 🚨',
+        case 'auto_reply':
+          workflowInput = {
+            name: `Auto-reply in #${channelName}`,
+            description:
+              'Automatically reply to messages with specific keywords',
+            trigger: {
+              type: 'keyword',
+              keyword: {
+                keywords: ['help', 'support'],
+                matchType: 'contains',
               },
-            },
-          ],
-        };
-        break;
-    }
+            } as TriggerConfig,
+            actions: [
+              {
+                type: 'send_message',
+                order: 0,
+                config: {
+                  channelId: channelId,
+                  message:
+                    'Thanks for reaching out! Someone will assist you shortly.',
+                },
+              },
+            ],
+          };
+          break;
 
-    if (workflowInput) {
-      // Navigate to workflow builder with pre-filled data
-      router.push(`/${workspaceId}/workflows/new?template=${type}&channelId=${channelId}`);
-    }
+        case 'reaction_trigger':
+          workflowInput = {
+            name: `Reaction alert in #${channelName}`,
+            description: 'Trigger action when specific reaction is added',
+            trigger: {
+              type: 'reaction',
+              reaction: {
+                emoji: '🚨',
+                channelIds: [channelId],
+              },
+            } as TriggerConfig,
+            actions: [
+              {
+                type: 'send_message',
+                order: 0,
+                config: {
+                  channelId: channelId,
+                  message:
+                    'Alert: {{trigger.message.content}} was marked with 🚨',
+                },
+              },
+            ],
+          };
+          break;
+      }
 
-    setShowQuickCreate(false);
-  }, [channelId, channelName, workspaceId, router]);
+      if (workflowInput) {
+        // Navigate to workflow builder with pre-filled data
+        router.push(
+          `/${workspaceId}/workflows/new?template=${type}&channelId=${channelId}`
+        );
+      }
+
+      setShowQuickCreate(false);
+    },
+    [channelId, channelName, workspaceId, router]
+  );
 
   const handleViewFullBuilder = useCallback(() => {
     router.push(`/${workspaceId}/workflows/new?channelId=${channelId}`);
   }, [workspaceId, channelId, router]);
 
-  const handleEditWorkflow = useCallback((workflow: Workflow) => {
-    router.push(`/${workspaceId}/workflows/${workflow.id}/edit`);
-  }, [workspaceId, router]);
+  const handleEditWorkflow = useCallback(
+    (workflow: Workflow) => {
+      router.push(`/${workspaceId}/workflows/${workflow.id}/edit`);
+    },
+    [workspaceId, router]
+  );
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
@@ -222,10 +255,11 @@ export function ChannelWorkflowsPanel({
             'flex-1 px-4 py-2 text-sm font-medium transition-colors',
             activeTab === 'active'
               ? 'border-b-2 border-primary text-foreground'
-              : 'text-muted-foreground hover:text-foreground',
+              : 'text-muted-foreground hover:text-foreground'
           )}
         >
-          Active Workflows ({channelWorkflows.filter(w => w.status === 'active').length})
+          Active Workflows (
+          {channelWorkflows.filter(w => w.status === 'active').length})
         </button>
         <button
           type='button'
@@ -234,7 +268,7 @@ export function ChannelWorkflowsPanel({
             'flex-1 px-4 py-2 text-sm font-medium transition-colors',
             activeTab === 'history'
               ? 'border-b-2 border-primary text-foreground'
-              : 'text-muted-foreground hover:text-foreground',
+              : 'text-muted-foreground hover:text-foreground'
           )}
         >
           Execution History
@@ -252,15 +286,24 @@ export function ChannelWorkflowsPanel({
               <button
                 key={key}
                 type='button'
-                onClick={() => handleCreateQuickWorkflow(key as QuickWorkflowType)}
+                onClick={() =>
+                  handleCreateQuickWorkflow(key as QuickWorkflowType)
+                }
                 className='flex w-full items-start gap-3 rounded-md border bg-background p-3 text-left transition-colors hover:border-primary/50 hover:bg-accent'
               >
                 <div className='flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10'>
-                  <TemplateIcon type={template.icon} className='h-4 w-4 text-primary' />
+                  <TemplateIcon
+                    type={template.icon}
+                    className='h-4 w-4 text-primary'
+                  />
                 </div>
                 <div className='min-w-0 flex-1'>
-                  <p className='text-sm font-medium text-foreground'>{template.name}</p>
-                  <p className='text-xs text-muted-foreground'>{template.description}</p>
+                  <p className='text-sm font-medium text-foreground'>
+                    {template.name}
+                  </p>
+                  <p className='text-xs text-muted-foreground'>
+                    {template.description}
+                  </p>
                 </div>
                 <ChevronRightIcon className='h-5 w-5 shrink-0 text-muted-foreground' />
               </button>
@@ -285,7 +328,10 @@ export function ChannelWorkflowsPanel({
               // Loading skeleton
               <div className='space-y-3'>
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className='h-24 animate-pulse rounded-lg bg-muted' />
+                  <div
+                    key={i}
+                    className='h-24 animate-pulse rounded-lg bg-muted'
+                  />
                 ))}
               </div>
             ) : channelWorkflows.length === 0 ? (
@@ -296,7 +342,8 @@ export function ChannelWorkflowsPanel({
                   No workflows configured
                 </h3>
                 <p className='mt-2 max-w-sm text-center text-xs text-muted-foreground'>
-                  Create your first workflow to automate actions in this channel.
+                  Create your first workflow to automate actions in this
+                  channel.
                 </p>
                 <button
                   type='button'
@@ -420,7 +467,10 @@ function WorkflowListItem({
           )}
           <div className='mt-2 flex items-center gap-3 text-xs text-muted-foreground'>
             <span className='flex items-center gap-1'>
-              <TriggerIcon type={workflow.trigger.type} className='h-3.5 w-3.5' />
+              <TriggerIcon
+                type={workflow.trigger.type}
+                className='h-3.5 w-3.5'
+              />
               {triggerConfig.label}
             </span>
             <span>•</span>
@@ -445,13 +495,14 @@ function WorkflowListItem({
             className={cn(
               'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors',
               workflow.status === 'active' ? 'bg-primary' : 'bg-muted',
-              (isToggling || workflow.status === 'draft') && 'cursor-not-allowed opacity-50',
+              (isToggling || workflow.status === 'draft') &&
+                'cursor-not-allowed opacity-50'
             )}
           >
             <span
               className={cn(
                 'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform',
-                workflow.status === 'active' ? 'translate-x-5' : 'translate-x-0',
+                workflow.status === 'active' ? 'translate-x-5' : 'translate-x-0'
               )}
             />
           </button>
@@ -499,7 +550,7 @@ function WorkflowStatusBadge({ status }: WorkflowStatusBadgeProps) {
       className={cn(
         'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
         config.bgColor,
-        config.color,
+        config.color
       )}
     >
       {status === 'active' && (

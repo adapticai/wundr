@@ -13,7 +13,10 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { createAdminErrorResponse, ADMIN_ERROR_CODES } from '@/lib/validations/admin';
+import {
+  createAdminErrorResponse,
+  ADMIN_ERROR_CODES,
+} from '@/lib/validations/admin';
 
 /**
  * Route context with workspace slug and invoice ID parameters
@@ -27,13 +30,19 @@ interface RouteContext {
  *
  * Download invoice PDF. Requires admin role.
  */
-export async function GET(_request: Request, context: RouteContext): Promise<NextResponse> {
+export async function GET(
+  _request: Request,
+  context: RouteContext
+): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        createAdminErrorResponse(
+          'Unauthorized',
+          ADMIN_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
       );
     }
 
@@ -44,10 +53,16 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
+    if (
+      !membership ||
+      !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)
+    ) {
       return NextResponse.json(
-        createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 },
+        createAdminErrorResponse(
+          'Admin access required',
+          ADMIN_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
       );
     }
 
@@ -65,11 +80,14 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/admin/billing/invoices/:invoiceId/download] Error:',
-      error,
+      error
     );
     return NextResponse.json(
-      createAdminErrorResponse('Failed to download invoice', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 },
+      createAdminErrorResponse(
+        'Failed to download invoice',
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
     );
   }
 }

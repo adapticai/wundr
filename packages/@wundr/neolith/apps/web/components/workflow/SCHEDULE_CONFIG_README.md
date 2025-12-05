@@ -1,12 +1,14 @@
 # ScheduleConfig Component
 
-A comprehensive workflow scheduling UI component with visual cron expression builder, schedule preview, calendar view, and timezone support.
+A comprehensive workflow scheduling UI component with visual cron expression builder, schedule
+preview, calendar view, and timezone support.
 
 ## Features
 
 ### 1. Visual Cron Expression Builder
 
-- **Preset Schedules**: Quick selection of common patterns (every minute, hourly, daily, weekly, monthly)
+- **Preset Schedules**: Quick selection of common patterns (every minute, hourly, daily, weekly,
+  monthly)
 - **Advanced Mode**: Manual configuration of individual cron fields
 - **Real-time Validation**: Immediate feedback on cron expression validity
 - **Human-readable Descriptions**: Automatic translation of cron to plain English
@@ -72,9 +74,7 @@ function MyWorkflowEditor() {
   };
 
   const handleScheduleUpdate = (scheduleId: string, updates: Partial<Schedule>) => {
-    setSchedules(schedules.map(s =>
-      s.id === scheduleId ? { ...s, ...updates } : s
-    ));
+    setSchedules(schedules.map(s => (s.id === scheduleId ? { ...s, ...updates } : s)));
   };
 
   const handleScheduleDelete = (scheduleId: string) => {
@@ -83,7 +83,7 @@ function MyWorkflowEditor() {
 
   return (
     <ScheduleConfig
-      workflowId="my-workflow-id"
+      workflowId='my-workflow-id'
       schedules={schedules}
       onScheduleAdd={handleScheduleAdd}
       onScheduleUpdate={handleScheduleUpdate}
@@ -98,14 +98,14 @@ function MyWorkflowEditor() {
 
 ### Props
 
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| `workflowId` | `string` | Yes | - | Unique identifier for the workflow |
-| `schedules` | `Schedule[]` | No | `[]` | Array of existing schedules |
-| `onScheduleAdd` | `(schedule: Omit<Schedule, 'id' \| 'createdAt'>) => void` | No | - | Callback when a schedule is added |
-| `onScheduleUpdate` | `(scheduleId: string, updates: Partial<Schedule>) => void` | No | - | Callback when a schedule is updated |
-| `onScheduleDelete` | `(scheduleId: string) => void` | No | - | Callback when a schedule is deleted |
-| `maxSchedules` | `number` | No | `10` | Maximum number of schedules allowed |
+| Prop               | Type                                                       | Required | Default | Description                         |
+| ------------------ | ---------------------------------------------------------- | -------- | ------- | ----------------------------------- |
+| `workflowId`       | `string`                                                   | Yes      | -       | Unique identifier for the workflow  |
+| `schedules`        | `Schedule[]`                                               | No       | `[]`    | Array of existing schedules         |
+| `onScheduleAdd`    | `(schedule: Omit<Schedule, 'id' \| 'createdAt'>) => void`  | No       | -       | Callback when a schedule is added   |
+| `onScheduleUpdate` | `(scheduleId: string, updates: Partial<Schedule>) => void` | No       | -       | Callback when a schedule is updated |
+| `onScheduleDelete` | `(scheduleId: string) => void`                             | No       | -       | Callback when a schedule is deleted |
+| `maxSchedules`     | `number`                                                   | No       | `10`    | Maximum number of schedules allowed |
 
 ### Types
 
@@ -122,10 +122,10 @@ interface Schedule {
 }
 
 interface CronConfig {
-  minute: string;    // 0-59 or */n
-  hour: string;      // 0-23 or */n
+  minute: string; // 0-59 or */n
+  hour: string; // 0-23 or */n
   dayOfMonth: string; // 1-31 or */n or ?
-  month: string;     // 1-12 or */n
+  month: string; // 1-12 or */n
   dayOfWeek: string; // 0-6 or */n or ?
 }
 ```
@@ -143,17 +143,17 @@ The component uses standard cron format: `minute hour dayOfMonth month dayOfWeek
 
 ### Common Patterns
 
-| Pattern | Cron Expression | Description |
-|---------|-----------------|-------------|
-| Every minute | `* * * * *` | Runs every minute |
-| Every 5 minutes | `*/5 * * * *` | Runs every 5 minutes |
-| Every 15 minutes | `*/15 * * * *` | Runs every 15 minutes |
-| Every 30 minutes | `*/30 * * * *` | Runs every 30 minutes |
-| Every hour | `0 * * * *` | Runs at minute 0 of every hour |
-| Every day at midnight | `0 0 * * *` | Runs at 00:00 every day |
-| Every day at 9 AM | `0 9 * * *` | Runs at 09:00 every day |
-| Every Monday at 9 AM | `0 9 * * 1` | Runs at 09:00 on Mondays |
-| First day of month | `0 9 1 * *` | Runs at 09:00 on the 1st |
+| Pattern               | Cron Expression | Description                    |
+| --------------------- | --------------- | ------------------------------ |
+| Every minute          | `* * * * *`     | Runs every minute              |
+| Every 5 minutes       | `*/5 * * * *`   | Runs every 5 minutes           |
+| Every 15 minutes      | `*/15 * * * *`  | Runs every 15 minutes          |
+| Every 30 minutes      | `*/30 * * * *`  | Runs every 30 minutes          |
+| Every hour            | `0 * * * *`     | Runs at minute 0 of every hour |
+| Every day at midnight | `0 0 * * *`     | Runs at 00:00 every day        |
+| Every day at 9 AM     | `0 9 * * *`     | Runs at 09:00 every day        |
+| Every Monday at 9 AM  | `0 9 * * 1`     | Runs at 09:00 on Mondays       |
+| First day of month    | `0 9 1 * *`     | Runs at 09:00 on the 1st       |
 
 ## Timezones
 
@@ -177,6 +177,7 @@ Supported timezones:
 Visual cron expression builder with presets and advanced configuration.
 
 **Features:**
+
 - Preset dropdown for common patterns
 - Advanced mode with individual field inputs
 - Real-time description updates
@@ -187,6 +188,7 @@ Visual cron expression builder with presets and advanced configuration.
 Preview of next scheduled runs with formatted dates and times.
 
 **Features:**
+
 - Shows next 5 runs by default
 - Visual date cards
 - Countdown indicators
@@ -197,6 +199,7 @@ Preview of next scheduled runs with formatted dates and times.
 Monthly calendar view of scheduled runs.
 
 **Features:**
+
 - Full calendar with date highlighting
 - Click to view schedules for date
 - Shows all active schedules
@@ -235,10 +238,7 @@ function WorkflowScheduler({ workflowId }: { workflowId: string }) {
     });
   };
 
-  const handleScheduleUpdate = async (
-    scheduleId: string,
-    updates: Partial<Schedule>
-  ) => {
+  const handleScheduleUpdate = async (scheduleId: string, updates: Partial<Schedule>) => {
     await updateSchedule({
       variables: {
         scheduleId,
@@ -316,10 +316,10 @@ function WorkflowSchedulerWithValidation({ workflowId }: { workflowId: string })
       schedules={schedules}
       onScheduleAdd={handleScheduleAdd}
       onScheduleUpdate={(id, updates) => {
-        setSchedules(schedules.map(s => s.id === id ? { ...s, ...updates } : s));
+        setSchedules(schedules.map(s => (s.id === id ? { ...s, ...updates } : s)));
         toast.success('Schedule updated');
       }}
-      onScheduleDelete={(id) => {
+      onScheduleDelete={id => {
         setSchedules(schedules.filter(s => s.id !== id));
         toast.success('Schedule deleted');
       }}
@@ -330,7 +330,8 @@ function WorkflowSchedulerWithValidation({ workflowId }: { workflowId: string })
 
 ## Styling
 
-The component uses Tailwind CSS and shadcn/ui components. It automatically adapts to your theme configuration including:
+The component uses Tailwind CSS and shadcn/ui components. It automatically adapts to your theme
+configuration including:
 
 - Light/dark mode
 - Custom color schemes
@@ -365,19 +366,13 @@ import { ScheduleConfig } from './schedule-config';
 
 describe('ScheduleConfig', () => {
   it('renders without schedules', () => {
-    render(<ScheduleConfig workflowId="test" schedules={[]} />);
+    render(<ScheduleConfig workflowId='test' schedules={[]} />);
     expect(screen.getByText('No Schedules Yet')).toBeInTheDocument();
   });
 
   it('allows adding a schedule', async () => {
     const onScheduleAdd = jest.fn();
-    render(
-      <ScheduleConfig
-        workflowId="test"
-        schedules={[]}
-        onScheduleAdd={onScheduleAdd}
-      />
-    );
+    render(<ScheduleConfig workflowId='test' schedules={[]} onScheduleAdd={onScheduleAdd} />);
 
     fireEvent.click(screen.getByText('Add Schedule'));
     fireEvent.change(screen.getByLabelText('Schedule Name *'), {
@@ -407,7 +402,7 @@ describe('ScheduleConfig', () => {
       },
     ];
 
-    render(<ScheduleConfig workflowId="test" schedules={schedules} />);
+    render(<ScheduleConfig workflowId='test' schedules={schedules} />);
     expect(screen.getByText('Daily Report')).toBeInTheDocument();
   });
 });
@@ -422,7 +417,7 @@ describe('ScheduleConfig', () => {
 ```tsx
 const handleScheduleUpdate = (id: string, updates: Partial<Schedule>) => {
   // Make sure to update state
-  setSchedules(schedules.map(s => s.id === id ? { ...s, ...updates } : s));
+  setSchedules(schedules.map(s => (s.id === id ? { ...s, ...updates } : s)));
 };
 ```
 
@@ -432,10 +427,10 @@ const handleScheduleUpdate = (id: string, updates: Partial<Schedule>) => {
 
 ```tsx
 // Correct
-timezone: 'America/New_York'
+timezone: 'America/New_York';
 
 // Incorrect
-timezone: 'EST'
+timezone: 'EST';
 ```
 
 ### Issue: Calendar not showing scheduled dates

@@ -53,11 +53,9 @@ export function verifyApiKey(apiKey: string, hash: string): boolean {
  */
 export function generateWebhookSignature(
   payload: string,
-  secret: string,
+  secret: string
 ): string {
-  return createHash('sha256')
-    .update(`${secret}${payload}`)
-    .digest('hex');
+  return createHash('sha256').update(`${secret}${payload}`).digest('hex');
 }
 
 /**
@@ -66,7 +64,7 @@ export function generateWebhookSignature(
 export function verifyWebhookSignature(
   payload: string,
   signature: string,
-  secret: string,
+  secret: string
 ): boolean {
   try {
     const expectedSignature = generateWebhookSignature(payload, secret);
@@ -93,9 +91,7 @@ export function generateWebhookToken(): string {
 /**
  * Extract Bearer token from Authorization header
  */
-export function extractBearerToken(
-  authHeader: string | null,
-): string | null {
+export function extractBearerToken(authHeader: string | null): string | null {
   if (!authHeader) {
     return null;
   }

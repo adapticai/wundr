@@ -16,12 +16,12 @@
  * Time range options for analytics queries
  */
 export type AnalyticsTimeRange =
-  | '1h'    // Last hour
-  | '24h'   // Last 24 hours
-  | '7d'    // Last 7 days
-  | '30d'   // Last 30 days
-  | '90d'   // Last 90 days
-  | 'all'   // All time
+  | '1h' // Last hour
+  | '24h' // Last 24 hours
+  | '7d' // Last 7 days
+  | '30d' // Last 30 days
+  | '90d' // Last 90 days
+  | 'all' // All time
   | 'custom'; // Custom date range
 
 /**
@@ -1082,8 +1082,18 @@ export interface AnalyticsErrorResponse {
  */
 export function isChartType(value: unknown): value is ChartType {
   const validTypes: ChartType[] = [
-    'line', 'bar', 'area', 'pie', 'donut', 'scatter',
-    'heatmap', 'gauge', 'funnel', 'radar', 'treemap', 'waterfall',
+    'line',
+    'bar',
+    'area',
+    'pie',
+    'donut',
+    'scatter',
+    'heatmap',
+    'gauge',
+    'funnel',
+    'radar',
+    'treemap',
+    'waterfall',
   ];
   return typeof value === 'string' && validTypes.includes(value as ChartType);
 }
@@ -1099,8 +1109,17 @@ export function isTrendDirection(value: unknown): value is TrendDirection {
  * Check if value is a valid ReportFormat
  */
 export function isReportFormat(value: unknown): value is ReportFormat {
-  const validFormats: ReportFormat[] = ['pdf', 'excel', 'csv', 'json', 'html', 'markdown'];
-  return typeof value === 'string' && validFormats.includes(value as ReportFormat);
+  const validFormats: ReportFormat[] = [
+    'pdf',
+    'excel',
+    'csv',
+    'json',
+    'html',
+    'markdown',
+  ];
+  return (
+    typeof value === 'string' && validFormats.includes(value as ReportFormat)
+  );
 }
 
 /**
@@ -1108,8 +1127,8 @@ export function isReportFormat(value: unknown): value is ReportFormat {
  */
 export function isMetricValue(value: unknown): value is MetricValue {
   if (typeof value !== 'object' || value === null) {
-return false;
-}
+    return false;
+  }
   const v = value as MetricValue;
   return (
     typeof v.value === 'number' &&
@@ -1123,8 +1142,8 @@ return false;
  */
 export function isAnalyticsQuery(value: unknown): value is AnalyticsQuery {
   if (typeof value !== 'object' || value === null) {
-return false;
-}
+    return false;
+  }
   const q = value as AnalyticsQuery;
   return typeof q.workspaceId === 'string';
 }
@@ -1148,4 +1167,5 @@ export type RequireKeys<T, K extends keyof T> = T & Required<Pick<T, K>>;
 /**
  * Make specific keys optional
  */
-export type OptionalKeys<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type OptionalKeys<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;

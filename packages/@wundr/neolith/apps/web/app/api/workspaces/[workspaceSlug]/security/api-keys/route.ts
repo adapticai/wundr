@@ -62,9 +62,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     // Fetch API keys (excluding actual key values)
     const apiKeys = await prisma.daemonCredential.findMany({
-      where: {
-        
-      },
+      where: {},
       select: {
         id: true,
         apiKey: true, // This is the key identifier, not the actual secret
@@ -86,7 +84,7 @@ export async function GET(_request: Request, context: RouteContext) {
     console.error('Error fetching API keys:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -106,7 +104,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (!parseResult.success) {
       return NextResponse.json(
         { error: 'Invalid input', details: parseResult.error.flatten() },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -138,7 +136,7 @@ export async function POST(request: Request, context: RouteContext) {
     // Calculate expiry date
     const expiresAt = parseResult.data.expiresInDays
       ? new Date(
-          Date.now() + parseResult.data.expiresInDays * 24 * 60 * 60 * 1000,
+          Date.now() + parseResult.data.expiresInDays * 24 * 60 * 60 * 1000
         )
       : null;
 
@@ -154,8 +152,11 @@ export async function POST(request: Request, context: RouteContext) {
     // If no orchestrator exists, we can't create API keys yet
     if (!orchestrator) {
       return NextResponse.json(
-        { error: 'No orchestrator found for user. Create an orchestrator profile first.' },
-        { status: 400 },
+        {
+          error:
+            'No orchestrator found for user. Create an orchestrator profile first.',
+        },
+        { status: 400 }
       );
     }
 
@@ -179,8 +180,8 @@ export async function POST(request: Request, context: RouteContext) {
     // Log audit event
     await prisma.auditLog.create({
       data: {
-        
-        actorId: session.user.id, actorType: 'user',
+        actorId: session.user.id,
+        actorType: 'user',
         action: 'api_key.created',
         resourceType: 'api_key',
         resourceId: credential.id,
@@ -203,7 +204,7 @@ export async function POST(request: Request, context: RouteContext) {
     console.error('Error creating API key:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

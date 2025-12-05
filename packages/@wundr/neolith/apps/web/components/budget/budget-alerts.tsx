@@ -246,7 +246,7 @@ export function BudgetAlerts({
                       className={cn(
                         'flex items-start gap-3 p-3 rounded-lg border',
                         config.bgColor,
-                        config.borderColor,
+                        config.borderColor
                       )}
                     >
                       <Icon className={cn('h-5 w-5 mt-0.5', config.color)} />

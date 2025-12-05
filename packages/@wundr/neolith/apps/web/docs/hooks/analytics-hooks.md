@@ -1,10 +1,12 @@
 # Analytics Hooks Documentation
 
-This document provides comprehensive documentation for the analytics hooks in the Neolith web application.
+This document provides comprehensive documentation for the analytics hooks in the Neolith web
+application.
 
 ## Overview
 
-The analytics hooks provide a complete solution for fetching, managing, and displaying analytics data with proper TypeScript types, error handling, loading states, and SWR/React Query patterns.
+The analytics hooks provide a complete solution for fetching, managing, and displaying analytics
+data with proper TypeScript types, error handling, loading states, and SWR/React Query patterns.
 
 ## Table of Contents
 
@@ -34,19 +36,13 @@ Fetches comprehensive workspace analytics data with SWR caching and revalidation
 import { useAnalyticsData } from '@/hooks';
 
 function AnalyticsDashboard({ workspaceId }: { workspaceId: string }) {
-  const {
-    data,
-    isLoading,
-    error,
-    updateParams,
-    params
-  } = useAnalyticsData(workspaceId, {
+  const { data, isLoading, error, updateParams, params } = useAnalyticsData(workspaceId, {
     initialParams: {
       granularity: 'daily',
       includeTimeSeries: true,
-      includeBreakdown: true
+      includeBreakdown: true,
     },
-    refreshInterval: 60000 // Refresh every minute
+    refreshInterval: 60000, // Refresh every minute
   });
 
   if (isLoading) return <Spinner />;
@@ -56,15 +52,13 @@ function AnalyticsDashboard({ workspaceId }: { workspaceId: string }) {
   return (
     <div>
       <h1>{data.workspace.name} Analytics</h1>
-      <div className="summary">
-        <StatCard label="Total Messages" value={data.summary.totalMessages} />
-        <StatCard label="Active Orchestrators" value={data.summary.activeOrchestrators} />
-        <StatCard label="Task Completion Rate" value={`${data.taskMetrics.completionRate}%`} />
+      <div className='summary'>
+        <StatCard label='Total Messages' value={data.summary.totalMessages} />
+        <StatCard label='Active Orchestrators' value={data.summary.activeOrchestrators} />
+        <StatCard label='Task Completion Rate' value={`${data.taskMetrics.completionRate}%`} />
       </div>
       <TimeSeriesChart data={data.timeSeries.messageVolume} />
-      <button onClick={() => updateParams({ granularity: 'weekly' })}>
-        Switch to Weekly
-      </button>
+      <button onClick={() => updateParams({ granularity: 'weekly' })}>Switch to Weekly</button>
     </div>
   );
 }
@@ -128,14 +122,11 @@ Compares analytics data across time periods.
 import { useAnalyticsComparison } from '@/hooks';
 
 function AnalyticsComparison({ workspaceId }: { workspaceId: string }) {
-  const { comparison, isLoading, error } = useAnalyticsComparison(
-    workspaceId,
-    {
-      startDate: '2024-01-01',
-      endDate: '2024-01-31',
-      granularity: 'daily'
-    }
-  );
+  const { comparison, isLoading, error } = useAnalyticsComparison(workspaceId, {
+    startDate: '2024-01-01',
+    endDate: '2024-01-31',
+    granularity: 'daily',
+  });
 
   if (isLoading) return <Spinner />;
   if (error) return <ErrorMessage error={error} />;
@@ -144,7 +135,7 @@ function AnalyticsComparison({ workspaceId }: { workspaceId: string }) {
   return (
     <div>
       <ComparisonCard
-        label="Messages"
+        label='Messages'
         current={comparison.current.summary.totalMessages}
         previous={comparison.previous.summary.totalMessages}
         change={comparison.percentChanges.messages}
@@ -177,12 +168,12 @@ function InsightsDashboard({ workspaceId }: { workspaceId: string }) {
   return (
     <div>
       <h2>Insights for {report.workspace.name}</h2>
-      <div className="insights">
+      <div className='insights'>
         {report.insights.map(insight => (
           <InsightCard key={insight.id} insight={insight} />
         ))}
       </div>
-      <div className="trends">
+      <div className='trends'>
         {report.trends.map(trend => (
           <TrendChart key={trend.metric} trend={trend} />
         ))}
@@ -219,10 +210,7 @@ Fetches high-level summary reports for a specific period.
 import { useSummaryReport } from '@/hooks';
 
 function SummaryDashboard({ workspaceId }: { workspaceId: string }) {
-  const { report, isLoading, error, refetch } = useSummaryReport(
-    workspaceId,
-    'week'
-  );
+  const { report, isLoading, error, refetch } = useSummaryReport(workspaceId, 'week');
 
   if (isLoading) return <Spinner />;
   if (error) return <ErrorMessage error={error} />;
@@ -231,10 +219,10 @@ function SummaryDashboard({ workspaceId }: { workspaceId: string }) {
   return (
     <div>
       <h2>Weekly Summary</h2>
-      <div className="overview">
-        <Stat label="Messages" value={report.overview.totalMessages} />
-        <Stat label="Tasks" value={report.overview.totalTasks} />
-        <Stat label="Workflows" value={report.overview.totalWorkflows} />
+      <div className='overview'>
+        <Stat label='Messages' value={report.overview.totalMessages} />
+        <Stat label='Tasks' value={report.overview.totalTasks} />
+        <Stat label='Workflows' value={report.overview.totalWorkflows} />
       </div>
       <button onClick={refetch}>Refresh</button>
     </div>
@@ -289,20 +277,15 @@ Generates and exports custom reports with various formats.
 import { useReportGeneration } from '@/hooks';
 
 function ReportGenerator({ workspaceId }: { workspaceId: string }) {
-  const {
-    generate,
-    exportReport,
-    getStatus,
-    isGenerating,
-    error
-  } = useReportGeneration(workspaceId);
+  const { generate, exportReport, getStatus, isGenerating, error } =
+    useReportGeneration(workspaceId);
 
   const handleGenerate = async () => {
     const reportId = await generate({
       type: 'detailed',
       period: 'month',
       format: 'pdf',
-      includeCharts: true
+      includeCharts: true,
     });
 
     // Poll for completion
@@ -339,7 +322,7 @@ import { useRealTimeMetrics } from '@/hooks';
 function LiveMetricsDashboard({ workspaceId }: { workspaceId: string }) {
   const { metrics, isConnected, error } = useRealTimeMetrics(workspaceId, {
     useWebSocket: true,
-    autoConnect: true
+    autoConnect: true,
   });
 
   if (error) return <ErrorMessage error={error} />;
@@ -347,10 +330,10 @@ function LiveMetricsDashboard({ workspaceId }: { workspaceId: string }) {
   return (
     <div>
       <ConnectionStatus isConnected={isConnected} />
-      <MetricCard label="Online Users" value={metrics?.onlineUsers ?? 0} />
-      <MetricCard label="Active Channels" value={metrics?.activeChannels ?? 0} />
-      <MetricCard label="Messages/Hour" value={metrics?.messagesLastHour ?? 0} />
-      <MetricCard label="Response Time" value={`${metrics?.responseTime ?? 0}ms`} />
+      <MetricCard label='Online Users' value={metrics?.onlineUsers ?? 0} />
+      <MetricCard label='Active Channels' value={metrics?.activeChannels ?? 0} />
+      <MetricCard label='Messages/Hour' value={metrics?.messagesLastHour ?? 0} />
+      <MetricCard label='Response Time' value={`${metrics?.responseTime ?? 0}ms`} />
     </div>
   );
 }
@@ -391,19 +374,19 @@ function UsageOverview({ workspaceId }: { workspaceId: string }) {
   if (!metrics) return null;
 
   return (
-    <div className="grid">
+    <div className='grid'>
       <MetricCard
-        title="Messages"
+        title='Messages'
         value={metrics.messages.total}
         change={metrics.messages.changePercent}
       />
       <MetricCard
-        title="Active Users"
+        title='Active Users'
         value={metrics.users.activeUsers}
         subtitle={`${metrics.users.onlineNow} online now`}
       />
       <MetricCard
-        title="Task Completion"
+        title='Task Completion'
         value={`${metrics.tasks.completionRate}%`}
         subtitle={`${metrics.tasks.completed} completed`}
       />
@@ -434,12 +417,12 @@ function SystemHealth({ workspaceId }: { workspaceId: string }) {
     <div>
       <StatusBadge status={health.status} />
       <HealthCard
-        title="Database"
+        title='Database'
         status={health.database.status}
         responseTime={health.database.responseTime}
       />
       <HealthCard
-        title="Redis"
+        title='Redis'
         status={health.redis.status}
         responseTime={health.redis.responseTime}
       />
@@ -490,26 +473,18 @@ Tracks custom-defined metrics with configurable queries and aggregations.
 import { useCustomMetric } from '@/hooks';
 
 function CustomMetricDisplay({ workspaceId }: { workspaceId: string }) {
-  const { value, isLoading, error } = useCustomMetric(
-    workspaceId,
-    {
-      id: 'avg-task-completion',
-      name: 'Average Task Completion Time',
-      query: 'tasks.completionTime',
-      aggregation: 'avg',
-      refreshInterval: 60000
-    }
-  );
+  const { value, isLoading, error } = useCustomMetric(workspaceId, {
+    id: 'avg-task-completion',
+    name: 'Average Task Completion Time',
+    query: 'tasks.completionTime',
+    aggregation: 'avg',
+    refreshInterval: 60000,
+  });
 
   if (isLoading) return <Spinner />;
   if (error) return <ErrorMessage error={error} />;
 
-  return (
-    <MetricCard
-      title="Avg Task Completion"
-      value={`${value ?? 0}ms`}
-    />
-  );
+  return <MetricCard title='Avg Task Completion' value={`${value ?? 0}ms`} />;
 }
 ```
 
@@ -526,7 +501,7 @@ const { data, error, isLoading } = useAnalyticsData(workspaceId);
 
 if (error) {
   return (
-    <Alert variant="destructive">
+    <Alert variant='destructive'>
       <AlertTitle>Error</AlertTitle>
       <AlertDescription>{error.message}</AlertDescription>
     </Alert>
@@ -552,7 +527,7 @@ Enable automatic refresh with intervals:
 
 ```tsx
 const { data } = useAnalyticsData(workspaceId, {
-  refreshInterval: 60000 // Refresh every minute
+  refreshInterval: 60000, // Refresh every minute
 });
 ```
 
@@ -563,11 +538,7 @@ Trigger manual refresh:
 ```tsx
 const { data, refetch } = useAnalyticsData(workspaceId);
 
-return (
-  <button onClick={() => refetch()}>
-    Refresh Analytics
-  </button>
-);
+return <button onClick={() => refetch()}>Refresh Analytics</button>;
 ```
 
 ### Query Parameter Updates
@@ -578,14 +549,11 @@ Update query parameters dynamically:
 const { data, updateParams, params } = useAnalyticsData(workspaceId);
 
 return (
-  <select
-    value={params.granularity}
-    onChange={(e) => updateParams({ granularity: e.target.value })}
-  >
-    <option value="hourly">Hourly</option>
-    <option value="daily">Daily</option>
-    <option value="weekly">Weekly</option>
-    <option value="monthly">Monthly</option>
+  <select value={params.granularity} onChange={e => updateParams({ granularity: e.target.value })}>
+    <option value='hourly'>Hourly</option>
+    <option value='daily'>Daily</option>
+    <option value='weekly'>Weekly</option>
+    <option value='monthly'>Monthly</option>
   </select>
 );
 ```
@@ -627,7 +595,7 @@ const { data, isLoading, error } = useAnalytics(workspaceId, { period: 'month' }
 // New - More features and better types
 const { data, isLoading, error, updateParams } = useAnalyticsData(workspaceId, {
   initialParams: { granularity: 'daily' },
-  refreshInterval: 60000
+  refreshInterval: 60000,
 });
 ```
 
@@ -639,7 +607,7 @@ const { metrics, isLoading } = useMetrics(workspaceId, 'month');
 
 // New - Real-time support
 const { metrics, isLoading, isConnected } = useRealTimeMetrics(workspaceId, {
-  useWebSocket: true
+  useWebSocket: true,
 });
 ```
 
@@ -648,6 +616,7 @@ const { metrics, isLoading, isConnected } = useRealTimeMetrics(workspaceId, {
 ## Support
 
 For issues or questions:
+
 - Check the TypeScript types for detailed documentation
 - Review example usage patterns above
 - Contact the frontend team for assistance

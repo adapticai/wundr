@@ -79,7 +79,7 @@ const ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: string,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ): DaemonErrorResponse {
   return {
     error: {
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse('Validation failed', ERROR_CODES.VALIDATION_ERROR, {
           errors: parseResult.error.flatten().fieldErrors,
         }),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -198,9 +198,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found',
-          ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -208,9 +208,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator does not belong to organization',
-          ERROR_CODES.FORBIDDEN,
+          ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -218,14 +218,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!apiKey.startsWith('vp_')) {
       return NextResponse.json(
         createErrorResponse('Invalid API key format', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     // Check if daemon already registered
     try {
       const existingDaemon = await redis.get(
-        `daemon:heartbeat:${orchestratorId}`,
+        `daemon:heartbeat:${orchestratorId}`
       );
       if (existingDaemon) {
         const existing = JSON.parse(existingDaemon);
@@ -234,9 +234,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             createErrorResponse(
               'Another daemon instance already registered for this Orchestrator',
               ERROR_CODES.DAEMON_ALREADY_REGISTERED,
-              { existingInstanceId: existing.daemonId },
+              { existingInstanceId: existing.daemonId }
             ),
-            { status: 409 },
+            { status: 409 }
           );
         }
       }
@@ -258,7 +258,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           orchestratorId,
           organizationId,
           registeredAt,
-        }),
+        })
       );
     } catch (redisError) {
       console.error('Redis storage error:', redisError);
@@ -298,9 +298,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Daemon already registered for this Orchestrator',
-            ERROR_CODES.DAEMON_ALREADY_REGISTERED,
+            ERROR_CODES.DAEMON_ALREADY_REGISTERED
           ),
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
@@ -308,9 +308,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -339,7 +339,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -390,9 +390,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'Failed to get daemon status',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -421,7 +421,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -455,9 +455,9 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'Failed to unregister daemon',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

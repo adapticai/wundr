@@ -145,7 +145,7 @@ export function useOrchestrator(id: string): UseOrchestratorReturn {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to fetch Orchestrator: ${response.status} ${response.statusText}`,
+              `Failed to fetch Orchestrator: ${response.status} ${response.statusText}`
           );
         }
 
@@ -157,7 +157,7 @@ export function useOrchestrator(id: string): UseOrchestratorReturn {
         // Validate required fields exist
         if (!apiOrchestrator.id || !apiOrchestrator.userId) {
           throw new Error(
-            'Invalid Orchestrator response: missing required fields (id, userId)',
+            'Invalid Orchestrator response: missing required fields (id, userId)'
           );
         }
 
@@ -169,7 +169,7 @@ export function useOrchestrator(id: string): UseOrchestratorReturn {
           'AWAY',
         ];
         const orchestratorStatus = validStatuses.includes(
-          apiOrchestrator.status as Orchestrator['status'],
+          apiOrchestrator.status as Orchestrator['status']
         )
           ? (apiOrchestrator.status as Orchestrator['status'])
           : 'OFFLINE';
@@ -224,13 +224,13 @@ export function useOrchestrator(id: string): UseOrchestratorReturn {
         setError(
           err instanceof Error
             ? err
-            : new Error('Unknown error occurred while fetching orchestrator'),
+            : new Error('Unknown error occurred while fetching orchestrator')
         );
       } finally {
         setIsLoading(false);
       }
     },
-    [id],
+    [id]
   );
 
   useEffect(() => {
@@ -287,7 +287,7 @@ export function useOrchestrator(id: string): UseOrchestratorReturn {
  */
 export function useOrchestrators(
   workspaceId: string,
-  filters?: OrchestratorFilters,
+  filters?: OrchestratorFilters
 ): UseOrchestratorsReturn {
   const [orchestrators, setOrchestrators] = useState<Orchestrator[]>([]);
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
@@ -334,7 +334,7 @@ export function useOrchestrators(
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to fetch Orchestrators: ${response.status} ${response.statusText}`,
+              `Failed to fetch Orchestrators: ${response.status} ${response.statusText}`
           );
         }
 
@@ -359,7 +359,7 @@ export function useOrchestrators(
             if (!apiOrchestrator.id || !apiOrchestrator.userId) {
               console.warn(
                 'Skipping orchestrator with missing required fields:',
-                apiOrchestrator,
+                apiOrchestrator
               );
               return false;
             }
@@ -367,7 +367,7 @@ export function useOrchestrators(
           })
           .map((apiOrchestrator: OrchestratorApiResponse) => {
             const orchestratorStatus = validStatuses.includes(
-              apiOrchestrator.status as Orchestrator['status'],
+              apiOrchestrator.status as Orchestrator['status']
             )
               ? (apiOrchestrator.status as Orchestrator['status'])
               : 'OFFLINE';
@@ -426,7 +426,7 @@ export function useOrchestrators(
         setError(
           err instanceof Error
             ? err
-            : new Error('Unknown error occurred while fetching orchestrators'),
+            : new Error('Unknown error occurred while fetching orchestrators')
         );
         setOrchestrators([]);
         setPagination(null);
@@ -441,7 +441,7 @@ export function useOrchestrators(
       filters?.search,
       filters?.page,
       filters?.limit,
-    ],
+    ]
   );
 
   useEffect(() => {
@@ -467,19 +467,19 @@ export function useOrchestrators(
         orchestrator =>
           orchestrator.title.toLowerCase().includes(searchLower) ||
           orchestrator.description?.toLowerCase().includes(searchLower) ||
-          orchestrator.discipline?.toLowerCase().includes(searchLower),
+          orchestrator.discipline?.toLowerCase().includes(searchLower)
       );
     }
 
     if (filters?.discipline) {
       result = result.filter(
-        orchestrator => orchestrator.discipline === filters.discipline,
+        orchestrator => orchestrator.discipline === filters.discipline
       );
     }
 
     if (filters?.status) {
       result = result.filter(
-        orchestrator => orchestrator.status === filters.status,
+        orchestrator => orchestrator.status === filters.status
       );
     }
 
@@ -536,7 +536,7 @@ export function useOrchestratorMutations(): UseOrchestratorMutationsReturn {
   const createOrchestrator = useCallback(
     async (
       input: CreateOrchestratorInput,
-      signal?: AbortSignal,
+      signal?: AbortSignal
     ): Promise<Orchestrator | null> => {
       setIsLoading(true);
       setError(null);
@@ -553,7 +553,7 @@ export function useOrchestratorMutations(): UseOrchestratorMutationsReturn {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to create Orchestrator: ${response.status} ${response.statusText}`,
+              `Failed to create Orchestrator: ${response.status} ${response.statusText}`
           );
         }
 
@@ -573,14 +573,14 @@ export function useOrchestratorMutations(): UseOrchestratorMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const updateOrchestrator = useCallback(
     async (
       id: string,
       input: UpdateOrchestratorInput,
-      signal?: AbortSignal,
+      signal?: AbortSignal
     ): Promise<Orchestrator | null> => {
       setIsLoading(true);
       setError(null);
@@ -597,7 +597,7 @@ export function useOrchestratorMutations(): UseOrchestratorMutationsReturn {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to update Orchestrator: ${response.status} ${response.statusText}`,
+              `Failed to update Orchestrator: ${response.status} ${response.statusText}`
           );
         }
 
@@ -617,7 +617,7 @@ export function useOrchestratorMutations(): UseOrchestratorMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const deleteOrchestrator = useCallback(
@@ -635,7 +635,7 @@ export function useOrchestratorMutations(): UseOrchestratorMutationsReturn {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to delete Orchestrator: ${response.status} ${response.statusText}`,
+              `Failed to delete Orchestrator: ${response.status} ${response.statusText}`
           );
         }
 
@@ -654,25 +654,25 @@ export function useOrchestratorMutations(): UseOrchestratorMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const toggleOrchestratorStatus = useCallback(
     async (
       id: string,
-      currentStatus: Orchestrator['status'],
+      currentStatus: Orchestrator['status']
     ): Promise<Orchestrator | null> => {
       // Toggle between ONLINE and OFFLINE states
       const newStatus = currentStatus === 'ONLINE' ? 'OFFLINE' : 'ONLINE';
       return updateOrchestrator(id, { status: newStatus });
     },
-    [updateOrchestrator],
+    [updateOrchestrator]
   );
 
   const rotateAPIKey = useCallback(
     async (
       id: string,
-      signal?: AbortSignal,
+      signal?: AbortSignal
     ): Promise<{ apiKey: string } | null> => {
       setIsLoading(true);
       setError(null);
@@ -687,7 +687,7 @@ export function useOrchestratorMutations(): UseOrchestratorMutationsReturn {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to rotate API key: ${response.status} ${response.statusText}`,
+              `Failed to rotate API key: ${response.status} ${response.statusText}`
           );
         }
 
@@ -707,7 +707,7 @@ export function useOrchestratorMutations(): UseOrchestratorMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   return {

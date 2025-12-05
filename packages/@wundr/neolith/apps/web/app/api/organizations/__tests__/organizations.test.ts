@@ -83,7 +83,7 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
 function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
-  searchParams?: Record<string, string>,
+  searchParams?: Record<string, string>
 ): NextRequest {
   const url = new URL('http://localhost:3000/api/organizations');
 
@@ -190,7 +190,7 @@ describe('Organization API Routes', () => {
         expect.objectContaining({
           name: 'New Organization',
           slug: 'new-org',
-        }),
+        })
       );
     });
 
@@ -240,11 +240,11 @@ describe('Organization API Routes', () => {
       });
 
       await expect(
-        mockOrganizationService.createOrganization(invalidRequestBody),
+        mockOrganizationService.createOrganization(invalidRequestBody)
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'VALIDATION_ERROR',
-        }),
+        })
       );
     });
 
@@ -261,11 +261,11 @@ describe('Organization API Routes', () => {
         mockOrganizationService.createOrganization({
           name: 'Test',
           slug: 'existing-slug',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'ORGANIZATION_SLUG_EXISTS',
-        }),
+        })
       );
     });
 
@@ -286,11 +286,11 @@ describe('Organization API Routes', () => {
         mockOrganizationService.createOrganization({
           name: 'Test',
           slug: invalidSlug,
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'VALIDATION_ERROR',
-        }),
+        })
       );
     });
   });
@@ -381,7 +381,7 @@ describe('Organization API Routes', () => {
       expect(mockOrganizationService.listOrganizations).toHaveBeenCalledWith(
         expect.objectContaining({
           search: 'acme',
-        }),
+        })
       );
     });
 
@@ -421,11 +421,11 @@ describe('Organization API Routes', () => {
       });
 
       await expect(
-        mockOrganizationService.getOrganization('non-existent-id'),
+        mockOrganizationService.getOrganization('non-existent-id')
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'ORGANIZATION_NOT_FOUND',
-        }),
+        })
       );
     });
 
@@ -439,11 +439,11 @@ describe('Organization API Routes', () => {
       });
 
       await expect(
-        mockOrganizationService.getOrganization('org-not-member'),
+        mockOrganizationService.getOrganization('org-not-member')
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        }),
+        })
       );
     });
   });
@@ -468,7 +468,7 @@ describe('Organization API Routes', () => {
         {
           name: 'Updated Name',
           description: 'Updated description',
-        },
+        }
       );
 
       expect(result.name).toBe('Updated Name');
@@ -504,11 +504,11 @@ describe('Organization API Routes', () => {
       await expect(
         mockOrganizationService.updateOrganization('non-existent-id', {
           name: 'New Name',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'ORGANIZATION_NOT_FOUND',
-        }),
+        })
       );
     });
   });
@@ -532,10 +532,10 @@ describe('Organization API Routes', () => {
       mockOrganizationService.deleteOrganization.mockResolvedValue(undefined);
 
       await expect(
-        mockOrganizationService.deleteOrganization('org-123'),
+        mockOrganizationService.deleteOrganization('org-123')
       ).resolves.toBeUndefined();
       expect(mockOrganizationService.deleteOrganization).toHaveBeenCalledWith(
-        'org-123',
+        'org-123'
       );
     });
 
@@ -556,11 +556,11 @@ describe('Organization API Routes', () => {
       });
 
       await expect(
-        mockOrganizationService.deleteOrganization('org-123'),
+        mockOrganizationService.deleteOrganization('org-123')
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        }),
+        })
       );
     });
   });
@@ -606,11 +606,11 @@ describe('Organization API Routes', () => {
         mockOrganizationService.addMember('org-123', {
           userId: 'user-456',
           role: 'MEMBER',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        }),
+        })
       );
     });
 
@@ -627,11 +627,11 @@ describe('Organization API Routes', () => {
         mockOrganizationService.addMember('org-123', {
           userId: 'existing-user',
           role: 'MEMBER',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'ALREADY_CHANNEL_MEMBER',
-        }),
+        })
       );
     });
 
@@ -648,11 +648,11 @@ describe('Organization API Routes', () => {
         mockOrganizationService.addMember('org-123', {
           userId: 'non-existent-user',
           role: 'MEMBER',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'USER_NOT_FOUND',
-        }),
+        })
       );
     });
   });
@@ -674,7 +674,7 @@ describe('Organization API Routes', () => {
         'user-456',
         {
           role: 'ADMIN',
-        },
+        }
       );
 
       expect(result.role).toBe('ADMIN');
@@ -692,11 +692,11 @@ describe('Organization API Routes', () => {
       await expect(
         mockOrganizationService.updateMemberRole('org-123', 'owner-user-id', {
           role: 'MEMBER',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'CANNOT_MODIFY_OWNER',
-        }),
+        })
       );
     });
 
@@ -712,11 +712,11 @@ describe('Organization API Routes', () => {
       await expect(
         mockOrganizationService.updateMemberRole('org-123', 'user-456', {
           role: 'OWNER',
-        }),
+        })
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        }),
+        })
       );
     });
   });
@@ -733,7 +733,7 @@ describe('Organization API Routes', () => {
       mockOrganizationService.removeMember.mockResolvedValue(undefined);
 
       await expect(
-        mockOrganizationService.removeMember('org-123', 'user-456'),
+        mockOrganizationService.removeMember('org-123', 'user-456')
       ).resolves.toBeUndefined();
     });
 
@@ -752,7 +752,7 @@ describe('Organization API Routes', () => {
 
       // User can remove themselves
       await expect(
-        mockOrganizationService.removeMember('org-123', session.user.id),
+        mockOrganizationService.removeMember('org-123', session.user.id)
       ).resolves.toBeUndefined();
     });
 
@@ -767,11 +767,11 @@ describe('Organization API Routes', () => {
       });
 
       await expect(
-        mockOrganizationService.removeMember('org-123', 'owner-user-id'),
+        mockOrganizationService.removeMember('org-123', 'owner-user-id')
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'CANNOT_REMOVE_SELF_AS_OWNER',
-        }),
+        })
       );
     });
   });

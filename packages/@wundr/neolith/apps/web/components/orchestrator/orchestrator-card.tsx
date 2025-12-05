@@ -1,6 +1,14 @@
 'use client';
 
-import { Sparkles, MessageSquare, Bot, Clock, Edit, Play, Pause } from 'lucide-react';
+import {
+  Sparkles,
+  MessageSquare,
+  Bot,
+  Clock,
+  Edit,
+  Play,
+  Pause,
+} from 'lucide-react';
 import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
@@ -39,7 +47,7 @@ export function OrchestratorCard({
     <div
       className={cn(
         'group relative flex flex-col rounded-lg border bg-card p-5 shadow-sm transition-all hover:border-primary/50 hover:shadow-md',
-        className,
+        className
       )}
     >
       {/* Header with Avatar and Status */}
@@ -152,7 +160,7 @@ export function OrchestratorCard({
               'rounded-md border border-border bg-background p-1.5 transition-colors hover:bg-accent',
               orchestrator.status === 'ONLINE'
                 ? 'text-emerald-600 hover:text-rose-600 dark:text-emerald-400 dark:hover:text-rose-400'
-                : 'text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400',
+                : 'text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400'
             )}
             aria-label={
               orchestrator.status === 'ONLINE'

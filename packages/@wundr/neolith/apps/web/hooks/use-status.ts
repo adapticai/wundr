@@ -53,10 +53,10 @@ import type { PresenceStatusType } from '@/lib/validations/presence';
 export function useUserStatus() {
   const statusService = useMemo(() => getStatusService(), []);
   const [status, setStatus] = useState<PresenceStatusType>(
-    statusService.getCurrentStatus(),
+    statusService.getCurrentStatus()
   );
   const [customStatus, setCustomStatus] = useState<string | null>(
-    statusService.getCustomStatus(),
+    statusService.getCustomStatus()
   );
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -76,7 +76,7 @@ export function useUserStatus() {
   const updateStatus = useCallback(
     async (
       newStatus: PresenceStatusType,
-      options?: StatusUpdateOptions,
+      options?: StatusUpdateOptions
     ): Promise<boolean> => {
       setIsUpdating(true);
       try {
@@ -86,7 +86,7 @@ export function useUserStatus() {
         setIsUpdating(false);
       }
     },
-    [statusService],
+    [statusService]
   );
 
   // Update custom status
@@ -100,7 +100,7 @@ export function useUserStatus() {
         setIsUpdating(false);
       }
     },
-    [statusService],
+    [statusService]
   );
 
   // Clear custom status
@@ -171,7 +171,7 @@ export function useAutoAway(initialConfig?: Partial<AutoAwayConfig>) {
       setConfig(updatedConfig);
       statusService.configureAutoAway(updatedConfig);
     },
-    [config, statusService],
+    [config, statusService]
   );
 
   // Update time since activity every second
@@ -234,7 +234,7 @@ export function useAutoAway(initialConfig?: Partial<AutoAwayConfig>) {
 export function useDNDSchedule(initialSchedule?: DNDSchedule | null) {
   const statusService = useMemo(() => getStatusService(), []);
   const [schedule, setSchedule] = useState<DNDSchedule | null>(
-    initialSchedule ?? null,
+    initialSchedule ?? null
   );
   const [isInDNDWindow, setIsInDNDWindow] = useState(false);
 
@@ -247,7 +247,7 @@ export function useDNDSchedule(initialSchedule?: DNDSchedule | null) {
       setSchedule(updatedSchedule);
       statusService.configureDNDSchedule(updatedSchedule);
     },
-    [schedule, statusService],
+    [schedule, statusService]
   );
 
   // Check DND window status every minute

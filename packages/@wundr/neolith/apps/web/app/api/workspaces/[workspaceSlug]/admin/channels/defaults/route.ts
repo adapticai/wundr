@@ -53,7 +53,7 @@ interface ChannelDefaults {
  */
 export async function GET(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -61,9 +61,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED,
+          ADMIN_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -79,12 +79,11 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Workspace not found',
-          ADMIN_ERROR_CODES.NOT_FOUND,
+          ADMIN_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
-
 
     // Verify admin access
     const membership = await prisma.workspaceMember.findFirst({
@@ -98,9 +97,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN,
+          ADMIN_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -124,9 +123,9 @@ export async function GET(
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to fetch default settings',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR,
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -142,7 +141,7 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -150,9 +149,9 @@ export async function PATCH(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED,
+          ADMIN_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -168,12 +167,11 @@ export async function PATCH(
       return NextResponse.json(
         createAdminErrorResponse(
           'Workspace not found',
-          ADMIN_ERROR_CODES.NOT_FOUND,
+          ADMIN_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
-
 
     // Verify admin access
     const membership = await prisma.workspaceMember.findFirst({
@@ -187,9 +185,9 @@ export async function PATCH(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN,
+          ADMIN_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -200,14 +198,15 @@ export async function PATCH(
       return NextResponse.json(
         createAdminErrorResponse(
           'Updates are required',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR,
+          ADMIN_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Merge with existing settings
-    const currentSettings = (workspace.settings as Record<string, unknown>) || {};
+    const currentSettings =
+      (workspace.settings as Record<string, unknown>) || {};
     const currentDefaults =
       (currentSettings.channelDefaults as ChannelDefaults) || {};
 
@@ -244,9 +243,9 @@ export async function PATCH(
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to update default settings',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR,
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

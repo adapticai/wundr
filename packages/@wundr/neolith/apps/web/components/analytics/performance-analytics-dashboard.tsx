@@ -158,12 +158,8 @@ function generatePageLoadData(): PageLoadMetric[] {
     data.push({
       timestamp: timestamp.toISOString(),
       hour: `${hour.toString().padStart(2, '0')}:00`,
-      fcp: isPeakHour
-        ? 800 + Math.random() * 400
-        : 600 + Math.random() * 300,
-      lcp: isPeakHour
-        ? 1800 + Math.random() * 700
-        : 1400 + Math.random() * 500,
+      fcp: isPeakHour ? 800 + Math.random() * 400 : 600 + Math.random() * 300,
+      lcp: isPeakHour ? 1800 + Math.random() * 700 : 1400 + Math.random() * 500,
       fid: isPeakHour ? 50 + Math.random() * 100 : 30 + Math.random() * 70,
       cls: 0.05 + Math.random() * 0.15,
       ttfb: isPeakHour ? 200 + Math.random() * 150 : 150 + Math.random() * 100,
@@ -176,7 +172,12 @@ function generatePageLoadData(): PageLoadMetric[] {
 function generateApiResponseData(): ApiResponseMetric[] {
   const data: ApiResponseMetric[] = [];
   const now = new Date();
-  const endpoints = ['/api/workflows', '/api/agents', '/api/tasks', '/api/data'];
+  const endpoints = [
+    '/api/workflows',
+    '/api/agents',
+    '/api/tasks',
+    '/api/data',
+  ];
 
   for (let i = 23; i >= 0; i--) {
     const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000);
@@ -197,7 +198,7 @@ function generateApiResponseData(): ApiResponseMetric[] {
       p95: Math.round(p95),
       p99: Math.round(p99),
       requests: Math.round(
-        isPeakHour ? 1000 + Math.random() * 500 : 500 + Math.random() * 300,
+        isPeakHour ? 1000 + Math.random() * 500 : 500 + Math.random() * 300
       ),
     });
   }
@@ -244,9 +245,11 @@ function generateThroughputData(): ThroughputMetric[] {
     const isPeakHour = hour >= 9 && hour <= 17;
 
     const totalRequests = Math.round(
-      isPeakHour ? 1200 + Math.random() * 500 : 700 + Math.random() * 300,
+      isPeakHour ? 1200 + Math.random() * 500 : 700 + Math.random() * 300
     );
-    const failedRequests = Math.round(totalRequests * (0.01 + Math.random() * 0.02));
+    const failedRequests = Math.round(
+      totalRequests * (0.01 + Math.random() * 0.02)
+    );
     const successfulRequests = totalRequests - failedRequests;
 
     data.push({
@@ -267,7 +270,7 @@ export function PerformanceAnalyticsDashboard({
 }: PerformanceAnalyticsDashboardProps) {
   const [pageLoadData, setPageLoadData] = useState<PageLoadMetric[]>([]);
   const [apiResponseData, setApiResponseData] = useState<ApiResponseMetric[]>(
-    [],
+    []
   );
   const [errorData, setErrorData] = useState<ErrorMetric[]>([]);
   const [throughputData, setThroughputData] = useState<ThroughputMetric[]>([]);
@@ -300,79 +303,113 @@ export function PerformanceAnalyticsDashboard({
   // Calculate summary metrics
   const avgLCP = pageLoadData.length
     ? Math.round(
-        pageLoadData.reduce((sum, d) => sum + d.lcp, 0) / pageLoadData.length,
+        pageLoadData.reduce((sum, d) => sum + d.lcp, 0) / pageLoadData.length
       )
     : 0;
 
   const avgApiResponse = apiResponseData.length
     ? Math.round(
         apiResponseData.reduce((sum, d) => sum + d.p50, 0) /
-          apiResponseData.length,
+          apiResponseData.length
       )
     : 0;
 
   const totalErrors = errorData.reduce((sum, d) => sum + d.total, 0);
   const avgErrorRate = errorData.length
-    ? (errorData.reduce((sum, d) => sum + d.errorRate, 0) / errorData.length)
+    ? errorData.reduce((sum, d) => sum + d.errorRate, 0) / errorData.length
     : 0;
 
   const avgThroughput = throughputData.length
     ? Math.round(
         throughputData.reduce((sum, d) => sum + d.avgThroughput, 0) /
-          throughputData.length,
+          throughputData.length
       )
     : 0;
 
   // Calculate trends (compare last 6 hours vs previous 6 hours)
   const getLCPTrend = () => {
-    if (pageLoadData.length < 12) return { value: 0, percent: 0, trend: 'stable' as const };
-    const recent = pageLoadData.slice(-6).reduce((sum, d) => sum + d.lcp, 0) / 6;
-    const previous = pageLoadData.slice(-12, -6).reduce((sum, d) => sum + d.lcp, 0) / 6;
+    if (pageLoadData.length < 12)
+      return { value: 0, percent: 0, trend: 'stable' as const };
+    const recent =
+      pageLoadData.slice(-6).reduce((sum, d) => sum + d.lcp, 0) / 6;
+    const previous =
+      pageLoadData.slice(-12, -6).reduce((sum, d) => sum + d.lcp, 0) / 6;
     const change = recent - previous;
     const percent = (change / previous) * 100;
     return {
       value: Math.round(change),
       percent: Math.abs(percent),
-      trend: change > 0 ? 'up' as const : change < 0 ? 'down' as const : 'stable' as const,
+      trend:
+        change > 0
+          ? ('up' as const)
+          : change < 0
+            ? ('down' as const)
+            : ('stable' as const),
     };
   };
 
   const getApiTrend = () => {
-    if (apiResponseData.length < 12) return { value: 0, percent: 0, trend: 'stable' as const };
-    const recent = apiResponseData.slice(-6).reduce((sum, d) => sum + d.p50, 0) / 6;
-    const previous = apiResponseData.slice(-12, -6).reduce((sum, d) => sum + d.p50, 0) / 6;
+    if (apiResponseData.length < 12)
+      return { value: 0, percent: 0, trend: 'stable' as const };
+    const recent =
+      apiResponseData.slice(-6).reduce((sum, d) => sum + d.p50, 0) / 6;
+    const previous =
+      apiResponseData.slice(-12, -6).reduce((sum, d) => sum + d.p50, 0) / 6;
     const change = recent - previous;
     const percent = (change / previous) * 100;
     return {
       value: Math.round(change),
       percent: Math.abs(percent),
-      trend: change > 0 ? 'up' as const : change < 0 ? 'down' as const : 'stable' as const,
+      trend:
+        change > 0
+          ? ('up' as const)
+          : change < 0
+            ? ('down' as const)
+            : ('stable' as const),
     };
   };
 
   const getErrorTrend = () => {
-    if (errorData.length < 12) return { value: 0, percent: 0, trend: 'stable' as const };
-    const recent = errorData.slice(-6).reduce((sum, d) => sum + d.errorRate, 0) / 6;
-    const previous = errorData.slice(-12, -6).reduce((sum, d) => sum + d.errorRate, 0) / 6;
+    if (errorData.length < 12)
+      return { value: 0, percent: 0, trend: 'stable' as const };
+    const recent =
+      errorData.slice(-6).reduce((sum, d) => sum + d.errorRate, 0) / 6;
+    const previous =
+      errorData.slice(-12, -6).reduce((sum, d) => sum + d.errorRate, 0) / 6;
     const change = recent - previous;
     const percent = Math.abs((change / (previous || 1)) * 100);
     return {
       value: Number(change.toFixed(2)),
       percent,
-      trend: change > 0 ? 'up' as const : change < 0 ? 'down' as const : 'stable' as const,
+      trend:
+        change > 0
+          ? ('up' as const)
+          : change < 0
+            ? ('down' as const)
+            : ('stable' as const),
     };
   };
 
   const getThroughputTrend = () => {
-    if (throughputData.length < 12) return { value: 0, percent: 0, trend: 'stable' as const };
-    const recent = throughputData.slice(-6).reduce((sum, d) => sum + d.avgThroughput, 0) / 6;
-    const previous = throughputData.slice(-12, -6).reduce((sum, d) => sum + d.avgThroughput, 0) / 6;
+    if (throughputData.length < 12)
+      return { value: 0, percent: 0, trend: 'stable' as const };
+    const recent =
+      throughputData.slice(-6).reduce((sum, d) => sum + d.avgThroughput, 0) / 6;
+    const previous =
+      throughputData
+        .slice(-12, -6)
+        .reduce((sum, d) => sum + d.avgThroughput, 0) / 6;
     const change = recent - previous;
     const percent = (change / previous) * 100;
     return {
       value: Math.round(change),
       percent: Math.abs(percent),
-      trend: change > 0 ? 'up' as const : change < 0 ? 'down' as const : 'stable' as const,
+      trend:
+        change > 0
+          ? ('up' as const)
+          : change < 0
+            ? ('down' as const)
+            : ('stable' as const),
     };
   };
 
@@ -460,7 +497,10 @@ export function PerformanceAnalyticsDashboard({
               <CardTitle>Core Web Vitals - Last 24 Hours</CardTitle>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={pageLoadChartConfig} className='h-[400px]'>
+              <ChartContainer
+                config={pageLoadChartConfig}
+                className='h-[400px]'
+              >
                 <LineChart data={pageLoadData}>
                   <CartesianGrid strokeDasharray='3 3' />
                   <XAxis
@@ -550,15 +590,22 @@ export function PerformanceAnalyticsDashboard({
               </CardHeader>
               <CardContent className='space-y-4'>
                 {pageLoadData.slice(-1).map(data => {
-                  const lcpScore = data.lcp < 2500 ? 100 : data.lcp < 4000 ? 50 : 0;
-                  const fidScore = data.fid < 100 ? 100 : data.fid < 300 ? 50 : 0;
-                  const clsScore = data.cls < 0.1 ? 100 : data.cls < 0.25 ? 50 : 0;
-                  const overallScore = Math.round((lcpScore + fidScore + clsScore) / 3);
+                  const lcpScore =
+                    data.lcp < 2500 ? 100 : data.lcp < 4000 ? 50 : 0;
+                  const fidScore =
+                    data.fid < 100 ? 100 : data.fid < 300 ? 50 : 0;
+                  const clsScore =
+                    data.cls < 0.1 ? 100 : data.cls < 0.25 ? 50 : 0;
+                  const overallScore = Math.round(
+                    (lcpScore + fidScore + clsScore) / 3
+                  );
 
                   return (
                     <div key={data.timestamp} className='space-y-3'>
                       <div className='flex items-center justify-between'>
-                        <span className='text-4xl font-bold'>{overallScore}</span>
+                        <span className='text-4xl font-bold'>
+                          {overallScore}
+                        </span>
                         <Badge
                           variant={
                             overallScore >= 90
@@ -708,11 +755,7 @@ export function PerformanceAnalyticsDashboard({
                     axisLine={false}
                     tickMargin={8}
                   />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                  />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={8} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <ChartLegend content={<ChartLegendContent />} />
                   <Bar
@@ -834,11 +877,7 @@ export function PerformanceAnalyticsDashboard({
                     axisLine={false}
                     tickMargin={8}
                   />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                  />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={8} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <ChartLegend content={<ChartLegendContent />} />
                   <Bar
@@ -880,7 +919,7 @@ export function PerformanceAnalyticsDashboard({
                   {(
                     (throughputData.reduce(
                       (sum, d) => sum + d.successfulRequests,
-                      0,
+                      0
                     ) /
                       throughputData.reduce((sum, d) => sum + d.requests, 0)) *
                     100
@@ -899,9 +938,7 @@ export function PerformanceAnalyticsDashboard({
               </CardHeader>
               <CardContent>
                 <div className='text-3xl font-bold'>
-                  {Math.max(
-                    ...throughputData.map(d => d.avgThroughput),
-                  )}
+                  {Math.max(...throughputData.map(d => d.avgThroughput))}
                 </div>
                 <p className='text-xs text-muted-foreground mt-1'>
                   requests/minute

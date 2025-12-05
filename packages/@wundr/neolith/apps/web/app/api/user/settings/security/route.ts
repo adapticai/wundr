@@ -43,7 +43,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -67,7 +67,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
           error: 'User not found',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -91,7 +91,8 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
 
     // Check if user has password set
     const hasPassword = accounts.some(
-      (acc: AccountInfo) => acc.provider === 'credentials' && acc.type === 'credentials',
+      (acc: AccountInfo) =>
+        acc.provider === 'credentials' && acc.type === 'credentials'
     );
 
     const securitySettings = {
@@ -119,7 +120,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -143,7 +144,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -158,7 +159,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid JSON body',
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -171,7 +172,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -190,7 +191,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           error: 'User not found',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -199,20 +200,20 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const updatedPrefs = { ...currentPrefs };
 
     if (updates.sessionTimeout !== undefined) {
-updatedPrefs.sessionTimeout = updates.sessionTimeout;
-}
+      updatedPrefs.sessionTimeout = updates.sessionTimeout;
+    }
     if (updates.showOnlineStatus !== undefined) {
-updatedPrefs.showOnlineStatus = updates.showOnlineStatus;
-}
+      updatedPrefs.showOnlineStatus = updates.showOnlineStatus;
+    }
     if (updates.showTypingIndicators !== undefined) {
-updatedPrefs.showTypingIndicators = updates.showTypingIndicators;
-}
+      updatedPrefs.showTypingIndicators = updates.showTypingIndicators;
+    }
     if (updates.showReadReceipts !== undefined) {
-updatedPrefs.showReadReceipts = updates.showReadReceipts;
-}
+      updatedPrefs.showReadReceipts = updates.showReadReceipts;
+    }
     if (updates.loginAlerts !== undefined) {
-updatedPrefs.loginAlerts = updates.loginAlerts;
-}
+      updatedPrefs.loginAlerts = updates.loginAlerts;
+    }
 
     // Update user preferences
     await prisma.user.update({
@@ -236,7 +237,7 @@ updatedPrefs.loginAlerts = updates.loginAlerts;
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

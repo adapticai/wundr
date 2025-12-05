@@ -62,7 +62,7 @@ export type CallErrorCode =
 export function createCallErrorResponse(
   code: CallErrorCode,
   message: string,
-  status: number = 400,
+  status: number = 400
 ): Response {
   return new Response(
     JSON.stringify({
@@ -72,7 +72,7 @@ export function createCallErrorResponse(
     {
       status,
       headers: { 'Content-Type': 'application/json' },
-    },
+    }
   );
 }
 

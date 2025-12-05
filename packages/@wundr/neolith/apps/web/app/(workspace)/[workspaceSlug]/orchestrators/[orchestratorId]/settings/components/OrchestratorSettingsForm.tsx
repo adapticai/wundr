@@ -93,7 +93,7 @@ export function OrchestratorSettingsForm({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(data),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -164,7 +164,9 @@ export function OrchestratorSettingsForm({
         <TabsContent value='charter' className='space-y-4'>
           <CharterSettings
             orchestratorId={orchestrator.id}
-            charterId={(orchestrator.config as any)?.charterId as string | undefined}
+            charterId={
+              (orchestrator.config as any)?.charterId as string | undefined
+            }
             disabled={isLocked || isPending}
           />
         </TabsContent>

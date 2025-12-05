@@ -21,7 +21,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
 import type { WorkflowVersion } from './version-history';
-import type { Workflow, ActionConfig, WorkflowVariable } from '@/types/workflow';
+import type {
+  Workflow,
+  ActionConfig,
+  WorkflowVariable,
+} from '@/types/workflow';
 
 /**
  * Diff operation types
@@ -62,7 +66,10 @@ export interface WorkflowDiffProps {
 /**
  * Diff operation colors
  */
-const DIFF_COLORS: Record<DiffOperation, { bg: string; border: string; text: string }> = {
+const DIFF_COLORS: Record<
+  DiffOperation,
+  { bg: string; border: string; text: string }
+> = {
   added: {
     bg: 'bg-green-50 dark:bg-green-950/20',
     border: 'border-l-4 border-l-green-500',
@@ -88,7 +95,10 @@ const DIFF_COLORS: Record<DiffOperation, { bg: string; border: string; text: str
 /**
  * Diff operation icons
  */
-const DIFF_ICONS: Record<DiffOperation, React.ComponentType<{ className?: string }>> = {
+const DIFF_ICONS: Record<
+  DiffOperation,
+  React.ComponentType<{ className?: string }>
+> = {
   added: Plus,
   removed: Minus,
   modified: Edit,
@@ -100,30 +110,32 @@ const DIFF_ICONS: Record<DiffOperation, React.ComponentType<{ className?: string
  */
 function deepEqual(a: unknown, b: unknown): boolean {
   if (a === b) {
-return true;
-}
+    return true;
+  }
   if (a == null || b == null) {
-return false;
-}
+    return false;
+  }
   if (typeof a !== 'object' || typeof b !== 'object') {
-return false;
-}
+    return false;
+  }
 
   const keysA = Object.keys(a as Record<string, unknown>);
   const keysB = Object.keys(b as Record<string, unknown>);
 
   if (keysA.length !== keysB.length) {
-return false;
-}
+    return false;
+  }
 
   for (const key of keysA) {
     if (!keysB.includes(key)) {
-return false;
-}
-    if (!deepEqual(
-      (a as Record<string, unknown>)[key],
-      (b as Record<string, unknown>)[key],
-    )) {
+      return false;
+    }
+    if (
+      !deepEqual(
+        (a as Record<string, unknown>)[key],
+        (b as Record<string, unknown>)[key]
+      )
+    ) {
       return false;
     }
   }
@@ -136,7 +148,7 @@ return false;
  */
 function generateWorkflowDiff(
   oldWorkflow: Workflow,
-  newWorkflow: Workflow,
+  newWorkflow: Workflow
 ): WorkflowDiffResult {
   const metadata: DiffItem[] = [];
   const trigger: DiffItem[] = [];
@@ -230,8 +242,12 @@ function generateWorkflowDiff(
   });
 
   // Compare variables
-  const oldVarMap = new Map((oldWorkflow.variables || []).map(v => [v.name, v]));
-  const newVarMap = new Map((newWorkflow.variables || []).map(v => [v.name, v]));
+  const oldVarMap = new Map(
+    (oldWorkflow.variables || []).map(v => [v.name, v])
+  );
+  const newVarMap = new Map(
+    (newWorkflow.variables || []).map(v => [v.name, v])
+  );
 
   // Find removed and modified variables
   for (const [name, oldVar] of oldVarMap) {
@@ -280,14 +296,14 @@ function generateWorkflowDiff(
  */
 function formatValue(value: unknown): string {
   if (value === null || value === undefined) {
-return 'null';
-}
+    return 'null';
+  }
   if (typeof value === 'string') {
-return value;
-}
+    return value;
+  }
   if (typeof value === 'number' || typeof value === 'boolean') {
-return String(value);
-}
+    return String(value);
+  }
   try {
     return JSON.stringify(value, null, 2);
   } catch {
@@ -303,53 +319,60 @@ function DiffItemDisplay({ item }: { item: DiffItem }) {
   const colors = DIFF_COLORS[item.operation];
   const Icon = DIFF_ICONS[item.operation];
 
-  const hasDetails = item.operation === 'modified' && item.oldValue !== undefined && item.newValue !== undefined;
+  const hasDetails =
+    item.operation === 'modified' &&
+    item.oldValue !== undefined &&
+    item.newValue !== undefined;
 
   return (
     <div className={cn('rounded-lg p-4', colors.bg, colors.border)}>
-      <div className="flex items-start gap-3">
+      <div className='flex items-start gap-3'>
         <Icon className={cn('h-5 w-5 mt-0.5 flex-shrink-0', colors.text)} />
-        <div className="flex-1 min-w-0 space-y-2">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1 flex-1">
-              <div className="flex items-center gap-2">
+        <div className='flex-1 min-w-0 space-y-2'>
+          <div className='flex items-start justify-between gap-4'>
+            <div className='space-y-1 flex-1'>
+              <div className='flex items-center gap-2'>
                 <span className={cn('font-medium text-sm', colors.text)}>
                   {item.label}
                 </span>
-                <Badge variant="outline" className="text-xs capitalize">
+                <Badge variant='outline' className='text-xs capitalize'>
                   {item.operation}
                 </Badge>
               </div>
-              <code className="text-xs text-muted-foreground block">
+              <code className='text-xs text-muted-foreground block'>
                 {item.path}
               </code>
             </div>
             {hasDetails && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className='text-muted-foreground hover:text-foreground transition-colors'
               >
                 {isExpanded ? (
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className='h-4 w-4' />
                 ) : (
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className='h-4 w-4' />
                 )}
               </button>
             )}
           </div>
 
           {/* Quick summary for non-modified items */}
-          {item.operation === 'added' && item.newValue !== undefined && !isExpanded ? (
-            <div className="text-sm text-muted-foreground">
-              <pre className="font-mono text-xs overflow-x-auto">
+          {item.operation === 'added' &&
+          item.newValue !== undefined &&
+          !isExpanded ? (
+            <div className='text-sm text-muted-foreground'>
+              <pre className='font-mono text-xs overflow-x-auto'>
                 {formatValue(item.newValue)}
               </pre>
             </div>
           ) : null}
 
-          {item.operation === 'removed' && item.oldValue !== undefined && !isExpanded ? (
-            <div className="text-sm text-muted-foreground line-through">
-              <pre className="font-mono text-xs overflow-x-auto">
+          {item.operation === 'removed' &&
+          item.oldValue !== undefined &&
+          !isExpanded ? (
+            <div className='text-sm text-muted-foreground line-through'>
+              <pre className='font-mono text-xs overflow-x-auto'>
                 {formatValue(item.oldValue)}
               </pre>
             </div>
@@ -357,34 +380,38 @@ function DiffItemDisplay({ item }: { item: DiffItem }) {
 
           {/* Expanded details */}
           {isExpanded && hasDetails && (
-            <div className="space-y-3 pt-2">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">Before</Badge>
-                  <span className="text-xs text-muted-foreground">
+            <div className='space-y-3 pt-2'>
+              <div className='space-y-2'>
+                <div className='flex items-center gap-2'>
+                  <Badge variant='outline' className='text-xs'>
+                    Before
+                  </Badge>
+                  <span className='text-xs text-muted-foreground'>
                     Previous Version
                   </span>
                 </div>
-                <div className="rounded-md bg-background/50 p-3 border">
-                  <pre className="font-mono text-xs overflow-x-auto text-muted-foreground">
+                <div className='rounded-md bg-background/50 p-3 border'>
+                  <pre className='font-mono text-xs overflow-x-auto text-muted-foreground'>
                     {formatValue(item.oldValue)}
                   </pre>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center">
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              <div className='flex items-center justify-center'>
+                <ArrowRight className='h-4 w-4 text-muted-foreground' />
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">After</Badge>
-                  <span className="text-xs text-muted-foreground">
+              <div className='space-y-2'>
+                <div className='flex items-center gap-2'>
+                  <Badge variant='outline' className='text-xs'>
+                    After
+                  </Badge>
+                  <span className='text-xs text-muted-foreground'>
                     Current Version
                   </span>
                 </div>
-                <div className="rounded-md bg-background/50 p-3 border">
-                  <pre className="font-mono text-xs overflow-x-auto">
+                <div className='rounded-md bg-background/50 p-3 border'>
+                  <pre className='font-mono text-xs overflow-x-auto'>
                     {formatValue(item.newValue)}
                   </pre>
                 </div>
@@ -423,31 +450,40 @@ function DiffSection({
 
   return (
     <Card>
-      <CardHeader className="pb-3">
+      <CardHeader className='pb-3'>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center justify-between w-full group"
+          className='flex items-center justify-between w-full group'
         >
-          <div className="flex items-center gap-2">
-            <Icon className="h-5 w-5 text-muted-foreground" />
-            <CardTitle className="text-base">{title}</CardTitle>
+          <div className='flex items-center gap-2'>
+            <Icon className='h-5 w-5 text-muted-foreground' />
+            <CardTitle className='text-base'>{title}</CardTitle>
             {items.length > 0 && (
-              <div className="flex items-center gap-1.5 ml-2">
+              <div className='flex items-center gap-1.5 ml-2'>
                 {stats.added > 0 && (
-                  <Badge variant="outline" className="text-xs gap-1 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
-                    <Plus className="h-3 w-3" />
+                  <Badge
+                    variant='outline'
+                    className='text-xs gap-1 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800'
+                  >
+                    <Plus className='h-3 w-3' />
                     {stats.added}
                   </Badge>
                 )}
                 {stats.removed > 0 && (
-                  <Badge variant="outline" className="text-xs gap-1 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800">
-                    <Minus className="h-3 w-3" />
+                  <Badge
+                    variant='outline'
+                    className='text-xs gap-1 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800'
+                  >
+                    <Minus className='h-3 w-3' />
                     {stats.removed}
                   </Badge>
                 )}
                 {stats.modified > 0 && (
-                  <Badge variant="outline" className="text-xs gap-1 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800">
-                    <Edit className="h-3 w-3" />
+                  <Badge
+                    variant='outline'
+                    className='text-xs gap-1 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+                  >
+                    <Edit className='h-3 w-3' />
                     {stats.modified}
                   </Badge>
                 )}
@@ -455,20 +491,20 @@ function DiffSection({
             )}
           </div>
           {isExpanded ? (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            <ChevronDown className='h-4 w-4 text-muted-foreground' />
           ) : (
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <ChevronRight className='h-4 w-4 text-muted-foreground' />
           )}
         </button>
       </CardHeader>
       {isExpanded && (
         <CardContent>
           {items.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
+            <p className='text-sm text-muted-foreground text-center py-8'>
               {emptyMessage}
             </p>
           ) : (
-            <div className="space-y-3">
+            <div className='space-y-3'>
               {items.map((item, index) => (
                 <DiffItemDisplay key={`${item.path}-${index}`} item={item} />
               ))}
@@ -490,7 +526,7 @@ export function WorkflowDiff({
 }: WorkflowDiffProps) {
   const diff = React.useMemo(
     () => generateWorkflowDiff(oldVersion.workflow, newVersion.workflow),
-    [oldVersion, newVersion],
+    [oldVersion, newVersion]
   );
 
   const totalChanges = React.useMemo(() => {
@@ -504,12 +540,17 @@ export function WorkflowDiff({
 
   if (!diff.hasChanges) {
     return (
-      <div className={cn('flex flex-col items-center justify-center py-12', className)}>
-        <GitCommit className="h-16 w-16 text-muted-foreground/50 mb-4" />
-        <h3 className="text-lg font-semibold text-muted-foreground">
+      <div
+        className={cn(
+          'flex flex-col items-center justify-center py-12',
+          className
+        )}
+      >
+        <GitCommit className='h-16 w-16 text-muted-foreground/50 mb-4' />
+        <h3 className='text-lg font-semibold text-muted-foreground'>
           No Changes Detected
         </h3>
-        <p className="text-sm text-muted-foreground mt-2">
+        <p className='text-sm text-muted-foreground mt-2'>
           These versions are identical
         </p>
       </div>
@@ -521,44 +562,36 @@ export function WorkflowDiff({
       {/* Summary */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Change Summary</CardTitle>
+          <CardTitle className='text-lg'>Change Summary</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="space-y-1">
-              <div className="text-2xl font-bold">
-                {totalChanges}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Total Changes
-              </div>
+          <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+            <div className='space-y-1'>
+              <div className='text-2xl font-bold'>{totalChanges}</div>
+              <div className='text-xs text-muted-foreground'>Total Changes</div>
             </div>
-            <div className="space-y-1">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            <div className='space-y-1'>
+              <div className='text-2xl font-bold text-green-600 dark:text-green-400'>
                 {diff.actions.filter(a => a.operation === 'added').length +
                   diff.variables.filter(v => v.operation === 'added').length}
               </div>
-              <div className="text-xs text-muted-foreground">
-                Added Items
-              </div>
+              <div className='text-xs text-muted-foreground'>Added Items</div>
             </div>
-            <div className="space-y-1">
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+            <div className='space-y-1'>
+              <div className='text-2xl font-bold text-red-600 dark:text-red-400'>
                 {diff.actions.filter(a => a.operation === 'removed').length +
                   diff.variables.filter(v => v.operation === 'removed').length}
               </div>
-              <div className="text-xs text-muted-foreground">
-                Removed Items
-              </div>
+              <div className='text-xs text-muted-foreground'>Removed Items</div>
             </div>
-            <div className="space-y-1">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <div className='space-y-1'>
+              <div className='text-2xl font-bold text-blue-600 dark:text-blue-400'>
                 {diff.metadata.length +
                   diff.trigger.length +
                   diff.actions.filter(a => a.operation === 'modified').length +
                   diff.variables.filter(v => v.operation === 'modified').length}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className='text-xs text-muted-foreground'>
                 Modified Items
               </div>
             </div>
@@ -567,110 +600,110 @@ export function WorkflowDiff({
       </Card>
 
       {/* Diff sections */}
-      <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all">
+      <Tabs defaultValue='all' className='w-full'>
+        <TabsList className='grid w-full grid-cols-5'>
+          <TabsTrigger value='all'>
             All Changes
             {totalChanges > 0 && (
-              <Badge variant="secondary" className="ml-2 text-xs">
+              <Badge variant='secondary' className='ml-2 text-xs'>
                 {totalChanges}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="metadata">
+          <TabsTrigger value='metadata'>
             Metadata
             {diff.metadata.length > 0 && (
-              <Badge variant="secondary" className="ml-2 text-xs">
+              <Badge variant='secondary' className='ml-2 text-xs'>
                 {diff.metadata.length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="trigger">
+          <TabsTrigger value='trigger'>
             Trigger
             {diff.trigger.length > 0 && (
-              <Badge variant="secondary" className="ml-2 text-xs">
+              <Badge variant='secondary' className='ml-2 text-xs'>
                 {diff.trigger.length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="actions">
+          <TabsTrigger value='actions'>
             Actions
             {diff.actions.length > 0 && (
-              <Badge variant="secondary" className="ml-2 text-xs">
+              <Badge variant='secondary' className='ml-2 text-xs'>
                 {diff.actions.length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="variables">
+          <TabsTrigger value='variables'>
             Variables
             {diff.variables.length > 0 && (
-              <Badge variant="secondary" className="ml-2 text-xs">
+              <Badge variant='secondary' className='ml-2 text-xs'>
                 {diff.variables.length}
               </Badge>
             )}
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="space-y-4 mt-6">
+        <TabsContent value='all' className='space-y-4 mt-6'>
           <DiffSection
-            title="Metadata"
+            title='Metadata'
             icon={FileText}
             items={diff.metadata}
-            emptyMessage="No metadata changes"
+            emptyMessage='No metadata changes'
           />
           <DiffSection
-            title="Trigger"
+            title='Trigger'
             icon={Settings}
             items={diff.trigger}
-            emptyMessage="No trigger changes"
+            emptyMessage='No trigger changes'
           />
           <DiffSection
-            title="Actions"
+            title='Actions'
             icon={GitCommit}
             items={diff.actions}
-            emptyMessage="No action changes"
+            emptyMessage='No action changes'
           />
           <DiffSection
-            title="Variables"
+            title='Variables'
             icon={Code2}
             items={diff.variables}
-            emptyMessage="No variable changes"
+            emptyMessage='No variable changes'
           />
         </TabsContent>
 
-        <TabsContent value="metadata" className="space-y-4 mt-6">
+        <TabsContent value='metadata' className='space-y-4 mt-6'>
           <DiffSection
-            title="Metadata"
+            title='Metadata'
             icon={FileText}
             items={diff.metadata}
-            emptyMessage="No metadata changes"
+            emptyMessage='No metadata changes'
           />
         </TabsContent>
 
-        <TabsContent value="trigger" className="space-y-4 mt-6">
+        <TabsContent value='trigger' className='space-y-4 mt-6'>
           <DiffSection
-            title="Trigger"
+            title='Trigger'
             icon={Settings}
             items={diff.trigger}
-            emptyMessage="No trigger changes"
+            emptyMessage='No trigger changes'
           />
         </TabsContent>
 
-        <TabsContent value="actions" className="space-y-4 mt-6">
+        <TabsContent value='actions' className='space-y-4 mt-6'>
           <DiffSection
-            title="Actions"
+            title='Actions'
             icon={GitCommit}
             items={diff.actions}
-            emptyMessage="No action changes"
+            emptyMessage='No action changes'
           />
         </TabsContent>
 
-        <TabsContent value="variables" className="space-y-4 mt-6">
+        <TabsContent value='variables' className='space-y-4 mt-6'>
           <DiffSection
-            title="Variables"
+            title='Variables'
             icon={Code2}
             items={diff.variables}
-            emptyMessage="No variable changes"
+            emptyMessage='No variable changes'
           />
         </TabsContent>
       </Tabs>

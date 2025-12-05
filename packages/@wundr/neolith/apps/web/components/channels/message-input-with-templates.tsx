@@ -56,14 +56,14 @@ export function MessageInputWithTemplates({
   return (
     <div className={className}>
       {/* Template Selector Button */}
-      <div className="flex items-center gap-2 px-4 pb-2">
+      <div className='flex items-center gap-2 px-4 pb-2'>
         <TemplateSelector
           channelId={channelId}
           onSelectTemplate={handleTemplateSelect}
           isAdmin={isChannelAdmin}
           disabled={disabled}
         />
-        <span className="text-xs text-muted-foreground">
+        <span className='text-xs text-muted-foreground'>
           Click to insert a message template
         </span>
       </div>
@@ -84,30 +84,30 @@ export function MessageInputWithTemplates({
 
       {/* Template preview (if selected) */}
       {templateContent && (
-        <div className="mx-4 mb-2 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1">
-              <p className="text-xs font-medium text-blue-900 dark:text-blue-100 mb-1">
+        <div className='mx-4 mb-2 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg'>
+          <div className='flex items-start justify-between gap-2'>
+            <div className='flex-1'>
+              <p className='text-xs font-medium text-blue-900 dark:text-blue-100 mb-1'>
                 Template Preview
               </p>
-              <p className="text-xs text-blue-700 dark:text-blue-300 whitespace-pre-wrap">
+              <p className='text-xs text-blue-700 dark:text-blue-300 whitespace-pre-wrap'>
                 {templateContent}
               </p>
             </div>
             <button
               onClick={() => setTemplateContent(null)}
-              className="text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100"
+              className='text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100'
             >
               <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+                width='16'
+                height='16'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
               >
-                <path d="M18 6 6 18" />
-                <path d="m6 6 12 12" />
+                <path d='M18 6 6 18' />
+                <path d='m6 6 12 12' />
               </svg>
             </button>
           </div>

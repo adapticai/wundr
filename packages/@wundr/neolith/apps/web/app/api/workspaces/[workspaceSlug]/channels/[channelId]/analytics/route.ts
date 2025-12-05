@@ -62,11 +62,9 @@ function parseQueryParams(searchParams: URLSearchParams): AnalyticsQueryParams {
     endDate: searchParams.get('endDate')
       ? new Date(searchParams.get('endDate')!)
       : now,
-    granularity: (searchParams.get('granularity') as
-      | 'hour'
-      | 'day'
-      | 'week'
-      | 'month') || 'day',
+    granularity:
+      (searchParams.get('granularity') as 'hour' | 'day' | 'week' | 'month') ||
+      'day',
     timezone: searchParams.get('timezone') || 'UTC',
     export: (searchParams.get('export') as 'json' | 'csv') || undefined,
   };
@@ -85,7 +83,7 @@ function parseQueryParams(searchParams: URLSearchParams): AnalyticsQueryParams {
 async function checkChannelAccess(
   workspaceId: string,
   channelId: string,
-  userId: string,
+  userId: string
 ) {
   // Get workspace with organization
   const workspace = await prisma.workspace.findUnique({
@@ -148,7 +146,7 @@ async function checkChannelAccess(
  * Get date truncation SQL based on granularity
  */
 function getDateTruncExpression(
-  granularity: 'hour' | 'day' | 'week' | 'month',
+  granularity: 'hour' | 'day' | 'week' | 'month'
 ): string {
   switch (granularity) {
     case 'hour':
@@ -171,7 +169,7 @@ async function getMessageVolume(
   channelId: string,
   startDate: Date,
   endDate: Date,
-  granularity: 'hour' | 'day' | 'week' | 'month',
+  granularity: 'hour' | 'day' | 'week' | 'month'
 ) {
   const dateTrunc = getDateTruncExpression(granularity);
 
@@ -205,7 +203,7 @@ async function getActiveUsers(
   channelId: string,
   startDate: Date,
   endDate: Date,
-  granularity: 'hour' | 'day' | 'week' | 'month',
+  granularity: 'hour' | 'day' | 'week' | 'month'
 ) {
   const dateTrunc = getDateTruncExpression(granularity);
 
@@ -237,7 +235,7 @@ async function getActiveUsers(
 async function getPeakActivityHours(
   channelId: string,
   startDate: Date,
-  endDate: Date,
+  endDate: Date
 ) {
   const hourlyData = await prisma.$queryRaw<
     Array<{ hour: number; count: bigint }>
@@ -267,7 +265,7 @@ async function getPeakActivityHours(
 async function getMessageTypeDistribution(
   channelId: string,
   startDate: Date,
-  endDate: Date,
+  endDate: Date
 ) {
   const typeData = await prisma.message.groupBy({
     by: ['type'],
@@ -297,7 +295,7 @@ async function getTopContributors(
   channelId: string,
   startDate: Date,
   endDate: Date,
-  limit: number = 10,
+  limit: number = 10
 ) {
   const contributors = await prisma.message.groupBy({
     by: ['authorId'],
@@ -351,7 +349,7 @@ async function getTopContributors(
 async function getEngagementMetrics(
   channelId: string,
   startDate: Date,
-  endDate: Date,
+  endDate: Date
 ) {
   // Get messages with replies count
   const messagesWithReplies = await prisma.message.count({
@@ -428,7 +426,7 @@ async function getMemberGrowth(
   channelId: string,
   startDate: Date,
   endDate: Date,
-  granularity: 'hour' | 'day' | 'week' | 'month',
+  granularity: 'hour' | 'day' | 'week' | 'month'
 ) {
   const dateTrunc = getDateTruncExpression(granularity);
 
@@ -477,7 +475,7 @@ function convertToCSV(data: Record<string, unknown>): string {
     (data.messageVolume as Array<{ period: string; count: number }>).forEach(
       row => {
         sections.push(`${row.period},${row.count}`);
-      },
+      }
     );
     sections.push('');
   }
@@ -511,7 +509,7 @@ function convertToCSV(data: Record<string, unknown>): string {
     (data.messageTypes as Array<{ type: string; count: number }>).forEach(
       row => {
         sections.push(`${row.type},${row.count}`);
-      },
+      }
     );
     sections.push('');
   }
@@ -553,7 +551,7 @@ function convertToCSV(data: Record<string, unknown>): string {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -562,9 +560,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          ORG_ERROR_CODES.UNAUTHORIZED,
+          ORG_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -582,9 +580,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid workspace or channel ID',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -592,16 +590,16 @@ export async function GET(
     const access = await checkChannelAccess(
       workspaceId,
       params.channelId,
-      session.user.id,
+      session.user.id
     );
 
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           'Channel not found or access denied',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -615,9 +613,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           error instanceof Error ? error.message : 'Invalid query parameters',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -633,12 +631,7 @@ export async function GET(
       engagementMetrics,
       memberGrowth,
     ] = await Promise.all([
-      getMessageVolume(
-        params.channelId,
-        startDate!,
-        endDate!,
-        granularity!,
-      ),
+      getMessageVolume(params.channelId, startDate!, endDate!, granularity!),
       getActiveUsers(params.channelId, startDate!, endDate!, granularity!),
       getPeakActivityHours(params.channelId, startDate!, endDate!),
       getMessageTypeDistribution(params.channelId, startDate!, endDate!),
@@ -672,13 +665,12 @@ export async function GET(
         totalReactions: engagementMetrics.totalReactions,
         uniqueActiveUsers: activeUsers.reduce(
           (max, u) => Math.max(max, u.uniqueUsers),
-          0,
+          0
         ),
         avgMessagesPerDay:
           messageVolume.reduce((sum, v) => sum + v.count, 0) /
           (messageVolume.length || 1),
-        peakActivityHour:
-          peakHours.length > 0 ? peakHours[0].hour : null,
+        peakActivityHour: peakHours.length > 0 ? peakHours[0].hour : null,
       },
     };
 
@@ -700,14 +692,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/channels/:channelId/analytics] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

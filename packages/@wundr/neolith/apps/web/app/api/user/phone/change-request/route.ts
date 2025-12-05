@@ -45,7 +45,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       session.user.id,
       'phone_verification',
       3,
-      3600,
+      3600
     );
     if (!allowed) {
       return NextResponse.json(
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Too many verification attempts. Please try again later.',
           code: SECURITY_ERROR_CODES.RATE_LIMIT_EXCEEDED,
         },
-        { status: 429 },
+        { status: 429 }
       );
     }
 
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

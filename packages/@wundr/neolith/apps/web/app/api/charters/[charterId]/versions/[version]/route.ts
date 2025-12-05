@@ -59,7 +59,7 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
   }
 
   const membership = userOrganizations.find(
-    m => m.organizationId === orchestrator.organizationId,
+    m => m.organizationId === orchestrator.organizationId
   );
 
   return { orchestrator, role: membership?.role ?? null };
@@ -77,7 +77,7 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -86,9 +86,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.UNAUTHORIZED,
-          'Authentication required',
+          'Authentication required'
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -105,9 +105,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
-          'Invalid charter ID or version format',
+          'Invalid charter ID or version format'
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -144,24 +144,24 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VERSION_NOT_FOUND,
-          'Charter version not found',
+          'Charter version not found'
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Check access
     const access = await checkOrchestratorAccess(
       charterVersion.orchestratorId,
-      session.user.id,
+      session.user.id
     );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.FORBIDDEN,
-          'Orchestrator not found or access denied',
+          'Orchestrator not found or access denied'
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -169,14 +169,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/charters/:charterId/versions/:version] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         CHARTER_ERROR_CODES.INTERNAL_ERROR,
-        'An internal error occurred',
+        'An internal error occurred'
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -193,7 +193,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -202,9 +202,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.UNAUTHORIZED,
-          'Authentication required',
+          'Authentication required'
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -221,9 +221,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
-          'Invalid charter ID or version format',
+          'Invalid charter ID or version format'
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -237,9 +237,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
-          'Invalid JSON body',
+          'Invalid JSON body'
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -252,9 +252,9 @@ export async function PATCH(
           'Validation failed',
           {
             errors: parseResult.error.flatten().fieldErrors,
-          },
+          }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -276,24 +276,24 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VERSION_NOT_FOUND,
-          'Charter version not found',
+          'Charter version not found'
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Check access and permissions
     const access = await checkOrchestratorAccess(
       charterVersion.orchestratorId,
-      session.user.id,
+      session.user.id
     );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.FORBIDDEN,
-          'Orchestrator not found or access denied',
+          'Orchestrator not found or access denied'
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -302,9 +302,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.FORBIDDEN,
-          'Insufficient permissions to update charter version',
+          'Insufficient permissions to update charter version'
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -342,14 +342,14 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/charters/:charterId/versions/:version] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         CHARTER_ERROR_CODES.INTERNAL_ERROR,
-        'An internal error occurred',
+        'An internal error occurred'
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

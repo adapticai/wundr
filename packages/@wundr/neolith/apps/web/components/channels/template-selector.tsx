@@ -40,56 +40,64 @@ export function TemplateSelector({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             disabled={disabled}
-            className="h-8 px-2 hover:bg-accent"
-            title="Insert template"
+            className='h-8 px-2 hover:bg-accent'
+            title='Insert template'
           >
             <TemplateIcon />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-56">
+        <DropdownMenuContent align='start' className='w-56'>
           <DropdownMenuLabel>Quick Templates</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
           <DropdownMenuItem
             onClick={() => onSelectTemplate(getStandupTemplate())}
           >
-            <span className="mr-2">📋</span>
+            <span className='mr-2'>📋</span>
             <div>
-              <div className="font-medium text-sm">Daily Standup</div>
-              <div className="text-xs text-muted-foreground">Yesterday, Today, Blockers</div>
+              <div className='font-medium text-sm'>Daily Standup</div>
+              <div className='text-xs text-muted-foreground'>
+                Yesterday, Today, Blockers
+              </div>
             </div>
           </DropdownMenuItem>
 
           <DropdownMenuItem
             onClick={() => onSelectTemplate(getAnnouncementTemplate())}
           >
-            <span className="mr-2">📢</span>
+            <span className='mr-2'>📢</span>
             <div>
-              <div className="font-medium text-sm">Announcement</div>
-              <div className="text-xs text-muted-foreground">Important team message</div>
+              <div className='font-medium text-sm'>Announcement</div>
+              <div className='text-xs text-muted-foreground'>
+                Important team message
+              </div>
             </div>
           </DropdownMenuItem>
 
           <DropdownMenuItem
             onClick={() => onSelectTemplate(getMeetingNotesTemplate())}
           >
-            <span className="mr-2">📝</span>
+            <span className='mr-2'>📝</span>
             <div>
-              <div className="font-medium text-sm">Meeting Notes</div>
-              <div className="text-xs text-muted-foreground">Agenda and action items</div>
+              <div className='font-medium text-sm'>Meeting Notes</div>
+              <div className='text-xs text-muted-foreground'>
+                Agenda and action items
+              </div>
             </div>
           </DropdownMenuItem>
 
           <DropdownMenuItem
             onClick={() => onSelectTemplate(getDecisionTemplate())}
           >
-            <span className="mr-2">✅</span>
+            <span className='mr-2'>✅</span>
             <div>
-              <div className="font-medium text-sm">Decision</div>
-              <div className="text-xs text-muted-foreground">Document team decision</div>
+              <div className='font-medium text-sm'>Decision</div>
+              <div className='text-xs text-muted-foreground'>
+                Document team decision
+              </div>
             </div>
           </DropdownMenuItem>
 
@@ -97,9 +105,9 @@ export function TemplateSelector({
 
           <DropdownMenuItem
             onClick={() => setShowTemplatesDialog(true)}
-            className="text-primary"
+            className='text-primary'
           >
-            <span className="mr-2">🔍</span>
+            <span className='mr-2'>🔍</span>
             Browse All Templates
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -221,20 +229,20 @@ function getDecisionTemplate(): string {
 function TemplateIcon() {
   return (
     <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      width='20'
+      height='20'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <path d="M14 2v6h6" />
-      <path d="M16 13H8" />
-      <path d="M16 17H8" />
-      <path d="M10 9H8" />
+      <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' />
+      <path d='M14 2v6h6' />
+      <path d='M16 13H8' />
+      <path d='M16 17H8' />
+      <path d='M10 9H8' />
     </svg>
   );
 }

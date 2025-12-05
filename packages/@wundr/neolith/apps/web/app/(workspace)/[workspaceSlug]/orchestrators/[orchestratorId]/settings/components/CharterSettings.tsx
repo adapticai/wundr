@@ -56,9 +56,9 @@ export function CharterSettings({
   charterId,
   disabled = false,
 }: CharterSettingsProps) {
-  const [activeView, setActiveView] = useState<
-    'current' | 'edit' | 'history'
-  >('current');
+  const [activeView, setActiveView] = useState<'current' | 'edit' | 'history'>(
+    'current'
+  );
   const [currentCharter, setCurrentCharter] =
     useState<OrchestratorCharter | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,7 +74,7 @@ export function CharterSettings({
   // Version preview state
   const [previewDialog, setPreviewDialog] = useState(false);
   const [previewVersion, setPreviewVersion] = useState<CharterVersion | null>(
-    null,
+    null
   );
 
   /**
@@ -89,7 +89,7 @@ export function CharterSettings({
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/charter`,
+        `/api/orchestrators/${orchestratorId}/charter`
       );
 
       if (response.ok) {
@@ -121,7 +121,7 @@ export function CharterSettings({
       try {
         const changeLog = prompt(
           'Enter a description of changes (optional):',
-          'Charter updated',
+          'Charter updated'
         );
         if (changeLog === null) {
           return; // User cancelled
@@ -139,7 +139,7 @@ export function CharterSettings({
               charterData: charter,
               changeLog: changeLog || 'Charter updated',
             }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -158,12 +158,12 @@ export function CharterSettings({
       } catch (error) {
         console.error('Error saving charter:', error);
         toast.error(
-          error instanceof Error ? error.message : 'Failed to save charter',
+          error instanceof Error ? error.message : 'Failed to save charter'
         );
         throw error;
       }
     },
-    [orchestratorId, charterId, fetchCurrentCharter],
+    [orchestratorId, charterId, fetchCurrentCharter]
   );
 
   /**
@@ -178,10 +178,10 @@ export function CharterSettings({
       try {
         const [version1Response, version2Response] = await Promise.all([
           fetch(
-            `/api/charters/${charterId}/versions?limit=100&offset=0&status=all`,
+            `/api/charters/${charterId}/versions?limit=100&offset=0&status=all`
           ),
           fetch(
-            `/api/charters/${charterId}/versions?limit=100&offset=0&status=all`,
+            `/api/charters/${charterId}/versions?limit=100&offset=0&status=all`
           ),
         ]);
 
@@ -192,8 +192,12 @@ export function CharterSettings({
         const data1 = await version1Response.json();
         const data2 = await version2Response.json();
 
-        const v1 = data1.data.find((v: CharterVersion) => v.version === v1Number);
-        const v2 = data2.data.find((v: CharterVersion) => v.version === v2Number);
+        const v1 = data1.data.find(
+          (v: CharterVersion) => v.version === v1Number
+        );
+        const v2 = data2.data.find(
+          (v: CharterVersion) => v.version === v2Number
+        );
 
         if (v1 && v2) {
           setCompareVersions({ v1, v2 });
@@ -204,7 +208,7 @@ export function CharterSettings({
         toast.error('Failed to load versions for comparison');
       }
     },
-    [charterId],
+    [charterId]
   );
 
   /**
@@ -310,9 +314,7 @@ export function CharterSettings({
       <Dialog open={previewDialog} onOpenChange={setPreviewDialog}>
         <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
           <DialogHeader>
-            <DialogTitle>
-              Charter Version {previewVersion?.version}
-            </DialogTitle>
+            <DialogTitle>Charter Version {previewVersion?.version}</DialogTitle>
             <DialogDescription>
               Created on{' '}
               {previewVersion &&
@@ -330,7 +332,9 @@ export function CharterSettings({
                 </div>
               )}
               <CharterPreview
-                charter={previewVersion.charterData as unknown as OrchestratorCharter}
+                charter={
+                  previewVersion.charterData as unknown as OrchestratorCharter
+                }
               />
             </div>
           )}

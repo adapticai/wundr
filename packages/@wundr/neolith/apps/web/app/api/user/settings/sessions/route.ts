@@ -51,7 +51,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -67,7 +67,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     // Get current session token from request
-    const currentSessionToken = request.cookies.get('authjs.session-token')?.value;
+    const currentSessionToken = request.cookies.get(
+      'authjs.session-token'
+    )?.value;
 
     // Parse and format session information
     const sessionsInfo: SessionInfo[] = sessions.map(sess => {
@@ -101,7 +103,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

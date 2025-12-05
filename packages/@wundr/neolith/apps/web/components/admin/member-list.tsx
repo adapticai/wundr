@@ -64,7 +64,7 @@ export function MemberList({
       }
 
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/admin/members?${params.toString()}`,
+        `/api/workspaces/${workspaceId}/admin/members?${params.toString()}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -103,7 +103,7 @@ export function MemberList({
   };
 
   const handleBulkAction = async (
-    action: 'suspend' | 'activate' | 'remove',
+    action: 'suspend' | 'activate' | 'remove'
   ) => {
     if (selectedIds.size === 0) {
       return;
@@ -112,7 +112,7 @@ export function MemberList({
     const confirmed =
       action === 'remove'
         ? confirm(
-            `Are you sure you want to remove ${selectedIds.size} member(s)?`,
+            `Are you sure you want to remove ${selectedIds.size} member(s)?`
           )
         : true;
 
@@ -338,7 +338,7 @@ export function MemberList({
                       <span
                         className={cn(
                           'px-2 py-1 rounded text-xs capitalize',
-                          STATUS_COLORS[member.status],
+                          STATUS_COLORS[member.status]
                         )}
                       >
                         {member.status}

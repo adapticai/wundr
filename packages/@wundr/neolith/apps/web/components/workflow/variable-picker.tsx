@@ -69,7 +69,7 @@ export function VariablePicker({
 
   // Filter variables based on scope and search
   const availableVariables = React.useMemo(() => {
-    return variables.filter((variable) => {
+    return variables.filter(variable => {
       // Include global variables
       if (variable.scope === 'global') {
         return true;
@@ -85,32 +85,32 @@ export function VariablePicker({
   // Filter by search term
   const filteredVariables = React.useMemo(() => {
     if (!search) {
-return availableVariables;
-}
+      return availableVariables;
+    }
     const searchLower = search.toLowerCase();
     return availableVariables.filter(
-      (variable) =>
+      variable =>
         variable.name.toLowerCase().includes(searchLower) ||
-        variable.description?.toLowerCase().includes(searchLower),
+        variable.description?.toLowerCase().includes(searchLower)
     );
   }, [availableVariables, search]);
 
   // Group by scope
   const groupedVariables = React.useMemo(() => {
-    const global = filteredVariables.filter((v) => v.scope === 'global');
-    const step = filteredVariables.filter((v) => v.scope === 'step');
+    const global = filteredVariables.filter(v => v.scope === 'global');
+    const step = filteredVariables.filter(v => v.scope === 'step');
     return { global, step };
   }, [filteredVariables]);
 
   const selectedVariable = React.useMemo(() => {
     if (!value) {
-return null;
-}
+      return null;
+    }
     const varName = extractVariableName(value);
     if (!varName) {
-return null;
-}
-    return variables.find((v) => v.name === varName);
+      return null;
+    }
+    return variables.find(v => v.name === varName);
   }, [value, variables]);
 
   const handleSelect = (variable: ScopedWorkflowVariable) => {
@@ -123,39 +123,39 @@ return null;
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          role="combobox"
+          variant='outline'
+          role='combobox'
           aria-expanded={open}
           className={cn('w-full justify-between', className)}
         >
           {selectedVariable ? (
-            <div className="flex items-center gap-2">
-              <Code2 className="h-4 w-4" />
-              <span className="font-mono text-sm">{selectedVariable.name}</span>
-              <Badge variant="secondary" className="text-xs">
+            <div className='flex items-center gap-2'>
+              <Code2 className='h-4 w-4' />
+              <span className='font-mono text-sm'>{selectedVariable.name}</span>
+              <Badge variant='secondary' className='text-xs'>
                 {selectedVariable.type}
               </Badge>
             </div>
           ) : (
-            <span className="text-muted-foreground">{placeholder}</span>
+            <span className='text-muted-foreground'>{placeholder}</span>
           )}
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0" align="start">
-        <div className="flex items-center border-b px-3">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+      <PopoverContent className='w-[400px] p-0' align='start'>
+        <div className='flex items-center border-b px-3'>
+          <Search className='mr-2 h-4 w-4 shrink-0 opacity-50' />
           <Input
-            placeholder="Search variables..."
+            placeholder='Search variables...'
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            onChange={e => setSearch(e.target.value)}
+            className='border-0 focus-visible:ring-0 focus-visible:ring-offset-0'
           />
         </div>
 
-        <div className="max-h-[300px] overflow-y-auto">
+        <div className='max-h-[300px] overflow-y-auto'>
           {filteredVariables.length === 0 ? (
-            <div className="p-6 text-center text-sm text-muted-foreground">
+            <div className='p-6 text-center text-sm text-muted-foreground'>
               {search ? (
                 <>No variables found matching "{search}"</>
               ) : availableVariables.length === 0 ? (
@@ -165,48 +165,51 @@ return null;
               )}
             </div>
           ) : (
-            <div className="p-2 space-y-2">
+            <div className='p-2 space-y-2'>
               {/* Global Variables */}
               {groupedVariables.global.length > 0 && (
                 <div>
-                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                  <div className='px-2 py-1.5 text-xs font-semibold text-muted-foreground'>
                     Global Variables
                   </div>
-                  <div className="space-y-1">
-                    {groupedVariables.global.map((variable) => (
+                  <div className='space-y-1'>
+                    {groupedVariables.global.map(variable => (
                       <button
                         key={variable.id}
                         className={cn(
                           'w-full flex items-center justify-between px-2 py-2 text-sm rounded-md hover:bg-accent transition-colors',
-                          selectedVariable?.id === variable.id && 'bg-accent',
+                          selectedVariable?.id === variable.id && 'bg-accent'
                         )}
                         onClick={() => handleSelect(variable)}
                       >
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className='flex items-center gap-2 flex-1 min-w-0'>
                           <span
                             className={cn(
                               'font-mono text-xs',
-                              VARIABLE_TYPE_CONFIG[variable.type]?.color,
+                              VARIABLE_TYPE_CONFIG[variable.type]?.color
                             )}
                           >
                             {VARIABLE_TYPE_CONFIG[variable.type]?.icon}
                           </span>
-                          <div className="flex flex-col items-start min-w-0 flex-1">
-                            <span className="font-mono text-sm font-medium">
+                          <div className='flex flex-col items-start min-w-0 flex-1'>
+                            <span className='font-mono text-sm font-medium'>
                               {variable.name}
                             </span>
                             {variable.description && (
-                              <span className="text-xs text-muted-foreground truncate max-w-full">
+                              <span className='text-xs text-muted-foreground truncate max-w-full'>
                                 {variable.description}
                               </span>
                             )}
                           </div>
-                          <Badge variant="secondary" className="text-xs shrink-0">
+                          <Badge
+                            variant='secondary'
+                            className='text-xs shrink-0'
+                          >
                             {variable.type}
                           </Badge>
                         </div>
                         {selectedVariable?.id === variable.id && (
-                          <Check className="h-4 w-4 shrink-0 ml-2" />
+                          <Check className='h-4 w-4 shrink-0 ml-2' />
                         )}
                       </button>
                     ))}
@@ -217,44 +220,47 @@ return null;
               {/* Step Variables */}
               {groupedVariables.step.length > 0 && (
                 <div>
-                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                  <div className='px-2 py-1.5 text-xs font-semibold text-muted-foreground'>
                     Step Variables
                   </div>
-                  <div className="space-y-1">
-                    {groupedVariables.step.map((variable) => (
+                  <div className='space-y-1'>
+                    {groupedVariables.step.map(variable => (
                       <button
                         key={variable.id}
                         className={cn(
                           'w-full flex items-center justify-between px-2 py-2 text-sm rounded-md hover:bg-accent transition-colors',
-                          selectedVariable?.id === variable.id && 'bg-accent',
+                          selectedVariable?.id === variable.id && 'bg-accent'
                         )}
                         onClick={() => handleSelect(variable)}
                       >
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className='flex items-center gap-2 flex-1 min-w-0'>
                           <span
                             className={cn(
                               'font-mono text-xs',
-                              VARIABLE_TYPE_CONFIG[variable.type]?.color,
+                              VARIABLE_TYPE_CONFIG[variable.type]?.color
                             )}
                           >
                             {VARIABLE_TYPE_CONFIG[variable.type]?.icon}
                           </span>
-                          <div className="flex flex-col items-start min-w-0 flex-1">
-                            <span className="font-mono text-sm font-medium">
+                          <div className='flex flex-col items-start min-w-0 flex-1'>
+                            <span className='font-mono text-sm font-medium'>
                               {variable.name}
                             </span>
                             {variable.description && (
-                              <span className="text-xs text-muted-foreground truncate max-w-full">
+                              <span className='text-xs text-muted-foreground truncate max-w-full'>
                                 {variable.description}
                               </span>
                             )}
                           </div>
-                          <Badge variant="secondary" className="text-xs shrink-0">
+                          <Badge
+                            variant='secondary'
+                            className='text-xs shrink-0'
+                          >
                             {variable.type}
                           </Badge>
                         </div>
                         {selectedVariable?.id === variable.id && (
-                          <Check className="h-4 w-4 shrink-0 ml-2" />
+                          <Check className='h-4 w-4 shrink-0 ml-2' />
                         )}
                       </button>
                     ))}
@@ -266,13 +272,13 @@ return null;
         </div>
 
         {/* Footer with tips */}
-        <div className="border-t p-2 bg-muted/30">
-          <div className="text-xs text-muted-foreground space-y-1">
-            <div className="flex items-center gap-2">
-              <Code2 className="h-3 w-3" />
+        <div className='border-t p-2 bg-muted/30'>
+          <div className='text-xs text-muted-foreground space-y-1'>
+            <div className='flex items-center gap-2'>
+              <Code2 className='h-3 w-3' />
               <span>
                 Variables are referenced as:{' '}
-                <code className="bg-background px-1 py-0.5 rounded">
+                <code className='bg-background px-1 py-0.5 rounded'>
                   ${'{'}variable.name{'}'}
                 </code>
               </span>

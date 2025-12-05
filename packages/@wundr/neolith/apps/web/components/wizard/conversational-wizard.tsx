@@ -129,7 +129,7 @@ export function ConversationalWizard({
         : await defaultMessageHandler(
             content,
             [...messages, userMessage],
-            entityType,
+            entityType
           );
 
       // Add assistant response
@@ -277,7 +277,7 @@ function getEntityDisplayName(entityType: EntityType): string {
  */
 function getGreetingMessage(
   entityType: EntityType,
-  initialContext?: string,
+  initialContext?: string
 ): string {
   if (initialContext) {
     return initialContext;
@@ -310,7 +310,7 @@ function getGreetingMessage(
 async function defaultMessageHandler(
   message: string,
   history: Message[],
-  entityType: EntityType,
+  entityType: EntityType
 ): Promise<{ response: string; extractedData?: EntityData }> {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));

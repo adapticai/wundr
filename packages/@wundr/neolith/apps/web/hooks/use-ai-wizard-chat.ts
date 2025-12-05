@@ -29,7 +29,7 @@ export function getMessageContent(message: UIMessage): string {
   }
   return message.parts
     .filter(
-      (part): part is { type: 'text'; text: string } => part.type === 'text',
+      (part): part is { type: 'text'; text: string } => part.type === 'text'
     )
     .map(part => part.text)
     .join('');
@@ -52,7 +52,7 @@ export function getToolInvocations(message: UIMessage): ToolInvocation[] {
   return message.parts
     .filter(
       (part): part is Extract<typeof part, { type: `tool-${string}` }> =>
-        typeof part.type === 'string' && part.type.startsWith('tool-'),
+        typeof part.type === 'string' && part.type.startsWith('tool-')
     )
     .map(part => {
       // Extract tool name from type (e.g., 'tool-extract_workspace' -> 'extract_workspace')
@@ -84,7 +84,7 @@ export function useAIWizardChat({
   // Create stable initial greeting message
   const greetingMessage = React.useMemo(
     () => (initialGreeting ? createInitialMessage(initialGreeting) : null),
-    [initialGreeting],
+    [initialGreeting]
   );
 
   const chat = useChat({
@@ -130,14 +130,14 @@ export function useAIWizardChat({
       setInput('');
       await chat.sendMessage({ text: message });
     },
-    [input, chat],
+    [input, chat]
   );
 
   const append = React.useCallback(
     async (message: { role: string; content: string }) => {
       await chat.sendMessage({ text: message.content });
     },
-    [chat],
+    [chat]
   );
 
   const isLoading = chat.status === 'streaming' || chat.status === 'submitted';
@@ -158,14 +158,14 @@ export function useAIWizardChat({
       const filled = requiredFilled.length * 2 + optionalFilled.length;
       return Math.round((filled / total) * 100);
     },
-    [extractedData],
+    [extractedData]
   );
 
   const isComplete = React.useCallback(
     (requiredFields: string[]) => {
       return requiredFields.every(f => extractedData[f]);
     },
-    [extractedData],
+    [extractedData]
   );
 
   return {

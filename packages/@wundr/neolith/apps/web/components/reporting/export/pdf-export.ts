@@ -10,7 +10,7 @@ import type { Report, ExportOptions } from '../types';
 
 export async function exportToPDF(
   report: Report,
-  options: ExportOptions = { format: 'pdf' },
+  options: ExportOptions = { format: 'pdf' }
 ): Promise<void> {
   const {
     filename = 'report.pdf',
@@ -46,7 +46,7 @@ export async function exportToPDF(
     pdf.text(
       `Generated: ${report.metadata.generatedAt.toLocaleString()}`,
       margin,
-      yPosition,
+      yPosition
     );
     yPosition += 7;
 
@@ -59,7 +59,7 @@ export async function exportToPDF(
       pdf.text(
         `Period: ${report.metadata.dateRange.from.toLocaleDateString()} - ${report.metadata.dateRange.to.toLocaleDateString()}`,
         margin,
-        yPosition,
+        yPosition
       );
       yPosition += 10;
     }
@@ -92,11 +92,14 @@ export async function exportToPDF(
       pdf.setFontSize(10);
       const lines = pdf.splitTextToSize(
         String(section.content),
-        pageWidth - 2 * margin,
+        pageWidth - 2 * margin
       );
       pdf.text(lines, margin, yPosition);
       yPosition += lines.length * 5 + 5;
-    } else if (section.type === 'table' && typeof section.content === 'object') {
+    } else if (
+      section.type === 'table' &&
+      typeof section.content === 'object'
+    ) {
       // Simple table rendering
       const tableData = section.content as any;
       pdf.setFontSize(9);
@@ -144,7 +147,7 @@ export async function exportToPDF(
 export async function exportElementToPDF(
   elementId: string,
   filename: string = 'report.pdf',
-  orientation: 'portrait' | 'landscape' = 'portrait',
+  orientation: 'portrait' | 'landscape' = 'portrait'
 ): Promise<void> {
   const element = document.getElementById(elementId);
   if (!element) {

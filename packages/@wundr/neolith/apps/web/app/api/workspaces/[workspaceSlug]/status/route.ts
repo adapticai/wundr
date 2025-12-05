@@ -155,7 +155,7 @@ function isCustomStatusExpired(customStatus: CustomStatus | null): boolean {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -163,7 +163,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -174,7 +174,7 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         { error: { message: 'Workspace not found or access denied' } },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -192,7 +192,7 @@ export async function GET(
     if (!user) {
       return NextResponse.json(
         { error: { message: 'User not found' } },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -227,7 +227,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceSlug/status] Error:', error);
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -267,7 +267,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -275,7 +275,7 @@ export async function PUT(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -286,7 +286,7 @@ export async function PUT(
     if (!access) {
       return NextResponse.json(
         { error: { message: 'Workspace not found or access denied' } },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -297,7 +297,7 @@ export async function PUT(
     } catch {
       return NextResponse.json(
         { error: { message: 'Invalid JSON body' } },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -311,7 +311,7 @@ export async function PUT(
             errors: parseResult.error.flatten().fieldErrors,
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -341,7 +341,9 @@ export async function PUT(
     const newPrefs: Prisma.JsonObject = {
       ...currentPrefs,
       presenceStatus: input.status ?? currentPrefs.presenceStatus,
-      customStatus: (customStatus !== undefined ? customStatus : currentPrefs.customStatus) as Prisma.JsonValue,
+      customStatus: (customStatus !== undefined
+        ? customStatus
+        : currentPrefs.customStatus) as Prisma.JsonValue,
     };
 
     // Update user
@@ -391,7 +393,7 @@ export async function PUT(
     console.error('[PUT /api/workspaces/:workspaceSlug/status] Error:', error);
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -418,7 +420,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -426,7 +428,7 @@ export async function DELETE(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { message: 'Authentication required' } },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -437,7 +439,7 @@ export async function DELETE(
     if (!access) {
       return NextResponse.json(
         { error: { message: 'Workspace not found or access denied' } },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -492,11 +494,11 @@ export async function DELETE(
   } catch (error) {
     console.error(
       '[DELETE /api/workspaces/:workspaceSlug/status] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       { error: { message: 'An internal error occurred' } },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

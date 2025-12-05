@@ -270,7 +270,10 @@ export interface UseReportGenerationReturn {
   /** Generate a report */
   generate: (options: ReportGenerationOptions) => Promise<string>;
   /** Export a report */
-  exportReport: (reportId: string, options: ReportExportOptions) => Promise<void>;
+  exportReport: (
+    reportId: string,
+    options: ReportExportOptions
+  ) => Promise<void>;
   /** Get generation status */
   getStatus: (reportId: string) => Promise<ReportGenerationStatus>;
   /** Is generating */
@@ -297,7 +300,8 @@ async function fetchInsightReport(url: string): Promise<InsightReport> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      errorData.error || `Failed to fetch insight report: ${response.statusText}`,
+      errorData.error ||
+        `Failed to fetch insight report: ${response.statusText}`
     );
   }
 
@@ -316,7 +320,8 @@ async function fetchSummaryReport(url: string): Promise<SummaryReport> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      errorData.error || `Failed to fetch summary report: ${response.statusText}`,
+      errorData.error ||
+        `Failed to fetch summary report: ${response.statusText}`
     );
   }
 
@@ -372,20 +377,17 @@ async function fetchSummaryReport(url: string): Promise<SummaryReport> {
 export function useInsightReport(
   workspaceId: string,
   period: ReportPeriod = 'month',
-  options: SWRConfiguration = {},
+  options: SWRConfiguration = {}
 ): UseInsightReportReturn {
   const url = `/api/workspaces/${workspaceId}/analytics/insights?period=${period}`;
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<InsightReport>(
-    url,
-    fetchInsightReport,
-    {
+  const { data, error, isLoading, isValidating, mutate } =
+    useSWR<InsightReport>(url, fetchInsightReport, {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       dedupingInterval: 60000, // Cache for 1 minute
       ...options,
-    },
-  );
+    });
 
   const refetch = useCallback(async (): Promise<void> => {
     await mutate();
@@ -453,7 +455,7 @@ export function useInsightReport(
 export function useSummaryReport(
   workspaceId: string,
   period: ReportPeriod = 'month',
-  options: SWRConfiguration = {},
+  options: SWRConfiguration = {}
 ): UseSummaryReportReturn {
   const url = `/api/workspaces/${workspaceId}/analytics?period=${period}`;
 
@@ -464,7 +466,7 @@ export function useSummaryReport(
       revalidateOnFocus: false,
       dedupingInterval: 30000, // Cache for 30 seconds
       ...options,
-    },
+    }
   );
 
   const refetch = useCallback(async (): Promise<void> => {
@@ -525,15 +527,15 @@ export function useDetailedReport(
   workspaceId: string,
   period: ReportPeriod = 'month',
   startDate?: string,
-  endDate?: string,
+  endDate?: string
 ): UseDetailedReportReturn {
   const queryParams = new URLSearchParams({ period });
   if (startDate) {
-queryParams.set('startDate', startDate);
-}
+    queryParams.set('startDate', startDate);
+  }
   if (endDate) {
-queryParams.set('endDate', endDate);
-}
+    queryParams.set('endDate', endDate);
+  }
   queryParams.set('detailed', 'true');
 
   const url = `/api/workspaces/${workspaceId}/analytics?${queryParams.toString()}`;
@@ -544,7 +546,7 @@ queryParams.set('endDate', endDate);
     {
       revalidateOnFocus: false,
       dedupingInterval: 60000, // Cache for 1 minute
-    },
+    }
   );
 
   const refetch = useCallback(async (): Promise<void> => {
@@ -611,7 +613,7 @@ queryParams.set('endDate', endDate);
  * ```
  */
 export function useReportGeneration(
-  workspaceId: string,
+  workspaceId: string
 ): UseReportGenerationReturn {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -629,27 +631,29 @@ export function useReportGeneration(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(options),
-          },
+          }
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            errorData.error || `Report generation failed: ${response.statusText}`,
+            errorData.error ||
+              `Report generation failed: ${response.statusText}`
           );
         }
 
         const result = await response.json();
         return result.reportId;
       } catch (err) {
-        const errorObj = err instanceof Error ? err : new Error('Unknown error');
+        const errorObj =
+          err instanceof Error ? err : new Error('Unknown error');
         setError(errorObj);
         throw errorObj;
       } finally {
         setIsGenerating(false);
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   const exportReport = useCallback(
@@ -667,7 +671,7 @@ export function useReportGeneration(
         }
 
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/analytics/reports/${reportId}/export?${queryParams.toString()}`,
+          `/api/workspaces/${workspaceId}/analytics/reports/${reportId}/export?${queryParams.toString()}`
         );
 
         if (!response.ok) {
@@ -678,8 +682,7 @@ export function useReportGeneration(
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const filename =
-          options.filename ||
-          `report-${reportId}.${options.format}`;
+          options.filename || `report-${reportId}.${options.format}`;
         const link = document.createElement('a');
         link.href = url;
         link.download = filename;
@@ -688,20 +691,21 @@ export function useReportGeneration(
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       } catch (err) {
-        const errorObj = err instanceof Error ? err : new Error('Export failed');
+        const errorObj =
+          err instanceof Error ? err : new Error('Export failed');
         setError(errorObj);
         throw errorObj;
       } finally {
         setIsExporting(false);
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   const getStatus = useCallback(
     async (reportId: string): Promise<ReportGenerationStatus> => {
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/analytics/reports/${reportId}/status`,
+        `/api/workspaces/${workspaceId}/analytics/reports/${reportId}/status`
       );
 
       if (!response.ok) {
@@ -710,7 +714,7 @@ export function useReportGeneration(
 
       return response.json();
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   return {

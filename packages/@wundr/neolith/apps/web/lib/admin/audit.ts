@@ -121,7 +121,9 @@ export interface CreateAuditLogParams {
  * });
  * ```
  */
-export function createAuditLog(params: CreateAuditLogParams): Omit<AuditLog, 'id' | 'createdAt'> {
+export function createAuditLog(
+  params: CreateAuditLogParams
+): Omit<AuditLog, 'id' | 'createdAt'> {
   return {
     action: params.action,
     actorId: params.actorId,
@@ -174,7 +176,9 @@ export function formatAuditAction(log: AuditLog): string {
     'workspace.deleted': `${actorName} deleted workspace ${targetName}`,
   };
 
-  return actionDescriptions[log.action] || `${actorName} performed ${log.action}`;
+  return (
+    actionDescriptions[log.action] || `${actorName} performed ${log.action}`
+  );
 }
 
 /**
@@ -209,7 +213,7 @@ export function formatAuditTimestamp(
   options: {
     includeTime?: boolean;
     relative?: boolean;
-  } = {},
+  } = {}
 ): string {
   const { includeTime = true, relative = false } = options;
 
@@ -243,17 +247,17 @@ function formatRelativeTime(date: Date): string {
   const diffDay = Math.floor(diffHour / 24);
 
   if (diffSec < 60) {
-return 'Just now';
-}
+    return 'Just now';
+  }
   if (diffMin < 60) {
-return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
-}
+    return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
+  }
   if (diffHour < 24) {
-return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
-}
+    return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
+  }
   if (diffDay < 7) {
-return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
-}
+    return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+  }
   if (diffDay < 30) {
     const weeks = Math.floor(diffDay / 7);
     return `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
@@ -315,13 +319,15 @@ export function groupLogsByActor(logs: AuditLog[]): Record<string, AuditLog[]> {
  * @param logs - Audit logs to group
  * @returns Logs grouped by category
  */
-export function groupLogsByCategory(logs: AuditLog[]): Record<AuditCategory, AuditLog[]> {
+export function groupLogsByCategory(
+  logs: AuditLog[]
+): Record<AuditCategory, AuditLog[]> {
   const grouped = Object.values(AuditCategory).reduce(
     (acc, category) => {
       acc[category] = [];
       return acc;
     },
-    {} as Record<AuditCategory, AuditLog[]>,
+    {} as Record<AuditCategory, AuditLog[]>
   );
 
   for (const log of logs) {
@@ -343,10 +349,10 @@ export function groupLogsByCategory(logs: AuditLog[]): Record<AuditCategory, Aud
 export function filterLogsByDateRange(
   logs: AuditLog[],
   startDate: Date,
-  endDate: Date,
+  endDate: Date
 ): AuditLog[] {
   return logs.filter(
-    log => log.createdAt >= startDate && log.createdAt <= endDate,
+    log => log.createdAt >= startDate && log.createdAt <= endDate
   );
 }
 
@@ -360,7 +366,11 @@ export function getAuditStats(logs: AuditLog[]): {
   total: number;
   byCategory: Record<AuditCategory, number>;
   bySeverity: Record<AuditSeverity, number>;
-  topActors: Array<{ actorId: string; count: number; actor?: AuditLog['actor'] }>;
+  topActors: Array<{
+    actorId: string;
+    count: number;
+    actor?: AuditLog['actor'];
+  }>;
   recentActions: AuditLog[];
 } {
   const byCategory = Object.values(AuditCategory).reduce(
@@ -368,7 +378,7 @@ export function getAuditStats(logs: AuditLog[]): {
       acc[category] = 0;
       return acc;
     },
-    {} as Record<AuditCategory, number>,
+    {} as Record<AuditCategory, number>
   );
 
   const bySeverity = Object.values(AuditSeverity).reduce(
@@ -376,10 +386,13 @@ export function getAuditStats(logs: AuditLog[]): {
       acc[severity] = 0;
       return acc;
     },
-    {} as Record<AuditSeverity, number>,
+    {} as Record<AuditSeverity, number>
   );
 
-  const actorCounts = new Map<string, { count: number; actor?: AuditLog['actor'] }>();
+  const actorCounts = new Map<
+    string,
+    { count: number; actor?: AuditLog['actor'] }
+  >();
 
   for (const log of logs) {
     // Count by category

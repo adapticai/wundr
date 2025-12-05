@@ -14,7 +14,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { usePageHeader } from '@/contexts/page-header-context';
-import { useRoles, useMembers, type Role, type RolePermission } from '@/hooks/use-admin';
+import {
+  useRoles,
+  useMembers,
+  type Role,
+  type RolePermission,
+} from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
 
 /**
@@ -55,11 +60,12 @@ export default function AdminRolesPage() {
   useEffect(() => {
     setPageHeader(
       'Roles & Permissions',
-      'Manage roles and permissions for your workspace members',
+      'Manage roles and permissions for your workspace members'
     );
   }, [setPageHeader]);
 
-  const { roles, isLoading, createRole, updateRole, deleteRole } = useRoles(workspaceSlug);
+  const { roles, isLoading, createRole, updateRole, deleteRole } =
+    useRoles(workspaceSlug);
   const { members } = useMembers(workspaceSlug);
 
   const [view, setView] = useState<'list' | 'matrix'>('list');
@@ -90,7 +96,7 @@ export default function AdminRolesPage() {
       await createRole(data);
       setShowCreateModal(false);
     },
-    [createRole],
+    [createRole]
   );
 
   const handleUpdate = useCallback(
@@ -98,30 +104,32 @@ export default function AdminRolesPage() {
       await updateRole(roleId, data);
       setEditingRole(null);
     },
-    [updateRole],
+    [updateRole]
   );
 
   const handleDelete = useCallback(
     async (roleId: string) => {
       const role = rolesWithCounts.find(r => r.id === roleId);
       if (!role) {
-return;
-}
+        return;
+      }
 
       if (role.memberCount > 0) {
-        alert(`Cannot delete role "${role.name}". ${role.memberCount} member(s) are assigned to this role. Please reassign them first.`);
+        alert(
+          `Cannot delete role "${role.name}". ${role.memberCount} member(s) are assigned to this role. Please reassign them first.`
+        );
         return;
       }
 
       if (
         window.confirm(
-          `Are you sure you want to delete the "${role.name}" role? This action cannot be undone.`,
+          `Are you sure you want to delete the "${role.name}" role? This action cannot be undone.`
         )
       ) {
         await deleteRole(roleId);
       }
     },
-    [deleteRole, rolesWithCounts],
+    [deleteRole, rolesWithCounts]
   );
 
   // Define permission categories
@@ -381,7 +389,7 @@ return;
               'rounded-md px-4 py-2 text-sm font-medium transition-colors',
               view === 'list'
                 ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
             )}
           >
             List View
@@ -393,7 +401,7 @@ return;
               'rounded-md px-4 py-2 text-sm font-medium transition-colors',
               view === 'matrix'
                 ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
             )}
           >
             Permission Matrix
@@ -406,7 +414,7 @@ return;
           onClick={() => setShowCreateModal(true)}
           className={cn(
             'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2',
-            'text-sm font-medium text-primary-foreground hover:bg-primary/90',
+            'text-sm font-medium text-primary-foreground hover:bg-primary/90'
           )}
         >
           <PlusIcon className='h-4 w-4' />
@@ -420,7 +428,9 @@ return;
           {/* Custom Roles */}
           {rolesWithCounts.filter(r => !r.isSystem).length > 0 && (
             <div>
-              <h2 className='mb-4 text-lg font-semibold text-foreground'>Custom Roles</h2>
+              <h2 className='mb-4 text-lg font-semibold text-foreground'>
+                Custom Roles
+              </h2>
               <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
                 {rolesWithCounts
                   .filter(r => !r.isSystem)
@@ -439,7 +449,9 @@ return;
 
           {/* System Roles */}
           <div>
-            <h2 className='mb-2 text-lg font-semibold text-foreground'>System Roles</h2>
+            <h2 className='mb-2 text-lg font-semibold text-foreground'>
+              System Roles
+            </h2>
             <p className='mb-4 text-sm text-muted-foreground'>
               These roles are built-in and cannot be modified or deleted
             </p>
@@ -507,7 +519,11 @@ return;
       {selectedRoleId && (
         <RoleMembersModal
           role={rolesWithCounts.find(r => r.id === selectedRoleId)!}
-          members={members.filter(m => m.role?.name === rolesWithCounts.find(r => r.id === selectedRoleId)?.name)}
+          members={members.filter(
+            m =>
+              m.role?.name ===
+              rolesWithCounts.find(r => r.id === selectedRoleId)?.name
+          )}
           onClose={() => setSelectedRoleId(null)}
         />
       )}
@@ -578,7 +594,11 @@ function RoleCard({ role, onEdit, onDelete, onViewMembers }: RoleCardProps) {
         <p className='text-xs font-medium text-muted-foreground'>Permissions</p>
         <div className='mt-2 flex flex-wrap gap-1'>
           {role.permissions.slice(0, 3).map((permission, idx) => (
-            <Badge key={`${permission.resource}-${idx}`} variant='secondary' className='text-xs'>
+            <Badge
+              key={`${permission.resource}-${idx}`}
+              variant='secondary'
+              className='text-xs'
+            >
               {permission.resource}
             </Badge>
           ))}
@@ -593,7 +613,13 @@ function RoleCard({ role, onEdit, onDelete, onViewMembers }: RoleCardProps) {
   );
 }
 
-function SystemRoleCard({ role, onViewMembers }: { role: Role; onViewMembers: () => void }) {
+function SystemRoleCard({
+  role,
+  onViewMembers,
+}: {
+  role: Role;
+  onViewMembers: () => void;
+}) {
   return (
     <div className='rounded-lg border bg-muted/30 p-4'>
       <div className='flex items-center gap-2'>
@@ -630,12 +656,16 @@ interface PermissionMatrixProps {
   onEditRole: (role: Role) => void;
 }
 
-function PermissionMatrix({ roles, categories, onEditRole }: PermissionMatrixProps) {
+function PermissionMatrix({
+  roles,
+  categories,
+  onEditRole,
+}: PermissionMatrixProps) {
   // Helper to check if a role has a specific permission
   const hasPermission = (role: Role, permissionId: string): boolean => {
     const [resource] = permissionId.split('.');
-    return role.permissions.some(p =>
-      p.resource === resource || p.resource === '*',
+    return role.permissions.some(
+      p => p.resource === resource || p.resource === '*'
     );
   };
 
@@ -649,7 +679,9 @@ function PermissionMatrix({ roles, categories, onEditRole }: PermissionMatrixPro
         <div key={category.id} className='rounded-lg border bg-card'>
           <div className='border-b bg-muted/30 p-4'>
             <h3 className='font-semibold text-foreground'>{category.name}</h3>
-            <p className='text-sm text-muted-foreground'>{category.description}</p>
+            <p className='text-sm text-muted-foreground'>
+              {category.description}
+            </p>
           </div>
 
           <div className='overflow-x-auto'>
@@ -664,7 +696,7 @@ function PermissionMatrix({ roles, categories, onEditRole }: PermissionMatrixPro
                         onClick={() => !role.isSystem && onEditRole(role)}
                         className={cn(
                           'flex flex-col items-center gap-1',
-                          !role.isSystem && 'hover:underline',
+                          !role.isSystem && 'hover:underline'
                         )}
                       >
                         <span>{role.name}</span>
@@ -720,11 +752,18 @@ interface RoleEditorModalProps {
   onClose: () => void;
 }
 
-function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalProps) {
+function RoleEditorModal({
+  role,
+  categories,
+  onSave,
+  onClose,
+}: RoleEditorModalProps) {
   const [name, setName] = useState(role?.name ?? '');
   const [description, setDescription] = useState(role?.description ?? '');
   const [color, setColor] = useState(role?.color ?? '#6366f1');
-  const [permissions, setPermissions] = useState<RolePermission[]>(role?.permissions ?? []);
+  const [permissions, setPermissions] = useState<RolePermission[]>(
+    role?.permissions ?? []
+  );
   const [inheritFrom, setInheritFrom] = useState<string>('none');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -732,7 +771,14 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await onSave({ name, description, color, permissions, isSystem: false, memberCount: 0 });
+      await onSave({
+        name,
+        description,
+        color,
+        permissions,
+        isSystem: false,
+        memberCount: 0,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -751,25 +797,35 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
       if (exists) {
         return prev.filter(p => p.resource !== permission.resource);
       } else {
-        return [...prev, { resource: permission.resource, actions: permission.actions }];
+        return [
+          ...prev,
+          { resource: permission.resource, actions: permission.actions },
+        ];
       }
     });
   };
 
   // Select all in category
-  const selectAllInCategory = (category: PermissionCategory, enabled: boolean) => {
+  const selectAllInCategory = (
+    category: PermissionCategory,
+    enabled: boolean
+  ) => {
     if (enabled) {
       const newPermissions = category.permissions.map(p => ({
         resource: p.resource,
         actions: p.actions,
       }));
       setPermissions(prev => {
-        const filtered = prev.filter(p => !category.permissions.some(cp => cp.resource === p.resource));
+        const filtered = prev.filter(
+          p => !category.permissions.some(cp => cp.resource === p.resource)
+        );
         return [...filtered, ...newPermissions];
       });
     } else {
       setPermissions(prev =>
-        prev.filter(p => !category.permissions.some(cp => cp.resource === p.resource)),
+        prev.filter(
+          p => !category.permissions.some(cp => cp.resource === p.resource)
+        )
       );
     }
   };
@@ -808,7 +864,10 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
             {/* Basic Info */}
             <div className='grid gap-4 sm:grid-cols-2'>
               <div>
-                <label htmlFor='roleName' className='block text-sm font-medium text-foreground'>
+                <label
+                  htmlFor='roleName'
+                  className='block text-sm font-medium text-foreground'
+                >
                   Role Name *
                 </label>
                 <input
@@ -819,7 +878,7 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
                   className={cn(
                     'mt-1 block w-full rounded-md border border-input bg-background',
                     'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                   )}
                   placeholder='e.g., Content Editor'
                   required
@@ -827,7 +886,9 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
               </div>
 
               <div>
-                <label className='block text-sm font-medium text-foreground'>Color</label>
+                <label className='block text-sm font-medium text-foreground'>
+                  Color
+                </label>
                 <div className='mt-1 flex flex-wrap gap-2'>
                   {colorOptions.map(c => (
                     <button
@@ -838,7 +899,7 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
                         'h-8 w-8 rounded-full border-2',
                         color === c
                           ? 'border-foreground ring-2 ring-offset-2 ring-offset-background'
-                          : 'border-transparent',
+                          : 'border-transparent'
                       )}
                       style={{ backgroundColor: c }}
                       title={c}
@@ -849,7 +910,10 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
             </div>
 
             <div>
-              <label htmlFor='roleDescription' className='block text-sm font-medium text-foreground'>
+              <label
+                htmlFor='roleDescription'
+                className='block text-sm font-medium text-foreground'
+              >
                 Description
               </label>
               <textarea
@@ -860,7 +924,7 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
                 className={cn(
                   'mt-1 block w-full rounded-md border border-input bg-background',
                   'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                 )}
                 placeholder='Describe what this role is for...'
               />
@@ -868,7 +932,10 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
 
             {/* Inherit From */}
             <div>
-              <label htmlFor='inheritFrom' className='block text-sm font-medium text-foreground'>
+              <label
+                htmlFor='inheritFrom'
+                className='block text-sm font-medium text-foreground'
+              >
                 Inherit Permissions From
               </label>
               <select
@@ -878,7 +945,7 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
                 className={cn(
                   'mt-1 block w-full rounded-md border border-input bg-background',
                   'px-3 py-2 text-sm',
-                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                 )}
               >
                 <option value='none'>None - Start from scratch</option>
@@ -902,15 +969,24 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
               <div className='mt-4 space-y-4'>
                 {categories.map(category => {
                   const categoryPerms = category.permissions;
-                  const enabledCount = categoryPerms.filter(p => hasPermission(p.id)).length;
+                  const enabledCount = categoryPerms.filter(p =>
+                    hasPermission(p.id)
+                  ).length;
                   const allEnabled = enabledCount === categoryPerms.length;
 
                   return (
-                    <div key={category.id} className='rounded-lg border bg-muted/30 p-4'>
+                    <div
+                      key={category.id}
+                      className='rounded-lg border bg-muted/30 p-4'
+                    >
                       <div className='flex items-center justify-between'>
                         <div>
-                          <h4 className='font-medium text-foreground'>{category.name}</h4>
-                          <p className='text-sm text-muted-foreground'>{category.description}</p>
+                          <h4 className='font-medium text-foreground'>
+                            {category.name}
+                          </h4>
+                          <p className='text-sm text-muted-foreground'>
+                            {category.description}
+                          </p>
                         </div>
                         <div className='flex items-center gap-2'>
                           <span className='text-sm text-muted-foreground'>
@@ -918,7 +994,9 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
                           </span>
                           <Switch
                             checked={allEnabled}
-                            onCheckedChange={checked => selectAllInCategory(category, checked)}
+                            onCheckedChange={checked =>
+                              selectAllInCategory(category, checked)
+                            }
                           />
                         </div>
                       </div>
@@ -936,7 +1014,9 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
                               className='mt-1 h-4 w-4 rounded border-input text-primary focus:ring-primary'
                             />
                             <div className='flex-1'>
-                              <div className='font-medium text-foreground'>{permission.name}</div>
+                              <div className='font-medium text-foreground'>
+                                {permission.name}
+                              </div>
                               <div className='text-sm text-muted-foreground'>
                                 {permission.description}
                               </div>
@@ -964,10 +1044,14 @@ function RoleEditorModal({ role, categories, onSave, onClose }: RoleEditorModalP
               disabled={isSubmitting || !name.trim()}
               className={cn(
                 'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-                'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
+                'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
               )}
             >
-              {isSubmitting ? 'Saving...' : role ? 'Save Changes' : 'Create Role'}
+              {isSubmitting
+                ? 'Saving...'
+                : role
+                  ? 'Save Changes'
+                  : 'Create Role'}
             </button>
           </div>
         </form>
@@ -1004,7 +1088,9 @@ function RoleMembersModal({ role, members, onClose }: RoleMembersModalProps) {
               <ShieldIcon className='h-4 w-4 text-white' />
             </div>
             <div>
-              <h2 className='text-lg font-semibold text-foreground'>{role.name}</h2>
+              <h2 className='text-lg font-semibold text-foreground'>
+                {role.name}
+              </h2>
               <p className='text-sm text-muted-foreground'>
                 {members.length} member{members.length !== 1 ? 's' : ''}
               </p>
@@ -1027,13 +1113,20 @@ function RoleMembersModal({ role, members, onClose }: RoleMembersModalProps) {
           ) : (
             <div className='space-y-3'>
               {members.map(member => (
-                <div key={member.id} className='flex items-center gap-3 rounded-lg border p-3'>
+                <div
+                  key={member.id}
+                  className='flex items-center gap-3 rounded-lg border p-3'
+                >
                   <div className='flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary'>
                     {member.name?.[0] || member.email?.[0] || '?'}
                   </div>
                   <div>
-                    <div className='font-medium text-foreground'>{member.name || 'Unknown'}</div>
-                    <div className='text-sm text-muted-foreground'>{member.email}</div>
+                    <div className='font-medium text-foreground'>
+                      {member.name || 'Unknown'}
+                    </div>
+                    <div className='text-sm text-muted-foreground'>
+                      {member.email}
+                    </div>
                   </div>
                 </div>
               ))}

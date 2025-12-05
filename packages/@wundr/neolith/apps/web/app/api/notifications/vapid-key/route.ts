@@ -29,7 +29,7 @@ const ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: (typeof ERROR_CODES)[keyof typeof ERROR_CODES],
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ) {
   return {
     error: {
@@ -70,9 +70,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Push notifications are not configured',
-          ERROR_CODES.CONFIGURATION_ERROR,
+          ERROR_CODES.CONFIGURATION_ERROR
         ),
-        { status: 503 },
+        { status: 503 }
       );
     }
 
@@ -82,9 +82,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        ERROR_CODES.INTERNAL_ERROR,
+        ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

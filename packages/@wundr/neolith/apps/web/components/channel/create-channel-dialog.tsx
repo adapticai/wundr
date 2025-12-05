@@ -145,7 +145,7 @@ export function CreateChannelDialog({
         handleAddEmail();
       }
     },
-    [handleAddEmail],
+    [handleAddEmail]
   );
 
   // Format channel name as user types
@@ -236,7 +236,7 @@ export function CreateChannelDialog({
                   'flex flex-1 items-start gap-3 rounded-lg border p-3 text-left transition-colors',
                   type === 'public'
                     ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50',
+                    : 'border-border hover:border-primary/50'
                 )}
               >
                 <div
@@ -244,7 +244,7 @@ export function CreateChannelDialog({
                     'mt-0.5 flex h-4 w-4 items-center justify-center rounded-full border',
                     type === 'public'
                       ? 'border-primary bg-primary'
-                      : 'border-muted-foreground',
+                      : 'border-muted-foreground'
                   )}
                 >
                   {type === 'public' && (
@@ -270,7 +270,7 @@ export function CreateChannelDialog({
                   'flex flex-1 items-start gap-3 rounded-lg border p-3 text-left transition-colors',
                   type === 'private'
                     ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50',
+                    : 'border-border hover:border-primary/50'
                 )}
               >
                 <div
@@ -278,7 +278,7 @@ export function CreateChannelDialog({
                     'mt-0.5 flex h-4 w-4 items-center justify-center rounded-full border',
                     type === 'private'
                       ? 'border-primary bg-primary'
-                      : 'border-muted-foreground',
+                      : 'border-muted-foreground'
                   )}
                 >
                   {type === 'private' && (

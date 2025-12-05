@@ -146,7 +146,7 @@ export function useWorkflowExecution(
   workspaceId: string,
   workflowId: string,
   executionId: string,
-  options: UseWorkflowExecutionOptions = {},
+  options: UseWorkflowExecutionOptions = {}
 ): UseWorkflowExecutionReturn {
   const {
     enablePolling = true,
@@ -200,7 +200,7 @@ export function useWorkflowExecution(
           `/api/workspaces/${workspaceId}/workflows/${workflowId}/executions/${executionId}`,
           {
             signal: abortControllerRef.current.signal,
-          },
+          }
         );
 
         if (!response.ok) {
@@ -256,7 +256,7 @@ export function useWorkflowExecution(
       executionId,
       autoRefreshOnComplete,
       pollErrorCount,
-    ],
+    ]
   );
 
   /**
@@ -273,7 +273,7 @@ export function useWorkflowExecution(
     }
 
     const eventSource = new EventSource(
-      `/api/workspaces/${workspaceId}/workflows/${workflowId}/executions/${executionId}/stream`,
+      `/api/workspaces/${workspaceId}/workflows/${workflowId}/executions/${executionId}/stream`
     );
 
     eventSource.onmessage = event => {
@@ -294,7 +294,7 @@ export function useWorkflowExecution(
       if (enablePolling && !pollIntervalRef.current) {
         pollIntervalRef.current = setInterval(
           () => fetchExecution(true),
-          pollingInterval,
+          pollingInterval
         );
       }
     };
@@ -329,7 +329,7 @@ export function useWorkflowExecution(
 
     pollIntervalRef.current = setInterval(
       () => fetchExecution(true),
-      pollingInterval,
+      pollingInterval
     );
 
     return () => {
@@ -382,7 +382,7 @@ export function useWorkflowExecution(
         `/api/workspaces/${workspaceId}/workflows/${workflowId}/executions/${executionId}/cancel`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -415,7 +415,7 @@ export function useWorkflowExecution(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ actionId }),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -431,7 +431,7 @@ export function useWorkflowExecution(
         return false;
       }
     },
-    [workspaceId, workflowId, executionId, fetchExecution],
+    [workspaceId, workflowId, executionId, fetchExecution]
   );
 
   /**
@@ -448,7 +448,7 @@ export function useWorkflowExecution(
           `/api/workspaces/${workspaceId}/workflows/${workflowId}/executions/${executionId}/retry`,
           {
             method: 'POST',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -482,7 +482,7 @@ export function useWorkflowExecution(
         null
       );
     },
-    [execution],
+    [execution]
   );
 
   return {
@@ -505,41 +505,42 @@ export function useWorkflowExecution(
  * Calculate execution progress from execution data
  * @internal
  */
-function calculateProgress(
-  execution: WorkflowExecution,
-): ExecutionProgress {
+function calculateProgress(execution: WorkflowExecution): ExecutionProgress {
   const totalSteps = execution.actionResults.length;
   const completedSteps = execution.actionResults.filter(
-    r => r.status === 'completed',
+    r => r.status === 'completed'
   ).length;
   const failedSteps = execution.actionResults.filter(
-    r => r.status === 'failed',
+    r => r.status === 'failed'
   ).length;
   const skippedSteps = execution.actionResults.filter(
-    r => r.status === 'skipped',
+    r => r.status === 'skipped'
   ).length;
 
   const currentStepIndex = execution.actionResults.findIndex(
-    r => r.status === 'running',
+    r => r.status === 'running'
   );
   const currentStep = currentStepIndex !== -1 ? currentStepIndex + 1 : null;
 
   const percentage =
     totalSteps > 0
-      ? Math.round(((completedSteps + failedSteps + skippedSteps) / totalSteps) * 100)
+      ? Math.round(
+          ((completedSteps + failedSteps + skippedSteps) / totalSteps) * 100
+        )
       : 0;
 
   // Calculate estimated time remaining based on average duration per step
   let estimatedTimeRemaining: number | null = null;
   if (execution.status === 'running' && currentStep !== null) {
     const completedResults = execution.actionResults.filter(
-      r => r.status === 'completed' && r.duration,
+      r => r.status === 'completed' && r.duration
     );
     if (completedResults.length > 0) {
       const averageDuration =
         completedResults.reduce((sum, r) => sum + (r.duration || 0), 0) /
         completedResults.length;
-      const remainingSteps = totalSteps - completedSteps - failedSteps - skippedSteps;
+      const remainingSteps =
+        totalSteps - completedSteps - failedSteps - skippedSteps;
       estimatedTimeRemaining = averageDuration * remainingSteps;
     }
   }

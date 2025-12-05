@@ -231,7 +231,7 @@ function MetricCard({ metric }: { metric: DashboardMetric }) {
               'flex items-center gap-1 text-sm font-medium',
               metric.trend === 'up' && 'text-green-600 dark:text-green-400',
               metric.trend === 'down' && 'text-red-600 dark:text-red-400',
-              metric.trend === 'stable' && 'text-muted-foreground',
+              metric.trend === 'stable' && 'text-muted-foreground'
             )}
             role='status'
             aria-label={getTrendAriaLabel()}
@@ -275,7 +275,7 @@ function DashboardCardComponent({ card }: { card: DashboardCard }) {
       className={cn(
         'bg-card border border-border rounded-lg p-4 md:p-6',
         'hover:border-primary/50 transition-colors',
-        getCardClass(),
+        getCardClass()
       )}
       aria-labelledby={`card-title-${card.id}`}
     >
@@ -361,7 +361,7 @@ export function TabletDashboardAction({
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         'disabled:cursor-not-allowed disabled:opacity-50',
         getVariantClass(),
-        className,
+        className
       )}
     >
       {children}

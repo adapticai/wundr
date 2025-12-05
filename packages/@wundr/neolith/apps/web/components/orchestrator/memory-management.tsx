@@ -141,7 +141,7 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedMemory, setSelectedMemory] = useState<MemoryEntry | null>(
-    null,
+    null
   );
 
   // Edit form state
@@ -180,7 +180,7 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
         }
 
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/memory?${params.toString()}`,
+          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/memory?${params.toString()}`
         );
 
         if (!response.ok) {
@@ -200,7 +200,7 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
         setIsLoading(false);
       }
     },
-    [workspaceSlug, orchestratorId, page, memoryTypeFilter],
+    [workspaceSlug, orchestratorId, page, memoryTypeFilter]
   );
 
   /**
@@ -226,7 +226,7 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
       }
 
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/memory/search?${params.toString()}`,
+        `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/memory/search?${params.toString()}`
       );
 
       if (!response.ok) {
@@ -237,8 +237,7 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
       setMemories(result.data || []);
       setTotalCount(result.meta?.totalResults || 0);
     } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error('Search failed');
+      const error = err instanceof Error ? err : new Error('Search failed');
       setError(error);
       console.error('[MemoryManagement] Search error:', error);
     } finally {
@@ -298,7 +297,7 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
             importance: editFormData.importance,
             expiresAt: editFormData.expiresAt || null,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -341,7 +340,7 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
         `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/memory/${selectedMemory.id}`,
         {
           method: 'DELETE',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -414,9 +413,7 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
               <p className='text-2xl font-bold'>{totalCount}</p>
             </div>
             <div className='border rounded-lg p-4'>
-              <p className='text-xs text-muted-foreground mb-1'>
-                Current Page
-              </p>
+              <p className='text-xs text-muted-foreground mb-1'>Current Page</p>
               <p className='text-2xl font-bold'>
                 {page} / {totalPages}
               </p>
@@ -463,7 +460,10 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
                 />
               </div>
             </div>
-            <Select value={memoryTypeFilter} onValueChange={setMemoryTypeFilter}>
+            <Select
+              value={memoryTypeFilter}
+              onValueChange={setMemoryTypeFilter}
+            >
               <SelectTrigger className='w-48'>
                 <SelectValue placeholder='All Types' />
               </SelectTrigger>
@@ -580,7 +580,10 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
                           <TableCell>
                             <Badge
                               variant='outline'
-                              className={cn(typeConfig.bgColor, typeConfig.color)}
+                              className={cn(
+                                typeConfig.bgColor,
+                                typeConfig.color
+                              )}
                             >
                               <Tag className='h-3 w-3 mr-1' />
                               {typeConfig.label}
@@ -613,7 +616,9 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
                           <TableCell>
                             {memory.expiresAt ? (
                               <span className='text-xs text-muted-foreground'>
-                                {new Date(memory.expiresAt).toLocaleDateString()}
+                                {new Date(
+                                  memory.expiresAt
+                                ).toLocaleDateString()}
                               </span>
                             ) : (
                               <span className='text-xs text-muted-foreground'>
@@ -703,7 +708,7 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
                   className={cn(
                     'mt-1',
                     MEMORY_TYPE_CONFIG[selectedMemory.memoryType]?.bgColor,
-                    MEMORY_TYPE_CONFIG[selectedMemory.memoryType]?.color,
+                    MEMORY_TYPE_CONFIG[selectedMemory.memoryType]?.color
                   )}
                 >
                   {MEMORY_TYPE_CONFIG[selectedMemory.memoryType]?.label}
@@ -826,10 +831,7 @@ export function MemoryManagement({ orchestratorId }: MemoryManagementProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={() => setEditDialogOpen(false)}
-            >
+            <Button variant='outline' onClick={() => setEditDialogOpen(false)}>
               Cancel
             </Button>
             <Button onClick={handleSaveEdit}>Save Changes</Button>

@@ -152,7 +152,7 @@ describe('Daemon API Routes', () => {
           body: JSON.stringify({
             refreshToken: 'valid-refresh-token',
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -165,7 +165,7 @@ describe('Daemon API Routes', () => {
       const { GET } = await import('../messages/route');
 
       const request = new NextRequest(
-        'http://localhost/api/daemon/messages?channelId=ch-1',
+        'http://localhost/api/daemon/messages?channelId=ch-1'
       );
 
       const response = await GET(request);
@@ -181,7 +181,7 @@ describe('Daemon API Routes', () => {
           headers: {
             authorization: 'Bearer test-token',
           },
-        },
+        }
       );
 
       const response = await GET(request);

@@ -125,7 +125,7 @@ export function WorkspaceInviteModal({
             role: selectedRole,
             message: message || undefined,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -145,7 +145,7 @@ export function WorkspaceInviteModal({
           .join(', ');
         console.warn(`Some invitation emails failed: ${failedEmails}`);
         toast.warning(
-          `${succeeded} invitation${succeeded !== 1 ? 's' : ''} sent, ${failed} failed`,
+          `${succeeded} invitation${succeeded !== 1 ? 's' : ''} sent, ${failed} failed`
         );
       } else {
         // All succeeded
@@ -185,7 +185,7 @@ export function WorkspaceInviteModal({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: selectedRole }),
-        },
+        }
       );
 
       if (!response.ok) {

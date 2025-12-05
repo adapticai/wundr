@@ -348,7 +348,7 @@ const CONDITION_TEMPLATES: Array<{
  * Check if a condition or group is a group
  */
 function isConditionGroup(
-  item: Condition | ConditionGroup,
+  item: Condition | ConditionGroup
 ): item is ConditionGroup {
   return 'operator' in item && 'conditions' in item;
 }
@@ -374,10 +374,10 @@ function getOperatorsForType(variableType: string): ComparisonOperator[] {
  */
 function validateCondition(
   condition: Condition,
-  variables: ScopedWorkflowVariable[],
+  variables: ScopedWorkflowVariable[]
 ): string | null {
   // Check if variable exists
-  const variable = variables.find((v) => v.name === condition.variable);
+  const variable = variables.find(v => v.name === condition.variable);
   if (!variable) {
     return `Variable "${condition.variable}" not found`;
   }
@@ -395,7 +395,7 @@ function validateCondition(
 
   // Validate variable reference
   if (condition.type === 'variable') {
-    const refVariable = variables.find((v) => v.name === condition.value);
+    const refVariable = variables.find(v => v.name === condition.value);
     if (!refVariable) {
       return `Referenced variable "${condition.value}" not found`;
     }
@@ -409,11 +409,11 @@ function validateCondition(
  */
 function validateConditionGroup(
   group: ConditionGroup,
-  variables: ScopedWorkflowVariable[],
+  variables: ScopedWorkflowVariable[]
 ): ConditionError[] {
   const errors: ConditionError[] = [];
 
-  group.conditions.forEach((item) => {
+  group.conditions.forEach(item => {
     if (isConditionGroup(item)) {
       errors.push(...validateConditionGroup(item, variables));
     } else {
@@ -432,9 +432,9 @@ function validateConditionGroup(
  */
 function explainCondition(
   condition: Condition,
-  variables: ScopedWorkflowVariable[],
+  variables: ScopedWorkflowVariable[]
 ): string {
-  const variable = variables.find((v) => v.name === condition.variable);
+  const variable = variables.find(v => v.name === condition.variable);
   const varName = variable?.name || condition.variable;
   const operatorConfig = OPERATOR_CONFIG[condition.operator];
 
@@ -443,7 +443,9 @@ function explainCondition(
   }
 
   const valueDisplay =
-    condition.type === 'variable' ? `{${condition.value}}` : `"${condition.value}"`;
+    condition.type === 'variable'
+      ? `{${condition.value}}`
+      : `"${condition.value}"`;
 
   return `${varName} ${operatorConfig.label} ${valueDisplay}`;
 }
@@ -454,7 +456,7 @@ function explainCondition(
 function explainConditionGroup(
   group: ConditionGroup,
   variables: ScopedWorkflowVariable[],
-  depth = 0,
+  depth = 0
 ): string {
   const indent = '  '.repeat(depth);
   const parts: string[] = [];
@@ -464,7 +466,7 @@ function explainConditionGroup(
 
     if (isConditionGroup(item)) {
       parts.push(
-        `${prefix}(\n${explainConditionGroup(item, variables, depth + 1)}\n${indent})`,
+        `${prefix}(\n${explainConditionGroup(item, variables, depth + 1)}\n${indent})`
       );
     } else {
       parts.push(`${prefix}${explainCondition(item, variables)}`);
@@ -495,10 +497,10 @@ function ConditionItem({
   error,
   readOnly,
 }: ConditionItemProps) {
-  const selectedVariable = variables.find((v) => v.name === condition.variable);
+  const selectedVariable = variables.find(v => v.name === condition.variable);
   const availableOperators = selectedVariable
     ? getOperatorsForType(selectedVariable.type)
-    : Object.keys(OPERATOR_CONFIG) as ComparisonOperator[];
+    : (Object.keys(OPERATOR_CONFIG) as ComparisonOperator[]);
 
   const operatorConfig = OPERATOR_CONFIG[condition.operator];
 
@@ -506,7 +508,7 @@ function ConditionItem({
     <div
       className={cn(
         'flex items-start gap-2 p-3 rounded-lg border bg-card',
-        error && 'border-destructive',
+        error && 'border-destructive'
       )}
     >
       <div className='flex-1 grid grid-cols-1 md:grid-cols-3 gap-2'>
@@ -515,16 +517,14 @@ function ConditionItem({
           <Label className='text-xs text-muted-foreground'>Variable</Label>
           <Select
             value={condition.variable}
-            onValueChange={(value) =>
-              onChange({ ...condition, variable: value })
-            }
+            onValueChange={value => onChange({ ...condition, variable: value })}
             disabled={readOnly}
           >
             <SelectTrigger>
               <SelectValue placeholder='Select variable' />
             </SelectTrigger>
             <SelectContent>
-              {variables.map((variable) => (
+              {variables.map(variable => (
                 <SelectItem key={variable.id} value={variable.name}>
                   <div className='flex items-center gap-2'>
                     <span>{variable.name}</span>
@@ -543,7 +543,7 @@ function ConditionItem({
           <Label className='text-xs text-muted-foreground'>Operator</Label>
           <Select
             value={condition.operator}
-            onValueChange={(value) =>
+            onValueChange={value =>
               onChange({ ...condition, operator: value as ComparisonOperator })
             }
             disabled={readOnly}
@@ -552,7 +552,7 @@ function ConditionItem({
               <SelectValue placeholder='Select operator' />
             </SelectTrigger>
             <SelectContent>
-              {availableOperators.map((op) => (
+              {availableOperators.map(op => (
                 <SelectItem key={op} value={op}>
                   <TooltipProvider>
                     <Tooltip>
@@ -593,16 +593,14 @@ function ConditionItem({
             {condition.type === 'variable' ? (
               <Select
                 value={condition.value}
-                onValueChange={(value) =>
-                  onChange({ ...condition, value })
-                }
+                onValueChange={value => onChange({ ...condition, value })}
                 disabled={readOnly}
               >
                 <SelectTrigger>
                   <SelectValue placeholder='Select variable' />
                 </SelectTrigger>
                 <SelectContent>
-                  {variables.map((variable) => (
+                  {variables.map(variable => (
                     <SelectItem key={variable.id} value={variable.name}>
                       {variable.name}
                     </SelectItem>
@@ -612,7 +610,7 @@ function ConditionItem({
             ) : (
               <Input
                 value={condition.value}
-                onChange={(e) =>
+                onChange={e =>
                   onChange({ ...condition, value: e.target.value })
                 }
                 placeholder='Enter value'
@@ -703,7 +701,10 @@ function ConditionGroupItem({
     });
   };
 
-  const updateCondition = (index: number, updated: Condition | ConditionGroup) => {
+  const updateCondition = (
+    index: number,
+    updated: Condition | ConditionGroup
+  ) => {
     const newConditions = [...group.conditions];
     newConditions[index] = updated;
     onChange({ ...group, conditions: newConditions });
@@ -727,7 +728,7 @@ function ConditionGroupItem({
     <div
       className={cn(
         'rounded-lg border-2 border-dashed p-4 space-y-3',
-        depth === 0 ? 'border-primary' : 'border-muted-foreground/30',
+        depth === 0 ? 'border-primary' : 'border-muted-foreground/30'
       )}
       style={{ marginLeft: depth * 16 }}
     >
@@ -793,7 +794,7 @@ function ConditionGroupItem({
                   <ConditionGroupItem
                     group={item}
                     variables={variables}
-                    onChange={(updated) => updateCondition(index, updated)}
+                    onChange={updated => updateCondition(index, updated)}
                     onDelete={() => deleteCondition(index)}
                     errors={errors}
                     depth={depth + 1}
@@ -803,9 +804,9 @@ function ConditionGroupItem({
                   <ConditionItem
                     condition={item}
                     variables={variables}
-                    onChange={(updated) => updateCondition(index, updated)}
+                    onChange={updated => updateCondition(index, updated)}
                     onDelete={() => deleteCondition(index)}
-                    error={errors.find((e) => e.id === item.id)?.message}
+                    error={errors.find(e => e.id === item.id)?.message}
                     readOnly={readOnly}
                   />
                 )}
@@ -852,7 +853,7 @@ export function ConditionBuilder({
   const applyTemplate = (template: ConditionGroup) => {
     // Generate new IDs for all conditions/groups
     const cloneWithNewIds = (
-      item: Condition | ConditionGroup,
+      item: Condition | ConditionGroup
     ): Condition | ConditionGroup => {
       if (isConditionGroup(item)) {
         return {
@@ -920,7 +921,7 @@ export function ConditionBuilder({
                 Validation Errors
               </h4>
               <ul className='mt-2 space-y-1 text-xs'>
-                {errors.map((error) => (
+                {errors.map(error => (
                   <li key={error.id}>• {error.message}</li>
                 ))}
               </ul>

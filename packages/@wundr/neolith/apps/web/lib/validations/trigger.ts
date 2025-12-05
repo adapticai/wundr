@@ -58,7 +58,7 @@ export const eventTriggerConfigSchema = z.object({
         value: z
           .union([z.string(), z.number(), z.boolean(), z.array(z.string())])
           .optional(),
-      }),
+      })
     )
     .optional(),
 });
@@ -108,20 +108,26 @@ export const createTriggerConfigSchema = z.object({
     .optional(),
 });
 
-export type CreateTriggerConfigInput = z.infer<typeof createTriggerConfigSchema>;
+export type CreateTriggerConfigInput = z.infer<
+  typeof createTriggerConfigSchema
+>;
 
 /**
  * Update trigger configuration schema
  */
 export const updateTriggerConfigSchema = createTriggerConfigSchema.partial();
 
-export type UpdateTriggerConfigInput = z.infer<typeof updateTriggerConfigSchema>;
+export type UpdateTriggerConfigInput = z.infer<
+  typeof updateTriggerConfigSchema
+>;
 
 /**
  * Trigger log filters schema
  */
 export const triggerLogFiltersSchema = z.object({
-  status: z.enum(['success', 'failure', 'rate_limited', 'unauthorized']).optional(),
+  status: z
+    .enum(['success', 'failure', 'rate_limited', 'unauthorized'])
+    .optional(),
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
   page: z.coerce.number().int().positive().default(1),

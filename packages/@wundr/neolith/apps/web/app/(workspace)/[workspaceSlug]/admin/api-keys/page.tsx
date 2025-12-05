@@ -65,11 +65,12 @@ export default async function AdminApiKeysPage({ params }: PageProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">API Keys</h1>
-        <p className="text-muted-foreground">
-          Manage API keys for programmatic access to your workspace. Create, revoke, and configure rate limits and permissions.
+    <div className='flex flex-col gap-6 p-6'>
+      <div className='flex flex-col gap-2'>
+        <h1 className='text-3xl font-bold tracking-tight'>API Keys</h1>
+        <p className='text-muted-foreground'>
+          Manage API keys for programmatic access to your workspace. Create,
+          revoke, and configure rate limits and permissions.
         </p>
       </div>
 

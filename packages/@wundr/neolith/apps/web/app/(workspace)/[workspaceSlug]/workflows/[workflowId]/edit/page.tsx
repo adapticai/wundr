@@ -27,10 +27,7 @@ import { WorkflowPreview } from '@/components/workflows/workflow-preview';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useWorkflow } from '@/hooks/use-workflows';
 import { cn } from '@/lib/utils';
-import {
-  TRIGGER_TYPE_CONFIG,
-  ACTION_TYPE_CONFIG,
-} from '@/types/workflow';
+import { TRIGGER_TYPE_CONFIG, ACTION_TYPE_CONFIG } from '@/types/workflow';
 
 import type {
   ActionConfig,
@@ -179,17 +176,17 @@ export default function WorkflowEditPage() {
         .map((a, index) => ({ ...a, order: index }));
       setActions(updatedActions);
     },
-    [actions],
+    [actions]
   );
 
   const handleUpdateAction = useCallback(
     (actionId: string, updates: Partial<ActionConfig>) => {
       const updatedActions = actions.map(a =>
-        a.id === actionId ? ({ ...a, ...updates } as ActionConfig) : a,
+        a.id === actionId ? ({ ...a, ...updates } as ActionConfig) : a
       );
       setActions(updatedActions);
     },
-    [actions],
+    [actions]
   );
 
   const handleMoveAction = useCallback(
@@ -212,7 +209,7 @@ export default function WorkflowEditPage() {
       const withOrder = reordered.map((a, i) => ({ ...a, order: i }));
       setActions(withOrder);
     },
-    [actions],
+    [actions]
   );
 
   // Loading State
@@ -287,7 +284,7 @@ export default function WorkflowEditPage() {
         )}
         <WorkflowCanvas
           workflow={workflow}
-          onSave={async (workflowInput) => {
+          onSave={async workflowInput => {
             setName(workflowInput.name);
             setDescription(workflowInput.description || '');
             setTrigger(workflowInput.trigger);
@@ -297,7 +294,9 @@ export default function WorkflowEditPage() {
           onCancel={() => {
             if (
               hasChanges &&
-              !confirm('You have unsaved changes. Are you sure you want to leave?')
+              !confirm(
+                'You have unsaved changes. Are you sure you want to leave?'
+              )
             ) {
               return;
             }
@@ -801,7 +800,10 @@ function ActionEditor({
                 } else if (newType === 'http_request') {
                   defaultConfig = { url: '', method: 'GET' };
                 }
-                onUpdate({ type: newType, config: defaultConfig } as Partial<ActionConfig>);
+                onUpdate({
+                  type: newType,
+                  config: defaultConfig,
+                } as Partial<ActionConfig>);
               }}
               className='mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
             >
@@ -819,7 +821,8 @@ function ActionEditor({
               {actionConfig.description}
             </p>
             <p className='mt-2 text-xs italic text-muted-foreground'>
-              Configuration details: {JSON.stringify(action.config).slice(0, 100)}
+              Configuration details:{' '}
+              {JSON.stringify(action.config).slice(0, 100)}
               {JSON.stringify(action.config).length > 100 ? '...' : ''}
             </p>
           </div>

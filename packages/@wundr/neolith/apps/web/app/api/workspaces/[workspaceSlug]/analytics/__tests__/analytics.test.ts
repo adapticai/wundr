@@ -163,7 +163,7 @@ describe('Analytics API Routes', () => {
 
       const { GET } = await import('../metrics/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/analytics/metrics',
+        'http://localhost/api/workspaces/ws-1/analytics/metrics'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -181,7 +181,7 @@ describe('Analytics API Routes', () => {
 
       const { GET } = await import('../metrics/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/analytics/metrics',
+        'http://localhost/api/workspaces/ws-1/analytics/metrics'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -205,7 +205,7 @@ describe('Analytics API Routes', () => {
 
       const { GET } = await import('../metrics/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/analytics/metrics?period=month',
+        'http://localhost/api/workspaces/ws-1/analytics/metrics?period=month'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -231,7 +231,7 @@ describe('Analytics API Routes', () => {
 
       const { GET } = await import('../metrics/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/analytics/metrics?period=week',
+        'http://localhost/api/workspaces/ws-1/analytics/metrics?period=week'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -257,7 +257,7 @@ describe('Analytics API Routes', () => {
 
       const { GET } = await import('../realtime/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/analytics/realtime',
+        'http://localhost/api/workspaces/ws-1/analytics/realtime'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -286,7 +286,7 @@ describe('Analytics API Routes', () => {
 
       const { GET } = await import('../trends/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/analytics/trends?metric=messages',
+        'http://localhost/api/workspaces/ws-1/analytics/trends?metric=messages'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -315,7 +315,7 @@ describe('Analytics API Routes', () => {
 
       const { GET } = await import('../insights/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/analytics/insights?period=month',
+        'http://localhost/api/workspaces/ws-1/analytics/insights?period=month'
       );
       const response = await GET(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -344,7 +344,7 @@ describe('Analytics API Routes', () => {
             eventType: 'message.sent',
             eventData: { channelId: 'ch-1' },
           }),
-        },
+        }
       );
       const response = await POST(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -367,7 +367,7 @@ describe('Analytics API Routes', () => {
         {
           method: 'POST',
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -397,7 +397,7 @@ describe('Analytics API Routes', () => {
         {
           method: 'POST',
           body: JSON.stringify({ period: 'month', format: 'json' }),
-        },
+        }
       );
       const response = await POST(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),
@@ -425,7 +425,7 @@ describe('Analytics API Routes', () => {
         {
           method: 'POST',
           body: JSON.stringify({ period: 'month', format: 'json' }),
-        },
+        }
       );
       const response = await POST(request, {
         params: Promise.resolve({ workspaceSlug: 'ws-1' }),

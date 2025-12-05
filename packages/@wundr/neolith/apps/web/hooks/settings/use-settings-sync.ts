@@ -84,18 +84,19 @@ const STORAGE_KEY = 'neolith-settings-sync-event';
  * ```
  */
 export function useSettingsSync(
-  options: UseSettingsSyncOptions = {},
+  options: UseSettingsSyncOptions = {}
 ): UseSettingsSyncReturn {
   const { onSync, onRefresh, enabled = true } = options;
 
   const channelRef = useRef<BroadcastChannel | null>(null);
-  const isSupported = typeof window !== 'undefined' && 'BroadcastChannel' in window;
+  const isSupported =
+    typeof window !== 'undefined' && 'BroadcastChannel' in window;
 
   // Initialize BroadcastChannel
   useEffect(() => {
     if (!enabled || typeof window === 'undefined') {
-return;
-}
+      return;
+    }
 
     if (isSupported) {
       // Use BroadcastChannel for modern browsers
@@ -120,13 +121,17 @@ return;
       // Fallback to localStorage events for older browsers
       const handleStorageEvent = (e: StorageEvent) => {
         if (e.key !== STORAGE_KEY || !e.newValue) {
-return;
-}
+          return;
+        }
 
         try {
           const message: SettingsSyncMessage = JSON.parse(e.newValue);
 
-          if (message.type === 'settings-updated' && message.settings && onSync) {
+          if (
+            message.type === 'settings-updated' &&
+            message.settings &&
+            onSync
+          ) {
             onSync(message.settings);
           } else if (message.type === 'settings-refresh' && onRefresh) {
             onRefresh();
@@ -148,8 +153,8 @@ return;
   const broadcastUpdate = useCallback(
     (settings: Partial<UserSettings>) => {
       if (!enabled) {
-return;
-}
+        return;
+      }
 
       const message: SettingsSyncMessage = {
         type: 'settings-updated',
@@ -173,14 +178,14 @@ return;
         }
       }
     },
-    [enabled],
+    [enabled]
   );
 
   // Request refresh in all tabs
   const requestRefresh = useCallback(() => {
     if (!enabled) {
-return;
-}
+      return;
+    }
 
     const message: SettingsSyncMessage = {
       type: 'settings-refresh',

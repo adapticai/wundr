@@ -54,10 +54,7 @@ interface OrchestratorPerformanceMetricsProps {
 export function OrchestratorPerformanceMetrics({
   orchestratorId,
 }: OrchestratorPerformanceMetricsProps) {
-  const { metrics, isLoading } = useOrchestratorAnalytics(
-    orchestratorId,
-    '7d',
-  );
+  const { metrics, isLoading } = useOrchestratorAnalytics(orchestratorId, '7d');
 
   return (
     <Card>

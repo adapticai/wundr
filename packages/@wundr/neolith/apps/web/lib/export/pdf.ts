@@ -14,7 +14,7 @@ import type { PDFExportOptions, ExportResult, ReportSection } from './types';
  */
 export async function exportToPDF<T extends Record<string, unknown>>(
   data: T[],
-  options: PDFExportOptions = {},
+  options: PDFExportOptions = {}
 ): Promise<ExportResult> {
   const startTime = Date.now();
 
@@ -92,7 +92,7 @@ export async function exportToPDF<T extends Record<string, unknown>>(
       headers.map(header => {
         const value = row[header];
         return formatValueForPDF(value);
-      }),
+      })
     );
 
     // Add table using autoTable
@@ -113,7 +113,7 @@ export async function exportToPDF<T extends Record<string, unknown>>(
       alternateRowStyles: {
         fillColor: [245, 245, 245],
       },
-      didDrawPage: (pageData) => {
+      didDrawPage: pageData => {
         // Add page numbers
         if (includePageNumbers) {
           const pageCount = doc.getNumberOfPages();
@@ -126,7 +126,7 @@ export async function exportToPDF<T extends Record<string, unknown>>(
           doc.text(
             pageText,
             pageWidth - margins.right - doc.getTextWidth(pageText),
-            pageHeight - margins.bottom + 5,
+            pageHeight - margins.bottom + 5
           );
         }
 
@@ -134,7 +134,11 @@ export async function exportToPDF<T extends Record<string, unknown>>(
         if (footerText) {
           doc.setFontSize(8);
           doc.setFont(fontFamily, 'italic');
-          doc.text(footerText, margins.left, doc.internal.pageSize.getHeight() - margins.bottom + 5);
+          doc.text(
+            footerText,
+            margins.left,
+            doc.internal.pageSize.getHeight() - margins.bottom + 5
+          );
         }
       },
     });
@@ -195,7 +199,7 @@ function formatValueForPDF(value: unknown): string {
  */
 export async function exportReportToPDF(
   sections: ReportSection[],
-  options: PDFExportOptions = {},
+  options: PDFExportOptions = {}
 ): Promise<ExportResult> {
   const startTime = Date.now();
 
@@ -237,10 +241,24 @@ export async function exportReportToPDF(
 
       switch (section.type) {
         case 'text':
-          currentY = addTextSection(doc, section, currentY, margins, fontFamily, fontSize);
+          currentY = addTextSection(
+            doc,
+            section,
+            currentY,
+            margins,
+            fontFamily,
+            fontSize
+          );
           break;
         case 'table':
-          currentY = await addTableSection(doc, section, currentY, margins, fontFamily, fontSize);
+          currentY = await addTableSection(
+            doc,
+            section,
+            currentY,
+            margins,
+            fontFamily,
+            fontSize
+          );
           break;
         case 'chart':
           currentY = await addChartSection(doc, section, currentY, margins);
@@ -272,7 +290,7 @@ export async function exportReportToPDF(
         doc.text(
           pageText,
           pageWidth - margins.right - doc.getTextWidth(pageText),
-          pageHeight - margins.bottom + 5,
+          pageHeight - margins.bottom + 5
         );
       }
     }
@@ -313,7 +331,7 @@ function addTextSection(
   currentY: number,
   margins: { top: number; right: number; bottom: number; left: number },
   fontFamily: string,
-  fontSize: number,
+  fontSize: number
 ): number {
   if (section.title) {
     doc.setFontSize(14);
@@ -325,7 +343,8 @@ function addTextSection(
   doc.setFontSize(fontSize);
   doc.setFont(fontFamily, 'normal');
 
-  const maxWidth = doc.internal.pageSize.getWidth() - margins.left - margins.right;
+  const maxWidth =
+    doc.internal.pageSize.getWidth() - margins.left - margins.right;
   const text = String(section.content || '');
   const lines = doc.splitTextToSize(text, maxWidth);
 
@@ -346,7 +365,7 @@ async function addTableSection(
   currentY: number,
   margins: { top: number; right: number; bottom: number; left: number },
   fontFamily: string,
-  fontSize: number,
+  fontSize: number
 ): Promise<number> {
   if (section.title) {
     doc.setFontSize(14);
@@ -361,7 +380,9 @@ async function addTableSection(
   }
 
   const headers = Object.keys(tableData[0]);
-  const body = tableData.map(row => headers.map(h => formatValueForPDF(row[h])));
+  const body = tableData.map(row =>
+    headers.map(h => formatValueForPDF(row[h]))
+  );
 
   autoTable(doc, {
     head: [headers],
@@ -381,7 +402,7 @@ async function addChartSection(
   doc: jsPDF,
   section: ReportSection,
   currentY: number,
-  margins: { top: number; right: number; bottom: number; left: number },
+  margins: { top: number; right: number; bottom: number; left: number }
 ): Promise<number> {
   if (section.title) {
     doc.setFontSize(14);
@@ -393,7 +414,8 @@ async function addChartSection(
   // If chart image is provided in content
   if (section.content && typeof section.content === 'string') {
     const imgData = section.content as string;
-    const maxWidth = doc.internal.pageSize.getWidth() - margins.left - margins.right;
+    const maxWidth =
+      doc.internal.pageSize.getWidth() - margins.left - margins.right;
     const imgWidth = maxWidth;
     const imgHeight = maxWidth * 0.6; // Maintain aspect ratio
 
@@ -411,7 +433,7 @@ function addDivider(
   doc: jsPDF,
   section: ReportSection,
   currentY: number,
-  margins: { top: number; right: number; bottom: number; left: number },
+  margins: { top: number; right: number; bottom: number; left: number }
 ): number {
   const pageWidth = doc.internal.pageSize.getWidth();
   doc.setDrawColor(200, 200, 200);
@@ -425,7 +447,7 @@ function addDivider(
 export async function exportWithTemplate<T extends Record<string, unknown>>(
   data: T[],
   templateSections: ReportSection[],
-  options: PDFExportOptions = {},
+  options: PDFExportOptions = {}
 ): Promise<ExportResult> {
   // Replace data placeholders in template sections
   const processedSections = templateSections.map(section => {

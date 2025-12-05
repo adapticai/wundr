@@ -111,7 +111,7 @@ export function AuditLogViewer({
   isLoading = false,
 }: AuditLogViewerProps) {
   const [expandedRows, setExpandedRows] = React.useState<Set<string>>(
-    new Set(),
+    new Set()
   );
   const [filters, setFilters] = React.useState<AuditLogFilters>({});
   const [dateRange, setDateRange] = React.useState<{
@@ -215,7 +215,7 @@ export function AuditLogViewer({
                       'justify-start text-left font-normal',
                       !dateRange.from &&
                         !dateRange.to &&
-                        'text-muted-foreground',
+                        'text-muted-foreground'
                     )}
                   >
                     {dateRange.from ? (

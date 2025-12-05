@@ -24,7 +24,7 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -69,14 +69,14 @@ export async function GET(
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       return NextResponse.json(
         { error: 'Invalid date format. Use ISO 8601 format (YYYY-MM-DD)' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (startDate > endDate) {
       return NextResponse.json(
         { error: 'Start date must be before end date' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -101,7 +101,7 @@ export async function GET(
             const csv = convertMetricsToCSV(
               filteredMetrics,
               startDate,
-              endDate,
+              endDate
             );
             controller.enqueue(encoder.encode(csv));
             controller.close();
@@ -148,7 +148,7 @@ export async function GET(
         error: 'Failed to export analytics',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -165,7 +165,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -191,21 +191,21 @@ export async function POST(
     if (!frequency || !['daily', 'weekly', 'monthly'].includes(frequency)) {
       return NextResponse.json(
         { error: 'Invalid frequency. Must be: daily, weekly, or monthly' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!format || !['csv', 'json'].includes(format)) {
       return NextResponse.json(
         { error: 'Invalid format. Must be: csv or json' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!Array.isArray(recipients) || recipients.length === 0) {
       return NextResponse.json(
         { error: 'Recipients must be a non-empty array of email addresses' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -215,7 +215,7 @@ export async function POST(
     if (invalidEmails.length > 0) {
       return NextResponse.json(
         { error: `Invalid email addresses: ${invalidEmails.join(', ')}` },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -228,7 +228,7 @@ export async function POST(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -269,7 +269,7 @@ export async function POST(
         message: 'Scheduled export created successfully',
         export: exportConfig,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error('Scheduled export creation error:', error);
@@ -278,7 +278,7 @@ export async function POST(
         error: 'Failed to create scheduled export',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -288,7 +288,7 @@ export async function POST(
  */
 function filterMetrics(
   metrics: UsageMetrics,
-  filter?: string[],
+  filter?: string[]
 ): Partial<UsageMetrics> {
   if (!filter || filter.length === 0) {
     return metrics;
@@ -321,7 +321,7 @@ function filterMetrics(
 function convertMetricsToCSV(
   metrics: Partial<UsageMetrics>,
   startDate?: Date,
-  endDate?: Date,
+  endDate?: Date
 ): string {
   const lines: string[] = [];
 
@@ -329,7 +329,7 @@ function convertMetricsToCSV(
   if (startDate && endDate) {
     lines.push('# Analytics Export');
     lines.push(
-      `# Date Range: ${startDate.toISOString()} to ${endDate.toISOString()}`,
+      `# Date Range: ${startDate.toISOString()} to ${endDate.toISOString()}`
     );
     lines.push(`# Generated: ${new Date().toISOString()}`);
     lines.push('');
@@ -370,13 +370,13 @@ function convertMetricsToCSV(
   // Orchestrators
   if (metrics.orchestrator) {
     lines.push(
-      `Orchestrators,Total,${metrics.orchestrator.totalOrchestrators}`,
+      `Orchestrators,Total,${metrics.orchestrator.totalOrchestrators}`
     );
     lines.push(
-      `Orchestrators,Active,${metrics.orchestrator.activeOrchestrators}`,
+      `Orchestrators,Active,${metrics.orchestrator.activeOrchestrators}`
     );
     lines.push(
-      `Orchestrators,Messages Sent,${metrics.orchestrator.messagesSent}`,
+      `Orchestrators,Messages Sent,${metrics.orchestrator.messagesSent}`
     );
   }
 

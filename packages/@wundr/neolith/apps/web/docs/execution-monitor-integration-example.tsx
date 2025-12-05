@@ -21,7 +21,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 
 // Import required UI components for these examples
@@ -45,20 +51,22 @@ export function BasicExecutionPage({ params }: WorkflowExecutionPageProps) {
   const { workspaceSlug, workflowId, executionId } = params;
 
   return (
-    <div className="container max-w-5xl py-6 space-y-6">
+    <div className='container max-w-5xl py-6 space-y-6'>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold">Workflow Execution</h1>
-          <p className="text-sm text-muted-foreground">
+      <div className='flex items-center justify-between'>
+        <div className='space-y-1'>
+          <h1 className='text-2xl font-bold'>Workflow Execution</h1>
+          <p className='text-sm text-muted-foreground'>
             Monitor the progress of your workflow execution in real-time
           </p>
         </div>
         <Button
-          variant="outline"
-          onClick={() => router.push(`/${workspaceSlug}/workflows/${workflowId}`)}
+          variant='outline'
+          onClick={() =>
+            router.push(`/${workspaceSlug}/workflows/${workflowId}`)
+          }
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className='mr-2 h-4 w-4' />
           Back to Workflow
         </Button>
       </div>
@@ -71,7 +79,7 @@ export function BasicExecutionPage({ params }: WorkflowExecutionPageProps) {
         workflowId={workflowId}
         executionId={executionId}
         enablePolling={true}
-        onComplete={(execution) => {
+        onComplete={execution => {
           toast.success('Workflow completed successfully!', {
             description: `Execution ID: ${execution.id}`,
           });
@@ -92,46 +100,57 @@ export function BasicExecutionPage({ params }: WorkflowExecutionPageProps) {
 export function AdvancedExecutionPage({ params }: WorkflowExecutionPageProps) {
   const router = useRouter();
   const { workspaceSlug, workflowId, executionId } = params;
-  const [activeTab, setActiveTab] = useState<'monitor' | 'logs' | 'details'>('monitor');
+  const [activeTab, setActiveTab] = useState<'monitor' | 'logs' | 'details'>(
+    'monitor'
+  );
 
   return (
-    <div className="container max-w-6xl py-6 space-y-6">
+    <div className='container max-w-6xl py-6 space-y-6'>
       {/* Header with Actions */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold">Execution Monitor</h1>
+      <div className='flex items-center justify-between'>
+        <div className='space-y-1'>
+          <div className='flex items-center gap-2'>
+            <h1 className='text-2xl font-bold'>Execution Monitor</h1>
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.open(`/${workspaceSlug}/workflows/${workflowId}`, '_blank')}
+              variant='ghost'
+              size='sm'
+              onClick={() =>
+                window.open(
+                  `/${workspaceSlug}/workflows/${workflowId}`,
+                  '_blank'
+                )
+              }
             >
-              <ExternalLink className="h-4 w-4" />
+              <ExternalLink className='h-4 w-4' />
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className='text-sm text-muted-foreground'>
             Execution ID: {executionId}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className='flex gap-2'>
           <Button
-            variant="outline"
-            onClick={() => router.push(`/${workspaceSlug}/workflows/${workflowId}/history`)}
+            variant='outline'
+            onClick={() =>
+              router.push(`/${workspaceSlug}/workflows/${workflowId}/history`)
+            }
           >
             View History
           </Button>
           <Button
-            variant="outline"
-            onClick={() => router.push(`/${workspaceSlug}/workflows/${workflowId}`)}
+            variant='outline'
+            onClick={() =>
+              router.push(`/${workspaceSlug}/workflows/${workflowId}`)
+            }
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className='mr-2 h-4 w-4' />
             Back
           </Button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b">
+      <div className='flex gap-2 border-b'>
         <Button
           variant={activeTab === 'monitor' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('monitor')}
@@ -153,7 +172,7 @@ export function AdvancedExecutionPage({ params }: WorkflowExecutionPageProps) {
       </div>
 
       {/* Content */}
-      <div className="space-y-6">
+      <div className='space-y-6'>
         {activeTab === 'monitor' && (
           <ExecutionMonitor
             workspaceId={workspaceSlug}
@@ -161,7 +180,7 @@ export function AdvancedExecutionPage({ params }: WorkflowExecutionPageProps) {
             executionId={executionId}
             enablePolling={true}
             enableSSE={false}
-            onComplete={(execution) => {
+            onComplete={execution => {
               toast.success('Workflow completed!', {
                 action: {
                   label: 'View Results',
@@ -184,7 +203,7 @@ export function AdvancedExecutionPage({ params }: WorkflowExecutionPageProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
+              <p className='text-sm text-muted-foreground'>
                 Logs view would go here...
               </p>
             </CardContent>
@@ -200,7 +219,7 @@ export function AdvancedExecutionPage({ params }: WorkflowExecutionPageProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
+              <p className='text-sm text-muted-foreground'>
                 Details view would go here...
               </p>
             </CardContent>
@@ -230,7 +249,7 @@ export function ExecutionModal({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>Workflow Execution</DialogTitle>
           <DialogDescription>
@@ -243,7 +262,7 @@ export function ExecutionModal({
           workflowId={workflowId}
           executionId={executionId}
           enablePolling={true}
-          onComplete={(execution) => {
+          onComplete={execution => {
             toast.success('Workflow completed!');
             setTimeout(() => onOpenChange(false), 2000);
           }}
@@ -257,37 +276,41 @@ export function ExecutionModal({
  * Example 4: Embedded in Dashboard
  * Show multiple running executions in a dashboard
  */
-export function ExecutionsDashboard({ workspaceSlug }: { workspaceSlug: string }) {
+export function ExecutionsDashboard({
+  workspaceSlug,
+}: {
+  workspaceSlug: string;
+}) {
   const { executions } = useWorkflowExecutions(workspaceSlug, 'all', {
     status: 'running',
     limit: 5,
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Running Executions</h2>
-        <Button variant="outline" size="sm">
+    <div className='space-y-6'>
+      <div className='flex items-center justify-between'>
+        <h2 className='text-xl font-semibold'>Running Executions</h2>
+        <Button variant='outline' size='sm'>
           View All
         </Button>
       </div>
 
       {executions.length === 0 ? (
         <Card>
-          <CardContent className="py-12">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">
+          <CardContent className='py-12'>
+            <div className='text-center'>
+              <p className='text-sm text-muted-foreground'>
                 No workflows currently running
               </p>
             </div>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {executions.map((execution) => (
+        <div className='space-y-4'>
+          {executions.map(execution => (
             <Card key={execution.id}>
               <CardHeader>
-                <CardTitle className="text-base">
+                <CardTitle className='text-base'>
                   Workflow: {execution.workflowId}
                 </CardTitle>
               </CardHeader>
@@ -297,7 +320,7 @@ export function ExecutionsDashboard({ workspaceSlug }: { workspaceSlug: string }
                   workflowId={execution.workflowId}
                   executionId={execution.id}
                   enablePolling={true}
-                  className="border-0 p-0"
+                  className='border-0 p-0'
                 />
               </CardContent>
             </Card>
@@ -312,7 +335,9 @@ export function ExecutionsDashboard({ workspaceSlug }: { workspaceSlug: string }
  * Example 5: With Custom Actions
  * Integration with custom action buttons and notifications
  */
-export function ExecutionPageWithActions({ params }: WorkflowExecutionPageProps) {
+export function ExecutionPageWithActions({
+  params,
+}: WorkflowExecutionPageProps) {
   const router = useRouter();
   const { workspaceSlug, workflowId, executionId } = params;
   const [isExporting, setIsExporting] = useState(false);
@@ -322,7 +347,7 @@ export function ExecutionPageWithActions({ params }: WorkflowExecutionPageProps)
     try {
       // Export execution data
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/workflows/${workflowId}/executions/${executionId}/export`,
+        `/api/workspaces/${workspaceSlug}/workflows/${workflowId}/executions/${executionId}/export`
       );
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -349,35 +374,27 @@ export function ExecutionPageWithActions({ params }: WorkflowExecutionPageProps)
   };
 
   return (
-    <div className="container max-w-5xl py-6 space-y-6">
+    <div className='container max-w-5xl py-6 space-y-6'>
       {/* Header with Custom Actions */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold">Workflow Execution</h1>
-          <p className="text-sm text-muted-foreground">ID: {executionId}</p>
+      <div className='flex items-center justify-between'>
+        <div className='space-y-1'>
+          <h1 className='text-2xl font-bold'>Workflow Execution</h1>
+          <p className='text-sm text-muted-foreground'>ID: {executionId}</p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleShare}
-          >
+        <div className='flex gap-2'>
+          <Button variant='outline' size='sm' onClick={handleShare}>
             Share
           </Button>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={handleExport}
             disabled={isExporting}
           >
             {isExporting ? 'Exporting...' : 'Export'}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+          <Button variant='outline' size='sm' onClick={() => router.back()}>
+            <ArrowLeft className='mr-2 h-4 w-4' />
             Back
           </Button>
         </div>
@@ -391,14 +408,16 @@ export function ExecutionPageWithActions({ params }: WorkflowExecutionPageProps)
         workflowId={workflowId}
         executionId={executionId}
         enablePolling={true}
-        onComplete={(execution) => {
+        onComplete={execution => {
           // Custom completion handler
           toast.success('Workflow completed!', {
             description: `Completed in ${execution.duration}ms`,
             action: {
               label: 'View Results',
               onClick: () => {
-                router.push(`/${workspaceSlug}/workflows/${workflowId}/executions/${executionId}/results`);
+                router.push(
+                  `/${workspaceSlug}/workflows/${workflowId}/executions/${executionId}/results`
+                );
               },
             },
           });

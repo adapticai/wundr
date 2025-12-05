@@ -107,7 +107,9 @@ export default function StatusSettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<any>(null);
   const [statusHistory, setStatusHistory] = useState<any[]>([]);
-  const [scheduledStatuses, setScheduledStatuses] = useState<ScheduledStatusInput[]>([]);
+  const [scheduledStatuses, setScheduledStatuses] = useState<
+    ScheduledStatusInput[]
+  >([]);
 
   // Status form
   const statusForm = useForm<StatusUpdateInput>({
@@ -145,8 +147,8 @@ export default function StatusSettingsPage() {
   useEffect(() => {
     const loadData = async () => {
       if (!session?.user?.id) {
-return;
-}
+        return;
+      }
 
       try {
         setIsLoading(true);
@@ -207,8 +209,8 @@ return;
   // Update status
   const onStatusSubmit = async (data: StatusUpdateInput) => {
     if (!session?.user?.id) {
-return;
-}
+      return;
+    }
 
     setIsSaving(true);
 
@@ -286,7 +288,7 @@ return;
   };
 
   // Apply preset
-  const applyPreset = (preset: typeof STATUS_PRESETS[0]) => {
+  const applyPreset = (preset: (typeof STATUS_PRESETS)[0]) => {
     statusForm.setValue('emoji', preset.emoji);
     statusForm.setValue('message', preset.message);
     statusForm.setValue('type', preset.type);
@@ -339,7 +341,9 @@ return;
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to update out of office settings');
+        throw new Error(
+          error.error || 'Failed to update out of office settings'
+        );
       }
 
       toast({
@@ -362,31 +366,31 @@ return;
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className='flex items-center justify-center min-h-[400px]'>
+        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <h1 className="text-2xl font-bold">Status & Availability</h1>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className='text-2xl font-bold'>Status & Availability</h1>
+        <p className='mt-1 text-muted-foreground'>
           Manage your status, working hours, and availability settings.
         </p>
       </div>
 
-      <Tabs defaultValue="status" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="status">Status</TabsTrigger>
-          <TabsTrigger value="working-hours">Working Hours</TabsTrigger>
-          <TabsTrigger value="out-of-office">Out of Office</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+      <Tabs defaultValue='status' className='w-full'>
+        <TabsList className='grid w-full grid-cols-4'>
+          <TabsTrigger value='status'>Status</TabsTrigger>
+          <TabsTrigger value='working-hours'>Working Hours</TabsTrigger>
+          <TabsTrigger value='out-of-office'>Out of Office</TabsTrigger>
+          <TabsTrigger value='history'>History</TabsTrigger>
         </TabsList>
 
         {/* Status Tab */}
-        <TabsContent value="status" className="space-y-6">
+        <TabsContent value='status' className='space-y-6'>
           {/* Current Status Preview */}
           <Card>
             <CardHeader>
@@ -396,33 +400,35 @@ return;
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border">
+              <div className='flex items-center justify-between p-4 bg-muted/50 rounded-lg border'>
                 {currentStatus ? (
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl">{currentStatus.emoji}</span>
+                  <div className='flex items-center gap-3'>
+                    <span className='text-3xl'>{currentStatus.emoji}</span>
                     <div>
-                      <p className="font-medium">{currentStatus.message}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {STATUS_TYPES.find(t => t === currentStatus.type) || 'available'}
+                      <p className='font-medium'>{currentStatus.message}</p>
+                      <p className='text-sm text-muted-foreground'>
+                        {STATUS_TYPES.find(t => t === currentStatus.type) ||
+                          'available'}
                       </p>
                       {currentStatus.expiresAt && (
-                        <p className="text-xs text-muted-foreground">
-                          Until {new Date(currentStatus.expiresAt).toLocaleString()}
+                        <p className='text-xs text-muted-foreground'>
+                          Until{' '}
+                          {new Date(currentStatus.expiresAt).toLocaleString()}
                         </p>
                       )}
                     </div>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground">No status set</p>
+                  <p className='text-muted-foreground'>No status set</p>
                 )}
                 {currentStatus && (
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant='ghost'
+                    size='sm'
                     onClick={handleClearStatus}
                     disabled={isSaving}
                   >
-                    <XCircle className="h-4 w-4 mr-2" />
+                    <XCircle className='h-4 w-4 mr-2' />
                     Clear
                   </Button>
                 )}
@@ -442,29 +448,29 @@ return;
               <Form {...statusForm}>
                 <form
                   onSubmit={statusForm.handleSubmit(onStatusSubmit)}
-                  className="space-y-6"
+                  className='space-y-6'
                 >
                   {/* Quick Presets */}
                   <div>
-                    <Label className="text-sm font-medium mb-3 block">
+                    <Label className='text-sm font-medium mb-3 block'>
                       Quick presets
                     </Label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
                       {STATUS_PRESETS.map((preset, index) => (
                         <button
                           key={index}
-                          type="button"
+                          type='button'
                           onClick={() => applyPreset(preset)}
                           className={cn(
                             'flex items-center gap-2 p-3 rounded-lg border text-left',
                             'hover:bg-accent hover:border-primary transition-colors',
                             statusForm.watch('emoji') === preset.emoji &&
                               statusForm.watch('message') === preset.message &&
-                              'bg-accent border-primary',
+                              'bg-accent border-primary'
                           )}
                         >
-                          <span className="text-xl">{preset.emoji}</span>
-                          <span className="text-sm font-medium truncate">
+                          <span className='text-xl'>{preset.emoji}</span>
+                          <span className='text-sm font-medium truncate'>
                             {preset.message}
                           </span>
                         </button>
@@ -475,17 +481,20 @@ return;
                   <Separator />
 
                   {/* Custom Status */}
-                  <div className="space-y-4">
-                    <Label className="text-sm font-medium">Custom status</Label>
+                  <div className='space-y-4'>
+                    <Label className='text-sm font-medium'>Custom status</Label>
 
-                    <div className="flex gap-3">
+                    <div className='flex gap-3'>
                       <FormField
                         control={statusForm.control}
-                        name="emoji"
+                        name='emoji'
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <EmojiPicker value={field.value} onChange={field.onChange} />
+                              <EmojiPicker
+                                value={field.value}
+                                onChange={field.onChange}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -494,9 +503,9 @@ return;
 
                       <FormField
                         control={statusForm.control}
-                        name="message"
+                        name='message'
                         render={({ field }) => (
-                          <FormItem className="flex-1">
+                          <FormItem className='flex-1'>
                             <FormControl>
                               <Input
                                 placeholder="What's your status?"
@@ -512,7 +521,7 @@ return;
 
                     <FormField
                       control={statusForm.control}
-                      name="type"
+                      name='type'
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Status type</FormLabel>
@@ -520,33 +529,48 @@ return;
                             <RadioGroup
                               onValueChange={field.onChange}
                               value={field.value}
-                              className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+                              className='grid grid-cols-2 sm:grid-cols-4 gap-4'
                             >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="available" id="available" />
-                                <Label htmlFor="available" className="flex items-center gap-2">
-                                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              <div className='flex items-center space-x-2'>
+                                <RadioGroupItem
+                                  value='available'
+                                  id='available'
+                                />
+                                <Label
+                                  htmlFor='available'
+                                  className='flex items-center gap-2'
+                                >
+                                  <CheckCircle2 className='h-4 w-4 text-green-500' />
                                   Available
                                 </Label>
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="busy" id="busy" />
-                                <Label htmlFor="busy" className="flex items-center gap-2">
-                                  <Circle className="h-4 w-4 text-red-500" />
+                              <div className='flex items-center space-x-2'>
+                                <RadioGroupItem value='busy' id='busy' />
+                                <Label
+                                  htmlFor='busy'
+                                  className='flex items-center gap-2'
+                                >
+                                  <Circle className='h-4 w-4 text-red-500' />
                                   Busy
                                 </Label>
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="away" id="away" />
-                                <Label htmlFor="away" className="flex items-center gap-2">
-                                  <Clock className="h-4 w-4 text-yellow-500" />
+                              <div className='flex items-center space-x-2'>
+                                <RadioGroupItem value='away' id='away' />
+                                <Label
+                                  htmlFor='away'
+                                  className='flex items-center gap-2'
+                                >
+                                  <Clock className='h-4 w-4 text-yellow-500' />
                                   Away
                                 </Label>
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="dnd" id="dnd" />
-                                <Label htmlFor="dnd" className="flex items-center gap-2">
-                                  <Moon className="h-4 w-4 text-red-500" />
+                              <div className='flex items-center space-x-2'>
+                                <RadioGroupItem value='dnd' id='dnd' />
+                                <Label
+                                  htmlFor='dnd'
+                                  className='flex items-center gap-2'
+                                >
+                                  <Moon className='h-4 w-4 text-red-500' />
                                   DND
                                 </Label>
                               </div>
@@ -559,13 +583,15 @@ return;
 
                     <FormField
                       control={statusForm.control}
-                      name="clearAt"
+                      name='clearAt'
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Clear status after</FormLabel>
                           <Select
                             onValueChange={value =>
-                              field.onChange(value === 'null' ? undefined : Number(value))
+                              field.onChange(
+                                value === 'null' ? undefined : Number(value)
+                              )
                             }
                             value={field.value?.toString() || 'null'}
                           >
@@ -586,7 +612,8 @@ return;
                             </SelectContent>
                           </Select>
                           <FormDescription>
-                            Automatically clear your status after a set time period.
+                            Automatically clear your status after a set time
+                            period.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -594,11 +621,11 @@ return;
                     />
                   </div>
 
-                  <div className="flex gap-3">
-                    <Button type="submit" disabled={isSaving}>
+                  <div className='flex gap-3'>
+                    <Button type='submit' disabled={isSaving}>
                       {isSaving ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                           Saving...
                         </>
                       ) : (
@@ -606,8 +633,8 @@ return;
                       )}
                     </Button>
                     <Button
-                      type="button"
-                      variant="outline"
+                      type='button'
+                      variant='outline'
                       onClick={handleClearStatus}
                       disabled={isSaving || !currentStatus}
                     >
@@ -621,7 +648,7 @@ return;
         </TabsContent>
 
         {/* Working Hours Tab */}
-        <TabsContent value="working-hours" className="space-y-6">
+        <TabsContent value='working-hours' className='space-y-6'>
           <Card>
             <CardHeader>
               <CardTitle>Working Hours</CardTitle>
@@ -633,21 +660,26 @@ return;
               <Form {...workingHoursForm}>
                 <form
                   onSubmit={workingHoursForm.handleSubmit(onWorkingHoursSubmit)}
-                  className="space-y-6"
+                  className='space-y-6'
                 >
                   <FormField
                     control={workingHoursForm.control}
-                    name="enabled"
+                    name='enabled'
                     render={({ field }) => (
-                      <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Enable working hours</FormLabel>
+                      <FormItem className='flex items-center justify-between rounded-lg border p-4'>
+                        <div className='space-y-0.5'>
+                          <FormLabel className='text-base'>
+                            Enable working hours
+                          </FormLabel>
                           <FormDescription>
                             Show when you're typically available for work
                           </FormDescription>
                         </div>
                         <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
@@ -657,17 +689,20 @@ return;
                     <>
                       <FormField
                         control={workingHoursForm.control}
-                        name="timezone"
+                        name='timezone'
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Timezone</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select your timezone" />
+                                  <SelectValue placeholder='Select your timezone' />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent className="max-h-[300px]">
+                              <SelectContent className='max-h-[300px]'>
                                 {TIMEZONES.map(tz => (
                                   <SelectItem key={tz} value={tz}>
                                     {tz.replace(/_/g, ' ')}
@@ -680,35 +715,48 @@ return;
                         )}
                       />
 
-                      <div className="space-y-4">
+                      <div className='space-y-4'>
                         <Label>Working hours by day</Label>
                         {DAYS_OF_WEEK.map(day => (
                           <div
                             key={day.key}
-                            className="flex items-center gap-4 p-4 rounded-lg border"
+                            className='flex items-center gap-4 p-4 rounded-lg border'
                           >
-                            <div className="flex items-center gap-2 w-32">
+                            <div className='flex items-center gap-2 w-32'>
                               <Switch
-                                checked={workingHoursForm.watch(`${day.key}.enabled` as any)}
+                                checked={workingHoursForm.watch(
+                                  `${day.key}.enabled` as any
+                                )}
                                 onCheckedChange={checked =>
-                                  workingHoursForm.setValue(`${day.key}.enabled` as any, checked)
+                                  workingHoursForm.setValue(
+                                    `${day.key}.enabled` as any,
+                                    checked
+                                  )
                                 }
                               />
-                              <Label className="font-medium">{day.label}</Label>
+                              <Label className='font-medium'>{day.label}</Label>
                             </div>
 
-                            {workingHoursForm.watch(`${day.key}.enabled` as any) && (
-                              <div className="flex items-center gap-2 flex-1">
+                            {workingHoursForm.watch(
+                              `${day.key}.enabled` as any
+                            ) && (
+                              <div className='flex items-center gap-2 flex-1'>
                                 <Input
-                                  type="time"
-                                  {...workingHoursForm.register(`${day.key}.start` as any)}
-                                  className="w-32"
+                                  type='time'
+                                  {...workingHoursForm.register(
+                                    `${day.key}.start` as any
+                                  )}
+                                  className='w-32'
                                 />
-                                <span className="text-muted-foreground">to</span>
+                                <span className='text-muted-foreground'>
+                                  to
+                                </span>
                                 <Input
-                                  type="time"
-                                  {...workingHoursForm.register(`${day.key}.end` as any)}
-                                  className="w-32"
+                                  type='time'
+                                  {...workingHoursForm.register(
+                                    `${day.key}.end` as any
+                                  )}
+                                  className='w-32'
                                 />
                               </div>
                             )}
@@ -718,10 +766,10 @@ return;
                     </>
                   )}
 
-                  <Button type="submit" disabled={isSaving}>
+                  <Button type='submit' disabled={isSaving}>
                     {isSaving ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                         Saving...
                       </>
                     ) : (
@@ -735,7 +783,7 @@ return;
         </TabsContent>
 
         {/* Out of Office Tab */}
-        <TabsContent value="out-of-office" className="space-y-6">
+        <TabsContent value='out-of-office' className='space-y-6'>
           <Card>
             <CardHeader>
               <CardTitle>Out of Office</CardTitle>
@@ -747,15 +795,15 @@ return;
               <Form {...outOfOfficeForm}>
                 <form
                   onSubmit={outOfOfficeForm.handleSubmit(onOutOfOfficeSubmit)}
-                  className="space-y-6"
+                  className='space-y-6'
                 >
                   <FormField
                     control={outOfOfficeForm.control}
-                    name="enabled"
+                    name='enabled'
                     render={({ field }) => (
-                      <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">
+                      <FormItem className='flex items-center justify-between rounded-lg border p-4'>
+                        <div className='space-y-0.5'>
+                          <FormLabel className='text-base'>
                             Enable out of office
                           </FormLabel>
                           <FormDescription>
@@ -763,7 +811,10 @@ return;
                           </FormDescription>
                         </div>
                         <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
@@ -771,16 +822,16 @@ return;
 
                   {outOfOfficeForm.watch('enabled') && (
                     <>
-                      <div className="grid gap-4 sm:grid-cols-2">
+                      <div className='grid gap-4 sm:grid-cols-2'>
                         <FormField
                           control={outOfOfficeForm.control}
-                          name="startDate"
+                          name='startDate'
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Start date</FormLabel>
                               <FormControl>
                                 <Input
-                                  type="datetime-local"
+                                  type='datetime-local'
                                   {...field}
                                   value={
                                     field.value
@@ -790,7 +841,9 @@ return;
                                       : ''
                                   }
                                   onChange={e =>
-                                    field.onChange(new Date(e.target.value).toISOString())
+                                    field.onChange(
+                                      new Date(e.target.value).toISOString()
+                                    )
                                   }
                                 />
                               </FormControl>
@@ -801,13 +854,13 @@ return;
 
                         <FormField
                           control={outOfOfficeForm.control}
-                          name="endDate"
+                          name='endDate'
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>End date</FormLabel>
                               <FormControl>
                                 <Input
-                                  type="datetime-local"
+                                  type='datetime-local'
                                   {...field}
                                   value={
                                     field.value
@@ -817,7 +870,9 @@ return;
                                       : ''
                                   }
                                   onChange={e =>
-                                    field.onChange(new Date(e.target.value).toISOString())
+                                    field.onChange(
+                                      new Date(e.target.value).toISOString()
+                                    )
                                   }
                                 />
                               </FormControl>
@@ -829,7 +884,7 @@ return;
 
                       <FormField
                         control={outOfOfficeForm.control}
-                        name="autoReply"
+                        name='autoReply'
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Auto-reply message</FormLabel>
@@ -842,8 +897,8 @@ return;
                               />
                             </FormControl>
                             <FormDescription>
-                              This message will be sent automatically to people who contact
-                              you
+                              This message will be sent automatically to people
+                              who contact you
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -852,14 +907,16 @@ return;
 
                       <FormField
                         control={outOfOfficeForm.control}
-                        name="forwardTo"
+                        name='forwardTo'
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Forward messages to (optional)</FormLabel>
+                            <FormLabel>
+                              Forward messages to (optional)
+                            </FormLabel>
                             <FormControl>
                               <Input
-                                type="email"
-                                placeholder="colleague@example.com"
+                                type='email'
+                                placeholder='colleague@example.com'
                                 {...field}
                               />
                             </FormControl>
@@ -873,10 +930,10 @@ return;
                     </>
                   )}
 
-                  <Button type="submit" disabled={isSaving}>
+                  <Button type='submit' disabled={isSaving}>
                     {isSaving ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                         Saving...
                       </>
                     ) : (
@@ -890,7 +947,7 @@ return;
         </TabsContent>
 
         {/* History Tab */}
-        <TabsContent value="history" className="space-y-6">
+        <TabsContent value='history' className='space-y-6'>
           <Card>
             <CardHeader>
               <CardTitle>Status History</CardTitle>
@@ -900,24 +957,24 @@ return;
             </CardHeader>
             <CardContent>
               {statusHistory.length > 0 ? (
-                <div className="space-y-2">
+                <div className='space-y-2'>
                   {statusHistory.map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent transition-colors"
+                      className='flex items-center justify-between p-3 rounded-lg border hover:bg-accent transition-colors'
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{item.emoji}</span>
+                      <div className='flex items-center gap-3'>
+                        <span className='text-2xl'>{item.emoji}</span>
                         <div>
-                          <p className="font-medium">{item.message}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className='font-medium'>{item.message}</p>
+                          <p className='text-xs text-muted-foreground'>
                             {new Date(item.createdAt).toLocaleString()}
                           </p>
                         </div>
                       </div>
                       <Button
-                        variant="ghost"
-                        size="sm"
+                        variant='ghost'
+                        size='sm'
                         onClick={() => {
                           statusForm.setValue('emoji', item.emoji);
                           statusForm.setValue('message', item.message);
@@ -930,8 +987,8 @@ return;
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <div className='text-center py-8 text-muted-foreground'>
+                  <Clock className='h-12 w-12 mx-auto mb-3 opacity-50' />
                   <p>No status history yet</p>
                 </div>
               )}

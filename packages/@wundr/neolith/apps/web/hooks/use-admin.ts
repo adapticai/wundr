@@ -213,7 +213,7 @@ const fetcher = async <T>(url: string): Promise<T> => {
       .json()
       .catch(() => ({ message: 'Failed to fetch' }));
     throw new Error(
-      errorData.message || `HTTP ${res.status}: ${res.statusText}`,
+      errorData.message || `HTTP ${res.status}: ${res.statusText}`
     );
   }
   return res.json() as Promise<T>;
@@ -289,7 +289,7 @@ export interface UseMembersReturn {
  */
 export function useMembers(
   workspaceId: string,
-  options: UseMembersOptions = {},
+  options: UseMembersOptions = {}
 ): UseMembersReturn {
   const [page, setPage] = useState(1);
   const limit = options.limit ?? 50;
@@ -318,7 +318,7 @@ export function useMembers(
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updates),
-        },
+        }
       );
       if (!res.ok) {
         const error = await res
@@ -328,7 +328,7 @@ export function useMembers(
       }
       await mutate();
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   const suspendMember = useCallback(
@@ -337,7 +337,7 @@ export function useMembers(
         `/api/workspaces/${workspaceId}/members/${memberId}/suspend`,
         {
           method: 'POST',
-        },
+        }
       );
       if (!res.ok) {
         const error = await res
@@ -347,7 +347,7 @@ export function useMembers(
       }
       await mutate();
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   const removeMember = useCallback(
@@ -356,7 +356,7 @@ export function useMembers(
         `/api/workspaces/${workspaceId}/members/${memberId}`,
         {
           method: 'DELETE',
-        },
+        }
       );
       if (!res.ok) {
         const error = await res
@@ -366,7 +366,7 @@ export function useMembers(
       }
       await mutate();
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   return {
@@ -432,7 +432,7 @@ export interface UseRolesReturn {
 export function useRoles(workspaceId: string): UseRolesReturn {
   const { data, error, isLoading, mutate } = useSWR<{ roles: Role[] }>(
     `/api/workspaces/${workspaceId}/admin/roles`,
-    fetcher,
+    fetcher
   );
 
   const createRole = useCallback(
@@ -452,7 +452,7 @@ export function useRoles(workspaceId: string): UseRolesReturn {
       await mutate();
       return created;
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   const updateRole = useCallback(
@@ -463,7 +463,7 @@ export function useRoles(workspaceId: string): UseRolesReturn {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updates),
-        },
+        }
       );
       if (!res.ok) {
         const error = await res
@@ -473,7 +473,7 @@ export function useRoles(workspaceId: string): UseRolesReturn {
       }
       await mutate();
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   const deleteRole = useCallback(
@@ -482,7 +482,7 @@ export function useRoles(workspaceId: string): UseRolesReturn {
         `/api/workspaces/${workspaceId}/admin/roles/${roleId}`,
         {
           method: 'DELETE',
-        },
+        }
       );
       if (!res.ok) {
         const error = await res
@@ -492,7 +492,7 @@ export function useRoles(workspaceId: string): UseRolesReturn {
       }
       await mutate();
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   return {
@@ -551,7 +551,7 @@ export interface UseInvitesReturn {
 export function useInvites(workspaceId: string): UseInvitesReturn {
   const { data, error, isLoading, mutate } = useSWR<{ invites: Invite[] }>(
     `/api/workspaces/${workspaceId}/admin/invites?status=PENDING`,
-    fetcher,
+    fetcher
   );
 
   const createInvites = useCallback(
@@ -576,7 +576,7 @@ export function useInvites(workspaceId: string): UseInvitesReturn {
       }
       await mutate();
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   const revokeInvite = useCallback(
@@ -585,7 +585,7 @@ export function useInvites(workspaceId: string): UseInvitesReturn {
         `/api/workspaces/${workspaceId}/admin/invites/${inviteId}`,
         {
           method: 'DELETE',
-        },
+        }
       );
       if (!res.ok) {
         const errorData = await res
@@ -596,7 +596,7 @@ export function useInvites(workspaceId: string): UseInvitesReturn {
       }
       await mutate();
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   const resendInvite = useCallback(
@@ -605,7 +605,7 @@ export function useInvites(workspaceId: string): UseInvitesReturn {
         `/api/workspaces/${workspaceId}/admin/invites/${inviteId}/resend`,
         {
           method: 'POST',
-        },
+        }
       );
       if (!res.ok) {
         const error = await res
@@ -614,7 +614,7 @@ export function useInvites(workspaceId: string): UseInvitesReturn {
         throw new Error(error.message || 'Failed to resend invite');
       }
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   return {
@@ -667,7 +667,7 @@ export interface UseWorkspaceSettingsReturn {
  * ```
  */
 export function useWorkspaceSettings(
-  workspaceId: string,
+  workspaceId: string
 ): UseWorkspaceSettingsReturn {
   const { data, error, isLoading, mutate } = useSWR<{
     settings: WorkspaceSettings;
@@ -688,7 +688,7 @@ export function useWorkspaceSettings(
       }
       await mutate();
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   return {
@@ -745,7 +745,7 @@ export interface UseBillingReturn {
 export function useBilling(workspaceId: string): UseBillingReturn {
   const { data, error, isLoading, mutate } = useSWR<{ billing: BillingInfo }>(
     `/api/workspaces/${workspaceId}/billing`,
-    fetcher,
+    fetcher
   );
 
   const updatePlan = useCallback(
@@ -763,7 +763,7 @@ export function useBilling(workspaceId: string): UseBillingReturn {
       }
       await mutate();
     },
-    [workspaceId, mutate],
+    [workspaceId, mutate]
   );
 
   const cancelSubscription = useCallback(async () => {
@@ -784,7 +784,7 @@ export function useBilling(workspaceId: string): UseBillingReturn {
   const downloadInvoice = useCallback(
     async (invoiceId: string) => {
       const res = await fetch(
-        `/api/workspaces/${workspaceId}/billing/invoices/${invoiceId}`,
+        `/api/workspaces/${workspaceId}/billing/invoices/${invoiceId}`
       );
       if (!res.ok) {
         const error = await res
@@ -800,7 +800,7 @@ export function useBilling(workspaceId: string): UseBillingReturn {
       a.click();
       URL.revokeObjectURL(url);
     },
-    [workspaceId],
+    [workspaceId]
   );
 
   return {
@@ -879,7 +879,7 @@ export interface UseAdminActivityReturn {
  */
 export function useAdminActivity(
   workspaceId: string,
-  options: UseAdminActivityOptions = {},
+  options: UseAdminActivityOptions = {}
 ): UseAdminActivityReturn {
   const [offset, setOffset] = useState(0);
   const [allActivities, setAllActivities] = useState<AdminAction[]>([]);
@@ -903,7 +903,7 @@ export function useAdminActivity(
   useEffect(() => {
     if (data?.actions) {
       setAllActivities(prev =>
-        offset === 0 ? data.actions : [...prev, ...data.actions],
+        offset === 0 ? data.actions : [...prev, ...data.actions]
       );
     }
   }, [data?.actions, offset]);

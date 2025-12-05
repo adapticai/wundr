@@ -34,7 +34,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: 'UNAUTHORIZED',
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -58,7 +58,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
           error: 'User not found',
           code: 'NOT_FOUND',
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -81,10 +81,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       select: { size: true },
     });
 
-    const totalBytes = files.reduce(
-      (sum, file) => sum + Number(file.size),
-      0,
-    );
+    const totalBytes = files.reduce((sum, file) => sum + Number(file.size), 0);
     const totalMB = Math.round((totalBytes / 1024 / 1024) * 100) / 100;
 
     // Storage limit (example: 1GB per user)
@@ -93,8 +90,8 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     // Format dates
     const formatDate = (date: Date | null | undefined) => {
       if (!date) {
-return 'Never';
-}
+        return 'Never';
+      }
       return new Intl.DateTimeFormat('en-US', {
         year: 'numeric',
         month: 'long',
@@ -130,7 +127,7 @@ return 'Never';
         error: 'An internal error occurred',
         code: 'INTERNAL_ERROR',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

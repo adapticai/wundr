@@ -28,7 +28,10 @@ import {
   WORKFLOW_ERROR_CODES,
 } from '@/lib/validations/workflow';
 import { validateCronExpression } from '@/lib/workflow/cron-validator';
-import { getRateLimitStatus, resetRateLimit } from '@/lib/workflow/rate-limiter';
+import {
+  getRateLimitStatus,
+  resetRateLimit,
+} from '@/lib/workflow/rate-limiter';
 import {
   generateWebhookToken,
   generateWebhookSecret,
@@ -52,7 +55,7 @@ interface RouteContext {
 async function checkWorkspaceAccess(
   workspaceId: string,
   workflowId: string,
-  userId: string,
+  userId: string
 ) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -110,7 +113,7 @@ async function checkWorkspaceAccess(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -118,9 +121,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -130,7 +133,7 @@ export async function GET(
     const result = await checkWorkspaceAccess(
       workspaceId,
       workflowId,
-      session.user.id,
+      session.user.id
     );
 
     if ('error' in result) {
@@ -138,18 +141,18 @@ export async function GET(
         return NextResponse.json(
           createErrorResponse(
             'Workspace not found or access denied',
-            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
           createErrorResponse(
             'Workflow not found',
-            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -158,20 +161,20 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workflow not found',
-          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     const { workflow } = result;
-    const metadata = workflow.metadata as any || {};
-    const trigger = workflow.trigger as any || {};
+    const metadata = (workflow.metadata as any) || {};
+    const trigger = (workflow.trigger as any) || {};
 
     // Get rate limit status
     const rateLimitStatus = await getRateLimitStatus(
       workflowId,
-      trigger.type || 'webhook',
+      trigger.type || 'webhook'
     );
 
     // Build webhook URL if webhook token exists
@@ -186,35 +189,45 @@ export async function GET(
       enabled: workflow.status === 'ACTIVE',
 
       // Webhook configuration
-      webhook: metadata.webhookToken ? {
-        url: webhookUrl,
-        token: metadata.webhookToken,
-        secret: metadata.webhookSecret ? '***' : undefined, // Hide actual secret
-        requireSignature: metadata.requireSignature ?? true,
-        hasSecret: !!metadata.webhookSecret,
-      } : undefined,
+      webhook: metadata.webhookToken
+        ? {
+            url: webhookUrl,
+            token: metadata.webhookToken,
+            secret: metadata.webhookSecret ? '***' : undefined, // Hide actual secret
+            requireSignature: metadata.requireSignature ?? true,
+            hasSecret: !!metadata.webhookSecret,
+          }
+        : undefined,
 
       // API key configuration
-      apiKey: metadata.apiKeyHash ? {
-        hasKey: true,
-        // Never return the actual API key
-      } : undefined,
+      apiKey: metadata.apiKeyHash
+        ? {
+            hasKey: true,
+            // Never return the actual API key
+          }
+        : undefined,
 
       // Schedule configuration
-      schedule: trigger.type === 'schedule' ? {
-        cron: trigger.config?.cron,
-        timezone: trigger.config?.timezone || 'UTC',
-        enabled: trigger.config?.enabled ?? true,
-        nextRun: trigger.config?.nextRun,
-        lastRun: trigger.config?.lastRun,
-      } : undefined,
+      schedule:
+        trigger.type === 'schedule'
+          ? {
+              cron: trigger.config?.cron,
+              timezone: trigger.config?.timezone || 'UTC',
+              enabled: trigger.config?.enabled ?? true,
+              nextRun: trigger.config?.nextRun,
+              lastRun: trigger.config?.lastRun,
+            }
+          : undefined,
 
       // Event configuration
-      event: trigger.type === 'event' ? {
-        eventType: trigger.eventType || trigger.event,
-        conditions: trigger.conditions,
-        filters: trigger.filters,
-      } : undefined,
+      event:
+        trigger.type === 'event'
+          ? {
+              eventType: trigger.eventType || trigger.event,
+              conditions: trigger.conditions,
+              filters: trigger.filters,
+            }
+          : undefined,
 
       // Rate limiting
       rateLimit: {
@@ -225,9 +238,16 @@ export async function GET(
       // Statistics
       statistics: {
         totalTriggers: metadata.triggerHistory?.length || 0,
-        successfulTriggers: metadata.triggerHistory?.filter((t: any) => t.status === 'success').length || 0,
-        failedTriggers: metadata.triggerHistory?.filter((t: any) => t.status === 'failure').length || 0,
-        rateLimitedTriggers: metadata.triggerHistory?.filter((t: any) => t.status === 'rate_limited').length || 0,
+        successfulTriggers:
+          metadata.triggerHistory?.filter((t: any) => t.status === 'success')
+            .length || 0,
+        failedTriggers:
+          metadata.triggerHistory?.filter((t: any) => t.status === 'failure')
+            .length || 0,
+        rateLimitedTriggers:
+          metadata.triggerHistory?.filter(
+            (t: any) => t.status === 'rate_limited'
+          ).length || 0,
       },
     };
 
@@ -237,9 +257,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -251,7 +271,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -259,9 +279,9 @@ export async function PUT(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -271,7 +291,7 @@ export async function PUT(
     const result = await checkWorkspaceAccess(
       workspaceId,
       workflowId,
-      session.user.id,
+      session.user.id
     );
 
     if ('error' in result) {
@@ -279,18 +299,18 @@ export async function PUT(
         return NextResponse.json(
           createErrorResponse(
             'Workspace not found or access denied',
-            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
           createErrorResponse(
             'Workflow not found',
-            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -299,9 +319,9 @@ export async function PUT(
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to update trigger configuration',
-          WORKFLOW_ERROR_CODES.FORBIDDEN,
+          WORKFLOW_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -313,9 +333,9 @@ export async function PUT(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -326,9 +346,9 @@ export async function PUT(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -344,16 +364,16 @@ export async function PUT(
           return NextResponse.json(
             createErrorResponse(
               `Invalid cron expression: ${validation.error}`,
-              WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+              WORKFLOW_ERROR_CODES.VALIDATION_ERROR
             ),
-            { status: 400 },
+            { status: 400 }
           );
         }
       }
     }
 
-    const currentMetadata = workflow.metadata as any || {};
-    const currentTrigger = workflow.trigger as any || {};
+    const currentMetadata = (workflow.metadata as any) || {};
+    const currentTrigger = (workflow.trigger as any) || {};
 
     // Update trigger configuration
     const updatedTrigger = {
@@ -389,9 +409,9 @@ export async function PUT(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -403,7 +423,7 @@ export async function PUT(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -411,9 +431,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -423,7 +443,7 @@ export async function POST(
     const result = await checkWorkspaceAccess(
       workspaceId,
       workflowId,
-      session.user.id,
+      session.user.id
     );
 
     if ('error' in result) {
@@ -431,18 +451,18 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             'Workspace not found or access denied',
-            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
           createErrorResponse(
             'Workflow not found',
-            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -451,9 +471,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to regenerate credentials',
-          WORKFLOW_ERROR_CODES.FORBIDDEN,
+          WORKFLOW_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -470,7 +490,7 @@ export async function POST(
 
     const regenerateType = body.type || 'webhook_token';
     const { workflow } = result;
-    const currentMetadata = workflow.metadata as any || {};
+    const currentMetadata = (workflow.metadata as any) || {};
 
     const newCredentials: Record<string, string> = {};
 
@@ -492,9 +512,15 @@ export async function POST(
     // Update metadata
     const updatedMetadata = {
       ...currentMetadata,
-      ...(regenerateType === 'webhook_token' && { webhookToken: newCredentials.webhookToken }),
-      ...(regenerateType === 'webhook_secret' && { webhookSecret: newCredentials.webhookSecret }),
-      ...(regenerateType === 'api_key' && { apiKeyHash: newCredentials.apiKeyHash }),
+      ...(regenerateType === 'webhook_token' && {
+        webhookToken: newCredentials.webhookToken,
+      }),
+      ...(regenerateType === 'webhook_secret' && {
+        webhookSecret: newCredentials.webhookSecret,
+      }),
+      ...(regenerateType === 'api_key' && {
+        apiKeyHash: newCredentials.apiKeyHash,
+      }),
     };
 
     await prisma.workflow.update({
@@ -522,18 +548,22 @@ export async function POST(
       response.webhookSecret = newCredentials.webhookSecret;
     } else if (regenerateType === 'api_key') {
       response.apiKey = newCredentials.apiKey;
-      response.warning = 'Save this API key securely - it will not be shown again';
+      response.warning =
+        'Save this API key securely - it will not be shown again';
     }
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('[POST /workflows/trigger/config/:workflowId/regenerate] Error:', error);
+    console.error(
+      '[POST /workflows/trigger/config/:workflowId/regenerate] Error:',
+      error
+    );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

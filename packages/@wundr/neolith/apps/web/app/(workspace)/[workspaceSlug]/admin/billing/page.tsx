@@ -1,23 +1,67 @@
 'use client';
 
-import { AlertCircle, CreditCard, Download, Mail, TrendingUp } from 'lucide-react';
+import {
+  AlertCircle,
+  CreditCard,
+  Download,
+  Mail,
+  TrendingUp,
+} from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { usePageHeader } from '@/contexts/page-header-context';
@@ -123,7 +167,8 @@ export default function AdminBillingPage() {
   const [budgetAlerts, setBudgetAlerts] = useState<BudgetAlert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<PlanTier | null>(null);
-  const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
+  const [billingInterval, setBillingInterval] =
+    useState<BillingInterval>('monthly');
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showEnterpriseDialog, setShowEnterpriseDialog] = useState(false);
@@ -133,7 +178,7 @@ export default function AdminBillingPage() {
   useEffect(() => {
     setPageHeader(
       'Billing & Subscription',
-      'Manage your subscription, payment methods, and billing settings',
+      'Manage your subscription, payment methods, and billing settings'
     );
   }, [setPageHeader]);
 
@@ -142,13 +187,20 @@ export default function AdminBillingPage() {
     const fetchBillingData = async () => {
       try {
         setIsLoading(true);
-        const [billingRes, paymentsRes, invoicesRes, usageRes, alertsRes] = await Promise.all([
-          fetch(`/api/workspaces/${workspaceSlug}/admin/billing`),
-          fetch(`/api/workspaces/${workspaceSlug}/admin/billing/payment-methods`),
-          fetch(`/api/workspaces/${workspaceSlug}/admin/billing/invoices`),
-          fetch(`/api/workspaces/${workspaceSlug}/admin/billing/usage-history`),
-          fetch(`/api/workspaces/${workspaceSlug}/admin/billing/budget-alerts`),
-        ]);
+        const [billingRes, paymentsRes, invoicesRes, usageRes, alertsRes] =
+          await Promise.all([
+            fetch(`/api/workspaces/${workspaceSlug}/admin/billing`),
+            fetch(
+              `/api/workspaces/${workspaceSlug}/admin/billing/payment-methods`
+            ),
+            fetch(`/api/workspaces/${workspaceSlug}/admin/billing/invoices`),
+            fetch(
+              `/api/workspaces/${workspaceSlug}/admin/billing/usage-history`
+            ),
+            fetch(
+              `/api/workspaces/${workspaceSlug}/admin/billing/budget-alerts`
+            ),
+          ]);
 
         if (billingRes.ok) {
           const data = await billingRes.json();
@@ -189,11 +241,14 @@ export default function AdminBillingPage() {
 
       setIsUpgrading(true);
       try {
-        const res = await fetch(`/api/workspaces/${workspaceSlug}/admin/billing/upgrade`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plan: planId }),
-        });
+        const res = await fetch(
+          `/api/workspaces/${workspaceSlug}/admin/billing/upgrade`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan: planId }),
+          }
+        );
 
         if (!res.ok) {
           throw new Error('Failed to upgrade plan');
@@ -213,15 +268,17 @@ export default function AdminBillingPage() {
         setIsUpgrading(false);
       }
     },
-    [workspaceSlug],
+    [workspaceSlug]
   );
 
   const handleDownloadInvoice = async (invoiceId: string) => {
     try {
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/admin/billing/invoices/${invoiceId}/download`);
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/admin/billing/invoices/${invoiceId}/download`
+      );
       if (!res.ok) {
-throw new Error('Failed to download invoice');
-}
+        throw new Error('Failed to download invoice');
+      }
 
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -359,8 +416,8 @@ throw new Error('Failed to download invoice');
         <Alert>
           <AlertCircle className='h-4 w-4' />
           <AlertDescription>
-            Your subscription will be canceled at the end of the billing period on{' '}
-            {new Date(billing.currentPeriodEnd).toLocaleDateString()}.
+            Your subscription will be canceled at the end of the billing period
+            on {new Date(billing.currentPeriodEnd).toLocaleDateString()}.
           </AlertDescription>
         </Alert>
       )}
@@ -404,14 +461,20 @@ throw new Error('Failed to download invoice');
                 </div>
                 <div className='text-right'>
                   <p className='text-3xl font-bold'>
-                    ${billingInterval === 'monthly' ? currentPlan.priceMonthly : Math.round(currentPlan.priceYearly / 12)}
-                    <span className='text-base font-normal text-muted-foreground'>/month</span>
+                    $
+                    {billingInterval === 'monthly'
+                      ? currentPlan.priceMonthly
+                      : Math.round(currentPlan.priceYearly / 12)}
+                    <span className='text-base font-normal text-muted-foreground'>
+                      /month
+                    </span>
                   </p>
-                  {billingInterval === 'yearly' && currentPlan.priceYearly > 0 && (
-                    <p className='text-sm text-muted-foreground'>
-                      Billed ${currentPlan.priceYearly}/year
-                    </p>
-                  )}
+                  {billingInterval === 'yearly' &&
+                    currentPlan.priceYearly > 0 && (
+                      <p className='text-sm text-muted-foreground'>
+                        Billed ${currentPlan.priceYearly}/year
+                      </p>
+                    )}
                 </div>
               </div>
             </CardHeader>
@@ -453,7 +516,10 @@ throw new Error('Failed to download invoice');
                     Upgrade Plan
                   </Button>
                 )}
-                <Button variant='outline' onClick={() => setShowPaymentDialog(true)}>
+                <Button
+                  variant='outline'
+                  onClick={() => setShowPaymentDialog(true)}
+                >
                   <CreditCard className='mr-2 h-4 w-4' />
                   Manage Payment
                 </Button>
@@ -576,13 +642,16 @@ throw new Error('Failed to download invoice');
                   <TableBody>
                     {invoices.map(invoice => (
                       <TableRow key={invoice.id}>
-                        <TableCell className='font-medium'>#{invoice.number}</TableCell>
+                        <TableCell className='font-medium'>
+                          #{invoice.number}
+                        </TableCell>
                         <TableCell>
                           {new Date(invoice.periodStart).toLocaleDateString()} -{' '}
                           {new Date(invoice.periodEnd).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          ${(invoice.amount / 100).toFixed(2)} {invoice.currency.toUpperCase()}
+                          ${(invoice.amount / 100).toFixed(2)}{' '}
+                          {invoice.currency.toUpperCase()}
                         </TableCell>
                         <TableCell>
                           <Badge
@@ -642,7 +711,12 @@ throw new Error('Failed to download invoice');
                     <CartesianGrid strokeDasharray='3 3' />
                     <XAxis
                       dataKey='date'
-                      tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      tickFormatter={value =>
+                        new Date(value).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      }
                     />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
@@ -678,7 +752,12 @@ throw new Error('Failed to download invoice');
                     <CartesianGrid strokeDasharray='3 3' />
                     <XAxis
                       dataKey='date'
-                      tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      tickFormatter={value =>
+                        new Date(value).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      }
                     />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
@@ -708,7 +787,12 @@ throw new Error('Failed to download invoice');
                     <CartesianGrid strokeDasharray='3 3' />
                     <XAxis
                       dataKey='date'
-                      tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      tickFormatter={value =>
+                        new Date(value).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      }
                     />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
@@ -744,7 +828,12 @@ throw new Error('Failed to download invoice');
                     <CartesianGrid strokeDasharray='3 3' />
                     <XAxis
                       dataKey='date'
-                      tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      tickFormatter={value =>
+                        new Date(value).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      }
                     />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
@@ -769,7 +858,9 @@ throw new Error('Failed to download invoice');
               <div className='flex items-center justify-between'>
                 <div>
                   <CardTitle>Budget Alerts</CardTitle>
-                  <CardDescription>Set up alerts for usage thresholds</CardDescription>
+                  <CardDescription>
+                    Set up alerts for usage thresholds
+                  </CardDescription>
                 </div>
                 <Button onClick={() => setShowBudgetDialog(true)}>
                   Create Alert
@@ -785,7 +876,8 @@ throw new Error('Failed to download invoice');
                 </div>
               ) : (
                 <div className='py-12 text-center text-muted-foreground'>
-                  No budget alerts configured. Create one to monitor your spending.
+                  No budget alerts configured. Create one to monitor your
+                  spending.
                 </div>
               )}
             </CardContent>
@@ -860,7 +952,9 @@ function UsageMetric({
                 of {limit.toLocaleString()} {unit}
               </p>
               <Progress value={percentage} className='h-2' />
-              <p className='text-xs text-muted-foreground'>{percentage.toFixed(0)}% used</p>
+              <p className='text-xs text-muted-foreground'>
+                {percentage.toFixed(0)}% used
+              </p>
             </>
           )}
           {isUnlimited && (
@@ -915,13 +1009,18 @@ function PlanCard({
   isCurrentPlan: boolean;
   onSelect: () => void;
 }) {
-  const price = billingInterval === 'monthly' ? plan.priceMonthly : Math.round(plan.priceYearly / 12);
+  const price =
+    billingInterval === 'monthly'
+      ? plan.priceMonthly
+      : Math.round(plan.priceYearly / 12);
 
   return (
-    <Card className={cn(
-      'relative',
-      plan.popular && 'border-primary ring-1 ring-primary',
-    )}>
+    <Card
+      className={cn(
+        'relative',
+        plan.popular && 'border-primary ring-1 ring-primary'
+      )}
+    >
       {plan.popular && (
         <div className='absolute -top-3 left-1/2 -translate-x-1/2'>
           <Badge>Most Popular</Badge>
@@ -937,7 +1036,9 @@ function PlanCard({
             <>
               <p className='text-3xl font-bold'>
                 ${price}
-                <span className='text-base font-normal text-muted-foreground'>/month</span>
+                <span className='text-base font-normal text-muted-foreground'>
+                  /month
+                </span>
               </p>
               {billingInterval === 'yearly' && plan.priceYearly > 0 && (
                 <p className='text-sm text-muted-foreground'>
@@ -1024,7 +1125,8 @@ function UpgradeModal({
   onConfirm: () => void;
   onClose: () => void;
 }) {
-  const price = billingInterval === 'monthly' ? plan.priceMonthly : plan.priceYearly;
+  const price =
+    billingInterval === 'monthly' ? plan.priceMonthly : plan.priceYearly;
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -1032,7 +1134,8 @@ function UpgradeModal({
         <DialogHeader>
           <DialogTitle>Upgrade to {plan.name}</DialogTitle>
           <DialogDescription>
-            You will be charged ${price} {billingInterval === 'monthly' ? 'per month' : 'per year'}.
+            You will be charged ${price}{' '}
+            {billingInterval === 'monthly' ? 'per month' : 'per year'}.
           </DialogDescription>
         </DialogHeader>
         <div className='space-y-4 py-4'>
@@ -1077,15 +1180,18 @@ function PaymentMethodDialog({
   const handleSubmit = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/admin/billing/payment-methods`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cardNumber, expiry, cvc }),
-      });
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/admin/billing/payment-methods`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cardNumber, expiry, cvc }),
+        }
+      );
 
       if (!res.ok) {
-throw new Error('Failed to add payment method');
-}
+        throw new Error('Failed to add payment method');
+      }
 
       onClose();
       window.location.reload();
@@ -1113,7 +1219,7 @@ throw new Error('Failed to add payment method');
               id='cardNumber'
               placeholder='1234 5678 9012 3456'
               value={cardNumber}
-              onChange={(e) => setCardNumber(e.target.value)}
+              onChange={e => setCardNumber(e.target.value)}
             />
           </div>
           <div className='grid grid-cols-2 gap-4'>
@@ -1123,7 +1229,7 @@ throw new Error('Failed to add payment method');
                 id='expiry'
                 placeholder='MM/YY'
                 value={expiry}
-                onChange={(e) => setExpiry(e.target.value)}
+                onChange={e => setExpiry(e.target.value)}
               />
             </div>
             <div className='space-y-2'>
@@ -1132,7 +1238,7 @@ throw new Error('Failed to add payment method');
                 id='cvc'
                 placeholder='123'
                 value={cvc}
-                onChange={(e) => setCvc(e.target.value)}
+                onChange={e => setCvc(e.target.value)}
               />
             </div>
           </div>
@@ -1171,15 +1277,18 @@ function EnterpriseContactDialog({
   const handleSubmit = async () => {
     setIsSending(true);
     try {
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/admin/billing/contact-enterprise`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/admin/billing/contact-enterprise`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (!res.ok) {
-throw new Error('Failed to send request');
-}
+        throw new Error('Failed to send request');
+      }
 
       alert('Thank you! Our enterprise team will contact you within 24 hours.');
       onClose();
@@ -1207,7 +1316,9 @@ throw new Error('Failed to send request');
               <Input
                 id='name'
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
               />
             </div>
             <div className='space-y-2'>
@@ -1216,7 +1327,9 @@ throw new Error('Failed to send request');
                 id='email'
                 type='email'
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
               />
             </div>
           </div>
@@ -1226,14 +1339,18 @@ throw new Error('Failed to send request');
               <Input
                 id='company'
                 value={formData.company}
-                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, company: e.target.value })
+                }
               />
             </div>
             <div className='space-y-2'>
               <Label htmlFor='employees'>Number of Employees</Label>
               <Select
                 value={formData.employees}
-                onValueChange={(value) => setFormData({ ...formData, employees: value })}
+                onValueChange={value =>
+                  setFormData({ ...formData, employees: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder='Select' />
@@ -1254,7 +1371,9 @@ throw new Error('Failed to send request');
               rows={4}
               placeholder='Tell us about your requirements...'
               value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+              onChange={e =>
+                setFormData({ ...formData, message: e.target.value })
+              }
             />
           </div>
         </div>
@@ -1289,19 +1408,22 @@ function BudgetAlertDialog({
   const handleSubmit = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/workspaces/${workspaceSlug}/admin/billing/budget-alerts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          threshold: parseFloat(threshold),
-          notifyEmail,
-          notifySlack,
-        }),
-      });
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/admin/billing/budget-alerts`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            threshold: parseFloat(threshold),
+            notifyEmail,
+            notifySlack,
+          }),
+        }
+      );
 
       if (!res.ok) {
-throw new Error('Failed to create alert');
-}
+        throw new Error('Failed to create alert');
+      }
 
       onClose();
       window.location.reload();
@@ -1329,7 +1451,7 @@ throw new Error('Failed to create alert');
               id='threshold'
               type='number'
               value={threshold}
-              onChange={(e) => setThreshold(e.target.value)}
+              onChange={e => setThreshold(e.target.value)}
             />
           </div>
           <div className='space-y-2'>

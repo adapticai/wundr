@@ -74,7 +74,7 @@ const fetcher = async <T>(url: string): Promise<T> => {
       .json()
       .catch(() => ({ message: 'Failed to fetch' }));
     throw new Error(
-      errorData.message || `HTTP ${res.status}: ${res.statusText}`,
+      errorData.message || `HTTP ${res.status}: ${res.statusText}`
     );
   }
   return res.json() as Promise<T>;
@@ -104,13 +104,13 @@ export interface UseAdminChannelsReturn {
   }) => Promise<ChannelInfo>;
   updateChannel: (
     channelId: string,
-    updates: Partial<ChannelInfo>,
+    updates: Partial<ChannelInfo>
   ) => Promise<ChannelInfo>;
   deleteChannel: (channelId: string) => Promise<void>;
   bulkOperation: (
     channelIds: string[],
     operation: BulkOperation,
-    data?: { type?: ChannelType },
+    data?: { type?: ChannelType }
   ) => Promise<void>;
   refresh: () => void;
 }
@@ -124,29 +124,26 @@ export interface UseAdminChannelsReturn {
  */
 export function useAdminChannels(
   workspaceSlug: string,
-  options: UseAdminChannelsOptions = {},
+  options: UseAdminChannelsOptions = {}
 ): UseAdminChannelsReturn {
   const queryParams = new URLSearchParams();
   if (options.type) {
-queryParams.set('type', options.type);
-}
+    queryParams.set('type', options.type);
+  }
   if (options.archived !== undefined) {
-queryParams.set('archived', String(options.archived));
-}
+    queryParams.set('archived', String(options.archived));
+  }
   if (options.search) {
-queryParams.set('search', options.search);
-}
+    queryParams.set('search', options.search);
+  }
   if (options.limit) {
-queryParams.set('limit', String(options.limit));
-}
+    queryParams.set('limit', String(options.limit));
+  }
 
   const { data, error, isLoading, mutate } = useSWR<{
     channels: ChannelInfo[];
     total: number;
-  }>(
-    `/api/workspaces/${workspaceSlug}/admin/channels?${queryParams}`,
-    fetcher,
-  );
+  }>(`/api/workspaces/${workspaceSlug}/admin/channels?${queryParams}`, fetcher);
 
   const createChannel = useCallback(
     async (channelData: {
@@ -161,7 +158,7 @@ queryParams.set('limit', String(options.limit));
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(channelData),
-        },
+        }
       );
       if (!res.ok) {
         const error = await res
@@ -173,13 +170,13 @@ queryParams.set('limit', String(options.limit));
       await mutate();
       return created;
     },
-    [workspaceSlug, mutate],
+    [workspaceSlug, mutate]
   );
 
   const updateChannel = useCallback(
     async (
       channelId: string,
-      updates: Partial<ChannelInfo>,
+      updates: Partial<ChannelInfo>
     ): Promise<ChannelInfo> => {
       const res = await fetch(
         `/api/workspaces/${workspaceSlug}/admin/channels/${channelId}`,
@@ -187,7 +184,7 @@ queryParams.set('limit', String(options.limit));
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updates),
-        },
+        }
       );
       if (!res.ok) {
         const error = await res
@@ -199,7 +196,7 @@ queryParams.set('limit', String(options.limit));
       await mutate();
       return updated;
     },
-    [workspaceSlug, mutate],
+    [workspaceSlug, mutate]
   );
 
   const deleteChannel = useCallback(
@@ -208,7 +205,7 @@ queryParams.set('limit', String(options.limit));
         `/api/workspaces/${workspaceSlug}/admin/channels/${channelId}`,
         {
           method: 'DELETE',
-        },
+        }
       );
       if (!res.ok) {
         const error = await res
@@ -218,14 +215,14 @@ queryParams.set('limit', String(options.limit));
       }
       await mutate();
     },
-    [workspaceSlug, mutate],
+    [workspaceSlug, mutate]
   );
 
   const bulkOperation = useCallback(
     async (
       channelIds: string[],
       operation: BulkOperation,
-      data?: { type?: ChannelType },
+      data?: { type?: ChannelType }
     ) => {
       const res = await fetch(
         `/api/workspaces/${workspaceSlug}/admin/channels/bulk`,
@@ -233,7 +230,7 @@ queryParams.set('limit', String(options.limit));
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ channelIds, operation, data }),
-        },
+        }
       );
       if (!res.ok) {
         const error = await res
@@ -243,7 +240,7 @@ queryParams.set('limit', String(options.limit));
       }
       await mutate();
     },
-    [workspaceSlug, mutate],
+    [workspaceSlug, mutate]
   );
 
   return {
@@ -277,7 +274,7 @@ export interface UseChannelDefaultsReturn {
  * @returns Default settings and update function
  */
 export function useChannelDefaults(
-  workspaceSlug: string,
+  workspaceSlug: string
 ): UseChannelDefaultsReturn {
   const { data, error, isLoading, mutate } = useSWR<{
     defaults: ChannelDefaults;
@@ -291,7 +288,7 @@ export function useChannelDefaults(
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ defaults: updates }),
-        },
+        }
       );
       if (!res.ok) {
         const error = await res
@@ -301,7 +298,7 @@ export function useChannelDefaults(
       }
       await mutate();
     },
-    [workspaceSlug, mutate],
+    [workspaceSlug, mutate]
   );
 
   return {

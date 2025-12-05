@@ -80,7 +80,10 @@ export function DMSearchPanel({
         let snippet = msg.content;
         if (queryIndex !== -1 && msg.content.length > 100) {
           const start = Math.max(0, queryIndex - 40);
-          const end = Math.min(msg.content.length, queryIndex + query.length + 40);
+          const end = Math.min(
+            msg.content.length,
+            queryIndex + query.length + 40
+          );
           snippet =
             (start > 0 ? '...' : '') +
             msg.content.slice(start, end) +
@@ -106,32 +109,42 @@ export function DMSearchPanel({
   // Navigate to previous result
   const handlePrevious = useCallback(() => {
     if (!hasResults) {
-return;
-}
-    const newIndex = currentResultIndex === 0
-      ? totalResults - 1
-      : currentResultIndex - 1;
+      return;
+    }
+    const newIndex =
+      currentResultIndex === 0 ? totalResults - 1 : currentResultIndex - 1;
     setCurrentResultIndex(newIndex);
     onScrollToMessage(searchResults[newIndex].message.id);
-  }, [currentResultIndex, hasResults, onScrollToMessage, searchResults, totalResults]);
+  }, [
+    currentResultIndex,
+    hasResults,
+    onScrollToMessage,
+    searchResults,
+    totalResults,
+  ]);
 
   // Navigate to next result
   const handleNext = useCallback(() => {
     if (!hasResults) {
-return;
-}
-    const newIndex = currentResultIndex === totalResults - 1
-      ? 0
-      : currentResultIndex + 1;
+      return;
+    }
+    const newIndex =
+      currentResultIndex === totalResults - 1 ? 0 : currentResultIndex + 1;
     setCurrentResultIndex(newIndex);
     onScrollToMessage(searchResults[newIndex].message.id);
-  }, [currentResultIndex, hasResults, onScrollToMessage, searchResults, totalResults]);
+  }, [
+    currentResultIndex,
+    hasResults,
+    onScrollToMessage,
+    searchResults,
+    totalResults,
+  ]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
     if (!isOpen) {
-return;
-}
+      return;
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Close on Escape
@@ -196,7 +209,7 @@ return;
     <div
       className={cn(
         'flex items-center gap-2 border-b bg-background px-4 py-2',
-        className,
+        className
       )}
     >
       {/* Search icon */}
@@ -265,7 +278,9 @@ return;
       {!searchQuery.trim() && (
         <div className='hidden md:flex items-center gap-2 text-xs text-muted-foreground ml-auto'>
           <span>Press</span>
-          <kbd className='px-1.5 py-0.5 bg-muted rounded border text-xs'>Esc</kbd>
+          <kbd className='px-1.5 py-0.5 bg-muted rounded border text-xs'>
+            Esc
+          </kbd>
           <span>to close</span>
         </div>
       )}
@@ -279,7 +294,7 @@ return;
  */
 export function useSearchHighlight(
   content: string,
-  searchQuery: string,
+  searchQuery: string
 ): React.ReactNode {
   return useMemo(() => {
     if (!searchQuery.trim()) {
@@ -297,7 +312,7 @@ export function useSearchHighlight(
       // Add text before match
       if (matchIndex > lastIndex) {
         parts.push(
-          <span key={key++}>{content.slice(lastIndex, matchIndex)}</span>,
+          <span key={key++}>{content.slice(lastIndex, matchIndex)}</span>
         );
       }
 
@@ -308,7 +323,7 @@ export function useSearchHighlight(
           className='bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-100 rounded px-0.5'
         >
           {content.slice(matchIndex, matchIndex + query.length)}
-        </mark>,
+        </mark>
       );
 
       lastIndex = matchIndex + query.length;

@@ -54,18 +54,18 @@ export function WorkflowResourceUsageDialog({
 
   const fetchUsage = async () => {
     if (!workflowId) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/workflows/${workflowId}/resource-usage`,
+        `/api/workspaces/${workspaceSlug}/admin/workflows/${workflowId}/resource-usage`
       );
 
       if (!response.ok) {
-throw new Error('Failed to fetch resource usage');
-}
+        throw new Error('Failed to fetch resource usage');
+      }
 
       const data = await response.json();
       setUsage(data.usage);

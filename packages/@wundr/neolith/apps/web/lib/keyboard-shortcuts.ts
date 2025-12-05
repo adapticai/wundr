@@ -393,7 +393,7 @@ export const SHORTCUT_PRESETS: ShortcutPreset[] = [
         acc[shortcut.id] = shortcut.defaultKeys;
         return acc;
       },
-      {} as Record<string, string[]>,
+      {} as Record<string, string[]>
     ),
   },
   {
@@ -543,7 +543,7 @@ export function keysEqual(keys1: string[], keys2: string[]): boolean {
  * Find conflicts between shortcuts
  */
 export function findConflicts(
-  shortcuts: KeyboardShortcut[],
+  shortcuts: KeyboardShortcut[]
 ): Array<{ shortcut1: KeyboardShortcut; shortcut2: KeyboardShortcut }> {
   const conflicts: Array<{
     shortcut1: KeyboardShortcut;
@@ -596,7 +596,7 @@ export function loadShortcuts(): KeyboardShortcut[] {
     // Merge with defaults to ensure new shortcuts are included
     return DEFAULT_SHORTCUTS.map(defaultShortcut => {
       const customShortcut = parsed.find(
-        (s: KeyboardShortcut) => s.id === defaultShortcut.id,
+        (s: KeyboardShortcut) => s.id === defaultShortcut.id
       );
       return customShortcut
         ? { ...defaultShortcut, ...customShortcut }
@@ -638,7 +638,7 @@ export function exportShortcuts(shortcuts: KeyboardShortcut[]): string {
       })),
     },
     null,
-    2,
+    2
   );
 }
 
@@ -646,7 +646,7 @@ export function exportShortcuts(shortcuts: KeyboardShortcut[]): string {
  * Import shortcuts configuration from JSON
  */
 export function importShortcuts(
-  json: string,
+  json: string
 ): KeyboardShortcut[] | { error: string } {
   try {
     const data = JSON.parse(json);
@@ -657,7 +657,7 @@ export function importShortcuts(
 
     const imported = DEFAULT_SHORTCUTS.map(defaultShortcut => {
       const importedShortcut = data.shortcuts.find(
-        (s: { id: string }) => s.id === defaultShortcut.id,
+        (s: { id: string }) => s.id === defaultShortcut.id
       );
       if (importedShortcut) {
         return {

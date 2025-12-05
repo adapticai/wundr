@@ -4,8 +4,21 @@
  */
 'use client';
 
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
   GripVertical,
@@ -141,9 +154,24 @@ const DEFAULT_SECTIONS: SidebarSection[] = [
 ];
 
 const SAMPLE_FAVORITES: FavoriteItem[] = [
-  { id: '1', name: 'general', type: 'channel', icon: <Hash className='h-3 w-3' /> },
-  { id: '2', name: 'random', type: 'channel', icon: <Hash className='h-3 w-3' /> },
-  { id: '3', name: 'Alice Johnson', type: 'dm', icon: <MessageSquare className='h-3 w-3' /> },
+  {
+    id: '1',
+    name: 'general',
+    type: 'channel',
+    icon: <Hash className='h-3 w-3' />,
+  },
+  {
+    id: '2',
+    name: 'random',
+    type: 'channel',
+    icon: <Hash className='h-3 w-3' />,
+  },
+  {
+    id: '3',
+    name: 'Alice Johnson',
+    type: 'dm',
+    icon: <MessageSquare className='h-3 w-3' />,
+  },
 ];
 
 export function SidebarSettings() {
@@ -178,7 +206,7 @@ export function SidebarSettings() {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    }),
+    })
   );
 
   React.useEffect(() => {
@@ -195,7 +223,7 @@ export function SidebarSettings() {
 
   const updatePreference = <K extends keyof SidebarPreferences>(
     key: K,
-    value: SidebarPreferences[K],
+    value: SidebarPreferences[K]
   ) => {
     setPreferences(prev => {
       const updated = { ...prev, [key]: value };
@@ -220,7 +248,7 @@ export function SidebarSettings() {
     const updatedSections = preferences.sections.map(section =>
       section.id === sectionId
         ? { ...section, visible: !section.visible }
-        : section,
+        : section
     );
     updatePreference('sections', updatedSections);
   };
@@ -337,7 +365,9 @@ export function SidebarSettings() {
                         <SortableSectionItem
                           key={section.id}
                           section={section}
-                          onToggleVisibility={() => toggleSectionVisibility(section.id)}
+                          onToggleVisibility={() =>
+                            toggleSectionVisibility(section.id)
+                          }
                         />
                       ))}
                     </div>
@@ -359,7 +389,9 @@ export function SidebarSettings() {
               <CardContent className='space-y-4'>
                 <div className='flex items-center justify-between'>
                   <div className='space-y-0.5'>
-                    <Label htmlFor='show-favorites'>Show Favorites Section</Label>
+                    <Label htmlFor='show-favorites'>
+                      Show Favorites Section
+                    </Label>
                     <p className='text-sm text-muted-foreground'>
                       Display a dedicated section for favorited items
                     </p>
@@ -387,7 +419,9 @@ export function SidebarSettings() {
                             <div className='flex items-center justify-center h-8 w-8 rounded bg-muted'>
                               {item.icon}
                             </div>
-                            <span className='flex-1 text-sm font-medium'>{item.name}</span>
+                            <span className='flex-1 text-sm font-medium'>
+                              {item.name}
+                            </span>
                             <span className='text-xs text-muted-foreground capitalize'>
                               {item.type}
                             </span>
@@ -435,7 +469,9 @@ export function SidebarSettings() {
                     <Separator />
                     <div className='flex items-center justify-between'>
                       <div className='space-y-0.5'>
-                        <Label htmlFor='starred-position'>Starred Position</Label>
+                        <Label htmlFor='starred-position'>
+                          Starred Position
+                        </Label>
                         <p className='text-sm text-muted-foreground'>
                           Where to show starred items
                         </p>
@@ -634,7 +670,9 @@ export function SidebarSettings() {
                     max={400}
                     step={8}
                     value={[preferences.sidebarWidth]}
-                    onValueChange={([value]) => updatePreference('sidebarWidth', value)}
+                    onValueChange={([value]) =>
+                      updatePreference('sidebarWidth', value)
+                    }
                     className='w-full'
                   />
                   <p className='text-xs text-muted-foreground'>
@@ -687,9 +725,9 @@ export function SidebarSettings() {
                       </div>
                       <Select
                         value={preferences.unreadBadgeStyle}
-                        onValueChange={(value: typeof preferences.unreadBadgeStyle) =>
-                          updatePreference('unreadBadgeStyle', value)
-                        }
+                        onValueChange={(
+                          value: typeof preferences.unreadBadgeStyle
+                        ) => updatePreference('unreadBadgeStyle', value)}
                       >
                         <SelectTrigger id='badge-style' className='w-32'>
                           <SelectValue />
@@ -758,7 +796,9 @@ export function SidebarSettings() {
 
                 <div className='flex items-center justify-between'>
                   <div className='space-y-0.5'>
-                    <Label htmlFor='auto-collapse'>Auto-collapse When Inactive</Label>
+                    <Label htmlFor='auto-collapse'>
+                      Auto-collapse When Inactive
+                    </Label>
                     <p className='text-sm text-muted-foreground'>
                       Collapse sidebar after period of inactivity
                     </p>
@@ -798,7 +838,9 @@ export function SidebarSettings() {
 
                 <div className='flex items-center justify-between'>
                   <div className='space-y-0.5'>
-                    <Label htmlFor='remember-state'>Remember Collapse State</Label>
+                    <Label htmlFor='remember-state'>
+                      Remember Collapse State
+                    </Label>
                     <p className='text-sm text-muted-foreground'>
                       Restore sidebar state on page reload
                     </p>
@@ -858,9 +900,7 @@ export function SidebarSettings() {
                 <Eye className='h-5 w-5' />
                 <CardTitle>Live Preview</CardTitle>
               </div>
-              <CardDescription>
-                See how your sidebar will look
-              </CardDescription>
+              <CardDescription>See how your sidebar will look</CardDescription>
             </CardHeader>
             <CardContent>
               <SidebarPreview preferences={preferences} />
@@ -877,7 +917,10 @@ interface SortableSectionItemProps {
   onToggleVisibility: () => void;
 }
 
-function SortableSectionItem({ section, onToggleVisibility }: SortableSectionItemProps) {
+function SortableSectionItem({
+  section,
+  onToggleVisibility,
+}: SortableSectionItemProps) {
   const {
     attributes,
     listeners,
@@ -899,7 +942,7 @@ function SortableSectionItem({ section, onToggleVisibility }: SortableSectionIte
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg border bg-card',
         isDragging && 'opacity-50 cursor-grabbing',
-        !section.sortable && 'opacity-75',
+        !section.sortable && 'opacity-75'
       )}
     >
       {section.sortable && (
@@ -925,7 +968,7 @@ function SortableSectionItem({ section, onToggleVisibility }: SortableSectionIte
           'p-2 rounded-md transition-colors',
           section.visible
             ? 'text-foreground hover:bg-muted'
-            : 'text-muted-foreground hover:bg-muted',
+            : 'text-muted-foreground hover:bg-muted'
         )}
         title={section.visible ? 'Hide section' : 'Show section'}
       >
@@ -958,12 +1001,17 @@ function SidebarPreview({ preferences }: SidebarPreviewProps) {
       <div
         className={cn(
           'rounded-lg border bg-background overflow-hidden',
-          preferences.compactMode ? 'p-2' : 'p-3',
+          preferences.compactMode ? 'p-2' : 'p-3'
         )}
         style={{ minHeight: '400px' }}
       >
         {/* Header */}
-        <div className={cn('flex items-center gap-2 mb-4', preferences.compactMode ? 'mb-2' : 'mb-4')}>
+        <div
+          className={cn(
+            'flex items-center gap-2 mb-4',
+            preferences.compactMode ? 'mb-2' : 'mb-4'
+          )}
+        >
           <div className='h-8 w-8 rounded-lg bg-primary' />
           <div className='flex-1'>
             <div className='h-3 w-24 rounded bg-foreground mb-1' />
@@ -978,43 +1026,58 @@ function SidebarPreview({ preferences }: SidebarPreviewProps) {
           {visibleSections.map((section, index) => (
             <div key={section.id}>
               {/* Section Header */}
-              <div className={cn(
-                'flex items-center gap-2 mb-2',
-                preferences.compactMode ? 'text-xs' : 'text-sm',
-              )}>
+              <div
+                className={cn(
+                  'flex items-center gap-2 mb-2',
+                  preferences.compactMode ? 'text-xs' : 'text-sm'
+                )}
+              >
                 <ChevronRight className='h-3 w-3 text-muted-foreground' />
                 <span className='font-semibold text-muted-foreground uppercase tracking-wider'>
                   {section.name}
                 </span>
                 {preferences.showSectionCounts && (
                   <span className='ml-auto text-xs text-muted-foreground'>
-                    {section.id === 'channels' ? 12 : section.id === 'direct-messages' ? 8 : 3}
+                    {section.id === 'channels'
+                      ? 12
+                      : section.id === 'direct-messages'
+                        ? 8
+                        : 3}
                   </span>
                 )}
               </div>
 
               {/* Section Items */}
-              <div className={cn('space-y-1', preferences.compactMode && 'space-y-0.5')}>
+              <div
+                className={cn(
+                  'space-y-1',
+                  preferences.compactMode && 'space-y-0.5'
+                )}
+              >
                 {[1, 2, 3].slice(0, section.id === 'starred' ? 2 : 3).map(i => (
                   <div
                     key={i}
                     className={cn(
                       'flex items-center gap-2 rounded px-2 py-1.5 bg-muted/50',
-                      preferences.compactMode && 'py-1',
+                      preferences.compactMode && 'py-1'
                     )}
                   >
                     <div className='h-1 w-1 rounded-full bg-muted-foreground/50' />
-                    <div className={cn(
-                      'h-2 flex-1 rounded bg-muted-foreground/30',
-                      i === 1 ? 'w-20' : i === 2 ? 'w-24' : 'w-16',
-                    )} />
+                    <div
+                      className={cn(
+                        'h-2 flex-1 rounded bg-muted-foreground/30',
+                        i === 1 ? 'w-20' : i === 2 ? 'w-24' : 'w-16'
+                      )}
+                    />
                     {preferences.showUnreadBadges && i === 1 && (
-                      <div className={cn(
-                        'flex items-center justify-center rounded-full bg-primary',
-                        preferences.unreadBadgeStyle === 'dot'
-                          ? 'h-2 w-2'
-                          : 'h-4 min-w-4 px-1',
-                      )}>
+                      <div
+                        className={cn(
+                          'flex items-center justify-center rounded-full bg-primary',
+                          preferences.unreadBadgeStyle === 'dot'
+                            ? 'h-2 w-2'
+                            : 'h-4 min-w-4 px-1'
+                        )}
+                      >
                         {preferences.unreadBadgeStyle !== 'dot' && (
                           <span className='text-[8px] text-primary-foreground font-medium'>
                             5
@@ -1025,7 +1088,9 @@ function SidebarPreview({ preferences }: SidebarPreviewProps) {
                   </div>
                 ))}
               </div>
-              {index < visibleSections.length - 1 && <Separator className='my-3' />}
+              {index < visibleSections.length - 1 && (
+                <Separator className='my-3' />
+              )}
             </div>
           ))}
         </div>
@@ -1033,10 +1098,12 @@ function SidebarPreview({ preferences }: SidebarPreviewProps) {
         {/* User Section */}
         <div className='mt-auto pt-4'>
           <Separator className='mb-3' />
-          <div className={cn(
-            'flex items-center gap-2 p-2 rounded bg-muted/50',
-            preferences.compactMode && 'p-1.5',
-          )}>
+          <div
+            className={cn(
+              'flex items-center gap-2 p-2 rounded bg-muted/50',
+              preferences.compactMode && 'p-1.5'
+            )}
+          >
             <div className='relative'>
               <div className='h-8 w-8 rounded-full bg-primary' />
               {preferences.showUserPresence && (
@@ -1072,7 +1139,9 @@ function SidebarPreview({ preferences }: SidebarPreviewProps) {
         {preferences.autoCollapseInactive && (
           <div className='flex justify-between text-primary'>
             <span>Auto-collapse:</span>
-            <span className='font-semibold'>{preferences.autoCollapseDelay}m</span>
+            <span className='font-semibold'>
+              {preferences.autoCollapseDelay}m
+            </span>
           </div>
         )}
       </div>

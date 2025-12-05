@@ -80,7 +80,7 @@ export function Leaderboard({
             key={`${item.id}-${index}`}
             className={clsx(
               'flex items-center gap-3 p-2 rounded-lg',
-              'hover:bg-muted transition-colors cursor-default',
+              'hover:bg-muted transition-colors cursor-default'
             )}
           >
             {showRank && (
@@ -93,7 +93,7 @@ export function Leaderboard({
                     'bg-stone-400/20 text-stone-600 dark:text-stone-400',
                   index === 2 &&
                     'bg-orange-600/20 text-orange-700 dark:text-orange-400',
-                  index > 2 && 'bg-muted text-muted-foreground',
+                  index > 2 && 'bg-muted text-muted-foreground'
                 )}
                 title={`Rank ${index + 1}`}
               >

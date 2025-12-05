@@ -26,7 +26,6 @@ import {
 
 import type { z } from 'zod';
 
-
 /**
  * Validation error type
  */
@@ -62,9 +61,13 @@ export interface UseSettingsValidationReturn {
   /** Validate general settings section */
   validateGeneral: (settings: Partial<GeneralSettings>) => ValidationResult;
   /** Validate notification preferences section */
-  validateNotifications: (settings: Partial<NotificationPreferences>) => ValidationResult;
+  validateNotifications: (
+    settings: Partial<NotificationPreferences>
+  ) => ValidationResult;
   /** Validate appearance settings section */
-  validateAppearance: (settings: Partial<AppearanceSettings>) => ValidationResult;
+  validateAppearance: (
+    settings: Partial<AppearanceSettings>
+  ) => ValidationResult;
   /** Validate privacy settings section */
   validatePrivacy: (settings: Partial<PrivacySettings>) => ValidationResult;
   /** Current validation errors */
@@ -123,7 +126,7 @@ export interface UseSettingsValidationReturn {
  * ```
  */
 export function useSettingsValidation(
-  options: UseSettingsValidationOptions = {},
+  options: UseSettingsValidationOptions = {}
 ): UseSettingsValidationReturn {
   const [errors, setErrors] = useState<ValidationError[]>([]);
 
@@ -132,12 +135,12 @@ export function useSettingsValidation(
   // Convert Zod errors to ValidationError array
   const parseZodErrors = useCallback(
     (zodError: z.ZodError, prefix = ''): ValidationError[] => {
-      return zodError.errors.map((err) => ({
+      return zodError.errors.map(err => ({
         field: prefix ? `${prefix}.${err.path.join('.')}` : err.path.join('.'),
         message: err.message,
       }));
     },
-    [],
+    []
   );
 
   // Validate complete settings object
@@ -154,7 +157,7 @@ export function useSettingsValidation(
       setErrors(validationErrors);
       return { isValid: false, errors: validationErrors };
     },
-    [parseZodErrors],
+    [parseZodErrors]
   );
 
   // Validate general settings
@@ -169,7 +172,7 @@ export function useSettingsValidation(
       const validationErrors = parseZodErrors(result.error, 'general');
       return { isValid: false, errors: validationErrors };
     },
-    [parseZodErrors],
+    [parseZodErrors]
   );
 
   // Validate notification preferences
@@ -184,7 +187,7 @@ export function useSettingsValidation(
       const validationErrors = parseZodErrors(result.error, 'notifications');
       return { isValid: false, errors: validationErrors };
     },
-    [parseZodErrors],
+    [parseZodErrors]
   );
 
   // Validate appearance settings
@@ -199,7 +202,7 @@ export function useSettingsValidation(
       const validationErrors = parseZodErrors(result.error, 'appearance');
       return { isValid: false, errors: validationErrors };
     },
-    [parseZodErrors],
+    [parseZodErrors]
   );
 
   // Validate privacy settings
@@ -214,7 +217,7 @@ export function useSettingsValidation(
       const validationErrors = parseZodErrors(result.error, 'privacy');
       return { isValid: false, errors: validationErrors };
     },
-    [parseZodErrors],
+    [parseZodErrors]
   );
 
   // Clear all errors
@@ -225,18 +228,18 @@ export function useSettingsValidation(
   // Get error for specific field
   const getFieldError = useCallback(
     (field: string): string | null => {
-      const error = errors.find((err) => err.field === field);
+      const error = errors.find(err => err.field === field);
       return error?.message ?? null;
     },
-    [errors],
+    [errors]
   );
 
   // Check if field has error
   const hasFieldError = useCallback(
     (field: string): boolean => {
-      return errors.some((err) => err.field === field);
+      return errors.some(err => err.field === field);
     },
-    [errors],
+    [errors]
   );
 
   return {

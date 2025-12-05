@@ -14,8 +14,6 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-
-
 // Re-export React import for the useEffect hook
 
 export interface KPITrend {
@@ -60,11 +58,11 @@ export interface KPICardProps {
 
 function formatValue(
   value: number | string,
-  format: KPICardProps['format'] = 'number',
+  format: KPICardProps['format'] = 'number'
 ): string {
   if (typeof value === 'string') {
-return value;
-}
+    return value;
+  }
 
   switch (format) {
     case 'currency':
@@ -78,22 +76,22 @@ return value;
       return `${value.toFixed(1)}%`;
     case 'duration':
       if (value < 60) {
-return `${Math.round(value)}s`;
-}
+        return `${Math.round(value)}s`;
+      }
       if (value < 3600) {
-return `${Math.floor(value / 60)}m ${Math.round(value % 60)}s`;
-}
+        return `${Math.floor(value / 60)}m ${Math.round(value % 60)}s`;
+      }
       return `${Math.floor(value / 3600)}h ${Math.floor((value % 3600) / 60)}m`;
     case 'compact':
       if (value < 1000) {
-return value.toLocaleString();
-}
+        return value.toLocaleString();
+      }
       if (value < 1000000) {
-return `${(value / 1000).toFixed(1)}K`;
-}
+        return `${(value / 1000).toFixed(1)}K`;
+      }
       if (value < 1000000000) {
-return `${(value / 1000000).toFixed(1)}M`;
-}
+        return `${(value / 1000000).toFixed(1)}M`;
+      }
       return `${(value / 1000000000).toFixed(1)}B`;
     default:
       return value.toLocaleString();
@@ -163,15 +161,16 @@ export function KPICard({
     );
   }
 
-  const targetProgress = target && typeof value === 'number'
-    ? Math.min((value / target) * 100, 100)
-    : null;
+  const targetProgress =
+    target && typeof value === 'number'
+      ? Math.min((value / target) * 100, 100)
+      : null;
 
   return (
     <Card
       className={cn(
         'overflow-hidden transition-all hover:shadow-md',
-        className,
+        className
       )}
     >
       <CardContent className='p-6'>
@@ -201,7 +200,7 @@ export function KPICard({
             <div
               className={cn(
                 'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0',
-                status ? getStatusColor(status) : 'bg-primary/10 text-primary',
+                status ? getStatusColor(status) : 'bg-primary/10 text-primary'
               )}
             >
               {icon}
@@ -230,7 +229,7 @@ export function KPICard({
                 'flex items-center gap-1 font-medium',
                 trend.isPositive
                   ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400'
-                  : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-400',
+                  : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-400'
               )}
             >
               {getTrendIcon(trend.direction)}
@@ -258,7 +257,7 @@ export function KPICard({
                       ? 'bg-blue-500'
                       : targetProgress >= 50
                         ? 'bg-amber-500'
-                        : 'bg-rose-500',
+                        : 'bg-rose-500'
                 )}
                 style={{ width: `${targetProgress}%` }}
               />

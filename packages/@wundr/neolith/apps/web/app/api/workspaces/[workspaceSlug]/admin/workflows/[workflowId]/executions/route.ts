@@ -30,8 +30,8 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -56,7 +56,7 @@ return null;
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -71,7 +71,7 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or insufficient permissions' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -84,7 +84,10 @@ export async function GET(
     });
 
     if (!workflow || workflow.workspaceId !== workspaceId) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Workflow not found' },
+        { status: 404 }
+      );
     }
 
     // Get executions
@@ -105,10 +108,13 @@ export async function GET(
 
     return NextResponse.json({ executions });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/admin/workflows/:workflowId/executions]', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/admin/workflows/:workflowId/executions]',
+      error
+    );
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -111,10 +111,10 @@ export function AnalyticsDashboard({
       const [metricsRes, messagesTrend, tasksTrend] = await Promise.all([
         fetch(`/api/workspaces/${workspaceId}/analytics?${queryParams}`),
         fetch(
-          `/api/workspaces/${workspaceId}/analytics/trends?metric=messages&period=${granularity}`,
+          `/api/workspaces/${workspaceId}/analytics/trends?metric=messages&period=${granularity}`
         ),
         fetch(
-          `/api/workspaces/${workspaceId}/analytics/trends?metric=tasks&period=${granularity}`,
+          `/api/workspaces/${workspaceId}/analytics/trends?metric=tasks&period=${granularity}`
         ),
       ]);
 
@@ -163,8 +163,8 @@ export function AnalyticsDashboard({
   // Close export menu when clicking outside
   useEffect(() => {
     if (!showExportMenu) {
-return;
-}
+      return;
+    }
 
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -187,7 +187,7 @@ return;
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ granularity, format }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -316,7 +316,7 @@ return;
                   granularity === g
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground hover:bg-muted/80',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                  'disabled:opacity-50 disabled:cursor-not-allowed'
                 )}
               >
                 {g.charAt(0).toUpperCase() + g.slice(1)}
@@ -341,7 +341,7 @@ return;
               className={clsx(
                 'px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
                 'bg-primary text-primary-foreground hover:bg-primary/90',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
+                'disabled:opacity-50 disabled:cursor-not-allowed'
               )}
             >
               <DownloadIcon />
@@ -381,11 +381,13 @@ return;
             className={clsx(
               'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
               'bg-muted text-muted-foreground hover:bg-muted/80',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
             title='Refresh data'
           >
-            <RefreshIcon className={clsx('w-4 h-4', isLoading && 'animate-spin')} />
+            <RefreshIcon
+              className={clsx('w-4 h-4', isLoading && 'animate-spin')}
+            />
           </button>
         </div>
       </div>
@@ -576,7 +578,7 @@ return;
                     ([status, count]) => ({
                       label: status,
                       value: count,
-                    }),
+                    })
                   ) || []
                 }
               />

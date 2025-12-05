@@ -61,7 +61,7 @@ interface QuickStatusSwitcherProps {
   };
   onStatusChange: (
     status: StatusOption,
-    clearAfter?: { value: number; unit: 'minutes' | 'hours' },
+    clearAfter?: { value: number; unit: 'minutes' | 'hours' }
   ) => Promise<void>;
   onClearStatus: () => Promise<void>;
   onCustomStatus: () => void;
@@ -103,7 +103,7 @@ export function QuickStatusSwitcher({
   };
 
   const currentStatusOption = STATUS_OPTIONS.find(
-    opt => opt.type === currentStatus?.type,
+    opt => opt.type === currentStatus?.type
   );
   const StatusIcon = currentStatusOption?.icon || Circle;
 
@@ -111,20 +111,25 @@ export function QuickStatusSwitcher({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
-          size="sm"
-          className="gap-2"
+          variant='ghost'
+          size='sm'
+          className='gap-2'
           disabled={isUpdating}
         >
           <StatusIcon
-            className={cn('h-4 w-4', currentStatusOption?.color || 'text-muted-foreground')}
+            className={cn(
+              'h-4 w-4',
+              currentStatusOption?.color || 'text-muted-foreground'
+            )}
           />
-          <span className="text-sm">
-            {currentStatus?.message || currentStatusOption?.label || 'Set status'}
+          <span className='text-sm'>
+            {currentStatus?.message ||
+              currentStatusOption?.label ||
+              'Set status'}
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
+      <DropdownMenuContent align='end' className='w-64'>
         <DropdownMenuLabel>Quick status</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
@@ -136,14 +141,14 @@ export function QuickStatusSwitcher({
             <DropdownMenuItem
               key={status.type}
               onClick={() => handleStatusChange(status)}
-              className="flex items-center gap-3"
+              className='flex items-center gap-3'
             >
               <Icon className={cn('h-4 w-4', status.color)} />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{status.label}</span>
+              <div className='flex-1'>
+                <div className='flex items-center gap-2'>
+                  <span className='font-medium'>{status.label}</span>
                   {isActive && (
-                    <CheckCircle2 className="h-3 w-3 text-primary" />
+                    <CheckCircle2 className='h-3 w-3 text-primary' />
                   )}
                 </div>
               </div>
@@ -154,15 +159,15 @@ export function QuickStatusSwitcher({
         <DropdownMenuSeparator />
 
         <DropdownMenuItem onClick={onCustomStatus}>
-          <span className="text-sm">Set custom status...</span>
+          <span className='text-sm'>Set custom status...</span>
         </DropdownMenuItem>
 
         {currentStatus && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleClearStatus}>
-              <XCircle className="h-4 w-4 mr-2" />
-              <span className="text-sm">Clear status</span>
+              <XCircle className='h-4 w-4 mr-2' />
+              <span className='text-sm'>Clear status</span>
             </DropdownMenuItem>
           </>
         )}

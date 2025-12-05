@@ -48,14 +48,14 @@ export function OrgChart({
     // Apply discipline filter
     if (selectedDisciplines.length > 0) {
       filtered = filtered.filter(orch =>
-        selectedDisciplines.includes(orch.discipline),
+        selectedDisciplines.includes(orch.discipline)
       );
     }
 
     // Apply status filter
     if (selectedStatuses.length > 0) {
       filtered = filtered.filter(orch =>
-        selectedStatuses.includes(orch.status),
+        selectedStatuses.includes(orch.status)
       );
     }
 
@@ -67,7 +67,7 @@ export function OrgChart({
           orch.name.toLowerCase().includes(query) ||
           orch.title.toLowerCase().includes(query) ||
           orch.discipline.toLowerCase().includes(query) ||
-          orch.status.toLowerCase().includes(query),
+          orch.status.toLowerCase().includes(query)
       );
     }
 
@@ -86,13 +86,13 @@ export function OrgChart({
     setSelectedDisciplines(prev =>
       prev.includes(discipline)
         ? prev.filter(d => d !== discipline)
-        : [...prev, discipline],
+        : [...prev, discipline]
     );
   };
 
   const handleStatusToggle = (status: string) => {
     setSelectedStatuses(prev =>
-      prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status],
+      prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status]
     );
   };
 
@@ -138,7 +138,7 @@ export function OrgChart({
         className={cn(
           'rounded-lg border border-stone-800 bg-stone-950 p-6',
           isMobile && 'overflow-x-auto',
-          isMobile && 'snap-x snap-mandatory',
+          isMobile && 'snap-x snap-mandatory'
         )}
       >
         {filteredOrchestrators.length === 0 ? (
@@ -205,7 +205,7 @@ export function OrgChart({
                     ))}
                   </div>
                 </div>
-              ),
+              )
             )}
           </div>
         )}

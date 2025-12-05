@@ -28,8 +28,8 @@ interface RouteContext {
  */
 function arrayToCSV(data: Record<string, unknown>[]): string {
   if (data.length === 0) {
-return '';
-}
+    return '';
+  }
 
   // Get headers from first object
   const headers = Object.keys(data[0]);
@@ -39,18 +39,20 @@ return '';
 
   // Create data rows
   const dataRows = data.map(row => {
-    return headers.map(header => {
-      const value = row[header];
+    return headers
+      .map(header => {
+        const value = row[header];
 
-      // Handle different types
-      if (value === null || value === undefined) {
-        return '""';
-      }
-      if (typeof value === 'object') {
-        return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
-      }
-      return `"${String(value).replace(/"/g, '""')}"`;
-    }).join(',');
+        // Handle different types
+        if (value === null || value === undefined) {
+          return '""';
+        }
+        if (typeof value === 'object') {
+          return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+        }
+        return `"${String(value).replace(/"/g, '""')}"`;
+      })
+      .join(',');
   });
 
   return [headerRow, ...dataRows].join('\n');
@@ -77,7 +79,7 @@ return '';
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authentication check
@@ -85,7 +87,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -105,7 +107,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied', code: 'FORBIDDEN' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -116,7 +118,7 @@ export async function GET(
           error: 'Only admins and owners can export audit logs',
           code: 'FORBIDDEN',
         },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -138,7 +140,7 @@ export async function GET(
       if (isNaN(startDate.getTime())) {
         return NextResponse.json(
           { error: 'Invalid startDate format', code: 'VALIDATION_ERROR' },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -148,7 +150,7 @@ export async function GET(
       if (isNaN(endDate.getTime())) {
         return NextResponse.json(
           { error: 'Invalid endDate format', code: 'VALIDATION_ERROR' },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -190,11 +192,11 @@ export async function GET(
     if (startDate || endDate) {
       where.createdAt = {};
       if (startDate) {
-where.createdAt.gte = startDate;
-}
+        where.createdAt.gte = startDate;
+      }
       if (endDate) {
-where.createdAt.lte = endDate;
-}
+        where.createdAt.lte = endDate;
+      }
     }
 
     // Fetch all matching logs (no pagination for export)
@@ -220,7 +222,9 @@ where.createdAt.lte = endDate;
 
     // Fetch actor details
     const userActorIds = logs
-      .filter(log => log.actorType === 'user' || log.actorType === 'orchestrator')
+      .filter(
+        log => log.actorType === 'user' || log.actorType === 'orchestrator'
+      )
       .map(log => log.actorId);
 
     const uniqueActorIds = [...new Set(userActorIds)];
@@ -266,11 +270,11 @@ where.createdAt.lte = endDate;
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceSlug/audit-log/export] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       { error: 'Failed to export audit log', code: 'INTERNAL_ERROR' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

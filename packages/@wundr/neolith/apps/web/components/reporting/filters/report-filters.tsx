@@ -62,7 +62,7 @@ export function ReportFilters({
 
   const handleReset = () => {
     const resetValues: Record<string, unknown> = {};
-    filters.forEach((filter) => {
+    filters.forEach(filter => {
       resetValues[filter.id] = undefined;
     });
     onChange(resetValues);
@@ -70,7 +70,8 @@ export function ReportFilters({
   };
 
   const activeFilterCount = React.useMemo(() => {
-    return Object.values(values).filter((v) => v !== undefined && v !== '').length;
+    return Object.values(values).filter(v => v !== undefined && v !== '')
+      .length;
   }, [values]);
 
   const renderFilter = (filter: ReportFilter) => {
@@ -83,7 +84,7 @@ export function ReportFilters({
             id={filter.id}
             placeholder={`Enter ${filter.label.toLowerCase()}`}
             value={(value as string) || ''}
-            onChange={(e) => handleValueChange(filter.id, e.target.value)}
+            onChange={e => handleValueChange(filter.id, e.target.value)}
           />
         );
 
@@ -91,12 +92,10 @@ export function ReportFilters({
         return (
           <Input
             id={filter.id}
-            type="number"
+            type='number'
             placeholder={`Enter ${filter.label.toLowerCase()}`}
             value={(value as number) || ''}
-            onChange={(e) =>
-              handleValueChange(filter.id, Number(e.target.value))
-            }
+            onChange={e => handleValueChange(filter.id, Number(e.target.value))}
           />
         );
 
@@ -104,13 +103,15 @@ export function ReportFilters({
         return (
           <Select
             value={(value as string) || ''}
-            onValueChange={(v) => handleValueChange(filter.id, v)}
+            onValueChange={v => handleValueChange(filter.id, v)}
           >
             <SelectTrigger id={filter.id}>
-              <SelectValue placeholder={`Select ${filter.label.toLowerCase()}`} />
+              <SelectValue
+                placeholder={`Select ${filter.label.toLowerCase()}`}
+              />
             </SelectTrigger>
             <SelectContent>
-              {filter.options?.map((option) => (
+              {filter.options?.map(option => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -123,8 +124,8 @@ export function ReportFilters({
         return (
           <DateRangePicker
             value={value as any}
-            onChange={(range) => handleValueChange(filter.id, range)}
-            className="w-full"
+            onChange={range => handleValueChange(filter.id, range)}
+            className='w-full'
           />
         );
 
@@ -135,33 +136,33 @@ export function ReportFilters({
 
   return (
     <Card className={cn('', className)}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            <CardTitle className="text-lg">Filters</CardTitle>
+      <CardHeader className='pb-3'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            <Filter className='h-4 w-4' />
+            <CardTitle className='text-lg'>Filters</CardTitle>
             {activeFilterCount > 0 && (
-              <Badge variant="secondary">{activeFilterCount}</Badge>
+              <Badge variant='secondary'>{activeFilterCount}</Badge>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             {activeFilterCount > 0 && (
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={handleReset}
-                className="h-8"
+                className='h-8'
               >
-                <X className="h-3 w-3 mr-1" />
+                <X className='h-3 w-3 mr-1' />
                 Clear
               </Button>
             )}
             {collapsible && (
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="h-8"
+                className='h-8'
               >
                 {isExpanded ? 'Collapse' : 'Expand'}
               </Button>
@@ -174,13 +175,13 @@ export function ReportFilters({
       </CardHeader>
       {isExpanded && (
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filters.map((filter) => (
-              <div key={filter.id} className="space-y-2">
+          <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+            {filters.map(filter => (
+              <div key={filter.id} className='space-y-2'>
                 <Label htmlFor={filter.id}>
                   {filter.label}
                   {filter.required && (
-                    <span className="text-destructive ml-1">*</span>
+                    <span className='text-destructive ml-1'>*</span>
                   )}
                 </Label>
                 {renderFilter(filter)}
@@ -188,7 +189,7 @@ export function ReportFilters({
             ))}
           </div>
           {onApply && (
-            <div className="flex justify-end gap-2 mt-4">
+            <div className='flex justify-end gap-2 mt-4'>
               <Button onClick={onApply}>Apply Filters</Button>
             </div>
           )}

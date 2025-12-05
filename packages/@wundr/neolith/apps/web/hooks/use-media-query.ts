@@ -74,7 +74,7 @@ export function useIsMobile(): boolean {
  */
 export function useIsTablet(): boolean {
   return useMediaQuery(
-    `(min-width: ${BREAKPOINTS.md}px) and (max-width: ${BREAKPOINTS.lg - 1}px)`,
+    `(min-width: ${BREAKPOINTS.md}px) and (max-width: ${BREAKPOINTS.lg - 1}px)`
   );
 }
 
@@ -154,7 +154,7 @@ export function useOrientation(): 'portrait' | 'landscape' | null {
       setOrientation(
         window.matchMedia('(orientation: portrait)').matches
           ? 'portrait'
-          : 'landscape',
+          : 'landscape'
       );
     };
 

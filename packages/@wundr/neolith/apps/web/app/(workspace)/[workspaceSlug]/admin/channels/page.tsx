@@ -69,15 +69,15 @@ export default function AdminChannelsPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDefaultsModal, setShowDefaultsModal] = useState(false);
   const [editingChannel, setEditingChannel] = useState<ChannelInfo | null>(
-    null,
+    null
   );
   const [channelToDelete, setChannelToDelete] = useState<string | null>(null);
   const [selectedChannels, setSelectedChannels] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [bulkOperation, setBulkOperation] = useState<BulkOperation | null>(
-    null,
+    null
   );
 
   const {
@@ -90,7 +90,8 @@ export default function AdminChannelsPage() {
     bulkOperation: performBulkOperation,
   } = useAdminChannels(workspaceSlug, {
     type: filterType === 'all' ? undefined : filterType,
-    archived: filterArchived === 'all' ? undefined : filterArchived === 'archived',
+    archived:
+      filterArchived === 'all' ? undefined : filterArchived === 'archived',
     search: searchQuery || undefined,
   });
 
@@ -119,25 +120,25 @@ export default function AdminChannelsPage() {
       await createChannel(data);
       setShowCreateModal(false);
     },
-    [createChannel],
+    [createChannel]
   );
 
   const handleUpdateChannel = useCallback(
     async (updates: Partial<ChannelInfo>) => {
       if (!editingChannel) {
-return;
-}
+        return;
+      }
       await updateChannel(editingChannel.id, updates);
       setShowEditModal(false);
       setEditingChannel(null);
     },
-    [editingChannel, updateChannel],
+    [editingChannel, updateChannel]
   );
 
   const handleDeleteChannel = useCallback(async () => {
     if (!channelToDelete) {
-return;
-}
+      return;
+    }
     await deleteChannel(channelToDelete);
     setChannelToDelete(null);
   }, [channelToDelete, deleteChannel]);
@@ -145,14 +146,14 @@ return;
   const handleBulkOperation = useCallback(
     async (operation: BulkOperation, data?: { type?: ChannelType }) => {
       if (selectedChannels.size === 0) {
-return;
-}
+        return;
+      }
       await performBulkOperation(Array.from(selectedChannels), operation, data);
       setSelectedChannels(new Set());
       setShowBulkDialog(false);
       setBulkOperation(null);
     },
-    [selectedChannels, performBulkOperation],
+    [selectedChannels, performBulkOperation]
   );
 
   const toggleChannelSelection = useCallback((channelId: string) => {
@@ -202,7 +203,7 @@ return;
             onClick={() => setShowDefaultsModal(true)}
             className={cn(
               'inline-flex items-center gap-2 rounded-md border border-input px-4 py-2',
-              'text-sm font-medium hover:bg-accent hover:text-accent-foreground',
+              'text-sm font-medium hover:bg-accent hover:text-accent-foreground'
             )}
           >
             <SettingsIcon className='h-4 w-4' />
@@ -213,7 +214,7 @@ return;
             onClick={() => setShowCreateModal(true)}
             className={cn(
               'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2',
-              'text-sm font-medium text-primary-foreground hover:bg-primary/90',
+              'text-sm font-medium text-primary-foreground hover:bg-primary/90'
             )}
           >
             <PlusIcon className='h-4 w-4' />
@@ -236,7 +237,7 @@ return;
                   'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
                   filterType === option.value
                     ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground',
+                    : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
                 )}
               >
                 {option.label}
@@ -255,7 +256,7 @@ return;
                   'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
                   filterArchived === option.value
                     ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground',
+                    : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
                 )}
               >
                 {option.label}
@@ -275,7 +276,7 @@ return;
             className={cn(
               'w-full rounded-md border border-input bg-background py-2 pl-9 pr-4',
               'text-sm placeholder:text-muted-foreground',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
             )}
           />
         </div>
@@ -481,7 +482,7 @@ function ChannelRow({
       className={cn(
         'hover:bg-muted/50',
         channel.isArchived && 'opacity-60',
-        isSelected && 'bg-muted/30',
+        isSelected && 'bg-muted/30'
       )}
     >
       <td className='px-4 py-3'>
@@ -641,7 +642,10 @@ function ChannelTypeBadge({ type }: { type: ChannelType }) {
 
   return (
     <span
-      className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', className)}
+      className={cn(
+        'rounded-full px-2.5 py-0.5 text-xs font-medium',
+        className
+      )}
     >
       {label}
     </span>
@@ -790,8 +794,8 @@ function EditChannelModal({
   };
 
   if (!channel) {
-return null;
-}
+    return null;
+  }
 
   return (
     <ResponsiveModal open={open} onOpenChange={onClose}>
@@ -891,11 +895,13 @@ interface DefaultSettingsModalProps {
     };
   } | null;
   onClose: () => void;
-  onUpdate: (updates: Partial<{
-    autoJoinPublic: boolean;
-    allowMemberCreation: boolean;
-    requireApproval: boolean;
-  }>) => Promise<void>;
+  onUpdate: (
+    updates: Partial<{
+      autoJoinPublic: boolean;
+      allowMemberCreation: boolean;
+      requireApproval: boolean;
+    }>
+  ) => Promise<void>;
 }
 
 function DefaultSettingsModal({
@@ -1013,8 +1019,8 @@ function BulkOperationDialog({
 
   const handleConfirm = () => {
     if (!operation) {
-return;
-}
+      return;
+    }
     if (operation === 'change_visibility') {
       onConfirm(operation, { type: newType });
     } else {
@@ -1062,7 +1068,10 @@ return;
 
         {operation === 'change_visibility' && (
           <div className='py-4'>
-            <Select value={newType} onValueChange={v => setNewType(v as ChannelType)}>
+            <Select
+              value={newType}
+              onValueChange={v => setNewType(v as ChannelType)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -1079,7 +1088,7 @@ return;
           <AlertDialogAction
             onClick={handleConfirm}
             className={cn(
-              operation === 'delete' && 'bg-red-600 hover:bg-red-700',
+              operation === 'delete' && 'bg-red-600 hover:bg-red-700'
             )}
           >
             Confirm

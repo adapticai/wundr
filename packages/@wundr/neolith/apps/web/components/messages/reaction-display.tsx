@@ -83,7 +83,7 @@ const ReactionBadge = memo(function ReactionBadge({
           'flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
           reaction.hasReacted
             ? 'border-primary/50 bg-primary/10 text-primary hover:border-primary'
-            : 'border-border bg-muted/50 hover:border-muted-foreground/50 hover:bg-muted',
+            : 'border-border bg-muted/50 hover:border-muted-foreground/50 hover:bg-muted'
         )}
         aria-label={`${reaction.emoji} reaction, ${reaction.count} ${reaction.count === 1 ? 'person' : 'people'}`}
       >

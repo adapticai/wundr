@@ -9,13 +9,7 @@ import { useFileUpload } from '@/hooks/use-file-upload';
 import { FilePreview, UploadPreview } from '@/components/messages/file-preview';
 
 function MyMessageComponent() {
-  const {
-    uploads,
-    addFiles,
-    removeFile,
-    uploadFile,
-    uploadAll,
-  } = useFileUpload({
+  const { uploads, addFiles, removeFile, uploadFile, uploadAll } = useFileUpload({
     workspaceId: 'workspace_123',
     channelId: 'channel_456',
     maxFileSize: 10 * 1024 * 1024, // 10MB
@@ -67,7 +61,7 @@ import { FilePreview } from '@/components/messages/file-preview';
 
 function MessageAttachments({ attachments }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className='flex flex-wrap gap-2'>
       {attachments.map(attachment => (
         <FilePreview
           key={attachment.id}
@@ -91,6 +85,7 @@ function MessageAttachments({ attachments }) {
 ## API Endpoints
 
 ### Upload File
+
 ```
 POST /api/files/upload
 Content-Type: multipart/form-data
@@ -116,6 +111,7 @@ Response: {
 ```
 
 ### Send Message with Attachments
+
 ```
 POST /api/channels/{channelId}/messages
 Content-Type: application/json
@@ -144,6 +140,7 @@ Response: {
 ## Component Props Reference
 
 ### FileUploadButton
+
 ```typescript
 interface FileUploadButtonProps {
   onFilesSelected: (files: File[]) => void;
@@ -157,6 +154,7 @@ interface FileUploadButtonProps {
 ```
 
 ### FilePreview
+
 ```typescript
 interface FilePreviewProps {
   attachment: {
@@ -176,6 +174,7 @@ interface FilePreviewProps {
 ```
 
 ### UploadPreview
+
 ```typescript
 interface UploadPreviewProps {
   file: File;
@@ -188,24 +187,26 @@ interface UploadPreviewProps {
 
 ## File Size Limits
 
-| Type      | Limit  |
-|-----------|--------|
-| Image     | 10MB   |
-| Video     | 100MB  |
-| Audio     | 50MB   |
-| Document  | 25MB   |
-| Archive   | 50MB   |
-| Default   | 100MB  |
+| Type     | Limit |
+| -------- | ----- |
+| Image    | 10MB  |
+| Video    | 100MB |
+| Audio    | 50MB  |
+| Document | 25MB  |
+| Archive  | 50MB  |
+| Default  | 100MB |
 
 ## Supported File Types
 
 ### Images
+
 - JPEG (.jpg, .jpeg)
 - PNG (.png)
 - GIF (.gif)
 - WebP (.webp)
 
 ### Documents
+
 - PDF (.pdf)
 - Word (.doc, .docx)
 - Excel (.xls, .xlsx)
@@ -214,10 +215,12 @@ interface UploadPreviewProps {
 - Markdown (.md)
 
 ### Media
+
 - Video: MP4, WebM
 - Audio: MP3, WAV, OGG
 
 ### Archives
+
 - ZIP (.zip)
 - RAR (.rar)
 - GZIP (.gz)
@@ -227,6 +230,7 @@ interface UploadPreviewProps {
 ## Common Patterns
 
 ### Upload on Select
+
 ```tsx
 const handleFilesSelected = async (files: File[]) => {
   const ids = addFiles(files);
@@ -239,6 +243,7 @@ const handleFilesSelected = async (files: File[]) => {
 ```
 
 ### Batch Upload Before Send
+
 ```tsx
 const handleSend = async () => {
   // Upload all pending files first
@@ -253,6 +258,7 @@ const handleSend = async () => {
 ```
 
 ### Validate Before Upload
+
 ```tsx
 const handleFilesSelected = (files: File[]) => {
   const errors: string[] = [];
@@ -276,11 +282,9 @@ const handleFilesSelected = (files: File[]) => {
 ```
 
 ### Handle Upload Errors
+
 ```tsx
-const {
-  uploads,
-  uploadFile,
-} = useFileUpload({
+const { uploads, uploadFile } = useFileUpload({
   workspaceId,
   onUploadError: (id, error) => {
     toast.error(`Upload failed: ${error}`);
@@ -346,20 +350,24 @@ test('calls onRemove when remove button clicked', () => {
 ## Troubleshooting
 
 ### Upload fails with 413 error
+
 - File exceeds size limit
 - Check file size and type-specific limits
 
 ### Preview doesn't show
+
 - Verify file URL is accessible
 - Check CORS settings for S3 bucket
 - Ensure thumbnailUrl is generated for images
 
 ### Drag-and-drop not working
+
 - Ensure drop zone has proper event handlers
 - Check z-index layering
 - Verify `onDragEnter`, `onDragOver`, `onDrop` are bound
 
 ### TypeScript errors
+
 - Ensure attachment object matches interface
 - Check File vs FileRecord type usage
 - Verify all required props are passed

@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 
 import type { AutoBackupConfig } from '@/lib/settings-backup';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     console.error('Get config error:', error);
     return NextResponse.json(
       { error: 'Failed to get auto backup config' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     console.error('Save config error:', error);
     return NextResponse.json(
       { error: 'Failed to save auto backup config' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

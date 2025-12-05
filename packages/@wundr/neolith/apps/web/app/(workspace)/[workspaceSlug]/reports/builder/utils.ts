@@ -121,15 +121,20 @@ export function generateSampleData(
       });
 
     case 'categorical':
-      const categories = ['Category A', 'Category B', 'Category C', 'Category D'];
-      return categories.map((name) => ({
+      const categories = [
+        'Category A',
+        'Category B',
+        'Category C',
+        'Category D',
+      ];
+      return categories.map(name => ({
         name,
         value: Math.floor(Math.random() * 1000) + 100,
       }));
 
     case 'pie':
       const statuses = ['Completed', 'In Progress', 'Pending', 'Cancelled'];
-      return statuses.map((name) => ({
+      return statuses.map(name => ({
         name,
         value: Math.floor(Math.random() * 500) + 50,
       }));
@@ -142,7 +147,11 @@ export function generateSampleData(
 /**
  * Export utilities
  */
-export function downloadFile(content: string, filename: string, mimeType: string) {
+export function downloadFile(
+  content: string,
+  filename: string,
+  mimeType: string
+) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');

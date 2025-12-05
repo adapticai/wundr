@@ -44,10 +44,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
     const parseResult = usernameCheckSchema.safeParse(body);
@@ -57,7 +54,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Validation failed',
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -89,7 +86,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error('[POST /api/users/username/check] Error:', error);
     return NextResponse.json(
       { error: 'Failed to check username availability' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

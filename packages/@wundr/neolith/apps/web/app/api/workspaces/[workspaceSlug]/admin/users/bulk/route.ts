@@ -32,15 +32,12 @@ interface RouteContext {
  */
 export async function POST(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { workspaceSlug } = await context.params;
@@ -50,15 +47,15 @@ export async function POST(
     if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
       return NextResponse.json(
         { error: 'No user IDs provided' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    if (!action || !['suspend', 'activate', 'remove', 'changeRole'].includes(action)) {
-      return NextResponse.json(
-        { error: 'Invalid action' },
-        { status: 400 },
-      );
+    if (
+      !action ||
+      !['suspend', 'activate', 'remove', 'changeRole'].includes(action)
+    ) {
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
     // Find workspace by slug
@@ -70,7 +67,7 @@ export async function POST(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -82,10 +79,13 @@ export async function POST(
       },
     });
 
-    if (!adminMembership || !['ADMIN', 'OWNER'].includes(adminMembership.role)) {
+    if (
+      !adminMembership ||
+      !['ADMIN', 'OWNER'].includes(adminMembership.role)
+    ) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -95,7 +95,7 @@ export async function POST(
     if (filteredUserIds.length === 0) {
       return NextResponse.json(
         { error: 'Cannot perform bulk action on yourself' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -140,12 +140,12 @@ export async function POST(
         if (!role || !['OWNER', 'ADMIN', 'MEMBER', 'GUEST'].includes(role)) {
           return NextResponse.json(
             { error: 'Invalid role for bulk change' },
-            { status: 400 },
+            { status: 400 }
           );
         }
 
         // Only owners can bulk change to/from owner role
-        if ((role === 'OWNER' || adminMembership.role !== 'OWNER')) {
+        if (role === 'OWNER' || adminMembership.role !== 'OWNER') {
           // If not owner, only change non-owner roles
           const roleResult = await prisma.workspaceMember.updateMany({
             where: {
@@ -170,10 +170,7 @@ export async function POST(
         break;
 
       default:
-        return NextResponse.json(
-          { error: 'Unknown action' },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
 
     return NextResponse.json({
@@ -186,7 +183,7 @@ export async function POST(
     console.error('Failed to perform bulk action:', error);
     return NextResponse.json(
       { error: 'Failed to perform bulk action' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

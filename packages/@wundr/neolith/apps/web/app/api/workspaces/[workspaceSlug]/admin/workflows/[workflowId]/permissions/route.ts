@@ -31,8 +31,8 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -57,7 +57,7 @@ return null;
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -72,7 +72,7 @@ export async function GET(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or insufficient permissions' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -83,7 +83,10 @@ export async function GET(
     });
 
     if (!workflow || workflow.metadata === null) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Workflow not found' },
+        { status: 404 }
+      );
     }
 
     // Get workspace members
@@ -115,10 +118,13 @@ export async function GET(
 
     return NextResponse.json({ permissions });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceSlug/admin/workflows/:workflowId/permissions]', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceSlug/admin/workflows/:workflowId/permissions]',
+      error
+    );
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -130,7 +136,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -145,7 +151,7 @@ export async function PUT(
     if (!access) {
       return NextResponse.json(
         { error: 'Workspace not found or insufficient permissions' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -159,11 +165,17 @@ export async function PUT(
     });
 
     if (!workflow) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Workflow not found' },
+        { status: 404 }
+      );
     }
 
     // Build permissions object
-    const permissionsMap: Record<string, { canExecute: boolean; canEdit: boolean }> = {};
+    const permissionsMap: Record<
+      string,
+      { canExecute: boolean; canEdit: boolean }
+    > = {};
     for (const perm of permissions) {
       permissionsMap[perm.userId] = {
         canExecute: perm.canExecute,
@@ -185,10 +197,13 @@ export async function PUT(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[PUT /api/workspaces/:workspaceSlug/admin/workflows/:workflowId/permissions]', error);
+    console.error(
+      '[PUT /api/workspaces/:workspaceSlug/admin/workflows/:workflowId/permissions]',
+      error
+    );
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

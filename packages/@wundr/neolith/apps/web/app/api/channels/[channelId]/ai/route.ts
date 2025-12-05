@@ -84,7 +84,7 @@ async function getRecentMessages(channelId: string, limit: number = 50) {
 function getSystemPrompt(
   action: string,
   channelName: string,
-  channelDescription: string | null,
+  channelDescription: string | null
 ): string {
   const baseContext = `You are an AI assistant for the "${channelName}" channel${channelDescription ? ` (${channelDescription})` : ''}.`;
 
@@ -133,7 +133,7 @@ function formatMessagesForContext(
     content: string;
     author: { name: string | null; email: string };
     createdAt: Date;
-  }>,
+  }>
 ): string {
   if (messages.length === 0) {
     return 'No messages in this channel yet.';
@@ -185,7 +185,7 @@ export async function POST(req: Request, context: RouteContext) {
     if (!Array.isArray(uiMessages)) {
       return new Response(
         JSON.stringify({ error: 'messages array is required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } },
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -210,7 +210,7 @@ export async function POST(req: Request, context: RouteContext) {
     const systemPrompt = getSystemPrompt(
       action,
       channel.name,
-      channel.description,
+      channel.description
     );
 
     // Add context message about recent channel activity
@@ -232,17 +232,21 @@ export async function POST(req: Request, context: RouteContext) {
 
     // Validate API keys
     if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
-      console.error('[POST /api/channels/:channelId/ai] OPENAI_API_KEY not configured');
+      console.error(
+        '[POST /api/channels/:channelId/ai] OPENAI_API_KEY not configured'
+      );
       return new Response(
         JSON.stringify({ error: 'OpenAI API key not configured' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } },
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
     if (provider !== 'openai' && !process.env.ANTHROPIC_API_KEY) {
-      console.error('[POST /api/channels/:channelId/ai] ANTHROPIC_API_KEY not configured');
+      console.error(
+        '[POST /api/channels/:channelId/ai] ANTHROPIC_API_KEY not configured'
+      );
       return new Response(
         JSON.stringify({ error: 'Anthropic API key not configured' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } },
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -268,7 +272,7 @@ export async function POST(req: Request, context: RouteContext) {
         error:
           error instanceof Error ? error.message : 'An internal error occurred',
       }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

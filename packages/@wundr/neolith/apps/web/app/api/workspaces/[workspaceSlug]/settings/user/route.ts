@@ -71,7 +71,7 @@ const workspaceUserSettingsSchema = z.object({
           startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
           endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
         }),
-      }),
+      })
     )
     .optional(),
 });
@@ -109,7 +109,7 @@ interface RouteParams {
  */
 export async function GET(
   _request: NextRequest,
-  { params }: RouteParams,
+  { params }: RouteParams
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -130,7 +130,7 @@ export async function GET(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -149,7 +149,7 @@ export async function GET(
     if (!member) {
       return NextResponse.json(
         { error: 'Not a member of this workspace' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -160,7 +160,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:slug/settings/user] Error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -197,7 +197,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: RouteParams,
+  { params }: RouteParams
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -222,7 +222,7 @@ export async function PATCH(
           error: 'Validation failed',
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -239,7 +239,7 @@ export async function PATCH(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -258,7 +258,7 @@ export async function PATCH(
     if (!member) {
       return NextResponse.json(
         { error: 'Not a member of this workspace' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -299,7 +299,7 @@ export async function PATCH(
     console.error('[PATCH /api/workspaces/:slug/settings/user] Error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

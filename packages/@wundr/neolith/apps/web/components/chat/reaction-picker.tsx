@@ -78,7 +78,7 @@ export function ReactionPicker({
       onSelect(emoji);
       onClose();
     },
-    [onSelect, onClose],
+    [onSelect, onClose]
   );
 
   return (
@@ -120,7 +120,7 @@ export function ReactionPicker({
               'shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
               activeCategory === category.id
                 ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
           >
             {category.name}
@@ -197,7 +197,7 @@ export function ReactionPickerTrigger({
       onSelect(emoji);
       setIsOpen(false);
     },
-    [onSelect],
+    [onSelect]
   );
 
   return (

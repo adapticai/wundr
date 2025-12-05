@@ -1,23 +1,29 @@
 # Channel Templates Feature
 
-This directory contains the implementation of the channel templates feature for the Neolith messaging system.
+This directory contains the implementation of the channel templates feature for the Neolith
+messaging system.
 
 ## Overview
 
-Channel templates allow users to quickly compose common message formats without retyping the same structure repeatedly. Admins can create custom templates specific to their channels, and the system provides built-in templates for common scenarios.
+Channel templates allow users to quickly compose common message formats without retyping the same
+structure repeatedly. Admins can create custom templates specific to their channels, and the system
+provides built-in templates for common scenarios.
 
 ## Components
 
 ### `channel-templates.tsx`
+
 Main component for displaying and managing channel templates.
 
 **Features:**
+
 - Display all available templates (system and custom)
 - Template selection with preview
 - Create new custom templates (admin only)
 - Template management dialog
 
 **Props:**
+
 ```typescript
 interface ChannelTemplatesProps {
   channelId: string;
@@ -29,14 +35,17 @@ interface ChannelTemplatesProps {
 ```
 
 ### `template-selector.tsx`
+
 Dropdown menu component for quick template access.
 
 **Features:**
+
 - Quick access to popular templates via dropdown
 - Browse all templates button
 - Integration with message input
 
 **Props:**
+
 ```typescript
 interface TemplateSelectorProps {
   channelId: string;
@@ -47,9 +56,11 @@ interface TemplateSelectorProps {
 ```
 
 ### `message-input-with-templates.tsx`
+
 Example integration showing how to combine templates with message input.
 
 **Features:**
+
 - Template preview before sending
 - Integration guidance
 - Two integration approaches documented
@@ -57,9 +68,11 @@ Example integration showing how to combine templates with message input.
 ## API Routes
 
 ### `GET /api/channels/:channelId/templates`
+
 List all templates for a channel.
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -81,9 +94,11 @@ List all templates for a channel.
 ```
 
 ### `POST /api/channels/:channelId/templates`
+
 Create a new template (admin only).
 
 **Request:**
+
 ```json
 {
   "name": "My Template",
@@ -94,6 +109,7 @@ Create a new template (admin only).
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -108,6 +124,7 @@ Create a new template (admin only).
 ## Database Schema
 
 ### `channelTemplate` Model
+
 ```prisma
 model channelTemplate {
   id          String   @id @default(cuid())
@@ -139,6 +156,7 @@ Templates support placeholders that are automatically replaced when selected:
 - `{channel}` - Channel name
 
 ### Example Template
+
 ```
 **Daily Standup - {date}**
 
@@ -153,6 +171,7 @@ Templates support placeholders that are automatically replaced when selected:
 ```
 
 ### After Processing
+
 ```
 **Daily Standup - December 5, 2025**
 
@@ -182,6 +201,7 @@ The system includes 8 default templates:
 ## Usage Examples
 
 ### Basic Template Selection
+
 ```tsx
 import { TemplateSelector } from '@/components/channels/template-selector';
 
@@ -192,16 +212,13 @@ function MyComponent() {
   };
 
   return (
-    <TemplateSelector
-      channelId="ch_123"
-      onSelectTemplate={handleTemplateSelect}
-      isAdmin={true}
-    />
+    <TemplateSelector channelId='ch_123' onSelectTemplate={handleTemplateSelect} isAdmin={true} />
   );
 }
 ```
 
 ### Full Template Management
+
 ```tsx
 import { ChannelTemplates } from '@/components/channels/channel-templates';
 
@@ -210,15 +227,13 @@ function MyComponent() {
 
   return (
     <>
-      <Button onClick={() => setShowTemplates(true)}>
-        Browse Templates
-      </Button>
+      <Button onClick={() => setShowTemplates(true)}>Browse Templates</Button>
 
       <ChannelTemplates
-        channelId="ch_123"
+        channelId='ch_123'
         open={showTemplates}
         onClose={() => setShowTemplates(false)}
-        onSelectTemplate={(content) => {
+        onSelectTemplate={content => {
           console.log('Selected:', content);
         }}
         isAdmin={true}
@@ -231,6 +246,7 @@ function MyComponent() {
 ## Database Migrations
 
 ### Setup
+
 ```bash
 # Run the migration
 cd packages/@neolith/database
@@ -244,6 +260,7 @@ npm run seed:templates
 ```
 
 ### Seed Script
+
 ```bash
 # Seed templates for all channels
 node prisma/seeds/channel-templates.ts
@@ -254,6 +271,7 @@ node prisma/seeds/channel-templates.ts
 To integrate templates with the existing `MessageInput` component, you have two options:
 
 ### Option 1: Controlled Component (Recommended)
+
 Modify `MessageInput` to accept `value` and `onChange` props:
 
 ```tsx
@@ -265,6 +283,7 @@ interface MessageInputProps {
 ```
 
 ### Option 2: Imperative Handle
+
 Use `useImperativeHandle` to expose a method for inserting content:
 
 ```tsx
@@ -306,6 +325,7 @@ Potential improvements for future iterations:
 ## Testing
 
 ### Unit Tests
+
 ```bash
 # Test template component
 npm test channel-templates.test.tsx
@@ -315,6 +335,7 @@ npm test templates/route.test.ts
 ```
 
 ### Integration Tests
+
 ```bash
 # Test full template workflow
 npm test templates.integration.test.ts
@@ -323,16 +344,19 @@ npm test templates.integration.test.ts
 ## Troubleshooting
 
 ### Templates not loading
+
 - Check channel membership
 - Verify API endpoint is accessible
 - Check browser console for errors
 
 ### Cannot create templates
+
 - Verify user has admin permissions
 - Check for duplicate template names
 - Verify all required fields are provided
 
 ### Placeholders not replaced
+
 - Check placeholder syntax matches exactly
 - Verify `processPlaceholders` function is called
 - Check for typos in placeholder names
@@ -340,6 +364,7 @@ npm test templates.integration.test.ts
 ## Support
 
 For issues or questions about the templates feature:
+
 1. Check this documentation
 2. Review the component source code
 3. Check API route documentation

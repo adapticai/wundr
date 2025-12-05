@@ -37,7 +37,7 @@ interface RouteContext {
  */
 export async function PATCH(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -45,14 +45,13 @@ export async function PATCH(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED,
+          ADMIN_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     const { workspaceSlug: workspaceId, channelId } = await context.params;
-
 
     // Verify admin access
     const membership = await prisma.workspaceMember.findFirst({
@@ -66,9 +65,9 @@ export async function PATCH(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN,
+          ADMIN_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -81,9 +80,9 @@ export async function PATCH(
       return NextResponse.json(
         createAdminErrorResponse(
           'Channel not found',
-          ADMIN_ERROR_CODES.NOT_FOUND,
+          ADMIN_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -131,31 +130,31 @@ export async function PATCH(
         return NextResponse.json(
           createAdminErrorResponse(
             'Channel with this name already exists',
-            ADMIN_ERROR_CODES.VALIDATION_ERROR,
+            ADMIN_ERROR_CODES.VALIDATION_ERROR
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
 
     if (description !== undefined) {
-updateData.description = description;
-}
+      updateData.description = description;
+    }
     if (topic !== undefined) {
-updateData.topic = topic;
-}
+      updateData.topic = topic;
+    }
     if (type !== undefined) {
-updateData.type = type;
-}
+      updateData.type = type;
+    }
     if (isArchived !== undefined) {
-updateData.isArchived = isArchived;
-}
+      updateData.isArchived = isArchived;
+    }
     if (settings !== undefined) {
-updateData.settings = settings;
-}
+      updateData.settings = settings;
+    }
     if (createdById !== undefined) {
-updateData.createdById = createdById;
-}
+      updateData.createdById = createdById;
+    }
 
     // Update channel
     const updatedChannel = await prisma.channel.update({
@@ -188,9 +187,9 @@ updateData.createdById = createdById;
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to update channel',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR,
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -206,7 +205,7 @@ updateData.createdById = createdById;
  */
 export async function DELETE(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -214,14 +213,13 @@ export async function DELETE(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED,
+          ADMIN_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     const { workspaceSlug: workspaceId, channelId } = await context.params;
-
 
     // Verify admin access
     const membership = await prisma.workspaceMember.findFirst({
@@ -235,9 +233,9 @@ export async function DELETE(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN,
+          ADMIN_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -250,9 +248,9 @@ export async function DELETE(
       return NextResponse.json(
         createAdminErrorResponse(
           'Channel not found',
-          ADMIN_ERROR_CODES.NOT_FOUND,
+          ADMIN_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -266,9 +264,9 @@ export async function DELETE(
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to delete channel',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR,
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

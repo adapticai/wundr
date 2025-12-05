@@ -89,7 +89,7 @@ export function OrgNode({
         <Card
           className={cn(
             'cursor-pointer transition-all hover:shadow-lg border-2',
-            isExpanded && 'border-primary',
+            isExpanded && 'border-primary'
           )}
           onClick={() => {
             onNodeClick?.(node);
@@ -148,7 +148,7 @@ export function OrgNode({
         <Card
           className={cn(
             'cursor-pointer transition-all hover:shadow-md',
-            isExpanded && 'border-blue-500',
+            isExpanded && 'border-blue-500'
           )}
           onClick={() => {
             onNodeClick?.(node);
@@ -207,7 +207,7 @@ export function OrgNode({
                     <span
                       className={cn(
                         'text-xs font-semibold px-2 py-1 rounded-md',
-                        disciplineColor,
+                        disciplineColor
                       )}
                     >
                       {discipline || 'Uncategorized'}
@@ -227,7 +227,7 @@ export function OrgNode({
                     ))}
                   </div>
                 </div>
-              ),
+              )
             )}
           </div>
         )}
@@ -251,7 +251,7 @@ export function OrgNode({
         <Card
           className={cn(
             'cursor-pointer transition-all hover:shadow-md hover:border-primary/50 relative overflow-hidden',
-            disciplineColor && 'border-l-4',
+            disciplineColor && 'border-l-4'
           )}
           style={
             node.data.discipline
@@ -361,7 +361,7 @@ function OrgNodeRenderer({
  * Groups Orchestrator nodes by discipline for better organization
  */
 function groupByDiscipline(
-  nodes: OrgNodeProps['node'][],
+  nodes: OrgNodeProps['node'][]
 ): [string, OrgNodeProps['node'][]][] {
   const grouped = nodes.reduce(
     (acc, node) => {
@@ -372,7 +372,7 @@ function groupByDiscipline(
       acc[discipline].push(node);
       return acc;
     },
-    {} as Record<string, OrgNodeProps['node'][]>,
+    {} as Record<string, OrgNodeProps['node'][]>
   );
 
   return Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b));

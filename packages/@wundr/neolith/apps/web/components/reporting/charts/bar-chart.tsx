@@ -88,12 +88,12 @@ export function BarChart({
         layout={horizontal ? 'vertical' : 'horizontal'}
         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
       >
-        {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} />}
+        {showGrid && <CartesianGrid strokeDasharray='3 3' vertical={false} />}
         {horizontal ? (
           <>
-            <XAxis type="number" tickLine={false} axisLine={false} />
+            <XAxis type='number' tickLine={false} axisLine={false} />
             <YAxis
-              type="category"
+              type='category'
               dataKey={xAxisKey}
               tickLine={false}
               axisLine={false}
@@ -103,13 +103,13 @@ export function BarChart({
         ) : (
           <>
             <XAxis
-              type="category"
+              type='category'
               dataKey={xAxisKey}
               tickLine={false}
               axisLine={false}
               tickMargin={8}
             />
-            <YAxis type="number" tickLine={false} axisLine={false} />
+            <YAxis type='number' tickLine={false} axisLine={false} />
           </>
         )}
         <ChartTooltip content={<ChartTooltipContent />} />

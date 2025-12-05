@@ -61,7 +61,7 @@ const TimeRangeSelector: React.FC<TimeRangeSelectorProps> = ({
             'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
             selected === range.value
               ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
           )}
         >
           {range.label}

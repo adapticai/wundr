@@ -45,7 +45,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -74,7 +74,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     const prefs = (user?.preferences as Record<string, unknown>) || {};
-    const twoFactor = prefs.twoFactor as { enabled?: boolean; secret?: string; backupCodes?: string[] } | undefined;
+    const twoFactor = prefs.twoFactor as
+      | { enabled?: boolean; secret?: string; backupCodes?: string[] }
+      | undefined;
 
     if (!user || !twoFactor?.secret) {
       return NextResponse.json(
@@ -83,7 +85,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: '2FA setup not initiated',
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -96,7 +98,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid verification code',
           code: SECURITY_ERROR_CODES.INVALID_CODE,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -146,7 +148,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

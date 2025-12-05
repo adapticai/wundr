@@ -55,7 +55,7 @@ export default function ConnectedAppsPage() {
         throw error;
       }
     },
-    [workspaceId, initiateOAuth, toast],
+    [workspaceId, initiateOAuth, toast]
   );
 
   // Disconnect an app
@@ -66,7 +66,7 @@ export default function ConnectedAppsPage() {
           `/api/workspaces/${workspaceId}/integrations/${integrationId}`,
           {
             method: 'DELETE',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -85,7 +85,7 @@ export default function ConnectedAppsPage() {
         throw error;
       }
     },
-    [workspaceId, refetchIntegrations, toast],
+    [workspaceId, refetchIntegrations, toast]
   );
 
   // Refresh an app connection
@@ -96,7 +96,7 @@ export default function ConnectedAppsPage() {
           `/api/workspaces/${workspaceId}/integrations/${integrationId}/sync`,
           {
             method: 'POST',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -117,7 +117,7 @@ export default function ConnectedAppsPage() {
         throw error;
       }
     },
-    [workspaceId, refetchIntegrations, toast],
+    [workspaceId, refetchIntegrations, toast]
   );
 
   const isLoading = integrationsLoading || webhooksLoading;
@@ -125,25 +125,23 @@ export default function ConnectedAppsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
+        <LoadingSpinner size='lg' />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-foreground mb-2">
+      <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
+        <div className='text-center'>
+          <h3 className='text-lg font-semibold text-foreground mb-2'>
             Failed to Load Apps
           </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            {error.message}
-          </p>
+          <p className='text-sm text-muted-foreground mb-4'>{error.message}</p>
           <button
             onClick={() => router.push(`/${workspaceId}/settings`)}
-            className="text-sm text-primary hover:underline"
+            className='text-sm text-primary hover:underline'
           >
             Return to Settings
           </button>
@@ -153,30 +151,30 @@ export default function ConnectedAppsPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    <div className='flex h-[calc(100vh-4rem)] flex-col'>
       {/* Header */}
-      <div className="border-b px-6 py-4">
-        <div className="flex items-center gap-2 text-sm mb-2">
+      <div className='border-b px-6 py-4'>
+        <div className='flex items-center gap-2 text-sm mb-2'>
           <button
             onClick={() => router.push(`/${workspaceId}/settings`)}
-            className="text-muted-foreground hover:text-foreground"
+            className='text-muted-foreground hover:text-foreground'
           >
             Settings
           </button>
-          <span className="text-muted-foreground">/</span>
-          <span className="font-medium text-foreground">Connected Apps</span>
+          <span className='text-muted-foreground'>/</span>
+          <span className='font-medium text-foreground'>Connected Apps</span>
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Connected Apps</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className='text-2xl font-bold text-foreground'>Connected Apps</h1>
+          <p className='mt-1 text-sm text-muted-foreground'>
             Manage third-party applications, API keys, and webhooks
           </p>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-6xl p-6">
+      <div className='flex-1 overflow-y-auto'>
+        <div className='mx-auto max-w-6xl p-6'>
           <ConnectedApps
             workspaceId={workspaceId}
             integrations={integrations}

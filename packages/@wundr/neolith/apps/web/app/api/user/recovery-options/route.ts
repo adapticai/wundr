@@ -20,7 +20,7 @@ import {
   SECURITY_ERROR_CODES,
 } from '@/lib/validations/security';
 
-import type { Prisma} from '@neolith/database';
+import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 export interface RecoveryOptions {
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: 'User not found',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -76,9 +76,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const prefs = (user.preferences as Record<string, unknown>) || {};
     const recoveryEmail = prefs.recoveryEmail as string | undefined;
     const phoneNumber = prefs.phoneNumber as string | undefined;
-    const twoFactor = prefs.twoFactor as
-      | { backupCodes?: string[] }
-      | undefined;
+    const twoFactor = prefs.twoFactor as { backupCodes?: string[] } | undefined;
     const hasBackupCodes = !!twoFactor?.backupCodes?.length;
 
     // Check if security questions exist
@@ -113,7 +111,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -137,7 +135,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -153,7 +151,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
           code: SECURITY_ERROR_CODES.VALIDATION_ERROR,
           details: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -167,8 +165,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         select: { preferences: true },
       });
 
-      const prefs =
-        (currentUser?.preferences as Record<string, unknown>) || {};
+      const prefs = (currentUser?.preferences as Record<string, unknown>) || {};
 
       await prisma.user.update({
         where: { id: session.user.id },
@@ -188,8 +185,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         severity: 'info',
         description: 'Recovery email updated',
         metadata: { recoveryEmail },
-        ipAddress:
-          request.headers.get('x-forwarded-for') || 'unknown',
+        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         userAgent: request.headers.get('user-agent') || undefined,
       });
     }
@@ -206,7 +202,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

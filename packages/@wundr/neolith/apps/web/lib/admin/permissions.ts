@@ -26,15 +26,13 @@ export const SYSTEM_ROLES = {
   GUEST: 'guest',
 } as const;
 
-export type SystemRole = typeof SYSTEM_ROLES[keyof typeof SYSTEM_ROLES];
+export type SystemRole = (typeof SYSTEM_ROLES)[keyof typeof SYSTEM_ROLES];
 
 /**
  * Default permissions for each system role
  */
 export const DEFAULT_ROLE_PERMISSIONS: Record<SystemRole, Permission[]> = {
-  [SYSTEM_ROLES.OWNER]: [
-    { resource: '*', actions: ['*'] },
-  ],
+  [SYSTEM_ROLES.OWNER]: [{ resource: '*', actions: ['*'] }],
   [SYSTEM_ROLES.ADMIN]: [
     { resource: 'workspace', actions: ['read', 'update'] },
     { resource: 'channel', actions: ['*'] },
@@ -95,7 +93,7 @@ export const DANGEROUS_PERMISSIONS = [
 export function hasPermission(
   permissions: Permission[],
   resource: PermissionResource,
-  action: PermissionAction,
+  action: PermissionAction
 ): boolean {
   // Check for wildcard permissions
   const wildcardPerm = permissions.find(p => p.resource === '*');
@@ -136,7 +134,7 @@ export function hasPermission(
  */
 export function checkMultiplePermissions(
   permissions: Permission[],
-  checks: Array<{ resource: PermissionResource; action: PermissionAction }>,
+  checks: Array<{ resource: PermissionResource; action: PermissionAction }>
 ): BulkPermissionCheckResult {
   const results: BulkPermissionCheckResult = {};
 
@@ -161,10 +159,10 @@ export function checkMultiplePermissions(
  */
 export function hasAnyPermission(
   permissions: Permission[],
-  checks: Array<{ resource: PermissionResource; action: PermissionAction }>,
+  checks: Array<{ resource: PermissionResource; action: PermissionAction }>
 ): boolean {
   return checks.some(check =>
-    hasPermission(permissions, check.resource, check.action),
+    hasPermission(permissions, check.resource, check.action)
   );
 }
 
@@ -177,10 +175,10 @@ export function hasAnyPermission(
  */
 export function hasAllPermissions(
   permissions: Permission[],
-  checks: Array<{ resource: PermissionResource; action: PermissionAction }>,
+  checks: Array<{ resource: PermissionResource; action: PermissionAction }>
 ): boolean {
   return checks.every(check =>
-    hasPermission(permissions, check.resource, check.action),
+    hasPermission(permissions, check.resource, check.action)
   );
 }
 
@@ -193,10 +191,10 @@ export function hasAllPermissions(
  */
 export function isDangerousPermission(
   resource: PermissionResource,
-  action: PermissionAction,
+  action: PermissionAction
 ): boolean {
   return DANGEROUS_PERMISSIONS.some(
-    danger => danger.resource === resource && danger.action === action,
+    danger => danger.resource === resource && danger.action === action
   );
 }
 
@@ -213,7 +211,7 @@ export function isDangerousPermission(
  */
 export function comparePermissions(
   current: Permission[],
-  proposed: Permission[],
+  proposed: Permission[]
 ): {
   added: Permission[];
   removed: Permission[];
@@ -229,12 +227,16 @@ export function comparePermissions(
     if (!existing) {
       added.push(perm);
     } else {
-      const addedActions = perm.actions.filter(a => !existing.actions.includes(a));
+      const addedActions = perm.actions.filter(
+        a => !existing.actions.includes(a)
+      );
       if (addedActions.length > 0) {
         added.push({ resource: perm.resource, actions: addedActions });
       }
 
-      const commonActions = perm.actions.filter(a => existing.actions.includes(a));
+      const commonActions = perm.actions.filter(a =>
+        existing.actions.includes(a)
+      );
       if (commonActions.length > 0) {
         unchanged.push({ resource: perm.resource, actions: commonActions });
       }
@@ -247,7 +249,9 @@ export function comparePermissions(
     if (!existing) {
       removed.push(perm);
     } else {
-      const removedActions = perm.actions.filter(a => !existing.actions.includes(a));
+      const removedActions = perm.actions.filter(
+        a => !existing.actions.includes(a)
+      );
       if (removedActions.length > 0) {
         removed.push({ resource: perm.resource, actions: removedActions });
       }
@@ -299,7 +303,9 @@ export function validatePermissions(permissions: Permission[]): {
  * @param permissionSets - Array of permission arrays to merge
  * @returns Merged permissions with duplicates removed
  */
-export function mergePermissions(...permissionSets: Permission[][]): Permission[] {
+export function mergePermissions(
+  ...permissionSets: Permission[][]
+): Permission[] {
   const merged = new Map<string, Set<PermissionAction>>();
 
   for (const permissions of permissionSets) {
@@ -328,10 +334,10 @@ export function mergePermissions(...permissionSets: Permission[][]): Permission[
  */
 export function filterPermissionsByResource(
   permissions: Permission[],
-  resources: PermissionResource[],
+  resources: PermissionResource[]
 ): Permission[] {
-  return permissions.filter(perm =>
-    resources.includes(perm.resource) || perm.resource === '*',
+  return permissions.filter(
+    perm => resources.includes(perm.resource) || perm.resource === '*'
   );
 }
 
@@ -343,6 +349,6 @@ export function filterPermissionsByResource(
  */
 export function formatPermissions(permissions: Permission[]): string[] {
   return permissions.flatMap(perm =>
-    perm.actions.map(action => `${action} ${perm.resource}`),
+    perm.actions.map(action => `${action} ${perm.resource}`)
   );
 }

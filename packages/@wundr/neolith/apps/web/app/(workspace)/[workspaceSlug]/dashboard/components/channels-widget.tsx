@@ -41,7 +41,7 @@ export function ChannelsWidget({
         setIsLoading(true);
         // TODO: Replace with actual API endpoint for starred/frequent channels
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/channels?starred=true&limit=${limit}`,
+          `/api/workspaces/${workspaceSlug}/channels?starred=true&limit=${limit}`
         );
 
         if (!response.ok) {
@@ -116,7 +116,7 @@ function ChannelPill({ channel, workspaceSlug }: ChannelPillProps) {
       className={cn(
         'flex items-center gap-2 px-3 py-2 rounded-lg border bg-card',
         'hover:bg-accent hover:text-accent-foreground transition-colors',
-        'group relative',
+        'group relative'
       )}
     >
       <Hash className='h-4 w-4 flex-shrink-0 text-muted-foreground' />

@@ -1,6 +1,7 @@
 # Real-time Analytics System
 
-Comprehensive real-time analytics implementation using Server-Sent Events (SSE) for live workspace monitoring.
+Comprehensive real-time analytics implementation using Server-Sent Events (SSE) for live workspace
+monitoring.
 
 ## Overview
 
@@ -174,7 +175,7 @@ function RealtimeAnalyticsDashboard({ workspaceId }: { workspaceId: string }) {
   const { stats, isConnected, error } = useRealtimeAnalytics(workspaceId);
 
   if (error) {
-    return <div className="text-red-500">Error: {error}</div>;
+    return <div className='text-red-500'>Error: {error}</div>;
   }
 
   if (!stats) {
@@ -182,26 +183,26 @@ function RealtimeAnalyticsDashboard({ workspaceId }: { workspaceId: string }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <h2 className="text-2xl font-bold">Live Analytics</h2>
+    <div className='space-y-4'>
+      <div className='flex items-center gap-2'>
+        <h2 className='text-2xl font-bold'>Live Analytics</h2>
         <span className={isConnected ? 'text-green-500' : 'text-red-500'}>
           {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
         </span>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        <MetricCard label="Active Users" value={stats.activeUsers} />
-        <MetricCard label="Online Now" value={stats.onlineUsers} />
-        <MetricCard label="Active Sessions" value={stats.activeSessions} />
-        <MetricCard label="Messages Today" value={stats.messagesToday} />
+      <div className='grid grid-cols-4 gap-4'>
+        <MetricCard label='Active Users' value={stats.activeUsers} />
+        <MetricCard label='Online Now' value={stats.onlineUsers} />
+        <MetricCard label='Active Sessions' value={stats.activeSessions} />
+        <MetricCard label='Messages Today' value={stats.messagesToday} />
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        <MetricCard label="Last Hour" value={stats.messagesLastHour} />
-        <MetricCard label="Active Channels" value={stats.activeChannels} />
-        <MetricCard label="Orchestrators" value={stats.activeOrchestrators} />
-        <MetricCard label="Tasks" value={stats.tasksInProgress} />
+      <div className='grid grid-cols-4 gap-4'>
+        <MetricCard label='Last Hour' value={stats.messagesLastHour} />
+        <MetricCard label='Active Channels' value={stats.activeChannels} />
+        <MetricCard label='Orchestrators' value={stats.activeOrchestrators} />
+        <MetricCard label='Tasks' value={stats.tasksInProgress} />
       </div>
     </div>
   );
@@ -212,24 +213,21 @@ function RealtimeAnalyticsDashboard({ workspaceId }: { workspaceId: string }) {
 
 ```tsx
 function AdvancedAnalytics({ workspaceId }: { workspaceId: string }) {
-  const { stats, isConnected, error, reconnect, trackEvent } = useRealtimeAnalytics(
-    workspaceId,
-    {
-      enabled: true,
-      autoReconnect: true,
-      maxReconnectAttempts: 10,
-      reconnectDelay: 2000,
-      onConnect: () => console.log('Analytics connected'),
-      onDisconnect: () => console.log('Analytics disconnected'),
-      onError: (err) => console.error('Analytics error:', err),
-      onStatsUpdate: (newStats) => {
-        // Handle stats updates
-        if (newStats.onlineUsers > 100) {
-          console.log('High activity detected!');
-        }
-      },
+  const { stats, isConnected, error, reconnect, trackEvent } = useRealtimeAnalytics(workspaceId, {
+    enabled: true,
+    autoReconnect: true,
+    maxReconnectAttempts: 10,
+    reconnectDelay: 2000,
+    onConnect: () => console.log('Analytics connected'),
+    onDisconnect: () => console.log('Analytics disconnected'),
+    onError: err => console.error('Analytics error:', err),
+    onStatsUpdate: newStats => {
+      // Handle stats updates
+      if (newStats.onlineUsers > 100) {
+        console.log('High activity detected!');
+      }
     },
-  );
+  });
 
   const handleUserAction = async () => {
     await trackEvent('user.action', {
@@ -260,7 +258,7 @@ import { useRealtimeAnalyticsPolling } from '@/hooks/useRealtimeAnalytics';
 function PollingAnalytics({ workspaceId }: { workspaceId: string }) {
   const { stats, error, trackEvent } = useRealtimeAnalyticsPolling(
     workspaceId,
-    5000, // Poll every 5 seconds
+    5000 // Poll every 5 seconds
   );
 
   // Same usage as SSE version
@@ -310,6 +308,7 @@ function MessageComposer({ workspaceId }: { workspaceId: string }) {
 ### Environment Variables
 
 No additional environment variables required. Uses existing:
+
 - Database connection (Prisma)
 - Redis connection
 - NextAuth session management
@@ -319,10 +318,10 @@ No additional environment variables required. Uses existing:
 In `route.ts`:
 
 ```typescript
-const CONNECTION_CLEANUP_INTERVAL = 5 * 60 * 1000;  // 5 minutes
-const HEARTBEAT_INTERVAL = 30 * 1000;               // 30 seconds
-const STATS_UPDATE_INTERVAL = 5000;                 // 5 seconds
-const MAX_CONNECTION_DURATION = 60 * 60 * 1000;     // 1 hour
+const CONNECTION_CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const HEARTBEAT_INTERVAL = 30 * 1000; // 30 seconds
+const STATS_UPDATE_INTERVAL = 5000; // 5 seconds
+const MAX_CONNECTION_DURATION = 60 * 60 * 1000; // 1 hour
 ```
 
 ## Security
@@ -351,6 +350,7 @@ Monitor active connection count:
 ### Logging
 
 Server logs include:
+
 - Connection establishment/closure
 - Error conditions
 - Reconnection attempts
@@ -389,8 +389,8 @@ Enable debug logging:
 const { stats } = useRealtimeAnalytics(workspaceId, {
   onConnect: () => console.log('[Debug] Connected'),
   onDisconnect: () => console.log('[Debug] Disconnected'),
-  onError: (err) => console.error('[Debug] Error:', err),
-  onStatsUpdate: (stats) => console.log('[Debug] Stats:', stats),
+  onError: err => console.error('[Debug] Error:', err),
+  onStatsUpdate: stats => console.log('[Debug] Stats:', stats),
 });
 ```
 
@@ -414,6 +414,7 @@ Potential improvements:
 ## Support
 
 For issues or questions:
+
 - Check server logs for errors
 - Inspect network tab for SSE connection status
 - Verify workspace access permissions

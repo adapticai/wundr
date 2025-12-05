@@ -122,7 +122,11 @@ export type OutOfOfficeInput = z.infer<typeof outOfOfficeSchema>;
 export const scheduledStatusSchema = z.object({
   id: z.string().optional(),
   emoji: z.string().min(1).max(10),
-  message: z.string().max(STATUS_LIMITS.MESSAGE_MAX).optional().or(z.literal('')),
+  message: z
+    .string()
+    .max(STATUS_LIMITS.MESSAGE_MAX)
+    .optional()
+    .or(z.literal('')),
   type: z.enum(STATUS_TYPES),
   startAt: z.string().datetime(),
   endAt: z.string().datetime().optional().nullable(),
@@ -147,4 +151,6 @@ export const availabilitySettingsSchema = z.object({
   workspaceVisibility: z.record(z.string(), z.boolean()).optional(),
 });
 
-export type AvailabilitySettingsInput = z.infer<typeof availabilitySettingsSchema>;
+export type AvailabilitySettingsInput = z.infer<
+  typeof availabilitySettingsSchema
+>;

@@ -60,7 +60,7 @@ export function useLLMChat() {
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            errorData.error || 'Failed to generate chat completion',
+            errorData.error || 'Failed to generate chat completion'
           );
         }
 
@@ -78,13 +78,13 @@ export function useLLMChat() {
         setLoading(false);
       }
     },
-    [],
+    []
   );
 
   const chatJSON = useCallback(
     async <T = any>(
       prompt: string,
-      options?: ChatOptions,
+      options?: ChatOptions
     ): Promise<T | null> => {
       setLoading(true);
       setError(null);
@@ -105,7 +105,7 @@ export function useLLMChat() {
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            errorData.error || 'Failed to generate chat completion',
+            errorData.error || 'Failed to generate chat completion'
           );
         }
 
@@ -123,7 +123,7 @@ export function useLLMChat() {
         setLoading(false);
       }
     },
-    [],
+    []
   );
 
   const chatStructured = useCallback(
@@ -134,7 +134,7 @@ export function useLLMChat() {
         properties: Record<string, any>;
         required?: string[];
       },
-      options?: ChatOptions,
+      options?: ChatOptions
     ): Promise<T | null> => {
       setLoading(true);
       setError(null);
@@ -156,7 +156,7 @@ export function useLLMChat() {
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            errorData.error || 'Failed to generate chat completion',
+            errorData.error || 'Failed to generate chat completion'
           );
         }
 
@@ -174,13 +174,13 @@ export function useLLMChat() {
         setLoading(false);
       }
     },
-    [],
+    []
   );
 
   const chatWithHistory = useCallback(
     async (
       messages: ChatMessage[],
-      options?: ChatOptions,
+      options?: ChatOptions
     ): Promise<string | null> => {
       setLoading(true);
       setError(null);
@@ -201,7 +201,7 @@ export function useLLMChat() {
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            errorData.error || 'Failed to generate chat completion',
+            errorData.error || 'Failed to generate chat completion'
           );
         }
 
@@ -219,7 +219,7 @@ export function useLLMChat() {
         setLoading(false);
       }
     },
-    [],
+    []
   );
 
   return {
@@ -245,7 +245,7 @@ export function useLLMImageAnalysis() {
     async (
       imageBase64: string,
       prompt?: string,
-      options?: ChatOptions & { detail?: 'low' | 'high' | 'auto' },
+      options?: ChatOptions & { detail?: 'low' | 'high' | 'auto' }
     ): Promise<string | null> => {
       setLoading(true);
       setError(null);
@@ -283,7 +283,7 @@ export function useLLMImageAnalysis() {
         setLoading(false);
       }
     },
-    [],
+    []
   );
 
   return {

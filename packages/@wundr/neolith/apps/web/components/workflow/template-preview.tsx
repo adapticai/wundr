@@ -86,18 +86,18 @@ export function TemplatePreview({ template, className }: TemplatePreviewProps) {
 
   return (
     <div className={className}>
-      <div className="space-y-6">
+      <div className='space-y-6'>
         {/* Overview */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">{categoryConfig.label}</Badge>
-            <Badge variant="outline">
+        <div className='space-y-2'>
+          <div className='flex items-center gap-2'>
+            <Badge variant='secondary'>{categoryConfig.label}</Badge>
+            <Badge variant='outline'>
               {template.usageCount.toLocaleString()} uses
             </Badge>
           </div>
-          <div className="flex flex-wrap gap-1">
-            {template.tags.map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs">
+          <div className='flex flex-wrap gap-1'>
+            {template.tags.map(tag => (
+              <Badge key={tag} variant='outline' className='text-xs'>
                 {tag}
               </Badge>
             ))}
@@ -107,21 +107,21 @@ export function TemplatePreview({ template, className }: TemplatePreviewProps) {
         {/* Trigger */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <TriggerIconComponent className="h-4 w-4 text-primary" />
+            <div className='flex items-center gap-2'>
+              <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10'>
+                <TriggerIconComponent className='h-4 w-4 text-primary' />
               </div>
               <div>
-                <CardTitle className="text-base">Trigger</CardTitle>
-                <CardDescription className="text-xs">
+                <CardTitle className='text-base'>Trigger</CardTitle>
+                <CardDescription className='text-xs'>
                   {triggerConfig.description}
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
+            <div className='space-y-2'>
+              <div className='flex items-center gap-2'>
                 <Badge>{triggerConfig.label}</Badge>
               </div>
               <TriggerDetails trigger={template.trigger} />
@@ -132,21 +132,21 @@ export function TemplatePreview({ template, className }: TemplatePreviewProps) {
         {/* Actions Flow */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">
+            <CardTitle className='text-base'>
               Actions ({template.actions.length})
             </CardTitle>
-            <CardDescription className="text-xs">
+            <CardDescription className='text-xs'>
               Steps that will be executed when the workflow is triggered
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className='space-y-3'>
               {template.actions.map((action, index) => (
-                <div key={index} className="space-y-2">
+                <div key={index} className='space-y-2'>
                   <ActionPreview action={action} order={index + 1} />
                   {index < template.actions.length - 1 && (
-                    <div className="flex justify-center">
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    <div className='flex justify-center'>
+                      <ArrowRight className='h-4 w-4 text-muted-foreground' />
                     </div>
                   )}
                 </div>
@@ -159,41 +159,41 @@ export function TemplatePreview({ template, className }: TemplatePreviewProps) {
         {template.variables && template.variables.length > 0 && (
           <Card>
             <CardHeader>
-              <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
+              <div className='flex items-center gap-2'>
+                <Settings className='h-4 w-4' />
                 <div>
-                  <CardTitle className="text-base">
+                  <CardTitle className='text-base'>
                     Variables ({template.variables.length})
                   </CardTitle>
-                  <CardDescription className="text-xs">
+                  <CardDescription className='text-xs'>
                     Configuration values you'll need to provide
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {template.variables.map((variable) => (
+              <div className='space-y-3'>
+                {template.variables.map(variable => (
                   <div
                     key={variable.name}
-                    className="flex items-start justify-between rounded-lg border p-3"
+                    className='flex items-start justify-between rounded-lg border p-3'
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <code className="text-sm font-mono">
+                    <div className='flex-1'>
+                      <div className='flex items-center gap-2'>
+                        <code className='text-sm font-mono'>
                           {variable.name}
                         </code>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant='outline' className='text-xs'>
                           {variable.type}
                         </Badge>
                       </div>
                       {variable.description && (
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className='mt-1 text-xs text-muted-foreground'>
                           {variable.description}
                         </p>
                       )}
                       {variable.defaultValue && (
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className='mt-1 text-xs text-muted-foreground'>
                           Default: <code>{String(variable.defaultValue)}</code>
                         </p>
                       )}
@@ -206,31 +206,34 @@ export function TemplatePreview({ template, className }: TemplatePreviewProps) {
         )}
 
         {/* Usage Tips */}
-        <Card className="border-primary/20 bg-primary/5">
+        <Card className='border-primary/20 bg-primary/5'>
           <CardHeader>
-            <CardTitle className="text-base">How to use this template</CardTitle>
+            <CardTitle className='text-base'>
+              How to use this template
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <ol className="space-y-2 text-sm">
-              <li className="flex gap-2">
-                <span className="font-semibold">1.</span>
+            <ol className='space-y-2 text-sm'>
+              <li className='flex gap-2'>
+                <span className='font-semibold'>1.</span>
                 <span>
                   Click "Use This Template" to create a new workflow from this
                   template
                 </span>
               </li>
-              <li className="flex gap-2">
-                <span className="font-semibold">2.</span>
+              <li className='flex gap-2'>
+                <span className='font-semibold'>2.</span>
                 <span>
-                  Configure the required variables (marked in the workflow editor)
+                  Configure the required variables (marked in the workflow
+                  editor)
                 </span>
               </li>
-              <li className="flex gap-2">
-                <span className="font-semibold">3.</span>
+              <li className='flex gap-2'>
+                <span className='font-semibold'>3.</span>
                 <span>Customize actions and trigger settings as needed</span>
               </li>
-              <li className="flex gap-2">
-                <span className="font-semibold">4.</span>
+              <li className='flex gap-2'>
+                <span className='font-semibold'>4.</span>
                 <span>Test your workflow before activating it</span>
               </li>
             </ol>
@@ -254,24 +257,26 @@ function ActionPreview({ action, order }: ActionPreviewProps) {
   const IconComponent = ActionIcon[action.type];
 
   return (
-    <div className="flex items-start gap-3 rounded-lg border bg-card p-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+    <div className='flex items-start gap-3 rounded-lg border bg-card p-3'>
+      <div className='flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary'>
         {order}
       </div>
-      <div className="flex-1 space-y-2">
-        <div className="flex items-center gap-2">
-          <IconComponent className="h-4 w-4 text-muted-foreground" />
-          <span className="font-semibold text-sm">{actionConfig.label}</span>
+      <div className='flex-1 space-y-2'>
+        <div className='flex items-center gap-2'>
+          <IconComponent className='h-4 w-4 text-muted-foreground' />
+          <span className='font-semibold text-sm'>{actionConfig.label}</span>
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className='text-xs text-muted-foreground'>
           {actionConfig.description}
         </p>
         <ActionConfigPreview action={action} />
         {action.errorHandling && (
-          <div className="mt-2 rounded border border-orange-200 bg-orange-50 p-2 dark:border-orange-900 dark:bg-orange-950/20">
-            <p className="text-xs text-orange-700 dark:text-orange-400">
+          <div className='mt-2 rounded border border-orange-200 bg-orange-50 p-2 dark:border-orange-900 dark:bg-orange-950/20'>
+            <p className='text-xs text-orange-700 dark:text-orange-400'>
               Error handling:{' '}
-              <span className="font-semibold">{action.errorHandling.onError}</span>
+              <span className='font-semibold'>
+                {action.errorHandling.onError}
+              </span>
               {action.errorHandling.retryCount && (
                 <span> • Retries: {action.errorHandling.retryCount}</span>
               )}
@@ -290,15 +295,15 @@ function TriggerDetails({ trigger }: { trigger: WorkflowTemplate['trigger'] }) {
   switch (trigger.type) {
     case 'schedule':
       return (
-        <div className="rounded-lg bg-muted/50 p-3 text-xs">
-          <div className="space-y-1">
+        <div className='rounded-lg bg-muted/50 p-3 text-xs'>
+          <div className='space-y-1'>
             <div>
-              <span className="font-semibold">Schedule:</span>{' '}
+              <span className='font-semibold'>Schedule:</span>{' '}
               <code>{trigger.schedule.cron}</code>
             </div>
             {trigger.schedule.timezone && (
               <div>
-                <span className="font-semibold">Timezone:</span>{' '}
+                <span className='font-semibold'>Timezone:</span>{' '}
                 {trigger.schedule.timezone}
               </div>
             )}
@@ -308,13 +313,13 @@ function TriggerDetails({ trigger }: { trigger: WorkflowTemplate['trigger'] }) {
 
     case 'keyword':
       return (
-        <div className="rounded-lg bg-muted/50 p-3 text-xs">
+        <div className='rounded-lg bg-muted/50 p-3 text-xs'>
           <div>
-            <span className="font-semibold">Keywords:</span>{' '}
+            <span className='font-semibold'>Keywords:</span>{' '}
             {trigger.keyword.keywords.join(', ')}
           </div>
           <div>
-            <span className="font-semibold">Match type:</span>{' '}
+            <span className='font-semibold'>Match type:</span>{' '}
             {trigger.keyword.matchType}
           </div>
         </div>
@@ -322,11 +327,11 @@ function TriggerDetails({ trigger }: { trigger: WorkflowTemplate['trigger'] }) {
 
     case 'message':
       return (
-        <div className="rounded-lg bg-muted/50 p-3 text-xs">
+        <div className='rounded-lg bg-muted/50 p-3 text-xs'>
           <div>Triggers when a message is posted</div>
           {trigger.message.channelIds && (
-            <div className="mt-1">
-              <span className="font-semibold">Channels:</span> Specific channels
+            <div className='mt-1'>
+              <span className='font-semibold'>Channels:</span> Specific channels
               configured
             </div>
           )}
@@ -335,14 +340,14 @@ function TriggerDetails({ trigger }: { trigger: WorkflowTemplate['trigger'] }) {
 
     case 'mention':
       return (
-        <div className="rounded-lg bg-muted/50 p-3 text-xs">
+        <div className='rounded-lg bg-muted/50 p-3 text-xs'>
           <div>Triggers when mentioned in a message</div>
         </div>
       );
 
     default:
       return (
-        <div className="rounded-lg bg-muted/50 p-3 text-xs">
+        <div className='rounded-lg bg-muted/50 p-3 text-xs'>
           <div>Configured when workflow is created</div>
         </div>
       );
@@ -356,21 +361,23 @@ function ActionConfigPreview({ action }: { action: Omit<ActionConfig, 'id'> }) {
   const config = action.config as Record<string, unknown>;
 
   return (
-    <div className="space-y-1 rounded-lg bg-muted/30 p-2 text-xs font-mono">
+    <div className='space-y-1 rounded-lg bg-muted/30 p-2 text-xs font-mono'>
       {Object.entries(config).map(([key, value]) => {
         // Handle nested objects
         if (typeof value === 'object' && value !== null) {
           return (
-            <div key={key} className="space-y-1">
-              <div className="font-semibold text-muted-foreground">{key}:</div>
-              <div className="ml-2 space-y-1">
+            <div key={key} className='space-y-1'>
+              <div className='font-semibold text-muted-foreground'>{key}:</div>
+              <div className='ml-2 space-y-1'>
                 {Object.entries(value as Record<string, unknown>).map(
                   ([nestedKey, nestedValue]) => (
                     <div key={nestedKey}>
-                      <span className="text-muted-foreground">{nestedKey}:</span>{' '}
+                      <span className='text-muted-foreground'>
+                        {nestedKey}:
+                      </span>{' '}
                       {formatValue(nestedValue)}
                     </div>
-                  ),
+                  )
                 )}
               </div>
             </div>
@@ -379,7 +386,7 @@ function ActionConfigPreview({ action }: { action: Omit<ActionConfig, 'id'> }) {
 
         return (
           <div key={key}>
-            <span className="text-muted-foreground">{key}:</span>{' '}
+            <span className='text-muted-foreground'>{key}:</span>{' '}
             {formatValue(value)}
           </div>
         );

@@ -44,12 +44,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -149,7 +144,8 @@ export default function CustomizationPage() {
     emailFooter: '',
     welcomeEmailEnabled: true,
     welcomeEmailSubject: 'Welcome to {{workspace}}!',
-    welcomeEmailBody: 'Hi {{name}},\n\nWelcome to {{workspace}}! We\'re excited to have you on board.\n\nBest regards,\nThe Team',
+    welcomeEmailBody:
+      "Hi {{name}},\n\nWelcome to {{workspace}}! We're excited to have you on board.\n\nBest regards,\nThe Team",
     notificationBrandingEnabled: true,
     notificationIcon: '',
     notificationSound: 'default',
@@ -159,9 +155,27 @@ export default function CustomizationPage() {
     sidebarCollapsible: true,
     sidebarDefaultCollapsed: false,
     sidebarItems: [
-      { id: '1', label: 'Dashboard', icon: 'Home', url: '/dashboard', enabled: true },
-      { id: '2', label: 'Messages', icon: 'MessageSquare', url: '/messages', enabled: true },
-      { id: '3', label: 'Channels', icon: 'Hash', url: '/channels', enabled: true },
+      {
+        id: '1',
+        label: 'Dashboard',
+        icon: 'Home',
+        url: '/dashboard',
+        enabled: true,
+      },
+      {
+        id: '2',
+        label: 'Messages',
+        icon: 'MessageSquare',
+        url: '/messages',
+        enabled: true,
+      },
+      {
+        id: '3',
+        label: 'Channels',
+        icon: 'Hash',
+        url: '/channels',
+        enabled: true,
+      },
       { id: '4', label: 'Files', icon: 'Folder', url: '/files', enabled: true },
     ],
     features: {
@@ -190,7 +204,7 @@ export default function CustomizationPage() {
     const loadSettings = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/customization`,
+          `/api/workspaces/${workspaceSlug}/customization`
         );
         if (response.ok) {
           const data = await response.json();
@@ -212,8 +226,8 @@ export default function CustomizationPage() {
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (!file) {
-return;
-}
+        return;
+      }
 
       if (file.size > 5 * 1024 * 1024) {
         toast({
@@ -232,12 +246,12 @@ return;
 
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/customization/upload`,
-          { method: 'POST', body: formData },
+          { method: 'POST', body: formData }
         );
 
         if (!response.ok) {
-throw new Error('Upload failed');
-}
+          throw new Error('Upload failed');
+        }
 
         const data = await response.json();
         setSettings(prev => ({ ...prev, logo: data.url }));
@@ -255,19 +269,19 @@ throw new Error('Upload failed');
       } finally {
         setIsUploadingLogo(false);
         if (logoInputRef.current) {
-logoInputRef.current.value = '';
-}
+          logoInputRef.current.value = '';
+        }
       }
     },
-    [workspaceSlug, toast],
+    [workspaceSlug, toast]
   );
 
   const handleFaviconUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (!file) {
-return;
-}
+        return;
+      }
 
       if (file.size > 1 * 1024 * 1024) {
         toast({
@@ -286,12 +300,12 @@ return;
 
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/customization/upload`,
-          { method: 'POST', body: formData },
+          { method: 'POST', body: formData }
         );
 
         if (!response.ok) {
-throw new Error('Upload failed');
-}
+          throw new Error('Upload failed');
+        }
 
         const data = await response.json();
         setSettings(prev => ({ ...prev, favicon: data.url }));
@@ -309,11 +323,11 @@ throw new Error('Upload failed');
       } finally {
         setIsUploadingFavicon(false);
         if (faviconInputRef.current) {
-faviconInputRef.current.value = '';
-}
+          faviconInputRef.current.value = '';
+        }
       }
     },
-    [workspaceSlug, toast],
+    [workspaceSlug, toast]
   );
 
   const handleSave = useCallback(async () => {
@@ -325,7 +339,7 @@ faviconInputRef.current.value = '';
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(settings),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -351,7 +365,7 @@ faviconInputRef.current.value = '';
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/customization/verify-domain`,
-        { method: 'POST' },
+        { method: 'POST' }
       );
 
       if (!response.ok) {
@@ -872,7 +886,10 @@ faviconInputRef.current.value = '';
                 <Switch
                   checked={settings.customCssEnabled}
                   onCheckedChange={checked =>
-                    setSettings(prev => ({ ...prev, customCssEnabled: checked }))
+                    setSettings(prev => ({
+                      ...prev,
+                      customCssEnabled: checked,
+                    }))
                   }
                 />
               </div>
@@ -883,7 +900,10 @@ faviconInputRef.current.value = '';
                   id='custom-css'
                   value={settings.customCss}
                   onChange={e =>
-                    setSettings(prev => ({ ...prev, customCss: e.target.value }))
+                    setSettings(prev => ({
+                      ...prev,
+                      customCss: e.target.value,
+                    }))
                   }
                   rows={12}
                   className='font-mono text-sm'
@@ -935,7 +955,10 @@ faviconInputRef.current.value = '';
                 <Switch
                   checked={settings.sidebarCollapsible}
                   onCheckedChange={checked =>
-                    setSettings(prev => ({ ...prev, sidebarCollapsible: checked }))
+                    setSettings(prev => ({
+                      ...prev,
+                      sidebarCollapsible: checked,
+                    }))
                   }
                 />
               </div>
@@ -1035,7 +1058,7 @@ faviconInputRef.current.value = '';
                           setSettings(prev => ({
                             ...prev,
                             sidebarItems: prev.sidebarItems.filter(
-                              i => i.id !== item.id,
+                              i => i.id !== item.id
                             ),
                           }));
                         }}

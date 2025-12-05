@@ -2,7 +2,11 @@
  * CSV Export - Comprehensive CSV export functionality
  */
 
-import { downloadBlob, generateExportMetadata, measureExportDuration } from './utils';
+import {
+  downloadBlob,
+  generateExportMetadata,
+  measureExportDuration,
+} from './utils';
 
 import type { CSVExportOptions, ExportResult } from './types';
 
@@ -11,7 +15,7 @@ import type { CSVExportOptions, ExportResult } from './types';
  */
 export async function exportToCSV<T extends Record<string, unknown>>(
   data: T[],
-  options: CSVExportOptions = {},
+  options: CSVExportOptions = {}
 ): Promise<ExportResult> {
   const startTime = Date.now();
 
@@ -82,7 +86,7 @@ export function convertToCSV<T extends Record<string, unknown>>(
     lineEnding?: string;
     includeHeaders?: boolean;
     columns?: string[];
-  } = {},
+  } = {}
 ): string {
   const {
     delimiter = ',',
@@ -102,7 +106,9 @@ export function convertToCSV<T extends Record<string, unknown>>(
 
   if (includeHeaders) {
     csvRows.push(
-      headers.map(h => escapeCSVValue(String(h), delimiter, quote, escape)).join(delimiter),
+      headers
+        .map(h => escapeCSVValue(String(h), delimiter, quote, escape))
+        .join(delimiter)
     );
   }
 
@@ -124,7 +130,7 @@ function escapeCSVValue(
   value: string,
   delimiter: string,
   quote: string,
-  escape: string,
+  escape: string
 ): string {
   // Check if value needs quoting
   const needsQuoting =
@@ -171,7 +177,7 @@ export function parseCSV(
     quote?: string;
     hasHeaders?: boolean;
     skipEmptyLines?: boolean;
-  } = {},
+  } = {}
 ): Record<string, string>[] {
   const {
     delimiter = ',',
@@ -189,7 +195,10 @@ export function parseCSV(
 
   const headers = hasHeaders
     ? parseCSVLine(lines[0], delimiter, quote)
-    : Array.from({ length: parseCSVLine(lines[0], delimiter, quote).length }, (_, i) => `column${i + 1}`);
+    : Array.from(
+        { length: parseCSVLine(lines[0], delimiter, quote).length },
+        (_, i) => `column${i + 1}`
+      );
 
   const startIndex = hasHeaders ? 1 : 0;
 
@@ -216,7 +225,11 @@ export function parseCSV(
 /**
  * Parse a single CSV line
  */
-function parseCSVLine(line: string, delimiter: string, quote: string): string[] {
+function parseCSVLine(
+  line: string,
+  delimiter: string,
+  quote: string
+): string[] {
   const values: string[] = [];
   let current = '';
   let inQuotes = false;
@@ -260,7 +273,7 @@ function parseCSVLine(line: string, delimiter: string, quote: string): string[] 
  */
 export async function exportMultipleSheetsToCSV(
   sheets: Record<string, Record<string, unknown>[]>,
-  options: CSVExportOptions = {},
+  options: CSVExportOptions = {}
 ): Promise<ExportResult[]> {
   const results: ExportResult[] = [];
 
@@ -285,7 +298,7 @@ export async function exportMultipleSheetsToCSV(
  */
 export async function* streamToCSV<T extends Record<string, unknown>>(
   dataGenerator: AsyncGenerator<T[], void, unknown>,
-  options: CSVExportOptions = {},
+  options: CSVExportOptions = {}
 ): AsyncGenerator<string, void, unknown> {
   const {
     delimiter = ',',
@@ -301,8 +314,8 @@ export async function* streamToCSV<T extends Record<string, unknown>>(
 
   for await (const chunk of dataGenerator) {
     if (chunk.length === 0) {
-continue;
-}
+      continue;
+    }
 
     if (isFirstChunk) {
       headers = columns || Object.keys(chunk[0] || {});

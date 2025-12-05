@@ -57,7 +57,7 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
   }
 
   const membership = userOrganizations.find(
-    m => m.organizationId === orchestrator.organizationId,
+    m => m.organizationId === orchestrator.organizationId
   );
 
   return { orchestrator, role: membership?.role ?? null };
@@ -69,7 +69,7 @@ async function checkOrchestratorAccess(orchestratorId: string, userId: string) {
 function deepDiff(
   obj1: Record<string, unknown>,
   obj2: Record<string, unknown>,
-  path = '',
+  path = ''
 ): {
   changed: Array<{ path: string; oldValue: unknown; newValue: unknown }>;
   added: Array<{ path: string; value: unknown }>;
@@ -116,7 +116,7 @@ function deepDiff(
         const nestedDiff = deepDiff(
           val1 as Record<string, unknown>,
           val2 as Record<string, unknown>,
-          currentPath,
+          currentPath
         );
         result.changed.push(...nestedDiff.changed);
         result.added.push(...nestedDiff.added);
@@ -155,7 +155,7 @@ function deepDiff(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -164,9 +164,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.UNAUTHORIZED,
-          'Authentication required',
+          'Authentication required'
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -177,9 +177,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
-          'Invalid charter ID format',
+          'Invalid charter ID format'
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -194,9 +194,9 @@ export async function GET(
           'Invalid query parameters',
           {
             errors: parseResult.error.flatten().fieldErrors,
-          },
+          }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -241,9 +241,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VERSION_NOT_FOUND,
-          `Version ${version1} not found`,
+          `Version ${version1} not found`
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -251,9 +251,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VERSION_NOT_FOUND,
-          `Version ${version2} not found`,
+          `Version ${version2} not found`
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -262,31 +262,31 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.VALIDATION_ERROR,
-          'Versions belong to different orchestrators',
+          'Versions belong to different orchestrators'
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check access
     const access = await checkOrchestratorAccess(
       charterVersion1.orchestratorId,
-      session.user.id,
+      session.user.id
     );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.FORBIDDEN,
-          'Orchestrator not found or access denied',
+          'Orchestrator not found or access denied'
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Compute diff
     const diff = deepDiff(
       charterVersion1.charterData as Record<string, unknown>,
-      charterVersion2.charterData as Record<string, unknown>,
+      charterVersion2.charterData as Record<string, unknown>
     );
 
     return NextResponse.json({
@@ -315,9 +315,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         CHARTER_ERROR_CODES.INTERNAL_ERROR,
-        'An internal error occurred',
+        'An internal error occurred'
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

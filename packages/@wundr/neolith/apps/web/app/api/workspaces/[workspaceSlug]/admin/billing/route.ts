@@ -47,7 +47,12 @@ const PLAN_LIMITS: Record<
     storage: 5,
     channels: 10,
     apiCalls: 10000,
-    features: ['Basic messaging', 'Public channels', '5GB storage', '10K API calls/month'],
+    features: [
+      'Basic messaging',
+      'Public channels',
+      '5GB storage',
+      '10K API calls/month',
+    ],
   },
   STARTER: {
     name: 'Starter',
@@ -120,7 +125,7 @@ const PLAN_LIMITS: Record<
  */
 export async function GET(
   _request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -128,9 +133,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED,
+          ADMIN_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -149,9 +154,9 @@ export async function GET(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN,
+          ADMIN_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -178,7 +183,9 @@ export async function GET(
       Number(storageUsage._sum.size || 0) / (1024 * 1024 * 1024);
 
     // Mock API calls usage (in production, this would come from an API usage tracking table)
-    const apiCallsUsage = Math.floor(Math.random() * (planConfig.apiCalls * 0.7));
+    const apiCallsUsage = Math.floor(
+      Math.random() * (planConfig.apiCalls * 0.7)
+    );
 
     // Calculate period dates (monthly billing)
     const now = new Date();
@@ -208,14 +215,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/admin/billing] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to fetch billing info',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR,
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

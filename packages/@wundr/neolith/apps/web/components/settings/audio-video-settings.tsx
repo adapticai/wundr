@@ -98,11 +98,16 @@ export function AudioVideoSettings() {
   const [isMicTesting, setIsMicTesting] = React.useState(false);
   const [micLevel, setMicLevel] = React.useState(0);
   const [isSpeakerTesting, setIsSpeakerTesting] = React.useState(false);
-  const [isCameraPreviewActive, setIsCameraPreviewActive] = React.useState(false);
+  const [isCameraPreviewActive, setIsCameraPreviewActive] =
+    React.useState(false);
 
   // Media streams
-  const [audioStream, setAudioStream] = React.useState<MediaStream | null>(null);
-  const [videoStream, setVideoStream] = React.useState<MediaStream | null>(null);
+  const [audioStream, setAudioStream] = React.useState<MediaStream | null>(
+    null
+  );
+  const [videoStream, setVideoStream] = React.useState<MediaStream | null>(
+    null
+  );
 
   // Refs
   const videoPreviewRef = React.useRef<HTMLVideoElement>(null);
@@ -158,8 +163,12 @@ export function AudioVideoSettings() {
 
   const checkPermissions = async () => {
     try {
-      const micPermission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
-      const cameraPermission = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      const micPermission = await navigator.permissions.query({
+        name: 'microphone' as PermissionName,
+      });
+      const cameraPermission = await navigator.permissions.query({
+        name: 'camera' as PermissionName,
+      });
 
       setPermissionsGranted({
         microphone: micPermission.state === 'granted',
@@ -167,11 +176,17 @@ export function AudioVideoSettings() {
       });
 
       micPermission.onchange = () => {
-        setPermissionsGranted(prev => ({ ...prev, microphone: micPermission.state === 'granted' }));
+        setPermissionsGranted(prev => ({
+          ...prev,
+          microphone: micPermission.state === 'granted',
+        }));
       };
 
       cameraPermission.onchange = () => {
-        setPermissionsGranted(prev => ({ ...prev, camera: cameraPermission.state === 'granted' }));
+        setPermissionsGranted(prev => ({
+          ...prev,
+          camera: cameraPermission.state === 'granted',
+        }));
       };
     } catch (error) {
       console.error('Permission API not supported:', error);
@@ -182,26 +197,32 @@ export function AudioVideoSettings() {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
 
-      const mics = devices.filter(d => d.kind === 'audioinput').map(d => ({
-        deviceId: d.deviceId,
-        groupId: d.groupId,
-        kind: d.kind,
-        label: d.label || `Microphone ${d.deviceId.slice(0, 5)}`,
-      }));
+      const mics = devices
+        .filter(d => d.kind === 'audioinput')
+        .map(d => ({
+          deviceId: d.deviceId,
+          groupId: d.groupId,
+          kind: d.kind,
+          label: d.label || `Microphone ${d.deviceId.slice(0, 5)}`,
+        }));
 
-      const spkrs = devices.filter(d => d.kind === 'audiooutput').map(d => ({
-        deviceId: d.deviceId,
-        groupId: d.groupId,
-        kind: d.kind,
-        label: d.label || `Speaker ${d.deviceId.slice(0, 5)}`,
-      }));
+      const spkrs = devices
+        .filter(d => d.kind === 'audiooutput')
+        .map(d => ({
+          deviceId: d.deviceId,
+          groupId: d.groupId,
+          kind: d.kind,
+          label: d.label || `Speaker ${d.deviceId.slice(0, 5)}`,
+        }));
 
-      const cams = devices.filter(d => d.kind === 'videoinput').map(d => ({
-        deviceId: d.deviceId,
-        groupId: d.groupId,
-        kind: d.kind,
-        label: d.label || `Camera ${d.deviceId.slice(0, 5)}`,
-      }));
+      const cams = devices
+        .filter(d => d.kind === 'videoinput')
+        .map(d => ({
+          deviceId: d.deviceId,
+          groupId: d.groupId,
+          kind: d.kind,
+          label: d.label || `Camera ${d.deviceId.slice(0, 5)}`,
+        }));
 
       setMicrophones(mics);
       setSpeakers(spkrs);
@@ -236,7 +257,7 @@ export function AudioVideoSettings() {
 
   const updatePreference = <K extends keyof AudioVideoPreferences>(
     key: K,
-    value: AudioVideoPreferences[K],
+    value: AudioVideoPreferences[K]
   ) => {
     setPreferences(prev => {
       const updated = { ...prev, [key]: value };
@@ -259,9 +280,10 @@ export function AudioVideoSettings() {
 
       const constraints: MediaStreamConstraints = {
         audio: {
-          deviceId: preferences.microphoneId !== 'default'
-            ? { exact: preferences.microphoneId }
-            : undefined,
+          deviceId:
+            preferences.microphoneId !== 'default'
+              ? { exact: preferences.microphoneId }
+              : undefined,
           echoCancellation: preferences.echoCancellation,
           noiseSuppression: preferences.noiseCancellation,
           autoGainControl: preferences.autoGainControl,
@@ -284,12 +306,16 @@ export function AudioVideoSettings() {
 
       const checkLevel = () => {
         if (!analyserRef.current || !isMicTesting) {
-return;
-}
+          return;
+        }
 
         analyserRef.current.getByteFrequencyData(dataArray);
-        const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
-        const normalizedLevel = Math.min(100, (average / 255) * 100 * (preferences.microphoneVolume / 100));
+        const average =
+          dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+        const normalizedLevel = Math.min(
+          100,
+          (average / 255) * 100 * (preferences.microphoneVolume / 100)
+        );
         setMicLevel(normalizedLevel);
 
         animationFrameRef.current = requestAnimationFrame(checkLevel);
@@ -306,7 +332,10 @@ return;
       setIsMicTesting(false);
       toast({
         title: 'Microphone Error',
-        description: error instanceof Error ? error.message : 'Failed to access microphone',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to access microphone',
         variant: 'destructive',
       });
     }
@@ -386,9 +415,10 @@ return;
 
       const constraints: MediaStreamConstraints = {
         video: {
-          deviceId: preferences.cameraId !== 'default'
-            ? { exact: preferences.cameraId }
-            : undefined,
+          deviceId:
+            preferences.cameraId !== 'default'
+              ? { exact: preferences.cameraId }
+              : undefined,
           ...videoQualityConstraints[preferences.videoQuality],
         },
       };
@@ -409,7 +439,8 @@ return;
       setIsCameraPreviewActive(false);
       toast({
         title: 'Camera Error',
-        description: error instanceof Error ? error.message : 'Failed to access camera',
+        description:
+          error instanceof Error ? error.message : 'Failed to access camera',
         variant: 'destructive',
       });
     }
@@ -435,7 +466,8 @@ return;
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to save preferences',
+        description:
+          error instanceof Error ? error.message : 'Failed to save preferences',
         variant: 'destructive',
       });
     } finally {
@@ -479,7 +511,8 @@ return;
           <Settings className='h-4 w-4' />
           <AlertDescription className='flex items-center justify-between'>
             <span>
-              Audio/Video permissions are required to test and configure devices.
+              Audio/Video permissions are required to test and configure
+              devices.
             </span>
             <Button size='sm' onClick={requestPermissions}>
               Grant Permissions
@@ -529,7 +562,9 @@ return;
                 max={100}
                 step={1}
                 value={[preferences.microphoneVolume]}
-                onValueChange={([value]) => updatePreference('microphoneVolume', value)}
+                onValueChange={([value]) =>
+                  updatePreference('microphoneVolume', value)
+                }
               />
             </div>
           </SettingsRow>
@@ -576,7 +611,10 @@ return;
 
         <Separator className='my-6' />
 
-        <SettingsGroup title='Audio Processing' description='Advanced audio enhancements'>
+        <SettingsGroup
+          title='Audio Processing'
+          description='Advanced audio enhancements'
+        >
           <SettingsRow
             label='Noise Cancellation'
             description='Reduce background noise during calls'
@@ -585,7 +623,9 @@ return;
             <Switch
               id='noise-cancellation'
               checked={preferences.noiseCancellation}
-              onCheckedChange={checked => updatePreference('noiseCancellation', checked)}
+              onCheckedChange={checked =>
+                updatePreference('noiseCancellation', checked)
+              }
             />
           </SettingsRow>
 
@@ -597,7 +637,9 @@ return;
             <Switch
               id='echo-cancellation'
               checked={preferences.echoCancellation}
-              onCheckedChange={checked => updatePreference('echoCancellation', checked)}
+              onCheckedChange={checked =>
+                updatePreference('echoCancellation', checked)
+              }
             />
           </SettingsRow>
 
@@ -609,7 +651,9 @@ return;
             <Switch
               id='auto-gain'
               checked={preferences.autoGainControl}
-              onCheckedChange={checked => updatePreference('autoGainControl', checked)}
+              onCheckedChange={checked =>
+                updatePreference('autoGainControl', checked)
+              }
             />
           </SettingsRow>
 
@@ -621,7 +665,9 @@ return;
             <Switch
               id='auto-mute'
               checked={preferences.autoMuteOnJoin}
-              onCheckedChange={checked => updatePreference('autoMuteOnJoin', checked)}
+              onCheckedChange={checked =>
+                updatePreference('autoMuteOnJoin', checked)
+              }
             />
           </SettingsRow>
         </SettingsGroup>
@@ -668,7 +714,9 @@ return;
                 max={100}
                 step={1}
                 value={[preferences.speakerVolume]}
-                onValueChange={([value]) => updatePreference('speakerVolume', value)}
+                onValueChange={([value]) =>
+                  updatePreference('speakerVolume', value)
+                }
               />
             </div>
           </SettingsRow>
@@ -805,7 +853,9 @@ return;
             <Switch
               id='virtual-background'
               checked={preferences.virtualBackground}
-              onCheckedChange={checked => updatePreference('virtualBackground', checked)}
+              onCheckedChange={checked =>
+                updatePreference('virtualBackground', checked)
+              }
             />
           </SettingsRow>
 
@@ -818,9 +868,9 @@ return;
               >
                 <Select
                   value={preferences.virtualBackgroundType}
-                  onValueChange={(value: AudioVideoPreferences['virtualBackgroundType']) =>
-                    updatePreference('virtualBackgroundType', value)
-                  }
+                  onValueChange={(
+                    value: AudioVideoPreferences['virtualBackgroundType']
+                  ) => updatePreference('virtualBackgroundType', value)}
                 >
                   <SelectTrigger id='background-type' className='w-64'>
                     <SelectValue />
@@ -872,7 +922,9 @@ return;
             <Switch
               id='hardware-accel'
               checked={preferences.hardwareAcceleration}
-              onCheckedChange={checked => updatePreference('hardwareAcceleration', checked)}
+              onCheckedChange={checked =>
+                updatePreference('hardwareAcceleration', checked)
+              }
             />
           </SettingsRow>
 
@@ -883,9 +935,9 @@ return;
           >
             <Select
               value={preferences.echoCancellationType}
-              onValueChange={(value: AudioVideoPreferences['echoCancellationType']) =>
-                updatePreference('echoCancellationType', value)
-              }
+              onValueChange={(
+                value: AudioVideoPreferences['echoCancellationType']
+              ) => updatePreference('echoCancellationType', value)}
             >
               <SelectTrigger id='echo-type' className='w-64'>
                 <SelectValue />
@@ -904,7 +956,9 @@ return;
           >
             <Select
               value={preferences.sampleRate.toString()}
-              onValueChange={value => updatePreference('sampleRate', parseInt(value))}
+              onValueChange={value =>
+                updatePreference('sampleRate', parseInt(value))
+              }
             >
               <SelectTrigger id='sample-rate' className='w-64'>
                 <SelectValue />
@@ -927,7 +981,9 @@ return;
             <Gauge className='h-5 w-5' />
             Device Status
           </CardTitle>
-          <CardDescription>Current device configuration summary</CardDescription>
+          <CardDescription>
+            Current device configuration summary
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
@@ -944,8 +1000,9 @@ return;
                     <XCircle className='h-3 w-3 text-red-500' />
                   )}
                   <span>
-                    {microphones.find(m => m.deviceId === preferences.microphoneId)?.label ||
-                      'Default'}
+                    {microphones.find(
+                      m => m.deviceId === preferences.microphoneId
+                    )?.label || 'Default'}
                   </span>
                 </div>
                 <div>Volume: {preferences.microphoneVolume}%</div>
@@ -970,7 +1027,8 @@ return;
                     <XCircle className='h-3 w-3 text-red-500' />
                   )}
                   <span>
-                    {speakers.find(s => s.deviceId === preferences.speakerId)?.label || 'Default'}
+                    {speakers.find(s => s.deviceId === preferences.speakerId)
+                      ?.label || 'Default'}
                   </span>
                 </div>
                 <div>Volume: {preferences.speakerVolume}%</div>
@@ -990,12 +1048,15 @@ return;
                     <XCircle className='h-3 w-3 text-red-500' />
                   )}
                   <span>
-                    {cameras.find(c => c.deviceId === preferences.cameraId)?.label || 'Default'}
+                    {cameras.find(c => c.deviceId === preferences.cameraId)
+                      ?.label || 'Default'}
                   </span>
                 </div>
                 <div>Quality: {preferences.videoQuality.toUpperCase()}</div>
                 {preferences.virtualBackground && (
-                  <div>Virtual Background: {preferences.virtualBackgroundType}</div>
+                  <div>
+                    Virtual Background: {preferences.virtualBackgroundType}
+                  </div>
                 )}
               </div>
             </div>

@@ -138,10 +138,10 @@ export function WorkflowAnalytics({
 
   // Auto-refresh data every 30 seconds when there are running executions
   useEffect(() => {
-    const hasRunning = executions.some((e) => e.status === 'running');
+    const hasRunning = executions.some(e => e.status === 'running');
     if (!hasRunning) {
-return;
-}
+      return;
+    }
 
     const interval = setInterval(() => {
       setLastUpdate(new Date());
@@ -170,32 +170,28 @@ return;
         break;
     }
 
-    return executions.filter(
-      (e) => new Date(e.startedAt) >= cutoffDate,
-    );
+    return executions.filter(e => new Date(e.startedAt) >= cutoffDate);
   }, [executions, timeRange]);
 
   // Calculate aggregate metrics
   const metrics = useMemo(() => {
     const total = filteredExecutions.length;
     const completed = filteredExecutions.filter(
-      (e) => e.status === 'completed',
+      e => e.status === 'completed'
     ).length;
-    const failed = filteredExecutions.filter(
-      (e) => e.status === 'failed',
-    ).length;
+    const failed = filteredExecutions.filter(e => e.status === 'failed').length;
     const running = filteredExecutions.filter(
-      (e) => e.status === 'running',
+      e => e.status === 'running'
     ).length;
 
     const completedExecutions = filteredExecutions.filter(
-      (e) => e.status === 'completed' && e.duration,
+      e => e.status === 'completed' && e.duration
     );
     const avgDuration =
       completedExecutions.length > 0
         ? Math.round(
             completedExecutions.reduce((sum, e) => sum + (e.duration || 0), 0) /
-              completedExecutions.length,
+              completedExecutions.length
           )
         : 0;
 
@@ -217,7 +213,7 @@ return;
   const trendData = useMemo((): ExecutionTrendData[] => {
     const groupedByDate = new Map<string, ExecutionTrendData>();
 
-    filteredExecutions.forEach((execution) => {
+    filteredExecutions.forEach(execution => {
       const date = new Date(execution.startedAt).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -230,11 +226,11 @@ return;
       const data = groupedByDate.get(date)!;
       data.total += 1;
       if (execution.status === 'completed') {
-data.completed += 1;
-}
+        data.completed += 1;
+      }
       if (execution.status === 'failed') {
-data.failed += 1;
-}
+        data.failed += 1;
+      }
     });
 
     return Array.from(groupedByDate.values()).sort((a, b) => {
@@ -248,8 +244,8 @@ data.failed += 1;
   const errorBreakdown = useMemo((): ErrorBreakdownData[] => {
     const errorMap = new Map<string, { count: number; total: number }>();
 
-    filteredExecutions.forEach((execution) => {
-      execution.actionResults.forEach((result) => {
+    filteredExecutions.forEach(execution => {
+      execution.actionResults.forEach(result => {
         const actionLabel =
           ACTION_TYPE_CONFIG[result.actionType]?.label || result.actionType;
 
@@ -271,7 +267,7 @@ data.failed += 1;
         errorCount: count,
         errorRate: total > 0 ? Math.round((count / total) * 100) : 0,
       }))
-      .filter((item) => item.errorCount > 0)
+      .filter(item => item.errorCount > 0)
       .sort((a, b) => b.errorCount - a.errorCount);
   }, [filteredExecutions]);
 
@@ -282,8 +278,8 @@ data.failed += 1;
       { durations: number[]; successCount: number; totalCount: number }
     >();
 
-    filteredExecutions.forEach((execution) => {
-      execution.actionResults.forEach((result) => {
+    filteredExecutions.forEach(execution => {
+      execution.actionResults.forEach(result => {
         if (!actionMap.has(result.actionType)) {
           actionMap.set(result.actionType, {
             durations: [],
@@ -310,7 +306,7 @@ data.failed += 1;
         const avgDuration =
           durations.length > 0
             ? Math.round(
-                durations.reduce((sum, d) => sum + d, 0) / durations.length,
+                durations.reduce((sum, d) => sum + d, 0) / durations.length
               )
             : 0;
         const successRate =
@@ -329,8 +325,8 @@ data.failed += 1;
   // Calculate trigger frequency (mock data for now, would need trigger data from executions)
   const triggerFrequency = useMemo((): TriggerFrequencyData[] => {
     if (!triggerType) {
-return [];
-}
+      return [];
+    }
 
     return [
       {
@@ -345,8 +341,8 @@ return [];
     const groupedByDate = new Map<string, number[]>();
 
     filteredExecutions
-      .filter((e) => e.status === 'completed' && e.duration)
-      .forEach((execution) => {
+      .filter(e => e.status === 'completed' && e.duration)
+      .forEach(execution => {
         const date = new Date(execution.startedAt).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
@@ -366,7 +362,7 @@ return [];
         const p95Index = Math.floor(sorted.length * 0.95);
         const p99Index = Math.floor(sorted.length * 0.99);
         const avg = Math.round(
-          sorted.reduce((sum, d) => sum + d, 0) / sorted.length,
+          sorted.reduce((sum, d) => sum + d, 0) / sorted.length
         );
 
         return {
@@ -388,7 +384,7 @@ return [];
   const hourlyTrends = useMemo((): HourlyExecutionData[] => {
     const hourlyMap = new Map<number, HourlyExecutionData>();
 
-    filteredExecutions.forEach((execution) => {
+    filteredExecutions.forEach(execution => {
       const hour = new Date(execution.startedAt).getHours();
 
       if (!hourlyMap.has(hour)) {
@@ -422,7 +418,7 @@ return [];
     }
 
     return Array.from(hourlyMap.values()).sort((a, b) =>
-      a.hour.localeCompare(b.hour),
+      a.hour.localeCompare(b.hour)
     );
   }, [filteredExecutions]);
 
@@ -535,14 +531,26 @@ return [];
           value={`${metrics.successRate}%`}
           subtitle={`${metrics.completed} completed`}
           icon={<SuccessIcon className='h-4 w-4' />}
-          trend={metrics.successRate >= 80 ? 'positive' : metrics.successRate >= 50 ? 'neutral' : 'negative'}
+          trend={
+            metrics.successRate >= 80
+              ? 'positive'
+              : metrics.successRate >= 50
+                ? 'neutral'
+                : 'negative'
+          }
         />
         <MetricCard
           title='Failure Rate'
           value={`${metrics.failureRate}%`}
           subtitle={`${metrics.failed} failed`}
           icon={<FailureIcon className='h-4 w-4' />}
-          trend={metrics.failureRate <= 10 ? 'positive' : metrics.failureRate <= 30 ? 'neutral' : 'negative'}
+          trend={
+            metrics.failureRate <= 10
+              ? 'positive'
+              : metrics.failureRate <= 30
+                ? 'neutral'
+                : 'negative'
+          }
         />
         <MetricCard
           title='Avg Execution Time'
@@ -605,9 +613,7 @@ return [];
         <Card>
           <CardHeader>
             <CardTitle>Status Distribution</CardTitle>
-            <CardDescription>
-              Breakdown of execution statuses
-            </CardDescription>
+            <CardDescription>Breakdown of execution statuses</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width='100%' height={300}>
@@ -617,7 +623,7 @@ return [];
                     { name: 'Completed', value: metrics.completed },
                     { name: 'Failed', value: metrics.failed },
                     { name: 'Running', value: metrics.running },
-                  ].filter((item) => item.value > 0)}
+                  ].filter(item => item.value > 0)}
                   cx='50%'
                   cy='50%'
                   labelLine={false}
@@ -881,7 +887,7 @@ return [];
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {hourlyTrends.some((h) => h.executions > 0) ? (
+            {hourlyTrends.some(h => h.executions > 0) ? (
               <ChartContainer config={hourlyChartConfig} className='h-[300px]'>
                 <ComposedChart data={hourlyTrends}>
                   <CartesianGrid strokeDasharray='3 3' />
@@ -934,7 +940,7 @@ return [];
           </CardHeader>
           <CardContent>
             <div className='space-y-2'>
-              {triggerFrequency.map((item) => (
+              {triggerFrequency.map(item => (
                 <div
                   key={item.trigger}
                   className='flex items-center justify-between rounded-lg border bg-muted/50 p-3'
@@ -1057,7 +1063,7 @@ return [];
       )}
 
       {/* Live Data Indicator */}
-      {executions.some((e) => e.status === 'running') && (
+      {executions.some(e => e.status === 'running') && (
         <div className='flex items-center justify-center gap-2 rounded-lg border bg-blue-50 p-3 dark:bg-blue-900/20'>
           <span className='relative flex h-3 w-3'>
             <span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75' />
@@ -1137,14 +1143,14 @@ function EmptyChartPlaceholder({ message }: { message: string }) {
 
 function formatDuration(ms: number): string {
   if (ms === 0) {
-return '0ms';
-}
+    return '0ms';
+  }
   if (ms < 1000) {
-return `${ms}ms`;
-}
+    return `${ms}ms`;
+  }
   if (ms < 60000) {
-return `${(ms / 1000).toFixed(1)}s`;
-}
+    return `${(ms / 1000).toFixed(1)}s`;
+  }
   if (ms < 3600000) {
     const mins = Math.floor(ms / 60000);
     const secs = Math.round((ms % 60000) / 1000);

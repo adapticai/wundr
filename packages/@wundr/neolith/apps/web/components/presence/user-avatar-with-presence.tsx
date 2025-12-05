@@ -85,7 +85,7 @@ export function UserAvatarWithPresence({
           showPulse={showPulse && status === 'online'}
           className={cn(
             'absolute ring-2 ring-card',
-            presencePositionClasses[size],
+            presencePositionClasses[size]
           )}
         />
       )}

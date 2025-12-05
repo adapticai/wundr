@@ -8,7 +8,11 @@
 import { useCallback, useState } from 'react';
 import useSWR from 'swr';
 
-import type { AuditLog, AuditLogFilters, PaginatedAuditLogs } from '@/types/admin';
+import type {
+  AuditLog,
+  AuditLogFilters,
+  PaginatedAuditLogs,
+} from '@/types/admin';
 
 // =============================================================================
 // Types
@@ -50,7 +54,9 @@ const auditFetcher = async (url: string): Promise<PaginatedAuditLogs> => {
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || 'Failed to fetch audit logs');
+    throw new Error(
+      errorData.error || errorData.message || 'Failed to fetch audit logs'
+    );
   }
 
   const result = await res.json();
@@ -109,7 +115,7 @@ const auditFetcher = async (url: string): Promise<PaginatedAuditLogs> => {
  */
 export function useAdminAudit(
   workspaceId: string,
-  initialFilters: AuditLogFilters = {},
+  initialFilters: AuditLogFilters = {}
 ): UseAdminAuditReturn {
   const [filters, setFilters] = useState<AuditLogFilters>({
     page: 1,
@@ -121,17 +127,17 @@ export function useAdminAudit(
   // Build query params from filters
   const queryParams = new URLSearchParams();
   if (filters.action) {
-queryParams.set('action', filters.action);
-}
+    queryParams.set('action', filters.action);
+  }
   if (filters.actorId) {
-queryParams.set('actorId', filters.actorId);
-}
+    queryParams.set('actorId', filters.actorId);
+  }
   if (filters.targetType) {
-queryParams.set('targetType', filters.targetType);
-}
+    queryParams.set('targetType', filters.targetType);
+  }
   if (filters.targetId) {
-queryParams.set('targetId', filters.targetId);
-}
+    queryParams.set('targetId', filters.targetId);
+  }
   if (filters.startDate) {
     queryParams.set('startDate', filters.startDate.toISOString());
   }
@@ -143,10 +149,14 @@ queryParams.set('targetId', filters.targetId);
 
   const url = `/api/workspaces/${workspaceId}/admin/audit?${queryParams}`;
 
-  const { data, error, isLoading, mutate } = useSWR<PaginatedAuditLogs>(url, auditFetcher, {
-    revalidateOnFocus: false,
-    keepPreviousData: true,
-  });
+  const { data, error, isLoading, mutate } = useSWR<PaginatedAuditLogs>(
+    url,
+    auditFetcher,
+    {
+      revalidateOnFocus: false,
+      keepPreviousData: true,
+    }
+  );
 
   // Manual refresh
   const refresh = useCallback(async () => {
@@ -166,12 +176,14 @@ queryParams.set('targetId', filters.targetId);
         exportParams.delete('limit');
 
         const res = await fetch(
-          `/api/workspaces/${workspaceId}/admin/audit/export?${exportParams}`,
+          `/api/workspaces/${workspaceId}/admin/audit/export?${exportParams}`
         );
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Failed to export logs');
+          throw new Error(
+            errorData.error || errorData.message || 'Failed to export logs'
+          );
         }
 
         // Download the file
@@ -190,7 +202,7 @@ queryParams.set('targetId', filters.targetId);
         setIsExporting(false);
       }
     },
-    [workspaceId, queryParams],
+    [workspaceId, queryParams]
   );
 
   return {

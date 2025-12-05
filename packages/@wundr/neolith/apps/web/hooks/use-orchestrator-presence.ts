@@ -91,12 +91,12 @@ export interface UseOrchestratorPresenceReturn {
  */
 export function useOrchestratorPresence(
   orchestratorId: string,
-  options: UseOrchestratorPresenceOptions = {},
+  options: UseOrchestratorPresenceOptions = {}
 ): UseOrchestratorPresenceReturn {
   const { refreshInterval = 5000, enabled = true, onPresenceChange } = options;
 
   const [presence, setPresence] = useState<OrchestratorPresenceData | null>(
-    null,
+    null
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -108,7 +108,7 @@ export function useOrchestratorPresence(
 
     try {
       const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/presence`,
+        `/api/orchestrators/${orchestratorId}/presence`
       );
 
       if (!response.ok) {
@@ -167,7 +167,7 @@ export function useOrchestratorPresence(
         return { ...prev, ...updates };
       });
     },
-    [],
+    []
   );
 
   return {
@@ -210,7 +210,7 @@ export function useOrchestratorPresence(
  */
 export function useMultipleOrchestratorPresence(
   orchestratorIds: string[],
-  options: Omit<UseOrchestratorPresenceOptions, 'onPresenceChange'> = {},
+  options: Omit<UseOrchestratorPresenceOptions, 'onPresenceChange'> = {}
 ): {
   presenceMap: Map<string, OrchestratorPresenceData>;
   isLoading: boolean;
@@ -247,7 +247,7 @@ export function useMultipleOrchestratorPresence(
               lastActive: new Date(result.data.lastActive),
             },
           }))
-          .catch(() => null),
+          .catch(() => null)
       );
 
       const results = await Promise.all(promises);

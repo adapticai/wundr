@@ -50,7 +50,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -59,7 +59,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     if (!member || member.role !== 'OWNER') {
       return NextResponse.json(
         { error: 'Only workspace owners can delete workspaces' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -77,10 +77,9 @@ export async function DELETE(_request: Request, context: RouteContext) {
     console.error('Error deleting workspace:', error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : 'Internal server error',
+        error: error instanceof Error ? error.message : 'Internal server error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

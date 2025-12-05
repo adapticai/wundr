@@ -77,12 +77,12 @@ function generateRealtimeMetrics() {
 
 export function DashboardWidgetsDemo() {
   const [realtimeMetrics, setRealtimeMetrics] = React.useState(
-    generateRealtimeMetrics(),
+    generateRealtimeMetrics()
   );
 
   const handleRealtimeUpdate = async () => {
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 500));
     return generateRealtimeMetrics();
   };
 
@@ -395,11 +395,7 @@ export function DashboardWidgetsDemo() {
       <section>
         <h2 className='text-2xl font-semibold mb-4'>Loading States</h2>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-          <KPICard
-            title='Loading KPI'
-            value={0}
-            isLoading={true}
-          />
+          <KPICard title='Loading KPI' value={0} isLoading={true} />
           <SparklineChart
             title='Loading Chart'
             currentValue={0}

@@ -75,7 +75,7 @@ export function ChannelWithHuddle({
         console.error('Failed to start huddle:', error);
       }
     },
-    [startHuddle],
+    [startHuddle]
   );
 
   const handleJoinHuddle = useCallback(
@@ -88,7 +88,7 @@ export function ChannelWithHuddle({
         console.error('Failed to join huddle:', error);
       }
     },
-    [joinHuddle],
+    [joinHuddle]
   );
 
   const handleLeaveHuddle = useCallback(async () => {

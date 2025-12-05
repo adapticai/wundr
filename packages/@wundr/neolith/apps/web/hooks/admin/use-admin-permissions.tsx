@@ -50,11 +50,17 @@ export interface UseAdminPermissionsReturn {
   /** Check if user has a specific permission */
   can: (resource: PermissionResource, action: PermissionAction) => boolean;
   /** Check multiple permissions at once */
-  canMultiple: (checks: Array<{ resource: PermissionResource; action: PermissionAction }>) => BulkPermissionCheckResult;
+  canMultiple: (
+    checks: Array<{ resource: PermissionResource; action: PermissionAction }>
+  ) => BulkPermissionCheckResult;
   /** Check if user has any of the specified permissions */
-  canAny: (checks: Array<{ resource: PermissionResource; action: PermissionAction }>) => boolean;
+  canAny: (
+    checks: Array<{ resource: PermissionResource; action: PermissionAction }>
+  ) => boolean;
   /** Check if user has all of the specified permissions */
-  canAll: (checks: Array<{ resource: PermissionResource; action: PermissionAction }>) => boolean;
+  canAll: (
+    checks: Array<{ resource: PermissionResource; action: PermissionAction }>
+  ) => boolean;
   /** Manually refresh permissions */
   refresh: () => Promise<void>;
 }
@@ -71,7 +77,9 @@ const permissionsFetcher = async (url: string): Promise<UserPermissions> => {
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || 'Failed to fetch permissions');
+    throw new Error(
+      errorData.error || errorData.message || 'Failed to fetch permissions'
+    );
   }
 
   const result = await res.json();
@@ -89,33 +97,33 @@ function hasPermission(
   permissions: Permission[] | undefined,
   resource: PermissionResource,
   action: PermissionAction,
-  isOwner: boolean,
+  isOwner: boolean
 ): boolean {
   // Owners have all permissions
   if (isOwner) {
-return true;
-}
+    return true;
+  }
 
   if (!permissions || permissions.length === 0) {
-return false;
-}
+    return false;
+  }
 
   // Check for wildcard permission
   const wildcardPerm = permissions.find(p => p.resource === '*');
   if (wildcardPerm && wildcardPerm.actions.includes('*')) {
-return true;
-}
+    return true;
+  }
 
   // Check for specific resource with wildcard action
   const resourcePerm = permissions.find(p => p.resource === resource);
   if (resourcePerm && resourcePerm.actions.includes('*')) {
-return true;
-}
+    return true;
+  }
 
   // Check for specific permission
   if (resourcePerm && resourcePerm.actions.includes(action)) {
-return true;
-}
+    return true;
+  }
 
   return false;
 }
@@ -172,7 +180,7 @@ return true;
  */
 export function useAdminPermissions(
   workspaceId: string,
-  userId?: string,
+  userId?: string
 ): UseAdminPermissionsReturn {
   const url = userId
     ? `/api/workspaces/${workspaceId}/admin/permissions?userId=${userId}`
@@ -184,7 +192,7 @@ export function useAdminPermissions(
     {
       revalidateOnFocus: false,
       dedupingInterval: 60000, // Cache for 1 minute
-    },
+    }
   );
 
   // Manual refresh
@@ -196,16 +204,18 @@ export function useAdminPermissions(
   const can = useCallback(
     (resource: PermissionResource, action: PermissionAction): boolean => {
       if (!data) {
-return false;
-}
+        return false;
+      }
       return hasPermission(data.permissions, resource, action, data.isOwner);
     },
-    [data],
+    [data]
   );
 
   // Multiple permission checks
   const canMultiple = useCallback(
-    (checks: Array<{ resource: PermissionResource; action: PermissionAction }>): BulkPermissionCheckResult => {
+    (
+      checks: Array<{ resource: PermissionResource; action: PermissionAction }>
+    ): BulkPermissionCheckResult => {
       const results: BulkPermissionCheckResult = {};
 
       checks.forEach(({ resource, action }) => {
@@ -219,23 +229,27 @@ return false;
 
       return results;
     },
-    [can],
+    [can]
   );
 
   // Check if user has ANY of the specified permissions
   const canAny = useCallback(
-    (checks: Array<{ resource: PermissionResource; action: PermissionAction }>): boolean => {
+    (
+      checks: Array<{ resource: PermissionResource; action: PermissionAction }>
+    ): boolean => {
       return checks.some(({ resource, action }) => can(resource, action));
     },
-    [can],
+    [can]
   );
 
   // Check if user has ALL of the specified permissions
   const canAll = useCallback(
-    (checks: Array<{ resource: PermissionResource; action: PermissionAction }>): boolean => {
+    (
+      checks: Array<{ resource: PermissionResource; action: PermissionAction }>
+    ): boolean => {
       return checks.every(({ resource, action }) => can(resource, action));
     },
-    [can],
+    [can]
   );
 
   return {
@@ -288,7 +302,7 @@ export function PermissionGuard({
 }: PermissionGuardProps) {
   const hasPermission = useMemo(
     () => can(resource, action),
-    [can, resource, action],
+    [can, resource, action]
   );
 
   return hasPermission ? <>{children}</> : <>{fallback}</>;

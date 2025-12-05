@@ -84,7 +84,7 @@ export async function logMemberAction(
   workspaceId: string,
   targetUserId: string,
   targetUserName: string | null,
-  metadata?: Record<string, unknown>,
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   await logAdminAction({
     action: `member.${action}`,
@@ -106,7 +106,7 @@ export async function logRoleAction(
   workspaceId: string,
   roleId: string,
   roleName: string,
-  metadata?: Record<string, unknown>,
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   await logAdminAction({
     action: `role.${action}`,
@@ -128,7 +128,7 @@ export async function logInviteAction(
   workspaceId: string,
   inviteId: string,
   inviteEmail: string,
-  metadata?: Record<string, unknown>,
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   await logAdminAction({
     action: `invite.${action}`,
@@ -148,7 +148,7 @@ export async function logSettingsAction(
   actorId: string,
   workspaceId: string,
   section: string,
-  changes: Record<string, unknown>,
+  changes: Record<string, unknown>
 ): Promise<void> {
   await logAdminAction({
     action: 'settings.updated',
@@ -168,7 +168,7 @@ export async function logBillingAction(
   action: 'upgraded' | 'downgraded' | 'cancelled',
   actorId: string,
   workspaceId: string,
-  metadata?: Record<string, unknown>,
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   await logAdminAction({
     action: `billing.${action}`,
@@ -188,7 +188,7 @@ export async function logChannelAction(
   workspaceId: string,
   channelId: string,
   channelName: string,
-  metadata?: Record<string, unknown>,
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   await logAdminAction({
     action: `channel.${action}`,
@@ -217,18 +217,20 @@ export async function getAdminActionHistory(
     actorId?: string;
     from?: Date;
     to?: Date;
-  } = {},
-): Promise<Array<{
-  id: string;
-  action: string;
-  actorId: string;
-  actorName: string | null;
-  targetType: string | null;
-  targetId: string | null;
-  targetName: string | null;
-  metadata: Record<string, unknown>;
-  createdAt: Date;
-}>> {
+  } = {}
+): Promise<
+  Array<{
+    id: string;
+    action: string;
+    actorId: string;
+    actorName: string | null;
+    targetType: string | null;
+    targetId: string | null;
+    targetName: string | null;
+    metadata: Record<string, unknown>;
+    createdAt: Date;
+  }>
+> {
   try {
     const auditService = createAuditService();
 
@@ -244,7 +246,7 @@ export async function getAdminActionHistory(
       {
         limit: options.limit || 50,
         offset: options.offset || 0,
-      },
+      }
     );
 
     return result.entries.map(entry => ({
@@ -252,9 +254,15 @@ export async function getAdminActionHistory(
       action: entry.action as string,
       actorId: entry.actorId,
       actorName: entry.actorName || null,
-      targetType: ((entry.metadata as Record<string, unknown>)?.targetType as string) || null,
-      targetId: ((entry.metadata as Record<string, unknown>)?.targetId as string) || null,
-      targetName: ((entry.metadata as Record<string, unknown>)?.targetName as string) || null,
+      targetType:
+        ((entry.metadata as Record<string, unknown>)?.targetType as string) ||
+        null,
+      targetId:
+        ((entry.metadata as Record<string, unknown>)?.targetId as string) ||
+        null,
+      targetName:
+        ((entry.metadata as Record<string, unknown>)?.targetName as string) ||
+        null,
       metadata: (entry.metadata as Record<string, unknown>) || {},
       createdAt: entry.timestamp,
     }));

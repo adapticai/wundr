@@ -212,14 +212,14 @@ export function useCharter(orchestratorId: string): UseCharterReturn {
         // First, get the orchestrator to find its charter
         const orchestratorResponse = await fetch(
           `/api/orchestrators/${orchestratorId}`,
-          { signal },
+          { signal }
         );
 
         if (!orchestratorResponse.ok) {
           const errorData = await orchestratorResponse.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to fetch orchestrator: ${orchestratorResponse.status}`,
+              `Failed to fetch orchestrator: ${orchestratorResponse.status}`
           );
         }
 
@@ -253,13 +253,13 @@ export function useCharter(orchestratorId: string): UseCharterReturn {
         setError(
           err instanceof Error
             ? err
-            : new Error('Unknown error occurred while fetching charter'),
+            : new Error('Unknown error occurred while fetching charter')
         );
       } finally {
         setIsLoading(false);
       }
     },
-    [orchestratorId],
+    [orchestratorId]
   );
 
   useEffect(() => {
@@ -325,7 +325,7 @@ export function useCharterVersions(
     isActive?: boolean;
     page?: number;
     limit?: number;
-  },
+  }
 ): UseCharterVersionsReturn {
   const [versions, setVersions] = useState<CharterVersion[]>([]);
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
@@ -364,7 +364,7 @@ export function useCharterVersions(
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to fetch charter versions: ${response.status}`,
+              `Failed to fetch charter versions: ${response.status}`
           );
         }
 
@@ -390,8 +390,8 @@ export function useCharterVersions(
           err instanceof Error
             ? err
             : new Error(
-                'Unknown error occurred while fetching charter versions',
-              ),
+                'Unknown error occurred while fetching charter versions'
+              )
         );
         setVersions([]);
         setPagination(null);
@@ -399,7 +399,7 @@ export function useCharterVersions(
         setIsLoading(false);
       }
     },
-    [charterId, options?.isActive, options?.page, options?.limit],
+    [charterId, options?.isActive, options?.page, options?.limit]
   );
 
   useEffect(() => {
@@ -472,7 +472,7 @@ export function useCharterMutations(): UseCharterMutationsReturn {
     async (
       charterId: string,
       input: CreateCharterVersionInput,
-      signal?: AbortSignal,
+      signal?: AbortSignal
     ): Promise<CharterVersion | null> => {
       setIsLoading(true);
       setError(null);
@@ -489,7 +489,7 @@ export function useCharterMutations(): UseCharterMutationsReturn {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to create charter version: ${response.status}`,
+              `Failed to create charter version: ${response.status}`
           );
         }
 
@@ -507,7 +507,7 @@ export function useCharterMutations(): UseCharterMutationsReturn {
           err instanceof Error
             ? err
             : new Error(
-                'Unknown error occurred while creating charter version',
+                'Unknown error occurred while creating charter version'
               );
         setError(error);
         return null;
@@ -515,7 +515,7 @@ export function useCharterMutations(): UseCharterMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const updateVersion = useCallback(
@@ -523,7 +523,7 @@ export function useCharterMutations(): UseCharterMutationsReturn {
       charterId: string,
       version: number,
       input: UpdateCharterVersionInput,
-      signal?: AbortSignal,
+      signal?: AbortSignal
     ): Promise<CharterVersion | null> => {
       setIsLoading(true);
       setError(null);
@@ -536,14 +536,14 @@ export function useCharterMutations(): UseCharterMutationsReturn {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(input),
             signal,
-          },
+          }
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to update charter version: ${response.status}`,
+              `Failed to update charter version: ${response.status}`
           );
         }
 
@@ -562,7 +562,7 @@ export function useCharterMutations(): UseCharterMutationsReturn {
           err instanceof Error
             ? err
             : new Error(
-                'Unknown error occurred while updating charter version',
+                'Unknown error occurred while updating charter version'
               );
         setError(error);
         return null;
@@ -570,14 +570,14 @@ export function useCharterMutations(): UseCharterMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const activateVersion = useCallback(
     async (
       charterId: string,
       version: number,
-      signal?: AbortSignal,
+      signal?: AbortSignal
     ): Promise<CharterVersion | null> => {
       setIsLoading(true);
       setError(null);
@@ -594,7 +594,7 @@ export function useCharterMutations(): UseCharterMutationsReturn {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to activate charter version: ${response.status}`,
+              `Failed to activate charter version: ${response.status}`
           );
         }
 
@@ -612,7 +612,7 @@ export function useCharterMutations(): UseCharterMutationsReturn {
           err instanceof Error
             ? err
             : new Error(
-                'Unknown error occurred while activating charter version',
+                'Unknown error occurred while activating charter version'
               );
         setError(error);
         return null;
@@ -620,14 +620,14 @@ export function useCharterMutations(): UseCharterMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const rollback = useCallback(
     async (
       charterId: string,
       input: RollbackCharterInput,
-      signal?: AbortSignal,
+      signal?: AbortSignal
     ): Promise<CharterVersion | null> => {
       setIsLoading(true);
       setError(null);
@@ -644,7 +644,7 @@ export function useCharterMutations(): UseCharterMutationsReturn {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to rollback charter: ${response.status}`,
+              `Failed to rollback charter: ${response.status}`
           );
         }
 
@@ -668,7 +668,7 @@ export function useCharterMutations(): UseCharterMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const getDiff = useCallback(
@@ -676,7 +676,7 @@ export function useCharterMutations(): UseCharterMutationsReturn {
       charterId: string,
       v1: number,
       v2: number,
-      signal?: AbortSignal,
+      signal?: AbortSignal
     ): Promise<CharterDiff | null> => {
       setIsLoading(true);
       setError(null);
@@ -685,14 +685,14 @@ export function useCharterMutations(): UseCharterMutationsReturn {
         const params = new URLSearchParams({ v1: String(v1), v2: String(v2) });
         const response = await fetch(
           `/api/charters/${charterId}/diff?${params}`,
-          { signal },
+          { signal }
         );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.error?.message ||
-              `Failed to get charter diff: ${response.status}`,
+              `Failed to get charter diff: ${response.status}`
           );
         }
 
@@ -712,7 +712,7 @@ export function useCharterMutations(): UseCharterMutationsReturn {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   return {

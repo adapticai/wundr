@@ -28,7 +28,7 @@ export function OrgConnector({
       <div
         className={cn(
           'absolute left-8 top-0 h-1/2 w-px bg-border',
-          isLast && 'h-10',
+          isLast && 'h-10'
         )}
       />
 

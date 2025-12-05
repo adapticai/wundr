@@ -55,7 +55,7 @@ export function SpeakerView({
       return participants;
     }
     return participants.filter(
-      p => p.participant?.sid !== featuredTrack.participant?.sid,
+      p => p.participant?.sid !== featuredTrack.participant?.sid
     );
   }, [participants, featuredTrack]);
 
@@ -104,7 +104,7 @@ export function SpeakerView({
             'w-full h-32',
             'overflow-x-auto lg:overflow-x-visible',
             'overflow-y-visible lg:overflow-y-auto',
-            'flex-shrink-0',
+            'flex-shrink-0'
           )}
           role='list'
           aria-label='Other participants'

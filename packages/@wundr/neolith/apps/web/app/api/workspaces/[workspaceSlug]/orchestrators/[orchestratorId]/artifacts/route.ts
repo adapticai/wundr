@@ -42,7 +42,7 @@ interface RouteContext {
 async function uploadToS3(
   content: string,
   s3Key: string,
-  contentType: string,
+  contentType: string
 ): Promise<string> {
   const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
   const region = process.env.MY_AWS_REGION ?? 'us-east-1';
@@ -74,7 +74,7 @@ async function uploadToS3(
       Key: s3Key,
       Body: buffer,
       ContentType: contentType,
-    }),
+    })
   );
 
   // Return S3 URL
@@ -93,7 +93,7 @@ async function uploadToS3(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user (or Orchestrator daemon)
@@ -102,9 +102,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORK_SESSION_ERROR_CODES.UNAUTHORIZED,
+          WORK_SESSION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -122,9 +122,9 @@ export async function POST(
           WORK_SESSION_ERROR_CODES.VALIDATION_ERROR,
           {
             errors: validationResult.error.errors,
-          },
+          }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -140,9 +140,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          WORK_SESSION_ERROR_CODES.FORBIDDEN,
+          WORK_SESSION_ERROR_CODES.FORBIDDEN
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -158,9 +158,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Orchestrator not found',
-          WORK_SESSION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
+          WORK_SESSION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -181,9 +181,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Task not found',
-          WORK_SESSION_ERROR_CODES.TASK_NOT_FOUND,
+          WORK_SESSION_ERROR_CODES.TASK_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -203,9 +203,9 @@ export async function POST(
           WORK_SESSION_ERROR_CODES.S3_UPLOAD_FAILED,
           {
             error: error instanceof Error ? error.message : 'Unknown error',
-          },
+          }
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -249,9 +249,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORK_SESSION_ERROR_CODES.INTERNAL_ERROR,
+        WORK_SESSION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -138,7 +138,7 @@ export function NotificationsDialog({
                     'flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors',
                     preference === value
                       ? 'border-primary bg-primary/5'
-                      : 'border-transparent hover:bg-accent',
+                      : 'border-transparent hover:bg-accent'
                   )}
                 >
                   <div
@@ -146,7 +146,7 @@ export function NotificationsDialog({
                       'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
                       preference === value
                         ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted',
+                        : 'bg-muted'
                     )}
                   >
                     <Icon className='h-5 w-5' />

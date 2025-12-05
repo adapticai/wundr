@@ -70,7 +70,7 @@ function generateCacheKey(
   channelId: string,
   timeRange: string,
   since?: string,
-  until?: string,
+  until?: string
 ): string {
   const params = [channelId, timeRange, since, until].filter(Boolean).join(':');
   return `channel:summary:${params}`;
@@ -92,8 +92,8 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 function getCachedSummary(cacheKey: string) {
   const cached = summaryCache.get(cacheKey);
   if (!cached) {
-return null;
-}
+    return null;
+  }
 
   const isExpired = Date.now() - cached.timestamp > CACHE_TTL;
   if (isExpired) {
@@ -110,7 +110,7 @@ return null;
 function setCachedSummary(
   cacheKey: string,
   summary: string,
-  messageCount: number,
+  messageCount: number
 ) {
   summaryCache.set(cacheKey, {
     summary,
@@ -183,7 +183,7 @@ async function fetchMessagesForSummary(
   channelId: string,
   since: Date,
   until: Date,
-  limit: number,
+  limit: number
 ) {
   const messages = await prisma.message.findMany({
     where: {
@@ -236,7 +236,7 @@ function formatMessagesForAI(
       replies: number;
     };
   }>,
-  channelName: string,
+  channelName: string
 ): string {
   if (messages.length === 0) {
     return `No messages in the specified time range for channel "${channelName}".`;
@@ -263,7 +263,7 @@ function formatMessagesForAI(
 function getSystemPrompt(
   channelName: string,
   timeRange: string,
-  messageCount: number,
+  messageCount: number
 ): string {
   return `You are an AI assistant helping users understand channel conversations at a glance.
 
@@ -305,7 +305,7 @@ Keep the summary under 500 words.`;
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -314,9 +314,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED,
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -327,9 +327,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Invalid channel ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -342,9 +342,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           MESSAGE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: queryResult.error.flatten().fieldErrors },
+          { errors: queryResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -353,15 +353,15 @@ export async function GET(
     // Check channel membership
     const membership = await checkChannelMembership(
       params.channelId,
-      session.user.id,
+      session.user.id
     );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -370,7 +370,7 @@ export async function GET(
       params.channelId,
       query.timeRange,
       query.since,
-      query.until,
+      query.until
     );
 
     // Check cache
@@ -399,7 +399,7 @@ export async function GET(
       params.channelId,
       since,
       until,
-      query.limit,
+      query.limit
     );
 
     if (messages.length === 0) {
@@ -421,10 +421,7 @@ export async function GET(
     }
 
     // Format messages for AI
-    const messagesText = formatMessagesForAI(
-      messages,
-      membership.channel.name,
-    );
+    const messagesText = formatMessagesForAI(messages, membership.channel.name);
 
     // Determine which model to use
     const provider = process.env.DEFAULT_LLM_PROVIDER || 'openai';
@@ -432,26 +429,26 @@ export async function GET(
     // Validate API key for selected provider
     if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
       console.error(
-        '[GET /api/channels/:channelId/summarize] OPENAI_API_KEY not configured',
+        '[GET /api/channels/:channelId/summarize] OPENAI_API_KEY not configured'
       );
       return NextResponse.json(
         createErrorResponse(
           'AI service not configured',
-          MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+          MESSAGE_ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
     if (provider !== 'openai' && !process.env.ANTHROPIC_API_KEY) {
       console.error(
-        '[GET /api/channels/:channelId/summarize] ANTHROPIC_API_KEY not configured',
+        '[GET /api/channels/:channelId/summarize] ANTHROPIC_API_KEY not configured'
       );
       return NextResponse.json(
         createErrorResponse(
           'AI service not configured',
-          MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+          MESSAGE_ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -465,7 +462,7 @@ export async function GET(
     const systemPrompt = getSystemPrompt(
       membership.channel.name,
       query.timeRange,
-      messages.length,
+      messages.length
     );
 
     const { text: summary } = await generateText({
@@ -497,9 +494,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -527,7 +524,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<Response> {
   try {
     // Authenticate user
@@ -543,9 +540,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid channel ID format',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -565,9 +562,9 @@ export async function POST(
         createErrorResponse(
           'Invalid query parameters',
           MESSAGE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: queryResult.error.flatten().fieldErrors },
+          { errors: queryResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -576,15 +573,15 @@ export async function POST(
     // Check channel membership
     const membership = await checkChannelMembership(
       params.channelId,
-      session.user.id,
+      session.user.id
     );
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -596,7 +593,7 @@ export async function POST(
       params.channelId,
       since,
       until,
-      query.limit,
+      query.limit
     );
 
     if (messages.length === 0) {
@@ -608,10 +605,7 @@ export async function POST(
     }
 
     // Format messages for AI
-    const messagesText = formatMessagesForAI(
-      messages,
-      membership.channel.name,
-    );
+    const messagesText = formatMessagesForAI(messages, membership.channel.name);
 
     // Determine which model to use
     const provider = process.env.DEFAULT_LLM_PROVIDER || 'openai';
@@ -619,26 +613,26 @@ export async function POST(
     // Validate API key
     if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
       console.error(
-        '[POST /api/channels/:channelId/summarize] OPENAI_API_KEY not configured',
+        '[POST /api/channels/:channelId/summarize] OPENAI_API_KEY not configured'
       );
       return NextResponse.json(
         createErrorResponse(
           'AI service not configured',
-          MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+          MESSAGE_ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
     if (provider !== 'openai' && !process.env.ANTHROPIC_API_KEY) {
       console.error(
-        '[POST /api/channels/:channelId/summarize] ANTHROPIC_API_KEY not configured',
+        '[POST /api/channels/:channelId/summarize] ANTHROPIC_API_KEY not configured'
       );
       return NextResponse.json(
         createErrorResponse(
           'AI service not configured',
-          MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+          MESSAGE_ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -652,7 +646,7 @@ export async function POST(
     const systemPrompt = getSystemPrompt(
       membership.channel.name,
       query.timeRange,
-      messages.length,
+      messages.length
     );
 
     const result = streamText({
@@ -668,9 +662,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

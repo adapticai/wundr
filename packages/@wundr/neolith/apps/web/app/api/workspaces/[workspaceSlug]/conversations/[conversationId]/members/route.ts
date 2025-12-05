@@ -83,14 +83,14 @@ function generateInviteToken(): string {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -105,9 +105,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -125,9 +125,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'You are not a member of this workspace',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -159,9 +159,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Conversation not found',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -169,9 +169,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'This endpoint is only for DM conversations',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -179,23 +179,23 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Conversation does not belong to this workspace',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Verify user is a member of the conversation
     const isMember = conversation.channelMembers.some(
-      m => m.userId === session.user.id,
+      m => m.userId === session.user.id
     );
     if (!isMember) {
       return NextResponse.json(
         createErrorResponse(
           'You are not a member of this conversation',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -219,14 +219,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/[workspaceSlug]/conversations/[conversationId]/members] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'Failed to fetch conversation members',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -245,14 +245,14 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Unauthorized', ORG_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -266,9 +266,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -279,9 +279,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'At least one userId or email is required',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -300,9 +300,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found',
-          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND,
+          ORG_ERROR_CODES.WORKSPACE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -329,9 +329,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'You are not a member of this workspace',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -351,9 +351,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Conversation not found',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
+          ORG_ERROR_CODES.CHANNEL_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -361,9 +361,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'This endpoint is only for DM conversations',
-          ORG_ERROR_CODES.VALIDATION_ERROR,
+          ORG_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -371,23 +371,23 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Conversation does not belong to this workspace',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Verify user is a member of the conversation
     const isMember = conversation.channelMembers.some(
-      m => m.userId === session.user.id,
+      m => m.userId === session.user.id
     );
     if (!isMember) {
       return NextResponse.json(
         createErrorResponse(
           'You are not a member of this conversation',
-          ORG_ERROR_CODES.FORBIDDEN,
+          ORG_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -408,15 +408,15 @@ export async function POST(
         return NextResponse.json(
           createErrorResponse(
             `Some users are not workspace members: ${invalidUserIds.join(', ')}`,
-            ORG_ERROR_CODES.USER_NOT_FOUND,
+            ORG_ERROR_CODES.USER_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
 
       // Filter out users who are already members
       const existingMemberIds = new Set(
-        conversation.channelMembers.map(m => m.userId),
+        conversation.channelMembers.map(m => m.userId)
       );
       const usersToAdd = userIds.filter(id => !existingMemberIds.has(id));
       newMembers.push(...usersToAdd);
@@ -448,7 +448,7 @@ export async function POST(
 
       // For existing members, add them to the conversation if not already in it
       const existingMemberIds = new Set(
-        conversation.channelMembers.map(m => m.userId),
+        conversation.channelMembers.map(m => m.userId)
       );
       for (const member of existingMembers) {
         if (!existingMemberIds.has(member.userId)) {
@@ -528,13 +528,13 @@ export async function POST(
             if (!emailResult.success) {
               console.error(
                 `[Conversation Members] Failed to send email to ${invite.email}:`,
-                emailResult.error,
+                emailResult.error
               );
             }
           } catch (error) {
             console.error(
               `[Conversation Members] Exception sending email to ${invite.email}:`,
-              error,
+              error
             );
             emailResults.push({
               email: invite.email,
@@ -632,14 +632,14 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/[workspaceSlug]/conversations/[conversationId]/members] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'Failed to add members to conversation',
-        ORG_ERROR_CODES.INTERNAL_ERROR,
+        ORG_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

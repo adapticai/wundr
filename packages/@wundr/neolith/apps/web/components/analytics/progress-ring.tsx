@@ -37,7 +37,7 @@ export interface ProgressRingProps {
 
 function formatValue(
   value: number,
-  format: ProgressRingProps['format'] = 'number',
+  format: ProgressRingProps['format'] = 'number'
 ): string {
   switch (format) {
     case 'currency':
@@ -51,14 +51,14 @@ function formatValue(
       return `${value.toFixed(0)}%`;
     case 'compact':
       if (value < 1000) {
-return value.toString();
-}
+        return value.toString();
+      }
       if (value < 1000000) {
-return `${(value / 1000).toFixed(1)}K`;
-}
+        return `${(value / 1000).toFixed(1)}K`;
+      }
       if (value < 1000000000) {
-return `${(value / 1000000).toFixed(1)}M`;
-}
+        return `${(value / 1000000).toFixed(1)}M`;
+      }
       return `${(value / 1000000000).toFixed(1)}B`;
     default:
       return value.toLocaleString();
@@ -67,18 +67,18 @@ return `${(value / 1000000).toFixed(1)}M`;
 
 function getColorClasses(
   color: ProgressRingProps['color'] = 'primary',
-  percentage: number,
+  percentage: number
 ) {
   if (color === 'gradient') {
     if (percentage >= 80) {
-return 'stroke-emerald-500';
-}
+      return 'stroke-emerald-500';
+    }
     if (percentage >= 60) {
-return 'stroke-blue-500';
-}
+      return 'stroke-blue-500';
+    }
     if (percentage >= 40) {
-return 'stroke-amber-500';
-}
+      return 'stroke-amber-500';
+    }
     return 'stroke-rose-500';
   }
 
@@ -181,7 +181,7 @@ export function ProgressRing({
               strokeLinecap='round'
               className={cn(
                 'transition-all duration-300',
-                getColorClasses(color, percentage),
+                getColorClasses(color, percentage)
               )}
               style={{
                 transitionProperty: 'stroke-dashoffset',

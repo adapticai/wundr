@@ -38,7 +38,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'Authentication required',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: 'User not found',
           code: SECURITY_ERROR_CODES.UNAUTHORIZED,
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -64,7 +64,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Store secret temporarily in preferences (will be confirmed on verification)
     const prefs = (user.preferences as Record<string, unknown>) || {};
-    const twoFactor = prefs.twoFactor as { enabled?: boolean; secret?: string; backupCodes?: string[] } | undefined;
+    const twoFactor = prefs.twoFactor as
+      | { enabled?: boolean; secret?: string; backupCodes?: string[] }
+      | undefined;
 
     const updatedPrefs = {
       ...prefs,
@@ -105,7 +107,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'An internal error occurred',
         code: SECURITY_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

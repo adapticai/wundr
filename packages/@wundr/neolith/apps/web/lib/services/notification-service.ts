@@ -13,14 +13,14 @@ export interface NotificationPayload {
 }
 
 export async function sendNotification(
-  payload: NotificationPayload,
+  payload: NotificationPayload
 ): Promise<void> {
   console.log('[Notification] Would send notification:', payload);
   // TODO: Implement actual notification delivery (WebSocket, push, etc.)
 }
 
 export async function sendBulkNotifications(
-  payloads: NotificationPayload[],
+  payloads: NotificationPayload[]
 ): Promise<void> {
   for (const payload of payloads) {
     await sendNotification(payload);
@@ -29,7 +29,7 @@ export async function sendBulkNotifications(
 
 export async function markNotificationRead(
   notificationId: string,
-  userId: string,
+  userId: string
 ): Promise<void> {
   console.log(`[Notification] Marking ${notificationId} as read for ${userId}`);
   // TODO: Implement database update
@@ -43,7 +43,7 @@ export async function getUnreadCount(userId: string): Promise<number> {
 
 export async function subscribeToChannel(
   userId: string,
-  channelId: string,
+  channelId: string
 ): Promise<void> {
   console.log(`[Notification] Subscribing ${userId} to channel ${channelId}`);
   // TODO: Implement subscription
@@ -51,10 +51,10 @@ export async function subscribeToChannel(
 
 export async function unsubscribeFromChannel(
   userId: string,
-  channelId: string,
+  channelId: string
 ): Promise<void> {
   console.log(
-    `[Notification] Unsubscribing ${userId} from channel ${channelId}`,
+    `[Notification] Unsubscribing ${userId} from channel ${channelId}`
   );
   // TODO: Implement unsubscription
 }
@@ -120,7 +120,7 @@ export class NotificationService {
     assigneeId: string,
     taskId: string,
     taskTitle: string,
-    assignedBy: string,
+    assignedBy: string
   ): Promise<void> {
     console.log('[Notification] Task assignment notification:', {
       assigneeId,

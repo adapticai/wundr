@@ -1,10 +1,6 @@
 'use client';
 
-import type {
-  Connection,
-  Edge,
-  Node,
-  NodeTypes} from '@xyflow/react';
+import type { Connection, Edge, Node, NodeTypes } from '@xyflow/react';
 
 import {
   ReactFlow,
@@ -308,7 +304,7 @@ export function WorkflowCanvas({
       setHistory(newHistory);
       setHistoryIndex(newHistory.length - 1);
     },
-    [history, historyIndex],
+    [history, historyIndex]
   );
 
   // Undo/Redo
@@ -343,11 +339,11 @@ export function WorkflowCanvas({
               type: MarkerType.ArrowClosed,
             },
           },
-          eds,
-        ),
+          eds
+        )
       );
     },
-    [setEdges],
+    [setEdges]
   );
 
   // Add action node
@@ -400,7 +396,7 @@ export function WorkflowCanvas({
       saveToHistory(newNodes, newEdges);
       setShowAddActionDialog(false);
     },
-    [nodes, edges, setNodes, setEdges, saveToHistory],
+    [nodes, edges, setNodes, setEdges, saveToHistory]
   );
 
   // Edit node
@@ -413,7 +409,7 @@ export function WorkflowCanvas({
         setShowEditDialog(true);
       }
     },
-    [nodes],
+    [nodes]
   );
 
   // Save node edit
@@ -426,9 +422,7 @@ export function WorkflowCanvas({
       if (node.id === selectedNode.id) {
         const config =
           node.data.type === 'trigger'
-            ? TRIGGER_TYPE_CONFIG[
-                (editingConfig as TriggerConfig).type
-              ]
+            ? TRIGGER_TYPE_CONFIG[(editingConfig as TriggerConfig).type]
             : ACTION_TYPE_CONFIG[(editingConfig as ActionConfig).type];
 
         return {
@@ -456,7 +450,7 @@ export function WorkflowCanvas({
     (nodeId: string) => {
       const newNodes = nodes.filter(n => n.id !== nodeId);
       const newEdges = edges.filter(
-        e => e.source !== nodeId && e.target !== nodeId,
+        e => e.source !== nodeId && e.target !== nodeId
       );
 
       // Reconnect edges if deleting a middle node
@@ -480,7 +474,7 @@ export function WorkflowCanvas({
       setEdges(newEdges);
       saveToHistory(newNodes, newEdges);
     },
-    [nodes, edges, setNodes, setEdges, saveToHistory],
+    [nodes, edges, setNodes, setEdges, saveToHistory]
   );
 
   // Duplicate node
@@ -511,7 +505,7 @@ export function WorkflowCanvas({
       setNodes(newNodes);
       saveToHistory(newNodes, edges);
     },
-    [nodes, edges, setNodes, saveToHistory],
+    [nodes, edges, setNodes, saveToHistory]
   );
 
   // Save workflow
@@ -586,7 +580,12 @@ export function WorkflowCanvas({
           >
             <Redo className='h-4 w-4' />
           </Button>
-          <Button type='button' variant='outline' onClick={onCancel} disabled={isLoading}>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={onCancel}
+            disabled={isLoading}
+          >
             Cancel
           </Button>
           <Button
@@ -649,9 +648,7 @@ export function WorkflowCanvas({
               <button
                 key={type}
                 type='button'
-                onClick={() =>
-                  handleAddAction(type as ActionConfig['type'])
-                }
+                onClick={() => handleAddAction(type as ActionConfig['type'])}
                 className='flex items-start gap-3 rounded-lg border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary/5'
               >
                 <div className='rounded-md bg-blue-500 p-2 text-white'>
@@ -674,7 +671,8 @@ export function WorkflowCanvas({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Edit {selectedNode?.data.type === 'trigger' ? 'Trigger' : 'Action'}
+              Edit{' '}
+              {selectedNode?.data.type === 'trigger' ? 'Trigger' : 'Action'}
             </DialogTitle>
             <DialogDescription>
               Configure the {selectedNode?.data.type} settings
@@ -697,11 +695,13 @@ export function WorkflowCanvas({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(TRIGGER_TYPE_CONFIG).map(([key, config]) => (
-                      <SelectItem key={key} value={key}>
-                        {config.label}
-                      </SelectItem>
-                    ))}
+                    {Object.entries(TRIGGER_TYPE_CONFIG).map(
+                      ([key, config]) => (
+                        <SelectItem key={key} value={key}>
+                          {config.label}
+                        </SelectItem>
+                      )
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -714,7 +714,8 @@ export function WorkflowCanvas({
                   onValueChange={value =>
                     setEditingConfig({
                       type: value as ActionConfig['type'],
-                      config: DEFAULT_ACTION_CONFIGS[value as ActionConfig['type']],
+                      config:
+                        DEFAULT_ACTION_CONFIGS[value as ActionConfig['type']],
                     } as ActionConfig)
                   }
                 >

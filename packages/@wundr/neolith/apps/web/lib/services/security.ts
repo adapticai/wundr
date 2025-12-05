@@ -27,7 +27,7 @@ export async function hashPassword(password: string): Promise<string> {
  */
 export async function verifyPassword(
   password: string,
-  hashedPassword: string,
+  hashedPassword: string
 ): Promise<boolean> {
   const [salt, hash] = hashedPassword.split(':');
   const verifyHash = crypto
@@ -41,7 +41,10 @@ export async function verifyPassword(
  */
 export function generateTOTPSecret(): string {
   const buffer = crypto.randomBytes(20);
-  return buffer.toString('base64').replace(/[^A-Z2-7]/gi, '').substring(0, 32);
+  return buffer
+    .toString('base64')
+    .replace(/[^A-Z2-7]/gi, '')
+    .substring(0, 32);
 }
 
 /**
@@ -52,7 +55,7 @@ export function generateBackupCodes(count: number = 8): string[] {
   for (let i = 0; i < count; i++) {
     const code = crypto.randomBytes(6).toString('hex');
     codes.push(
-      `${code.substring(0, 4)}-${code.substring(4, 8)}-${code.substring(8, 12)}`,
+      `${code.substring(0, 4)}-${code.substring(4, 8)}-${code.substring(8, 12)}`
     );
   }
   return codes;
@@ -127,34 +130,34 @@ export function parseUserAgent(userAgent: string): {
 
   // Parse browser
   if (userAgent.includes('Chrome')) {
-browser = 'Chrome';
-} else if (userAgent.includes('Safari')) {
-browser = 'Safari';
-} else if (userAgent.includes('Firefox')) {
-browser = 'Firefox';
-} else if (userAgent.includes('Edge')) {
-browser = 'Edge';
-}
+    browser = 'Chrome';
+  } else if (userAgent.includes('Safari')) {
+    browser = 'Safari';
+  } else if (userAgent.includes('Firefox')) {
+    browser = 'Firefox';
+  } else if (userAgent.includes('Edge')) {
+    browser = 'Edge';
+  }
 
   // Parse OS
   if (userAgent.includes('Windows')) {
-os = 'Windows';
-} else if (userAgent.includes('Mac')) {
-os = 'macOS';
-} else if (userAgent.includes('Linux')) {
-os = 'Linux';
-} else if (userAgent.includes('Android')) {
-os = 'Android';
-} else if (userAgent.includes('iOS')) {
-os = 'iOS';
-}
+    os = 'Windows';
+  } else if (userAgent.includes('Mac')) {
+    os = 'macOS';
+  } else if (userAgent.includes('Linux')) {
+    os = 'Linux';
+  } else if (userAgent.includes('Android')) {
+    os = 'Android';
+  } else if (userAgent.includes('iOS')) {
+    os = 'iOS';
+  }
 
   // Parse device type
   if (userAgent.includes('Mobile')) {
-device = 'mobile';
-} else if (userAgent.includes('Tablet')) {
-device = 'tablet';
-}
+    device = 'mobile';
+  } else if (userAgent.includes('Tablet')) {
+    device = 'tablet';
+  }
 
   return { browser, os, device };
 }
@@ -164,7 +167,7 @@ device = 'tablet';
  * In production, use a proper geolocation service like MaxMind
  */
 export async function getLocationFromIP(
-  ip: string,
+  ip: string
 ): Promise<{ city: string; country: string }> {
   // Simplified implementation - in production use a proper geolocation service
   if (ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.')) {
@@ -268,7 +271,7 @@ export async function checkRateLimit(
   userId: string,
   action: string,
   limit: number,
-  windowSeconds: number,
+  windowSeconds: number
 ): Promise<boolean> {
   const key = `rate_limit:${userId}:${action}`;
   const now = Date.now();
@@ -321,7 +324,7 @@ export async function cleanupExpiredSessions(): Promise<number> {
  * Clean up old login history entries
  */
 export async function cleanupOldLoginHistory(
-  retentionDays: number = 90,
+  retentionDays: number = 90
 ): Promise<number> {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
@@ -342,7 +345,7 @@ export async function cleanupOldLoginHistory(
  * Clean up old audit logs
  */
 export async function cleanupOldAuditLogs(
-  retentionDays: number = 365,
+  retentionDays: number = 365
 ): Promise<number> {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - retentionDays);

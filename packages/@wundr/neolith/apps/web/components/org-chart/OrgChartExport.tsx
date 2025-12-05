@@ -97,11 +97,11 @@ export function OrgChartExport({
         10,
         25,
         imgWidth * ratio * 0.26458, // Convert px to mm
-        imgHeight * ratio * 0.26458,
+        imgHeight * ratio * 0.26458
       );
 
       pdf.save(
-        `${orgName}-org-chart-${new Date().toISOString().split('T')[0]}.pdf`,
+        `${orgName}-org-chart-${new Date().toISOString().split('T')[0]}.pdf`
       );
     } catch (error) {
       console.error('Failed to export as PDF:', error);
@@ -119,7 +119,7 @@ export function OrgChartExport({
           disabled={isExporting}
           className={cn(
             'bg-stone-900 border-stone-800 text-stone-100 hover:bg-stone-800',
-            className,
+            className
           )}
         >
           <Download className='h-4 w-4 mr-2' />

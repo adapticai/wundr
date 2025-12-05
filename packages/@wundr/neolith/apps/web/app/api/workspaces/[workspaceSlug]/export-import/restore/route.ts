@@ -18,7 +18,7 @@ const restoreSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -39,14 +39,14 @@ export async function POST(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can restore backups' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -61,7 +61,8 @@ export async function POST(
     return NextResponse.json({
       success: true,
       recordsRestored: 0,
-      message: 'Restore functionality requires export job tracking to be fully implemented. Please use the import feature with a backup file instead.',
+      message:
+        'Restore functionality requires export job tracking to be fully implemented. Please use the import feature with a backup file instead.',
     });
   } catch (error) {
     console.error('Restore error:', error);
@@ -71,13 +72,13 @@ export async function POST(
         {
           error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
       { error: 'Failed to restore backup' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

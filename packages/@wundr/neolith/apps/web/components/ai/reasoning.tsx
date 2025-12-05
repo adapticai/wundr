@@ -38,7 +38,7 @@ export function Reasoning({
 
     if (!isStreaming && startTimeRef.current) {
       setInternalDuration(
-        Math.round((Date.now() - startTimeRef.current) / 1000),
+        Math.round((Date.now() - startTimeRef.current) / 1000)
       );
       // Auto-close after streaming ends (with delay)
       const timer = setTimeout(() => setIsOpen(false), 1000);
@@ -54,7 +54,7 @@ export function Reasoning({
 
     const interval = setInterval(() => {
       setInternalDuration(
-        Math.round((Date.now() - startTimeRef.current!) / 1000),
+        Math.round((Date.now() - startTimeRef.current!) / 1000)
       );
     }, 1000);
 
@@ -92,7 +92,7 @@ export function ReasoningTrigger({
     <CollapsibleTrigger
       className={cn(
         'flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full',
-        className,
+        className
       )}
     >
       <Brain
@@ -124,7 +124,7 @@ export function ReasoningContent({
         className={cn(
           'mt-2 p-3 rounded-lg bg-muted/50 border text-sm text-muted-foreground',
           'prose prose-sm dark:prose-invert max-w-none',
-          className,
+          className
         )}
       >
         {typeof children === 'string' ? (
@@ -156,7 +156,7 @@ export function ReasoningBadge({
         isActive
           ? 'bg-primary/10 text-primary'
           : 'bg-muted text-muted-foreground',
-        className,
+        className
       )}
     >
       <Brain className={cn('h-3 w-3', isActive && 'animate-pulse')} />

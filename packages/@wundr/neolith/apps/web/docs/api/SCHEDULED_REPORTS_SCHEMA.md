@@ -1,6 +1,8 @@
 # Scheduled Reports Schema Extension
 
-This document describes the recommended Prisma schema extension for scheduled reports. The current implementation uses the `exportJob` table as a workaround, but a dedicated schema should be added for production use.
+This document describes the recommended Prisma schema extension for scheduled reports. The current
+implementation uses the `exportJob` table as a workaround, but a dedicated schema should be added
+for production use.
 
 ## Recommended Schema Addition
 
@@ -121,11 +123,13 @@ model ReportExecution {
 ## Migration Steps
 
 1. **Add the models to your Prisma schema:**
+
    ```bash
    # Add the above models to packages/@wundr/neolith/packages/@neolith/database/prisma/schema.prisma
    ```
 
 2. **Create and run migration:**
+
    ```bash
    cd packages/@wundr/neolith/packages/@neolith/database
    npx prisma migrate dev --name add_scheduled_reports
@@ -143,7 +147,8 @@ model ReportExecution {
 
 ## Current Workaround
 
-The current implementation uses the `exportJob` table with metadata JSON field to store schedule configuration. This works but has limitations:
+The current implementation uses the `exportJob` table with metadata JSON field to store schedule
+configuration. This works but has limitations:
 
 - No type safety for schedule configuration
 - No relational queries on schedule fields

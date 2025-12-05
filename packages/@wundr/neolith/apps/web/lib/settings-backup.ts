@@ -69,7 +69,7 @@ export interface AutoBackupConfig {
  */
 export async function exportSettings(
   categories: string[] = ['all'],
-  includeConversations = false,
+  includeConversations = false
 ): Promise<string> {
   const response = await fetch('/api/settings/export', {
     method: 'POST',
@@ -94,7 +94,7 @@ export async function importSettings(
     overwrite?: boolean;
     merge?: boolean;
     categories?: string[];
-  } = {},
+  } = {}
 ): Promise<{ success: boolean; imported: string[]; skipped: string[] }> {
   let backup: SettingsBackup;
 
@@ -128,7 +128,7 @@ export async function importSettings(
  */
 export function downloadSettingsFile(
   jsonData: string,
-  filename?: string,
+  filename?: string
 ): void {
   const blob = new Blob([jsonData], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -136,7 +136,8 @@ export function downloadSettingsFile(
 
   link.href = url;
   link.download =
-    filename || `neolith-settings-${new Date().toISOString().split('T')[0]}.json`;
+    filename ||
+    `neolith-settings-${new Date().toISOString().split('T')[0]}.json`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -198,7 +199,7 @@ export async function getBackupHistory(): Promise<
  */
 export async function restoreFromBackup(
   backupId: string,
-  categories?: string[],
+  categories?: string[]
 ): Promise<{ success: boolean; restored: string[] }> {
   const response = await fetch(`/api/settings/backups/${backupId}/restore`, {
     method: 'POST',
@@ -245,7 +246,7 @@ export async function downloadBackup(backupId: string): Promise<void> {
  * Configure automatic backups
  */
 export async function configureAutoBackup(
-  config: AutoBackupConfig,
+  config: AutoBackupConfig
 ): Promise<void> {
   const response = await fetch('/api/settings/backups/auto-config', {
     method: 'POST',
@@ -284,14 +285,14 @@ export function validateBackup(backup: SettingsBackup): {
     errors.push('Missing metadata');
   } else {
     if (!backup.metadata.version) {
-errors.push('Missing version in metadata');
-}
+      errors.push('Missing version in metadata');
+    }
     if (!backup.metadata.timestamp) {
-errors.push('Missing timestamp in metadata');
-}
+      errors.push('Missing timestamp in metadata');
+    }
     if (!backup.metadata.userId) {
-errors.push('Missing userId in metadata');
-}
+      errors.push('Missing userId in metadata');
+    }
   }
 
   if (!backup.data) {
@@ -422,6 +423,6 @@ export function estimateBackupSize(categories: string[]): number {
 
   return categories.reduce(
     (total, cat) => total + (categorySize[cat] || 0),
-    10,
+    10
   ); // 10KB base overhead
 }

@@ -135,20 +135,20 @@ export function WorkflowPermissionsPage({
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ level }),
-          },
+          }
         );
 
         if (!response.ok) {
-throw new Error('Failed to update permission');
-}
+          throw new Error('Failed to update permission');
+        }
 
         // Update local state
-        setPermissions((prev) =>
-          prev.map((p) => (p.id === permissionId ? { ...p, level } : p)),
+        setPermissions(prev =>
+          prev.map(p => (p.id === permissionId ? { ...p, level } : p))
         );
 
         // Add to access log
-        setAccessLog((prev) => [
+        setAccessLog(prev => [
           {
             id: `log-${Date.now()}`,
             userId: 'current-user',
@@ -172,7 +172,7 @@ throw new Error('Failed to update permission');
         });
       }
     },
-    [workflowId, workspaceSlug, toast],
+    [workflowId, workspaceSlug, toast]
   );
 
   const handleRemovePermission = useCallback(
@@ -183,15 +183,15 @@ throw new Error('Failed to update permission');
           `/api/workspaces/${workspaceSlug}/workflows/${workflowId}/permissions/${permissionId}`,
           {
             method: 'DELETE',
-          },
+          }
         );
 
         if (!response.ok) {
-throw new Error('Failed to remove permission');
-}
+          throw new Error('Failed to remove permission');
+        }
 
         // Update local state
-        setPermissions((prev) => prev.filter((p) => p.id !== permissionId));
+        setPermissions(prev => prev.filter(p => p.id !== permissionId));
 
         toast({
           title: 'Permission removed',
@@ -205,14 +205,14 @@ throw new Error('Failed to remove permission');
         });
       }
     },
-    [workflowId, workspaceSlug, toast],
+    [workflowId, workspaceSlug, toast]
   );
 
   const handleAddPermission = useCallback(
     async (
       subjectType: PermissionSubjectType,
       subjectId: string,
-      level: WorkflowPermissionLevel,
+      level: WorkflowPermissionLevel
     ) => {
       try {
         // Replace with actual API call
@@ -222,15 +222,15 @@ throw new Error('Failed to remove permission');
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ subjectType, subjectId, level }),
-          },
+          }
         );
 
         if (!response.ok) {
-throw new Error('Failed to add permission');
-}
+          throw new Error('Failed to add permission');
+        }
 
         const newPermission = await response.json();
-        setPermissions((prev) => [...prev, newPermission]);
+        setPermissions(prev => [...prev, newPermission]);
 
         toast({
           title: 'Permission added',
@@ -244,7 +244,7 @@ throw new Error('Failed to add permission');
         });
       }
     },
-    [workflowId, workspaceSlug, toast],
+    [workflowId, workspaceSlug, toast]
   );
 
   const handleUpdateSharingConfig = useCallback(
@@ -257,15 +257,15 @@ throw new Error('Failed to add permission');
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(config),
-          },
+          }
         );
 
         if (!response.ok) {
-throw new Error('Failed to update sharing config');
-}
+          throw new Error('Failed to update sharing config');
+        }
 
         // Update local state
-        setSharingConfig((prev) => ({ ...prev, ...config }));
+        setSharingConfig(prev => ({ ...prev, ...config }));
 
         toast({
           title: 'Settings updated',
@@ -279,7 +279,7 @@ throw new Error('Failed to update sharing config');
         });
       }
     },
-    [workflowId, workspaceSlug, toast],
+    [workflowId, workspaceSlug, toast]
   );
 
   const handleGenerateShareLink = useCallback(async (): Promise<string> => {
@@ -289,17 +289,17 @@ throw new Error('Failed to update sharing config');
         `/api/workspaces/${workspaceSlug}/workflows/${workflowId}/share-link/generate`,
         {
           method: 'POST',
-        },
+        }
       );
 
       if (!response.ok) {
-throw new Error('Failed to generate share link');
-}
+        throw new Error('Failed to generate share link');
+      }
 
       const { shareLink } = await response.json();
 
       // Update local state
-      setSharingConfig((prev) => ({ ...prev, publicShareLink: shareLink }));
+      setSharingConfig(prev => ({ ...prev, publicShareLink: shareLink }));
 
       toast({
         title: 'Share link generated',
@@ -324,15 +324,15 @@ throw new Error('Failed to generate share link');
         `/api/workspaces/${workspaceSlug}/workflows/${workflowId}/share-link`,
         {
           method: 'DELETE',
-        },
+        }
       );
 
       if (!response.ok) {
-throw new Error('Failed to revoke share link');
-}
+        throw new Error('Failed to revoke share link');
+      }
 
       // Update local state
-      setSharingConfig((prev) => ({ ...prev, publicShareLink: undefined }));
+      setSharingConfig(prev => ({ ...prev, publicShareLink: undefined }));
 
       toast({
         title: 'Share link revoked',
@@ -355,7 +355,7 @@ throw new Error('Failed to revoke share link');
         description: 'Share link copied to clipboard.',
       });
     },
-    [toast],
+    [toast]
   );
 
   const handleShare = useCallback(
@@ -368,16 +368,16 @@ throw new Error('Failed to revoke share link');
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ recipients, message }),
-          },
+          }
         );
 
         if (!response.ok) {
-throw new Error('Failed to share workflow');
-}
+          throw new Error('Failed to share workflow');
+        }
 
         // Update permissions list
         const newPermissions = await response.json();
-        setPermissions((prev) => [...prev, ...newPermissions]);
+        setPermissions(prev => [...prev, ...newPermissions]);
 
         toast({
           title: 'Workflow shared',
@@ -392,11 +392,14 @@ throw new Error('Failed to share workflow');
         throw error;
       }
     },
-    [workflowId, workspaceSlug, toast],
+    [workflowId, workspaceSlug, toast]
   );
 
   const handleSearchEntities = useCallback(
-    async (query: string, type: 'user' | 'team'): Promise<ShareableEntity[]> => {
+    async (
+      query: string,
+      type: 'user' | 'team'
+    ): Promise<ShareableEntity[]> => {
       try {
         // Replace with actual API call
         const endpoint =
@@ -404,11 +407,13 @@ throw new Error('Failed to share workflow');
             ? `/api/workspaces/${workspaceSlug}/users/search`
             : `/api/workspaces/${workspaceSlug}/teams/search`;
 
-        const response = await fetch(`${endpoint}?q=${encodeURIComponent(query)}`);
+        const response = await fetch(
+          `${endpoint}?q=${encodeURIComponent(query)}`
+        );
 
         if (!response.ok) {
-throw new Error('Search failed');
-}
+          throw new Error('Search failed');
+        }
 
         return await response.json();
       } catch (error) {
@@ -416,16 +421,18 @@ throw new Error('Search failed');
         return [];
       }
     },
-    [workspaceSlug],
+    [workspaceSlug]
   );
 
   return (
-    <div className="container max-w-4xl py-8 space-y-8">
+    <div className='container max-w-4xl py-8 space-y-8'>
       {/* Header with Quick Share */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h1 className="text-3xl font-bold">{workflowName}</h1>
-          <p className="text-muted-foreground mt-1">Manage workflow access and permissions</p>
+          <h1 className='text-3xl font-bold'>{workflowName}</h1>
+          <p className='text-muted-foreground mt-1'>
+            Manage workflow access and permissions
+          </p>
         </div>
         <QuickShareButton
           workflowId={workflowId}
@@ -433,8 +440,8 @@ throw new Error('Search failed');
           currentShares={currentShares}
           onShare={handleShare}
           onSearchEntities={handleSearchEntities}
-          variant="default"
-          size="default"
+          variant='default'
+          size='default'
           showLabel={true}
         />
       </div>
@@ -471,30 +478,33 @@ export function WorkflowHeaderWithShare({
   const { toast } = useToast();
   const [currentShares, setCurrentShares] = useState<ShareableEntity[]>([]);
 
-  const handleShare = async (recipients: ShareRecipient[], message?: string) => {
+  const handleShare = async (
+    recipients: ShareRecipient[],
+    message?: string
+  ) => {
     // Implementation here
     console.log('Sharing with:', recipients, message);
   };
 
   const handleSearchEntities = async (
     query: string,
-    type: 'user' | 'team',
+    type: 'user' | 'team'
   ): Promise<ShareableEntity[]> => {
     // Implementation here
     return [];
   };
 
   return (
-    <div className="flex items-center justify-between p-4 border-b">
-      <h2 className="text-xl font-semibold">{workflowName}</h2>
+    <div className='flex items-center justify-between p-4 border-b'>
+      <h2 className='text-xl font-semibold'>{workflowName}</h2>
       <QuickShareButton
         workflowId={workflowId}
         workflowName={workflowName}
         currentShares={currentShares}
         onShare={handleShare}
         onSearchEntities={handleSearchEntities}
-        variant="outline"
-        size="sm"
+        variant='outline'
+        size='sm'
       />
     </div>
   );

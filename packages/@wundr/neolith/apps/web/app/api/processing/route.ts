@@ -89,9 +89,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           'Authentication required',
-          PROCESSING_ERROR_CODES.UNAUTHORIZED,
+          PROCESSING_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -103,9 +103,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           'Invalid JSON body',
-          PROCESSING_ERROR_CODES.VALIDATION_ERROR,
+          PROCESSING_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -115,9 +115,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createProcessingErrorResponse(
           'Invalid request body',
           PROCESSING_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -140,9 +140,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           'File not found',
-          PROCESSING_ERROR_CODES.FILE_NOT_FOUND,
+          PROCESSING_ERROR_CODES.FILE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -160,9 +160,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           'Not a member of this workspace',
-          PROCESSING_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+          PROCESSING_ERROR_CODES.NOT_WORKSPACE_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -171,9 +171,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           `Processing type '${input.type}' is not supported for file type '${file.mimeType}'`,
-          PROCESSING_ERROR_CODES.UNSUPPORTED_TYPE,
+          PROCESSING_ERROR_CODES.UNSUPPORTED_TYPE
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -216,16 +216,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         },
         message: 'Processing job created successfully',
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (_error) {
     // Error handling - details in response
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',
-        PROCESSING_ERROR_CODES.INTERNAL_ERROR,
+        PROCESSING_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -252,9 +252,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createProcessingErrorResponse(
           'Authentication required',
-          PROCESSING_ERROR_CODES.UNAUTHORIZED,
+          PROCESSING_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -267,9 +267,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createProcessingErrorResponse(
           'Invalid query parameters',
           PROCESSING_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -282,7 +282,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     const accessibleWorkspaceIds = new Set(
-      userWorkspaces.map(w => w.workspaceId),
+      userWorkspaces.map(w => w.workspaceId)
     );
 
     // Get all jobs from in-memory store and filter by accessible workspaces
@@ -324,7 +324,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const paginatedJobs = jobs.slice(
       startIndex,
-      startIndex + filters.limit + 1,
+      startIndex + filters.limit + 1
     );
     const hasMore = paginatedJobs.length > filters.limit;
     const resultJobs = hasMore
@@ -361,9 +361,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',
-        PROCESSING_ERROR_CODES.INTERNAL_ERROR,
+        PROCESSING_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -46,7 +46,7 @@ interface RouteContext {
 async function verifyOrchestratorAccess(
   workspaceId: string,
   orchestratorId: string,
-  userId: string,
+  userId: string
 ) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -109,7 +109,7 @@ async function verifyOrchestratorAccess(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -118,9 +118,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Authentication required',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -133,9 +133,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Invalid parameters',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -143,15 +143,15 @@ export async function GET(
     const access = await verifyOrchestratorAccess(
       workspaceId,
       orchestratorId,
-      session.user.id,
+      session.user.id
     );
     if (!access) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Orchestrator not found or access denied',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -165,9 +165,9 @@ export async function GET(
         createAnalyticsErrorResponse(
           'Invalid query parameters',
           ORCHESTRATOR_ANALYTICS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -189,16 +189,16 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           error instanceof Error ? error.message : 'Invalid date range',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INVALID_TIME_RANGE,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INVALID_TIME_RANGE
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get basic metrics - use a default timeRange string
     const metrics = await getOrchestratorMetrics(
       orchestratorId,
-      '30d', // Default time range for the service
+      '30d' // Default time range for the service
     );
 
     // Build where condition for detailed queries
@@ -229,7 +229,7 @@ export async function GET(
           acc[item.status] = item._count.id;
           return acc;
         },
-        {} as Record<string, number>,
+        {} as Record<string, number>
       );
     }
 
@@ -251,7 +251,7 @@ export async function GET(
           acc[item.priority] = item._count.id;
           return acc;
         },
-        {} as Record<string, number>,
+        {} as Record<string, number>
       );
     }
 
@@ -264,7 +264,7 @@ export async function GET(
       const qualityScore = await calculateQualityScore(
         orchestratorId,
         startDate,
-        endDate,
+        endDate
       );
       qualityMetrics = {
         overallScore: qualityScore.score,
@@ -289,7 +289,7 @@ export async function GET(
 
     const onTimeCount = tasksWithDueDate.filter(
       task =>
-        task.completedAt && task.dueDate && task.completedAt <= task.dueDate,
+        task.completedAt && task.dueDate && task.completedAt <= task.dueDate
     ).length;
     const onTimeRate =
       tasksWithDueDate.length > 0
@@ -301,9 +301,9 @@ export async function GET(
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Unable to calculate metrics',
-          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR,
+          ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -344,14 +344,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/orchestrators/:orchestratorId/analytics] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createAnalyticsErrorResponse(
         'An internal error occurred',
-        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR,
+        ORCHESTRATOR_ANALYTICS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

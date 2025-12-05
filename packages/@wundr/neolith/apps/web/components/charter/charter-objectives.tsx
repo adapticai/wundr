@@ -86,7 +86,7 @@ function getPercentageColor(value: number, max: number = 100): string {
  */
 function getMetricBadgeVariant(
   value: number,
-  type: 'completion' | 'quality',
+  type: 'completion' | 'quality'
 ): 'default' | 'secondary' | 'outline' {
   if (type === 'completion') {
     if (value >= 95) {
@@ -123,7 +123,7 @@ export function CharterObjectives({
 
   const handleSliderChange = (
     field: keyof CharterObjectives,
-    newValue: number[],
+    newValue: number[]
   ) => {
     const updatedValues = { ...localValues, [field]: newValue[0] };
     setLocalValues(updatedValues);
@@ -132,7 +132,7 @@ export function CharterObjectives({
 
   const handleInputChange = (
     field: keyof CharterObjectives,
-    inputValue: string,
+    inputValue: string
   ) => {
     const numValue = parseInt(inputValue, 10);
     if (isNaN(numValue)) {
@@ -267,7 +267,7 @@ export function CharterObjectives({
                     ? 'bg-green-500/30'
                     : localValues.responseTimeTarget <= 60000
                       ? 'bg-yellow-500/30'
-                      : 'bg-orange-500/30',
+                      : 'bg-orange-500/30'
                 )}
                 style={{
                   width: `${(localValues.responseTimeTarget / OBJECTIVES_LIMITS.responseTimeTarget.max) * 100}%`,
@@ -300,7 +300,7 @@ export function CharterObjectives({
                 <Badge
                   variant={getMetricBadgeVariant(
                     localValues.taskCompletionRate,
-                    'completion',
+                    'completion'
                   )}
                 >
                   {localValues.taskCompletionRate >= 95
@@ -339,7 +339,7 @@ export function CharterObjectives({
               <div
                 className={cn(
                   'h-full transition-all',
-                  getPercentageColor(localValues.taskCompletionRate),
+                  getPercentageColor(localValues.taskCompletionRate)
                 )}
                 style={{
                   width: `${localValues.taskCompletionRate}%`,
@@ -369,7 +369,7 @@ export function CharterObjectives({
                 <Badge
                   variant={getMetricBadgeVariant(
                     localValues.qualityScore,
-                    'quality',
+                    'quality'
                   )}
                 >
                   {localValues.qualityScore >= 90
@@ -406,7 +406,7 @@ export function CharterObjectives({
               <div
                 className={cn(
                   'h-full transition-all',
-                  getPercentageColor(localValues.qualityScore),
+                  getPercentageColor(localValues.qualityScore)
                 )}
                 style={{
                   width: `${localValues.qualityScore}%`,
@@ -468,7 +468,7 @@ export function CharterObjectives({
                           <Trash2 className='h-4 w-4' />
                         </Button>
                       </div>
-                    ),
+                    )
                   )}
                 </div>
               )}

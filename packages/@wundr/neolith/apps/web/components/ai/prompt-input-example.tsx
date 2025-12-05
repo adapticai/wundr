@@ -58,7 +58,7 @@ export function AdvancedPromptExample() {
   const [value, setValue] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [selectedModel, setSelectedModel] = React.useState(
-    'claude-sonnet-4-20250514',
+    'claude-sonnet-4-20250514'
   );
 
   const handleSubmit = async () => {

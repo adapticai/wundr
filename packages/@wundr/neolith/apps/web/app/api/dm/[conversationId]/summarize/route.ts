@@ -49,7 +49,7 @@ type TimePeriod = keyof typeof TIME_PERIODS;
  */
 async function checkConversationMembership(
   conversationId: string,
-  userId: string,
+  userId: string
 ) {
   const membership = await prisma.channelMember.findUnique({
     where: {
@@ -92,7 +92,7 @@ function formatMessagesForSummary(
         mimeType: string | null;
       } | null;
     }>;
-  }>,
+  }>
 ): string {
   return messages
     .map(msg => {
@@ -130,7 +130,7 @@ function formatMessagesForSummary(
  */
 function getSummarizationPrompt(
   messageCount: number,
-  timePeriod: TimePeriod,
+  timePeriod: TimePeriod
 ): string {
   const timeDesc =
     timePeriod === 'all'
@@ -184,7 +184,7 @@ Be objective and avoid editorializing. If there are no messages or minimal conte
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse | Response> {
   try {
     // Authenticate user
@@ -193,9 +193,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED,
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -218,25 +218,25 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           `Invalid period. Must be one of: ${Object.keys(TIME_PERIODS).join(', ')}`,
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check conversation membership
     const membership = await checkConversationMembership(
       conversationId,
-      session.user.id,
+      session.user.id
     );
 
     if (!membership) {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this conversation',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -292,9 +292,9 @@ export async function POST(
       return NextResponse.json(
         createErrorResponse(
           'No messages found in the specified time period',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -305,32 +305,32 @@ export async function POST(
     // Select AI provider and model
     const provider = process.env.DEFAULT_LLM_PROVIDER || 'openai';
     console.log(
-      `[POST /api/dm/:conversationId/summarize] Using provider: ${provider}`,
+      `[POST /api/dm/:conversationId/summarize] Using provider: ${provider}`
     );
 
     // Validate API key
     if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
       console.error(
-        '[POST /api/dm/:conversationId/summarize] OPENAI_API_KEY not configured',
+        '[POST /api/dm/:conversationId/summarize] OPENAI_API_KEY not configured'
       );
       return NextResponse.json(
         createErrorResponse(
           'OpenAI API key not configured',
-          MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+          MESSAGE_ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
     if (provider !== 'openai' && !process.env.ANTHROPIC_API_KEY) {
       console.error(
-        '[POST /api/dm/:conversationId/summarize] ANTHROPIC_API_KEY not configured',
+        '[POST /api/dm/:conversationId/summarize] ANTHROPIC_API_KEY not configured'
       );
       return NextResponse.json(
         createErrorResponse(
           'Anthropic API key not configured',
-          MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+          MESSAGE_ERROR_CODES.INTERNAL_ERROR
         ),
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -354,9 +354,9 @@ export async function POST(
     return NextResponse.json(
       createErrorResponse(
         error instanceof Error ? error.message : 'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -54,7 +54,7 @@ export function DMSelector({
   // Filter out already selected users
   const availableUsers = useMemo(
     () => users.filter(u => !selectedUsers.some(s => s.id === u.id)),
-    [users, selectedUsers],
+    [users, selectedUsers]
   );
 
   const resetForm = useCallback(() => {
@@ -95,7 +95,7 @@ export function DMSelector({
       await onCreate(dm.participants.map(p => p.user.id));
       handleClose();
     },
-    [onCreate, handleClose],
+    [onCreate, handleClose]
   );
 
   if (!isOpen) {
@@ -335,7 +335,7 @@ function UserItem({ user, isOrchestrator, onSelect }: UserItemProps) {
         <span
           className={cn(
             'absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card',
-            statusColors[user.status || 'offline'],
+            statusColors[user.status || 'offline']
           )}
         />
         {isOrchestrator && (

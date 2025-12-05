@@ -39,7 +39,7 @@ export function OrgChartNode({
         'bg-stone-900 border-stone-800 hover:border-stone-700 cursor-pointer',
         isHighlighted && 'ring-2 ring-stone-100 border-stone-100',
         isDimmed && 'opacity-30',
-        !isDimmed && 'hover:shadow-lg',
+        !isDimmed && 'hover:shadow-lg'
       )}
       onClick={() => onClick?.(node)}
       role='button'
@@ -66,7 +66,7 @@ export function OrgChartNode({
         <div
           className={cn(
             'absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-stone-900',
-            statusConfig.dotColor,
+            statusConfig.dotColor
           )}
           aria-label={statusConfig.label}
         />

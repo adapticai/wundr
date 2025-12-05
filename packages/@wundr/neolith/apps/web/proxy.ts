@@ -43,7 +43,7 @@ const API_ROUTES = ['/api/auth', '/api/health', '/api/graphql'];
  */
 function matchesRoutes(pathname: string, routes: string[]): boolean {
   return routes.some(
-    route => pathname === route || pathname.startsWith(`${route}/`),
+    route => pathname === route || pathname.startsWith(`${route}/`)
   );
 }
 

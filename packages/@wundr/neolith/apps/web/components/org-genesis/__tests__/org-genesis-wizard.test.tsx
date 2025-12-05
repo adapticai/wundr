@@ -45,7 +45,7 @@ describe('OrgGenesisWizard', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Organization name is required/i),
+        screen.getByText(/Organization name is required/i)
       ).toBeInTheDocument();
     });
   });
@@ -64,7 +64,7 @@ describe('OrgGenesisWizard', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Describe Your Organization/i),
+        screen.getByText(/Describe Your Organization/i)
       ).toBeInTheDocument();
     });
   });
@@ -83,7 +83,7 @@ describe('OrgGenesisWizard', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Describe Your Organization/i),
+        screen.getByText(/Describe Your Organization/i)
       ).toBeInTheDocument();
     });
 
@@ -110,7 +110,7 @@ describe('OrgGenesisWizard', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Describe Your Organization/i),
+        screen.getByText(/Describe Your Organization/i)
       ).toBeInTheDocument();
     });
 
@@ -123,7 +123,7 @@ describe('OrgGenesisWizard', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Please provide a more detailed description/i),
+        screen.getByText(/Please provide a more detailed description/i)
       ).toBeInTheDocument();
     });
   });
@@ -142,7 +142,7 @@ describe('OrgGenesisWizard', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByLabelText(/Organization Description/i),
+        screen.getByLabelText(/Organization Description/i)
       ).toBeInTheDocument();
     });
 
@@ -159,10 +159,10 @@ describe('OrgGenesisWizard', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Configure Your Organization/i),
+        screen.getByText(/Configure Your Organization/i)
       ).toBeInTheDocument();
       expect(
-        screen.getByLabelText(/Target Assets \/ Markets/i),
+        screen.getByLabelText(/Target Assets \/ Markets/i)
       ).toBeInTheDocument();
     });
   });
@@ -223,7 +223,7 @@ describe('OrgGenesisWizard', () => {
             },
           },
         }),
-      }),
+      })
     );
 
     render(<OrgGenesisWizard />);
@@ -239,7 +239,7 @@ describe('OrgGenesisWizard', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/Generating Organization.../i),
+          screen.getByText(/Generating Organization.../i)
         ).toBeInTheDocument();
       });
     }
@@ -252,7 +252,7 @@ describe('OrgGenesisWizard', () => {
         json: async () => ({
           error: 'Failed to generate organization',
         }),
-      }),
+      })
     );
 
     render(<OrgGenesisWizard />);
@@ -266,7 +266,7 @@ describe('OrgGenesisWizard', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/Failed to generate organization/i),
+          screen.getByText(/Failed to generate organization/i)
         ).toBeInTheDocument();
       });
     }

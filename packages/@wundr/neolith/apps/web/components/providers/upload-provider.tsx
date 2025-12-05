@@ -114,7 +114,7 @@ export function UploadProvider({
       // Auto-show queue when files are added
       setIsQueueVisible(true);
     },
-    [uploadFiles],
+    [uploadFiles]
   );
 
   const showQueue = useCallback(() => setIsQueueVisible(true), []);
@@ -166,7 +166,7 @@ export function UploadProvider({
       showQueue,
       hideQueue,
       toggleQueue,
-    ],
+    ]
   );
 
   return (

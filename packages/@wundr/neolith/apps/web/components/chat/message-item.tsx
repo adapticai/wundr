@@ -95,7 +95,7 @@ export const MessageItem = memo(function MessageItem({
         hour: 'numeric',
         minute: '2-digit',
       }),
-    [message.createdAt],
+    [message.createdAt]
   );
 
   const formattedDate = useMemo(() => {
@@ -121,7 +121,7 @@ export const MessageItem = memo(function MessageItem({
     (emoji: string) => {
       onReaction?.(message.id, emoji);
     },
-    [message.id, onReaction],
+    [message.id, onReaction]
   );
 
   const handleSaveEdit = useCallback(() => {
@@ -152,7 +152,7 @@ export const MessageItem = memo(function MessageItem({
         // Remove from saved
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/saved-items/${savedItemId}`,
-          { method: 'DELETE' },
+          { method: 'DELETE' }
         );
         if (response.ok) {
           setIsSaved(false);
@@ -169,7 +169,7 @@ export const MessageItem = memo(function MessageItem({
               type: 'MESSAGE',
               messageId: message.id,
             }),
-          },
+          }
         );
         if (response.ok) {
           const result = await response.json();
@@ -193,7 +193,7 @@ export const MessageItem = memo(function MessageItem({
     async (messageId: string) => {
       await onDelete?.(messageId);
     },
-    [onDelete],
+    [onDelete]
   );
 
   const handlePin = useCallback(async () => {
@@ -247,7 +247,7 @@ export const MessageItem = memo(function MessageItem({
         data-message-id={message.id}
         className={cn(
           'group relative px-4 py-2 transition-colors hover:bg-accent/50',
-          className,
+          className
         )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -351,29 +351,40 @@ export const MessageItem = memo(function MessageItem({
                         {message.replyCount}{' '}
                         {message.replyCount === 1 ? 'reply' : 'replies'}
                       </span>
-                      {message.replyPreview && message.replyPreview.length > 0 && (
-                        <div className='flex items-center gap-1.5'>
-                          <GroupAvatar
-                            users={message.replyPreview
-                              .slice(0, 3)
-                              .filter(reply => reply.author)
-                              .map(reply => reply.author!)}
-                            max={3}
-                            size='xs'
-                          />
+                      {message.replyPreview &&
+                        message.replyPreview.length > 0 && (
+                          <div className='flex items-center gap-1.5'>
+                            <GroupAvatar
+                              users={message.replyPreview
+                                .slice(0, 3)
+                                .filter(reply => reply.author)
+                                .map(reply => reply.author!)}
+                              max={3}
+                              size='xs'
+                            />
+                          </div>
+                        )}
+                    </div>
+                    {message.replyPreview &&
+                      message.replyPreview.length > 0 && (
+                        <div className='text-xs text-muted-foreground'>
+                          <span className='font-medium'>
+                            {
+                              message.replyPreview[
+                                message.replyPreview.length - 1
+                              ]?.author?.name
+                            }
+                            :
+                          </span>{' '}
+                          <span className='line-clamp-1'>
+                            {
+                              message.replyPreview[
+                                message.replyPreview.length - 1
+                              ]?.content
+                            }
+                          </span>
                         </div>
                       )}
-                    </div>
-                    {message.replyPreview && message.replyPreview.length > 0 && (
-                      <div className='text-xs text-muted-foreground'>
-                        <span className='font-medium'>
-                          {message.replyPreview[message.replyPreview.length - 1]?.author?.name}:
-                        </span>{' '}
-                        <span className='line-clamp-1'>
-                          {message.replyPreview[message.replyPreview.length - 1]?.content}
-                        </span>
-                      </div>
-                    )}
                     <div className='flex items-center gap-1.5 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100'>
                       <span>View thread</span>
                       <svg
@@ -416,7 +427,7 @@ export const MessageItem = memo(function MessageItem({
                 title={isSaved ? 'Remove from saved' : 'Save for later'}
                 onClick={handleSaveForLater}
                 className={cn(
-                  isSaved && 'text-yellow-500 hover:text-yellow-600',
+                  isSaved && 'text-yellow-500 hover:text-yellow-600'
                 )}
               />
             )}
@@ -425,9 +436,7 @@ export const MessageItem = memo(function MessageItem({
                 icon={<PinIcon filled={isPinned} loading={isPinning} />}
                 title={isPinned ? 'Unpin message' : 'Pin message'}
                 onClick={handlePin}
-                className={cn(
-                  isPinned && 'text-primary hover:text-primary/80',
-                )}
+                className={cn(isPinned && 'text-primary hover:text-primary/80')}
               />
             )}
             {isOwn && (
@@ -481,14 +490,14 @@ function MessageContent({ content }: MessageContentProps) {
         result.push(
           <span key={key++}>
             {parseInlineContent(content.slice(lastIndex, match.index))}
-          </span>,
+          </span>
         );
       }
 
       const language = match[1] || 'text';
       const code = match[2];
       result.push(
-        <CodeBlock key={key++} language={language} code={code.trim()} />,
+        <CodeBlock key={key++} language={language} code={code.trim()} />
       );
 
       lastIndex = match.index + match[0].length;
@@ -496,7 +505,7 @@ function MessageContent({ content }: MessageContentProps) {
 
     if (lastIndex < content.length) {
       result.push(
-        <span key={key++}>{parseInlineContent(content.slice(lastIndex))}</span>,
+        <span key={key++}>{parseInlineContent(content.slice(lastIndex))}</span>
       );
     }
 
@@ -614,7 +623,7 @@ function AttachmentPreview({
         size: attachment.size,
       });
     },
-    [attachment, openPreview],
+    [attachment, openPreview]
   );
 
   const formatSize = (bytes: number) => {
@@ -683,7 +692,7 @@ function AttachmentPreview({
       if (isSaved && savedItemId) {
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/saved-items/${savedItemId}`,
-          { method: 'DELETE' },
+          { method: 'DELETE' }
         );
         if (response.ok) {
           setIsSaved(false);
@@ -699,7 +708,7 @@ function AttachmentPreview({
               type: 'FILE',
               fileId: attachment.id,
             }),
-          },
+          }
         );
         if (response.ok) {
           const result = await response.json();
@@ -723,7 +732,7 @@ function AttachmentPreview({
     <div
       className={cn(
         'absolute top-2 right-2 flex items-center gap-0.5 rounded-md border bg-popover p-0.5 shadow-md transition-opacity',
-        isHovered || showMenu ? 'opacity-100' : 'opacity-0 pointer-events-none',
+        isHovered || showMenu ? 'opacity-100' : 'opacity-0 pointer-events-none'
       )}
       onClick={e => e.stopPropagation()}
     >
@@ -928,7 +937,7 @@ function ActionButton({ icon, title, onClick, className }: ActionButtonProps) {
       title={title}
       className={cn(
         'rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground',
-        className,
+        className
       )}
     >
       {icon}
@@ -1145,13 +1154,7 @@ function BookmarkIcon({
   );
 }
 
-function PinIcon({
-  filled,
-  loading,
-}: {
-  filled?: boolean;
-  loading?: boolean;
-}) {
+function PinIcon({ filled, loading }: { filled?: boolean; loading?: boolean }) {
   if (loading) {
     return (
       <svg

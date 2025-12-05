@@ -200,7 +200,7 @@ export function DMCanvas({
           const data = await response.json();
           // Update with server response
           setNotes(prev =>
-            prev.map(note => (note.id === newNote.id ? data.note : note)),
+            prev.map(note => (note.id === newNote.id ? data.note : note))
           );
           setActiveNoteId(data.note.id);
           toast.success('Note created');
@@ -214,13 +214,13 @@ export function DMCanvas({
         toast.error('Failed to create note');
         // Remove optimistic update on error
         setNotes(prev =>
-          prev.filter(note => !note.id.startsWith('note-' + Date.now())),
+          prev.filter(note => !note.id.startsWith('note-' + Date.now()))
         );
       } finally {
         setIsCreating(false);
       }
     },
-    [channelId, currentUserId, currentUserName, currentUserImage],
+    [channelId, currentUserId, currentUserName, currentUserImage]
   );
 
   const handleSaveNote = useCallback(async () => {
@@ -246,8 +246,8 @@ export function DMCanvas({
                   image: currentUserImage,
                 },
               }
-            : note,
-        ),
+            : note
+        )
       );
 
       // Save to backend
@@ -260,7 +260,7 @@ export function DMCanvas({
             title: editTitle,
             content: editContent,
           }),
-        },
+        }
       );
 
       if (response.ok) {
@@ -301,7 +301,7 @@ export function DMCanvas({
           `/api/channels/${channelId}/canvas/${noteId}`,
           {
             method: 'DELETE',
-          },
+          }
         );
 
         if (response.ok) {
@@ -317,7 +317,7 @@ export function DMCanvas({
         loadNotes();
       }
     },
-    [activeNoteId, channelId, loadNotes],
+    [activeNoteId, channelId, loadNotes]
   );
 
   const handleSelectNote = useCallback(
@@ -336,7 +336,7 @@ export function DMCanvas({
       setEditContent(note.content);
       setSaveStatus('saved');
     },
-    [activeNoteId, saveStatus, handleSaveNote],
+    [activeNoteId, saveStatus, handleSaveNote]
   );
 
   const noteTypes = [
@@ -376,12 +376,7 @@ export function DMCanvas({
 
   if (isLoading) {
     return (
-      <div
-        className={cn(
-          'flex flex-1 items-center justify-center',
-          className,
-        )}
-      >
+      <div className={cn('flex flex-1 items-center justify-center', className)}>
         <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
       </div>
     );
@@ -393,18 +388,16 @@ export function DMCanvas({
       <div
         className={cn(
           'flex flex-1 flex-col items-center justify-center p-8',
-          className,
+          className
         )}
       >
         <div className='mb-8 rounded-full bg-muted p-6'>
           <FileText className='h-12 w-12 text-muted-foreground' />
         </div>
-        <h2 className='mb-2 text-xl font-semibold'>
-          Create shared notes
-        </h2>
+        <h2 className='mb-2 text-xl font-semibold'>Create shared notes</h2>
         <p className='mb-8 max-w-md text-center text-muted-foreground'>
-          Canvas lets you create shared notes, documents, and checklists
-          that everyone in this conversation can edit together.
+          Canvas lets you create shared notes, documents, and checklists that
+          everyone in this conversation can edit together.
         </p>
 
         <div className='grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3'>
@@ -450,7 +443,8 @@ export function DMCanvas({
         <div className='flex-1 overflow-y-auto p-2'>
           <div className='space-y-1'>
             {notes.map(note => {
-              const Icon = noteTypes.find(t => t.type === note.type)?.icon || FileText;
+              const Icon =
+                noteTypes.find(t => t.type === note.type)?.icon || FileText;
               return (
                 <button
                   key={note.id}
@@ -458,7 +452,7 @@ export function DMCanvas({
                   onClick={() => handleSelectNote(note)}
                   className={cn(
                     'flex w-full items-start gap-2 rounded-md p-2 text-left transition-colors hover:bg-accent',
-                    activeNoteId === note.id && 'bg-accent',
+                    activeNoteId === note.id && 'bg-accent'
                   )}
                 >
                   <Icon className='h-4 w-4 mt-0.5 flex-shrink-0 text-muted-foreground' />
@@ -521,27 +515,28 @@ export function DMCanvas({
             </div>
             <div className='flex items-center gap-2'>
               {/* Collaborators */}
-              {activeNote.collaborators && activeNote.collaborators.length > 0 && (
-                <div className='flex items-center gap-1'>
-                  <Users className='h-3 w-3 text-muted-foreground' />
-                  <div className='flex -space-x-1'>
-                    {activeNote.collaborators.map(collaborator => (
-                      <Avatar
-                        key={collaborator.id}
-                        className='h-6 w-6 border-2 border-background'
-                      >
-                        <AvatarImage
-                          src={collaborator.image || undefined}
-                          alt={collaborator.name}
-                        />
-                        <AvatarFallback className='text-[8px]'>
-                          {getInitials(collaborator.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                    ))}
+              {activeNote.collaborators &&
+                activeNote.collaborators.length > 0 && (
+                  <div className='flex items-center gap-1'>
+                    <Users className='h-3 w-3 text-muted-foreground' />
+                    <div className='flex -space-x-1'>
+                      {activeNote.collaborators.map(collaborator => (
+                        <Avatar
+                          key={collaborator.id}
+                          className='h-6 w-6 border-2 border-background'
+                        >
+                          <AvatarImage
+                            src={collaborator.image || undefined}
+                            alt={collaborator.name}
+                          />
+                          <AvatarFallback className='text-[8px]'>
+                            {getInitials(collaborator.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
               {/* Actions */}
               <Button
                 size='sm'

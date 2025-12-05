@@ -36,7 +36,7 @@ export function useLoginHistory(initialLimit = 20): UseLoginHistoryReturn {
         setError(null);
 
         const response = await fetch(
-          `/api/user/login-history?limit=${limit}&offset=${currentOffset}`,
+          `/api/user/login-history?limit=${limit}&offset=${currentOffset}`
         );
 
         if (!response.ok) {
@@ -62,7 +62,7 @@ export function useLoginHistory(initialLimit = 20): UseLoginHistoryReturn {
         setIsLoading(false);
       }
     },
-    [limit],
+    [limit]
   );
 
   // Initial fetch
@@ -77,8 +77,8 @@ export function useLoginHistory(initialLimit = 20): UseLoginHistoryReturn {
 
   const loadMore = useCallback(async () => {
     if (!hasMore || isLoading) {
-return;
-}
+      return;
+    }
     const newOffset = offset + limit;
     setOffset(newOffset);
     await fetchHistory(newOffset);

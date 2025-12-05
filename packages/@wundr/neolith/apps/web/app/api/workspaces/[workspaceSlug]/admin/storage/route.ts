@@ -75,7 +75,7 @@ interface StorageAlert {
  */
 export async function GET(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -99,7 +99,7 @@ export async function GET(
     ) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -133,7 +133,7 @@ export async function GET(
     // Calculate total storage (convert BigInt to number)
     const totalSize = files.reduce(
       (sum, file) => sum + Number(file.size || 0n),
-      0,
+      0
     );
     const totalSizeGB = totalSize / (1024 * 1024 * 1024);
 
@@ -153,7 +153,7 @@ export async function GET(
     });
 
     const breakdown: StorageBreakdown[] = Array.from(
-      typeBreakdown.entries(),
+      typeBreakdown.entries()
     ).map(([type, data]) => ({
       type,
       size: data.size,
@@ -195,7 +195,7 @@ export async function GET(
     });
 
     const usageOverTime: StorageUsageOverTime[] = Array.from(
-      usageByDate.entries(),
+      usageByDate.entries()
     ).map(([date, size]) => ({
       date,
       size: size / (1024 * 1024 * 1024), // Convert to GB
@@ -273,7 +273,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceSlug/storage] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch storage info' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -285,7 +285,7 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -308,7 +308,7 @@ export async function PATCH(
     ) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -342,11 +342,11 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/workspaces/:workspaceSlug/storage] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       { error: 'Failed to update storage settings' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

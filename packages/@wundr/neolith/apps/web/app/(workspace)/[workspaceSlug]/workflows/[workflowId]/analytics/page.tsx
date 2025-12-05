@@ -34,7 +34,9 @@ export default function WorkflowAnalyticsPage() {
   const workflowId = (params?.workflowId ?? '') as string;
   const { setPageHeader } = usePageHeader();
 
-  const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'all'>('week');
+  const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'all'>(
+    'week'
+  );
 
   // Fetch workflow data
   const {
@@ -56,7 +58,7 @@ export default function WorkflowAnalyticsPage() {
     if (workflow) {
       setPageHeader(
         `${workflow.name} - Analytics`,
-        'View performance metrics and insights for this workflow',
+        'View performance metrics and insights for this workflow'
       );
     }
   }, [workflow, setPageHeader]);
@@ -64,16 +66,16 @@ export default function WorkflowAnalyticsPage() {
   // Export analytics data
   const handleExportAnalytics = useCallback(() => {
     if (!workflow || !executions) {
-return;
-}
+      return;
+    }
 
     // Calculate metrics for export
     const totalExecutions = executions.length;
     const completedExecutions = executions.filter(
-      (e) => e.status === 'completed',
+      e => e.status === 'completed'
     ).length;
     const failedExecutions = executions.filter(
-      (e) => e.status === 'failed',
+      e => e.status === 'failed'
     ).length;
     const successRate =
       totalExecutions > 0
@@ -84,21 +86,21 @@ return;
       completedExecutions > 0
         ? Math.round(
             executions
-              .filter((e) => e.status === 'completed' && e.duration)
+              .filter(e => e.status === 'completed' && e.duration)
               .reduce((sum, e) => sum + (e.duration || 0), 0) /
-              completedExecutions,
+              completedExecutions
           )
         : 0;
 
     // Group errors by type
     const errorBreakdown = new Map<string, number>();
-    executions.forEach((execution) => {
-      execution.actionResults.forEach((result) => {
+    executions.forEach(execution => {
+      execution.actionResults.forEach(result => {
         if (result.status === 'failed' && result.error) {
           const errorType = result.actionType;
           errorBreakdown.set(
             errorType,
-            (errorBreakdown.get(errorType) || 0) + 1,
+            (errorBreakdown.get(errorType) || 0) + 1
           );
         }
       });
@@ -117,13 +119,13 @@ return;
         avgExecutionTime: avgDuration,
       },
       errorBreakdown: Object.fromEntries(errorBreakdown),
-      executions: executions.map((execution) => ({
+      executions: executions.map(execution => ({
         id: execution.id,
         status: execution.status,
         startedAt: execution.startedAt,
         completedAt: execution.completedAt,
         duration: execution.duration,
-        actionResults: execution.actionResults.map((result) => ({
+        actionResults: execution.actionResults.map(result => ({
           actionType: result.actionType,
           status: result.status,
           duration: result.duration,
@@ -221,7 +223,7 @@ return;
           {/* Time Range Filter */}
           <Select
             value={timeRange}
-            onValueChange={(value) =>
+            onValueChange={value =>
               setTimeRange(value as 'day' | 'week' | 'month' | 'all')
             }
           >
@@ -283,11 +285,11 @@ return;
             <div className='flex-1'>
               <p className='text-sm font-medium'>Analytics Insights</p>
               <p className='mt-1 text-sm text-muted-foreground'>
-                This dashboard shows aggregated metrics from{' '}
-                {executions.length} execution
-                {executions.length !== 1 ? 's' : ''}. Use the time range
-                filter to focus on specific periods. Export data for deeper
-                analysis in external tools.
+                This dashboard shows aggregated metrics from {executions.length}{' '}
+                execution
+                {executions.length !== 1 ? 's' : ''}. Use the time range filter
+                to focus on specific periods. Export data for deeper analysis in
+                external tools.
               </p>
             </div>
           </div>

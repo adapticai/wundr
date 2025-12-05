@@ -91,7 +91,7 @@ export function ResponsiveSidebar({
         onCollapsedChange(collapsed);
       }
     },
-    [onCollapsedChange],
+    [onCollapsedChange]
   );
 
   // Mobile: Render drawer
@@ -154,7 +154,7 @@ export function ResponsiveSidebar({
         'fixed inset-y-0 left-0 z-30 flex flex-col border-r bg-background',
         'transition-all duration-300 ease-in-out',
         sidebarWidth,
-        className,
+        className
       )}
     >
       {/* Collapse button */}
@@ -179,7 +179,7 @@ export function ResponsiveSidebar({
         <div
           className={cn(
             'border-b p-4',
-            isCollapsed && 'px-2 flex justify-center',
+            isCollapsed && 'px-2 flex justify-center'
           )}
         >
           {header}
@@ -266,7 +266,7 @@ export function SidebarNavItem({
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
     isActive && 'bg-accent text-accent-foreground',
     isCollapsed && 'justify-center px-2',
-    className,
+    className
   );
 
   if (href) {

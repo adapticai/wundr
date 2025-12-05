@@ -89,7 +89,7 @@ export function DaemonManager({
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/admin/daemons?orchestratorId=${orchestratorId}`,
+        `/api/workspaces/${workspaceId}/admin/daemons?orchestratorId=${orchestratorId}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -113,10 +113,10 @@ export function DaemonManager({
         try {
           const [sessionsRes, metricsRes] = await Promise.all([
             fetch(
-              `/api/workspaces/${workspaceId}/admin/daemons/${cred.id}/sessions`,
+              `/api/workspaces/${workspaceId}/admin/daemons/${cred.id}/sessions`
             ),
             fetch(
-              `/api/workspaces/${workspaceId}/admin/daemons/${cred.id}/metrics`,
+              `/api/workspaces/${workspaceId}/admin/daemons/${cred.id}/metrics`
             ),
           ]);
 
@@ -153,7 +153,7 @@ export function DaemonManager({
             version: '1.0.0',
             capabilities: ['messaging', 'presence'],
           }),
-        },
+        }
       );
 
       if (response.ok) {
@@ -174,7 +174,7 @@ export function DaemonManager({
   const handleRevoke = async (daemonId: string) => {
     if (
       !confirm(
-        'Are you sure you want to revoke this daemon? This action cannot be undone.',
+        'Are you sure you want to revoke this daemon? This action cannot be undone.'
       )
     ) {
       return;
@@ -205,12 +205,12 @@ export function DaemonManager({
 
   const handleTerminateSession = async (
     daemonId: string,
-    sessionId: string,
+    sessionId: string
   ) => {
     try {
       await fetch(
         `/api/workspaces/${workspaceId}/admin/daemons/${daemonId}/sessions/${sessionId}`,
-        { method: 'DELETE' },
+        { method: 'DELETE' }
       );
       setSessions(prev => ({
         ...prev,
@@ -368,7 +368,7 @@ export function DaemonManager({
                             <div
                               className={cn(
                                 'w-2 h-2 rounded-full',
-                                STATUS_COLORS[session.status] || 'bg-gray-400',
+                                STATUS_COLORS[session.status] || 'bg-gray-400'
                               )}
                             />
                             <div>
@@ -384,7 +384,7 @@ export function DaemonManager({
                             <span className='text-xs text-muted-foreground'>
                               Last heartbeat:{' '}
                               {new Date(
-                                session.lastHeartbeat,
+                                session.lastHeartbeat
                               ).toLocaleTimeString()}
                             </span>
                             <Button

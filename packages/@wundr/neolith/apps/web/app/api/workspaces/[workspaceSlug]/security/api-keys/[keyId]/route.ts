@@ -43,7 +43,6 @@ export async function DELETE(_request: Request, context: RouteContext) {
     const credential = await prisma.daemonCredential.findFirst({
       where: {
         id: keyId,
-        
       },
     });
 
@@ -59,8 +58,8 @@ export async function DELETE(_request: Request, context: RouteContext) {
     // Log audit event
     await prisma.auditLog.create({
       data: {
-        
-        actorId: session.user.id, actorType: 'user',
+        actorId: session.user.id,
+        actorType: 'user',
         action: 'api_key.deleted',
         resourceType: 'api_key',
         resourceId: keyId,
@@ -75,7 +74,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     console.error('Error deleting API key:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -115,7 +114,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     const credential = await prisma.daemonCredential.findFirst({
       where: {
         id: keyId,
-        
       },
     });
 
@@ -127,15 +125,16 @@ export async function PATCH(request: Request, context: RouteContext) {
     const updated = await prisma.daemonCredential.update({
       where: { id: keyId },
       data: {
-        isActive: body.isActive !== undefined ? body.isActive : credential.isActive,
+        isActive:
+          body.isActive !== undefined ? body.isActive : credential.isActive,
       },
     });
 
     // Log audit event
     await prisma.auditLog.create({
       data: {
-        
-        actorId: session.user.id, actorType: 'user',
+        actorId: session.user.id,
+        actorType: 'user',
         action: 'api_key.updated',
         resourceType: 'api_key',
         resourceId: keyId,
@@ -150,7 +149,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     console.error('Error updating API key:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

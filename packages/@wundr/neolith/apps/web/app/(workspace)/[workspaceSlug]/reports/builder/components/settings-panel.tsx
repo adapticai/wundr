@@ -43,93 +43,93 @@ export function SettingsPanel({ widget, onUpdate }: SettingsPanelProps) {
 
   const renderChartSettings = () => (
     <>
-      <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='title'>Title</Label>
         <Input
-          id="title"
+          id='title'
           value={config.title || ''}
-          onChange={(e) => handleChange({ title: e.target.value })}
-          placeholder="Chart title"
+          onChange={e => handleChange({ title: e.target.value })}
+          placeholder='Chart title'
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='description'>Description</Label>
         <Textarea
-          id="description"
+          id='description'
           value={config.description || ''}
-          onChange={(e) => handleChange({ description: e.target.value })}
-          placeholder="Chart description"
+          onChange={e => handleChange({ description: e.target.value })}
+          placeholder='Chart description'
           rows={2}
         />
       </div>
 
       <Separator />
 
-      <div className="space-y-2">
-        <Label htmlFor="x-axis">X-Axis Field</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='x-axis'>X-Axis Field</Label>
         <Input
-          id="x-axis"
+          id='x-axis'
           value={config.xAxisKey || ''}
-          onChange={(e) => handleChange({ xAxisKey: e.target.value })}
-          placeholder="e.g., date"
+          onChange={e => handleChange({ xAxisKey: e.target.value })}
+          placeholder='e.g., date'
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="data-keys">Data Fields (comma-separated)</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='data-keys'>Data Fields (comma-separated)</Label>
         <Input
-          id="data-keys"
+          id='data-keys'
           value={config.dataKeys?.join(', ') || ''}
-          onChange={(e) =>
+          onChange={e =>
             handleChange({
-              dataKeys: e.target.value.split(',').map((k) => k.trim()),
+              dataKeys: e.target.value.split(',').map(k => k.trim()),
             })
           }
-          placeholder="e.g., value, target"
+          placeholder='e.g., value, target'
         />
       </div>
 
       <Separator />
 
-      <div className="flex items-center justify-between">
-        <Label htmlFor="show-legend">Show Legend</Label>
+      <div className='flex items-center justify-between'>
+        <Label htmlFor='show-legend'>Show Legend</Label>
         <Switch
-          id="show-legend"
+          id='show-legend'
           checked={config.showLegend ?? true}
-          onCheckedChange={(checked) => handleChange({ showLegend: checked })}
+          onCheckedChange={checked => handleChange({ showLegend: checked })}
         />
       </div>
 
-      <div className="flex items-center justify-between">
-        <Label htmlFor="show-grid">Show Grid</Label>
+      <div className='flex items-center justify-between'>
+        <Label htmlFor='show-grid'>Show Grid</Label>
         <Switch
-          id="show-grid"
+          id='show-grid'
           checked={config.showGrid ?? true}
-          onCheckedChange={(checked) => handleChange({ showGrid: checked })}
+          onCheckedChange={checked => handleChange({ showGrid: checked })}
         />
       </div>
 
       {(type === 'line-chart' || type === 'area-chart') && (
         <>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="curved">Curved Lines</Label>
+          <div className='flex items-center justify-between'>
+            <Label htmlFor='curved'>Curved Lines</Label>
             <Switch
-              id="curved"
+              id='curved'
               checked={config.curved ?? true}
-              onCheckedChange={(checked) => handleChange({ curved: checked })}
+              onCheckedChange={checked => handleChange({ curved: checked })}
             />
           </div>
         </>
       )}
 
       {(type === 'bar-chart' || type === 'area-chart') && (
-        <div className="flex items-center justify-between">
-          <Label htmlFor="stacked">Stacked</Label>
+        <div className='flex items-center justify-between'>
+          <Label htmlFor='stacked'>Stacked</Label>
           <Switch
-            id="stacked"
+            id='stacked'
             checked={config.stacked ?? false}
-            onCheckedChange={(checked) => handleChange({ stacked: checked })}
+            onCheckedChange={checked => handleChange({ stacked: checked })}
           />
         </div>
       )}
@@ -138,32 +138,32 @@ export function SettingsPanel({ widget, onUpdate }: SettingsPanelProps) {
 
   const renderTableSettings = () => (
     <>
-      <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='title'>Title</Label>
         <Input
-          id="title"
+          id='title'
           value={config.title || ''}
-          onChange={(e) => handleChange({ title: e.target.value })}
-          placeholder="Table title"
+          onChange={e => handleChange({ title: e.target.value })}
+          placeholder='Table title'
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='description'>Description</Label>
         <Textarea
-          id="description"
+          id='description'
           value={config.description || ''}
-          onChange={(e) => handleChange({ description: e.target.value })}
-          placeholder="Table description"
+          onChange={e => handleChange({ description: e.target.value })}
+          placeholder='Table description'
           rows={2}
         />
       </div>
 
       <Separator />
 
-      <div className="space-y-2">
+      <div className='space-y-2'>
         <Label>Columns</Label>
-        <p className="text-xs text-muted-foreground">
+        <p className='text-xs text-muted-foreground'>
           Configure columns in the data source panel
         </p>
       </div>
@@ -172,54 +172,54 @@ export function SettingsPanel({ widget, onUpdate }: SettingsPanelProps) {
 
   const renderMetricCardSettings = () => (
     <>
-      <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='title'>Title</Label>
         <Input
-          id="title"
+          id='title'
           value={config.title || ''}
-          onChange={(e) => handleChange({ title: e.target.value })}
-          placeholder="Metric name"
+          onChange={e => handleChange({ title: e.target.value })}
+          placeholder='Metric name'
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="value">Value</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='value'>Value</Label>
         <Input
-          id="value"
+          id='value'
           value={config.value || ''}
-          onChange={(e) => handleChange({ value: e.target.value })}
-          placeholder="e.g., 1,234"
+          onChange={e => handleChange({ value: e.target.value })}
+          placeholder='e.g., 1,234'
         />
       </div>
 
       <Separator />
 
-      <div className="space-y-2">
-        <Label htmlFor="change">Change (%)</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='change'>Change (%)</Label>
         <Input
-          id="change"
-          type="number"
+          id='change'
+          type='number'
           value={config.change || ''}
-          onChange={(e) => handleChange({ change: parseFloat(e.target.value) })}
-          placeholder="e.g., 12.5"
+          onChange={e => handleChange({ change: parseFloat(e.target.value) })}
+          placeholder='e.g., 12.5'
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="trend">Trend</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='trend'>Trend</Label>
         <Select
           value={config.trend || 'neutral'}
-          onValueChange={(v) =>
+          onValueChange={v =>
             handleChange({ trend: v as 'up' | 'down' | 'neutral' })
           }
         >
-          <SelectTrigger id="trend">
+          <SelectTrigger id='trend'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="up">Up (Green)</SelectItem>
-            <SelectItem value="down">Down (Red)</SelectItem>
-            <SelectItem value="neutral">Neutral</SelectItem>
+            <SelectItem value='up'>Up (Green)</SelectItem>
+            <SelectItem value='down'>Down (Red)</SelectItem>
+            <SelectItem value='neutral'>Neutral</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -228,57 +228,57 @@ export function SettingsPanel({ widget, onUpdate }: SettingsPanelProps) {
 
   const renderTextSettings = () => (
     <>
-      <div className="space-y-2">
-        <Label htmlFor="content">Content</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='content'>Content</Label>
         <Textarea
-          id="content"
+          id='content'
           value={config.content || ''}
-          onChange={(e) => handleChange({ content: e.target.value })}
-          placeholder="Enter your text here"
+          onChange={e => handleChange({ content: e.target.value })}
+          placeholder='Enter your text here'
           rows={6}
         />
       </div>
 
       <Separator />
 
-      <div className="space-y-2">
-        <Label htmlFor="font-size">Font Size</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='font-size'>Font Size</Label>
         <Select
           value={config.fontSize || 'base'}
-          onValueChange={(v) =>
+          onValueChange={v =>
             handleChange({
               fontSize: v as 'sm' | 'base' | 'lg' | 'xl' | '2xl',
             })
           }
         >
-          <SelectTrigger id="font-size">
+          <SelectTrigger id='font-size'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="sm">Small</SelectItem>
-            <SelectItem value="base">Base</SelectItem>
-            <SelectItem value="lg">Large</SelectItem>
-            <SelectItem value="xl">Extra Large</SelectItem>
-            <SelectItem value="2xl">2X Large</SelectItem>
+            <SelectItem value='sm'>Small</SelectItem>
+            <SelectItem value='base'>Base</SelectItem>
+            <SelectItem value='lg'>Large</SelectItem>
+            <SelectItem value='xl'>Extra Large</SelectItem>
+            <SelectItem value='2xl'>2X Large</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="align">Alignment</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='align'>Alignment</Label>
         <Select
           value={config.align || 'left'}
-          onValueChange={(v) =>
+          onValueChange={v =>
             handleChange({ align: v as 'left' | 'center' | 'right' })
           }
         >
-          <SelectTrigger id="align">
+          <SelectTrigger id='align'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="left">Left</SelectItem>
-            <SelectItem value="center">Center</SelectItem>
-            <SelectItem value="right">Right</SelectItem>
+            <SelectItem value='left'>Left</SelectItem>
+            <SelectItem value='center'>Center</SelectItem>
+            <SelectItem value='right'>Right</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -300,13 +300,13 @@ export function SettingsPanel({ widget, onUpdate }: SettingsPanelProps) {
         return renderTextSettings();
       case 'divider':
         return (
-          <div className="text-sm text-muted-foreground text-center py-4">
+          <div className='text-sm text-muted-foreground text-center py-4'>
             No settings available for divider
           </div>
         );
       default:
         return (
-          <div className="text-sm text-muted-foreground text-center py-4">
+          <div className='text-sm text-muted-foreground text-center py-4'>
             No settings available
           </div>
         );
@@ -316,15 +316,15 @@ export function SettingsPanel({ widget, onUpdate }: SettingsPanelProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <Settings2 className="h-4 w-4" />
-          <CardTitle className="text-base">Widget Settings</CardTitle>
+        <div className='flex items-center gap-2'>
+          <Settings2 className='h-4 w-4' />
+          <CardTitle className='text-base'>Widget Settings</CardTitle>
         </div>
-        <CardDescription className="text-xs">
+        <CardDescription className='text-xs'>
           Configure {type.replace('-', ' ')} properties
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">{renderSettings()}</CardContent>
+      <CardContent className='space-y-4'>{renderSettings()}</CardContent>
     </Card>
   );
 }

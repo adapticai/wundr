@@ -272,7 +272,13 @@ export type PermissionResource =
 /**
  * Permission action types
  */
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage' | '*';
+export type PermissionAction =
+  | 'create'
+  | 'read'
+  | 'update'
+  | 'delete'
+  | 'manage'
+  | '*';
 
 /**
  * Permission definition
@@ -391,12 +397,22 @@ export interface WorkspaceAdminSettings {
 /**
  * Subscription plan types
  */
-export type PlanType = 'free' | 'starter' | 'professional' | 'business' | 'enterprise';
+export type PlanType =
+  | 'free'
+  | 'starter'
+  | 'professional'
+  | 'business'
+  | 'enterprise';
 
 /**
  * Subscription status
  */
-export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing' | 'unpaid';
+export type SubscriptionStatus =
+  | 'active'
+  | 'canceled'
+  | 'past_due'
+  | 'trialing'
+  | 'unpaid';
 
 /**
  * Usage metrics

@@ -13,7 +13,7 @@ import type { NextRequest } from 'next/server';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -34,14 +34,14 @@ export async function POST(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can import data' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -50,22 +50,15 @@ export async function POST(
     const platform = formData.get('platform') as string;
 
     if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
     // Validate file type
-    const allowedTypes = [
-      'application/json',
-      'text/csv',
-      'application/zip',
-    ];
+    const allowedTypes = ['application/json', 'text/csv', 'application/zip'];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
         { error: 'Invalid file type. Supports JSON, CSV, and ZIP files' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -81,13 +74,13 @@ export async function POST(
       } else {
         return NextResponse.json(
           { error: 'ZIP import not yet implemented' },
-          { status: 501 },
+          { status: 501 }
         );
       }
     } catch (error) {
       return NextResponse.json(
         { error: 'Failed to parse file content' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -98,31 +91,31 @@ export async function POST(
       case 'neolith':
         recordsImported = await importNeolithBackup(
           workspaceId,
-          importData as NeolithBackup,
+          importData as NeolithBackup
         );
         break;
       case 'slack':
         recordsImported = await importSlackData(
           workspaceId,
-          importData as SlackExport,
+          importData as SlackExport
         );
         break;
       case 'discord':
         recordsImported = await importDiscordData(
           workspaceId,
-          importData as DiscordExport,
+          importData as DiscordExport
         );
         break;
       case 'teams':
         recordsImported = await importTeamsData(
           workspaceId,
-          importData as TeamsExport,
+          importData as TeamsExport
         );
         break;
       default:
         return NextResponse.json(
           { error: `Unsupported platform: ${platform}` },
-          { status: 400 },
+          { status: 400 }
         );
     }
 
@@ -135,7 +128,7 @@ export async function POST(
     console.error('Import error:', error);
     return NextResponse.json(
       { error: 'Failed to import data' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -192,7 +185,7 @@ interface TeamsExport {
 // Import functions
 async function importNeolithBackup(
   workspaceId: string,
-  data: NeolithBackup,
+  data: NeolithBackup
 ): Promise<number> {
   let count = 0;
 
@@ -204,7 +197,8 @@ async function importNeolithBackup(
           data: {
             workspaceId,
             name: channel.name,
-            slug: channel.slug || channel.name.toLowerCase().replace(/\s+/g, '-'),
+            slug:
+              channel.slug || channel.name.toLowerCase().replace(/\s+/g, '-'),
             description: channel.description,
             type: (channel.type as 'PUBLIC' | 'PRIVATE') || 'PUBLIC',
           },
@@ -236,11 +230,13 @@ async function importNeolithBackup(
               title: task.title,
               description: task.description,
               status:
-                (task.status as 'TODO' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED') ||
-                'TODO',
+                (task.status as
+                  | 'TODO'
+                  | 'IN_PROGRESS'
+                  | 'DONE'
+                  | 'CANCELLED') || 'TODO',
               priority:
-                (task.priority as 'LOW' | 'MEDIUM' | 'HIGH') ||
-                'MEDIUM',
+                (task.priority as 'LOW' | 'MEDIUM' | 'HIGH') || 'MEDIUM',
             },
           });
           count++;
@@ -256,7 +252,7 @@ async function importNeolithBackup(
 
 async function importSlackData(
   workspaceId: string,
-  data: SlackExport,
+  data: SlackExport
 ): Promise<number> {
   let count = 0;
 
@@ -285,7 +281,7 @@ async function importSlackData(
 
 async function importDiscordData(
   workspaceId: string,
-  data: DiscordExport,
+  data: DiscordExport
 ): Promise<number> {
   let count = 0;
 
@@ -318,7 +314,7 @@ async function importDiscordData(
 
 async function importTeamsData(
   workspaceId: string,
-  data: TeamsExport,
+  data: TeamsExport
 ): Promise<number> {
   let count = 0;
 
@@ -347,8 +343,8 @@ async function importTeamsData(
 function parseCSV(content: string): Array<Record<string, string>> {
   const lines = content.split('\n');
   if (lines.length < 2) {
-return [];
-}
+    return [];
+  }
 
   const headers = lines[0].split(',').map(h => h.trim());
   const data: Array<Record<string, string>> = [];
@@ -356,8 +352,8 @@ return [];
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) {
-continue;
-}
+      continue;
+    }
 
     const values = line.split(',').map(v => v.trim());
     const row: Record<string, string> = {};

@@ -35,7 +35,7 @@ interface CleanupRequest {
  */
 export async function POST(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -57,7 +57,7 @@ export async function POST(
     ) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -93,7 +93,7 @@ export async function POST(
     const deletedCount = filesToDelete.length;
     const freedSpace = filesToDelete.reduce(
       (sum, file) => sum + Number(file.size || 0n),
-      0,
+      0
     );
 
     // Delete files
@@ -111,11 +111,11 @@ export async function POST(
   } catch (error) {
     console.error(
       '[POST /api/workspaces/:workspaceSlug/storage/cleanup] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       { error: 'Failed to run cleanup' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

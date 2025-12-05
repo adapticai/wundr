@@ -12,7 +12,15 @@
 
 import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 import { BudgetAlerts } from '@/components/budget/budget-alerts';
 import { BudgetOverview } from '@/components/budget/budget-overview';
@@ -31,7 +39,12 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useBudget, useUsageHistory, useBudgetAlerts, useBudgetMutations } from '@/hooks/use-budget';
+import {
+  useBudget,
+  useUsageHistory,
+  useBudgetAlerts,
+  useBudgetMutations,
+} from '@/hooks/use-budget';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -59,18 +72,30 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function BudgetManagement({ orchestratorId, disabled = false }: BudgetManagementProps) {
+export function BudgetManagement({
+  orchestratorId,
+  disabled = false,
+}: BudgetManagementProps) {
   const { toast } = useToast();
-  const [selectedPeriod, setSelectedPeriod] = useState<'hourly' | 'daily' | 'monthly'>('daily');
+  const [selectedPeriod, setSelectedPeriod] = useState<
+    'hourly' | 'daily' | 'monthly'
+  >('daily');
 
   // Fetch budget data
-  const { budget, isLoading: budgetLoading, refetch: refetchBudget } = useBudget(orchestratorId);
+  const {
+    budget,
+    isLoading: budgetLoading,
+    refetch: refetchBudget,
+  } = useBudget(orchestratorId);
 
   // Fetch usage history
-  const { history, isLoading: historyLoading } = useUsageHistory(orchestratorId, {
-    granularity: selectedPeriod === 'hourly' ? 'hourly' : 'daily',
-    limit: selectedPeriod === 'hourly' ? 24 : 30,
-  });
+  const { history, isLoading: historyLoading } = useUsageHistory(
+    orchestratorId,
+    {
+      granularity: selectedPeriod === 'hourly' ? 'hourly' : 'daily',
+      limit: selectedPeriod === 'hourly' ? 24 : 30,
+    }
+  );
 
   // Fetch alerts
   const {
@@ -81,7 +106,8 @@ export function BudgetManagement({ orchestratorId, disabled = false }: BudgetMan
   } = useBudgetAlerts(orchestratorId);
 
   // Budget mutations
-  const { updateBudget, setAutoPause, isPending } = useBudgetMutations(orchestratorId);
+  const { updateBudget, setAutoPause, isPending } =
+    useBudgetMutations(orchestratorId);
 
   // Transform history data for charts
   const chartData = useMemo(() => {
@@ -100,13 +126,15 @@ export function BudgetManagement({ orchestratorId, disabled = false }: BudgetMan
   // Calculate trends
   const usageTrend = useMemo(() => {
     if (history.length < 2) {
-return null;
-}
+      return null;
+    }
     const recent = history.slice(0, Math.floor(history.length / 2));
     const older = history.slice(Math.floor(history.length / 2));
 
-    const recentAvg = recent.reduce((sum, h) => sum + h.tokensUsed, 0) / recent.length;
-    const olderAvg = older.reduce((sum, h) => sum + h.tokensUsed, 0) / older.length;
+    const recentAvg =
+      recent.reduce((sum, h) => sum + h.tokensUsed, 0) / recent.length;
+    const olderAvg =
+      older.reduce((sum, h) => sum + h.tokensUsed, 0) / older.length;
 
     const percentChange = ((recentAvg - olderAvg) / olderAvg) * 100;
     return {
@@ -118,8 +146,8 @@ return null;
   // Transform budget data for BudgetOverview component
   const budgetUsage = useMemo(() => {
     if (!budget) {
-return null;
-}
+      return null;
+    }
 
     const periodMap = {
       hourly: budget.usage.daily / 24, // Rough estimate
@@ -139,7 +167,9 @@ return null;
       period: selectedPeriod,
       projectedExhaustion: budget.isDailyLimitExceeded
         ? new Date()
-        : new Date(Date.now() + (budget.dailyRemaining / budget.usage.daily) * 86400000),
+        : new Date(
+            Date.now() + (budget.dailyRemaining / budget.usage.daily) * 86400000
+          ),
       costEstimate: (periodMap[selectedPeriod] || 0) * 0.00002, // Rough estimate at $0.02/1K tokens
     };
   }, [budget, selectedPeriod]);
@@ -165,8 +195,8 @@ return null;
   // Transform budget config for BudgetSettings component
   const budgetConfig: BudgetConfiguration | null = useMemo(() => {
     if (!budget) {
-return null;
-}
+      return null;
+    }
     return {
       hourlyLimit: budget.limits.dailyLimit / 24,
       dailyLimit: budget.limits.dailyLimit,
@@ -199,7 +229,8 @@ return null;
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update budget',
+        description:
+          error instanceof Error ? error.message : 'Failed to update budget',
         variant: 'destructive',
       });
     }
@@ -224,7 +255,10 @@ return null;
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to acknowledge alert',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to acknowledge alert',
         variant: 'destructive',
       });
     }
@@ -259,7 +293,10 @@ return null;
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update thresholds',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to update thresholds',
         variant: 'destructive',
       });
     }
@@ -269,9 +306,9 @@ return null;
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="h-64 bg-muted animate-pulse rounded-lg" />
-        <div className="h-96 bg-muted animate-pulse rounded-lg" />
+      <div className='space-y-4'>
+        <div className='h-64 bg-muted animate-pulse rounded-lg' />
+        <div className='h-96 bg-muted animate-pulse rounded-lg' />
       </div>
     );
   }
@@ -280,8 +317,8 @@ return null;
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-muted-foreground" />
+          <CardTitle className='flex items-center gap-2'>
+            <AlertCircle className='h-5 w-5 text-muted-foreground' />
             Budget Data Unavailable
           </CardTitle>
           <CardDescription>
@@ -293,63 +330,66 @@ return null;
   }
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Budget Overview Section */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <BudgetOverview
-          usage={budgetUsage}
-          onViewChange={setSelectedPeriod}
-        />
+      <div className='grid gap-4 md:grid-cols-2'>
+        <BudgetOverview usage={budgetUsage} onViewChange={setSelectedPeriod} />
 
         <Card>
           <CardHeader>
             <CardTitle>Usage Trend</CardTitle>
-            <CardDescription>
-              Compared to previous period
-            </CardDescription>
+            <CardDescription>Compared to previous period</CardDescription>
           </CardHeader>
           <CardContent>
             {usageTrend ? (
-              <div className="flex items-center gap-4">
-                <div className={cn(
-                  'flex items-center gap-2 text-2xl font-bold',
-                  usageTrend.direction === 'up' ? 'text-destructive' : 'text-green-600',
-                )}>
+              <div className='flex items-center gap-4'>
+                <div
+                  className={cn(
+                    'flex items-center gap-2 text-2xl font-bold',
+                    usageTrend.direction === 'up'
+                      ? 'text-destructive'
+                      : 'text-green-600'
+                  )}
+                >
                   {usageTrend.direction === 'up' ? (
-                    <TrendingUp className="h-6 w-6" />
+                    <TrendingUp className='h-6 w-6' />
                   ) : (
-                    <TrendingDown className="h-6 w-6" />
+                    <TrendingDown className='h-6 w-6' />
                   )}
                   {usageTrend.percentage}%
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {usageTrend.direction === 'up' ? 'Increase' : 'Decrease'} in token usage
+                <p className='text-sm text-muted-foreground'>
+                  {usageTrend.direction === 'up' ? 'Increase' : 'Decrease'} in
+                  token usage
                 </p>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className='text-sm text-muted-foreground'>
                 Not enough data to calculate trend
               </p>
             )}
 
-            <div className="mt-4 grid grid-cols-3 gap-4">
+            <div className='mt-4 grid grid-cols-3 gap-4'>
               <div>
-                <p className="text-xs text-muted-foreground">Total Requests</p>
-                <p className="text-lg font-semibold">
-                  {history.reduce((sum, h) => sum + h.requestCount, 0).toLocaleString()}
+                <p className='text-xs text-muted-foreground'>Total Requests</p>
+                <p className='text-lg font-semibold'>
+                  {history
+                    .reduce((sum, h) => sum + h.requestCount, 0)
+                    .toLocaleString()}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Avg per Request</p>
-                <p className="text-lg font-semibold">
+                <p className='text-xs text-muted-foreground'>Avg per Request</p>
+                <p className='text-lg font-semibold'>
                   {Math.round(
-                    history.reduce((sum, h) => sum + h.averagePerRequest, 0) / history.length,
+                    history.reduce((sum, h) => sum + h.averagePerRequest, 0) /
+                      history.length
                   ).toLocaleString()}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Peak Usage</p>
-                <p className="text-lg font-semibold">
+                <p className='text-xs text-muted-foreground'>Peak Usage</p>
+                <p className='text-lg font-semibold'>
                   {Math.max(...history.map(h => h.tokensUsed)).toLocaleString()}
                 </p>
               </div>
@@ -359,13 +399,13 @@ return null;
       </div>
 
       {/* Charts Section */}
-      <Tabs defaultValue="usage" className="space-y-4">
+      <Tabs defaultValue='usage' className='space-y-4'>
         <TabsList>
-          <TabsTrigger value="usage">Token Usage</TabsTrigger>
-          <TabsTrigger value="requests">Requests</TabsTrigger>
+          <TabsTrigger value='usage'>Token Usage</TabsTrigger>
+          <TabsTrigger value='requests'>Requests</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="usage" className="space-y-4">
+        <TabsContent value='usage' className='space-y-4'>
           <Card>
             <CardHeader>
               <CardTitle>Token Usage Over Time</CardTitle>
@@ -374,11 +414,11 @@ return null;
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <ChartContainer config={chartConfig} className='h-[300px] w-full'>
                 <AreaChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <CartesianGrid strokeDasharray='3 3' vertical={false} />
                   <XAxis
-                    dataKey="date"
+                    dataKey='date'
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
@@ -387,14 +427,14 @@ return null;
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
-                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
+                    tickFormatter={value => `${(value / 1000).toFixed(0)}K`}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Area
-                    type="monotone"
-                    dataKey="tokensUsed"
-                    stroke="var(--color-tokensUsed)"
-                    fill="var(--color-tokensUsed)"
+                    type='monotone'
+                    dataKey='tokensUsed'
+                    stroke='var(--color-tokensUsed)'
+                    fill='var(--color-tokensUsed)'
                     fillOpacity={0.2}
                   />
                 </AreaChart>
@@ -403,33 +443,27 @@ return null;
           </Card>
         </TabsContent>
 
-        <TabsContent value="requests" className="space-y-4">
+        <TabsContent value='requests' className='space-y-4'>
           <Card>
             <CardHeader>
               <CardTitle>Request Volume</CardTitle>
-              <CardDescription>
-                Number of requests over time
-              </CardDescription>
+              <CardDescription>Number of requests over time</CardDescription>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <ChartContainer config={chartConfig} className='h-[300px] w-full'>
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <CartesianGrid strokeDasharray='3 3' vertical={false} />
                   <XAxis
-                    dataKey="date"
+                    dataKey='date'
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
                   />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                  />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={8} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar
-                    dataKey="requestCount"
-                    fill="var(--color-requestCount)"
+                    dataKey='requestCount'
+                    fill='var(--color-requestCount)'
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
@@ -440,7 +474,7 @@ return null;
       </Tabs>
 
       {/* Alerts and Settings Section */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className='grid gap-4 md:grid-cols-2'>
         <BudgetAlerts
           alerts={transformedAlerts}
           thresholds={alertThresholds}
@@ -459,14 +493,15 @@ return null;
 
       {/* Status Badge */}
       {budget.isPaused && (
-        <Card className="border-destructive bg-destructive/10">
+        <Card className='border-destructive bg-destructive/10'>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="h-5 w-5" />
+            <CardTitle className='flex items-center gap-2 text-destructive'>
+              <AlertCircle className='h-5 w-5' />
               Orchestrator Paused
             </CardTitle>
             <CardDescription>
-              This orchestrator has been paused due to budget limits. Increase your budget or wait for the next period to resume operations.
+              This orchestrator has been paused due to budget limits. Increase
+              your budget or wait for the next period to resume operations.
             </CardDescription>
           </CardHeader>
         </Card>

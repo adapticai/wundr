@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-
 export interface RealtimeMetric {
   /** Unique identifier */
   id: string;
@@ -38,7 +37,10 @@ export interface RealtimeMetricsProps {
   className?: string;
 }
 
-function formatValue(value: number, format: RealtimeMetric['format'] = 'number'): string {
+function formatValue(
+  value: number,
+  format: RealtimeMetric['format'] = 'number'
+): string {
   switch (format) {
     case 'currency':
       return new Intl.NumberFormat('en-US', {
@@ -51,14 +53,14 @@ function formatValue(value: number, format: RealtimeMetric['format'] = 'number')
       return `${value.toFixed(1)}%`;
     case 'compact':
       if (value < 1000) {
-return value.toLocaleString();
-}
+        return value.toLocaleString();
+      }
       if (value < 1000000) {
-return `${(value / 1000).toFixed(1)}K`;
-}
+        return `${(value / 1000).toFixed(1)}K`;
+      }
       if (value < 1000000000) {
-return `${(value / 1000000).toFixed(1)}M`;
-}
+        return `${(value / 1000000).toFixed(1)}M`;
+      }
       return `${(value / 1000000000).toFixed(1)}B`;
     default:
       return value.toLocaleString();
@@ -85,7 +87,7 @@ function LiveIndicator({ isActive }: { isActive: boolean }) {
         <div
           className={cn(
             'w-2 h-2 rounded-full',
-            isActive ? 'bg-emerald-500' : 'bg-gray-400',
+            isActive ? 'bg-emerald-500' : 'bg-gray-400'
           )}
         />
         {isActive && (
@@ -106,14 +108,15 @@ export function RealtimeMetrics({
   showLiveIndicator = true,
   className,
 }: RealtimeMetricsProps) {
-  const [metrics, setMetrics] = React.useState<RealtimeMetric[]>(initialMetrics);
+  const [metrics, setMetrics] =
+    React.useState<RealtimeMetric[]>(initialMetrics);
   const [isLive, setIsLive] = React.useState(true);
   const [lastUpdate, setLastUpdate] = React.useState<Date>(new Date());
 
   React.useEffect(() => {
     if (!isLive || !onUpdate) {
-return;
-}
+      return;
+    }
 
     const interval = setInterval(async () => {
       try {
@@ -150,7 +153,7 @@ return;
       </CardHeader>
 
       <CardContent className='space-y-3'>
-        {metrics.map((metric) => {
+        {metrics.map(metric => {
           const change =
             metric.previousValue !== undefined
               ? metric.value - metric.previousValue
@@ -162,7 +165,7 @@ return;
               key={metric.id}
               className={cn(
                 'p-3 rounded-lg border transition-all',
-                hasChanged && 'animate-pulse-once',
+                hasChanged && 'animate-pulse-once'
               )}
             >
               <div className='flex items-center justify-between mb-2'>
@@ -171,7 +174,7 @@ return;
                     <div
                       className={cn(
                         'w-2 h-2 rounded-full',
-                        getStatusColor(metric.status),
+                        getStatusColor(metric.status)
                       )}
                     />
                   )}
@@ -198,7 +201,7 @@ return;
                       'text-xs',
                       change > 0
                         ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400'
-                        : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-400',
+                        : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-400'
                     )}
                   >
                     {change > 0 ? '+' : ''}
@@ -269,7 +272,7 @@ export function RealtimeActivityFeed({
               key={activity.id}
               className={cn(
                 'p-3 rounded-lg border transition-all',
-                index === 0 && 'bg-accent/50',
+                index === 0 && 'bg-accent/50'
               )}
             >
               <div className='flex items-start gap-3'>

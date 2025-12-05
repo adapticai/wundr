@@ -2,7 +2,9 @@
 
 ## Overview
 
-Implemented a comprehensive scheduled reports API system for the Wundr Neolith platform with full CRUD operations, cron expression validation, email delivery configuration, and report generation triggers.
+Implemented a comprehensive scheduled reports API system for the Wundr Neolith platform with full
+CRUD operations, cron expression validation, email delivery configuration, and report generation
+triggers.
 
 ## Files Created
 
@@ -77,7 +79,7 @@ Implemented a comprehensive scheduled reports API system for the Wundr Neolith p
 ### 2. Cron Expression Validation
 
 - Standard cron format validation (minute hour day-of-month month day-of-week)
-- Support for step values (*/6 for "every 6")
+- Support for step values (\*/6 for "every 6")
 - Preset expressions (HOURLY, DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY)
 - Frequency limit validation (minimum 1 hour interval)
 - Human-readable descriptions
@@ -85,6 +87,7 @@ Implemented a comprehensive scheduled reports API system for the Wundr Neolith p
 ### 3. Email Delivery Configuration
 
 Full email configuration with:
+
 - Enable/disable toggle
 - Primary recipients (1-50)
 - CC recipients (0-20)
@@ -97,6 +100,7 @@ Full email configuration with:
 ### 4. Report Parameters
 
 Flexible parameter system supporting:
+
 - Date range selection (last-7-days, last-30-days, last-quarter, last-year, custom)
 - Include/exclude archived items
 - Channel filtering
@@ -109,6 +113,7 @@ Flexible parameter system supporting:
 ### 5. Report Types
 
 Support for multiple report types:
+
 - `workspace-activity`: Overall workspace usage
 - `channel-analytics`: Channel metrics
 - `user-engagement`: User activity patterns
@@ -121,6 +126,7 @@ Support for multiple report types:
 ### 6. Export Formats
 
 Multiple export format support:
+
 - PDF (presentations, reports)
 - CSV (data analysis)
 - JSON (API integration)
@@ -171,20 +177,24 @@ Multiple export format support:
 
 ### Workaround: Using ExportJob Table
 
-The current implementation uses the existing `exportJob` table as a workaround because there's no dedicated `scheduledReport` table in the schema. Schedule configuration is stored in a metadata JSON field.
+The current implementation uses the existing `exportJob` table as a workaround because there's no
+dedicated `scheduledReport` table in the schema. Schedule configuration is stored in a metadata JSON
+field.
 
 **Limitations:**
+
 - No type safety for schedule configuration
 - Cannot efficiently query on schedule fields
 - No dedicated execution history
 - Metadata field becomes complex
 
-**Recommendation:**
-See `SCHEDULED_REPORTS_SCHEMA.md` for the recommended production schema with dedicated `ScheduledReport` and `ReportExecution` tables.
+**Recommendation:** See `SCHEDULED_REPORTS_SCHEMA.md` for the recommended production schema with
+dedicated `ScheduledReport` and `ReportExecution` tables.
 
 ### Missing Components (Not Implemented)
 
-The following components are documented but not implemented (they require additional infrastructure):
+The following components are documented but not implemented (they require additional
+infrastructure):
 
 1. **Background Job Processor**:
    - Actual report generation logic
@@ -212,14 +222,14 @@ The following components are documented but not implemented (they require additi
 
 ## API Endpoints Summary
 
-| Method | Endpoint | Description | Auth | Permissions |
-|--------|----------|-------------|------|-------------|
-| GET | `/reports/scheduled` | List scheduled reports | Required | Any member |
-| POST | `/reports/scheduled` | Create scheduled report | Required | Not GUEST |
-| GET | `/reports/scheduled/{id}` | Get report details | Required | Any member |
-| PUT | `/reports/scheduled/{id}` | Update report | Required | Owner or ADMIN/OWNER |
-| DELETE | `/reports/scheduled/{id}` | Delete report | Required | Owner or ADMIN/OWNER |
-| POST | `/reports/scheduled/{id}/trigger` | Trigger execution | Required | Any member |
+| Method | Endpoint                          | Description             | Auth     | Permissions          |
+| ------ | --------------------------------- | ----------------------- | -------- | -------------------- |
+| GET    | `/reports/scheduled`              | List scheduled reports  | Required | Any member           |
+| POST   | `/reports/scheduled`              | Create scheduled report | Required | Not GUEST            |
+| GET    | `/reports/scheduled/{id}`         | Get report details      | Required | Any member           |
+| PUT    | `/reports/scheduled/{id}`         | Update report           | Required | Owner or ADMIN/OWNER |
+| DELETE | `/reports/scheduled/{id}`         | Delete report           | Required | Owner or ADMIN/OWNER |
+| POST   | `/reports/scheduled/{id}/trigger` | Trigger execution       | Required | Any member           |
 
 ## Testing
 
@@ -230,6 +240,7 @@ npm test tests/lib/cron-validation.test.ts
 ```
 
 Test coverage includes:
+
 - Cron expression parsing
 - Preset values
 - Frequency conversion
@@ -240,6 +251,7 @@ Test coverage includes:
 ## Next Steps for Production
 
 1. **Add Dedicated Schema**:
+
    ```bash
    # Follow SCHEDULED_REPORTS_SCHEMA.md
    cd packages/@wundr/neolith/packages/@neolith/database
@@ -315,10 +327,9 @@ const data = await response.json();
 ### Trigger Manual Execution
 
 ```typescript
-const response = await fetch(
-  '/api/workspaces/acme-corp/reports/scheduled/clx123abc/trigger',
-  { method: 'POST' }
-);
+const response = await fetch('/api/workspaces/acme-corp/reports/scheduled/clx123abc/trigger', {
+  method: 'POST',
+});
 ```
 
 ## Architecture Decisions
@@ -349,6 +360,7 @@ const response = await fetch(
 ## Conclusion
 
 This implementation provides a solid foundation for scheduled reports with:
+
 - Complete CRUD operations
 - Robust validation
 - Proper security
@@ -356,4 +368,6 @@ This implementation provides a solid foundation for scheduled reports with:
 - Test coverage
 - Clear path to production deployment
 
-All code is production-ready with NO stubs or placeholders. The only missing components are external services (email, job queue, report generation) which are documented but require additional infrastructure setup.
+All code is production-ready with NO stubs or placeholders. The only missing components are external
+services (email, job queue, report generation) which are documented but require additional
+infrastructure setup.

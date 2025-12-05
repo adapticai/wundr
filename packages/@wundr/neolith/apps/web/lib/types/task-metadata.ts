@@ -62,14 +62,14 @@ export interface TaskMetadata {
  * Type guard to check if metadata has assignment history
  */
 export function hasAssignmentHistory(
-  metadata: unknown,
+  metadata: unknown
 ): metadata is { assignmentHistory: TaskAssignmentHistoryEntry[] } {
   return (
     typeof metadata === 'object' &&
     metadata !== null &&
     'assignmentHistory' in metadata &&
     Array.isArray(
-      (metadata as { assignmentHistory: unknown }).assignmentHistory,
+      (metadata as { assignmentHistory: unknown }).assignmentHistory
     )
   );
 }
@@ -78,7 +78,7 @@ export function hasAssignmentHistory(
  * Type guard to check if metadata has completion info
  */
 export function hasCompletionMetadata(
-  metadata: unknown,
+  metadata: unknown
 ): metadata is { completion: TaskCompletionMetadata } {
   return (
     typeof metadata === 'object' &&
@@ -92,7 +92,7 @@ export function hasCompletionMetadata(
  * Helper to safely get assignment history from metadata
  */
 export function getAssignmentHistory(
-  metadata: unknown,
+  metadata: unknown
 ): TaskAssignmentHistoryEntry[] {
   if (hasAssignmentHistory(metadata)) {
     return metadata.assignmentHistory;
@@ -104,7 +104,7 @@ export function getAssignmentHistory(
  * Helper to safely get completion metadata
  */
 export function getCompletionMetadata(
-  metadata: unknown,
+  metadata: unknown
 ): TaskCompletionMetadata | null {
   if (hasCompletionMetadata(metadata)) {
     return metadata.completion;

@@ -30,10 +30,7 @@ import {
 } from '@/components/ui/timeline';
 import { useWorkflowExecution } from '@/hooks/use-workflow-execution';
 import { cn } from '@/lib/utils';
-import {
-  ACTION_TYPE_CONFIG,
-  EXECUTION_STATUS_CONFIG,
-} from '@/types/workflow';
+import { ACTION_TYPE_CONFIG, EXECUTION_STATUS_CONFIG } from '@/types/workflow';
 
 import type {
   WorkflowExecution,
@@ -294,7 +291,8 @@ export function ExecutionMonitor({
           <div className='mt-6 space-y-2'>
             <div className='flex items-center justify-between text-sm'>
               <span className='font-medium'>
-                {progress.completedSteps} of {progress.totalSteps} steps completed
+                {progress.completedSteps} of {progress.totalSteps} steps
+                completed
               </span>
               <span className='text-muted-foreground'>
                 {progress.percentage}%
@@ -354,7 +352,8 @@ export function ExecutionMonitor({
                           {result.startedAt
                             ? formatDateTime(new Date(result.startedAt))
                             : 'Not started'}
-                          {result.duration && ` • ${formatDuration(result.duration)}`}
+                          {result.duration &&
+                            ` • ${formatDuration(result.duration)}`}
                         </TimelineTime>
 
                         {result.error && (
@@ -460,7 +459,10 @@ interface ActionStatusBadgeProps {
 function ActionStatusBadge({ status }: ActionStatusBadgeProps) {
   const statusConfig: Record<
     ActionResultStatus,
-    { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+    {
+      label: string;
+      variant: 'default' | 'secondary' | 'destructive' | 'outline';
+    }
   > = {
     pending: { label: 'Pending', variant: 'secondary' },
     running: { label: 'Running', variant: 'default' },
@@ -475,7 +477,7 @@ function ActionStatusBadge({ status }: ActionStatusBadgeProps) {
 }
 
 function getTimelineVariant(
-  status: ActionResultStatus,
+  status: ActionResultStatus
 ): 'default' | 'success' | 'warning' | 'error' | 'info' | 'primary' {
   switch (status) {
     case 'completed':

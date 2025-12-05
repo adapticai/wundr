@@ -20,7 +20,7 @@ export function OrgChartEmptyState({
     <Card
       className={cn(
         'flex flex-col items-center justify-center p-12 bg-stone-900 border-stone-800',
-        className,
+        className
       )}
     >
       <div className='flex h-20 w-20 items-center justify-center rounded-full bg-stone-800 mb-6'>

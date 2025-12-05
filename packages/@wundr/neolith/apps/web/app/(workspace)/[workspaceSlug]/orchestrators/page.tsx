@@ -47,7 +47,7 @@ export default function OrchestratorsPage() {
   useEffect(() => {
     setPageHeader(
       'Orchestrators',
-      'AI-powered orchestrators managing your workspace operations',
+      'AI-powered orchestrators managing your workspace operations'
     );
   }, [setPageHeader]);
 
@@ -138,7 +138,7 @@ export default function OrchestratorsPage() {
       await createOrchestrator(input);
       refetch();
     },
-    [createOrchestrator, refetch],
+    [createOrchestrator, refetch]
   );
 
   const handleToggleStatus = useCallback(
@@ -146,14 +146,14 @@ export default function OrchestratorsPage() {
       await toggleOrchestratorStatus(orchestrator.id, orchestrator.status);
       refetch();
     },
-    [toggleOrchestratorStatus, refetch],
+    [toggleOrchestratorStatus, refetch]
   );
 
   const handleEditWithAI = useCallback(
     (orchestrator: Orchestrator) => {
       router.push(`/${workspaceSlug}/orchestrators/${orchestrator.id}/edit`);
     },
-    [router, workspaceSlug],
+    [router, workspaceSlug]
   );
 
   const handleNewOrchestrator = useCallback(() => {
@@ -196,7 +196,7 @@ export default function OrchestratorsPage() {
         return part;
       });
     },
-    [filters.search],
+    [filters.search]
   );
 
   // Group Orchestrators by status for stats
@@ -319,7 +319,7 @@ export default function OrchestratorsPage() {
                 <option key={status} value={status}>
                   {config.label}
                 </option>
-              ),
+              )
             )}
           </select>
 

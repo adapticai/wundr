@@ -14,9 +14,14 @@ export function createTableReportTemplate(
     description?: string;
     includeTimestamp?: boolean;
     includeSummary?: boolean;
-  } = {},
+  } = {}
 ): ReportTemplate {
-  const { title = name, description, includeTimestamp = true, includeSummary = false } = options;
+  const {
+    title = name,
+    description,
+    includeTimestamp = true,
+    includeSummary = false,
+  } = options;
 
   const sections: ReportSection[] = [];
   let order = 0;
@@ -90,7 +95,7 @@ export function createDashboardReportTemplate(
     title?: string;
     description?: string;
     includeDataTables?: boolean;
-  } = {},
+  } = {}
 ): ReportTemplate {
   const { title = name, description, includeDataTables = false } = options;
 
@@ -176,7 +181,7 @@ export function createFinancialReportTemplate(
     title?: string;
     period?: string;
     includeCharts?: boolean;
-  } = {},
+  } = {}
 ): ReportTemplate {
   const { title = 'Financial Report', period, includeCharts = true } = options;
 
@@ -276,7 +281,7 @@ export function createFinancialReportTemplate(
 export function createCustomReportTemplate(
   name: string,
   sections: Omit<ReportSection, 'id' | 'order'>[],
-  options: PDFExportOptions = {},
+  options: PDFExportOptions = {}
 ): ReportTemplate {
   const orderedSections: ReportSection[] = sections.map((section, index) => ({
     ...section,
@@ -311,7 +316,7 @@ export function getTemplateLibrary(): Record<string, ReportTemplate> {
       {
         title: 'Dashboard Overview',
         includeDataTables: true,
-      },
+      }
     ),
     financial: createFinancialReportTemplate('Financial Report', {
       includeCharts: true,
@@ -342,7 +347,7 @@ export function getTemplateLibrary(): Record<string, ReportTemplate> {
       {
         orientation: 'landscape',
         includePageNumbers: true,
-      },
+      }
     ),
   };
 }
@@ -417,10 +422,7 @@ export function listTemplates(): ReportTemplate[] {
   const library = getTemplateLibrary();
   const customTemplates = loadTemplates();
 
-  return [
-    ...Object.values(library),
-    ...Object.values(customTemplates),
-  ];
+  return [...Object.values(library), ...Object.values(customTemplates)];
 }
 
 /**
@@ -435,7 +437,7 @@ function generateTemplateId(name: string): string {
  */
 export function cloneTemplate(
   templateId: string,
-  newName: string,
+  newName: string
 ): ReportTemplate | null {
   const template = getTemplate(templateId);
 
@@ -457,7 +459,7 @@ export function cloneTemplate(
  */
 export function updateTemplate(
   templateId: string,
-  updates: Partial<Omit<ReportTemplate, 'id' | 'createdAt'>>,
+  updates: Partial<Omit<ReportTemplate, 'id' | 'createdAt'>>
 ): void {
   const templates = loadTemplates();
   const template = templates[templateId];

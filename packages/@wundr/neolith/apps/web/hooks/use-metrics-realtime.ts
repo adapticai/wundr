@@ -265,7 +265,8 @@ async function fetchRealTimeMetrics(url: string): Promise<RealTimeMetrics> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      errorData.error || `Failed to fetch real-time metrics: ${response.statusText}`,
+      errorData.error ||
+        `Failed to fetch real-time metrics: ${response.statusText}`
     );
   }
 
@@ -285,7 +286,7 @@ async function fetchUsageMetrics(url: string): Promise<UsageMetrics> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      errorData.error || `Failed to fetch usage metrics: ${response.statusText}`,
+      errorData.error || `Failed to fetch usage metrics: ${response.statusText}`
     );
   }
 
@@ -304,7 +305,8 @@ async function fetchHealthMetrics(url: string): Promise<HealthMetrics> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      errorData.error || `Failed to fetch health metrics: ${response.statusText}`,
+      errorData.error ||
+        `Failed to fetch health metrics: ${response.statusText}`
     );
   }
 
@@ -349,7 +351,7 @@ async function fetchHealthMetrics(url: string): Promise<HealthMetrics> {
  */
 export function useRealTimeMetrics(
   workspaceId: string,
-  options: UseRealTimeMetricsOptions = {},
+  options: UseRealTimeMetricsOptions = {}
 ): UseRealTimeMetricsReturn {
   const {
     useWebSocket = false,
@@ -366,21 +368,26 @@ export function useRealTimeMetrics(
   const url = `/api/workspaces/${workspaceId}/analytics/realtime`;
 
   // SWR for polling
-  const { data, error: swrError, isLoading, mutate } = useSWR<RealTimeMetrics>(
+  const {
+    data,
+    error: swrError,
+    isLoading,
+    mutate,
+  } = useSWR<RealTimeMetrics>(
     !useWebSocket && autoConnect ? url : null,
     fetchRealTimeMetrics,
     {
       refreshInterval: pollingInterval,
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
-    },
+    }
   );
 
   // WebSocket connection
   useEffect(() => {
     if (!useWebSocket || !autoConnect) {
-return;
-}
+      return;
+    }
 
     const connectWebSocket = () => {
       try {
@@ -396,7 +403,7 @@ return;
           console.log('[useRealTimeMetrics] WebSocket connected');
         };
 
-        ws.onmessage = (event) => {
+        ws.onmessage = event => {
           try {
             const message: MetricsWebSocketMessage = JSON.parse(event.data);
 
@@ -406,8 +413,8 @@ return;
               const update = message.data as MetricUpdate;
               setMetrics(prev => {
                 if (!prev) {
-return null;
-}
+                  return null;
+                }
                 return {
                   ...prev,
                   [update.metric]: update.value,
@@ -419,7 +426,7 @@ return null;
           }
         };
 
-        ws.onerror = (event) => {
+        ws.onerror = event => {
           console.error('[useRealTimeMetrics] WebSocket error:', event);
           setError(new Error('WebSocket connection error'));
         };
@@ -435,7 +442,8 @@ return null;
           }, 5000);
         };
       } catch (err) {
-        const errorObj = err instanceof Error ? err : new Error('WebSocket setup failed');
+        const errorObj =
+          err instanceof Error ? err : new Error('WebSocket setup failed');
         setError(errorObj);
       }
     };
@@ -542,7 +550,7 @@ return null;
 export function useUsageMetrics(
   workspaceId: string,
   period: string = 'month',
-  options: SWRConfiguration = {},
+  options: SWRConfiguration = {}
 ): UseUsageMetricsReturn {
   const url = `/api/workspaces/${workspaceId}/analytics/metrics?period=${period}`;
 
@@ -555,7 +563,7 @@ export function useUsageMetrics(
       revalidateOnReconnect: true,
       dedupingInterval: 10000,
       ...options,
-    },
+    }
   );
 
   const refetch = useCallback(async (): Promise<void> => {
@@ -622,7 +630,7 @@ export function useUsageMetrics(
  */
 export function useHealthMetrics(
   workspaceId: string,
-  options: SWRConfiguration = {},
+  options: SWRConfiguration = {}
 ): UseHealthMetricsReturn {
   const url = `/api/workspaces/${workspaceId}/admin/health`;
 
@@ -634,7 +642,7 @@ export function useHealthMetrics(
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
       ...options,
-    },
+    }
   );
 
   const refetch = useCallback(async (): Promise<void> => {
@@ -685,11 +693,13 @@ export function useHealthMetrics(
  */
 export function usePerformanceMetrics(
   workspaceId: string,
-  options: SWRConfiguration = {},
+  options: SWRConfiguration = {}
 ): UsePerformanceMetricsReturn {
   const url = `/api/workspaces/${workspaceId}/analytics/performance`;
 
-  const fetchPerformanceMetrics = async (url: string): Promise<PerformanceMetrics> => {
+  const fetchPerformanceMetrics = async (
+    url: string
+  ): Promise<PerformanceMetrics> => {
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -698,7 +708,8 @@ export function usePerformanceMetrics(
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(
-        errorData.error || `Failed to fetch performance metrics: ${response.statusText}`,
+        errorData.error ||
+          `Failed to fetch performance metrics: ${response.statusText}`
       );
     }
 
@@ -712,7 +723,7 @@ export function usePerformanceMetrics(
       refreshInterval: 15000, // Refresh every 15 seconds
       revalidateOnFocus: true,
       ...options,
-    },
+    }
   );
 
   const refetch = useCallback(async (): Promise<void> => {
@@ -771,7 +782,7 @@ export function usePerformanceMetrics(
 export function useCustomMetric(
   workspaceId: string,
   metric: CustomMetric,
-  options: SWRConfiguration = {},
+  options: SWRConfiguration = {}
 ): UseCustomMetricReturn {
   const queryParams = new URLSearchParams({
     query: metric.query,
@@ -785,14 +796,14 @@ export function useCustomMetric(
     async (url: string) => {
       const response = await fetch(url);
       if (!response.ok) {
-throw new Error('Failed to fetch custom metric');
-}
+        throw new Error('Failed to fetch custom metric');
+      }
       return response.json();
     },
     {
       refreshInterval: metric.refreshInterval ?? 30000,
       ...options,
-    },
+    }
   );
 
   const refetch = useCallback(async (): Promise<void> => {

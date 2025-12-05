@@ -18,7 +18,7 @@ describe('Conversation', () => {
       <Conversation>
         <div>Message 1</div>
         <div>Message 2</div>
-      </Conversation>,
+      </Conversation>
     );
 
     expect(screen.getByText('Message 1')).toBeInTheDocument();
@@ -29,7 +29,7 @@ describe('Conversation', () => {
     const { container } = render(
       <Conversation className='custom-class'>
         <div>Test</div>
-      </Conversation>,
+      </Conversation>
     );
 
     const scrollToBottom = container.querySelector('.custom-class');
@@ -40,7 +40,7 @@ describe('Conversation', () => {
     render(
       <Conversation showScrollButton={true}>
         <div>Message</div>
-      </Conversation>,
+      </Conversation>
     );
 
     // Note: The button might be hidden initially if at bottom
@@ -53,7 +53,7 @@ describe('Conversation', () => {
     render(
       <Conversation showScrollButton={false}>
         <div>Message</div>
-      </Conversation>,
+      </Conversation>
     );
 
     const button = screen.queryByLabelText('Scroll to bottom');
@@ -64,7 +64,7 @@ describe('Conversation', () => {
     const { container } = render(
       <Conversation>
         <div>Test</div>
-      </Conversation>,
+      </Conversation>
     );
 
     const logContainer = container.querySelector('[role="log"]');
@@ -77,7 +77,7 @@ describe('Conversation', () => {
     const { container } = render(
       <Conversation autoscroll={false}>
         <div>Message</div>
-      </Conversation>,
+      </Conversation>
     );
 
     expect(container.firstChild).toBeInTheDocument();
@@ -100,7 +100,7 @@ describe('useConversation', () => {
     render(
       <Conversation>
         <TestComponent />
-      </Conversation>,
+      </Conversation>
     );
 
     const scrollButton = screen.getByText('Scroll');
@@ -124,7 +124,7 @@ describe('Conversation subcomponents', () => {
     render(
       <Conversation.Content>
         <div>Test content</div>
-      </Conversation.Content>,
+      </Conversation.Content>
     );
 
     expect(screen.getByText('Test content')).toBeInTheDocument();

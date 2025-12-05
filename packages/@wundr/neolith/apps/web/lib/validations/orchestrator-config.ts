@@ -127,7 +127,7 @@ export const topologyConfigSchema = z.object({
         from: z.string(),
         to: z.string(),
         type: z.string().optional(),
-      }),
+      })
     )
     .optional(),
 });

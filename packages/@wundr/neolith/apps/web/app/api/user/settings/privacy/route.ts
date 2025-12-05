@@ -40,9 +40,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Authentication required',
-          SETTINGS_ERROR_CODES.UNAUTHORIZED,
+          SETTINGS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -58,9 +58,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'User not found',
-          SETTINGS_ERROR_CODES.NOT_FOUND,
+          SETTINGS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -72,16 +72,24 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       showTypingIndicators: (prefs.showTypingIndicators as boolean) ?? true,
       profileDiscoverable: (prefs.profileDiscoverable as boolean) ?? true,
       allowAnalytics: (prefs.allowAnalytics as boolean) ?? true,
-      allowThirdPartyDataSharing: (prefs.allowThirdPartyDataSharing as boolean) ?? false,
+      allowThirdPartyDataSharing:
+        (prefs.allowThirdPartyDataSharing as boolean) ?? false,
       whoCanSendMessages:
-        (prefs.whoCanSendMessages as 'everyone' | 'workspace-members' | 'connections') ||
-        'everyone',
+        (prefs.whoCanSendMessages as
+          | 'everyone'
+          | 'workspace-members'
+          | 'connections') || 'everyone',
       whoCanSeePosts:
-        (prefs.whoCanSeePosts as 'public' | 'workspace' | 'private') || 'workspace',
+        (prefs.whoCanSeePosts as 'public' | 'workspace' | 'private') ||
+        'workspace',
       allowDirectMessages: (prefs.allowDirectMessages as boolean) ?? true,
       showActivityStatus: (prefs.showActivityStatus as boolean) ?? true,
       dataRetention:
-        (prefs.dataRetention as 'forever' | '1-year' | '6-months' | '3-months') || 'forever',
+        (prefs.dataRetention as
+          | 'forever'
+          | '1-year'
+          | '6-months'
+          | '3-months') || 'forever',
     };
 
     return NextResponse.json({
@@ -93,9 +101,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createSettingsErrorResponse(
         'An internal error occurred',
-        SETTINGS_ERROR_CODES.INTERNAL_ERROR,
+        SETTINGS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -116,9 +124,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Authentication required',
-          SETTINGS_ERROR_CODES.UNAUTHORIZED,
+          SETTINGS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -130,9 +138,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Invalid JSON body',
-          SETTINGS_ERROR_CODES.VALIDATION_ERROR,
+          SETTINGS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -142,9 +150,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         createSettingsErrorResponse(
           'Validation failed',
           SETTINGS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -160,9 +168,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'User not found',
-          SETTINGS_ERROR_CODES.NOT_FOUND,
+          SETTINGS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -196,9 +204,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createSettingsErrorResponse(
         'An internal error occurred',
-        SETTINGS_ERROR_CODES.INTERNAL_ERROR,
+        SETTINGS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

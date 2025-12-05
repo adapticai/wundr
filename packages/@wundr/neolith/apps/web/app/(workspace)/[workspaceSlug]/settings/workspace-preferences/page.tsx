@@ -115,7 +115,7 @@ export default function WorkspacePreferencesPage() {
 
         // Load workspace settings
         const settingsRes = await fetch(
-          `/api/workspaces/${workspaceSlug}/settings/user`,
+          `/api/workspaces/${workspaceSlug}/settings/user`
         );
         if (settingsRes.ok) {
           const { data } = await settingsRes.json();
@@ -129,7 +129,7 @@ export default function WorkspacePreferencesPage() {
 
         // Load channels
         const channelsRes = await fetch(
-          `/api/workspaces/${workspaceSlug}/channels`,
+          `/api/workspaces/${workspaceSlug}/channels`
         );
         if (channelsRes.ok) {
           const { data } = await channelsRes.json();
@@ -161,7 +161,7 @@ export default function WorkspacePreferencesPage() {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updates),
-          },
+          }
         );
 
         if (!response.ok) {
@@ -180,7 +180,7 @@ export default function WorkspacePreferencesPage() {
         setIsSaving(false);
       }
     },
-    [workspaceSlug, toast],
+    [workspaceSlug, toast]
   );
 
   const handleFieldChange = useCallback(
@@ -191,7 +191,7 @@ export default function WorkspacePreferencesPage() {
         return updated;
       });
     },
-    [saveSettings],
+    [saveSettings]
   );
 
   const toggleSidebarSection = useCallback(
@@ -202,7 +202,7 @@ export default function WorkspacePreferencesPage() {
       };
       handleFieldChange('sidebarCollapsed', newCollapsed);
     },
-    [settings.sidebarCollapsed, handleFieldChange],
+    [settings.sidebarCollapsed, handleFieldChange]
   );
 
   const toggleAutoJoinChannel = useCallback(
@@ -213,7 +213,7 @@ export default function WorkspacePreferencesPage() {
         : [...current, channelId];
       handleFieldChange('autoJoinChannels', updated);
     },
-    [settings.autoJoinChannels, handleFieldChange],
+    [settings.autoJoinChannels, handleFieldChange]
   );
 
   const toggleMuteWorkspace = useCallback(() => {
@@ -286,9 +286,7 @@ export default function WorkspacePreferencesPage() {
           {/* Workspace Status Message */}
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor='status-message'>
-                Workspace Status Message
-              </Label>
+              <Label htmlFor='status-message'>Workspace Status Message</Label>
               <span
                 className={`text-xs ${
                   (settings.statusMessage?.length || 0) > STATUS_MESSAGE_LIMIT
@@ -371,9 +369,7 @@ export default function WorkspacePreferencesPage() {
                     </span>
                   </div>
                   <Switch
-                    checked={settings.autoJoinChannels?.includes(
-                      channel.id,
-                    )}
+                    checked={settings.autoJoinChannels?.includes(channel.id)}
                     onCheckedChange={() => toggleAutoJoinChannel(channel.id)}
                   />
                 </div>

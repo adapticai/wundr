@@ -26,7 +26,7 @@ export type OrchestratorAnalyticsErrorCode =
 export function createAnalyticsErrorResponse(
   message: string,
   code: OrchestratorAnalyticsErrorCode,
-  extraData?: Record<string, unknown>,
+  extraData?: Record<string, unknown>
 ): {
   error: OrchestratorAnalyticsErrorCode;
   message: string;

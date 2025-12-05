@@ -70,7 +70,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: AUTH_ERROR_CODES.VALIDATION_ERROR,
           message: 'Invalid JSON body',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           message: 'Validation failed',
           errors: parseResult.error.flatten().fieldErrors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               email: user.email,
               error: emailResult.error,
               timestamp: new Date().toISOString(),
-            },
+            }
           );
         }
 
@@ -162,14 +162,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           // eslint-disable-next-line no-console
           console.log(
             '[DEVELOPMENT] Password reset requested for:',
-            user.email,
+            user.email
           );
           // eslint-disable-next-line no-console
           console.log('[DEVELOPMENT] Reset URL:', resetUrl);
           // eslint-disable-next-line no-console
           console.log(
             '[DEVELOPMENT] Token expires at:',
-            expiresAt.toISOString(),
+            expiresAt.toISOString()
           );
           // eslint-disable-next-line no-console
           console.log('[DEVELOPMENT] Email sent:', emailResult.success);
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 ? emailError.message
                 : String(emailError),
             timestamp: new Date().toISOString(),
-          },
+          }
         );
         // Continue execution - we still return success to prevent email enumeration
       }
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         message:
           "If an account exists with that email, we've sent password reset instructions.",
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     // Only log detailed error in development
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       console.error('[POST /api/auth/forgot-password] Error:', error);
     } else {
       console.error(
-        '[POST /api/auth/forgot-password] Password reset request error',
+        '[POST /api/auth/forgot-password] Password reset request error'
       );
     }
 
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: AUTH_ERROR_CODES.INTERNAL_ERROR,
         message: 'An internal error occurred',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -1,13 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 import {
   ChartContainer,
@@ -52,7 +46,7 @@ export function LineChart({
         color: color,
       },
     }),
-    [color],
+    [color]
   );
 
   const formatDate = (dateStr: string) => {
@@ -73,7 +67,7 @@ export function LineChart({
         date: formatDate(d.date),
         value: d.value,
       })),
-    [data],
+    [data]
   );
 
   if (isLoading) {
@@ -82,10 +76,7 @@ export function LineChart({
         {title && (
           <h3 className='text-sm font-medium text-foreground mb-2'>{title}</h3>
         )}
-        <div
-          className='flex items-center justify-center'
-          style={{ height }}
-        >
+        <div className='flex items-center justify-center' style={{ height }}>
           <div className='w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin' />
         </div>
       </div>
@@ -98,10 +89,7 @@ export function LineChart({
         {title && (
           <h3 className='text-sm font-medium text-foreground mb-2'>{title}</h3>
         )}
-        <div
-          className='flex items-center justify-center'
-          style={{ height }}
-        >
+        <div className='flex items-center justify-center' style={{ height }}>
           <p className='text-muted-foreground text-sm'>No data available</p>
         </div>
       </div>
@@ -114,7 +102,11 @@ export function LineChart({
         <h3 className='text-sm font-medium text-foreground mb-2'>{title}</h3>
       )}
 
-      <ChartContainer config={chartConfig} className='w-full' style={{ height }}>
+      <ChartContainer
+        config={chartConfig}
+        className='w-full'
+        style={{ height }}
+      >
         <AreaChart
           data={chartData}
           margin={{

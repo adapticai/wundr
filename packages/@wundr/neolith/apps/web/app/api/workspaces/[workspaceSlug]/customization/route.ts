@@ -39,13 +39,14 @@ export async function GET(_request: Request, context: RouteContext) {
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Parse customization settings from workspace.settings JSON
     const settings = (workspace.settings as Record<string, unknown>) || {};
-    const customization = settings.customization as Record<string, unknown> || {};
+    const customization =
+      (settings.customization as Record<string, unknown>) || {};
 
     return NextResponse.json({
       customization: {
@@ -139,7 +140,7 @@ export async function GET(_request: Request, context: RouteContext) {
     console.error('Error fetching customization settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -176,7 +177,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -185,7 +186,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (!member || (member.role !== 'ADMIN' && member.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Insufficient permissions' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -197,7 +198,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const updatedSettings = {
       ...currentSettings,
       customization: {
-        ...(currentSettings.customization as Record<string, unknown> || {}),
+        ...((currentSettings.customization as Record<string, unknown>) || {}),
         ...updates,
       },
     };
@@ -232,7 +233,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     console.error('Error updating customization settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

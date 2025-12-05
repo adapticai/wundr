@@ -39,7 +39,7 @@ interface TestPushNotificationParams {
  * @throws Error if notification fails to send
  */
 async function sendTestPushNotification(
-  params: TestPushNotificationParams,
+  params: TestPushNotificationParams
 ): Promise<void> {
   const { token, platform, title, body } = params;
 
@@ -165,9 +165,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createNotificationErrorResponse(
           'Authentication required',
-          NOTIFICATION_ERROR_CODES.UNAUTHORIZED,
+          NOTIFICATION_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -207,9 +207,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createNotificationErrorResponse(
           'No active devices found',
-          NOTIFICATION_ERROR_CODES.DEVICE_NOT_FOUND,
+          NOTIFICATION_ERROR_CODES.DEVICE_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -253,7 +253,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             error: error instanceof Error ? error.message : 'Unknown error',
           };
         }
-      }),
+      })
     );
 
     const successCount = results.filter(r => r.success).length;
@@ -276,9 +276,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
-        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR,
+        NOTIFICATION_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

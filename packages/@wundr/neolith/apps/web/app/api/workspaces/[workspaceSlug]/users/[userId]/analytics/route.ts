@@ -95,7 +95,7 @@ function calculateSessionMetrics(activities: Array<{ timestamp: Date }>) {
 
   // Sort activities by timestamp
   const sorted = [...activities].sort(
-    (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
   );
 
   // Group activities into sessions (gap > 30 minutes = new session)
@@ -127,7 +127,7 @@ function calculateSessionMetrics(activities: Array<{ timestamp: Date }>) {
 
   const totalActiveTime = sessions.reduce(
     (sum, session) => sum + session.duration,
-    0,
+    0
   );
   const avgSessionDuration =
     sessions.length > 0 ? totalActiveTime / sessions.length : 0;
@@ -161,7 +161,7 @@ function calculateSessionMetrics(activities: Array<{ timestamp: Date }>) {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -169,7 +169,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -180,7 +180,7 @@ export async function GET(
     if (!workspaceId || !userId) {
       return NextResponse.json(
         { error: 'Invalid parameters: workspaceId and userId required' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -201,27 +201,27 @@ export async function GET(
     if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
       return NextResponse.json(
         { error: 'Invalid date format. Use ISO 8601 format.' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (fromDate > toDate) {
       return NextResponse.json(
         { error: 'Start date must be before end date' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Check workspace membership for requesting user
     const requestingUserMembership = await checkWorkspaceMembership(
       workspaceId,
-      session.user.id,
+      session.user.id
     );
 
     if (!requestingUserMembership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -233,12 +233,12 @@ export async function GET(
 
     const targetUserMembership = await checkWorkspaceMembership(
       workspaceId,
-      userId,
+      userId
     );
     if (!targetUserMembership) {
       return NextResponse.json(
         { error: 'User is not a member of this workspace' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -458,13 +458,13 @@ export async function GET(
         acc[msg.type] = (acc[msg.type] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
 
     const directMessages = messagesSent.filter(msg =>
       channelMemberships.find(
-        cm => cm.channelId === msg.channelId && cm.channel.type === 'DM',
-      ),
+        cm => cm.channelId === msg.channelId && cm.channel.type === 'DM'
+      )
     );
 
     const threadMessages = messagesSent.filter(msg => msg.parentId !== null);
@@ -480,7 +480,7 @@ export async function GET(
         acc[task.status] = (acc[task.status] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
 
     const tasksByPriority = tasksAssigned.reduce(
@@ -488,12 +488,12 @@ export async function GET(
         acc[task.priority] = (acc[task.priority] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
 
     // Calculate average task completion time
     const completedWithTimes = tasksCompleted.filter(
-      t => t.completedAt && t.createdAt,
+      t => t.completedAt && t.createdAt
     );
     const avgCompletionTime =
       completedWithTimes.length > 0
@@ -511,7 +511,7 @@ export async function GET(
       t =>
         t.completedAt &&
         t.dueDate &&
-        new Date(t.completedAt) <= new Date(t.dueDate),
+        new Date(t.completedAt) <= new Date(t.dueDate)
     );
     const onTimeRate =
       tasksWithDueDate.length > 0
@@ -604,17 +604,20 @@ export async function GET(
       }
 
       if (activity.type === 'message') {
-activityByPeriod[periodKey].messages++;
-}
+        activityByPeriod[periodKey].messages++;
+      }
       if (activity.type === 'reaction') {
-activityByPeriod[periodKey].reactions++;
-}
-      if (activity.type === 'task_created' || activity.type === 'task_completed') {
-activityByPeriod[periodKey].tasks++;
-}
+        activityByPeriod[periodKey].reactions++;
+      }
+      if (
+        activity.type === 'task_created' ||
+        activity.type === 'task_completed'
+      ) {
+        activityByPeriod[periodKey].tasks++;
+      }
       if (activity.type === 'file') {
-activityByPeriod[periodKey].files++;
-}
+        activityByPeriod[periodKey].files++;
+      }
     });
 
     // Calculate peak activity hours
@@ -631,7 +634,7 @@ activityByPeriod[periodKey].files++;
         acc[msg.channelId] = (acc[msg.channelId] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
 
     const mostActiveChannels = Object.entries(channelActivity)
@@ -639,7 +642,7 @@ activityByPeriod[periodKey].files++;
       .slice(0, 5)
       .map(([channelId, count]) => {
         const channel = channelMemberships.find(
-          cm => cm.channelId === channelId,
+          cm => cm.channelId === channelId
         );
         return {
           channelId,
@@ -681,10 +684,9 @@ activityByPeriod[periodKey].files++;
             (messagesSent.length /
               Math.max(
                 1,
-                (toDate.getTime() - fromDate.getTime()) /
-                  (1000 * 60 * 60 * 24),
+                (toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24)
               )) *
-              10,
+              10
           ) / 10,
       },
       reactions: {
@@ -696,8 +698,8 @@ activityByPeriod[periodKey].files++;
               acc[r.emoji] = (acc[r.emoji] || 0) + 1;
               return acc;
             },
-            {} as Record<string, number>,
-          ),
+            {} as Record<string, number>
+          )
         )
           .sort(([, a], [, b]) => b - a)
           .slice(0, 5)
@@ -718,7 +720,7 @@ activityByPeriod[periodKey].files++;
         uploaded: filesUploaded.length,
         totalSizeBytes: filesUploaded.reduce(
           (sum, f) => sum + Number(f.size),
-          0,
+          0
         ),
         byType: filesUploaded.reduce(
           (acc, f) => {
@@ -726,7 +728,7 @@ activityByPeriod[periodKey].files++;
             acc[type] = (acc[type] || 0) + 1;
             return acc;
           },
-          {} as Record<string, number>,
+          {} as Record<string, number>
         ),
       },
       sessions: {
@@ -763,14 +765,14 @@ activityByPeriod[periodKey].files++;
   } catch (error) {
     console.error(
       '[GET /api/workspaces/[workspaceSlug]/users/[userId]/analytics] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       {
         error: 'An internal error occurred',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

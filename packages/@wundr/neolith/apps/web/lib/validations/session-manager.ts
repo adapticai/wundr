@@ -72,7 +72,7 @@ export const sessionRevokeSchema = z.object({
 export function createErrorResponse(
   message: string,
   code: SessionManagerErrorCode,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ): {
   error: SessionManagerErrorCode;
   message: string;

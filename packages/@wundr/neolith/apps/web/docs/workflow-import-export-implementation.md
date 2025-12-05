@@ -2,7 +2,8 @@
 
 ## Overview
 
-Comprehensive workflow import/export functionality with validation, conflict resolution, and batch operations.
+Comprehensive workflow import/export functionality with validation, conflict resolution, and batch
+operations.
 
 ## Components
 
@@ -11,6 +12,7 @@ Comprehensive workflow import/export functionality with validation, conflict res
 **Location**: `/apps/web/components/workflow/workflow-export.tsx`
 
 **Features**:
+
 - Single and batch workflow export
 - JSON format with customizable options
 - Export options:
@@ -25,6 +27,7 @@ Comprehensive workflow import/export functionality with validation, conflict res
 - Comprehensive export summary
 
 **Props**:
+
 ```typescript
 interface WorkflowExportProps {
   workflows: Workflow[];
@@ -37,6 +40,7 @@ interface WorkflowExportProps {
 ```
 
 **Usage**:
+
 ```tsx
 import { WorkflowExport } from '@/components/workflow';
 
@@ -44,10 +48,10 @@ import { WorkflowExport } from '@/components/workflow';
   workflows={workflows}
   selectedWorkflowIds={['wf_1', 'wf_2']}
   workspaceSlug={workspaceSlug}
-  onExportComplete={(result) => {
+  onExportComplete={result => {
     console.log('Exported:', result.fileName);
   }}
-/>
+/>;
 ```
 
 ### 2. WorkflowImport Component
@@ -55,6 +59,7 @@ import { WorkflowExport } from '@/components/workflow';
 **Location**: `/apps/web/components/workflow/workflow-import.tsx`
 
 **Features**:
+
 - Drag-and-drop file upload
 - File browser selection
 - JSON validation with detailed error messages
@@ -72,6 +77,7 @@ import { WorkflowExport } from '@/components/workflow';
 - Import results summary
 
 **Props**:
+
 ```typescript
 interface WorkflowImportProps {
   workspaceSlug: string;
@@ -83,17 +89,18 @@ interface WorkflowImportProps {
 ```
 
 **Usage**:
+
 ```tsx
 import { WorkflowImport } from '@/components/workflow';
 
 <WorkflowImport
   workspaceSlug={workspaceSlug}
   existingWorkflows={existingWorkflows}
-  onImportComplete={(results) => {
+  onImportComplete={results => {
     const success = results.filter(r => r.success).length;
     console.log(`Imported ${success} workflows`);
   }}
-/>
+/>;
 ```
 
 ## API Routes
@@ -105,9 +112,11 @@ import { WorkflowImport } from '@/components/workflow';
 **Endpoints**:
 
 #### GET `/api/workspaces/:workspaceSlug/workflows/export`
+
 Export workflows via query parameters.
 
 **Query Parameters**:
+
 - `ids` (required): Comma-separated workflow IDs
 - `includeExecutionHistory` (optional): Include last 50 executions (default: false)
 - `includeMetadata` (optional): Include timestamps, run counts (default: true)
@@ -116,11 +125,13 @@ Export workflows via query parameters.
 - `prettyPrint` (optional): Format JSON with indentation (default: true)
 
 **Example**:
+
 ```bash
 GET /api/workspaces/ws_123/workflows/export?ids=wf_1,wf_2&includeExecutionHistory=true
 ```
 
 **Response**:
+
 ```json
 {
   "version": "1.0.0",
@@ -138,9 +149,11 @@ GET /api/workspaces/ws_123/workflows/export?ids=wf_1,wf_2&includeExecutionHistor
 ```
 
 #### POST `/api/workspaces/:workspaceSlug/workflows/export`
+
 Export workflows via POST body for more control.
 
 **Request Body**:
+
 ```json
 {
   "workflowIds": ["wf_1", "wf_2"],
@@ -161,9 +174,11 @@ Export workflows via POST body for more control.
 **Endpoint**:
 
 #### POST `/api/workspaces/:workspaceSlug/workflows/import`
+
 Import workflows from JSON with validation and conflict resolution.
 
 **Request Body**:
+
 ```json
 {
   "workflows": [
@@ -180,11 +195,13 @@ Import workflows from JSON with validation and conflict resolution.
 ```
 
 **Parameters**:
+
 - `workflows` (required): Array of workflow objects
 - `conflictResolution` (optional): "skip" | "rename" | "overwrite" (default: "rename")
 - `validateOnly` (optional): Only validate without importing (default: false)
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -237,6 +254,7 @@ Errors are categorized by severity:
 - **Warnings**: Allow import with notification
 
 Example validation errors:
+
 ```typescript
 {
   field: 'trigger.type',
@@ -381,8 +399,8 @@ function MyComponent() {
   return (
     <WorkflowExport
       workflows={[selectedWorkflow]}
-      workspaceSlug="my-workspace"
-      onExportComplete={(result) => {
+      workspaceSlug='my-workspace'
+      onExportComplete={result => {
         toast.success(`Exported ${result.fileName}`);
       }}
     />
@@ -396,10 +414,10 @@ function MyComponent() {
 <WorkflowExport
   workflows={workflows}
   selectedWorkflowIds={selectedIds}
-  workspaceSlug="my-workspace"
+  workspaceSlug='my-workspace'
   trigger={
-    <Button variant="outline">
-      <Download className="mr-2" />
+    <Button variant='outline'>
+      <Download className='mr-2' />
       Export Selected
     </Button>
   }
@@ -414,13 +432,13 @@ import { WorkflowImport } from '@/components/workflow';
 function ImportButton() {
   return (
     <WorkflowImport
-      workspaceSlug="my-workspace"
+      workspaceSlug='my-workspace'
       existingWorkflows={existingWorkflows}
-      onImportComplete={(results) => {
+      onImportComplete={results => {
         const success = results.filter(r => r.success).length;
         toast.success(`Successfully imported ${success} workflows`);
       }}
-      onImportError={(error) => {
+      onImportError={error => {
         toast.error(`Import failed: ${error.message}`);
       }}
     />
@@ -432,34 +450,28 @@ function ImportButton() {
 
 ```typescript
 // Export workflows
-const response = await fetch(
-  `/api/workspaces/${workspaceSlug}/workflows/export`,
-  {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      workflowIds: ['wf_1', 'wf_2'],
-      options: {
-        includeExecutionHistory: true,
-        prettyPrint: true,
-      },
-    }),
-  }
-);
+const response = await fetch(`/api/workspaces/${workspaceSlug}/workflows/export`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    workflowIds: ['wf_1', 'wf_2'],
+    options: {
+      includeExecutionHistory: true,
+      prettyPrint: true,
+    },
+  }),
+});
 const exportData = await response.json();
 
 // Import workflows
-const importResponse = await fetch(
-  `/api/workspaces/${workspaceSlug}/workflows/import`,
-  {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      workflows: importData,
-      conflictResolution: 'rename',
-    }),
-  }
-);
+const importResponse = await fetch(`/api/workspaces/${workspaceSlug}/workflows/import`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    workflows: importData,
+    conflictResolution: 'rename',
+  }),
+});
 const { results, summary } = await importResponse.json();
 ```
 
@@ -468,6 +480,7 @@ const { results, summary } = await importResponse.json();
 ### Unit Tests
 
 Test files should cover:
+
 - Workflow validation logic
 - JSON parsing and serialization
 - Error handling paths
@@ -520,24 +533,29 @@ Test files should cover:
 ### Common Issues
 
 **Issue**: "Workflow validation failed"
+
 - **Solution**: Check the detailed error messages in the validation panel
 - **Cause**: Missing required fields or invalid configuration
 
 **Issue**: "Import stuck at 'Importing...'"
+
 - **Solution**: Check browser console for errors, refresh page
 - **Cause**: Network timeout or server error
 
 **Issue**: "Export file is too large"
+
 - **Solution**: Disable execution history, export in smaller batches
 - **Cause**: Too many workflows or large execution history
 
 **Issue**: "Duplicate workflow name"
+
 - **Solution**: Use 'rename' conflict resolution or rename manually
 - **Cause**: Workflow with same name exists in workspace
 
 ## Support
 
 For issues or questions:
+
 - Check the validation error messages
 - Review the API error responses
 - Consult the implementation code
@@ -545,6 +563,4 @@ For issues or questions:
 
 ---
 
-**Last Updated**: December 5, 2025
-**Version**: 1.0.0
-**Status**: Production Ready
+**Last Updated**: December 5, 2025 **Version**: 1.0.0 **Status**: Production Ready

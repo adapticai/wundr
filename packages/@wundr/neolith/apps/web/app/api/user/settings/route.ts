@@ -41,9 +41,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Authentication required',
-          SETTINGS_ERROR_CODES.UNAUTHORIZED,
+          SETTINGS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -62,9 +62,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'User not found',
-          SETTINGS_ERROR_CODES.NOT_FOUND,
+          SETTINGS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -77,8 +77,11 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
         language: (prefs.language as string) || 'en',
         timezone: (prefs.timezone as string) || 'UTC',
         dateFormat:
-          (prefs.dateFormat as 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD' | 'DD.MM.YYYY') ||
-          'MM/DD/YYYY',
+          (prefs.dateFormat as
+            | 'MM/DD/YYYY'
+            | 'DD/MM/YYYY'
+            | 'YYYY-MM-DD'
+            | 'DD.MM.YYYY') || 'MM/DD/YYYY',
         timeFormat: (prefs.timeFormat as '12h' | '24h') || '12h',
         startOfWeek:
           (prefs.startOfWeek as 'sunday' | 'monday' | 'saturday') || 'sunday',
@@ -126,17 +129,26 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       appearance: {
         theme: (prefs.theme as 'light' | 'dark' | 'system') || 'system',
         colorScheme:
-          (prefs.colorScheme as 'blue' | 'purple' | 'green' | 'orange' | 'red') || 'blue',
+          (prefs.colorScheme as
+            | 'blue'
+            | 'purple'
+            | 'green'
+            | 'orange'
+            | 'red') || 'blue',
         fontSize:
-          (prefs.fontSize as 'small' | 'medium' | 'large' | 'extra-large') || 'medium',
-        density: (prefs.density as 'compact' | 'comfortable' | 'spacious') || 'comfortable',
+          (prefs.fontSize as 'small' | 'medium' | 'large' | 'extra-large') ||
+          'medium',
+        density:
+          (prefs.density as 'compact' | 'comfortable' | 'spacious') ||
+          'comfortable',
         reduceMotion: (prefs.reduceMotion as boolean) ?? false,
         highContrast: (prefs.highContrast as boolean) ?? false,
         sidebarPosition: (prefs.sidebarPosition as 'left' | 'right') || 'left',
         messageGrouping: (prefs.messageGrouping as boolean) ?? true,
         showAvatars: (prefs.showAvatars as boolean) ?? true,
         emojiStyle:
-          (prefs.emojiStyle as 'native' | 'twitter' | 'google' | 'apple') || 'native',
+          (prefs.emojiStyle as 'native' | 'twitter' | 'google' | 'apple') ||
+          'native',
       },
       privacy: {
         showOnlineStatus: (prefs.showOnlineStatus as boolean) ?? true,
@@ -144,16 +156,24 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
         showTypingIndicators: (prefs.showTypingIndicators as boolean) ?? true,
         profileDiscoverable: (prefs.profileDiscoverable as boolean) ?? true,
         allowAnalytics: (prefs.allowAnalytics as boolean) ?? true,
-        allowThirdPartyDataSharing: (prefs.allowThirdPartyDataSharing as boolean) ?? false,
+        allowThirdPartyDataSharing:
+          (prefs.allowThirdPartyDataSharing as boolean) ?? false,
         whoCanSendMessages:
-          (prefs.whoCanSendMessages as 'everyone' | 'workspace-members' | 'connections') ||
-          'everyone',
+          (prefs.whoCanSendMessages as
+            | 'everyone'
+            | 'workspace-members'
+            | 'connections') || 'everyone',
         whoCanSeePosts:
-          (prefs.whoCanSeePosts as 'public' | 'workspace' | 'private') || 'workspace',
+          (prefs.whoCanSeePosts as 'public' | 'workspace' | 'private') ||
+          'workspace',
         allowDirectMessages: (prefs.allowDirectMessages as boolean) ?? true,
         showActivityStatus: (prefs.showActivityStatus as boolean) ?? true,
         dataRetention:
-          (prefs.dataRetention as 'forever' | '1-year' | '6-months' | '3-months') || 'forever',
+          (prefs.dataRetention as
+            | 'forever'
+            | '1-year'
+            | '6-months'
+            | '3-months') || 'forever',
       },
     };
 
@@ -166,9 +186,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createSettingsErrorResponse(
         'An internal error occurred',
-        SETTINGS_ERROR_CODES.INTERNAL_ERROR,
+        SETTINGS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -189,9 +209,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Authentication required',
-          SETTINGS_ERROR_CODES.UNAUTHORIZED,
+          SETTINGS_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -203,9 +223,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'Invalid JSON body',
-          SETTINGS_ERROR_CODES.VALIDATION_ERROR,
+          SETTINGS_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -215,9 +235,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         createSettingsErrorResponse(
           'Validation failed',
           SETTINGS_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -233,9 +253,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createSettingsErrorResponse(
           'User not found',
-          SETTINGS_ERROR_CODES.NOT_FOUND,
+          SETTINGS_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -257,37 +277,47 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       if (updates.notifications.email) {
         Object.entries(updates.notifications.email).forEach(([key, value]) => {
           if (value !== undefined) {
-            updatedPrefs[`email${key.charAt(0).toUpperCase()}${key.slice(1)}`] = value;
+            updatedPrefs[`email${key.charAt(0).toUpperCase()}${key.slice(1)}`] =
+              value;
           }
         });
       }
       if (updates.notifications.push) {
         Object.entries(updates.notifications.push).forEach(([key, value]) => {
           if (value !== undefined) {
-            updatedPrefs[`push${key.charAt(0).toUpperCase()}${key.slice(1)}`] = value;
+            updatedPrefs[`push${key.charAt(0).toUpperCase()}${key.slice(1)}`] =
+              value;
           }
         });
       }
       if (updates.notifications.inApp) {
         Object.entries(updates.notifications.inApp).forEach(([key, value]) => {
           if (value !== undefined) {
-            updatedPrefs[`inApp${key.charAt(0).toUpperCase()}${key.slice(1)}`] = value;
+            updatedPrefs[`inApp${key.charAt(0).toUpperCase()}${key.slice(1)}`] =
+              value;
           }
         });
       }
       if (updates.notifications.desktop) {
-        Object.entries(updates.notifications.desktop).forEach(([key, value]) => {
-          if (value !== undefined) {
-            updatedPrefs[`desktop${key.charAt(0).toUpperCase()}${key.slice(1)}`] = value;
+        Object.entries(updates.notifications.desktop).forEach(
+          ([key, value]) => {
+            if (value !== undefined) {
+              updatedPrefs[
+                `desktop${key.charAt(0).toUpperCase()}${key.slice(1)}`
+              ] = value;
+            }
           }
-        });
+        );
       }
       if (updates.notifications.doNotDisturb) {
-        Object.entries(updates.notifications.doNotDisturb).forEach(([key, value]) => {
-          if (value !== undefined) {
-            updatedPrefs[`dnd${key.charAt(0).toUpperCase()}${key.slice(1)}`] = value;
+        Object.entries(updates.notifications.doNotDisturb).forEach(
+          ([key, value]) => {
+            if (value !== undefined) {
+              updatedPrefs[`dnd${key.charAt(0).toUpperCase()}${key.slice(1)}`] =
+                value;
+            }
           }
-        });
+        );
       }
     }
 
@@ -328,9 +358,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createSettingsErrorResponse(
         'An internal error occurred',
-        SETTINGS_ERROR_CODES.INTERNAL_ERROR,
+        SETTINGS_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

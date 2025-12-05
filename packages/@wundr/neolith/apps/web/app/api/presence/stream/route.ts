@@ -63,7 +63,7 @@ function isUserOnline(lastActiveAt: Date | null): boolean {
  * Get presence from user preferences
  */
 function getPresenceFromPreferences(
-  preferences: Prisma.JsonValue,
+  preferences: Prisma.JsonValue
 ): UserPreferences {
   if (
     typeof preferences === 'object' &&
@@ -80,7 +80,7 @@ function getPresenceFromPreferences(
  */
 function mapUserStatusToPresence(
   status: UserStatus,
-  prefs: UserPreferences,
+  prefs: UserPreferences
 ): UserPresenceResponse['status'] {
   if (prefs.presenceStatus) {
     return prefs.presenceStatus;
@@ -157,7 +157,7 @@ function formatSSEMessage(event: string, data: unknown): string {
  * ```
  */
 export async function GET(
-  request: NextRequest,
+  request: NextRequest
 ): Promise<NextResponse | Response> {
   try {
     // Authenticate user
@@ -166,9 +166,9 @@ export async function GET(
       return NextResponse.json(
         createPresenceErrorResponse(
           'Authentication required',
-          PRESENCE_ERROR_CODES.UNAUTHORIZED,
+          PRESENCE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -181,9 +181,9 @@ export async function GET(
         createPresenceErrorResponse(
           'Validation failed',
           PRESENCE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -200,10 +200,10 @@ export async function GET(
       });
 
       const accessibleChannelIds = new Set(
-        channelMemberships.map(m => m.channelId),
+        channelMemberships.map(m => m.channelId)
       );
       const unauthorizedChannels = channelIds.filter(
-        id => !accessibleChannelIds.has(id),
+        id => !accessibleChannelIds.has(id)
       );
 
       if (unauthorizedChannels.length > 0) {
@@ -211,9 +211,9 @@ export async function GET(
           createPresenceErrorResponse(
             'Access denied to some channels',
             PRESENCE_ERROR_CODES.FORBIDDEN,
-            { unauthorizedChannels },
+            { unauthorizedChannels }
           ),
-          { status: 403 },
+          { status: 403 }
         );
       }
     }
@@ -232,8 +232,8 @@ export async function GET(
               timestamp: new Date().toISOString(),
               subscribedChannels: channelIds,
               subscribedUsers: userIds,
-            }),
-          ),
+            })
+          )
         );
 
         // Send initial presence state
@@ -252,7 +252,7 @@ export async function GET(
             const presence = buildPresenceResponse(user);
             previousPresence.set(user.id, presence);
             controller.enqueue(
-              encoder.encode(formatSSEMessage('presence:update', presence)),
+              encoder.encode(formatSSEMessage('presence:update', presence))
             );
           }
         }
@@ -288,8 +288,8 @@ export async function GET(
                   channelId: channel.id,
                   totalOnline: onlineUsers.length,
                   onlineUsers,
-                }),
-              ),
+                })
+              )
             );
 
             // Store member presence for change detection
@@ -297,7 +297,7 @@ export async function GET(
               if (!previousPresence.has(member.user.id)) {
                 previousPresence.set(
                   member.user.id,
-                  buildPresenceResponse(member.user),
+                  buildPresenceResponse(member.user)
                 );
               }
             }
@@ -338,8 +338,8 @@ export async function GET(
               ) {
                 controller.enqueue(
                   encoder.encode(
-                    formatSSEMessage('presence:update', currentPresence),
-                  ),
+                    formatSSEMessage('presence:update', currentPresence)
+                  )
                 );
                 previousPresence.set(user.id, currentPresence);
               }
@@ -356,8 +356,8 @@ export async function GET(
               encoder.encode(
                 formatSSEMessage('heartbeat', {
                   timestamp: new Date().toISOString(),
-                }),
-              ),
+                })
+              )
             );
           } catch {
             // Connection closed, intervals will be cleaned up
@@ -387,9 +387,9 @@ export async function GET(
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

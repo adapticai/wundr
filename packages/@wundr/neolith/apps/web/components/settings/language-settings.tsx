@@ -36,7 +36,11 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
@@ -73,7 +77,11 @@ interface LanguagePreferences {
   timeFormat: '12h' | '24h';
   weekStart: 'sunday' | 'monday' | 'saturday';
   numberFormat: string;
-  currencyFormat: 'symbol-before' | 'symbol-after' | 'code-before' | 'code-after';
+  currencyFormat:
+    | 'symbol-before'
+    | 'symbol-after'
+    | 'code-before'
+    | 'code-after';
   spellCheckLanguage: string;
   keyboardLanguage: string;
   enableRTL: boolean;
@@ -127,7 +135,7 @@ export function LanguageSettings() {
 
   const updatePreference = <K extends keyof LanguagePreferences>(
     key: K,
-    value: LanguagePreferences[K],
+    value: LanguagePreferences[K]
   ) => {
     setPreferences(prev => {
       const updated = { ...prev, [key]: value };
@@ -206,7 +214,9 @@ export function LanguageSettings() {
   }
 
   const selectedLocale = LOCALES.find(l => l.code === preferences.locale);
-  const selectedTimezone = TIMEZONES.find(t => t.value === preferences.timezone);
+  const selectedTimezone = TIMEZONES.find(
+    t => t.value === preferences.timezone
+  );
 
   // Group locales by region
   const localesByRegion = React.useMemo(() => {
@@ -229,8 +239,8 @@ export function LanguageSettings() {
   // Filter locales based on search
   const filteredLocaleRegions = React.useMemo(() => {
     if (!localeSearch) {
-return localesByRegion;
-}
+      return localesByRegion;
+    }
 
     const searchLower = localeSearch.toLowerCase();
     return localesByRegion
@@ -240,7 +250,7 @@ return localesByRegion;
           l =>
             l.name.toLowerCase().includes(searchLower) ||
             l.nativeName.toLowerCase().includes(searchLower) ||
-            l.code.toLowerCase().includes(searchLower),
+            l.code.toLowerCase().includes(searchLower)
         ),
       }))
       .filter(group => group.locales.length > 0);
@@ -249,8 +259,8 @@ return localesByRegion;
   // Filter timezones based on search
   const filteredTimezoneRegions = React.useMemo(() => {
     if (!timezoneSearch) {
-return timezonesByRegion;
-}
+      return timezonesByRegion;
+    }
 
     const searchLower = timezoneSearch.toLowerCase();
     return timezonesByRegion
@@ -260,16 +270,24 @@ return timezonesByRegion;
           t =>
             t.label.toLowerCase().includes(searchLower) ||
             t.value.toLowerCase().includes(searchLower) ||
-            t.offset.toLowerCase().includes(searchLower),
+            t.offset.toLowerCase().includes(searchLower)
         ),
       }))
       .filter(group => group.timezones.length > 0);
   }, [timezonesByRegion, timezoneSearch]);
 
-  const selectedDateFormat = DATE_FORMATS.find(f => f.value === preferences.dateFormat);
-  const selectedTimeFormat = TIME_FORMATS.find(f => f.value === preferences.timeFormat);
-  const selectedNumberFormat = NUMBER_FORMATS.find(f => f.value === preferences.numberFormat);
-  const selectedCurrencyFormat = CURRENCY_FORMATS.find(f => f.value === preferences.currencyFormat);
+  const selectedDateFormat = DATE_FORMATS.find(
+    f => f.value === preferences.dateFormat
+  );
+  const selectedTimeFormat = TIME_FORMATS.find(
+    f => f.value === preferences.timeFormat
+  );
+  const selectedNumberFormat = NUMBER_FORMATS.find(
+    f => f.value === preferences.numberFormat
+  );
+  const selectedCurrencyFormat = CURRENCY_FORMATS.find(
+    f => f.value === preferences.currencyFormat
+  );
 
   return (
     <div className='space-y-6'>
@@ -280,7 +298,12 @@ return timezonesByRegion;
             Configure language, timezone, and regional formatting preferences.
           </p>
         </div>
-        <Button variant='outline' size='sm' onClick={handleAutoDetect} className='gap-2'>
+        <Button
+          variant='outline'
+          size='sm'
+          onClick={handleAutoDetect}
+          className='gap-2'
+        >
           <MapPin className='h-4 w-4' />
           Auto-detect
         </Button>
@@ -339,7 +362,7 @@ return timezonesByRegion;
                           <CommandItem
                             key={locale.code}
                             value={locale.code}
-                            onSelect={(value) => {
+                            onSelect={value => {
                               updatePreference('locale', value);
                               if (locale.isRTL !== undefined) {
                                 updatePreference('enableRTL', locale.isRTL);
@@ -352,7 +375,7 @@ return timezonesByRegion;
                                 'mr-2 h-4 w-4',
                                 preferences.locale === locale.code
                                   ? 'opacity-100'
-                                  : 'opacity-0',
+                                  : 'opacity-0'
                               )}
                             />
                             <div className='flex flex-col'>
@@ -382,7 +405,9 @@ return timezonesByRegion;
             </div>
             <Switch
               checked={preferences.enableRTL}
-              onCheckedChange={checked => updatePreference('enableRTL', checked)}
+              onCheckedChange={checked =>
+                updatePreference('enableRTL', checked)
+              }
             />
           </div>
         </CardContent>
@@ -435,7 +460,7 @@ return timezonesByRegion;
                           <CommandItem
                             key={timezone.value}
                             value={timezone.value}
-                            onSelect={(value) => {
+                            onSelect={value => {
                               updatePreference('timezone', value);
                               setTimezoneOpen(false);
                             }}
@@ -445,7 +470,7 @@ return timezonesByRegion;
                                 'mr-2 h-4 w-4',
                                 preferences.timezone === timezone.value
                                   ? 'opacity-100'
-                                  : 'opacity-0',
+                                  : 'opacity-0'
                               )}
                             />
                             <div className='flex flex-col'>
@@ -524,7 +549,7 @@ return timezonesByRegion;
                   className={cn(
                     'flex flex-1 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer',
                     preferences.timeFormat === format.value &&
-                      'border-primary bg-primary/5',
+                      'border-primary bg-primary/5'
                   )}
                 >
                   <RadioGroupItem value={format.value} className='sr-only' />
@@ -621,7 +646,7 @@ return timezonesByRegion;
                   | 'symbol-before'
                   | 'symbol-after'
                   | 'code-before'
-                  | 'code-after',
+                  | 'code-after'
               ) => updatePreference('currencyFormat', value)}
               className='grid grid-cols-2 gap-4'
             >
@@ -631,12 +656,14 @@ return timezonesByRegion;
                   className={cn(
                     'flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer',
                     preferences.currencyFormat === format.value &&
-                      'border-primary bg-primary/5',
+                      'border-primary bg-primary/5'
                   )}
                 >
                   <RadioGroupItem value={format.value} className='sr-only' />
                   <DollarSign className='mb-2 h-5 w-5' />
-                  <span className='font-medium text-center'>{format.label}</span>
+                  <span className='font-medium text-center'>
+                    {format.label}
+                  </span>
                   <span className='text-xs text-muted-foreground text-center'>
                     {format.description}
                   </span>
@@ -666,7 +693,9 @@ return timezonesByRegion;
             </p>
             <Select
               value={preferences.spellCheckLanguage}
-              onValueChange={value => updatePreference('spellCheckLanguage', value)}
+              onValueChange={value =>
+                updatePreference('spellCheckLanguage', value)
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -690,7 +719,9 @@ return timezonesByRegion;
             </p>
             <Select
               value={preferences.keyboardLanguage}
-              onValueChange={value => updatePreference('keyboardLanguage', value)}
+              onValueChange={value =>
+                updatePreference('keyboardLanguage', value)
+              }
             >
               <SelectTrigger>
                 <SelectValue />

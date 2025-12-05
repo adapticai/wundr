@@ -108,7 +108,7 @@ function RegisterForm() {
     // Validate password strength - must match backend requirements
     if (!validatePassword(password)) {
       setError(
-        'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number',
+        'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number'
       );
       return;
     }
@@ -336,9 +336,7 @@ function RegisterForm() {
             type='button'
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
-            aria-label={
-              showConfirmPassword ? 'Hide password' : 'Show password'
-            }
+            aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
           >
             {showConfirmPassword ? (
               <EyeOff className='h-5 w-5' />

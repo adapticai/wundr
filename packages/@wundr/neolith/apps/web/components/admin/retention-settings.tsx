@@ -72,7 +72,7 @@ export function RetentionSettings({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingPolicy, setEditingPolicy] = useState<RetentionPolicy | null>(
-    null,
+    null
   );
   const [isCreating, setIsCreating] = useState(false);
 
@@ -98,7 +98,7 @@ export function RetentionSettings({
       setStats(statsData);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load retention data',
+        err instanceof Error ? err.message : 'Failed to load retention data'
       );
       console.error('Failed to fetch retention data:', err);
     } finally {
@@ -133,7 +133,7 @@ export function RetentionSettings({
       `/api/workspaces/${workspaceId}/admin/retention/policies/${policyId}/run`,
       {
         method: 'POST',
-      },
+      }
     );
     fetchData();
   };
@@ -245,7 +245,7 @@ export function RetentionSettings({
                           'px-2 py-0.5 text-xs rounded',
                           policy.isEnabled
                             ? 'bg-green-500/10 text-green-500'
-                            : 'bg-muted text-muted-foreground',
+                            : 'bg-muted text-muted-foreground'
                         )}
                       >
                         {policy.isEnabled ? 'Active' : 'Disabled'}
@@ -342,7 +342,7 @@ function PolicyEditor({
 
   const updateRule = (
     index: number,
-    updates: Partial<(typeof rules)[number]>,
+    updates: Partial<(typeof rules)[number]>
   ) => {
     const newRules = [...rules];
     newRules[index] = { ...newRules[index], ...updates };

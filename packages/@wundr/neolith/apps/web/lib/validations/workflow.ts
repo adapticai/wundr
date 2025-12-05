@@ -95,7 +95,7 @@ export const workflowSchema = z.object({
       z.object({
         type: z.enum(['manual', 'scheduled', 'event', 'webhook']),
         config: z.record(z.unknown()),
-      }),
+      })
     )
     .optional(),
   trigger: z.record(z.unknown()).optional(),
@@ -204,7 +204,7 @@ export type TriggerWorkflowsInput = z.infer<typeof triggerWorkflowsSchema>;
 export function createErrorResponse(
   message: string,
   code: WorkflowErrorCode,
-  extraData?: Record<string, unknown>,
+  extraData?: Record<string, unknown>
 ): { error: WorkflowErrorCode; message: string } & Record<string, unknown> {
   return { error: code, message, ...extraData };
 }
@@ -228,7 +228,7 @@ export const updateWorkflowSchema = z.object({
       z.object({
         type: z.enum(['manual', 'scheduled', 'event', 'webhook']),
         config: z.record(z.unknown()),
-      }),
+      })
     )
     .optional(),
   trigger: z.record(z.unknown()).optional(),

@@ -34,7 +34,7 @@ export function FileUploadButton({
       }
       return null;
     },
-    [maxSize],
+    [maxSize]
   );
 
   const handleFileSelect = useCallback(
@@ -46,7 +46,7 @@ export function FileUploadButton({
       // Check max files
       if (files.length > maxFiles) {
         validationErrors.push(
-          `Too many files selected. Maximum is ${maxFiles}.`,
+          `Too many files selected. Maximum is ${maxFiles}.`
         );
         setErrors(validationErrors);
         return;
@@ -73,7 +73,7 @@ export function FileUploadButton({
         fileInputRef.current.value = '';
       }
     },
-    [validateFile, maxFiles, onFilesSelected],
+    [validateFile, maxFiles, onFilesSelected]
   );
 
   const handleClick = useCallback(() => {
@@ -84,27 +84,27 @@ export function FileUploadButton({
     <>
       <input
         ref={fileInputRef}
-        type="file"
+        type='file'
         multiple={multiple}
         accept={accept}
         onChange={handleFileSelect}
-        className="hidden"
+        className='hidden'
         disabled={disabled}
       />
       <button
-        type="button"
+        type='button'
         onClick={handleClick}
         disabled={disabled}
         className={cn(
           'p-1.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 transition-colors',
-          className,
+          className
         )}
-        title="Attach file"
+        title='Attach file'
       >
         <PlusIcon />
       </button>
       {errors.length > 0 && (
-        <div className="absolute bottom-full left-0 mb-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs text-destructive max-w-xs">
+        <div className='absolute bottom-full left-0 mb-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs text-destructive max-w-xs'>
           {errors.map((error, i) => (
             <div key={i}>{error}</div>
           ))}
@@ -117,18 +117,18 @@ export function FileUploadButton({
 function PlusIcon() {
   return (
     <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      width='20'
+      height='20'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
     >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" x2="12" y1="8" y2="16" />
-      <line x1="8" x2="16" y1="12" y2="12" />
+      <circle cx='12' cy='12' r='10' />
+      <line x1='12' x2='12' y1='8' y2='16' />
+      <line x1='8' x2='16' y1='12' y2='12' />
     </svg>
   );
 }

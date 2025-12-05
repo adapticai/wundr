@@ -1,6 +1,13 @@
 'use client';
 
-import { Check, Target, Clock, Timer, TrendingUp, TrendingDown } from 'lucide-react';
+import {
+  Check,
+  Target,
+  Clock,
+  Timer,
+  TrendingUp,
+  TrendingDown,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -30,7 +37,7 @@ export function OrchestratorAnalyticsCard({
 }: OrchestratorAnalyticsCardProps) {
   const [metrics, setMetrics] = useState<OrchestratorMetrics | null>(null);
   const [analytics, setAnalytics] = useState<OrchestratorAnalytics | null>(
-    null,
+    null
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +49,7 @@ export function OrchestratorAnalyticsCard({
         setError(null);
 
         const response = await fetch(
-          `/api/orchestrators/${orchestratorId}/analytics?timeRange=${timeRange}`,
+          `/api/orchestrators/${orchestratorId}/analytics?timeRange=${timeRange}`
         );
 
         if (!response.ok) {
@@ -72,7 +79,7 @@ export function OrchestratorAnalyticsCard({
       <div
         className={cn(
           'rounded-lg border border-destructive/50 bg-destructive/10 p-4',
-          className,
+          className
         )}
       >
         <p className='text-sm font-sans text-destructive'>

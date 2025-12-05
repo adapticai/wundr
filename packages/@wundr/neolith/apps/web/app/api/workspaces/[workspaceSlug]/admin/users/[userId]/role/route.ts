@@ -32,15 +32,12 @@ interface RouteContext {
  */
 export async function PATCH(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { workspaceSlug, userId } = await context.params;
@@ -48,10 +45,7 @@ export async function PATCH(
     const { role } = body;
 
     if (!role || !['OWNER', 'ADMIN', 'MEMBER', 'GUEST'].includes(role)) {
-      return NextResponse.json(
-        { error: 'Invalid role' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }
 
     // Find workspace by slug
@@ -63,7 +57,7 @@ export async function PATCH(
     if (!workspace) {
       return NextResponse.json(
         { error: 'Workspace not found' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -75,10 +69,13 @@ export async function PATCH(
       },
     });
 
-    if (!adminMembership || !['ADMIN', 'OWNER'].includes(adminMembership.role)) {
+    if (
+      !adminMembership ||
+      !['ADMIN', 'OWNER'].includes(adminMembership.role)
+    ) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -93,7 +90,7 @@ export async function PATCH(
     if (!targetMembership) {
       return NextResponse.json(
         { error: 'User not found in workspace' },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -104,7 +101,7 @@ export async function PATCH(
     ) {
       return NextResponse.json(
         { error: 'Only owners can manage owner roles' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -133,7 +130,7 @@ export async function PATCH(
     console.error('Failed to update role:', error);
     return NextResponse.json(
       { error: 'Failed to update role' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

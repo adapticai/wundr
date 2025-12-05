@@ -123,9 +123,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          MESSAGE_ERROR_CODES.UNAUTHORIZED,
+          MESSAGE_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -137,9 +137,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Invalid form data',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -174,9 +174,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Message must have content or attachments',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -184,9 +184,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Channel ID is required',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -195,9 +195,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Message content exceeds maximum length of 4000 characters',
-          MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+          MESSAGE_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -213,9 +213,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Invalid mentions format',
-            MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+            MESSAGE_ERROR_CODES.VALIDATION_ERROR
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -232,9 +232,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Invalid attachment IDs format',
-            MESSAGE_ERROR_CODES.VALIDATION_ERROR,
+            MESSAGE_ERROR_CODES.VALIDATION_ERROR
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -245,9 +245,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         createErrorResponse(
           'Not a member of this channel',
-          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER,
+          MESSAGE_ERROR_CODES.NOT_CHANNEL_MEMBER
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -262,9 +262,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Parent message not found',
-            MESSAGE_ERROR_CODES.INVALID_PARENT,
+            MESSAGE_ERROR_CODES.INVALID_PARENT
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
 
@@ -272,9 +272,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Parent message belongs to a different channel',
-            MESSAGE_ERROR_CODES.INVALID_PARENT,
+            MESSAGE_ERROR_CODES.INVALID_PARENT
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -283,9 +283,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Cannot reply to a thread reply',
-            MESSAGE_ERROR_CODES.INVALID_PARENT,
+            MESSAGE_ERROR_CODES.INVALID_PARENT
           ),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -301,7 +301,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           const fileRecord = await uploadFile(
             file,
             session.user.id,
-            membership.channel.workspaceId,
+            membership.channel.workspaceId
           );
           uploadedFiles.push(fileRecord);
         } catch (error) {
@@ -316,7 +316,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (uploadErrors.length > 0) {
       console.warn(
         '[POST /api/messages] Failed to upload files:',
-        uploadErrors,
+        uploadErrors
       );
     }
 
@@ -435,9 +435,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        MESSAGE_ERROR_CODES.INTERNAL_ERROR,
+        MESSAGE_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

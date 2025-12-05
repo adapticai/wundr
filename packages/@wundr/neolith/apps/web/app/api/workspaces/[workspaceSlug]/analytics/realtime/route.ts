@@ -127,7 +127,7 @@ const analyticsService = new AnalyticsServiceImpl({
  * Get comprehensive real-time statistics
  */
 async function getComprehensiveStats(
-  workspaceId: string,
+  workspaceId: string
 ): Promise<RealTimeStats> {
   const today = new Date().toISOString().split('T')[0] as string;
   const now = new Date();
@@ -220,8 +220,8 @@ async function getComprehensiveStats(
     // Active SSE connections for this workspace
     Promise.resolve(
       Array.from(activeConnections.values()).filter(
-        conn => conn.workspaceId === workspaceId && !conn.closed,
-      ).length,
+        conn => conn.workspaceId === workspaceId && !conn.closed
+      ).length
     ),
   ]);
 
@@ -253,7 +253,7 @@ function sendHeartbeat(controller: ReadableStreamDefaultController): void {
   try {
     const encoder = new TextEncoder();
     controller.enqueue(
-      encoder.encode(formatSSEMessage('ping', { timestamp: Date.now() })),
+      encoder.encode(formatSSEMessage('ping', { timestamp: Date.now() }))
     );
   } catch {
     // Connection closed
@@ -266,7 +266,7 @@ function sendHeartbeat(controller: ReadableStreamDefaultController): void {
 async function streamStatsUpdates(
   workspaceId: string,
   controller: ReadableStreamDefaultController,
-  connectionId: string,
+  connectionId: string
 ): Promise<void> {
   const encoder = new TextEncoder();
   let running = true;
@@ -288,9 +288,7 @@ async function streamStatsUpdates(
 
       // Fetch and send stats
       const stats = await getComprehensiveStats(workspaceId);
-      controller.enqueue(
-        encoder.encode(formatSSEMessage('stats', stats)),
-      );
+      controller.enqueue(encoder.encode(formatSSEMessage('stats', stats)));
 
       // Update last ping time
       conn.lastPing = Date.now();
@@ -309,7 +307,7 @@ async function streamStatsUpdates(
  */
 function startHeartbeat(
   controller: ReadableStreamDefaultController,
-  connectionId: string,
+  connectionId: string
 ): NodeJS.Timeout {
   return setInterval(() => {
     const conn = activeConnections.get(connectionId);
@@ -342,7 +340,7 @@ function startHeartbeat(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     // Authenticate user
@@ -350,7 +348,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'AUTH_REQUIRED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -362,7 +360,7 @@ export async function GET(
     if (!uuidRegex.test(workspaceId)) {
       return NextResponse.json(
         { error: 'Invalid workspace ID format', code: 'INVALID_ID' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -374,7 +372,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Access denied to workspace', code: 'FORBIDDEN' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -408,14 +406,14 @@ export async function GET(
                 connectionId,
                 workspaceId,
                 timestamp: new Date().toISOString(),
-              }),
-            ),
+              })
+            )
           );
 
           // Send initial stats immediately
           const initialStats = await getComprehensiveStats(workspaceId);
           controller.enqueue(
-            encoder.encode(formatSSEMessage('stats', initialStats)),
+            encoder.encode(formatSSEMessage('stats', initialStats))
           );
 
           // Start heartbeat
@@ -451,7 +449,7 @@ export async function GET(
         headers: {
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache, no-transform',
-          'Connection': 'keep-alive',
+          Connection: 'keep-alive',
           'X-Accel-Buffering': 'no', // Disable nginx buffering
         },
       });
@@ -471,14 +469,17 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:workspaceId/analytics/realtime]', error);
+    console.error(
+      '[GET /api/workspaces/:workspaceId/analytics/realtime]',
+      error
+    );
     return NextResponse.json(
       {
         error: 'Failed to fetch real-time stats',
         code: 'INTERNAL_ERROR',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -493,7 +494,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     // Authenticate user
@@ -501,7 +502,7 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'AUTH_REQUIRED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -513,7 +514,7 @@ export async function POST(
     if (!uuidRegex.test(workspaceId)) {
       return NextResponse.json(
         { error: 'Invalid workspace ID format', code: 'INVALID_ID' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -525,7 +526,7 @@ export async function POST(
     if (!membership) {
       return NextResponse.json(
         { error: 'Access denied to workspace', code: 'FORBIDDEN' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -536,7 +537,7 @@ export async function POST(
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON body', code: 'INVALID_BODY' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -546,7 +547,7 @@ export async function POST(
     if (!eventType || typeof eventType !== 'string') {
       return NextResponse.json(
         { error: 'Event type required', code: 'MISSING_EVENT_TYPE' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -555,7 +556,9 @@ export async function POST(
       workspaceId,
       userId: session.user.id,
       eventType: eventType as never,
-      eventData: (eventData as Record<string, string | number | boolean | undefined>) || {},
+      eventData:
+        (eventData as Record<string, string | number | boolean | undefined>) ||
+        {},
       sessionId: sessionId as string | undefined,
       metadata: {
         userAgent: request.headers.get('user-agent') || undefined,
@@ -569,7 +572,7 @@ export async function POST(
     // Broadcast update to SSE clients for this workspace (if implemented)
     // This would notify connected clients of the new event
     const workspaceConnections = Array.from(activeConnections.values()).filter(
-      conn => conn.workspaceId === workspaceId && !conn.closed,
+      conn => conn.workspaceId === workspaceId && !conn.closed
     );
 
     // Send event notification to all connected clients
@@ -582,8 +585,8 @@ export async function POST(
               eventType,
               userId: session.user.id,
               timestamp: new Date().toISOString(),
-            }),
-          ),
+            })
+          )
         );
       } catch {
         // Connection closed, will be cleaned up later
@@ -599,14 +602,17 @@ export async function POST(
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('[POST /api/workspaces/:workspaceId/analytics/realtime]', error);
+    console.error(
+      '[POST /api/workspaces/:workspaceId/analytics/realtime]',
+      error
+    );
     return NextResponse.json(
       {
         error: 'Failed to track real-time event',
         code: 'INTERNAL_ERROR',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -621,7 +627,7 @@ export async function POST(
  */
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string }> }
 ) {
   try {
     // Authenticate user
@@ -629,7 +635,7 @@ export async function DELETE(
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'AUTH_REQUIRED' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -646,7 +652,7 @@ export async function DELETE(
     if (!membership) {
       return NextResponse.json(
         { error: 'Access denied', code: 'FORBIDDEN' },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -672,14 +678,17 @@ export async function DELETE(
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:workspaceId/analytics/realtime]', error);
+    console.error(
+      '[DELETE /api/workspaces/:workspaceId/analytics/realtime]',
+      error
+    );
     return NextResponse.json(
       {
         error: 'Failed to close connections',
         code: 'INTERNAL_ERROR',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

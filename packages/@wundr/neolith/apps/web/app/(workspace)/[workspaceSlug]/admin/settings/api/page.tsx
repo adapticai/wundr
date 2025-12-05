@@ -153,7 +153,7 @@ export default function ApiSettingsPage() {
             name: newKeyName,
             scopes: selectedScopes,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -187,7 +187,7 @@ export default function ApiSettingsPage() {
     async (keyId: string) => {
       if (
         !confirm(
-          'Are you sure you want to revoke this API key? This action cannot be undone.',
+          'Are you sure you want to revoke this API key? This action cannot be undone.'
         )
       ) {
         return;
@@ -198,7 +198,7 @@ export default function ApiSettingsPage() {
           `/api/workspaces/${workspaceSlug}/api-keys/${keyId}`,
           {
             method: 'DELETE',
-          },
+          }
         );
 
         if (!response.ok) {
@@ -220,7 +220,7 @@ export default function ApiSettingsPage() {
         });
       }
     },
-    [workspaceSlug, toast],
+    [workspaceSlug, toast]
   );
 
   const copyToClipboard = useCallback(
@@ -231,12 +231,12 @@ export default function ApiSettingsPage() {
         description: `${label} copied to clipboard`,
       });
     },
-    [toast],
+    [toast]
   );
 
   const toggleScope = useCallback((scope: string) => {
     setSelectedScopes(prev =>
-      prev.includes(scope) ? prev.filter(s => s !== scope) : [...prev, scope],
+      prev.includes(scope) ? prev.filter(s => s !== scope) : [...prev, scope]
     );
   }, []);
 
@@ -288,7 +288,7 @@ export default function ApiSettingsPage() {
                       ? 'bg-red-500'
                       : usagePercentageDaily > 70
                         ? 'bg-yellow-500'
-                        : 'bg-primary',
+                        : 'bg-primary'
                   )}
                   style={{ width: `${Math.min(usagePercentageDaily, 100)}%` }}
                 />
@@ -314,7 +314,7 @@ export default function ApiSettingsPage() {
                       ? 'bg-red-500'
                       : usagePercentageMonthly > 70
                         ? 'bg-yellow-500'
-                        : 'bg-primary',
+                        : 'bg-primary'
                   )}
                   style={{ width: `${Math.min(usagePercentageMonthly, 100)}%` }}
                 />
@@ -365,7 +365,7 @@ export default function ApiSettingsPage() {
                   className={cn(
                     'block w-full rounded-md border border-input bg-background',
                     'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                   )}
                 />
               </div>
@@ -410,7 +410,7 @@ export default function ApiSettingsPage() {
                   }
                   className={cn(
                     'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-                    'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
+                    'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
                   )}
                 >
                   {isCreating ? 'Creating...' : 'Create Key'}

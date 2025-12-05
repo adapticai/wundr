@@ -46,7 +46,7 @@ interface AccessTokenPayload {
  * Verify daemon token from Authorization header
  */
 async function verifyDaemonToken(
-  request: NextRequest,
+  request: NextRequest
 ): Promise<AccessTokenPayload> {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: CONFIG_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: 'Orchestrator not found',
           code: CONFIG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -177,7 +177,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: 'Failed to get config',
         code: CONFIG_ERROR_CODES.INTERNAL_ERROR,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

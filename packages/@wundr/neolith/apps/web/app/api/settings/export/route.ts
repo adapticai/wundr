@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 
 import type { SettingsBackup } from '@/lib/settings-backup';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,8 +33,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Export selected categories
-    const allCategories =
-      categories.includes('all') || categories.length === 0;
+    const allCategories = categories.includes('all') || categories.length === 0;
 
     if (allCategories || categories.includes('profile')) {
       backup.data.profile = {
@@ -119,7 +118,7 @@ export async function POST(request: NextRequest) {
     console.error('Export error:', error);
     return NextResponse.json(
       { error: 'Failed to export settings' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

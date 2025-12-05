@@ -224,9 +224,7 @@ export interface UseAnalyticsDataOptions extends SWRConfiguration {
 /**
  * Fetcher function for analytics data
  */
-async function fetchAnalyticsData(
-  url: string,
-): Promise<AnalyticsData> {
+async function fetchAnalyticsData(url: string): Promise<AnalyticsData> {
   const response = await fetch(url, {
     method: 'GET',
     headers: {
@@ -237,7 +235,7 @@ async function fetchAnalyticsData(
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      errorData.error || `Failed to fetch analytics: ${response.statusText}`,
+      errorData.error || `Failed to fetch analytics: ${response.statusText}`
     );
   }
 
@@ -299,7 +297,7 @@ async function fetchAnalyticsData(
  */
 export function useAnalyticsData(
   workspaceId: string,
-  options: UseAnalyticsDataOptions = {},
+  options: UseAnalyticsDataOptions = {}
 ): UseAnalyticsDataReturn {
   const {
     initialParams = {},
@@ -313,14 +311,14 @@ export function useAnalyticsData(
   // Build query string
   const queryString = new URLSearchParams();
   if (params.startDate) {
-queryString.set('startDate', params.startDate);
-}
+    queryString.set('startDate', params.startDate);
+  }
   if (params.endDate) {
-queryString.set('endDate', params.endDate);
-}
+    queryString.set('endDate', params.endDate);
+  }
   if (params.granularity) {
-queryString.set('granularity', params.granularity);
-}
+    queryString.set('granularity', params.granularity);
+  }
   if (params.includeTimeSeries !== undefined) {
     queryString.set('includeTimeSeries', String(params.includeTimeSeries));
   }
@@ -332,23 +330,14 @@ queryString.set('granularity', params.granularity);
     ? `/api/workspaces/${workspaceId}/analytics?${queryString.toString()}`
     : null;
 
-  const {
-    data,
-    error,
-    isLoading,
-    isValidating,
-    mutate,
-  } = useSWR<AnalyticsData>(
-    url,
-    fetchAnalyticsData,
-    {
+  const { data, error, isLoading, isValidating, mutate } =
+    useSWR<AnalyticsData>(url, fetchAnalyticsData, {
       refreshInterval,
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
       dedupingInterval: 5000,
       ...swrOptions,
-    },
-  );
+    });
 
   const refetch = useCallback(async (): Promise<void> => {
     await mutate();
@@ -358,7 +347,7 @@ queryString.set('granularity', params.granularity);
     (newParams: Partial<AnalyticsQueryParams>): void => {
       setParams(prev => ({ ...prev, ...newParams }));
     },
-    [],
+    []
   );
 
   return {
@@ -418,18 +407,18 @@ queryString.set('granularity', params.granularity);
 export function useAnalyticsComparison(
   workspaceId: string,
   currentPeriod: AnalyticsQueryParams,
-  options: SWRConfiguration = {},
+  options: SWRConfiguration = {}
 ): UseAnalyticsComparisonReturn {
   const [comparison, setComparison] = useState<AnalyticsComparison | null>(
-    null,
+    null
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchComparison = useCallback(async (): Promise<void> => {
     if (!workspaceId) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -469,18 +458,22 @@ return;
       // Fetch both periods
       const [currentData, previousData] = await Promise.all([
         fetchAnalyticsData(
-          `/api/workspaces/${workspaceId}/analytics?${currentQuery.toString()}`,
+          `/api/workspaces/${workspaceId}/analytics?${currentQuery.toString()}`
         ),
         fetchAnalyticsData(
-          `/api/workspaces/${workspaceId}/analytics?${previousQuery.toString()}`,
+          `/api/workspaces/${workspaceId}/analytics?${previousQuery.toString()}`
         ),
       ]);
 
       // Calculate changes
       const changes = {
-        messages: currentData.summary.totalMessages - previousData.summary.totalMessages,
+        messages:
+          currentData.summary.totalMessages -
+          previousData.summary.totalMessages,
         tasks: currentData.summary.totalTasks - previousData.summary.totalTasks,
-        workflows: currentData.summary.totalWorkflows - previousData.summary.totalWorkflows,
+        workflows:
+          currentData.summary.totalWorkflows -
+          previousData.summary.totalWorkflows,
         orchestrators:
           currentData.summary.activeOrchestrators -
           previousData.summary.activeOrchestrators,
@@ -501,7 +494,9 @@ return;
             : 0,
         orchestrators:
           previousData.summary.activeOrchestrators > 0
-            ? (changes.orchestrators / previousData.summary.activeOrchestrators) * 100
+            ? (changes.orchestrators /
+                previousData.summary.activeOrchestrators) *
+              100
             : 0,
       };
 

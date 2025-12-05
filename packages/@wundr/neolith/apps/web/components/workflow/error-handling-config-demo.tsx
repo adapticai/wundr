@@ -9,7 +9,13 @@
 
 import React from 'react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import {
@@ -202,57 +208,68 @@ const continueOnErrorConfig: StepErrorConfig = {
 // ============================================================================
 
 export function ErrorHandlingConfigDemo() {
-  const [config1, setConfig1] = React.useState<StepErrorConfig>(aggressiveRetryConfig);
+  const [config1, setConfig1] = React.useState<StepErrorConfig>(
+    aggressiveRetryConfig
+  );
   const [config2, setConfig2] = React.useState<StepErrorConfig>(fallbackConfig);
-  const [config3, setConfig3] = React.useState<StepErrorConfig>(circuitBreakerConfig);
-  const [config4, setConfig4] = React.useState<StepErrorConfig>(continueOnErrorConfig);
+  const [config3, setConfig3] =
+    React.useState<StepErrorConfig>(circuitBreakerConfig);
+  const [config4, setConfig4] = React.useState<StepErrorConfig>(
+    continueOnErrorConfig
+  );
 
-  const handleRetryDLQEntry = async (entryId: string, fixedPayload?: unknown) => {
+  const handleRetryDLQEntry = async (
+    entryId: string,
+    fixedPayload?: unknown
+  ) => {
     console.log('Retrying DLQ entry:', entryId, fixedPayload);
     // Simulate retry operation
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     alert(`Successfully retried entry: ${entryId}`);
   };
 
   const handleDeleteDLQEntry = async (entryId: string) => {
     console.log('Deleting DLQ entry:', entryId);
     // Simulate delete operation
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 500));
     alert(`Deleted entry: ${entryId}`);
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className='container mx-auto py-8 space-y-8'>
       <div>
-        <h1 className="text-3xl font-bold mb-2">Error Handling Configuration</h1>
-        <p className="text-muted-foreground">
+        <h1 className='text-3xl font-bold mb-2'>
+          Error Handling Configuration
+        </h1>
+        <p className='text-muted-foreground'>
           Explore different error handling strategies for workflow steps
         </p>
       </div>
 
-      <Tabs defaultValue="aggressive-retry" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="aggressive-retry">Aggressive Retry</TabsTrigger>
-          <TabsTrigger value="fallback">Fallback Strategy</TabsTrigger>
-          <TabsTrigger value="circuit-breaker">Circuit Breaker</TabsTrigger>
-          <TabsTrigger value="continue">Continue on Error</TabsTrigger>
+      <Tabs defaultValue='aggressive-retry' className='space-y-4'>
+        <TabsList className='grid w-full grid-cols-4'>
+          <TabsTrigger value='aggressive-retry'>Aggressive Retry</TabsTrigger>
+          <TabsTrigger value='fallback'>Fallback Strategy</TabsTrigger>
+          <TabsTrigger value='circuit-breaker'>Circuit Breaker</TabsTrigger>
+          <TabsTrigger value='continue'>Continue on Error</TabsTrigger>
         </TabsList>
 
         {/* Aggressive Retry Example */}
-        <TabsContent value="aggressive-retry">
+        <TabsContent value='aggressive-retry'>
           <Card>
             <CardHeader>
               <CardTitle>Aggressive Retry Strategy</CardTitle>
               <CardDescription>
-                Best for critical operations that must succeed (e.g., payment processing, email sending).
-                Uses exponential backoff with up to 5 retry attempts.
+                Best for critical operations that must succeed (e.g., payment
+                processing, email sending). Uses exponential backoff with up to
+                5 retry attempts.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ErrorHandlingConfig
                 config={config1}
                 availableSteps={availableSteps}
-                dlqEntries={mockDLQEntries.filter((e) => e.stepId === 'step-1')}
+                dlqEntries={mockDLQEntries.filter(e => e.stepId === 'step-1')}
                 onConfigChange={setConfig1}
                 onRetryDLQEntry={handleRetryDLQEntry}
                 onDeleteDLQEntry={handleDeleteDLQEntry}
@@ -262,20 +279,20 @@ export function ErrorHandlingConfigDemo() {
         </TabsContent>
 
         {/* Fallback Strategy Example */}
-        <TabsContent value="fallback">
+        <TabsContent value='fallback'>
           <Card>
             <CardHeader>
               <CardTitle>Fallback Strategy</CardTitle>
               <CardDescription>
-                Execute alternative steps when primary step fails. Useful for graceful degradation
-                (e.g., send email if Slack fails).
+                Execute alternative steps when primary step fails. Useful for
+                graceful degradation (e.g., send email if Slack fails).
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ErrorHandlingConfig
                 config={config2}
                 availableSteps={availableSteps}
-                dlqEntries={mockDLQEntries.filter((e) => e.stepId === 'step-4')}
+                dlqEntries={mockDLQEntries.filter(e => e.stepId === 'step-4')}
                 onConfigChange={setConfig2}
                 onRetryDLQEntry={handleRetryDLQEntry}
                 onDeleteDLQEntry={handleDeleteDLQEntry}
@@ -285,13 +302,14 @@ export function ErrorHandlingConfigDemo() {
         </TabsContent>
 
         {/* Circuit Breaker Example */}
-        <TabsContent value="circuit-breaker">
+        <TabsContent value='circuit-breaker'>
           <Card>
             <CardHeader>
               <CardTitle>Circuit Breaker Pattern</CardTitle>
               <CardDescription>
-                Prevent cascading failures by temporarily disabling failing steps. Ideal for
-                protecting external services and preventing resource exhaustion.
+                Prevent cascading failures by temporarily disabling failing
+                steps. Ideal for protecting external services and preventing
+                resource exhaustion.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -308,20 +326,21 @@ export function ErrorHandlingConfigDemo() {
         </TabsContent>
 
         {/* Continue on Error Example */}
-        <TabsContent value="continue">
+        <TabsContent value='continue'>
           <Card>
             <CardHeader>
               <CardTitle>Continue on Error</CardTitle>
               <CardDescription>
-                Log errors and continue workflow execution. Best for non-critical operations
-                that should not block the workflow (e.g., analytics tracking).
+                Log errors and continue workflow execution. Best for
+                non-critical operations that should not block the workflow
+                (e.g., analytics tracking).
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ErrorHandlingConfig
                 config={config4}
                 availableSteps={availableSteps}
-                dlqEntries={mockDLQEntries.filter((e) => e.stepId === 'step-2')}
+                dlqEntries={mockDLQEntries.filter(e => e.stepId === 'step-2')}
                 onConfigChange={setConfig4}
                 onRetryDLQEntry={handleRetryDLQEntry}
                 onDeleteDLQEntry={handleDeleteDLQEntry}
@@ -340,28 +359,28 @@ export function ErrorHandlingConfigDemo() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className='space-y-4'>
             <div>
-              <h4 className="text-sm font-medium mb-2">Aggressive Retry</h4>
-              <pre className="text-xs bg-muted rounded p-4 overflow-x-auto">
+              <h4 className='text-sm font-medium mb-2'>Aggressive Retry</h4>
+              <pre className='text-xs bg-muted rounded p-4 overflow-x-auto'>
                 {JSON.stringify(config1, null, 2)}
               </pre>
             </div>
             <div>
-              <h4 className="text-sm font-medium mb-2">Fallback Strategy</h4>
-              <pre className="text-xs bg-muted rounded p-4 overflow-x-auto">
+              <h4 className='text-sm font-medium mb-2'>Fallback Strategy</h4>
+              <pre className='text-xs bg-muted rounded p-4 overflow-x-auto'>
                 {JSON.stringify(config2, null, 2)}
               </pre>
             </div>
             <div>
-              <h4 className="text-sm font-medium mb-2">Circuit Breaker</h4>
-              <pre className="text-xs bg-muted rounded p-4 overflow-x-auto">
+              <h4 className='text-sm font-medium mb-2'>Circuit Breaker</h4>
+              <pre className='text-xs bg-muted rounded p-4 overflow-x-auto'>
                 {JSON.stringify(config3, null, 2)}
               </pre>
             </div>
             <div>
-              <h4 className="text-sm font-medium mb-2">Continue on Error</h4>
-              <pre className="text-xs bg-muted rounded p-4 overflow-x-auto">
+              <h4 className='text-sm font-medium mb-2'>Continue on Error</h4>
+              <pre className='text-xs bg-muted rounded p-4 overflow-x-auto'>
                 {JSON.stringify(config4, null, 2)}
               </pre>
             </div>

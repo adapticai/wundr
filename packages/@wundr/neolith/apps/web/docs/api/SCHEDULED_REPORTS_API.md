@@ -22,15 +22,15 @@ Get a paginated list of scheduled reports for a workspace.
 
 **Query Parameters:**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `reportType` | string | - | Filter by report type |
-| `isActive` | boolean | - | Filter by active status |
-| `tag` | string | - | Filter by tag |
-| `limit` | number | 50 | Number of results (max 100) |
-| `offset` | number | 0 | Pagination offset |
-| `sortBy` | enum | createdAt | Sort field: `name`, `createdAt`, `lastRun`, `nextRun` |
-| `sortOrder` | enum | desc | Sort order: `asc`, `desc` |
+| Parameter    | Type    | Default   | Description                                           |
+| ------------ | ------- | --------- | ----------------------------------------------------- |
+| `reportType` | string  | -         | Filter by report type                                 |
+| `isActive`   | boolean | -         | Filter by active status                               |
+| `tag`        | string  | -         | Filter by tag                                         |
+| `limit`      | number  | 50        | Number of results (max 100)                           |
+| `offset`     | number  | 0         | Pagination offset                                     |
+| `sortBy`     | enum    | createdAt | Sort field: `name`, `createdAt`, `lastRun`, `nextRun` |
+| `sortOrder`  | enum    | desc      | Sort order: `asc`, `desc`                             |
 
 **Response:** `200 OK`
 
@@ -140,8 +140,12 @@ Create a new scheduled report.
   "cronDescription": "Every day at 8:00",
   "timezone": "UTC",
   "exportFormats": ["pdf", "csv"],
-  "emailDelivery": { /* ... */ },
-  "parameters": { /* ... */ },
+  "emailDelivery": {
+    /* ... */
+  },
+  "parameters": {
+    /* ... */
+  },
   "isActive": true,
   "tags": ["daily", "engagement"],
   "lastRun": null,
@@ -149,7 +153,9 @@ Create a new scheduled report.
   "nextRun": "2024-12-07T08:00:00Z",
   "runCount": 0,
   "failureCount": 0,
-  "createdBy": { /* ... */ },
+  "createdBy": {
+    /* ... */
+  },
   "createdAt": "2024-12-06T10:30:00Z",
   "updatedAt": "2024-12-06T10:30:00Z"
 }
@@ -230,6 +236,7 @@ Update an existing scheduled report.
 **Response:** `200 OK` - Returns updated report object
 
 **Permissions:**
+
 - GUEST: Cannot update
 - MEMBER: Can update own reports
 - ADMIN/OWNER: Can update any report
@@ -250,6 +257,7 @@ Delete a scheduled report.
 ```
 
 **Permissions:**
+
 - GUEST: Cannot delete
 - MEMBER: Can delete own reports
 - ADMIN/OWNER: Can delete any report
@@ -287,16 +295,16 @@ Manually trigger a scheduled report to run immediately.
 
 Available report types:
 
-| Type | Description |
-|------|-------------|
-| `workspace-activity` | Overall workspace activity and usage |
-| `channel-analytics` | Channel-specific metrics and engagement |
-| `user-engagement` | User activity and engagement patterns |
-| `task-completion` | Task and project completion metrics |
-| `workflow-execution` | Workflow automation performance |
-| `security-audit` | Security events and compliance |
-| `export-summary` | Data export activity summary |
-| `custom` | Custom report configuration |
+| Type                 | Description                             |
+| -------------------- | --------------------------------------- |
+| `workspace-activity` | Overall workspace activity and usage    |
+| `channel-analytics`  | Channel-specific metrics and engagement |
+| `user-engagement`    | User activity and engagement patterns   |
+| `task-completion`    | Task and project completion metrics     |
+| `workflow-execution` | Workflow automation performance         |
+| `security-audit`     | Security events and compliance          |
+| `export-summary`     | Data export activity summary            |
+| `custom`             | Custom report configuration             |
 
 ## Cron Expression Format
 
@@ -316,6 +324,7 @@ Standard cron format: `minute hour day-of-month month day-of-week`
 ### Presets
 
 You can also use preset values:
+
 - `0 * * * *` - HOURLY
 - `0 0 * * *` - DAILY
 - `0 0 * * 0` - WEEKLY (Sunday)
@@ -332,37 +341,37 @@ You can also use preset values:
 
 Supported export formats:
 
-| Format | Description | Size | Best For |
-|--------|-------------|------|----------|
-| `pdf` | PDF document | Medium | Presentations, reports |
-| `csv` | Comma-separated values | Small | Data analysis, Excel |
-| `json` | JSON data | Small | API integration, processing |
+| Format  | Description            | Size   | Best For                      |
+| ------- | ---------------------- | ------ | ----------------------------- |
+| `pdf`   | PDF document           | Medium | Presentations, reports        |
+| `csv`   | Comma-separated values | Small  | Data analysis, Excel          |
+| `json`  | JSON data              | Small  | API integration, processing   |
 | `excel` | Excel workbook (.xlsx) | Medium | Advanced spreadsheet analysis |
-| `html` | HTML document | Small | Email previews, web viewing |
+| `html`  | HTML document          | Small  | Email previews, web viewing   |
 
 ## Email Delivery Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | boolean | false | Enable email delivery |
-| `recipients` | string[] | - | Primary recipients (required if enabled) |
-| `subject` | string | - | Email subject (auto-generated if omitted) |
-| `includeAttachment` | boolean | true | Attach report file |
-| `includeInlinePreview` | boolean | false | Include HTML preview in email body |
-| `sendOnlyIfData` | boolean | false | Skip email if report has no data |
-| `ccRecipients` | string[] | [] | CC recipients |
-| `bccRecipients` | string[] | [] | BCC recipients |
+| Option                 | Type     | Default | Description                               |
+| ---------------------- | -------- | ------- | ----------------------------------------- |
+| `enabled`              | boolean  | false   | Enable email delivery                     |
+| `recipients`           | string[] | -       | Primary recipients (required if enabled)  |
+| `subject`              | string   | -       | Email subject (auto-generated if omitted) |
+| `includeAttachment`    | boolean  | true    | Attach report file                        |
+| `includeInlinePreview` | boolean  | false   | Include HTML preview in email body        |
+| `sendOnlyIfData`       | boolean  | false   | Skip email if report has no data          |
+| `ccRecipients`         | string[] | []      | CC recipients                             |
+| `bccRecipients`        | string[] | []      | BCC recipients                            |
 
 ## Error Codes
 
-| Status | Code | Description |
-|--------|------|-------------|
-| 400 | `VALIDATION_FAILED` | Request validation failed |
-| 401 | `UNAUTHORIZED` | Authentication required |
-| 403 | `INSUFFICIENT_PERMISSIONS` | User lacks required permissions |
-| 404 | `NOT_FOUND` | Report or workspace not found |
-| 409 | `CONCURRENT_EXECUTION` | Report already running |
-| 500 | `INTERNAL_ERROR` | Server error |
+| Status | Code                       | Description                     |
+| ------ | -------------------------- | ------------------------------- |
+| 400    | `VALIDATION_FAILED`        | Request validation failed       |
+| 401    | `UNAUTHORIZED`             | Authentication required         |
+| 403    | `INSUFFICIENT_PERMISSIONS` | User lacks required permissions |
+| 404    | `NOT_FOUND`                | Report or workspace not found   |
+| 409    | `CONCURRENT_EXECUTION`     | Report already running          |
+| 500    | `INTERNAL_ERROR`           | Server error                    |
 
 ## Rate Limits
 

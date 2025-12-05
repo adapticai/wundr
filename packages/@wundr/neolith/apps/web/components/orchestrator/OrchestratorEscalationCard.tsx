@@ -137,7 +137,7 @@ export function OrchestratorEscalationCard({
     <Card
       className={cn(
         'overflow-hidden border-orange-200 bg-orange-50/50',
-        className,
+        className
       )}
     >
       <CardHeader className='pb-3'>
@@ -354,7 +354,7 @@ export function OrchestratorEscalationListItem({
       onClick={onClick}
       className={cn(
         'w-full rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent',
-        className,
+        className
       )}
     >
       <div className='flex items-start gap-3'>

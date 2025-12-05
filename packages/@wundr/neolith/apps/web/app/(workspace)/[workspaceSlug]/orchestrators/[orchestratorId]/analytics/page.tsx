@@ -155,7 +155,7 @@ export default function OrchestratorAnalyticsPage() {
     if (orchestrator) {
       setPageHeader(
         `${orchestrator.title} Analytics`,
-        'Performance metrics and insights',
+        'Performance metrics and insights'
       );
     }
   }, [orchestrator, setPageHeader]);
@@ -169,7 +169,7 @@ export default function OrchestratorAnalyticsPage() {
       try {
         // Fetch main analytics
         const analyticsResponse = await fetch(
-          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/analytics?timeRange=${timeRange}`,
+          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/analytics?timeRange=${timeRange}`
         );
 
         if (!analyticsResponse.ok) {
@@ -181,7 +181,7 @@ export default function OrchestratorAnalyticsPage() {
 
         // Fetch trends
         const trendsResponse = await fetch(
-          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/analytics/trends?period=daily&timeRange=${timeRange}`,
+          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/analytics/trends?period=daily&timeRange=${timeRange}`
         );
 
         if (!trendsResponse.ok) {
@@ -209,7 +209,7 @@ export default function OrchestratorAnalyticsPage() {
       // Return sample data for visualization
       return Array.from({ length: 7 }, (_, i) => ({
         date: new Date(
-          Date.now() - (6 - i) * 24 * 60 * 60 * 1000,
+          Date.now() - (6 - i) * 24 * 60 * 60 * 1000
         ).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         tasksCompleted: Math.floor(Math.random() * 50) + 10,
         successRate: Math.floor(Math.random() * 20) + 75,
@@ -286,11 +286,11 @@ export default function OrchestratorAnalyticsPage() {
         <Card className='max-w-md'>
           <CardContent className='pt-6 text-center'>
             <Activity className='h-12 w-12 text-destructive mx-auto mb-4' />
-            <h3 className='text-lg font-semibold mb-2'>Failed to Load Analytics</h3>
+            <h3 className='text-lg font-semibold mb-2'>
+              Failed to Load Analytics
+            </h3>
             <p className='text-sm text-muted-foreground mb-4'>{error}</p>
-            <Button onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
           </CardContent>
         </Card>
       </div>
@@ -318,7 +318,8 @@ export default function OrchestratorAnalyticsPage() {
             Analytics Dashboard
           </h1>
           <p className='text-muted-foreground mt-1'>
-            Performance metrics and insights for {orchestrator?.title || 'orchestrator'}
+            Performance metrics and insights for{' '}
+            {orchestrator?.title || 'orchestrator'}
           </p>
         </div>
         <Select
@@ -399,7 +400,10 @@ export default function OrchestratorAnalyticsPage() {
               <CardContent>
                 <ChartContainer config={performanceChartConfig}>
                   <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
+                    <CartesianGrid
+                      strokeDasharray='3 3'
+                      className='stroke-muted'
+                    />
                     <XAxis
                       dataKey='date'
                       tick={{ fontSize: 12 }}
@@ -411,7 +415,10 @@ export default function OrchestratorAnalyticsPage() {
                       tickLine={false}
                       axisLine={false}
                     />
-                    <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent />}
+                    />
                     <Bar
                       dataKey='tasksCompleted'
                       fill='var(--color-tasksCompleted)'
@@ -426,12 +433,17 @@ export default function OrchestratorAnalyticsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Success Rate Trend</CardTitle>
-                <CardDescription>Task completion success percentage</CardDescription>
+                <CardDescription>
+                  Task completion success percentage
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer config={successRateChartConfig}>
                   <AreaChart data={chartData}>
-                    <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
+                    <CartesianGrid
+                      strokeDasharray='3 3'
+                      className='stroke-muted'
+                    />
                     <XAxis
                       dataKey='date'
                       tick={{ fontSize: 12 }}
@@ -444,7 +456,10 @@ export default function OrchestratorAnalyticsPage() {
                       axisLine={false}
                       domain={[0, 100]}
                     />
-                    <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent />}
+                    />
                     <Area
                       type='monotone'
                       dataKey='successRate'
@@ -467,7 +482,10 @@ export default function OrchestratorAnalyticsPage() {
               <CardContent>
                 <ChartContainer config={durationChartConfig}>
                   <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
+                    <CartesianGrid
+                      strokeDasharray='3 3'
+                      className='stroke-muted'
+                    />
                     <XAxis
                       dataKey='date'
                       tick={{ fontSize: 12 }}
@@ -479,7 +497,10 @@ export default function OrchestratorAnalyticsPage() {
                       tickLine={false}
                       axisLine={false}
                     />
-                    <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent />}
+                    />
                     <Line
                       type='monotone'
                       dataKey='avgDuration'
@@ -497,7 +518,9 @@ export default function OrchestratorAnalyticsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Task Status Distribution</CardTitle>
-                <CardDescription>Current task breakdown by status</CardDescription>
+                <CardDescription>
+                  Current task breakdown by status
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className='space-y-4'>
@@ -645,10 +668,14 @@ export default function OrchestratorAnalyticsPage() {
                   data={chartData.map((d, i) => ({
                     date: d.date,
                     budget: budgetData.limit / 7,
-                    actual: (budgetData.current / 7) * (1 + Math.random() * 0.2),
+                    actual:
+                      (budgetData.current / 7) * (1 + Math.random() * 0.2),
                   }))}
                 >
-                  <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
+                  <CartesianGrid
+                    strokeDasharray='3 3'
+                    className='stroke-muted'
+                  />
                   <XAxis
                     dataKey='date'
                     tick={{ fontSize: 12 }}
@@ -660,7 +687,10 @@ export default function OrchestratorAnalyticsPage() {
                     tickLine={false}
                     axisLine={false}
                   />
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent />}
+                  />
                   <Line
                     type='monotone'
                     dataKey='budget'
@@ -686,7 +716,9 @@ export default function OrchestratorAnalyticsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Cost Analysis</CardTitle>
-              <CardDescription>Estimated costs by model and operation</CardDescription>
+              <CardDescription>
+                Estimated costs by model and operation
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className='grid gap-4 md:grid-cols-3'>
@@ -709,11 +741,16 @@ export default function OrchestratorAnalyticsPage() {
                   </p>
                 </div>
                 <div className='space-y-1 p-4 border rounded-lg'>
-                  <p className='text-sm text-muted-foreground'>Cost per 1K Tokens</p>
+                  <p className='text-sm text-muted-foreground'>
+                    Cost per 1K Tokens
+                  </p>
                   <p className='text-2xl font-bold'>
                     $
                     {budgetData.current > 0
-                      ? ((budgetData.costEstimate || 0) / (budgetData.current / 1000)).toFixed(4)
+                      ? (
+                          (budgetData.costEstimate || 0) /
+                          (budgetData.current / 1000)
+                        ).toFixed(4)
                       : '0.00'}
                   </p>
                 </div>
@@ -780,8 +817,8 @@ function MetricCard({
 
   const getTrendIcon = () => {
     if (!trend) {
-return null;
-}
+      return null;
+    }
     switch (trend.direction) {
       case 'up':
         return <TrendingUp className='h-4 w-4 text-green-600' />;
@@ -794,8 +831,8 @@ return null;
 
   const getTrendColor = () => {
     if (!trend) {
-return '';
-}
+      return '';
+    }
     switch (trend.direction) {
       case 'up':
         return 'text-green-600';

@@ -39,9 +39,9 @@ function MyComponent() {
   return (
     <>
       <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => {
+        type='file'
+        accept='image/*'
+        onChange={e => {
           const file = e.target.files?.[0];
           if (file) handleFileSelect(file);
         }}
@@ -158,7 +158,7 @@ function ProfileForm() {
     },
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit = async data => {
     console.log('Form data:', data);
     // Submit to API
     const response = await fetch('/api/users/me', {
@@ -174,15 +174,15 @@ function ProfileForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
         <FormField
           control={form.control}
-          name="name"
+          name='name'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Display Name</FormLabel>
               <FormControl>
-                <Input placeholder="John Doe" {...field} />
+                <Input placeholder='John Doe' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -191,19 +191,19 @@ function ProfileForm() {
 
         <FormField
           control={form.control}
-          name="username"
+          name='username'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input placeholder="johndoe" {...field} />
+                <Input placeholder='johndoe' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button type="submit">Save Changes</Button>
+        <Button type='submit'>Save Changes</Button>
       </form>
     </Form>
   );
@@ -270,31 +270,29 @@ function UsernameInput() {
   };
 
   return (
-    <div className="relative">
+    <div className='relative'>
       <input
-        type="text"
+        type='text'
         value={username}
-        onChange={(e) => handleChange(e.target.value)}
-        placeholder="username"
-        className="w-full px-4 py-2 border rounded-md"
+        onChange={e => handleChange(e.target.value)}
+        placeholder='username'
+        className='w-full px-4 py-2 border rounded-md'
       />
 
-      <div className="absolute right-3 top-2.5 flex items-center gap-2">
+      <div className='absolute right-3 top-2.5 flex items-center gap-2'>
         {availability.checking && (
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          <Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
         )}
         {!availability.checking && availability.available === true && (
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <CheckCircle2 className='h-4 w-4 text-green-500' />
         )}
         {!availability.checking && availability.available === false && (
-          <XCircle className="h-4 w-4 text-red-500" />
+          <XCircle className='h-4 w-4 text-red-500' />
         )}
       </div>
 
       {availability.message && (
-        <p className="mt-1 text-sm text-muted-foreground">
-          {availability.message}
-        </p>
+        <p className='mt-1 text-sm text-muted-foreground'>{availability.message}</p>
       )}
     </div>
   );
@@ -354,29 +352,21 @@ function UserProfileDisplay() {
   if (!profile) return <div>No profile found</div>;
 
   return (
-    <div className="space-y-4">
-      <img
-        src={profile.avatarUrl}
-        alt={profile.name}
-        className="w-24 h-24 rounded-full"
-      />
-      <h1 className="text-2xl font-bold">{profile.name}</h1>
-      <p className="text-muted-foreground">{profile.bio}</p>
+    <div className='space-y-4'>
+      <img src={profile.avatarUrl} alt={profile.name} className='w-24 h-24 rounded-full' />
+      <h1 className='text-2xl font-bold'>{profile.name}</h1>
+      <p className='text-muted-foreground'>{profile.bio}</p>
 
-      {profile.preferences.title && (
-        <p className="font-medium">{profile.preferences.title}</p>
-      )}
+      {profile.preferences.title && <p className='font-medium'>{profile.preferences.title}</p>}
 
-      {profile.preferences.location && (
-        <p className="text-sm">📍 {profile.preferences.location}</p>
-      )}
+      {profile.preferences.location && <p className='text-sm'>📍 {profile.preferences.location}</p>}
 
       {profile.preferences.socialLinks?.github && (
         <a
           href={profile.preferences.socialLinks.github}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-500 hover:underline"
+          target='_blank'
+          rel='noopener noreferrer'
+          className='text-blue-500 hover:underline'
         >
           GitHub Profile
         </a>
@@ -439,12 +429,7 @@ function OptimisticProfileUpdate() {
 
   return (
     <div>
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        disabled={isSaving}
-      />
+      <input type='text' value={name} onChange={e => setName(e.target.value)} disabled={isSaving} />
       <button onClick={updateProfile} disabled={isSaving}>
         {isSaving ? 'Saving...' : 'Save'}
       </button>
@@ -514,17 +499,11 @@ function DragDropAvatarUpload() {
       onDrop={handleDrop}
     >
       {preview ? (
-        <img
-          src={preview}
-          alt="Preview"
-          className="w-32 h-32 rounded-full mx-auto"
-        />
+        <img src={preview} alt='Preview' className='w-32 h-32 rounded-full mx-auto' />
       ) : (
-        <div className="text-center">
-          <Upload className="w-12 h-12 mx-auto text-gray-400" />
-          <p className="mt-2 text-sm text-gray-600">
-            Drag and drop an image, or click to browse
-          </p>
+        <div className='text-center'>
+          <Upload className='w-12 h-12 mx-auto text-gray-400' />
+          <p className='mt-2 text-sm text-gray-600'>Drag and drop an image, or click to browse</p>
         </div>
       )}
     </div>
@@ -567,43 +546,35 @@ function SocialLinksManager() {
     name: 'links',
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = data => {
     console.log('Social links:', data);
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
       {fields.map((field, index) => (
-        <div key={field.id} className="flex gap-2">
+        <div key={field.id} className='flex gap-2'>
           <Input
             {...form.register(`links.${index}.platform`)}
-            placeholder="Platform"
-            className="w-1/3"
+            placeholder='Platform'
+            className='w-1/3'
           />
           <Input
             {...form.register(`links.${index}.url`)}
-            placeholder="https://..."
-            className="flex-1"
+            placeholder='https://...'
+            className='flex-1'
           />
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => remove(index)}
-          >
+          <Button type='button' variant='destructive' onClick={() => remove(index)}>
             Remove
           </Button>
         </div>
       ))}
 
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => append({ platform: '', url: '' })}
-      >
+      <Button type='button' variant='outline' onClick={() => append({ platform: '', url: '' })}>
         Add Link
       </Button>
 
-      <Button type="submit">Save Links</Button>
+      <Button type='submit'>Save Links</Button>
     </form>
   );
 }
@@ -647,61 +618,49 @@ function PrivacySettings() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Profile Visibility */}
       <div>
-        <h3 className="text-lg font-medium mb-3">Profile Visibility</h3>
-        <RadioGroup value={visibility} onValueChange={(v) => setVisibility(v as any)}>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="public" id="public" />
-            <Label htmlFor="public">Public - Anyone can see</Label>
+        <h3 className='text-lg font-medium mb-3'>Profile Visibility</h3>
+        <RadioGroup value={visibility} onValueChange={v => setVisibility(v as any)}>
+          <div className='flex items-center space-x-2'>
+            <RadioGroupItem value='public' id='public' />
+            <Label htmlFor='public'>Public - Anyone can see</Label>
           </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="workspace" id="workspace" />
-            <Label htmlFor="workspace">Workspace Members Only</Label>
+          <div className='flex items-center space-x-2'>
+            <RadioGroupItem value='workspace' id='workspace' />
+            <Label htmlFor='workspace'>Workspace Members Only</Label>
           </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="private" id="private" />
-            <Label htmlFor="private">Private - Only you</Label>
+          <div className='flex items-center space-x-2'>
+            <RadioGroupItem value='private' id='private' />
+            <Label htmlFor='private'>Private - Only you</Label>
           </div>
         </RadioGroup>
       </div>
 
       {/* Individual Toggles */}
       <div>
-        <h3 className="text-lg font-medium mb-3">Visible Information</h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="show-email">Show Email</Label>
-            <Switch
-              id="show-email"
-              checked={showEmail}
-              onCheckedChange={setShowEmail}
-            />
+        <h3 className='text-lg font-medium mb-3'>Visible Information</h3>
+        <div className='space-y-3'>
+          <div className='flex items-center justify-between'>
+            <Label htmlFor='show-email'>Show Email</Label>
+            <Switch id='show-email' checked={showEmail} onCheckedChange={setShowEmail} />
           </div>
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="show-location">Show Location</Label>
-            <Switch
-              id="show-location"
-              checked={showLocation}
-              onCheckedChange={setShowLocation}
-            />
+          <div className='flex items-center justify-between'>
+            <Label htmlFor='show-location'>Show Location</Label>
+            <Switch id='show-location' checked={showLocation} onCheckedChange={setShowLocation} />
           </div>
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="show-bio">Show Bio</Label>
-            <Switch
-              id="show-bio"
-              checked={showBio}
-              onCheckedChange={setShowBio}
-            />
+          <div className='flex items-center justify-between'>
+            <Label htmlFor='show-bio'>Show Bio</Label>
+            <Switch id='show-bio' checked={showBio} onCheckedChange={setShowBio} />
           </div>
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="show-social">Show Social Links</Label>
+          <div className='flex items-center justify-between'>
+            <Label htmlFor='show-social'>Show Social Links</Label>
             <Switch
-              id="show-social"
+              id='show-social'
               checked={showSocialLinks}
               onCheckedChange={setShowSocialLinks}
             />
@@ -711,7 +670,7 @@ function PrivacySettings() {
 
       <button
         onClick={saveSettings}
-        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600'
       >
         Save Privacy Settings
       </button>
@@ -792,4 +751,5 @@ describe('Enhanced Profile Page', () => {
 
 ---
 
-These examples cover the most common use cases for the profile settings features. For more advanced scenarios, refer to the implementation files directly.
+These examples cover the most common use cases for the profile settings features. For more advanced
+scenarios, refer to the implementation files directly.

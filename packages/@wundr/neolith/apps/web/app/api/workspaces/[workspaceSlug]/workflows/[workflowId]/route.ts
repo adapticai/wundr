@@ -38,7 +38,7 @@ interface RouteContext {
 async function getWorkflowWithAccess(
   workspaceId: string,
   workflowId: string,
-  userId: string,
+  userId: string
 ) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -111,7 +111,7 @@ async function getWorkflowWithAccess(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -120,9 +120,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -134,7 +134,7 @@ export async function GET(
     const result = await getWorkflowWithAccess(
       workspaceId,
       workflowId,
-      session.user.id,
+      session.user.id
     );
 
     if ('error' in result) {
@@ -142,18 +142,18 @@ export async function GET(
         return NextResponse.json(
           createErrorResponse(
             'Workspace not found or access denied',
-            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
           createErrorResponse(
             'Workflow not found',
-            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -164,9 +164,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workflow not found',
-          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -235,14 +235,14 @@ export async function GET(
   } catch (error) {
     console.error(
       '[GET /api/workspaces/:workspaceId/workflows/:workflowId] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -275,7 +275,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -284,9 +284,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -298,7 +298,7 @@ export async function PATCH(
     const result = await getWorkflowWithAccess(
       workspaceId,
       workflowId,
-      session.user.id,
+      session.user.id
     );
 
     if ('error' in result) {
@@ -306,18 +306,18 @@ export async function PATCH(
         return NextResponse.json(
           createErrorResponse(
             'Workspace not found or access denied',
-            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
           createErrorResponse(
             'Workflow not found',
-            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -327,9 +327,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to update workflows',
-          WORKFLOW_ERROR_CODES.FORBIDDEN,
+          WORKFLOW_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -341,9 +341,9 @@ export async function PATCH(
       return NextResponse.json(
         createErrorResponse(
           'Invalid JSON body',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+          WORKFLOW_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -354,9 +354,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
+          { errors: parseResult.error.flatten().fieldErrors }
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -407,14 +407,14 @@ export async function PATCH(
   } catch (error) {
     console.error(
       '[PATCH /api/workspaces/:workspaceId/workflows/:workflowId] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -432,7 +432,7 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -441,9 +441,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Authentication required',
-          WORKFLOW_ERROR_CODES.UNAUTHORIZED,
+          WORKFLOW_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -455,7 +455,7 @@ export async function DELETE(
     const result = await getWorkflowWithAccess(
       workspaceId,
       workflowId,
-      session.user.id,
+      session.user.id
     );
 
     if ('error' in result) {
@@ -463,18 +463,18 @@ export async function DELETE(
         return NextResponse.json(
           createErrorResponse(
             'Workspace not found or access denied',
-            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
           createErrorResponse(
             'Workflow not found',
-            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND,
+            WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
           ),
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -484,9 +484,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'You must be a workspace member to archive workflows',
-          WORKFLOW_ERROR_CODES.FORBIDDEN,
+          WORKFLOW_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -497,9 +497,9 @@ export async function DELETE(
       return NextResponse.json(
         createErrorResponse(
           'Workflow is already archived',
-          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND,
+          WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND
         ),
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -522,14 +522,14 @@ export async function DELETE(
   } catch (error) {
     console.error(
       '[DELETE /api/workspaces/:workspaceId/workflows/:workflowId] Error:',
-      error,
+      error
     );
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        WORKFLOW_ERROR_CODES.INTERNAL_ERROR,
+        WORKFLOW_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

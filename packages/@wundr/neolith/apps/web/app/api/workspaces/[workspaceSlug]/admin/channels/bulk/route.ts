@@ -36,7 +36,7 @@ interface RouteContext {
  */
 export async function POST(
   request: Request,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -44,9 +44,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Unauthorized',
-          ADMIN_ERROR_CODES.UNAUTHORIZED,
+          ADMIN_ERROR_CODES.UNAUTHORIZED
         ),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -64,9 +64,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Admin access required',
-          ADMIN_ERROR_CODES.FORBIDDEN,
+          ADMIN_ERROR_CODES.FORBIDDEN
         ),
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -77,9 +77,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Channel IDs are required',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR,
+          ADMIN_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -87,9 +87,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'Operation is required',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR,
+          ADMIN_ERROR_CODES.VALIDATION_ERROR
         ),
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -105,9 +105,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'One or more channels not found',
-          ADMIN_ERROR_CODES.NOT_FOUND,
+          ADMIN_ERROR_CODES.NOT_FOUND
         ),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -152,9 +152,9 @@ export async function POST(
           return NextResponse.json(
             createAdminErrorResponse(
               'Valid channel type is required',
-              ADMIN_ERROR_CODES.VALIDATION_ERROR,
+              ADMIN_ERROR_CODES.VALIDATION_ERROR
             ),
-            { status: 400 },
+            { status: 400 }
           );
         }
 
@@ -173,9 +173,9 @@ export async function POST(
         return NextResponse.json(
           createAdminErrorResponse(
             'Invalid operation',
-            ADMIN_ERROR_CODES.VALIDATION_ERROR,
+            ADMIN_ERROR_CODES.VALIDATION_ERROR
           ),
-          { status: 400 },
+          { status: 400 }
         );
     }
 
@@ -188,9 +188,9 @@ export async function POST(
     return NextResponse.json(
       createAdminErrorResponse(
         'Failed to perform bulk operation',
-        ADMIN_ERROR_CODES.INTERNAL_ERROR,
+        ADMIN_ERROR_CODES.INTERNAL_ERROR
       ),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

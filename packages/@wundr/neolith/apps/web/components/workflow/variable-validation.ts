@@ -53,7 +53,7 @@ export function isReservedKeyword(name: string): boolean {
  */
 export function validateVariableName(
   name: string,
-  existingNames: string[] = [],
+  existingNames: string[] = []
 ): string | null {
   if (!name) {
     return 'Variable name is required';
@@ -83,7 +83,7 @@ export function validateVariableName(
  */
 export function validateDefaultValue(
   value: string,
-  type: VariableType,
+  type: VariableType
 ): string | null {
   if (!value) {
     return null; // Empty values are allowed
@@ -120,7 +120,11 @@ export function validateDefaultValue(
 
       case 'object':
         const objParsed = JSON.parse(value);
-        if (Array.isArray(objParsed) || typeof objParsed !== 'object' || objParsed === null) {
+        if (
+          Array.isArray(objParsed) ||
+          typeof objParsed !== 'object' ||
+          objParsed === null
+        ) {
           return 'Value must be a valid JSON object';
         }
         return null;
@@ -141,14 +145,14 @@ export function validateDefaultValue(
  */
 export function validateVariable(
   variable: Partial<ScopedWorkflowVariable>,
-  existingVariables: ScopedWorkflowVariable[] = [],
+  existingVariables: ScopedWorkflowVariable[] = []
 ): VariableValidationResult {
   const errors: ValidationError[] = [];
 
   // Validate name
   const existingNames = existingVariables
-    .filter((v) => v.id !== variable.id)
-    .map((v) => v.name);
+    .filter(v => v.id !== variable.id)
+    .map(v => v.name);
   const nameError = validateVariableName(variable.name || '', existingNames);
   if (nameError) {
     errors.push({ field: 'name', message: nameError });
@@ -158,7 +162,13 @@ export function validateVariable(
   if (!variable.type) {
     errors.push({ field: 'type', message: 'Variable type is required' });
   } else {
-    const validTypes: VariableType[] = ['string', 'number', 'boolean', 'array', 'object'];
+    const validTypes: VariableType[] = [
+      'string',
+      'number',
+      'boolean',
+      'array',
+      'object',
+    ];
     if (!validTypes.includes(variable.type)) {
       errors.push({ field: 'type', message: 'Invalid variable type' });
     }
@@ -166,9 +176,10 @@ export function validateVariable(
 
   // Validate default value if provided
   if (variable.defaultValue !== undefined && variable.type) {
-    const defaultValueStr = typeof variable.defaultValue === 'string'
-      ? variable.defaultValue
-      : JSON.stringify(variable.defaultValue);
+    const defaultValueStr =
+      typeof variable.defaultValue === 'string'
+        ? variable.defaultValue
+        : JSON.stringify(variable.defaultValue);
     const valueError = validateDefaultValue(defaultValueStr, variable.type);
     if (valueError) {
       errors.push({ field: 'defaultValue', message: valueError });
@@ -184,12 +195,18 @@ export function validateVariable(
 
   // Validate step ID for step-scoped variables
   if (variable.scope === 'step' && !variable.stepId) {
-    errors.push({ field: 'stepId', message: 'Step ID is required for step-scoped variables' });
+    errors.push({
+      field: 'stepId',
+      message: 'Step ID is required for step-scoped variables',
+    });
   }
 
   // Validate description length
   if (variable.description && variable.description.length > 500) {
-    errors.push({ field: 'description', message: 'Description must be 500 characters or less' });
+    errors.push({
+      field: 'description',
+      message: 'Description must be 500 characters or less',
+    });
   }
 
   return {
@@ -216,13 +233,13 @@ export function extractVariableReferences(text: string): string[] {
  */
 export function validateVariableReferences(
   text: string,
-  availableVariables: ScopedWorkflowVariable[],
+  availableVariables: ScopedWorkflowVariable[]
 ): VariableValidationResult {
   const errors: ValidationError[] = [];
   const references = extractVariableReferences(text);
-  const availableNames = availableVariables.map((v) => v.name);
+  const availableNames = availableVariables.map(v => v.name);
 
-  references.forEach((ref) => {
+  references.forEach(ref => {
     if (!availableNames.includes(ref)) {
       errors.push({
         field: 'reference',
@@ -249,7 +266,7 @@ export function hasVariableReferences(text: string): boolean {
  */
 export function replaceVariableReferences(
   text: string,
-  variables: Record<string, any>,
+  variables: Record<string, any>
 ): string {
   return text.replace(
     /\$\{variable\.([a-zA-Z_][a-zA-Z0-9_]*)\}/g,
@@ -262,7 +279,7 @@ export function replaceVariableReferences(
         return String(value);
       }
       return match; // Keep original if not found
-    },
+    }
   );
 }
 
@@ -270,7 +287,7 @@ export function replaceVariableReferences(
  * Validate all variables in a workflow
  */
 export function validateWorkflowVariables(
-  variables: ScopedWorkflowVariable[],
+  variables: ScopedWorkflowVariable[]
 ): VariableValidationResult {
   const errors: ValidationError[] = [];
   const names = new Set<string>();
@@ -288,7 +305,7 @@ export function validateWorkflowVariables(
 
     // Validate individual variable
     const result = validateVariable(variable, variables);
-    result.errors.forEach((error) => {
+    result.errors.forEach(error => {
       errors.push({
         field: `variable[${index}].${error.field}`,
         message: error.message,
@@ -316,7 +333,9 @@ export function isValueOfType(value: any, type: VariableType): boolean {
     case 'array':
       return Array.isArray(value);
     case 'object':
-      return typeof value === 'object' && value !== null && !Array.isArray(value);
+      return (
+        typeof value === 'object' && value !== null && !Array.isArray(value)
+      );
     default:
       return false;
   }
@@ -327,7 +346,7 @@ export function isValueOfType(value: any, type: VariableType): boolean {
  */
 export function coerceToType(
   value: any,
-  type: VariableType,
+  type: VariableType
 ): { success: boolean; value?: any; error?: string } {
   try {
     switch (type) {
@@ -347,11 +366,11 @@ export function coerceToType(
         }
         if (typeof value === 'string') {
           if (value === 'true') {
-return { success: true, value: true };
-}
+            return { success: true, value: true };
+          }
           if (value === 'false') {
-return { success: true, value: false };
-}
+            return { success: true, value: false };
+          }
         }
         return { success: false, error: 'Cannot convert to boolean' };
 
@@ -368,12 +387,20 @@ return { success: true, value: false };
         return { success: false, error: 'Cannot convert to array' };
 
       case 'object':
-        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        if (
+          typeof value === 'object' &&
+          value !== null &&
+          !Array.isArray(value)
+        ) {
           return { success: true, value };
         }
         if (typeof value === 'string') {
           const parsed = JSON.parse(value);
-          if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+          if (
+            typeof parsed === 'object' &&
+            parsed !== null &&
+            !Array.isArray(parsed)
+          ) {
             return { success: true, value: parsed };
           }
         }

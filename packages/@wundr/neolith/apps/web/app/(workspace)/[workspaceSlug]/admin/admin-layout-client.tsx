@@ -110,112 +110,112 @@ export function AdminLayoutClient({
     {
       title: 'Dashboard',
       href: `/${workspaceSlug}/admin`,
-      icon: <LayoutDashboard className="h-4 w-4" />,
+      icon: <LayoutDashboard className='h-4 w-4' />,
       description: 'Overview and metrics',
       section: 'overview',
     },
     {
       title: 'Activity',
       href: `/${workspaceSlug}/admin/activity`,
-      icon: <Activity className="h-4 w-4" />,
+      icon: <Activity className='h-4 w-4' />,
       description: 'Admin action logs',
       section: 'overview',
     },
     {
       title: 'Members',
       href: `/${workspaceSlug}/admin/members`,
-      icon: <Users className="h-4 w-4" />,
+      icon: <Users className='h-4 w-4' />,
       description: 'Manage workspace members',
       section: 'management',
     },
     {
       title: 'Roles',
       href: `/${workspaceSlug}/admin/roles`,
-      icon: <Shield className="h-4 w-4" />,
+      icon: <Shield className='h-4 w-4' />,
       description: 'Configure roles and permissions',
       section: 'management',
     },
     {
       title: 'Invitations',
       href: `/${workspaceSlug}/admin/invitations`,
-      icon: <Mail className="h-4 w-4" />,
+      icon: <Mail className='h-4 w-4' />,
       description: 'Manage pending invites',
       section: 'management',
     },
     {
       title: 'Channels',
       href: `/${workspaceSlug}/admin/channels`,
-      icon: <Package className="h-4 w-4" />,
+      icon: <Package className='h-4 w-4' />,
       description: 'Manage communication channels',
       section: 'management',
     },
     {
       title: 'Orchestrators',
       href: `/${workspaceSlug}/admin/orchestrators`,
-      icon: <Workflow className="h-4 w-4" />,
+      icon: <Workflow className='h-4 w-4' />,
       description: 'Manage orchestrator services',
       section: 'management',
     },
     {
       title: 'Workflows',
       href: `/${workspaceSlug}/admin/workflows`,
-      icon: <FileText className="h-4 w-4" />,
+      icon: <FileText className='h-4 w-4' />,
       description: 'Configure automated workflows',
       section: 'management',
     },
     {
       title: 'Settings',
       href: `/${workspaceSlug}/admin/settings`,
-      icon: <Settings className="h-4 w-4" />,
+      icon: <Settings className='h-4 w-4' />,
       description: 'General workspace settings',
       section: 'settings',
     },
     {
       title: 'Billing',
       href: `/${workspaceSlug}/admin/billing`,
-      icon: <CreditCard className="h-4 w-4" />,
+      icon: <CreditCard className='h-4 w-4' />,
       description: 'Manage billing and plans',
       section: 'settings',
     },
     {
       title: 'Storage',
       href: `/${workspaceSlug}/admin/storage`,
-      icon: <Database className="h-4 w-4" />,
+      icon: <Database className='h-4 w-4' />,
       description: 'Manage storage and files',
       section: 'settings',
     },
     {
       title: 'Integrations',
       href: `/${workspaceSlug}/admin/integrations`,
-      icon: <Package className="h-4 w-4" />,
+      icon: <Package className='h-4 w-4' />,
       description: 'Third-party integrations',
       section: 'settings',
     },
     {
       title: 'API Keys',
       href: `/${workspaceSlug}/admin/api-keys`,
-      icon: <Key className="h-4 w-4" />,
+      icon: <Key className='h-4 w-4' />,
       description: 'Manage API access',
       section: 'security',
     },
     {
       title: 'Security',
       href: `/${workspaceSlug}/admin/security`,
-      icon: <Lock className="h-4 w-4" />,
+      icon: <Lock className='h-4 w-4' />,
       description: 'Security settings',
       section: 'security',
     },
     {
       title: 'Webhooks',
       href: `/${workspaceSlug}/admin/webhooks`,
-      icon: <Webhook className="h-4 w-4" />,
+      icon: <Webhook className='h-4 w-4' />,
       description: 'Configure webhooks',
       section: 'security',
     },
     {
       title: 'Audit Log',
       href: `/${workspaceSlug}/admin/audit-log`,
-      icon: <FileText className="h-4 w-4" />,
+      icon: <FileText className='h-4 w-4' />,
       description: 'View audit logs',
       section: 'security',
     },
@@ -247,7 +247,7 @@ export function AdminLayoutClient({
         });
       } else {
         const navItem = navItems.find(item =>
-          item.href.endsWith(`/${segment}`),
+          item.href.endsWith(`/${segment}`)
         );
         if (navItem) {
           breadcrumbs.push({
@@ -256,9 +256,10 @@ export function AdminLayoutClient({
           });
         } else {
           breadcrumbs.push({
-            label: segment.split('-').map(s =>
-              s.charAt(0).toUpperCase() + s.slice(1),
-            ).join(' '),
+            label: segment
+              .split('-')
+              .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+              .join(' '),
             href: `/${segments.slice(0, index + 1).join('/')}`,
           });
         }
@@ -310,15 +311,15 @@ export function AdminLayoutClient({
                 isActive
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                !sidebarOpen && 'justify-center',
+                !sidebarOpen && 'justify-center'
               )}
             >
-              <span className="flex-shrink-0">{item.icon}</span>
+              <span className='flex-shrink-0'>{item.icon}</span>
               {sidebarOpen && (
                 <>
-                  <span className="flex-1">{item.title}</span>
+                  <span className='flex-1'>{item.title}</span>
                   {item.badge && (
-                    <Badge variant="secondary" className="ml-auto">
+                    <Badge variant='secondary' className='ml-auto'>
                       {item.badge}
                     </Badge>
                   )}
@@ -327,7 +328,7 @@ export function AdminLayoutClient({
             </Link>
           </TooltipTrigger>
           {!sidebarOpen && (
-            <TooltipContent side="right">
+            <TooltipContent side='right'>
               <p>{item.title}</p>
             </TooltipContent>
           )}
@@ -337,40 +338,40 @@ export function AdminLayoutClient({
   };
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col">
+    <div className='flex h-full flex-col'>
       {/* Sidebar Header */}
-      <div className="flex h-14 items-center justify-between border-b px-4">
+      <div className='flex h-14 items-center justify-between border-b px-4'>
         {sidebarOpen && (
-          <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
-            <span className="font-semibold">Admin Console</span>
+          <div className='flex items-center gap-2'>
+            <Shield className='h-5 w-5 text-primary' />
+            <span className='font-semibold'>Admin Console</span>
           </div>
         )}
         <Button
-          variant="ghost"
-          size="icon"
+          variant='ghost'
+          size='icon'
           className={cn('h-8 w-8', !sidebarOpen && 'mx-auto')}
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
           {sidebarOpen ? (
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className='h-4 w-4' />
           ) : (
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className='h-4 w-4' />
           )}
         </Button>
       </div>
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-6">
+      <ScrollArea className='flex-1 px-3 py-4'>
+        <nav className='space-y-6'>
           {/* Overview Section */}
           <div>
             {sidebarOpen && (
-              <h4 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <h4 className='mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
                 Overview
               </h4>
             )}
-            <div className="space-y-1">
+            <div className='space-y-1'>
               {groupedNav.overview.map(item => (
                 <NavLink key={item.href} item={item} />
               ))}
@@ -382,11 +383,11 @@ export function AdminLayoutClient({
           {/* Management Section */}
           <div>
             {sidebarOpen && (
-              <h4 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <h4 className='mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
                 Management
               </h4>
             )}
-            <div className="space-y-1">
+            <div className='space-y-1'>
               {groupedNav.management.map(item => (
                 <NavLink key={item.href} item={item} />
               ))}
@@ -398,11 +399,11 @@ export function AdminLayoutClient({
           {/* Settings Section */}
           <div>
             {sidebarOpen && (
-              <h4 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <h4 className='mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
                 Settings
               </h4>
             )}
-            <div className="space-y-1">
+            <div className='space-y-1'>
               {groupedNav.settings.map(item => (
                 <NavLink key={item.href} item={item} />
               ))}
@@ -414,11 +415,11 @@ export function AdminLayoutClient({
           {/* Security Section */}
           <div>
             {sidebarOpen && (
-              <h4 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <h4 className='mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
                 Security
               </h4>
             )}
-            <div className="space-y-1">
+            <div className='space-y-1'>
               {groupedNav.security.map(item => (
                 <NavLink key={item.href} item={item} />
               ))}
@@ -429,10 +430,10 @@ export function AdminLayoutClient({
 
       {/* Sidebar Footer */}
       {sidebarOpen && (
-        <div className="border-t p-4">
-          <div className="rounded-lg bg-muted/50 p-3">
-            <p className="text-xs font-medium">{userName}</p>
-            <p className="text-xs text-muted-foreground">{userRole} Access</p>
+        <div className='border-t p-4'>
+          <div className='rounded-lg bg-muted/50 p-3'>
+            <p className='text-xs font-medium'>{userName}</p>
+            <p className='text-xs text-muted-foreground'>{userRole} Access</p>
           </div>
         </div>
       )}
@@ -440,12 +441,12 @@ export function AdminLayoutClient({
   );
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className='flex h-screen overflow-hidden'>
       {/* Desktop Sidebar */}
       <aside
         className={cn(
           'hidden border-r bg-background transition-all duration-300 lg:block',
-          sidebarOpen ? 'w-64' : 'w-16',
+          sidebarOpen ? 'w-64' : 'w-16'
         )}
       >
         <SidebarContent />
@@ -453,10 +454,10 @@ export function AdminLayoutClient({
 
       {/* Mobile Drawer */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="w-64 p-0">
-          <SheetHeader className="border-b p-4">
-            <SheetTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
+        <SheetContent side='left' className='w-64 p-0'>
+          <SheetHeader className='border-b p-4'>
+            <SheetTitle className='flex items-center gap-2'>
+              <Shield className='h-5 w-5 text-primary' />
               Admin Console
             </SheetTitle>
           </SheetHeader>
@@ -465,33 +466,33 @@ export function AdminLayoutClient({
       </Sheet>
 
       {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className='flex flex-1 flex-col overflow-hidden'>
         {/* Header */}
-        <header className="flex h-14 items-center justify-between border-b bg-background px-4 lg:px-6">
+        <header className='flex h-14 items-center justify-between border-b bg-background px-4 lg:px-6'>
           {/* Left Section */}
-          <div className="flex items-center gap-4">
+          <div className='flex items-center gap-4'>
             {/* Mobile Menu Button */}
             <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
+              variant='ghost'
+              size='icon'
+              className='lg:hidden'
               onClick={() => setMobileMenuOpen(true)}
             >
-              <Menu className="h-5 w-5" />
+              <Menu className='h-5 w-5' />
             </Button>
 
             {/* Breadcrumbs */}
-            <Breadcrumb className="hidden md:flex">
+            <Breadcrumb className='hidden md:flex'>
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
                     <Link href={`/${workspaceSlug}/dashboard`}>
-                      <Home className="h-3.5 w-3.5" />
+                      <Home className='h-3.5 w-3.5' />
                     </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 {breadcrumbs.map((crumb, index) => (
-                  <div key={crumb.href} className="flex items-center">
+                  <div key={crumb.href} className='flex items-center'>
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
                       {index === breadcrumbs.length - 1 ? (
@@ -509,44 +510,44 @@ export function AdminLayoutClient({
           </div>
 
           {/* Right Section - Quick Actions */}
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             {/* Search */}
             <Button
-              variant="outline"
-              className="gap-2"
+              variant='outline'
+              className='gap-2'
               onClick={() => setCommandOpen(true)}
             >
-              <Search className="h-4 w-4" />
-              <span className="hidden sm:inline">Search</span>
-              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                <span className="text-xs">⌘</span>K
+              <Search className='h-4 w-4' />
+              <span className='hidden sm:inline'>Search</span>
+              <kbd className='pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex'>
+                <span className='text-xs'>⌘</span>K
               </kbd>
             </Button>
 
             {/* Quick Actions */}
-            <Button variant="ghost" size="icon">
-              <Bell className="h-4 w-4" />
+            <Button variant='ghost' size='icon'>
+              <Bell className='h-4 w-4' />
             </Button>
 
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-4 w-4" />
+            <Button variant='ghost' size='icon'>
+              <MoreVertical className='h-4 w-4' />
             </Button>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-muted/10">
-          <div className="container mx-auto p-4 lg:p-6">{children}</div>
+        <main className='flex-1 overflow-y-auto bg-muted/10'>
+          <div className='container mx-auto p-4 lg:p-6'>{children}</div>
         </main>
       </div>
 
       {/* Command Palette */}
       <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
-        <CommandInput placeholder="Search admin features..." />
+        <CommandInput placeholder='Search admin features...' />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
 
-          <CommandGroup heading="Overview">
+          <CommandGroup heading='Overview'>
             {groupedNav.overview.map(item => (
               <CommandItem
                 key={item.href}
@@ -558,7 +559,7 @@ export function AdminLayoutClient({
                 {item.icon}
                 <span>{item.title}</span>
                 {item.description && (
-                  <span className="ml-auto text-xs text-muted-foreground">
+                  <span className='ml-auto text-xs text-muted-foreground'>
                     {item.description}
                   </span>
                 )}
@@ -566,7 +567,7 @@ export function AdminLayoutClient({
             ))}
           </CommandGroup>
 
-          <CommandGroup heading="Management">
+          <CommandGroup heading='Management'>
             {groupedNav.management.map(item => (
               <CommandItem
                 key={item.href}
@@ -578,7 +579,7 @@ export function AdminLayoutClient({
                 {item.icon}
                 <span>{item.title}</span>
                 {item.description && (
-                  <span className="ml-auto text-xs text-muted-foreground">
+                  <span className='ml-auto text-xs text-muted-foreground'>
                     {item.description}
                   </span>
                 )}
@@ -586,7 +587,7 @@ export function AdminLayoutClient({
             ))}
           </CommandGroup>
 
-          <CommandGroup heading="Settings">
+          <CommandGroup heading='Settings'>
             {groupedNav.settings.map(item => (
               <CommandItem
                 key={item.href}
@@ -598,7 +599,7 @@ export function AdminLayoutClient({
                 {item.icon}
                 <span>{item.title}</span>
                 {item.description && (
-                  <span className="ml-auto text-xs text-muted-foreground">
+                  <span className='ml-auto text-xs text-muted-foreground'>
                     {item.description}
                   </span>
                 )}
@@ -606,7 +607,7 @@ export function AdminLayoutClient({
             ))}
           </CommandGroup>
 
-          <CommandGroup heading="Security">
+          <CommandGroup heading='Security'>
             {groupedNav.security.map(item => (
               <CommandItem
                 key={item.href}
@@ -618,7 +619,7 @@ export function AdminLayoutClient({
                 {item.icon}
                 <span>{item.title}</span>
                 {item.description && (
-                  <span className="ml-auto text-xs text-muted-foreground">
+                  <span className='ml-auto text-xs text-muted-foreground'>
                     {item.description}
                   </span>
                 )}

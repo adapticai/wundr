@@ -19,8 +19,8 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -43,7 +43,7 @@ return null;
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -75,7 +75,10 @@ export async function PATCH(
       data: { status: newStatus },
     });
 
-    return NextResponse.json({ success: true, updated: orchestratorIds.length });
+    return NextResponse.json({
+      success: true,
+      updated: orchestratorIds.length,
+    });
   } catch (error) {
     console.error('[PATCH bulk orchestrators]', error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

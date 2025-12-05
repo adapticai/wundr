@@ -389,7 +389,7 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
 
       return clientRef.current.spawnSession(payload);
     },
-    [state.connected],
+    [state.connected]
   );
 
   const executeTask = useCallback(
@@ -404,7 +404,7 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
 
       clientRef.current.executeTask(payload);
     },
-    [state.connected],
+    [state.connected]
   );
 
   const getSessionStatus = useCallback(
@@ -419,7 +419,7 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
 
       clientRef.current.getSessionStatus(sessionId);
     },
-    [state.connected],
+    [state.connected]
   );
 
   const getDaemonStatus = useCallback(() => {
@@ -452,14 +452,14 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
         sessions: prev.sessions.filter(s => s.id !== sessionId),
       }));
     },
-    [state.connected],
+    [state.connected]
   );
 
   const getSession = useCallback(
     (sessionId: string): Session | undefined => {
       return state.sessions.find(s => s.id === sessionId);
     },
-    [state.sessions],
+    [state.sessions]
   );
 
   return {
@@ -508,7 +508,7 @@ export function useDaemon(options: UseDaemonOptions = {}): UseDaemonReturn {
  */
 export function useSessionMonitor(
   sessionId: string,
-  handlers?: UseDaemonStreamHandlers,
+  handlers?: UseDaemonStreamHandlers
 ) {
   const [streamOutput, setStreamOutput] = useState('');
   const [session, setSession] = useState<Session | undefined>();

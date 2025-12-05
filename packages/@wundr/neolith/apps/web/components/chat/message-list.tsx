@@ -124,13 +124,13 @@ export function MessageList({
     const isAtBottom = scrollHeight - scrollTop - clientHeight < 30;
     setAutoScroll(isAtBottom);
     setShowScrollButton(
-      !isAtBottom && scrollHeight - scrollTop - clientHeight > 150,
+      !isAtBottom && scrollHeight - scrollTop - clientHeight > 150
     );
 
     // Update visible range for virtualization with improved calculation
     const scrollOffset = Math.max(
       0,
-      scrollTop - BUFFER_SIZE * ITEM_HEIGHT_ESTIMATE,
+      scrollTop - BUFFER_SIZE * ITEM_HEIGHT_ESTIMATE
     );
     const startIndex = Math.floor(scrollOffset / ITEM_HEIGHT_ESTIMATE);
     const visibleCount =
@@ -251,7 +251,7 @@ export function MessageList({
       top: visibleRange.start * ITEM_HEIGHT_ESTIMATE,
       bottom: Math.max(
         0,
-        (messages.length - visibleRange.end) * ITEM_HEIGHT_ESTIMATE,
+        (messages.length - visibleRange.end) * ITEM_HEIGHT_ESTIMATE
       ),
     };
   }, [messages.length, visibleRange]);
@@ -311,7 +311,7 @@ export function MessageList({
               canPin={canPin}
               isThreadView={isThreadView}
             />
-          ),
+          )
         )}
 
         {/* Bottom spacer for virtualization */}

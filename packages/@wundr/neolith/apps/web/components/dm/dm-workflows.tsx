@@ -60,7 +60,8 @@ const triggerIcons = {
 const statusConfig = {
   active: {
     label: 'Active',
-    color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    color:
+      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   },
   inactive: {
     label: 'Inactive',
@@ -68,7 +69,8 @@ const statusConfig = {
   },
   draft: {
     label: 'Draft',
-    color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+    color:
+      'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   },
   error: {
     label: 'Error',
@@ -95,7 +97,7 @@ export function DMWorkflowsTab({
     try {
       setIsLoading(true);
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/workflows?search=${channelId}`,
+        `/api/workspaces/${workspaceSlug}/workflows?search=${channelId}`
       );
 
       if (!response.ok) {
@@ -116,7 +118,7 @@ export function DMWorkflowsTab({
   const loadExecutions = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/workflows/executions?channelId=${channelId}&limit=5`,
+        `/api/workspaces/${workspaceSlug}/workflows/executions?channelId=${channelId}&limit=5`
       );
 
       if (response.ok) {
@@ -134,14 +136,17 @@ export function DMWorkflowsTab({
   }, [loadWorkflows, loadExecutions]);
 
   // Toggle workflow active/inactive
-  const handleToggleWorkflow = async (workflowId: string, currentStatus: string) => {
+  const handleToggleWorkflow = async (
+    workflowId: string,
+    currentStatus: string
+  ) => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     const action = newStatus === 'active' ? 'activate' : 'deactivate';
 
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/workflows/${workflowId}/${action}`,
-        { method: 'POST' },
+        { method: 'POST' }
       );
 
       if (!response.ok) {
@@ -150,10 +155,12 @@ export function DMWorkflowsTab({
 
       setWorkflows(prev =>
         prev.map(w =>
-          w.id === workflowId ? { ...w, status: newStatus as any } : w,
-        ),
+          w.id === workflowId ? { ...w, status: newStatus as any } : w
+        )
       );
-      toast.success(`Workflow ${newStatus === 'active' ? 'activated' : 'deactivated'}`);
+      toast.success(
+        `Workflow ${newStatus === 'active' ? 'activated' : 'deactivated'}`
+      );
     } catch (error) {
       console.error(`Failed to ${action} workflow:`, error);
       toast.error(`Failed to ${action} workflow`);
@@ -225,7 +232,7 @@ export function DMWorkflowsTab({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(workflowData),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -286,12 +293,8 @@ export function DMWorkflowsTab({
                       <SelectValue placeholder='Select a template...' />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value='reminder'>
-                        Daily Reminder
-                      </SelectItem>
-                      <SelectItem value='keyword'>
-                        Keyword Alert
-                      </SelectItem>
+                      <SelectItem value='reminder'>Daily Reminder</SelectItem>
+                      <SelectItem value='keyword'>Keyword Alert</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -345,14 +348,16 @@ export function DMWorkflowsTab({
           <Card>
             <CardHeader>
               <CardTitle className='text-base'>
-                Active Workflows ({workflows.filter(w => w.status === 'active').length})
+                Active Workflows (
+                {workflows.filter(w => w.status === 'active').length})
               </CardTitle>
             </CardHeader>
             <CardContent className='space-y-2'>
               {workflows.map(workflow => {
                 const TriggerIcon =
-                  triggerIcons[workflow.trigger.type as keyof typeof triggerIcons] ||
-                  Zap;
+                  triggerIcons[
+                    workflow.trigger.type as keyof typeof triggerIcons
+                  ] || Zap;
 
                 return (
                   <div
@@ -390,12 +395,14 @@ export function DMWorkflowsTab({
                       <div className='mt-2 flex flex-wrap items-center gap-2'>
                         <Badge
                           className={
-                            statusConfig[workflow.status as keyof typeof statusConfig]
-                              ?.color || statusConfig.draft.color
+                            statusConfig[
+                              workflow.status as keyof typeof statusConfig
+                            ]?.color || statusConfig.draft.color
                           }
                         >
-                          {statusConfig[workflow.status as keyof typeof statusConfig]
-                            ?.label || 'Draft'}
+                          {statusConfig[
+                            workflow.status as keyof typeof statusConfig
+                          ]?.label || 'Draft'}
                         </Badge>
                         <span className='text-muted-foreground text-xs'>
                           {workflow.actions.length}{' '}
@@ -404,7 +411,10 @@ export function DMWorkflowsTab({
                         {workflow.lastRunAt && (
                           <span className='text-muted-foreground text-xs'>
                             Last run:{' '}
-                            {format(new Date(workflow.lastRunAt), 'MMM d, h:mm a')}
+                            {format(
+                              new Date(workflow.lastRunAt),
+                              'MMM d, h:mm a'
+                            )}
                           </span>
                         )}
                         {workflow.runCount > 0 && (
@@ -431,11 +441,14 @@ export function DMWorkflowsTab({
             <CardContent className='space-y-2'>
               {executions.map(execution => {
                 const workflow = workflows.find(
-                  w => w.id === execution.workflowId,
+                  w => w.id === execution.workflowId
                 );
 
                 const executionStatusConfig = {
-                  pending: { label: 'Pending', color: 'bg-blue-100 text-blue-700' },
+                  pending: {
+                    label: 'Pending',
+                    color: 'bg-blue-100 text-blue-700',
+                  },
                   running: {
                     label: 'Running',
                     color: 'bg-indigo-100 text-indigo-700',
@@ -470,7 +483,10 @@ export function DMWorkflowsTab({
                           {executionStatusConfig[execution.status].label}
                         </Badge>
                         <span className='text-muted-foreground text-xs'>
-                          {format(new Date(execution.startedAt), 'MMM d, h:mm a')}
+                          {format(
+                            new Date(execution.startedAt),
+                            'MMM d, h:mm a'
+                          )}
                         </span>
                         {execution.duration && (
                           <span className='text-muted-foreground text-xs'>

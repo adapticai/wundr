@@ -195,7 +195,12 @@ function transformChannel(apiChannel: ChannelApiResponse): Channel {
             image:
               apiChannel.lastMessage.author.avatarUrl ||
               apiChannel.lastMessage.author.image,
-            status: (apiChannel.lastMessage.author.status as 'online' | 'offline' | 'away' | 'busy') || 'offline',
+            status:
+              (apiChannel.lastMessage.author.status as
+                | 'online'
+                | 'offline'
+                | 'away'
+                | 'busy') || 'offline',
           },
         }
       : undefined,
@@ -210,7 +215,9 @@ function transformChannel(apiChannel: ChannelApiResponse): Channel {
         name: m.user.displayName || m.user.name || 'Unknown',
         image: m.user.avatarUrl || m.user.image,
         email: m.user.email || '',
-        status: (m.user.status as 'online' | 'offline' | 'away' | 'busy') || 'offline',
+        status:
+          (m.user.status as 'online' | 'offline' | 'away' | 'busy') ||
+          'offline',
       },
     })),
   };
@@ -222,7 +229,7 @@ function transformChannel(apiChannel: ChannelApiResponse): Channel {
 function calculateOnlineStatus(channel: Channel): ChannelOnlineStatus {
   const onlineStatuses = ['online', 'busy', 'away'];
   const onlineCount = channel.members.filter(m =>
-    onlineStatuses.includes(m.user.status || ''),
+    onlineStatuses.includes(m.user.status || '')
   ).length;
 
   return {
@@ -302,7 +309,7 @@ export function useRealtimeChannels({
           .json()
           .catch(() => ({ error: 'Failed to fetch channels' }));
         throw new Error(
-          errorData.error || errorData.message || 'Failed to fetch channels',
+          errorData.error || errorData.message || 'Failed to fetch channels'
         );
       }
 
@@ -311,7 +318,7 @@ export function useRealtimeChannels({
 
       return channelsData.map(transformChannel);
     },
-    [enabled, workspaceId, initialChannels],
+    [enabled, workspaceId, initialChannels]
   );
 
   // SWR hook for automatic revalidation
@@ -324,14 +331,14 @@ export function useRealtimeChannels({
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
       dedupingInterval: 5000, // Prevent duplicate requests within 5s
-      onSuccess: (data) => {
+      onSuccess: data => {
         setIsRefreshing(false);
       },
-      onError: (err) => {
+      onError: err => {
         setIsRefreshing(false);
         console.error('[useRealtimeChannels] Error:', err);
       },
-    },
+    }
   );
 
   const channels = data || initialChannels;
@@ -352,7 +359,7 @@ export function useRealtimeChannels({
 
     // Detect new channels
     const newChannels = channels.filter(
-      c => !previousChannelIdsRef.current.has(c.id),
+      c => !previousChannelIdsRef.current.has(c.id)
     );
 
     if (newChannels.length > 0) {
@@ -362,7 +369,7 @@ export function useRealtimeChannels({
 
     // Detect deleted channels
     const deletedIds = Array.from(previousChannelIdsRef.current).filter(
-      id => !currentChannelIds.has(id),
+      id => !currentChannelIds.has(id)
     );
 
     if (deletedIds.length > 0) {
@@ -385,7 +392,11 @@ export function useRealtimeChannels({
       const enhanced: RealtimeChannel = { ...channel };
 
       // Add online status if enabled
-      if (includeOnlineStatus && channel.members && channel.members.length > 0) {
+      if (
+        includeOnlineStatus &&
+        channel.members &&
+        channel.members.length > 0
+      ) {
         enhanced.onlineStatus = calculateOnlineStatus(channel);
       }
 
@@ -402,10 +413,10 @@ export function useRealtimeChannels({
   const { publicChannels, privateChannels, starredChannels } = useMemo(() => {
     const starred = realtimeChannels.filter(c => c.isStarred);
     const publicCh = realtimeChannels.filter(
-      c => c.type === 'public' && !c.isStarred,
+      c => c.type === 'public' && !c.isStarred
     );
     const privateCh = realtimeChannels.filter(
-      c => c.type === 'private' && !c.isStarred,
+      c => c.type === 'private' && !c.isStarred
     );
 
     return {

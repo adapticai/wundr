@@ -224,17 +224,17 @@ export function OrchestratorActivityFeed({
     const diffDays = Math.floor(diffHours / 24);
 
     if (diffSecs < 60) {
-return 'Just now';
-}
+      return 'Just now';
+    }
     if (diffMins < 60) {
-return `${diffMins}m ago`;
-}
+      return `${diffMins}m ago`;
+    }
     if (diffHours < 24) {
-return `${diffHours}h ago`;
-}
+      return `${diffHours}h ago`;
+    }
     if (diffDays < 7) {
-return `${diffDays}d ago`;
-}
+      return `${diffDays}d ago`;
+    }
 
     return date.toLocaleDateString(undefined, {
       month: 'short',
@@ -250,8 +250,8 @@ return `${diffDays}d ago`;
   const fetchActivities = useCallback(
     async (append = false) => {
       if (!workspaceSlug || !orchestratorId) {
-return;
-}
+        return;
+      }
 
       if (!append) {
         setIsLoading(true);
@@ -282,7 +282,7 @@ return;
         }
 
         const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/activity?${params.toString()}`,
+          `/api/workspaces/${workspaceSlug}/orchestrators/${orchestratorId}/activity?${params.toString()}`
         );
 
         if (!response.ok) {
@@ -319,7 +319,7 @@ return;
       selectedType,
       dateFrom,
       dateTo,
-    ],
+    ]
   );
 
   /**
@@ -327,8 +327,8 @@ return;
    */
   const handleLoadMore = useCallback(() => {
     if (!hasMore || isLoadingMore) {
-return;
-}
+      return;
+    }
     fetchActivities(true);
   }, [hasMore, isLoadingMore, fetchActivities]);
 
@@ -372,7 +372,7 @@ return;
           `"${a.description.replace(/"/g, '""')}"`,
           a.importance,
           `"${a.keywords.join(', ')}"`,
-        ].join(','),
+        ].join(',')
       ),
     ].join('\n');
 
@@ -390,15 +390,15 @@ return;
    */
   const filteredActivities = useMemo(() => {
     if (!searchQuery) {
-return activities;
-}
+      return activities;
+    }
 
     const query = searchQuery.toLowerCase();
     return activities.filter(
       activity =>
         activity.description.toLowerCase().includes(query) ||
         activity.keywords.some(k => k.toLowerCase().includes(query)) ||
-        activity.type.toLowerCase().includes(query),
+        activity.type.toLowerCase().includes(query)
     );
   }, [activities, searchQuery]);
 
@@ -415,8 +415,8 @@ return activities;
    */
   useEffect(() => {
     if (!autoRefresh) {
-return;
-}
+      return;
+    }
 
     const interval = setInterval(() => {
       fetchActivities(false);
@@ -439,30 +439,30 @@ return;
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (selectedType !== 'all') {
-count++;
-}
+      count++;
+    }
     if (dateFrom) {
-count++;
-}
+      count++;
+    }
     if (dateTo) {
-count++;
-}
+      count++;
+    }
     if (searchQuery) {
-count++;
-}
+      count++;
+    }
     return count;
   }, [selectedType, dateFrom, dateTo, searchQuery]);
 
   // Loading state
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className='space-y-4'>
         {[1, 2, 3].map(i => (
-          <div key={i} className="flex gap-4 items-start animate-pulse">
-            <div className="h-8 w-8 rounded-full bg-muted shrink-0" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 bg-muted rounded w-3/4" />
-              <div className="h-3 bg-muted rounded w-1/2" />
+          <div key={i} className='flex gap-4 items-start animate-pulse'>
+            <div className='h-8 w-8 rounded-full bg-muted shrink-0' />
+            <div className='flex-1 space-y-2'>
+              <div className='h-4 bg-muted rounded w-3/4' />
+              <div className='h-3 bg-muted rounded w-1/2' />
             </div>
           </div>
         ))}
@@ -473,19 +473,19 @@ count++;
   // Error state
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-8">
-        <Card className="border-red-200 bg-red-50 max-w-sm">
-          <CardContent className="pt-6 text-center">
-            <AlertCircle className="h-6 w-6 text-red-600 mx-auto mb-2" />
-            <p className="text-sm text-red-800 font-medium">
+      <div className='flex flex-col items-center justify-center py-8'>
+        <Card className='border-red-200 bg-red-50 max-w-sm'>
+          <CardContent className='pt-6 text-center'>
+            <AlertCircle className='h-6 w-6 text-red-600 mx-auto mb-2' />
+            <p className='text-sm text-red-800 font-medium'>
               Failed to load activity
             </p>
-            <p className="text-xs text-red-600 mt-1">{error.message}</p>
+            <p className='text-xs text-red-600 mt-1'>{error.message}</p>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={handleRetry}
-              className="mt-3"
+              className='mt-3'
             >
               Try Again
             </Button>
@@ -496,48 +496,48 @@ count++;
   }
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className='flex flex-col sm:flex-row gap-3'>
+        <div className='relative flex-1'>
+          <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
           <Input
-            placeholder="Search activities..."
+            placeholder='Search activities...'
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className='pl-9'
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className='flex gap-2'>
           <Popover open={showFilters} onOpenChange={setShowFilters}>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Filter className="h-4 w-4" />
+              <Button variant='outline' className='gap-2'>
+                <Filter className='h-4 w-4' />
                 Filters
                 {activeFilterCount > 0 && (
-                  <Badge variant="secondary" className="ml-1 px-1.5 py-0">
+                  <Badge variant='secondary' className='ml-1 px-1.5 py-0'>
                     {activeFilterCount}
                   </Badge>
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-              <div className="space-y-4">
+            <PopoverContent className='w-80' align='end'>
+              <div className='space-y-4'>
                 <div>
-                  <h4 className="font-medium text-sm mb-2">Activity Type</h4>
+                  <h4 className='font-medium text-sm mb-2'>Activity Type</h4>
                   <Select value={selectedType} onValueChange={setSelectedType}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value='all'>All Types</SelectItem>
                       {Object.entries(ACTIVITY_TYPE_CONFIG).map(
                         ([type, config]) => (
                           <SelectItem key={type} value={type}>
                             {config.label}
                           </SelectItem>
-                        ),
+                        )
                       )}
                     </SelectContent>
                   </Select>
@@ -546,31 +546,33 @@ count++;
                 <Separator />
 
                 <div>
-                  <h4 className="font-medium text-sm mb-2">Date Range</h4>
-                  <div className="space-y-2">
+                  <h4 className='font-medium text-sm mb-2'>Date Range</h4>
+                  <div className='space-y-2'>
                     <div>
-                      <label className="text-xs text-muted-foreground">
+                      <label className='text-xs text-muted-foreground'>
                         From
                       </label>
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <div className='relative'>
+                        <Calendar className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
                         <Input
-                          type="datetime-local"
+                          type='datetime-local'
                           value={dateFrom}
                           onChange={e => setDateFrom(e.target.value)}
-                          className="pl-9"
+                          className='pl-9'
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground">To</label>
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <label className='text-xs text-muted-foreground'>
+                        To
+                      </label>
+                      <div className='relative'>
+                        <Calendar className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
                         <Input
-                          type="datetime-local"
+                          type='datetime-local'
                           value={dateTo}
                           onChange={e => setDateTo(e.target.value)}
-                          className="pl-9"
+                          className='pl-9'
                         />
                       </div>
                     </div>
@@ -579,20 +581,20 @@ count++;
 
                 <Separator />
 
-                <div className="flex gap-2">
+                <div className='flex gap-2'>
                   <Button
-                    variant="outline"
-                    size="sm"
+                    variant='outline'
+                    size='sm'
                     onClick={handleClearFilters}
-                    className="flex-1"
+                    className='flex-1'
                   >
-                    <X className="h-3 w-3 mr-1" />
+                    <X className='h-3 w-3 mr-1' />
                     Clear
                   </Button>
                   <Button
-                    size="sm"
+                    size='sm'
                     onClick={() => setShowFilters(false)}
-                    className="flex-1"
+                    className='flex-1'
                   >
                     Apply
                   </Button>
@@ -602,18 +604,18 @@ count++;
           </Popover>
 
           <Button
-            variant="outline"
-            size="icon"
+            variant='outline'
+            size='icon'
             onClick={handleExport}
             disabled={filteredActivities.length === 0}
-            title="Export to CSV"
+            title='Export to CSV'
           >
-            <Download className="h-4 w-4" />
+            <Download className='h-4 w-4' />
           </Button>
 
           {autoRefresh && (
-            <Button variant="outline" size="icon" disabled>
-              <Activity className="h-4 w-4 animate-pulse" />
+            <Button variant='outline' size='icon' disabled>
+              <Activity className='h-4 w-4 animate-pulse' />
             </Button>
           )}
         </div>
@@ -621,16 +623,17 @@ count++;
 
       {/* Results count */}
       {activeFilterCount > 0 && (
-        <div className="flex items-center justify-between text-sm">
-          <p className="text-muted-foreground">
-            Showing {filteredActivities.length} of {activities.length} activities
+        <div className='flex items-center justify-between text-sm'>
+          <p className='text-muted-foreground'>
+            Showing {filteredActivities.length} of {activities.length}{' '}
+            activities
           </p>
           {activeFilterCount > 0 && (
             <Button
-              variant="ghost"
-              size="sm"
+              variant='ghost'
+              size='sm'
               onClick={handleClearFilters}
-              className="h-auto py-1"
+              className='h-auto py-1'
             >
               Clear all filters
             </Button>
@@ -640,24 +643,24 @@ count++;
 
       {/* Empty state */}
       {filteredActivities.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <Activity className="h-12 w-12 text-muted-foreground/50 mb-4" />
-          <p className="text-sm font-medium text-muted-foreground">
+        <div className='flex flex-col items-center justify-center py-12 text-center'>
+          <Activity className='h-12 w-12 text-muted-foreground/50 mb-4' />
+          <p className='text-sm font-medium text-muted-foreground'>
             {activities.length === 0
               ? 'No activity recorded yet'
               : 'No activities match your filters'}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className='text-xs text-muted-foreground mt-1'>
             {activities.length === 0
               ? 'Activity will appear here as this orchestrator performs actions'
               : 'Try adjusting your search or filters'}
           </p>
           {activeFilterCount > 0 && (
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={handleClearFilters}
-              className="mt-4"
+              className='mt-4'
             >
               Clear Filters
             </Button>
@@ -676,27 +679,30 @@ count++;
 
               return (
                 <TimelineItem key={activity.id}>
-                  <TimelineDot variant={config.variant} icon={<IconComponent className="h-4 w-4" />} />
+                  <TimelineDot
+                    variant={config.variant}
+                    icon={<IconComponent className='h-4 w-4' />}
+                  />
                   {!isLast && <TimelineConnector />}
                   <TimelineContent>
                     <TimelineTime>
                       {formatRelativeTime(activity.timestamp)}
                     </TimelineTime>
-                    <TimelineTitle className="flex items-center gap-2">
+                    <TimelineTitle className='flex items-center gap-2'>
                       {activity.description}
                       {activity.importance >= 7 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant='outline' className='text-xs'>
                           High Priority
                         </Badge>
                       )}
                     </TimelineTitle>
                     {activity.keywords && activity.keywords.length > 0 && (
                       <TimelineDescription>
-                        <div className="flex flex-wrap gap-1 mt-1">
+                        <div className='flex flex-wrap gap-1 mt-1'>
                           {activity.keywords.slice(0, 5).map((keyword, idx) => (
                             <span
                               key={idx}
-                              className="text-xs bg-muted px-1.5 py-0.5 rounded"
+                              className='text-xs bg-muted px-1.5 py-0.5 rounded'
                             >
                               {keyword}
                             </span>
@@ -712,15 +718,15 @@ count++;
 
           {/* Load More Button */}
           {hasMore && (
-            <div className="flex justify-center pt-4">
+            <div className='flex justify-center pt-4'>
               <Button
-                variant="outline"
+                variant='outline'
                 onClick={handleLoadMore}
                 disabled={isLoadingMore}
               >
                 {isLoadingMore ? (
                   <>
-                    <Activity className="h-4 w-4 mr-2 animate-spin" />
+                    <Activity className='h-4 w-4 mr-2 animate-spin' />
                     Loading...
                   </>
                 ) : (

@@ -70,7 +70,11 @@ const billingFetcher = async (url: string): Promise<AdminBillingInfo> => {
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || 'Failed to fetch billing information');
+    throw new Error(
+      errorData.error ||
+        errorData.message ||
+        'Failed to fetch billing information'
+    );
   }
 
   const result = await res.json();
@@ -82,7 +86,9 @@ const billingFetcher = async (url: string): Promise<AdminBillingInfo> => {
     currentPeriodStart: new Date(data.currentPeriodStart),
     currentPeriodEnd: new Date(data.currentPeriodEnd),
     trialEnd: data.trialEnd ? new Date(data.trialEnd) : null,
-    nextInvoiceDate: data.nextInvoiceDate ? new Date(data.nextInvoiceDate) : undefined,
+    nextInvoiceDate: data.nextInvoiceDate
+      ? new Date(data.nextInvoiceDate)
+      : undefined,
   } as AdminBillingInfo;
 };
 
@@ -94,7 +100,9 @@ const plansFetcher = async (url: string): Promise<AvailablePlan[]> => {
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || 'Failed to fetch plans');
+    throw new Error(
+      errorData.error || errorData.message || 'Failed to fetch plans'
+    );
   }
 
   const result = await res.json();
@@ -161,17 +169,24 @@ export function useAdminBilling(workspaceId: string): UseAdminBillingReturn {
   const plansUrl = `/api/workspaces/${workspaceId}/admin/billing/plans`;
 
   // Fetch billing info
-  const { data: billing, error: billingError, isLoading: billingLoading, mutate: mutateBilling } =
-    useSWR<AdminBillingInfo>(billingUrl, billingFetcher, {
-      revalidateOnFocus: false,
-    });
+  const {
+    data: billing,
+    error: billingError,
+    isLoading: billingLoading,
+    mutate: mutateBilling,
+  } = useSWR<AdminBillingInfo>(billingUrl, billingFetcher, {
+    revalidateOnFocus: false,
+  });
 
   // Fetch available plans
-  const { data: availablePlans = [], error: plansError, isLoading: plansLoading } =
-    useSWR<AvailablePlan[]>(plansUrl, plansFetcher, {
-      revalidateOnFocus: false,
-      dedupingInterval: 300000, // Cache for 5 minutes
-    });
+  const {
+    data: availablePlans = [],
+    error: plansError,
+    isLoading: plansLoading,
+  } = useSWR<AvailablePlan[]>(plansUrl, plansFetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 300000, // Cache for 5 minutes
+  });
 
   const isLoading = billingLoading || plansLoading;
   const error = billingError || plansError;
@@ -195,7 +210,9 @@ export function useAdminBilling(workspaceId: string): UseAdminBillingReturn {
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Failed to change plan');
+          throw new Error(
+            errorData.error || errorData.message || 'Failed to change plan'
+          );
         }
 
         await mutateBilling();
@@ -205,7 +222,7 @@ export function useAdminBilling(workspaceId: string): UseAdminBillingReturn {
         setIsUpdating(false);
       }
     },
-    [billingUrl, mutateBilling],
+    [billingUrl, mutateBilling]
   );
 
   // Cancel subscription
@@ -219,12 +236,18 @@ export function useAdminBilling(workspaceId: string): UseAdminBillingReturn {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.message || 'Failed to cancel subscription');
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            'Failed to cancel subscription'
+        );
       }
 
       await mutateBilling();
     } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to cancel subscription');
+      throw err instanceof Error
+        ? err
+        : new Error('Failed to cancel subscription');
     } finally {
       setIsUpdating(false);
     }
@@ -241,12 +264,18 @@ export function useAdminBilling(workspaceId: string): UseAdminBillingReturn {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.message || 'Failed to reactivate subscription');
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            'Failed to reactivate subscription'
+        );
       }
 
       await mutateBilling();
     } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to reactivate subscription');
+      throw err instanceof Error
+        ? err
+        : new Error('Failed to reactivate subscription');
     } finally {
       setIsUpdating(false);
     }
@@ -266,17 +295,23 @@ export function useAdminBilling(workspaceId: string): UseAdminBillingReturn {
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Failed to update payment method');
+          throw new Error(
+            errorData.error ||
+              errorData.message ||
+              'Failed to update payment method'
+          );
         }
 
         await mutateBilling();
       } catch (err) {
-        throw err instanceof Error ? err : new Error('Failed to update payment method');
+        throw err instanceof Error
+          ? err
+          : new Error('Failed to update payment method');
       } finally {
         setIsUpdating(false);
       }
     },
-    [billingUrl, mutateBilling],
+    [billingUrl, mutateBilling]
   );
 
   // Preview plan change
@@ -290,7 +325,11 @@ export function useAdminBilling(workspaceId: string): UseAdminBillingReturn {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.message || 'Failed to preview plan change');
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            'Failed to preview plan change'
+        );
       }
 
       const result = await res.json();
@@ -302,7 +341,7 @@ export function useAdminBilling(workspaceId: string): UseAdminBillingReturn {
         effectiveDate: new Date(data.effectiveDate),
       };
     },
-    [billingUrl],
+    [billingUrl]
   );
 
   return {

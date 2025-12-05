@@ -30,7 +30,7 @@ export function ReasoningExample() {
     const interval = setInterval(() => {
       if (currentStep < thinkingSteps.length) {
         setContent(
-          prev => prev + (prev ? '\n' : '') + thinkingSteps[currentStep],
+          prev => prev + (prev ? '\n' : '') + thinkingSteps[currentStep]
         );
         currentStep++;
       } else {
@@ -100,7 +100,7 @@ export function ChatWithReasoningExample() {
           'First, I need to add 2 and 2. This is basic arithmetic. 2 + 2 = 4.',
       },
     ],
-    [],
+    []
   );
 
   return (

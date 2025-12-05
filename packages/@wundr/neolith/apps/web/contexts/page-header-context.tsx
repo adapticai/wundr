@@ -16,7 +16,7 @@ interface PageHeaderContextValue {
 }
 
 const PageHeaderContext = createContext<PageHeaderContextValue | undefined>(
-  undefined,
+  undefined
 );
 
 export interface PageHeaderProviderProps {
@@ -27,7 +27,7 @@ export function PageHeaderProvider({ children }: PageHeaderProviderProps) {
   const [title, setTitle] = useState<string>('Dashboard');
   const [subtitle, setSubtitle] = useState<string | undefined>(undefined);
   const [breadcrumbs, setBreadcrumbsState] = useState<Breadcrumb[] | undefined>(
-    undefined,
+    undefined
   );
 
   const setPageHeader = useCallback(
@@ -35,7 +35,7 @@ export function PageHeaderProvider({ children }: PageHeaderProviderProps) {
       setTitle(newTitle);
       setSubtitle(newSubtitle);
     },
-    [],
+    []
   );
 
   const setBreadcrumbs = useCallback((newBreadcrumbs: Breadcrumb[]) => {
