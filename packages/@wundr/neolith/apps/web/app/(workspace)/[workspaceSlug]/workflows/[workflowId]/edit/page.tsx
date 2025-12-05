@@ -13,6 +13,8 @@ import {
   Trash2,
   GripVertical,
   CheckCircle,
+  Workflow as WorkflowIcon,
+  Layout,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -20,6 +22,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { WorkflowCanvas } from '@/components/workflows/workflow-canvas';
 import { WorkflowPreview } from '@/components/workflows/workflow-preview';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useWorkflow } from '@/hooks/use-workflows';
@@ -64,6 +67,7 @@ export default function WorkflowEditPage() {
   const [error, setError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [viewMode, setViewMode] = useState<'form' | 'canvas'>('canvas');
 
   // Initialize state from workflow
   useEffect(() => {
@@ -272,6 +276,52 @@ export default function WorkflowEditPage() {
     );
   }
 
+  // Canvas Mode - Full screen visual editor
+  if (viewMode === 'canvas') {
+    return (
+      <div className='h-screen'>
+        {error && (
+          <div className='border-b border-red-200 bg-red-50 px-6 py-3 dark:border-red-800 dark:bg-red-900/20'>
+            <p className='text-sm text-red-700 dark:text-red-300'>{error}</p>
+          </div>
+        )}
+        <WorkflowCanvas
+          workflow={workflow}
+          onSave={async (workflowInput) => {
+            setName(workflowInput.name);
+            setDescription(workflowInput.description || '');
+            setTrigger(workflowInput.trigger);
+            setActions(workflowInput.actions as ActionConfig[]);
+            await handleSave();
+          }}
+          onCancel={() => {
+            if (
+              hasChanges &&
+              !confirm('You have unsaved changes. Are you sure you want to leave?')
+            ) {
+              return;
+            }
+            router.push(`/${workspaceSlug}/workflows/${workflowId}`);
+          }}
+          isLoading={isSaving}
+        />
+        {/* View Mode Toggle - Fixed position */}
+        <div className='fixed bottom-6 left-6 z-50'>
+          <Button
+            type='button'
+            variant='secondary'
+            size='sm'
+            onClick={() => setViewMode('form')}
+            className='shadow-lg'
+          >
+            <Layout className='mr-2 h-4 w-4' />
+            Switch to Form View
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // Preview Mode
   if (showPreview && trigger) {
     return (
@@ -353,6 +403,15 @@ export default function WorkflowEditPage() {
 
         {/* Actions */}
         <div className='flex gap-2'>
+          <Button
+            type='button'
+            variant='outline'
+            size='sm'
+            onClick={() => setViewMode('canvas')}
+          >
+            <WorkflowIcon className='mr-2 h-4 w-4' />
+            Canvas View
+          </Button>
           <Button type='button' variant='ghost' onClick={handleCancel}>
             <X className='mr-2 h-4 w-4' />
             Cancel

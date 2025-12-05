@@ -25,8 +25,8 @@ import {
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useCallback, useEffect } from 'react';
 
-import { SubagentList } from '@/components/orchestrator/subagent-list';
 import { SubagentCreate } from '@/components/orchestrator/subagent-create';
+import { SubagentList } from '@/components/orchestrator/subagent-list';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {

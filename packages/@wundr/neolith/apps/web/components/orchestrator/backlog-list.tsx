@@ -11,6 +11,9 @@
  */
 'use client';
 
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
   CheckCircle2,
   Circle,
@@ -24,9 +27,6 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import React, { useState, useCallback, useEffect } from 'react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -154,7 +154,7 @@ function SortableBacklogItem({
       className={cn(
         'group relative rounded-lg border bg-card p-4 transition-all',
         isDragging && 'opacity-50 shadow-lg',
-        !isDragging && 'hover:border-primary/50 hover:shadow-sm'
+        !isDragging && 'hover:border-primary/50 hover:shadow-sm',
       )}
     >
       {/* Drag Handle */}
@@ -172,7 +172,7 @@ function SortableBacklogItem({
           <div
             className={cn(
               'flex h-6 w-6 items-center justify-center rounded-full shrink-0 mt-0.5',
-              statusConfig.bgColor
+              statusConfig.bgColor,
             )}
           >
             <StatusIcon className={cn('h-4 w-4', statusConfig.color)} />
@@ -290,7 +290,7 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   /**
@@ -316,7 +316,7 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
       params.set('limit', '100');
 
       const response = await fetch(
-        `/api/orchestrators/${orchestratorId}/backlog?${params.toString()}`
+        `/api/orchestrators/${orchestratorId}/backlog?${params.toString()}`,
       );
 
       if (!response.ok) {
@@ -373,7 +373,7 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -399,7 +399,7 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
         `/api/orchestrators/${orchestratorId}/backlog/${itemId}`,
         {
           method: 'DELETE',
-        }
+        },
       );
 
       if (!response.ok) {
@@ -493,7 +493,7 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
                         setStatusFilter((prev) =>
                           checked
                             ? [...prev, status]
-                            : prev.filter((s) => s !== status)
+                            : prev.filter((s) => s !== status),
                         );
                       }}
                     >
@@ -510,7 +510,7 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
                         setPriorityFilter((prev) =>
                           checked
                             ? [...prev, priority]
-                            : prev.filter((p) => p !== priority)
+                            : prev.filter((p) => p !== priority),
                         );
                       }}
                     >

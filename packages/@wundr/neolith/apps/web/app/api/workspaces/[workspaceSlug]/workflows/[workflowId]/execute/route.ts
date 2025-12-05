@@ -15,6 +15,11 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
+  executeWorkflowActions,
+  createExecutionRecord,
+  completeExecution,
+} from '@/lib/services/workflow-execution-service';
+import {
   executeWorkflowSchema,
   createErrorResponse,
   WORKFLOW_ERROR_CODES,
@@ -23,11 +28,10 @@ import {
 import type {
   ExecuteWorkflowInput,
   WorkflowExecution,
-  WorkflowStepResult,
   WorkflowAction,
   WorkflowTrigger,
+  WorkflowStepResult,
 } from '@/lib/validations/workflow';
-import type { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -35,63 +39,6 @@ import type { NextRequest } from 'next/server';
  */
 interface RouteContext {
   params: Promise<{ workspaceSlug: string; workflowId: string }>;
-}
-
-/**
- * Execute workflow actions (simplified simulation)
- */
-async function executeWorkflowActions(
-  actions: WorkflowAction[],
-  triggerData: Record<string, unknown>,
-  _workspaceSlug: string,
-): Promise<{ steps: WorkflowStepResult[]; success: boolean; error?: string }> {
-  const steps: WorkflowStepResult[] = [];
-  let success = true;
-  let error: string | undefined;
-
-  for (let i = 0; i < actions.length; i++) {
-    const action = actions[i];
-    const startedAt = new Date();
-
-    try {
-      // Simulate action execution with context
-      // In a real implementation, this would call the actual action handlers
-      const stepResult: WorkflowStepResult = {
-        actionId: action.id ?? `action-${i}`,
-        actionType: action.type,
-        status: 'success',
-        output: {
-          executed: true,
-          config: action.config,
-          triggerData,
-        },
-        startedAt,
-        completedAt: new Date(),
-        durationMs: new Date().getTime() - startedAt.getTime(),
-      };
-
-      steps.push(stepResult);
-    } catch (err) {
-      const stepError = err instanceof Error ? err.message : 'Unknown error';
-      steps.push({
-        actionId: action.id ?? `action-${i}`,
-        actionType: action.type,
-        status: 'failed',
-        error: stepError,
-        startedAt,
-        completedAt: new Date(),
-        durationMs: new Date().getTime() - startedAt.getTime(),
-      });
-
-      if (action.onError === 'stop') {
-        success = false;
-        error = stepError;
-        break;
-      }
-    }
-  }
-
-  return { steps, success, error };
 }
 
 /**
@@ -385,52 +332,56 @@ export async function POST(
     const input: ExecuteWorkflowInput = parseResult.data;
     const triggerData = input.triggerData ?? {};
 
-    // Start execution timing
-    const startedAt = new Date();
-
-    // Create execution record
+    // Get workflow data
     const trigger = workflow.trigger as unknown as WorkflowTrigger;
     const actions = workflow.actions as unknown as WorkflowAction[];
 
-    // Execute workflow actions
+    // Create execution record
+    const executionId = await createExecutionRecord({
+      workflowId,
+      workspaceId,
+      triggeredBy: session.user.id,
+      triggerType: trigger.type,
+      triggerData,
+      isSimulation: false,
+    });
+
+    // Execute workflow actions with progress tracking
     const { steps, success, error } = await executeWorkflowActions(
       actions,
-      triggerData,
-      workspaceId,
+      {
+        workspaceId,
+        workflowId,
+        executionId,
+        triggerData,
+        userId: session.user.id,
+      },
+      async step => {
+        // Progress callback - could be used for real-time updates
+        console.log(
+          `[Workflow ${workflowId}] Step completed:`,
+          step.actionType,
+          step.status,
+        );
+      },
     );
 
-    const completedAt = new Date();
-    const durationMs = completedAt.getTime() - startedAt.getTime();
-
-    // Create execution record in database
-    const executionRecord = await prisma.workflowExecution.create({
-      data: {
-        workflowId,
-        workspaceId,
-        status: success ? 'COMPLETED' : 'FAILED',
-        triggeredBy: session.user.id,
-        triggerType: trigger.type,
-        triggerData: triggerData as Prisma.InputJsonValue,
-        steps: steps as unknown as Prisma.InputJsonValue,
-        error,
-        startedAt,
-        completedAt,
-        durationMs,
-        isSimulation: false,
-      },
+    // Complete execution
+    await completeExecution({
+      executionId,
+      success,
+      steps,
+      error,
     });
 
-    // Update workflow stats
-    await prisma.workflow.update({
-      where: { id: workflowId },
-      data: {
-        lastExecutedAt: startedAt,
-        executionCount: { increment: 1 },
-        ...(success
-          ? { successCount: { increment: 1 } }
-          : { failureCount: { increment: 1 } }),
-      },
+    // Fetch the completed execution record
+    const executionRecord = await prisma.workflowExecution.findUnique({
+      where: { id: executionId },
     });
+
+    if (!executionRecord) {
+      throw new Error('Execution record not found');
+    }
 
     // Format response
     const execution: WorkflowExecution = {
@@ -442,7 +393,7 @@ export async function POST(
       triggerType:
         executionRecord.triggerType as WorkflowExecution['triggerType'],
       triggerData: executionRecord.triggerData as Record<string, unknown>,
-      steps: executionRecord.steps as unknown as WorkflowStepResult[],
+      steps: executionRecord.steps as unknown as WorkflowExecution['steps'],
       error: executionRecord.error ?? undefined,
       startedAt: executionRecord.startedAt,
       completedAt: executionRecord.completedAt ?? undefined,

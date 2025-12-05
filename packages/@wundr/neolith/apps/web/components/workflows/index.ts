@@ -14,6 +14,9 @@ export type { WorkflowCardProps } from './workflow-card';
 export { WorkflowBuilder } from './workflow-builder';
 export type { WorkflowBuilderProps } from './workflow-builder';
 
+// Workflow Canvas Components
+export { WorkflowCanvas } from './workflow-canvas';
+
 // Trigger Configuration Components
 export { TriggerConfigPanel } from './trigger-config';
 export type { TriggerConfigPanelProps } from './trigger-config';
@@ -26,6 +29,10 @@ export type { ActionConfigPanelProps } from './action-config';
 export { ExecutionHistory } from './execution-history';
 export type { ExecutionHistoryProps } from './execution-history';
 
+// Execution Monitor Components
+export { ExecutionMonitor } from './execution-monitor';
+export type { ExecutionMonitorProps } from './execution-monitor';
+
 // Template Gallery Components
 export { TemplateGallery } from './template-gallery';
 export type { TemplateGalleryProps } from './template-gallery';
@@ -36,3 +43,7 @@ export type {
   VariableInserterProps,
   VariableInserterPopoverProps,
 } from './variable-inserter';
+
+// Workflow Debugger Components
+export { WorkflowDebugger } from './workflow-debugger';
+export type { WorkflowDebuggerProps } from './workflow-debugger';

@@ -105,7 +105,9 @@ export function DMSearchPanel({
 
   // Navigate to previous result
   const handlePrevious = useCallback(() => {
-    if (!hasResults) return;
+    if (!hasResults) {
+return;
+}
     const newIndex = currentResultIndex === 0
       ? totalResults - 1
       : currentResultIndex - 1;
@@ -115,7 +117,9 @@ export function DMSearchPanel({
 
   // Navigate to next result
   const handleNext = useCallback(() => {
-    if (!hasResults) return;
+    if (!hasResults) {
+return;
+}
     const newIndex = currentResultIndex === totalResults - 1
       ? 0
       : currentResultIndex + 1;
@@ -125,7 +129,9 @@ export function DMSearchPanel({
 
   // Handle keyboard shortcuts
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+return;
+}
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Close on Escape
@@ -291,7 +297,7 @@ export function useSearchHighlight(
       // Add text before match
       if (matchIndex > lastIndex) {
         parts.push(
-          <span key={key++}>{content.slice(lastIndex, matchIndex)}</span>
+          <span key={key++}>{content.slice(lastIndex, matchIndex)}</span>,
         );
       }
 
@@ -302,7 +308,7 @@ export function useSearchHighlight(
           className='bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-100 rounded px-0.5'
         >
           {content.slice(matchIndex, matchIndex + query.length)}
-        </mark>
+        </mark>,
       );
 
       lastIndex = matchIndex + query.length;

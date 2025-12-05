@@ -125,7 +125,9 @@ export function ResponseTemplates({
   };
 
   const deleteTemplate = async () => {
-    if (!deleteTemplateId) return;
+    if (!deleteTemplateId) {
+return;
+}
 
     const newTemplates = { ...templates };
     delete newTemplates[deleteTemplateId];
@@ -143,7 +145,9 @@ export function ResponseTemplates({
 
   const toggleTemplateActive = async (id: string) => {
     const template = templates[id];
-    if (!template) return;
+    if (!template) {
+return;
+}
 
     const updatedTemplate = {
       ...template,

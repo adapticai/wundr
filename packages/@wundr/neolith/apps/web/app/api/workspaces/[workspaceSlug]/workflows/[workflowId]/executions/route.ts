@@ -143,8 +143,8 @@ export async function GET(
       ...(filters.to && { startedAt: { lte: filters.to } }),
     };
 
-    // Fetch executions and total count in parallel
-    const [executions, totalCount] = await Promise.all([
+    // Fetch executions, total count, and statistics in parallel
+    const [executions, totalCount, statusCounts] = await Promise.all([
       prisma.workflowExecution.findMany({
         where,
         skip: filters.offset,
@@ -160,11 +160,65 @@ export async function GET(
         },
       }),
       prisma.workflowExecution.count({ where }),
+      // Get status breakdown
+      prisma.workflowExecution.groupBy({
+        by: ['status'],
+        where: {
+          workflowId,
+          workspaceId,
+        },
+        _count: {
+          status: true,
+        },
+      }),
     ]);
+
+    // Calculate statistics
+    const stats = {
+      total: totalCount,
+      byStatus: statusCounts.reduce(
+        (acc, { status, _count }) => {
+          acc[status] = _count.status;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
+      successRate:
+        totalCount > 0
+          ? Math.round(
+              ((statusCounts.find(s => s.status === 'COMPLETED')?._count
+                .status ?? 0) /
+                totalCount) *
+                100,
+            )
+          : 0,
+    };
+
+    // Calculate average duration for completed executions
+    const completedExecutions = await prisma.workflowExecution.aggregate({
+      where: {
+        workflowId,
+        workspaceId,
+        status: 'COMPLETED',
+        durationMs: { not: null },
+      },
+      _avg: {
+        durationMs: true,
+      },
+    });
 
     return NextResponse.json({
       executions,
-      total: totalCount,
+      pagination: {
+        total: totalCount,
+        offset: filters.offset,
+        limit: filters.limit,
+        hasMore: filters.offset + filters.limit < totalCount,
+      },
+      statistics: {
+        ...stats,
+        averageDurationMs: completedExecutions._avg.durationMs ?? 0,
+      },
     });
   } catch (error) {
     console.error(

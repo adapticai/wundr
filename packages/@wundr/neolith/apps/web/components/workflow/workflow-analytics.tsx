@@ -1,0 +1,851 @@
+'use client';
+
+import { useMemo } from 'react';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart';
+import { cn } from '@/lib/utils';
+import { ACTION_TYPE_CONFIG, TRIGGER_TYPE_CONFIG } from '@/types/workflow';
+
+import type {
+  ActionType,
+  TriggerType,
+  WorkflowExecution,
+} from '@/types/workflow';
+
+/**
+ * Props for WorkflowAnalytics component
+ */
+export interface WorkflowAnalyticsProps {
+  /** List of workflow executions to analyze */
+  executions: WorkflowExecution[];
+  /** Trigger type for context */
+  triggerType?: TriggerType;
+  /** Whether data is loading */
+  isLoading?: boolean;
+  /** Custom class name */
+  className?: string;
+  /** Time range for analysis */
+  timeRange?: 'day' | 'week' | 'month' | 'all';
+}
+
+/**
+ * Analytics data structure for execution trends
+ */
+interface ExecutionTrendData {
+  date: string;
+  completed: number;
+  failed: number;
+  total: number;
+}
+
+/**
+ * Analytics data for trigger frequency
+ */
+interface TriggerFrequencyData {
+  trigger: string;
+  count: number;
+}
+
+/**
+ * Analytics data for error breakdown
+ */
+interface ErrorBreakdownData {
+  step: string;
+  errorCount: number;
+  errorRate: number;
+}
+
+/**
+ * Analytics data for action performance
+ */
+interface ActionPerformanceData {
+  actionType: string;
+  avgDuration: number;
+  successRate: number;
+  count: number;
+}
+
+/**
+ * WorkflowAnalytics Component
+ *
+ * Displays comprehensive analytics for workflow executions including:
+ * - Total executions and success/failure rates
+ * - Execution trend charts over time
+ * - Average execution time
+ * - Most frequent triggers
+ * - Error breakdown by step
+ * - Action performance metrics
+ */
+export function WorkflowAnalytics({
+  executions,
+  triggerType,
+  isLoading = false,
+  className,
+  timeRange = 'all',
+}: WorkflowAnalyticsProps) {
+  // Filter executions by time range
+  const filteredExecutions = useMemo(() => {
+    if (timeRange === 'all') {
+      return executions;
+    }
+
+    const cutoffDate = new Date();
+
+    switch (timeRange) {
+      case 'day':
+        cutoffDate.setDate(cutoffDate.getDate() - 1);
+        break;
+      case 'week':
+        cutoffDate.setDate(cutoffDate.getDate() - 7);
+        break;
+      case 'month':
+        cutoffDate.setMonth(cutoffDate.getMonth() - 1);
+        break;
+    }
+
+    return executions.filter(
+      (e) => new Date(e.startedAt) >= cutoffDate,
+    );
+  }, [executions, timeRange]);
+
+  // Calculate aggregate metrics
+  const metrics = useMemo(() => {
+    const total = filteredExecutions.length;
+    const completed = filteredExecutions.filter(
+      (e) => e.status === 'completed',
+    ).length;
+    const failed = filteredExecutions.filter(
+      (e) => e.status === 'failed',
+    ).length;
+    const running = filteredExecutions.filter(
+      (e) => e.status === 'running',
+    ).length;
+
+    const completedExecutions = filteredExecutions.filter(
+      (e) => e.status === 'completed' && e.duration,
+    );
+    const avgDuration =
+      completedExecutions.length > 0
+        ? Math.round(
+            completedExecutions.reduce((sum, e) => sum + (e.duration || 0), 0) /
+              completedExecutions.length,
+          )
+        : 0;
+
+    const successRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const failureRate = total > 0 ? Math.round((failed / total) * 100) : 0;
+
+    return {
+      total,
+      completed,
+      failed,
+      running,
+      avgDuration,
+      successRate,
+      failureRate,
+    };
+  }, [filteredExecutions]);
+
+  // Calculate execution trend data
+  const trendData = useMemo((): ExecutionTrendData[] => {
+    const groupedByDate = new Map<string, ExecutionTrendData>();
+
+    filteredExecutions.forEach((execution) => {
+      const date = new Date(execution.startedAt).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      });
+
+      if (!groupedByDate.has(date)) {
+        groupedByDate.set(date, { date, completed: 0, failed: 0, total: 0 });
+      }
+
+      const data = groupedByDate.get(date)!;
+      data.total += 1;
+      if (execution.status === 'completed') {
+data.completed += 1;
+}
+      if (execution.status === 'failed') {
+data.failed += 1;
+}
+    });
+
+    return Array.from(groupedByDate.values()).sort((a, b) => {
+      const dateA = new Date(a.date + ', 2024');
+      const dateB = new Date(b.date + ', 2024');
+      return dateA.getTime() - dateB.getTime();
+    });
+  }, [filteredExecutions]);
+
+  // Calculate error breakdown by action step
+  const errorBreakdown = useMemo((): ErrorBreakdownData[] => {
+    const errorMap = new Map<string, { count: number; total: number }>();
+
+    filteredExecutions.forEach((execution) => {
+      execution.actionResults.forEach((result) => {
+        const actionLabel =
+          ACTION_TYPE_CONFIG[result.actionType]?.label || result.actionType;
+
+        if (!errorMap.has(actionLabel)) {
+          errorMap.set(actionLabel, { count: 0, total: 0 });
+        }
+
+        const data = errorMap.get(actionLabel)!;
+        data.total += 1;
+        if (result.status === 'failed') {
+          data.count += 1;
+        }
+      });
+    });
+
+    return Array.from(errorMap.entries())
+      .map(([step, { count, total }]) => ({
+        step,
+        errorCount: count,
+        errorRate: total > 0 ? Math.round((count / total) * 100) : 0,
+      }))
+      .filter((item) => item.errorCount > 0)
+      .sort((a, b) => b.errorCount - a.errorCount);
+  }, [filteredExecutions]);
+
+  // Calculate action performance metrics
+  const actionPerformance = useMemo((): ActionPerformanceData[] => {
+    const actionMap = new Map<
+      ActionType,
+      { durations: number[]; successCount: number; totalCount: number }
+    >();
+
+    filteredExecutions.forEach((execution) => {
+      execution.actionResults.forEach((result) => {
+        if (!actionMap.has(result.actionType)) {
+          actionMap.set(result.actionType, {
+            durations: [],
+            successCount: 0,
+            totalCount: 0,
+          });
+        }
+
+        const data = actionMap.get(result.actionType)!;
+        data.totalCount += 1;
+
+        if (result.duration) {
+          data.durations.push(result.duration);
+        }
+
+        if (result.status === 'completed') {
+          data.successCount += 1;
+        }
+      });
+    });
+
+    return Array.from(actionMap.entries())
+      .map(([actionType, { durations, successCount, totalCount }]) => {
+        const avgDuration =
+          durations.length > 0
+            ? Math.round(
+                durations.reduce((sum, d) => sum + d, 0) / durations.length,
+              )
+            : 0;
+        const successRate =
+          totalCount > 0 ? Math.round((successCount / totalCount) * 100) : 0;
+
+        return {
+          actionType: ACTION_TYPE_CONFIG[actionType]?.label || actionType,
+          avgDuration,
+          successRate,
+          count: totalCount,
+        };
+      })
+      .sort((a, b) => b.count - a.count);
+  }, [filteredExecutions]);
+
+  // Calculate trigger frequency (mock data for now, would need trigger data from executions)
+  const triggerFrequency = useMemo((): TriggerFrequencyData[] => {
+    if (!triggerType) {
+return [];
+}
+
+    return [
+      {
+        trigger: TRIGGER_TYPE_CONFIG[triggerType]?.label || triggerType,
+        count: filteredExecutions.length,
+      },
+    ];
+  }, [filteredExecutions, triggerType]);
+
+  // Chart configurations
+  const trendChartConfig: ChartConfig = {
+    completed: {
+      label: 'Completed',
+      color: 'hsl(var(--chart-2))',
+    },
+    failed: {
+      label: 'Failed',
+      color: 'hsl(var(--chart-1))',
+    },
+  };
+
+  const statusColors = {
+    completed: 'hsl(142, 76%, 36%)',
+    failed: 'hsl(0, 84%, 60%)',
+    running: 'hsl(24, 95%, 53%)',
+    other: 'hsl(0, 0%, 60%)',
+  };
+
+  if (isLoading) {
+    return (
+      <div className={cn('space-y-6', className)}>
+        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className='pb-2'>
+                <div className='h-4 w-24 animate-pulse rounded bg-muted' />
+              </CardHeader>
+              <CardContent>
+                <div className='h-8 w-16 animate-pulse rounded bg-muted' />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className='grid gap-4 md:grid-cols-2'>
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <div className='h-6 w-32 animate-pulse rounded bg-muted' />
+              </CardHeader>
+              <CardContent>
+                <div className='h-64 animate-pulse rounded bg-muted' />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (filteredExecutions.length === 0) {
+    return (
+      <Card className={className}>
+        <CardContent className='flex flex-col items-center justify-center py-12'>
+          <AnalyticsEmptyIcon className='h-12 w-12 text-muted-foreground' />
+          <h3 className='mt-4 text-lg font-semibold'>No execution data</h3>
+          <p className='mt-2 text-sm text-muted-foreground'>
+            Execute the workflow to see analytics and insights.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className={cn('space-y-6', className)}>
+      {/* Summary Metrics */}
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+        <MetricCard
+          title='Total Executions'
+          value={metrics.total}
+          icon={<TotalIcon className='h-4 w-4' />}
+          trend={null}
+        />
+        <MetricCard
+          title='Success Rate'
+          value={`${metrics.successRate}%`}
+          subtitle={`${metrics.completed} completed`}
+          icon={<SuccessIcon className='h-4 w-4' />}
+          trend={metrics.successRate >= 80 ? 'positive' : metrics.successRate >= 50 ? 'neutral' : 'negative'}
+        />
+        <MetricCard
+          title='Failure Rate'
+          value={`${metrics.failureRate}%`}
+          subtitle={`${metrics.failed} failed`}
+          icon={<FailureIcon className='h-4 w-4' />}
+          trend={metrics.failureRate <= 10 ? 'positive' : metrics.failureRate <= 30 ? 'neutral' : 'negative'}
+        />
+        <MetricCard
+          title='Avg Execution Time'
+          value={formatDuration(metrics.avgDuration)}
+          icon={<ClockIcon className='h-4 w-4' />}
+          trend={null}
+        />
+      </div>
+
+      {/* Charts Grid */}
+      <div className='grid gap-4 md:grid-cols-2'>
+        {/* Execution Trend Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Execution Trend</CardTitle>
+            <CardDescription>
+              Workflow executions over time showing success and failure rates
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {trendData.length > 0 ? (
+              <ChartContainer config={trendChartConfig} className='h-[300px]'>
+                <LineChart data={trendData}>
+                  <CartesianGrid strokeDasharray='3 3' />
+                  <XAxis
+                    dataKey='date'
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} tickLine={false} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Legend />
+                  <Line
+                    type='monotone'
+                    dataKey='completed'
+                    stroke='var(--color-completed)'
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    name='Completed'
+                  />
+                  <Line
+                    type='monotone'
+                    dataKey='failed'
+                    stroke='var(--color-failed)'
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    name='Failed'
+                  />
+                </LineChart>
+              </ChartContainer>
+            ) : (
+              <EmptyChartPlaceholder message='Not enough data for trend analysis' />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Status Distribution Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Status Distribution</CardTitle>
+            <CardDescription>
+              Breakdown of execution statuses
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width='100%' height={300}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Completed', value: metrics.completed },
+                    { name: 'Failed', value: metrics.failed },
+                    { name: 'Running', value: metrics.running },
+                  ].filter((item) => item.value > 0)}
+                  cx='50%'
+                  cy='50%'
+                  labelLine={false}
+                  label={({ name, percent }) =>
+                    `${name}: ${(percent * 100).toFixed(0)}%`
+                  }
+                  outerRadius={80}
+                  fill='#8884d8'
+                  dataKey='value'
+                >
+                  <Cell fill={statusColors.completed} />
+                  <Cell fill={statusColors.failed} />
+                  <Cell fill={statusColors.running} />
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Error Breakdown Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Error Breakdown by Step</CardTitle>
+            <CardDescription>
+              Actions with the highest error rates
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {errorBreakdown.length > 0 ? (
+              <ResponsiveContainer width='100%' height={300}>
+                <BarChart data={errorBreakdown}>
+                  <CartesianGrid strokeDasharray='3 3' />
+                  <XAxis
+                    dataKey='step'
+                    tick={{ fontSize: 11 }}
+                    tickLine={false}
+                    angle={-45}
+                    textAnchor='end'
+                    height={80}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} tickLine={false} />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className='rounded-lg border bg-background p-2 shadow-md'>
+                            <p className='font-medium'>{data.step}</p>
+                            <p className='text-sm text-muted-foreground'>
+                              Errors: {data.errorCount}
+                            </p>
+                            <p className='text-sm text-muted-foreground'>
+                              Error Rate: {data.errorRate}%
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey='errorCount' fill={statusColors.failed} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyChartPlaceholder message='No errors recorded' />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Action Performance Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Action Performance</CardTitle>
+            <CardDescription>
+              Average execution time and success rate by action type
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {actionPerformance.length > 0 ? (
+              <ResponsiveContainer width='100%' height={300}>
+                <BarChart data={actionPerformance}>
+                  <CartesianGrid strokeDasharray='3 3' />
+                  <XAxis
+                    dataKey='actionType'
+                    tick={{ fontSize: 11 }}
+                    tickLine={false}
+                    angle={-45}
+                    textAnchor='end'
+                    height={80}
+                  />
+                  <YAxis
+                    yAxisId='left'
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    label={{
+                      value: 'Duration (ms)',
+                      angle: -90,
+                      position: 'insideLeft',
+                      style: { fontSize: 12 },
+                    }}
+                  />
+                  <YAxis
+                    yAxisId='right'
+                    orientation='right'
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    label={{
+                      value: 'Success Rate (%)',
+                      angle: 90,
+                      position: 'insideRight',
+                      style: { fontSize: 12 },
+                    }}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className='rounded-lg border bg-background p-2 shadow-md'>
+                            <p className='font-medium'>{data.actionType}</p>
+                            <p className='text-sm text-muted-foreground'>
+                              Avg Duration: {formatDuration(data.avgDuration)}
+                            </p>
+                            <p className='text-sm text-muted-foreground'>
+                              Success Rate: {data.successRate}%
+                            </p>
+                            <p className='text-sm text-muted-foreground'>
+                              Executions: {data.count}
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar
+                    yAxisId='left'
+                    dataKey='avgDuration'
+                    fill='hsl(var(--chart-3))'
+                    name='Avg Duration'
+                  />
+                  <Bar
+                    yAxisId='right'
+                    dataKey='successRate'
+                    fill={statusColors.completed}
+                    name='Success Rate'
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyChartPlaceholder message='No action data available' />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Trigger Frequency Table */}
+      {triggerFrequency.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Most Frequent Triggers</CardTitle>
+            <CardDescription>
+              Breakdown of what triggers this workflow most often
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='space-y-2'>
+              {triggerFrequency.map((item) => (
+                <div
+                  key={item.trigger}
+                  className='flex items-center justify-between rounded-lg border bg-muted/50 p-3'
+                >
+                  <div className='flex items-center gap-2'>
+                    <TriggerIcon className='h-4 w-4 text-muted-foreground' />
+                    <span className='font-medium'>{item.trigger}</span>
+                  </div>
+                  <span className='text-sm text-muted-foreground'>
+                    {item.count} executions
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Helper Components
+// =============================================================================
+
+interface MetricCardProps {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  icon?: React.ReactNode;
+  trend?: 'positive' | 'negative' | 'neutral' | null;
+}
+
+function MetricCard({ title, value, subtitle, icon, trend }: MetricCardProps) {
+  return (
+    <Card>
+      <CardHeader className='flex flex-row items-center justify-between pb-2'>
+        <CardTitle className='text-sm font-medium'>{title}</CardTitle>
+        {icon}
+      </CardHeader>
+      <CardContent>
+        <div className='text-2xl font-bold'>{value}</div>
+        {subtitle && (
+          <p className='text-xs text-muted-foreground'>{subtitle}</p>
+        )}
+        {trend && (
+          <div className='mt-1'>
+            {trend === 'positive' && (
+              <span className='text-xs font-medium text-green-600 dark:text-green-400'>
+                Healthy
+              </span>
+            )}
+            {trend === 'negative' && (
+              <span className='text-xs font-medium text-red-600 dark:text-red-400'>
+                Needs attention
+              </span>
+            )}
+            {trend === 'neutral' && (
+              <span className='text-xs font-medium text-yellow-600 dark:text-yellow-400'>
+                Moderate
+              </span>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function EmptyChartPlaceholder({ message }: { message: string }) {
+  return (
+    <div className='flex h-[300px] items-center justify-center'>
+      <p className='text-sm text-muted-foreground'>{message}</p>
+    </div>
+  );
+}
+
+// =============================================================================
+// Utility Functions
+// =============================================================================
+
+function formatDuration(ms: number): string {
+  if (ms === 0) {
+return '0ms';
+}
+  if (ms < 1000) {
+return `${ms}ms`;
+}
+  if (ms < 60000) {
+return `${(ms / 1000).toFixed(1)}s`;
+}
+  if (ms < 3600000) {
+    const mins = Math.floor(ms / 60000);
+    const secs = Math.round((ms % 60000) / 1000);
+    return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
+  }
+  const hours = Math.floor(ms / 3600000);
+  const mins = Math.round((ms % 3600000) / 60000);
+  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+}
+
+// =============================================================================
+// Icons
+// =============================================================================
+
+function AnalyticsEmptyIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+      aria-hidden='true'
+    >
+      <path d='M3 3v18h18' />
+      <path d='m19 9-5 5-4-4-3 3' />
+    </svg>
+  );
+}
+
+function TotalIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+      aria-hidden='true'
+    >
+      <rect x='3' y='3' width='7' height='7' />
+      <rect x='14' y='3' width='7' height='7' />
+      <rect x='14' y='14' width='7' height='7' />
+      <rect x='3' y='14' width='7' height='7' />
+    </svg>
+  );
+}
+
+function SuccessIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+      aria-hidden='true'
+    >
+      <path d='M22 11.08V12a10 10 0 1 1-5.93-9.14' />
+      <polyline points='22 4 12 14.01 9 11.01' />
+    </svg>
+  );
+}
+
+function FailureIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+      aria-hidden='true'
+    >
+      <circle cx='12' cy='12' r='10' />
+      <line x1='15' y1='9' x2='9' y2='15' />
+      <line x1='9' y1='9' x2='15' y2='15' />
+    </svg>
+  );
+}
+
+function ClockIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+      aria-hidden='true'
+    >
+      <circle cx='12' cy='12' r='10' />
+      <polyline points='12 6 12 12 16 14' />
+    </svg>
+  );
+}
+
+function TriggerIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+      aria-hidden='true'
+    >
+      <path d='M13 2 3 14h9l-1 8 10-12h-9l1-8z' />
+    </svg>
+  );
+}

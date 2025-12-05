@@ -18,8 +18,8 @@ import {
 } from '@/components/chat';
 import { DMBookmarks } from '@/components/dm/dm-bookmarks';
 import { DMCanvas } from '@/components/dm/dm-canvas';
-import { DMSearchPanel } from '@/components/dm/dm-search-panel';
 import { DMListsTab } from '@/components/dm/dm-lists';
+import { DMSearchPanel } from '@/components/dm/dm-search-panel';
 import { DMWorkflowsTab } from '@/components/dm/dm-workflows';
 import {
   CommandDialog,

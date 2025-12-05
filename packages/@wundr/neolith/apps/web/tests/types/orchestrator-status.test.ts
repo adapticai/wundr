@@ -10,6 +10,10 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+  orchestratorStatusEnum,
+  type OrchestratorStatusType,
+} from '@/lib/validations/orchestrator';
+import {
   isOrchestratorStatus as isOrchestratorStatusApi,
   type OrchestratorStatus as OrchestratorStatusApi,
 } from '@/types/api';
@@ -19,10 +23,6 @@ import {
   ORCHESTRATOR_STATUS_VALUES,
   type OrchestratorStatus,
 } from '@/types/orchestrator';
-import {
-  orchestratorStatusEnum,
-  type OrchestratorStatusType,
-} from '@/lib/validations/orchestrator';
 
 describe('OrchestratorStatus Type Consistency', () => {
   describe('Type Compatibility', () => {

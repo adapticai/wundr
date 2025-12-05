@@ -3,6 +3,8 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 
+import { AudioRoom } from '@/components/call/audio-room';
+import { HuddleBar } from '@/components/call/huddle-bar';
 import { ChannelHeader } from '@/components/channel';
 import { CanvasTab } from '@/components/channel/canvas-tab';
 import { ChannelDetailsPanel } from '@/components/channel/channel-details-panel';
@@ -10,8 +12,6 @@ import { EditChannelDialog } from '@/components/channel/edit-channel-dialog';
 import { FilesTab } from '@/components/channel/files-tab';
 import { InviteDialog } from '@/components/channel/invite-dialog';
 import { NotificationsDialog } from '@/components/channel/notifications-dialog';
-import { AudioRoom } from '@/components/call/audio-room';
-import { HuddleBar } from '@/components/call/huddle-bar';
 import { ChannelAIAssistant } from '@/components/channels/channel-ai-assistant';
 import { PinnedMessagesPanel } from '@/components/channels/pinned-messages-panel';
 import {
@@ -226,7 +226,7 @@ export default function ChannelPage() {
             method: isPinned ? 'DELETE' : 'POST',
             headers: isPinned ? undefined : { 'Content-Type': 'application/json' },
             body: isPinned ? undefined : JSON.stringify({ messageId, channelId }),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -251,7 +251,7 @@ export default function ChannelPage() {
         });
       }
     },
-    [channelId, pinnedMessageIds, toast]
+    [channelId, pinnedMessageIds, toast],
   );
 
   // Handle jump to message from pinned panel

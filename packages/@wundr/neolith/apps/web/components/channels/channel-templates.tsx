@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 /**
@@ -56,7 +57,9 @@ export function ChannelTemplates({
 
   // Fetch templates when dialog opens
   const fetchTemplates = useCallback(async () => {
-    if (!open) return;
+    if (!open) {
+return;
+}
 
     setLoading(true);
     setError(null);

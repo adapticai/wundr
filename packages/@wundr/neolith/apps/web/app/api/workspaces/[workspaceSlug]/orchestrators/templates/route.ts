@@ -10,7 +10,7 @@
  * @module app/api/workspaces/[workspaceSlug]/orchestrators/templates/route
  */
 
-import { prisma } from '@neolith/database';
+import { prisma , Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -26,7 +26,6 @@ import {
 
 import type { OrchestratorTemplate } from '@/lib/templates/orchestrator-templates';
 import type { CreateOrchestratorInput } from '@/types/orchestrator';
-import { Prisma } from '@neolith/database';
 import type { NextRequest } from 'next/server';
 
 /**

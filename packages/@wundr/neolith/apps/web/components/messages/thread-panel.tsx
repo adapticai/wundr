@@ -85,7 +85,7 @@ export const ThreadPanel = memo(function ThreadPanel({
 
   // Get unique participants from replies
   const participants = Array.from(
-    new Set([parentMessage.author, ...replies.map(r => r.author)].filter(Boolean))
+    new Set([parentMessage.author, ...replies.map(r => r.author)].filter(Boolean)),
   );
 
   const handleSubmitReply = async (e: React.FormEvent) => {

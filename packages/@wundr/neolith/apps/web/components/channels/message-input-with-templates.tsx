@@ -1,8 +1,10 @@
 'use client';
 
-import { MessageInput } from '@/components/chat/message-input';
-import { TemplateSelector } from './template-selector';
 import { useState, useCallback } from 'react';
+
+import { MessageInput } from '@/components/chat/message-input';
+
+import { TemplateSelector } from './template-selector';
 
 import type { User } from '@/types/chat';
 

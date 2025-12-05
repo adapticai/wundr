@@ -20,8 +20,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
-import type { UIMessage } from '@ai-sdk/react';
 import type { Orchestrator } from '@/types/orchestrator';
+import type { UIMessage } from '@ai-sdk/react';
 
 export interface OrchestratorChatProps {
   orchestrator: Orchestrator;

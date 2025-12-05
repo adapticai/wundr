@@ -1,10 +1,57 @@
 'use client';
 
-import { Workflow as WorkflowLucideIcon, Search } from 'lucide-react';
+import {
+  Workflow as WorkflowLucideIcon,
+  Search,
+  LayoutGrid,
+  List,
+  Filter,
+  MoreVertical,
+  Copy,
+  Trash2,
+  Power,
+  PowerOff,
+  Archive,
+  Download,
+  ChevronDown,
+  ArrowUpDown,
+  Clock,
+  User,
+  CheckCircle2,
+  XCircle,
+  Activity,
+} from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/ui/empty-state';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { usePageHeader } from '@/contexts/page-header-context';
 import {
   useWorkflows,
@@ -32,6 +79,7 @@ import type {
   CreateWorkflowInput,
   TriggerConfig,
   ActionConfig,
+  TriggerType,
 } from '@/types/workflow';
 
 // =============================================================================
@@ -54,6 +102,14 @@ const DEFAULT_TRIGGER_CONFIGS: Record<TriggerConfig['type'], TriggerConfig> = {
 };
 
 // =============================================================================
+// Types
+// =============================================================================
+
+type ViewMode = 'grid' | 'table';
+type SortField = 'name' | 'status' | 'lastRun' | 'runCount' | 'createdAt';
+type SortOrder = 'asc' | 'desc';
+
+// =============================================================================
 // Main Page Component
 // =============================================================================
 
@@ -69,11 +125,23 @@ export default function WorkflowsPage() {
   }, [setPageHeader]);
 
   // State
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [statusFilter, setStatusFilter] = useState<WorkflowStatus | 'all'>(
     'all',
   );
+  const [triggerTypeFilter, setTriggerTypeFilter] = useState<
+    TriggerType | 'all'
+  >('all');
+  const [categoryFilter, setCategoryFilter] = useState<
+    WorkflowTemplateCategory | 'all'
+  >('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [selectedWorkflows, setSelectedWorkflows] = useState<Set<string>>(
+    new Set(),
+  );
   const [showBuilder, setShowBuilder] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(
     null,
@@ -115,29 +183,80 @@ export default function WorkflowsPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Filter workflows by search query
-  const filteredWorkflows = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) {
-      return workflows;
+  // Filter and sort workflows
+  const filteredAndSortedWorkflows = useMemo(() => {
+    let filtered = workflows;
+
+    // Apply trigger type filter
+    if (triggerTypeFilter !== 'all') {
+      filtered = filtered.filter(
+        wf => wf.trigger.type === triggerTypeFilter,
+      );
     }
-    const query = debouncedSearchQuery.toLowerCase();
-    return workflows.filter(workflow => {
-      // Search by name
-      if (workflow.name.toLowerCase().includes(query)) {
-        return true;
+
+    // Apply search query
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase();
+      filtered = filtered.filter(workflow => {
+        // Search by name
+        if (workflow.name.toLowerCase().includes(query)) {
+          return true;
+        }
+        // Search by description
+        if (workflow.description?.toLowerCase().includes(query)) {
+          return true;
+        }
+        // Search by trigger type
+        const triggerLabel =
+          TRIGGER_TYPE_CONFIG[workflow.trigger.type]?.label.toLowerCase();
+        if (triggerLabel?.includes(query)) {
+          return true;
+        }
+        return false;
+      });
+    }
+
+    // Apply sorting
+    const sorted = [...filtered].sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortField) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'status':
+          comparison = a.status.localeCompare(b.status);
+          break;
+        case 'lastRun':
+          const aLastRun = a.lastRunAt
+            ? new Date(a.lastRunAt).getTime()
+            : 0;
+          const bLastRun = b.lastRunAt
+            ? new Date(b.lastRunAt).getTime()
+            : 0;
+          comparison = aLastRun - bLastRun;
+          break;
+        case 'runCount':
+          comparison = a.runCount - b.runCount;
+          break;
+        case 'createdAt':
+          comparison =
+            new Date(a.createdAt).getTime() -
+            new Date(b.createdAt).getTime();
+          break;
       }
-      // Search by description
-      if (workflow.description?.toLowerCase().includes(query)) {
-        return true;
-      }
-      // Search by trigger type
-      const triggerLabel = TRIGGER_TYPE_CONFIG[workflow.trigger.type]?.label.toLowerCase();
-      if (triggerLabel?.includes(query)) {
-        return true;
-      }
-      return false;
+
+      return sortOrder === 'asc' ? comparison : -comparison;
     });
-  }, [workflows, debouncedSearchQuery]);
+
+    return sorted;
+  }, [
+    workflows,
+    triggerTypeFilter,
+    debouncedSearchQuery,
+    sortField,
+    sortOrder,
+  ]);
 
   // Stats
   const workflowStats = useMemo(() => {
@@ -215,53 +334,296 @@ export default function WorkflowsPage() {
     [workspaceSlug],
   );
 
+  // Bulk operation handlers
+  const handleSelectAll = useCallback(() => {
+    if (selectedWorkflows.size === filteredAndSortedWorkflows.length) {
+      setSelectedWorkflows(new Set());
+    } else {
+      setSelectedWorkflows(
+        new Set(filteredAndSortedWorkflows.map(wf => wf.id)),
+      );
+    }
+  }, [filteredAndSortedWorkflows, selectedWorkflows.size]);
+
+  const handleSelectWorkflow = useCallback(
+    (workflowId: string) => {
+      const newSelection = new Set(selectedWorkflows);
+      if (newSelection.has(workflowId)) {
+        newSelection.delete(workflowId);
+      } else {
+        newSelection.add(workflowId);
+      }
+      setSelectedWorkflows(newSelection);
+    },
+    [selectedWorkflows],
+  );
+
+  const handleBulkActivate = useCallback(async () => {
+    // TODO: Implement bulk activate API call
+    console.log('Activating workflows:', Array.from(selectedWorkflows));
+    setSelectedWorkflows(new Set());
+    mutate();
+  }, [selectedWorkflows, mutate]);
+
+  const handleBulkDeactivate = useCallback(async () => {
+    // TODO: Implement bulk deactivate API call
+    console.log('Deactivating workflows:', Array.from(selectedWorkflows));
+    setSelectedWorkflows(new Set());
+    mutate();
+  }, [selectedWorkflows, mutate]);
+
+  const handleBulkArchive = useCallback(async () => {
+    // TODO: Implement bulk archive API call
+    console.log('Archiving workflows:', Array.from(selectedWorkflows));
+    setSelectedWorkflows(new Set());
+    mutate();
+  }, [selectedWorkflows, mutate]);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (
+      !confirm(
+        `Are you sure you want to delete ${selectedWorkflows.size} workflow(s)?`,
+      )
+    ) {
+      return;
+    }
+    // TODO: Implement bulk delete API call
+    console.log('Deleting workflows:', Array.from(selectedWorkflows));
+    setSelectedWorkflows(new Set());
+    mutate();
+  }, [selectedWorkflows, mutate]);
+
+  // Quick action handlers
+  const handleDuplicate = useCallback(
+    async (workflow: Workflow) => {
+      // TODO: Implement duplicate API call
+      console.log('Duplicating workflow:', workflow.id);
+      mutate();
+    },
+    [mutate],
+  );
+
+  const handleToggleActive = useCallback(
+    async (workflow: Workflow) => {
+      const newStatus =
+        workflow.status === 'active' ? 'inactive' : 'active';
+      // TODO: Implement update status API call
+      console.log(`Setting workflow ${workflow.id} to ${newStatus}`);
+      mutate();
+    },
+    [mutate],
+  );
+
+  const handleDelete = useCallback(
+    async (workflow: Workflow) => {
+      if (!confirm(`Are you sure you want to delete "${workflow.name}"?`)) {
+        return;
+      }
+      // TODO: Implement delete API call
+      console.log('Deleting workflow:', workflow.id);
+      mutate();
+    },
+    [mutate],
+  );
+
+  const handleArchive = useCallback(
+    async (workflow: Workflow) => {
+      // TODO: Implement archive API call
+      console.log('Archiving workflow:', workflow.id);
+      mutate();
+    },
+    [mutate],
+  );
+
+  const handleExport = useCallback((workflow: Workflow) => {
+    const dataStr = JSON.stringify(workflow, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `workflow-${workflow.name.toLowerCase().replace(/\s+/g, '-')}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  // Toggle sort
+  const handleSort = useCallback(
+    (field: SortField) => {
+      if (sortField === field) {
+        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      } else {
+        setSortField(field);
+        setSortOrder('asc');
+      }
+    },
+    [sortField, sortOrder],
+  );
+
   return (
     <div className='space-y-6'>
-      {/* Search and Actions */}
-      <div className='flex items-center gap-3'>
-        <div className='relative flex-1'>
-          <Search
-            className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground'
-            aria-hidden='true'
-          />
-          <input
-            ref={searchInputRef}
-            type='text'
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder='Search workflows by name, description, or trigger type... (⌘K)'
-            className='w-full rounded-md border border-input bg-background py-2 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            aria-label='Search workflows'
-          />
-          {searchQuery && (
-            <button
-              type='button'
-              onClick={() => setSearchQuery('')}
-              className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
-              aria-label='Clear search'
+      {/* Search and Toolbar */}
+      <div className='flex flex-col gap-4'>
+        <div className='flex items-center gap-3'>
+          <div className='relative flex-1'>
+            <Search
+              className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground'
+              aria-hidden='true'
+            />
+            <input
+              ref={searchInputRef}
+              type='text'
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder='Search workflows by name, description, or trigger type... (⌘K)'
+              className='w-full rounded-md border border-input bg-background py-2 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              aria-label='Search workflows'
+            />
+            {searchQuery && (
+              <button
+                type='button'
+                onClick={() => setSearchQuery('')}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+                aria-label='Clear search'
+              >
+                <XIcon className='h-4 w-4' />
+              </button>
+            )}
+          </div>
+
+          {/* View Toggle */}
+          <div className='flex items-center gap-1 rounded-md border border-border p-1'>
+            <Button
+              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+              size='sm'
+              onClick={() => setViewMode('grid')}
+              className='h-8 w-8 p-0'
+              aria-label='Grid view'
             >
-              <XIcon className='h-4 w-4' />
-            </button>
+              <LayoutGrid className='h-4 w-4' />
+            </Button>
+            <Button
+              variant={viewMode === 'table' ? 'secondary' : 'ghost'}
+              size='sm'
+              onClick={() => setViewMode('table')}
+              className='h-8 w-8 p-0'
+              aria-label='Table view'
+            >
+              <List className='h-4 w-4' />
+            </Button>
+          </div>
+
+          <Button
+            variant='outline'
+            onClick={() => setShowTemplates(true)}
+            aria-label='Browse workflow templates'
+          >
+            <TemplateIcon className='h-4 w-4' aria-hidden='true' />
+            Templates
+          </Button>
+          <Button
+            onClick={() => router.push(`/${workspaceSlug}/workflows/new`)}
+            aria-label='Create new workflow'
+          >
+            <PlusIcon className='h-4 w-4' aria-hidden='true' />
+            Create Workflow
+          </Button>
+        </div>
+
+        {/* Filters and Sorting */}
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-3'>
+            {/* Trigger Type Filter */}
+            <Select
+              value={triggerTypeFilter}
+              onValueChange={value =>
+                setTriggerTypeFilter(value as TriggerType | 'all')
+              }
+            >
+              <SelectTrigger className='w-[180px]'>
+                <Filter className='mr-2 h-4 w-4' />
+                <SelectValue placeholder='Trigger Type' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>All Triggers</SelectItem>
+                {Object.entries(TRIGGER_TYPE_CONFIG).map(([key, config]) => (
+                  <SelectItem key={key} value={key}>
+                    {config.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Sort */}
+            <Select
+              value={sortField}
+              onValueChange={value => setSortField(value as SortField)}
+            >
+              <SelectTrigger className='w-[160px]'>
+                <ArrowUpDown className='mr-2 h-4 w-4' />
+                <SelectValue placeholder='Sort by' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='name'>Name</SelectItem>
+                <SelectItem value='status'>Status</SelectItem>
+                <SelectItem value='lastRun'>Last Run</SelectItem>
+                <SelectItem value='runCount'>Run Count</SelectItem>
+                <SelectItem value='createdAt'>Created Date</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() =>
+                setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+              }
+              className='h-9 px-3'
+            >
+              {sortOrder === 'asc' ? '↑' : '↓'}
+            </Button>
+          </div>
+
+          {/* Bulk Actions */}
+          {selectedWorkflows.size > 0 && (
+            <div className='flex items-center gap-2'>
+              <span className='text-sm text-muted-foreground'>
+                {selectedWorkflows.size} selected
+              </span>
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={handleBulkActivate}
+              >
+                <Power className='mr-2 h-4 w-4' />
+                Activate
+              </Button>
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={handleBulkDeactivate}
+              >
+                <PowerOff className='mr-2 h-4 w-4' />
+                Deactivate
+              </Button>
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={handleBulkArchive}
+              >
+                <Archive className='mr-2 h-4 w-4' />
+                Archive
+              </Button>
+              <Button
+                variant='destructive'
+                size='sm'
+                onClick={handleBulkDelete}
+              >
+                <Trash2 className='mr-2 h-4 w-4' />
+                Delete
+              </Button>
+            </div>
           )}
         </div>
-        <button
-          type='button'
-          onClick={() => setShowTemplates(true)}
-          className='inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent'
-          aria-label='Browse workflow templates'
-        >
-          <TemplateIcon className='h-4 w-4' aria-hidden='true' />
-          Templates
-        </button>
-        <button
-          type='button'
-          onClick={() => router.push(`/${workspaceSlug}/workflows/new`)}
-          className='inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90'
-          aria-label='Create new workflow'
-        >
-          <PlusIcon className='h-4 w-4' aria-hidden='true' />
-          Create Workflow
-        </button>
       </div>
 
       {/* Tab Navigation */}
@@ -376,32 +738,69 @@ export default function WorkflowsPage() {
       {!isLoading &&
         !error &&
         workflows.length > 0 &&
-        filteredWorkflows.length === 0 && (
+        filteredAndSortedWorkflows.length === 0 && (
           <EmptyState
             icon={Search}
             title='No Workflows Found'
-            description={`No workflows match "${searchQuery}". Try adjusting your search or create a new workflow.`}
+            description={`No workflows match your filters. Try adjusting your search or filters.`}
             action={{
-              label: 'Clear Search',
-              onClick: () => setSearchQuery(''),
+              label: 'Clear Filters',
+              onClick: () => {
+                setSearchQuery('');
+                setTriggerTypeFilter('all');
+                setStatusFilter('all');
+              },
               variant: 'outline' as const,
             }}
           />
         )}
 
-      {/* Workflow Grid */}
-      {!isLoading && !error && filteredWorkflows.length > 0 && (
-        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {filteredWorkflows.map(workflow => (
-            <WorkflowCard
-              key={workflow.id}
-              workflow={workflow}
-              onEdit={handleEditWorkflow}
-              onViewHistory={handleViewHistory}
-            />
-          ))}
-        </div>
-      )}
+      {/* Workflow Grid View */}
+      {!isLoading &&
+        !error &&
+        filteredAndSortedWorkflows.length > 0 &&
+        viewMode === 'grid' && (
+          <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {filteredAndSortedWorkflows.map(workflow => (
+              <WorkflowCard
+                key={workflow.id}
+                workflow={workflow}
+                selected={selectedWorkflows.has(workflow.id)}
+                onSelect={handleSelectWorkflow}
+                onEdit={handleEditWorkflow}
+                onViewHistory={handleViewHistory}
+                onDuplicate={handleDuplicate}
+                onToggleActive={handleToggleActive}
+                onArchive={handleArchive}
+                onDelete={handleDelete}
+                onExport={handleExport}
+              />
+            ))}
+          </div>
+        )}
+
+      {/* Workflow Table View */}
+      {!isLoading &&
+        !error &&
+        filteredAndSortedWorkflows.length > 0 &&
+        viewMode === 'table' && (
+          <WorkflowTable
+            workflows={filteredAndSortedWorkflows}
+            selectedWorkflows={selectedWorkflows}
+            onSelectAll={handleSelectAll}
+            onSelectWorkflow={handleSelectWorkflow}
+            onEdit={handleEditWorkflow}
+            onViewHistory={handleViewHistory}
+            onDuplicate={handleDuplicate}
+            onToggleActive={handleToggleActive}
+            onArchive={handleArchive}
+            onDelete={handleDelete}
+            onExport={handleExport}
+            sortField={sortField}
+            sortOrder={sortOrder}
+            onSort={handleSort}
+          />
+        )}
 
       {/* Workflow Builder Modal */}
       {showBuilder && (
@@ -439,75 +838,169 @@ export default function WorkflowsPage() {
 
 interface WorkflowCardProps {
   workflow: Workflow;
+  selected: boolean;
+  onSelect: (workflowId: string) => void;
   onEdit: (workflow: Workflow) => void;
   onViewHistory: (workflowId: string) => void;
+  onDuplicate: (workflow: Workflow) => void;
+  onToggleActive: (workflow: Workflow) => void;
+  onArchive: (workflow: Workflow) => void;
+  onDelete: (workflow: Workflow) => void;
+  onExport: (workflow: Workflow) => void;
 }
 
-function WorkflowCard({ workflow, onEdit, onViewHistory }: WorkflowCardProps) {
+function WorkflowCard({
+  workflow,
+  selected,
+  onSelect,
+  onEdit,
+  onViewHistory,
+  onDuplicate,
+  onToggleActive,
+  onArchive,
+  onDelete,
+  onExport,
+}: WorkflowCardProps) {
   const statusConfig = WORKFLOW_STATUS_CONFIG[workflow.status];
   const triggerConfig = TRIGGER_TYPE_CONFIG[workflow.trigger.type];
 
   return (
-    <div className='rounded-lg border bg-card p-4 transition-shadow hover:shadow-md'>
-      <div className='flex items-start justify-between'>
-        <div className='flex-1'>
-          <h3 className='font-semibold text-foreground'>{workflow.name}</h3>
-          {workflow.description && (
-            <p className='mt-1 text-sm text-muted-foreground line-clamp-2'>
-              {workflow.description}
-            </p>
-          )}
+    <Card
+      className={cn(
+        'transition-all hover:shadow-md',
+        selected && 'ring-2 ring-primary',
+      )}
+    >
+      <CardHeader className='pb-3'>
+        <div className='flex items-start gap-3'>
+          <Checkbox
+            checked={selected}
+            onCheckedChange={() => onSelect(workflow.id)}
+            className='mt-1'
+            aria-label={`Select ${workflow.name}`}
+          />
+          <div className='flex-1 min-w-0'>
+            <div className='flex items-start justify-between gap-2'>
+              <h3 className='font-semibold text-foreground truncate'>
+                {workflow.name}
+              </h3>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    className='h-8 w-8 p-0'
+                    aria-label='Workflow actions'
+                  >
+                    <MoreVertical className='h-4 w-4' />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='end'>
+                  <DropdownMenuItem onClick={() => onEdit(workflow)}>
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onDuplicate(workflow)}>
+                    <Copy className='mr-2 h-4 w-4' />
+                    Duplicate
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onToggleActive(workflow)}>
+                    {workflow.status === 'active' ? (
+                      <>
+                        <PowerOff className='mr-2 h-4 w-4' />
+                        Deactivate
+                      </>
+                    ) : (
+                      <>
+                        <Power className='mr-2 h-4 w-4' />
+                        Activate
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onExport(workflow)}>
+                    <Download className='mr-2 h-4 w-4' />
+                    Export
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onArchive(workflow)}>
+                    <Archive className='mr-2 h-4 w-4' />
+                    Archive
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onDelete(workflow)}
+                    className='text-red-600'
+                  >
+                    <Trash2 className='mr-2 h-4 w-4' />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            {workflow.description && (
+              <p className='mt-1 text-sm text-muted-foreground line-clamp-2'>
+                {workflow.description}
+              </p>
+            )}
+          </div>
         </div>
-        <span
-          className={cn(
-            'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-            statusConfig.bgColor,
-            statusConfig.color,
-          )}
-        >
-          {statusConfig.label}
-        </span>
-      </div>
+      </CardHeader>
+      <CardContent className='space-y-3'>
+        <div className='flex items-center justify-between'>
+          <Badge
+            variant='outline'
+            className={cn(statusConfig.bgColor, statusConfig.color)}
+          >
+            {statusConfig.label}
+          </Badge>
+        </div>
 
-      <div className='mt-4 flex items-center gap-4 text-sm text-muted-foreground'>
-        <div className='flex items-center gap-1'>
-          <TriggerIcon className='h-4 w-4' />
-          <span>{triggerConfig?.label ?? workflow.trigger.type}</span>
+        <div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
+          <div className='flex items-center gap-1'>
+            <TriggerIcon className='h-4 w-4' />
+            <span>{triggerConfig?.label ?? workflow.trigger.type}</span>
+          </div>
+          <div className='flex items-center gap-1'>
+            <ActionIcon className='h-4 w-4' />
+            <span>{workflow.actions.length} actions</span>
+          </div>
         </div>
-        <div className='flex items-center gap-1'>
-          <ActionIcon className='h-4 w-4' />
-          <span>{workflow.actions.length} actions</span>
-        </div>
-      </div>
 
-      <div className='mt-3 flex items-center justify-between border-t border-border pt-3'>
-        <div className='text-xs text-muted-foreground'>
-          {workflow.runCount} runs
-          {workflow.errorCount > 0 && (
-            <span className='text-red-600'>
-              {' '}
-              ({workflow.errorCount} errors)
-            </span>
-          )}
-        </div>
-        <div className='flex gap-2'>
-          <button
-            type='button'
+        <div className='flex items-center justify-between border-t border-border pt-3 text-xs'>
+          <div className='flex items-center gap-3 text-muted-foreground'>
+            <div className='flex items-center gap-1'>
+              <Activity className='h-3 w-3' />
+              <span>{workflow.runCount} runs</span>
+            </div>
+            {workflow.errorCount > 0 && (
+              <div className='flex items-center gap-1 text-red-600'>
+                <XCircle className='h-3 w-3' />
+                <span>{workflow.errorCount} errors</span>
+              </div>
+            )}
+          </div>
+          <Button
+            variant='ghost'
+            size='sm'
             onClick={() => onViewHistory(workflow.id)}
-            className='text-xs text-muted-foreground hover:text-foreground'
+            className='h-6 px-2 text-xs'
           >
+            <Clock className='mr-1 h-3 w-3' />
             History
-          </button>
-          <button
-            type='button'
-            onClick={() => onEdit(workflow)}
-            className='text-xs text-primary hover:text-primary/80'
-          >
-            Edit
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+
+        {workflow.lastRunAt && (
+          <div className='text-xs text-muted-foreground'>
+            Last run:{' '}
+            {new Date(workflow.lastRunAt).toLocaleDateString(undefined, {
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -529,6 +1022,257 @@ function WorkflowCardSkeleton() {
         <div className='h-3 w-16 rounded bg-muted' />
         <div className='h-3 w-12 rounded bg-muted' />
       </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// Workflow Table Component
+// =============================================================================
+
+interface WorkflowTableProps {
+  workflows: Workflow[];
+  selectedWorkflows: Set<string>;
+  onSelectAll: () => void;
+  onSelectWorkflow: (workflowId: string) => void;
+  onEdit: (workflow: Workflow) => void;
+  onViewHistory: (workflowId: string) => void;
+  onDuplicate: (workflow: Workflow) => void;
+  onToggleActive: (workflow: Workflow) => void;
+  onArchive: (workflow: Workflow) => void;
+  onDelete: (workflow: Workflow) => void;
+  onExport: (workflow: Workflow) => void;
+  sortField: SortField;
+  sortOrder: SortOrder;
+  onSort: (field: SortField) => void;
+}
+
+function WorkflowTable({
+  workflows,
+  selectedWorkflows,
+  onSelectAll,
+  onSelectWorkflow,
+  onEdit,
+  onViewHistory,
+  onDuplicate,
+  onToggleActive,
+  onArchive,
+  onDelete,
+  onExport,
+  sortField,
+  sortOrder,
+  onSort,
+}: WorkflowTableProps) {
+  const allSelected =
+    workflows.length > 0 && selectedWorkflows.size === workflows.length;
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className='ml-2 h-4 w-4 opacity-30' />;
+    }
+    return sortOrder === 'asc' ? (
+      <ChevronDown className='ml-2 h-4 w-4 rotate-180' />
+    ) : (
+      <ChevronDown className='ml-2 h-4 w-4' />
+    );
+  };
+
+  return (
+    <div className='rounded-lg border'>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className='w-[50px]'>
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={onSelectAll}
+                aria-label='Select all workflows'
+              />
+            </TableHead>
+            <TableHead
+              className='cursor-pointer select-none'
+              onClick={() => onSort('name')}
+            >
+              <div className='flex items-center'>
+                Name
+                <SortIcon field='name' />
+              </div>
+            </TableHead>
+            <TableHead
+              className='cursor-pointer select-none'
+              onClick={() => onSort('status')}
+            >
+              <div className='flex items-center'>
+                Status
+                <SortIcon field='status' />
+              </div>
+            </TableHead>
+            <TableHead>Trigger</TableHead>
+            <TableHead className='text-right'>Actions</TableHead>
+            <TableHead
+              className='cursor-pointer select-none text-right'
+              onClick={() => onSort('runCount')}
+            >
+              <div className='flex items-center justify-end'>
+                Runs
+                <SortIcon field='runCount' />
+              </div>
+            </TableHead>
+            <TableHead
+              className='cursor-pointer select-none'
+              onClick={() => onSort('lastRun')}
+            >
+              <div className='flex items-center'>
+                Last Run
+                <SortIcon field='lastRun' />
+              </div>
+            </TableHead>
+            <TableHead className='w-[100px]'></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {workflows.map(workflow => {
+            const statusConfig = WORKFLOW_STATUS_CONFIG[workflow.status];
+            const triggerConfig = TRIGGER_TYPE_CONFIG[workflow.trigger.type];
+            const isSelected = selectedWorkflows.has(workflow.id);
+
+            return (
+              <TableRow
+                key={workflow.id}
+                className={cn(isSelected && 'bg-muted/50')}
+              >
+                <TableCell>
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => onSelectWorkflow(workflow.id)}
+                    aria-label={`Select ${workflow.name}`}
+                  />
+                </TableCell>
+                <TableCell>
+                  <div className='max-w-[300px]'>
+                    <div className='font-medium truncate'>{workflow.name}</div>
+                    {workflow.description && (
+                      <div className='text-sm text-muted-foreground truncate'>
+                        {workflow.description}
+                      </div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant='outline'
+                    className={cn(statusConfig.bgColor, statusConfig.color)}
+                  >
+                    {statusConfig.label}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className='flex items-center gap-1 text-sm'>
+                    <TriggerIcon className='h-4 w-4' />
+                    <span>{triggerConfig?.label ?? workflow.trigger.type}</span>
+                  </div>
+                </TableCell>
+                <TableCell className='text-right'>
+                  {workflow.actions.length}
+                </TableCell>
+                <TableCell className='text-right'>
+                  <div className='flex flex-col items-end gap-1'>
+                    <div className='flex items-center gap-1'>
+                      <CheckCircle2 className='h-3 w-3 text-green-600' />
+                      <span>{workflow.runCount}</span>
+                    </div>
+                    {workflow.errorCount > 0 && (
+                      <div className='flex items-center gap-1 text-red-600'>
+                        <XCircle className='h-3 w-3' />
+                        <span>{workflow.errorCount}</span>
+                      </div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className='text-sm text-muted-foreground'>
+                    {workflow.lastRunAt
+                      ? new Date(workflow.lastRunAt).toLocaleDateString(
+                          undefined,
+                          {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          },
+                        )
+                      : 'Never'}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className='flex items-center gap-1'>
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={() => onViewHistory(workflow.id)}
+                      className='h-8 w-8 p-0'
+                      aria-label='View history'
+                    >
+                      <Clock className='h-4 w-4' />
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          className='h-8 w-8 p-0'
+                          aria-label='More actions'
+                        >
+                          <MoreVertical className='h-4 w-4' />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align='end'>
+                        <DropdownMenuItem onClick={() => onEdit(workflow)}>
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDuplicate(workflow)}>
+                          <Copy className='mr-2 h-4 w-4' />
+                          Duplicate
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onToggleActive(workflow)}
+                        >
+                          {workflow.status === 'active' ? (
+                            <>
+                              <PowerOff className='mr-2 h-4 w-4' />
+                              Deactivate
+                            </>
+                          ) : (
+                            <>
+                              <Power className='mr-2 h-4 w-4' />
+                              Activate
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onExport(workflow)}>
+                          <Download className='mr-2 h-4 w-4' />
+                          Export
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => onArchive(workflow)}>
+                          <Archive className='mr-2 h-4 w-4' />
+                          Archive
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onDelete(workflow)}
+                          className='text-red-600'
+                        >
+                          <Trash2 className='mr-2 h-4 w-4' />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
     </div>
   );
 }

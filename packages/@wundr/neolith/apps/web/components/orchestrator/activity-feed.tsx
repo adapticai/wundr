@@ -32,6 +32,23 @@ import {
 } from 'lucide-react';
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import {
   Timeline,
   TimelineItem,
@@ -42,23 +59,6 @@ import {
   TimelineTitle,
   TimelineDescription,
 } from '@/components/ui/timeline';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 /**
@@ -223,10 +223,18 @@ export function OrchestratorActivityFeed({
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffSecs < 60) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffSecs < 60) {
+return 'Just now';
+}
+    if (diffMins < 60) {
+return `${diffMins}m ago`;
+}
+    if (diffHours < 24) {
+return `${diffHours}h ago`;
+}
+    if (diffDays < 7) {
+return `${diffDays}d ago`;
+}
 
     return date.toLocaleDateString(undefined, {
       month: 'short',
@@ -241,7 +249,9 @@ export function OrchestratorActivityFeed({
    */
   const fetchActivities = useCallback(
     async (append = false) => {
-      if (!workspaceSlug || !orchestratorId) return;
+      if (!workspaceSlug || !orchestratorId) {
+return;
+}
 
       if (!append) {
         setIsLoading(true);
@@ -316,7 +326,9 @@ export function OrchestratorActivityFeed({
    * Load more activities (pagination)
    */
   const handleLoadMore = useCallback(() => {
-    if (!hasMore || isLoadingMore) return;
+    if (!hasMore || isLoadingMore) {
+return;
+}
     fetchActivities(true);
   }, [hasMore, isLoadingMore, fetchActivities]);
 
@@ -377,7 +389,9 @@ export function OrchestratorActivityFeed({
    * Filter activities by search query
    */
   const filteredActivities = useMemo(() => {
-    if (!searchQuery) return activities;
+    if (!searchQuery) {
+return activities;
+}
 
     const query = searchQuery.toLowerCase();
     return activities.filter(
@@ -400,7 +414,9 @@ export function OrchestratorActivityFeed({
    * Auto-refresh setup
    */
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!autoRefresh) {
+return;
+}
 
     const interval = setInterval(() => {
       fetchActivities(false);
@@ -422,10 +438,18 @@ export function OrchestratorActivityFeed({
   // Active filter count
   const activeFilterCount = useMemo(() => {
     let count = 0;
-    if (selectedType !== 'all') count++;
-    if (dateFrom) count++;
-    if (dateTo) count++;
-    if (searchQuery) count++;
+    if (selectedType !== 'all') {
+count++;
+}
+    if (dateFrom) {
+count++;
+}
+    if (dateTo) {
+count++;
+}
+    if (searchQuery) {
+count++;
+}
     return count;
   }, [selectedType, dateFrom, dateTo, searchQuery]);
 

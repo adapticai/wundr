@@ -30,6 +30,33 @@ export { useAuth } from './use-auth';
 export type { AuthUser, UseAuthReturn } from './use-auth';
 
 // =============================================================================
+// Workflow Hooks
+// =============================================================================
+export {
+  useWorkflows,
+  useWorkflow,
+  useWorkflowExecutions,
+  useWorkflowTemplates,
+  useWorkflowBuilder,
+} from './use-workflows';
+export type {
+  UseWorkflowsOptions,
+  UseWorkflowsReturn,
+  UseWorkflowReturn,
+  UseWorkflowExecutionsOptions,
+  UseWorkflowExecutionsReturn,
+  UseWorkflowTemplatesReturn,
+  UseWorkflowBuilderReturn,
+} from './use-workflows';
+
+export { useWorkflowExecution } from './use-workflow-execution';
+export type {
+  ExecutionProgress,
+  UseWorkflowExecutionOptions,
+  UseWorkflowExecutionReturn,
+} from './use-workflow-execution';
+
+// =============================================================================
 // Admin Hooks
 // =============================================================================
 export {
@@ -286,24 +313,6 @@ export {
   type UseWebhookReturn,
   type UseWebhookDeliveriesReturn,
 } from './use-integrations';
-
-// =============================================================================
-// Workflow Hooks
-// =============================================================================
-export {
-  useWorkflows,
-  useWorkflow,
-  useWorkflowExecutions,
-  useWorkflowTemplates,
-  useWorkflowBuilder,
-} from './use-workflows';
-export type {
-  UseWorkflowsReturn,
-  UseWorkflowReturn,
-  UseWorkflowExecutionsReturn,
-  UseWorkflowTemplatesReturn,
-  UseWorkflowBuilderReturn,
-} from './use-workflows';
 
 // =============================================================================
 // Presence Hooks

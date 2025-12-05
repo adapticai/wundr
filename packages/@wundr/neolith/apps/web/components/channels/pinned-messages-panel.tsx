@@ -3,8 +3,8 @@
 import { Pin, X, Loader2, AlertCircle } from 'lucide-react';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -100,7 +100,7 @@ export function PinnedMessagesPanel({
           `/api/channels/${channelId}/pins?messageId=${messageId}`,
           {
             method: 'DELETE',
-          }
+          },
         );
 
         if (!response.ok) {
@@ -127,7 +127,7 @@ export function PinnedMessagesPanel({
         setUnpinningId(null);
       }
     },
-    [channelId, canManagePins, toast]
+    [channelId, canManagePins, toast],
   );
 
   // Handle message click - scroll to message in main chat
@@ -137,7 +137,7 @@ export function PinnedMessagesPanel({
       // Also close the panel after clicking
       onClose();
     },
-    [onMessageClick, onClose]
+    [onMessageClick, onClose],
   );
 
   const pinnedCount = pinnedMessages.length;
@@ -170,7 +170,7 @@ export function PinnedMessagesPanel({
             ? canPinMore
               ? `Pin important messages to #{channelName}. ${MAX_PINS - pinnedCount} ${MAX_PINS - pinnedCount === 1 ? 'slot' : 'slots'} remaining.`
               : `Maximum of ${MAX_PINS} pins reached. Unpin a message to add new ones.`
-            : `View pinned messages in #{channelName}`}
+            : 'View pinned messages in #{channelName}'}
         </p>
       </div>
 
@@ -245,7 +245,7 @@ function PinnedMessageItem({
         hour: 'numeric',
         minute: '2-digit',
       }),
-    [message.createdAt]
+    [message.createdAt],
   );
 
   const author = message.author || {
@@ -268,7 +268,7 @@ function PinnedMessageItem({
     <div
       className={cn(
         'relative px-4 py-3 transition-colors hover:bg-accent/50 cursor-pointer',
-        isUnpinning && 'opacity-50'
+        isUnpinning && 'opacity-50',
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

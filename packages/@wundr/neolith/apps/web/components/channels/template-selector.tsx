@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
+
 import { ChannelTemplates } from './channel-templates';
 
 interface TemplateSelectorProps {

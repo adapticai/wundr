@@ -6,10 +6,13 @@
  * Manages orchestrator work schedules, availability calendar, and recurring tasks.
  */
 
+import { Clock, Plus, Trash2, Calendar as CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { Calendar } from '@/components/ui/calendar';
+
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Card,
   CardContent,
@@ -28,10 +31,8 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Clock, Plus, Trash2, Calendar as CalendarIcon } from 'lucide-react';
 
 interface WorkSchedule {
   workHours: {
@@ -206,7 +207,9 @@ export function ScheduleSettings({
 
   const checkAvailabilityForDate = useCallback(
     async (date: Date) => {
-      if (!date) return;
+      if (!date) {
+return;
+}
 
       const startTime = new Date(date);
       startTime.setHours(0, 0, 0, 0);

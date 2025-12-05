@@ -13,10 +13,10 @@
  * @module app/api/orchestrators/[orchestratorId]/ai/route
  */
 
-import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
-import { convertToModelMessages, streamText } from 'ai';
+import { openai } from '@ai-sdk/openai';
 import { prisma } from '@neolith/database';
+import { convertToModelMessages, streamText } from 'ai';
 
 import { auth } from '@/lib/auth';
 

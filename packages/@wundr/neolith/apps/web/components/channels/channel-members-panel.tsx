@@ -25,8 +25,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -184,7 +184,7 @@ export function ChannelMembersPanel({
       member =>
         member.user.name?.toLowerCase().includes(query) ||
         member.user.displayName?.toLowerCase().includes(query) ||
-        member.user.email?.toLowerCase().includes(query)
+        member.user.email?.toLowerCase().includes(query),
     );
   }, [members, searchQuery]);
 
@@ -192,8 +192,12 @@ export function ChannelMembersPanel({
   const sortedMembers = useMemo(() => {
     return [...filteredMembers].sort((a, b) => {
       // Admins first
-      if (a.role === 'ADMIN' && b.role !== 'ADMIN') return -1;
-      if (a.role !== 'ADMIN' && b.role === 'ADMIN') return 1;
+      if (a.role === 'ADMIN' && b.role !== 'ADMIN') {
+return -1;
+}
+      if (a.role !== 'ADMIN' && b.role === 'ADMIN') {
+return 1;
+}
 
       // Then by join date (earliest first)
       const dateA = new Date(a.joinedAt).getTime();
@@ -231,8 +235,8 @@ export function ChannelMembersPanel({
           <div className='flex items-center justify-between'>
             <p className='text-xs text-muted-foreground'>
               {canManageMembers
-                ? `Manage members of #{channelName}`
-                : `View members of #{channelName}`}
+                ? 'Manage members of #{channelName}'
+                : 'View members of #{channelName}'}
             </p>
             {canManageMembers && (
               <Button
@@ -360,7 +364,9 @@ function MemberRow({
   // Update member role
   const handleRoleChange = useCallback(
     async (newRole: 'ADMIN' | 'MEMBER') => {
-      if (newRole === member.role) return;
+      if (newRole === member.role) {
+return;
+}
 
       setIsUpdating(true);
 
@@ -371,7 +377,7 @@ function MemberRow({
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ role: newRole }),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -397,7 +403,7 @@ function MemberRow({
         setIsUpdating(false);
       }
     },
-    [channelId, member.userId, member.role, displayName, onMemberUpdated, toast]
+    [channelId, member.userId, member.role, displayName, onMemberUpdated, toast],
   );
 
   // Remove member
@@ -409,7 +415,7 @@ function MemberRow({
         `/api/channels/${channelId}/members/${member.userId}`,
         {
           method: 'DELETE',
-        }
+        },
       );
 
       if (!response.ok) {
@@ -584,7 +590,7 @@ function InviteMembersDialog({
   onMembersAdded,
 }: InviteMembersDialogProps) {
   const [workspaceMembers, setWorkspaceMembers] = useState<WorkspaceMember[]>(
-    []
+    [],
   );
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -611,12 +617,12 @@ function InviteMembersDialog({
         const channelResult = await channelResponse.json();
 
         const channelMemberIds = new Set(
-          (channelResult.data || []).map((m: ChannelMember) => m.userId)
+          (channelResult.data || []).map((m: ChannelMember) => m.userId),
         );
 
         // Filter out users already in the channel
         const availableMembers = (wsResult.data || []).filter(
-          (m: WorkspaceMember) => !channelMemberIds.has(m.userId)
+          (m: WorkspaceMember) => !channelMemberIds.has(m.userId),
         );
 
         setWorkspaceMembers(availableMembers);
@@ -648,7 +654,7 @@ function InviteMembersDialog({
       member =>
         member.user.name?.toLowerCase().includes(query) ||
         member.user.displayName?.toLowerCase().includes(query) ||
-        member.user.email?.toLowerCase().includes(query)
+        member.user.email?.toLowerCase().includes(query),
     );
   }, [workspaceMembers, searchQuery]);
 
@@ -657,13 +663,15 @@ function InviteMembersDialog({
     setSelectedUserIds(prev =>
       prev.includes(userId)
         ? prev.filter(id => id !== userId)
-        : [...prev, userId]
+        : [...prev, userId],
     );
   }, []);
 
   // Add selected members
   const handleAddMembers = useCallback(async () => {
-    if (selectedUserIds.length === 0) return;
+    if (selectedUserIds.length === 0) {
+return;
+}
 
     setIsAdding(true);
 
@@ -753,7 +761,7 @@ function InviteMembersDialog({
                       key={member.id}
                       className={cn(
                         'flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-accent transition-colors',
-                        isSelected && 'bg-accent/50'
+                        isSelected && 'bg-accent/50',
                       )}
                     >
                       <input

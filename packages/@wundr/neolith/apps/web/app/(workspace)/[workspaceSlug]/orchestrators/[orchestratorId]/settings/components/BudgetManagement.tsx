@@ -30,15 +30,14 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-
-import type { ChartConfig } from '@/components/ui/chart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBudget, useUsageHistory, useBudgetAlerts, useBudgetMutations } from '@/hooks/use-budget';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-import type { BudgetConfiguration } from '@/components/budget/budget-settings';
 import type { AlertThresholds } from '@/components/budget/budget-alerts';
+import type { BudgetConfiguration } from '@/components/budget/budget-settings';
+import type { ChartConfig } from '@/components/ui/chart';
 
 interface BudgetManagementProps {
   orchestratorId: string;
@@ -78,7 +77,7 @@ export function BudgetManagement({ orchestratorId, disabled = false }: BudgetMan
     alerts,
     acknowledge,
     configureAlerts,
-    isLoading: alertsLoading
+    isLoading: alertsLoading,
   } = useBudgetAlerts(orchestratorId);
 
   // Budget mutations
@@ -100,7 +99,9 @@ export function BudgetManagement({ orchestratorId, disabled = false }: BudgetMan
 
   // Calculate trends
   const usageTrend = useMemo(() => {
-    if (history.length < 2) return null;
+    if (history.length < 2) {
+return null;
+}
     const recent = history.slice(0, Math.floor(history.length / 2));
     const older = history.slice(Math.floor(history.length / 2));
 
@@ -116,7 +117,9 @@ export function BudgetManagement({ orchestratorId, disabled = false }: BudgetMan
 
   // Transform budget data for BudgetOverview component
   const budgetUsage = useMemo(() => {
-    if (!budget) return null;
+    if (!budget) {
+return null;
+}
 
     const periodMap = {
       hourly: budget.usage.daily / 24, // Rough estimate
@@ -161,7 +164,9 @@ export function BudgetManagement({ orchestratorId, disabled = false }: BudgetMan
 
   // Transform budget config for BudgetSettings component
   const budgetConfig: BudgetConfiguration | null = useMemo(() => {
-    if (!budget) return null;
+    if (!budget) {
+return null;
+}
     return {
       hourlyLimit: budget.limits.dailyLimit / 24,
       dailyLimit: budget.limits.dailyLimit,
@@ -308,7 +313,7 @@ export function BudgetManagement({ orchestratorId, disabled = false }: BudgetMan
               <div className="flex items-center gap-4">
                 <div className={cn(
                   'flex items-center gap-2 text-2xl font-bold',
-                  usageTrend.direction === 'up' ? 'text-destructive' : 'text-green-600'
+                  usageTrend.direction === 'up' ? 'text-destructive' : 'text-green-600',
                 )}>
                   {usageTrend.direction === 'up' ? (
                     <TrendingUp className="h-6 w-6" />
@@ -338,7 +343,7 @@ export function BudgetManagement({ orchestratorId, disabled = false }: BudgetMan
                 <p className="text-xs text-muted-foreground">Avg per Request</p>
                 <p className="text-lg font-semibold">
                   {Math.round(
-                    history.reduce((sum, h) => sum + h.averagePerRequest, 0) / history.length
+                    history.reduce((sum, h) => sum + h.averagePerRequest, 0) / history.length,
                   ).toLocaleString()}
                 </p>
               </div>

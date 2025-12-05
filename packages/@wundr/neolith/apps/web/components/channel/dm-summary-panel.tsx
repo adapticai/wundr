@@ -9,8 +9,8 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useState, useCallback } from 'react';
-import { toast } from 'sonner';
 import Markdown from 'react-markdown';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {

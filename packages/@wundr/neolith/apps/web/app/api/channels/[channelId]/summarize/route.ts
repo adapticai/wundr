@@ -91,7 +91,9 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
  */
 function getCachedSummary(cacheKey: string) {
   const cached = summaryCache.get(cacheKey);
-  if (!cached) return null;
+  if (!cached) {
+return null;
+}
 
   const isExpired = Date.now() - cached.timestamp > CACHE_TTL;
   if (isExpired) {

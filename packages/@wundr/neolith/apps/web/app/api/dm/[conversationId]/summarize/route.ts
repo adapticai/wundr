@@ -10,10 +10,10 @@
  * @module app/api/dm/[conversationId]/summarize/route
  */
 
-import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText } from 'ai';
+import { openai } from '@ai-sdk/openai';
 import { prisma } from '@neolith/database';
+import { streamText } from 'ai';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';

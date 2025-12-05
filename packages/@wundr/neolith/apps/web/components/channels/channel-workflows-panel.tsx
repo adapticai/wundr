@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCallback, useState, useMemo } from 'react';
 
+import { ExecutionHistory } from '@/components/workflows/execution-history';
+import { useWorkflows, useWorkflow, useWorkflowExecutions } from '@/hooks/use-workflows';
 import { cn } from '@/lib/utils';
 import { WORKFLOW_STATUS_CONFIG, TRIGGER_TYPE_CONFIG } from '@/types/workflow';
-import { useWorkflows, useWorkflow, useWorkflowExecutions } from '@/hooks/use-workflows';
-import { ExecutionHistory } from '@/components/workflows/execution-history';
 
 import type { Workflow, TriggerConfig, CreateWorkflowInput, WorkflowExecution } from '@/types/workflow';
 
@@ -83,13 +83,13 @@ export function ChannelWorkflowsPanel({
   const { executions, isLoading: isLoadingExecutions } = useWorkflowExecutions(
     workspaceId,
     selectedWorkflowId || '',
-    { limit: 10 }
+    { limit: 10 },
   );
 
   const handleToggleWorkflow = useCallback(async (workflow: Workflow) => {
     const { workflow: updatedWorkflow, activateWorkflow, deactivateWorkflow } = useWorkflow(
       workspaceId,
-      workflow.id
+      workflow.id,
     );
 
     if (workflow.status === 'active') {
@@ -222,7 +222,7 @@ export function ChannelWorkflowsPanel({
             'flex-1 px-4 py-2 text-sm font-medium transition-colors',
             activeTab === 'active'
               ? 'border-b-2 border-primary text-foreground'
-              : 'text-muted-foreground hover:text-foreground'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
           Active Workflows ({channelWorkflows.filter(w => w.status === 'active').length})
@@ -234,7 +234,7 @@ export function ChannelWorkflowsPanel({
             'flex-1 px-4 py-2 text-sm font-medium transition-colors',
             activeTab === 'history'
               ? 'border-b-2 border-primary text-foreground'
-              : 'text-muted-foreground hover:text-foreground'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
           Execution History
@@ -445,13 +445,13 @@ function WorkflowListItem({
             className={cn(
               'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors',
               workflow.status === 'active' ? 'bg-primary' : 'bg-muted',
-              (isToggling || workflow.status === 'draft') && 'cursor-not-allowed opacity-50'
+              (isToggling || workflow.status === 'draft') && 'cursor-not-allowed opacity-50',
             )}
           >
             <span
               className={cn(
                 'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform',
-                workflow.status === 'active' ? 'translate-x-5' : 'translate-x-0'
+                workflow.status === 'active' ? 'translate-x-5' : 'translate-x-0',
               )}
             />
           </button>
@@ -499,7 +499,7 @@ function WorkflowStatusBadge({ status }: WorkflowStatusBadgeProps) {
       className={cn(
         'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
         config.bgColor,
-        config.color
+        config.color,
       )}
     >
       {status === 'active' && (
