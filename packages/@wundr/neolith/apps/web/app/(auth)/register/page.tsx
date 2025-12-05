@@ -4,6 +4,7 @@ import { Button, Input } from '@neolith/ui';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Suspense, useState } from 'react';
 
 import { GitHubIcon, GoogleIcon } from '../../../components/icons';
@@ -40,9 +41,42 @@ function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Password validation state
+  const [passwordValidation, setPasswordValidation] = useState({
+    minLength: false,
+    hasUppercase: false,
+    hasLowercase: false,
+    hasNumber: false,
+  });
 
   // Determine callback URL based on invite token
   const callbackUrl = inviteToken ? `/invite/${inviteToken}` : '/dashboard';
+
+  /**
+   * Validates password against all requirements
+   */
+  const validatePassword = (pwd: string) => {
+    const validation = {
+      minLength: pwd.length >= 8,
+      hasUppercase: /[A-Z]/.test(pwd),
+      hasLowercase: /[a-z]/.test(pwd),
+      hasNumber: /[0-9]/.test(pwd),
+    };
+    setPasswordValidation(validation);
+    return Object.values(validation).every(Boolean);
+  };
+
+  /**
+   * Handles password input change with validation
+   */
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    validatePassword(newPassword);
+  };
 
   /**
    * Handles OAuth sign-up with the specified provider.
@@ -71,9 +105,11 @@ function RegisterForm() {
       return;
     }
 
-    // Validate password strength (basic check)
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+    // Validate password strength - must match backend requirements
+    if (!validatePassword(password)) {
+      setError(
+        'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number'
+      );
       return;
     }
 
@@ -186,28 +222,131 @@ function RegisterForm() {
           autoComplete='email'
           required
         />
-        <Input
-          type='password'
-          placeholder='Password'
-          value={password}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setPassword(e.target.value)
-          }
-          disabled={isLoading}
-          autoComplete='new-password'
-          required
-        />
-        <Input
-          type='password'
-          placeholder='Confirm password'
-          value={confirmPassword}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setConfirmPassword(e.target.value)
-          }
-          disabled={isLoading}
-          autoComplete='new-password'
-          required
-        />
+        <div className='space-y-2'>
+          <div className='relative'>
+            <Input
+              type={showPassword ? 'text' : 'password'}
+              placeholder='Password'
+              value={password}
+              onChange={handlePasswordChange}
+              disabled={isLoading}
+              autoComplete='new-password'
+              required
+            />
+            <button
+              type='button'
+              onClick={() => setShowPassword(!showPassword)}
+              className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? (
+                <EyeOff className='h-5 w-5' />
+              ) : (
+                <Eye className='h-5 w-5' />
+              )}
+            </button>
+          </div>
+          {password && (
+            <div className='space-y-1 rounded-md bg-muted/50 p-3 text-xs'>
+              <p className='font-medium text-muted-foreground mb-1'>
+                Password requirements:
+              </p>
+              <div className='space-y-1'>
+                <div className='flex items-center gap-2'>
+                  {passwordValidation.minLength ? (
+                    <span className='text-green-600'>✓</span>
+                  ) : (
+                    <span className='text-destructive'>✗</span>
+                  )}
+                  <span
+                    className={
+                      passwordValidation.minLength
+                        ? 'text-green-600'
+                        : 'text-muted-foreground'
+                    }
+                  >
+                    At least 8 characters
+                  </span>
+                </div>
+                <div className='flex items-center gap-2'>
+                  {passwordValidation.hasUppercase ? (
+                    <span className='text-green-600'>✓</span>
+                  ) : (
+                    <span className='text-destructive'>✗</span>
+                  )}
+                  <span
+                    className={
+                      passwordValidation.hasUppercase
+                        ? 'text-green-600'
+                        : 'text-muted-foreground'
+                    }
+                  >
+                    One uppercase letter
+                  </span>
+                </div>
+                <div className='flex items-center gap-2'>
+                  {passwordValidation.hasLowercase ? (
+                    <span className='text-green-600'>✓</span>
+                  ) : (
+                    <span className='text-destructive'>✗</span>
+                  )}
+                  <span
+                    className={
+                      passwordValidation.hasLowercase
+                        ? 'text-green-600'
+                        : 'text-muted-foreground'
+                    }
+                  >
+                    One lowercase letter
+                  </span>
+                </div>
+                <div className='flex items-center gap-2'>
+                  {passwordValidation.hasNumber ? (
+                    <span className='text-green-600'>✓</span>
+                  ) : (
+                    <span className='text-destructive'>✗</span>
+                  )}
+                  <span
+                    className={
+                      passwordValidation.hasNumber
+                        ? 'text-green-600'
+                        : 'text-muted-foreground'
+                    }
+                  >
+                    One number
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className='relative'>
+          <Input
+            type={showConfirmPassword ? 'text' : 'password'}
+            placeholder='Confirm password'
+            value={confirmPassword}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setConfirmPassword(e.target.value)
+            }
+            disabled={isLoading}
+            autoComplete='new-password'
+            required
+          />
+          <button
+            type='button'
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+            aria-label={
+              showConfirmPassword ? 'Hide password' : 'Show password'
+            }
+          >
+            {showConfirmPassword ? (
+              <EyeOff className='h-5 w-5' />
+            ) : (
+              <Eye className='h-5 w-5' />
+            )}
+          </button>
+        </div>
         <Button type='submit' className='w-full' disabled={isLoading}>
           {isLoading ? 'Creating account...' : 'Create account'}
         </Button>

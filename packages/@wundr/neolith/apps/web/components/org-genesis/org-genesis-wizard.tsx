@@ -25,6 +25,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -142,11 +149,6 @@ export function OrgGenesisWizard() {
     await generateOrganization(fullInput);
   };
 
-  const handleCustomize = () => {
-    // Future: Navigate to customization page
-    console.log('Customize organization', generatedOrg);
-  };
-
   const handleAccept = async () => {
     if (!generatedOrg) {
       return;
@@ -226,7 +228,6 @@ export function OrgGenesisWizard() {
         <OrgPreview
           orgData={generatedOrg}
           onRegenerate={handleRegenerate}
-          onCustomize={handleCustomize}
           onAccept={handleAccept}
           isRegenerating={isGenerating}
         />
@@ -289,12 +290,25 @@ function BasicInfoStep({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Organization Type</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder='e.g., Hedge Fund, VC Firm, Startup'
-                      {...field}
-                    />
-                  </FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select organization type' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value='startup'>Startup</SelectItem>
+                      <SelectItem value='enterprise'>Enterprise</SelectItem>
+                      <SelectItem value='agency'>Agency</SelectItem>
+                      <SelectItem value='nonprofit'>Non-Profit</SelectItem>
+                      <SelectItem value='government'>Government</SelectItem>
+                      <SelectItem value='education'>Education</SelectItem>
+                      <SelectItem value='other'>Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormDescription>
                     What industry or sector does your organization operate in?
                   </FormDescription>

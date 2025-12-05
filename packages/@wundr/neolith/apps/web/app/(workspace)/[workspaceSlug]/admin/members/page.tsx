@@ -5,6 +5,16 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   ResponsiveModal,
   ResponsiveModalContent,
   ResponsiveModalHeader,
@@ -48,6 +58,7 @@ export default function AdminMembersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(showInviteOnLoad);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
 
   const {
     members,
@@ -113,12 +124,17 @@ export default function AdminMembersPage() {
 
   const handleRemove = useCallback(
     async (memberId: string) => {
-      if (window.confirm('Are you sure you want to remove this member?')) {
-        await removeMember(memberId);
-      }
+      setMemberToRemove(memberId);
     },
-    [removeMember]
+    []
   );
+
+  const confirmRemove = useCallback(async () => {
+    if (memberToRemove) {
+      await removeMember(memberToRemove);
+      setMemberToRemove(null);
+    }
+  }, [memberToRemove, removeMember]);
 
   const filterOptions: { value: FilterStatus; label: string }[] = [
     { value: 'all', label: 'All Members' },
@@ -292,6 +308,33 @@ export default function AdminMembersPage() {
         }
         onClose={() => setEditingMember(null)}
       />
+
+      {/* Remove Member Confirmation Dialog */}
+      <AlertDialog
+        open={memberToRemove !== null}
+        onOpenChange={open => !open && setMemberToRemove(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this member from the workspace?
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setMemberToRemove(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRemove}
+              className='bg-red-600 hover:bg-red-700'
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

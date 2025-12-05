@@ -74,7 +74,7 @@ export default function AccountOverviewPage() {
   const hasAvatar = !!session?.user?.image;
   const hasName = !!session?.user?.name;
   const hasEmail = !!session?.user?.email;
-  const isEmailVerified = true; // TODO: Get from session/user data
+  const isEmailVerified = !!session?.user?.emailVerified;
 
   const completionItems = [
     { label: 'Profile picture', completed: hasAvatar },

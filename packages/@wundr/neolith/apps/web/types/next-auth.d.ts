@@ -28,6 +28,8 @@ declare module 'next-auth' {
       isOrchestrator: boolean;
       /** The user's role in the system */
       role: UserRole;
+      /** Email verification timestamp (null if not verified) */
+      emailVerified?: Date | null;
     } & DefaultSession['user'];
   }
 

@@ -83,6 +83,7 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isLoadingChannels, setIsLoadingChannels] = useState(true);
   const [errors, setErrors] = useState<DashboardErrors>({});
+  const [activityFilter, setActivityFilter] = useState<'all' | 'channels' | 'dms'>('all');
 
   // Get greeting based on time of day
   const getGreeting = () => {
@@ -210,6 +211,20 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
     return date.toLocaleDateString();
   };
 
+  // Filter activities based on the selected filter
+  const filteredActivities = activities.filter(activity => {
+    if (activityFilter === 'all') {
+      return true;
+    }
+    if (activityFilter === 'channels') {
+      return activity.target?.type === 'channel';
+    }
+    if (activityFilter === 'dms') {
+      return activity.target?.type === 'direct_message' || activity.type === 'direct_message';
+    }
+    return true;
+  });
+
   const isLoading = isLoadingActivities || isLoadingStats || isLoadingChannels;
 
   if (isLoading) {
@@ -247,13 +262,25 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
                   </CardDescription>
                 </div>
                 <div className='flex gap-2'>
-                  <Button variant='outline' size='sm'>
+                  <Button
+                    variant={activityFilter === 'all' ? 'outline' : 'ghost'}
+                    size='sm'
+                    onClick={() => setActivityFilter('all')}
+                  >
                     All
                   </Button>
-                  <Button variant='ghost' size='sm'>
+                  <Button
+                    variant={activityFilter === 'channels' ? 'outline' : 'ghost'}
+                    size='sm'
+                    onClick={() => setActivityFilter('channels')}
+                  >
                     Channels
                   </Button>
-                  <Button variant='ghost' size='sm'>
+                  <Button
+                    variant={activityFilter === 'dms' ? 'outline' : 'ghost'}
+                    size='sm'
+                    onClick={() => setActivityFilter('dms')}
+                  >
                     DMs
                   </Button>
                 </div>
@@ -264,9 +291,9 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
                     <p className='font-medium'>Error loading activity</p>
                     <p className='mt-1 text-xs'>{errors.activities}</p>
                   </div>
-                ) : activities.length > 0 ? (
+                ) : filteredActivities.length > 0 ? (
                   <div className='space-y-4'>
-                    {activities.map(activity => (
+                    {filteredActivities.map(activity => (
                       <div
                         key={activity.id}
                         className='flex items-start gap-3 pb-4 border-b last:border-0 last:pb-0'

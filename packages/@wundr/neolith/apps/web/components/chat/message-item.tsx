@@ -220,6 +220,7 @@ export const MessageItem = memo(function MessageItem({
 
       {/* Message */}
       <div
+        data-message-id={message.id}
         className={cn(
           'group relative px-4 py-2 transition-colors hover:bg-accent/50',
           className

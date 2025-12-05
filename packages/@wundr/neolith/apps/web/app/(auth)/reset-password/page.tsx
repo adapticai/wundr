@@ -1,9 +1,65 @@
 'use client';
 
 import { Button, Input } from '@neolith/ui';
+import { Eye, EyeOff, Check, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+
+/**
+ * Password requirements checklist component
+ */
+function PasswordRequirements({ password }: { password: string }) {
+  const requirements = [
+    {
+      label: 'At least 8 characters',
+      met: password.length >= 8,
+    },
+    {
+      label: 'One uppercase letter',
+      met: /[A-Z]/.test(password),
+    },
+    {
+      label: 'One lowercase letter',
+      met: /[a-z]/.test(password),
+    },
+    {
+      label: 'One number',
+      met: /\d/.test(password),
+    },
+  ];
+
+  return (
+    <div className='space-y-2 rounded-md border border-border bg-muted/30 p-3'>
+      <p className='text-xs font-medium text-foreground'>
+        Password must contain:
+      </p>
+      <ul className='space-y-1'>
+        {requirements.map((req, index) => (
+          <li
+            key={index}
+            className='flex items-center gap-2 text-xs'
+          >
+            {req.met ? (
+              <Check className='h-3.5 w-3.5 text-green-600 dark:text-green-400' />
+            ) : (
+              <X className='h-3.5 w-3.5 text-muted-foreground' />
+            )}
+            <span
+              className={
+                req.met
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-muted-foreground'
+              }
+            >
+              {req.label}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 /**
  * Password strength indicator component
@@ -103,6 +159,8 @@ function ResetPasswordContent() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Extract token from URL on mount
   useEffect(() => {
@@ -200,6 +258,11 @@ function ResetPasswordContent() {
         <p className='text-sm text-muted-foreground'>
           Enter your new password below
         </p>
+        {token && (
+          <p className='text-xs text-muted-foreground/80'>
+            Link valid for 1 hour
+          </p>
+        )}
       </div>
 
       {/* Success Message */}
@@ -220,34 +283,67 @@ function ResetPasswordContent() {
       {/* Password Reset Form */}
       {!success && token && (
         <form onSubmit={handleSubmit} className='space-y-4'>
+          {/* Password Requirements - Always Visible */}
+          <PasswordRequirements password={password} />
+
           <div className='space-y-2'>
-            <Input
-              type='password'
-              placeholder='New password'
-              value={password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setPassword(e.target.value)
-              }
-              disabled={isLoading}
-              autoComplete='new-password'
-              autoFocus
-              required
-            />
+            <div className='relative'>
+              <Input
+                type={showPassword ? 'text' : 'password'}
+                placeholder='New password'
+                value={password}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setPassword(e.target.value)
+                }
+                disabled={isLoading}
+                autoComplete='new-password'
+                autoFocus
+                required
+                className='pr-10'
+              />
+              <button
+                type='button'
+                onClick={() => setShowPassword(!showPassword)}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors'
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <EyeOff className='h-4 w-4' />
+                ) : (
+                  <Eye className='h-4 w-4' />
+                )}
+              </button>
+            </div>
             <PasswordStrength password={password} />
           </div>
 
           <div className='space-y-2'>
-            <Input
-              type='password'
-              placeholder='Confirm new password'
-              value={confirmPassword}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setConfirmPassword(e.target.value)
-              }
-              disabled={isLoading}
-              autoComplete='new-password'
-              required
-            />
+            <div className='relative'>
+              <Input
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder='Confirm new password'
+                value={confirmPassword}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setConfirmPassword(e.target.value)
+                }
+                disabled={isLoading}
+                autoComplete='new-password'
+                required
+                className='pr-10'
+              />
+              <button
+                type='button'
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors'
+                tabIndex={-1}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className='h-4 w-4' />
+                ) : (
+                  <Eye className='h-4 w-4' />
+                )}
+              </button>
+            </div>
             {!passwordsMatch && confirmPassword && (
               <p className='text-xs text-destructive'>Passwords do not match</p>
             )}

@@ -1,14 +1,11 @@
 'use client';
 
-import { Shield, Eye, Bell, Chrome, Github } from 'lucide-react';
+import { Shield, Eye, Bell, Chrome, Github, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { DangerZone } from '@/components/settings/security/DangerZone';
 import { PasswordSection } from '@/components/settings/security/PasswordSection';
-import {
-  SessionsList,
-  type Session,
-} from '@/components/settings/security/SessionsList';
+import { SessionsList } from '@/components/settings/security/SessionsList';
 import { TwoFactorSection } from '@/components/settings/security/TwoFactorSection';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,6 +25,8 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
+import { useConnectedAccounts } from '@/hooks/use-connected-accounts';
+import { useSessions } from '@/hooks/use-sessions';
 import { useToast } from '@/hooks/use-toast';
 
 export default function SecuritySettingsPage() {
@@ -42,43 +41,20 @@ export default function SecuritySettingsPage() {
     loginAlerts: true,
   });
 
-  const [sessions] = useState<Session[]>([
-    {
-      id: '1',
-      device: 'Chrome on macOS',
-      browser: 'Chrome',
-      os: 'macOS',
-      location: 'San Francisco, CA',
-      lastActive: 'Active now',
-      current: true,
-      deviceType: 'desktop',
-    },
-    {
-      id: '2',
-      device: 'Firefox on Windows',
-      browser: 'Firefox',
-      os: 'Windows',
-      location: 'New York, NY',
-      lastActive: '2 days ago',
-      current: false,
-      deviceType: 'desktop',
-    },
-    {
-      id: '3',
-      device: 'Safari on iPhone',
-      browser: 'Safari',
-      os: 'iOS',
-      location: 'Los Angeles, CA',
-      lastActive: '1 week ago',
-      current: false,
-      deviceType: 'mobile',
-    },
-  ]);
+  // Use custom hooks for data fetching
+  const {
+    sessions,
+    isLoading: sessionsLoading,
+    error: sessionsError,
+    refresh: refreshSessions,
+  } = useSessions();
 
-  const [connectedAccounts] = useState([
-    { provider: 'google', email: 'user@gmail.com', connected: true },
-    { provider: 'github', username: 'user123', connected: true },
-  ]);
+  const {
+    accounts: connectedAccounts,
+    isLoading: accountsLoading,
+    error: accountsError,
+    refresh: refreshAccounts,
+  } = useConnectedAccounts();
 
   const handleToggle = async (key: keyof typeof settings) => {
     const newValue = !settings[key];
@@ -169,7 +145,7 @@ export default function SecuritySettingsPage() {
       });
 
       // Refresh sessions list after revoking
-      window.location.reload();
+      await refreshSessions();
     } catch (error) {
       toast({
         title: 'Error',
@@ -195,8 +171,8 @@ export default function SecuritySettingsPage() {
         description: 'All other sessions have been signed out',
       });
 
-      // Refresh page after revoking all sessions
-      window.location.reload();
+      // Refresh sessions list after revoking all
+      await refreshSessions();
     } catch (error) {
       toast({
         title: 'Error',
@@ -252,7 +228,8 @@ export default function SecuritySettingsPage() {
         description: `Your ${provider} account has been disconnected`,
       });
 
-      window.location.reload();
+      // Refresh connected accounts list
+      await refreshAccounts();
     } catch (error) {
       toast({
         title: 'Error',
@@ -307,41 +284,61 @@ export default function SecuritySettingsPage() {
               </p>
             </div>
 
-            <div className='space-y-3'>
-              {connectedAccounts.map(account => (
-                <div
-                  key={account.provider}
-                  className='flex items-center justify-between rounded-lg border p-4'
-                >
-                  <div className='flex items-center gap-3'>
-                    <div className='flex h-10 w-10 items-center justify-center rounded-full bg-muted'>
-                      {account.provider === 'google' && (
-                        <Chrome className='h-5 w-5' />
-                      )}
-                      {account.provider === 'github' && (
-                        <Github className='h-5 w-5' />
-                      )}
-                    </div>
-                    <div>
-                      <p className='text-sm font-medium capitalize'>
-                        {account.provider}
-                      </p>
-                      <p className='text-xs text-muted-foreground'>
-                        {'email' in account ? account.email : account.username}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={() => handleDisconnectSocial(account.provider)}
-                    className='text-destructive hover:text-destructive hover:bg-destructive/10'
+            {accountsLoading ? (
+              <div className='flex items-center justify-center p-8'>
+                <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+              </div>
+            ) : accountsError ? (
+              <div className='rounded-lg border border-destructive/20 bg-destructive/5 p-4'>
+                <p className='text-sm text-destructive'>
+                  Failed to load connected accounts. Please try again later.
+                </p>
+              </div>
+            ) : connectedAccounts.length === 0 ? (
+              <div className='rounded-lg border border-dashed p-4'>
+                <p className='text-sm text-muted-foreground text-center'>
+                  No connected accounts
+                </p>
+              </div>
+            ) : (
+              <div className='space-y-3'>
+                {connectedAccounts.map(account => (
+                  <div
+                    key={account.provider}
+                    className='flex items-center justify-between rounded-lg border p-4'
                   >
-                    Disconnect
-                  </Button>
-                </div>
-              ))}
-            </div>
+                    <div className='flex items-center gap-3'>
+                      <div className='flex h-10 w-10 items-center justify-center rounded-full bg-muted'>
+                        {account.provider === 'google' && (
+                          <Chrome className='h-5 w-5' />
+                        )}
+                        {account.provider === 'github' && (
+                          <Github className='h-5 w-5' />
+                        )}
+                      </div>
+                      <div>
+                        <p className='text-sm font-medium capitalize'>
+                          {account.provider}
+                        </p>
+                        <p className='text-xs text-muted-foreground'>
+                          {'email' in account
+                            ? account.email
+                            : account.username}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={() => handleDisconnectSocial(account.provider)}
+                      className='text-destructive hover:text-destructive hover:bg-destructive/10'
+                    >
+                      Disconnect
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -358,11 +355,23 @@ export default function SecuritySettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SessionsList
-            sessions={sessions}
-            onRevokeSession={handleRevokeSession}
-            onRevokeAllSessions={handleRevokeAllSessions}
-          />
+          {sessionsLoading ? (
+            <div className='flex items-center justify-center p-8'>
+              <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+            </div>
+          ) : sessionsError ? (
+            <div className='rounded-lg border border-destructive/20 bg-destructive/5 p-4'>
+              <p className='text-sm text-destructive'>
+                Failed to load sessions. Please try again later.
+              </p>
+            </div>
+          ) : (
+            <SessionsList
+              sessions={sessions}
+              onRevokeSession={handleRevokeSession}
+              onRevokeAllSessions={handleRevokeAllSessions}
+            />
+          )}
         </CardContent>
       </Card>
 

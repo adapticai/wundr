@@ -1,10 +1,11 @@
 'use client';
 
-import { Button, Input } from '@neolith/ui';
+import { Button, Input, Label } from '@neolith/ui';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Suspense, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 import { GitHubIcon, GoogleIcon } from '../../../components/icons';
 
@@ -36,6 +37,7 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Determine callback URL based on invite token
   const callbackUrl = inviteToken ? `/invite/${inviteToken}` : '/dashboard';
@@ -134,35 +136,63 @@ function LoginForm() {
 
       {/* Error Message */}
       {error && (
-        <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
+        <div
+          role='alert'
+          aria-live='polite'
+          className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'
+        >
           {error}
         </div>
       )}
 
       {/* Email/Password Form */}
       <form onSubmit={handleEmailSignIn} className='space-y-4'>
-        <Input
-          type='email'
-          placeholder='Email address'
-          value={email}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setEmail(e.target.value)
-          }
-          disabled={isLoading}
-          autoComplete='email'
-          required
-        />
-        <Input
-          type='password'
-          placeholder='Password'
-          value={password}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setPassword(e.target.value)
-          }
-          disabled={isLoading}
-          autoComplete='current-password'
-          required
-        />
+        <div className='space-y-2'>
+          <Label htmlFor='email'>Email</Label>
+          <Input
+            id='email'
+            type='email'
+            placeholder='Enter your email'
+            value={email}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setEmail(e.target.value)
+            }
+            disabled={isLoading}
+            autoComplete='email'
+            required
+            aria-label='Email address'
+          />
+        </div>
+        <div className='space-y-2'>
+          <Label htmlFor='password'>Password</Label>
+          <div className='relative'>
+            <Input
+              id='password'
+              type={showPassword ? 'text' : 'password'}
+              placeholder='Enter your password'
+              value={password}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setPassword(e.target.value)
+              }
+              disabled={isLoading}
+              autoComplete='current-password'
+              required
+              aria-label='Password'
+            />
+            <button
+              type='button'
+              onClick={() => setShowPassword(!showPassword)}
+              className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? (
+                <EyeOff className='h-4 w-4' />
+              ) : (
+                <Eye className='h-4 w-4' />
+              )}
+            </button>
+          </div>
+        </div>
         <Button type='submit' className='w-full' disabled={isLoading}>
           {isLoading ? 'Signing in...' : 'Sign in'}
         </Button>

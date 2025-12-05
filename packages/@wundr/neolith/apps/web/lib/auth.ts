@@ -62,6 +62,7 @@ declare module 'next-auth' {
       id: string;
       isOrchestrator: boolean;
       role?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
+      emailVerified?: Date | null;
     } & DefaultSession['user'];
   }
 
@@ -493,15 +494,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role =
           (token.role as 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST') ?? 'MEMBER';
 
-        // Fetch the user's avatar from the database (S3 URL)
+        // Fetch the user's avatar and email verification status from the database
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.sub },
-            select: { avatarUrl: true },
+            select: { avatarUrl: true, emailVerified: true },
           });
           if (dbUser?.avatarUrl) {
             session.user.image = dbUser.avatarUrl;
           }
+          session.user.emailVerified = dbUser?.emailVerified ?? null;
         } catch (error: unknown) {
           // Don't block session creation on avatar fetch failure
           if (process.env.NODE_ENV === 'development') {

@@ -2,6 +2,7 @@
 
 import { clsx } from 'clsx';
 import { useState, useRef, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export interface DateRangePickerProps {
   from?: Date;
@@ -16,6 +17,7 @@ export function DateRangePicker({
   onSelect,
   className,
 }: DateRangePickerProps) {
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [fromInput, setFromInput] = useState(from ? formatDate(from) : '');
   const [toInput, setToInput] = useState(to ? formatDate(to) : '');
@@ -45,17 +47,29 @@ export function DateRangePicker({
     const toDate = toInput ? new Date(toInput) : undefined;
 
     if (fromDate && isNaN(fromDate.getTime())) {
-      alert('Invalid "from" date');
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Date',
+        description: 'Please enter a valid "from" date.',
+      });
       return;
     }
 
     if (toDate && isNaN(toDate.getTime())) {
-      alert('Invalid "to" date');
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Date',
+        description: 'Please enter a valid "to" date.',
+      });
       return;
     }
 
     if (fromDate && toDate && fromDate > toDate) {
-      alert('Start date must be before end date');
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Date Range',
+        description: 'Start date must be before end date.',
+      });
       return;
     }
 

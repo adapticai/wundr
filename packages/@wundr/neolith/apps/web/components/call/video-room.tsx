@@ -256,15 +256,27 @@ function VideoRoomInner({
   // Handle mute participant (host only)
   const handleMuteParticipant = useCallback(
     async (participantId: string) => {
-      if (!isHost || !room) {
+      if (!isHost || !room || !callId) {
         return;
       }
 
-      // Use LiveKit's API to mute remote participant
-      // This requires server-side implementation
-      console.log('Muting participant:', participantId);
+      try {
+        // Use server-side API to mute the participant
+        // LiveKit requires server-side implementation for permission changes
+        const response = await fetch(`/api/calls/${callId}/mute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ participantId }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to mute participant');
+        }
+      } catch (error) {
+        console.error('Error muting participant:', error);
+      }
     },
-    [isHost, room]
+    [isHost, room, callId]
   );
 
   // Handle kick participant (host only)
@@ -448,8 +460,8 @@ function VideoRoomInner({
           videoDevices={devices.video}
           selectedAudioDevice={selectedAudioDevice}
           selectedVideoDevice={selectedVideoDevice}
-          onSelectAudioDevice={setVideoDevice}
-          onSelectVideoDevice={setAudioDevice}
+          onSelectAudioDevice={setAudioDevice}
+          onSelectVideoDevice={setVideoDevice}
         />
       </div>
 

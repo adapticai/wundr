@@ -28,7 +28,6 @@ import type { OrgGenerationResponse } from '@/lib/validations/org-genesis';
 interface OrgPreviewProps {
   orgData: OrgGenerationResponse;
   onRegenerate: () => void;
-  onCustomize: () => void;
   onAccept: () => void;
   isRegenerating?: boolean;
 }
@@ -36,7 +35,6 @@ interface OrgPreviewProps {
 export function OrgPreview({
   orgData,
   onRegenerate,
-  onCustomize,
   onAccept,
   isRegenerating = false,
 }: OrgPreviewProps) {
@@ -270,7 +268,7 @@ export function OrgPreview({
       {/* Actions */}
       <div className='flex items-center justify-between gap-4 rounded-lg border bg-muted/50 p-4'>
         <div className='text-sm text-muted-foreground'>
-          Ready to create this organization?
+          Ready to create this organization? You can regenerate if needed, or create it to start using it.
         </div>
         <div className='flex gap-3'>
           <Button
@@ -279,9 +277,6 @@ export function OrgPreview({
             disabled={isRegenerating}
           >
             {isRegenerating ? 'Regenerating...' : 'Regenerate'}
-          </Button>
-          <Button variant='outline' onClick={onCustomize}>
-            Customize
           </Button>
           <Button onClick={onAccept}>Create Organization</Button>
         </div>

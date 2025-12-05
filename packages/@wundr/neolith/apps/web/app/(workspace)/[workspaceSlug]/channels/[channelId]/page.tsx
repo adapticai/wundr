@@ -25,6 +25,7 @@ import {
   useTypingIndicator,
   useThread,
 } from '@/hooks/use-chat';
+import { useChannelPermissions } from '@/hooks/use-channel';
 import { useToast } from '@/hooks/use-toast';
 
 import type { ConversationTab } from '@/components/channel/shared';
@@ -73,6 +74,12 @@ export default function ChannelPage() {
     isLoading: isChannelLoading,
     refetch: refetchChannel,
   } = useChannel(channelId);
+
+  // Fetch channel permissions
+  const {
+    permissions,
+    isLoading: isPermissionsLoading,
+  } = useChannelPermissions(channelId, currentUser?.id || '');
 
   // Derive isStarred: use local state for optimistic updates, fallback to channel data
   const channelWithStarred = channel as typeof channel & {
@@ -708,7 +715,7 @@ export default function ChannelPage() {
     }
   }, []);
 
-  const isLoading = isChannelLoading || isMessagesLoading || isAuthLoading;
+  const isLoading = isChannelLoading || isMessagesLoading || isAuthLoading || isPermissionsLoading;
 
   if (isLoading) {
     return (
@@ -785,16 +792,18 @@ export default function ChannelPage() {
       }
     : null;
 
-  // TODO: Replace with actual permissions from API/hook
-  // Currently using permissive defaults - should be based on user role and channel settings
-  const permissions: ChannelPermissions = {
-    canEdit: true,
-    canDelete: true,
-    canArchive: true,
-    canInvite: true,
-    canRemoveMembers: true,
-    canChangeRoles: true,
-  };
+  // Permissions are now fetched from API via useChannelPermissions hook
+  // Default to restrictive permissions if not loaded yet
+  const effectivePermissions: ChannelPermissions = isPermissionsLoading
+    ? {
+        canEdit: false,
+        canDelete: false,
+        canArchive: false,
+        canInvite: false,
+        canRemoveMembers: false,
+        canChangeRoles: false,
+      }
+    : permissions;
 
   return (
     <div className='flex h-[calc(100vh-4rem)] flex-col'>
@@ -802,7 +811,7 @@ export default function ChannelPage() {
       {channelForHeader && (
         <ChannelHeader
           channel={channelForHeader}
-          permissions={permissions}
+          permissions={effectivePermissions}
           workspaceId={workspaceSlug}
           activeTab={activeTab}
           onTabChange={handleTabChange}
@@ -923,7 +932,7 @@ export default function ChannelPage() {
 
           <ChannelDetailsPanel
             channel={channelForHeader}
-            permissions={permissions}
+            permissions={effectivePermissions}
             isOpen={showDetailsPanel}
             onClose={() => setShowDetailsPanel(false)}
             onEditChannel={() => {

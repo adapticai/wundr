@@ -220,7 +220,7 @@ export default function WorkspacesPage() {
                 <Card
                   key={workspace.id}
                   className='hover:border-primary transition-colors cursor-pointer'
-                  onClick={() => handleWorkspaceClick(workspace.id)}
+                  onClick={() => handleWorkspaceClick(workspace.slug)}
                 >
                   <CardHeader>
                     <CardTitle>{workspace.name}</CardTitle>

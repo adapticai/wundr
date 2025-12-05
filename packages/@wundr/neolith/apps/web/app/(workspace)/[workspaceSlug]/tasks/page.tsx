@@ -1,14 +1,63 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckSquare } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useTasks } from '@/hooks/use-tasks';
 import { cn } from '@/lib/utils';
+import { createTaskSchema } from '@/lib/validations/task';
 
 import type { TaskPriorityType, TaskStatusType } from '@/lib/validations/task';
+
+// =============================================================================
+// Form Schema
+// =============================================================================
+
+const createTaskFormSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(500, 'Title is too long'),
+  description: z.string().optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']),
+  status: z.enum(['TODO', 'IN_PROGRESS', 'BLOCKED', 'DONE', 'CANCELLED']),
+  dueDate: z.string().optional(),
+  estimatedHours: z.coerce.number().int().positive().optional(),
+  tags: z.string().optional(), // Comma-separated tags
+  orchestratorId: z.string().min(1, 'Orchestrator is required'),
+  assignedToId: z.string().optional(),
+});
+
+type CreateTaskFormValues = z.infer<typeof createTaskFormSchema>;
 
 // =============================================================================
 // Types
@@ -98,6 +147,7 @@ export default function TasksPage() {
     TaskPriorityType | 'all'
   >('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Hooks
   const { tasks, isLoading, error, refetch } = useTasks(workspaceSlug, {
@@ -171,13 +221,10 @@ export default function TasksPage() {
             Manage tasks across your workspace
           </p>
         </div>
-        <button
-          type='button'
-          className='inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90'
-        >
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
           <PlusIcon className='h-4 w-4' />
           Create Task
-        </button>
+        </Button>
       </div>
 
       {/* Stats Overview */}
@@ -332,9 +379,7 @@ export default function TasksPage() {
                 }
               : {
                   label: 'Create Your First Task',
-                  onClick: () => {
-                    // TODO: Open create task modal
-                  },
+                  onClick: () => setIsCreateDialogOpen(true),
                 }
           }
         />
@@ -348,7 +393,365 @@ export default function TasksPage() {
           ))}
         </div>
       )}
+
+      {/* Create Task Dialog */}
+      <CreateTaskDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        workspaceSlug={workspaceSlug}
+        onSuccess={refetch}
+      />
     </div>
+  );
+}
+
+// =============================================================================
+// Create Task Dialog Component
+// =============================================================================
+
+interface CreateTaskDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  workspaceSlug: string;
+  onSuccess: () => void;
+}
+
+function CreateTaskDialog({
+  open,
+  onOpenChange,
+  workspaceSlug,
+  onSuccess,
+}: CreateTaskDialogProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orchestrators, setOrchestrators] = useState<
+    Array<{ id: string; role: string; userId: string }>
+  >([]);
+  const [orchestratorsLoading, setOrchestratorsLoading] = useState(false);
+
+  const form = useForm<CreateTaskFormValues>({
+    resolver: zodResolver(createTaskFormSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      priority: 'MEDIUM',
+      status: 'TODO',
+      dueDate: '',
+      estimatedHours: undefined,
+      tags: '',
+      orchestratorId: '',
+      assignedToId: '',
+    },
+  });
+
+  // Fetch orchestrators when dialog opens
+  useMemo(() => {
+    if (open && !orchestrators.length) {
+      setOrchestratorsLoading(true);
+      fetch(`/api/orchestrators?workspaceSlug=${workspaceSlug}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.data) {
+            setOrchestrators(data.data);
+            // Auto-select first orchestrator if available
+            if (data.data.length > 0 && !form.getValues('orchestratorId')) {
+              form.setValue('orchestratorId', data.data[0].id);
+            }
+          }
+        })
+        .catch(err => console.error('Failed to fetch orchestrators:', err))
+        .finally(() => setOrchestratorsLoading(false));
+    }
+  }, [open, orchestrators.length, workspaceSlug, form]);
+
+  const onSubmit = async (values: CreateTaskFormValues) => {
+    setIsSubmitting(true);
+
+    try {
+      // Parse tags from comma-separated string
+      const tagsArray = values.tags
+        ? values.tags
+            .split(',')
+            .map(t => t.trim())
+            .filter(Boolean)
+        : [];
+
+      // Prepare payload
+      const payload = {
+        title: values.title,
+        description: values.description || '',
+        priority: values.priority,
+        status: values.status,
+        orchestratorId: values.orchestratorId,
+        workspaceId: workspaceSlug,
+        dueDate: values.dueDate || undefined,
+        estimatedHours: values.estimatedHours,
+        tags: tagsArray,
+        assignedToId: values.assignedToId || undefined,
+      };
+
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create task');
+      }
+
+      // Success - close dialog and refresh tasks
+      form.reset();
+      onOpenChange(false);
+      onSuccess();
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      // You could add toast notification here
+      alert(
+        error instanceof Error ? error.message : 'Failed to create task'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className='max-w-2xl max-h-[90vh] overflow-y-auto'>
+        <DialogHeader>
+          <DialogTitle>Create New Task</DialogTitle>
+          <DialogDescription>
+            Create a new task for your workspace. Fill in the details below.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            {/* Title */}
+            <FormField
+              control={form.control}
+              name='title'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder='Enter task title...'
+                      {...field}
+                      disabled={isSubmitting}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Description */}
+            <FormField
+              control={form.control}
+              name='description'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder='Enter task description...'
+                      className='min-h-[100px]'
+                      {...field}
+                      disabled={isSubmitting}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className='grid grid-cols-2 gap-4'>
+              {/* Priority */}
+              <FormField
+                control={form.control}
+                name='priority'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isSubmitting}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder='Select priority' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(PRIORITY_CONFIG).map(
+                          ([value, config]) => (
+                            <SelectItem key={value} value={value}>
+                              {config.label}
+                            </SelectItem>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Status */}
+              <FormField
+                control={form.control}
+                name='status'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isSubmitting}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder='Select status' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(STATUS_CONFIG).map(
+                          ([value, config]) => (
+                            <SelectItem key={value} value={value}>
+                              {config.label}
+                            </SelectItem>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Orchestrator */}
+            <FormField
+              control={form.control}
+              name='orchestratorId'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Orchestrator</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isSubmitting || orchestratorsLoading}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={
+                            orchestratorsLoading
+                              ? 'Loading orchestrators...'
+                              : 'Select orchestrator'
+                          }
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {orchestrators.map(orch => (
+                        <SelectItem key={orch.id} value={orch.id}>
+                          {orch.role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    The orchestrator responsible for this task
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className='grid grid-cols-2 gap-4'>
+              {/* Due Date */}
+              <FormField
+                control={form.control}
+                name='dueDate'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Due Date</FormLabel>
+                    <FormControl>
+                      <Input
+                        type='date'
+                        {...field}
+                        disabled={isSubmitting}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Estimated Hours */}
+              <FormField
+                control={form.control}
+                name='estimatedHours'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estimated Hours</FormLabel>
+                    <FormControl>
+                      <Input
+                        type='number'
+                        min='1'
+                        placeholder='8'
+                        {...field}
+                        disabled={isSubmitting}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Tags */}
+            <FormField
+              control={form.control}
+              name='tags'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tags</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder='feature, backend, urgent (comma-separated)'
+                      {...field}
+                      disabled={isSubmitting}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Enter tags separated by commas
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type='submit' disabled={isSubmitting}>
+                {isSubmitting ? 'Creating...' : 'Create Task'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

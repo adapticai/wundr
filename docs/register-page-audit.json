@@ -1,0 +1,305 @@
+{
+  "view": "register",
+  "path": "packages/@wundr/neolith/apps/web/app/(auth)/register/page.tsx",
+  "uxScore": 6,
+  "uiScore": 7,
+  "completenessScore": 7,
+  "summary": {
+    "overview": "The register page is functional with OAuth and email/password registration, but has significant UX gaps around password requirements, validation feedback, and accessibility. The UI is consistent with the login page and uses proper shadcn/ui components. Backend integration is complete.",
+    "strengths": [
+      "Consistent UI/UX with login page",
+      "Multiple auth methods (OAuth + credentials)",
+      "Proper loading states and disabled states",
+      "Complete backend API with proper validation",
+      "Good error handling on server side",
+      "Proper use of Suspense for loading",
+      "Autocomplete attributes for better UX",
+      "Password hashing with PBKDF2 (100k iterations)",
+      "Email verification support",
+      "Transaction safety for user creation"
+    ],
+    "weaknesses": [
+      "No visible password requirements before submission",
+      "No real-time validation feedback",
+      "Missing accessibility labels (no Label components)",
+      "Basic client-side validation that doesn't match server schema",
+      "No password strength indicator",
+      "No show/hide password toggle",
+      "Error messages not associated with specific fields",
+      "Missing ARIA attributes for form validation",
+      "No success state handling after registration"
+    ]
+  },
+  "issues": [
+    {
+      "type": "ux",
+      "severity": "critical",
+      "description": "Password requirements not shown to user before submission. Server expects lowercase, uppercase, and number (line 67-68 in auth.ts), but UI only checks length >= 8 characters.",
+      "location": "register/page.tsx:75-78",
+      "currentCode": "if (password.length < 8) {\n  setError('Password must be at least 8 characters');\n  return;\n}",
+      "suggestedFix": "Display password requirements upfront (8+ chars, 1 uppercase, 1 lowercase, 1 number). Implement real-time validation that matches registerSchema passwordSchema requirements."
+    },
+    {
+      "type": "ux",
+      "severity": "critical",
+      "description": "Client-side validation is incomplete and doesn't match server-side schema. Missing uppercase, lowercase, and number requirements.",
+      "location": "register/page.tsx:74-78",
+      "context": "Server validates: min 8, max 128, 1 lowercase, 1 uppercase, 1 number (auth.ts:63-69)",
+      "suggestedFix": "Either use the registerSchema on client-side with zod, or replicate all validation rules. Current mismatch will confuse users."
+    },
+    {
+      "type": "a11y",
+      "severity": "critical",
+      "description": "No Label components used for form fields. Inputs only have placeholder text, which disappears on focus and is not accessible.",
+      "location": "register/page.tsx:167-210",
+      "suggestedFix": "Add Label component from @neolith/ui above each Input with htmlFor attribute. Example: <Label htmlFor='email'>Email address</Label>"
+    },
+    {
+      "type": "a11y",
+      "severity": "major",
+      "description": "Error message not associated with specific fields. Screen readers won't know which field has the error.",
+      "location": "register/page.tsx:159-163",
+      "suggestedFix": "Use aria-describedby on inputs to link to error messages, or pass error prop to Input component (component supports it)"
+    },
+    {
+      "type": "ux",
+      "severity": "major",
+      "description": "No password strength indicator. Users don't get real-time feedback about password quality.",
+      "location": "register/page.tsx:189-199",
+      "suggestedFix": "Add a password strength meter that shows weak/medium/strong based on meeting requirements"
+    },
+    {
+      "type": "ux",
+      "severity": "major",
+      "description": "No show/hide password toggle. Users can't verify what they typed, increasing registration errors.",
+      "location": "register/page.tsx:189-210",
+      "suggestedFix": "Add an eye icon button to toggle password visibility between 'password' and 'text' type"
+    },
+    {
+      "type": "ux",
+      "severity": "major",
+      "description": "No field-specific error messages. All errors show in one place at top, not next to the relevant field.",
+      "location": "register/page.tsx:159-163",
+      "suggestedFix": "Store errors per field in state and display below each input using Input error prop"
+    },
+    {
+      "type": "ux",
+      "severity": "major",
+      "description": "No success state or feedback after registration. User is redirected but doesn't know registration succeeded.",
+      "location": "register/page.tsx:96-100",
+      "suggestedFix": "Show success toast/message before sign-in redirect, especially for email verification case"
+    },
+    {
+      "type": "ui",
+      "severity": "minor",
+      "description": "Inconsistent button text with login page. Login uses 'Continue with' while register uses 'Sign up with'.",
+      "location": "register/page.tsx:131, 141",
+      "suggestedFix": "Use 'Continue with' for consistency with login page, or document the intentional difference"
+    },
+    {
+      "type": "a11y",
+      "severity": "minor",
+      "description": "No aria-live region for error announcements. Screen reader users won't be notified of errors.",
+      "location": "register/page.tsx:159-163",
+      "suggestedFix": "Add aria-live='polite' to error container so screen readers announce errors"
+    },
+    {
+      "type": "ux",
+      "severity": "minor",
+      "description": "Name field validation mismatch. Client requires it (HTML required), but no JS validation. Server requires 2-100 chars.",
+      "location": "register/page.tsx:167-177",
+      "suggestedFix": "Add client-side validation for name length (2-100 characters) before submission"
+    },
+    {
+      "type": "completeness",
+      "severity": "minor",
+      "description": "Comment says 'placeholder for future credential-based registration' but it's actually implemented.",
+      "location": "register/page.tsx:62-63",
+      "suggestedFix": "Update comment to reflect that credential registration is fully implemented"
+    }
+  ],
+  "missingFeatures": [
+    "Real-time password validation feedback",
+    "Password strength indicator/meter",
+    "Show/hide password toggle",
+    "Field-specific error messages",
+    "Success confirmation message",
+    "Email verification notice in UI (backend supports it)",
+    "Loading spinner or skeleton for form submission",
+    "Rate limiting feedback (backend has it, UI doesn't show it)",
+    "Terms of service / privacy policy checkbox",
+    "Keyboard shortcuts (e.g., Enter to submit)",
+    "Focus management (auto-focus first field)",
+    "Proper form field IDs for label association"
+  ],
+  "stubsFound": [
+    {
+      "location": "register/page.tsx:62-63",
+      "description": "Outdated comment suggesting credential registration is a placeholder, but it's actually fully implemented"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "P0 - Critical",
+      "category": "UX",
+      "recommendation": "Add visible password requirements text (8+ chars, 1 uppercase, 1 lowercase, 1 number) above or below password field",
+      "effort": "Low",
+      "impact": "High - Prevents failed registrations"
+    },
+    {
+      "priority": "P0 - Critical",
+      "category": "UX",
+      "recommendation": "Implement client-side validation that matches server schema (registerSchema) to prevent validation mismatch errors",
+      "effort": "Medium",
+      "impact": "High - Improves user experience and prevents frustration"
+    },
+    {
+      "priority": "P0 - Critical",
+      "category": "Accessibility",
+      "recommendation": "Add Label components for all form fields with proper htmlFor associations",
+      "effort": "Low",
+      "impact": "High - Required for WCAG compliance"
+    },
+    {
+      "priority": "P1 - High",
+      "category": "UX",
+      "recommendation": "Add password strength indicator that updates in real-time as user types",
+      "effort": "Medium",
+      "impact": "High - Helps users create secure passwords"
+    },
+    {
+      "priority": "P1 - High",
+      "category": "UX",
+      "recommendation": "Add show/hide password toggle for both password fields",
+      "effort": "Low",
+      "impact": "Medium - Reduces typing errors"
+    },
+    {
+      "priority": "P1 - High",
+      "category": "UX",
+      "recommendation": "Implement field-specific error messages using Input error prop",
+      "effort": "Medium",
+      "impact": "High - Better error UX"
+    },
+    {
+      "priority": "P1 - High",
+      "category": "Accessibility",
+      "recommendation": "Add aria-describedby and aria-invalid attributes for error association",
+      "effort": "Low",
+      "impact": "High - Critical for screen reader users"
+    },
+    {
+      "priority": "P2 - Medium",
+      "category": "UX",
+      "recommendation": "Add success message/toast after registration before redirect",
+      "effort": "Low",
+      "impact": "Medium - Better user feedback"
+    },
+    {
+      "priority": "P2 - Medium",
+      "category": "UX",
+      "recommendation": "Add email verification notice when EMAIL_VERIFICATION_REQUIRED=true",
+      "effort": "Low",
+      "impact": "Medium - User knows to check email"
+    },
+    {
+      "priority": "P2 - Medium",
+      "category": "UI",
+      "recommendation": "Auto-focus first field (name) on page load for better keyboard UX",
+      "effort": "Low",
+      "impact": "Low - Nice to have"
+    },
+    {
+      "priority": "P3 - Low",
+      "category": "Legal",
+      "recommendation": "Add Terms of Service and Privacy Policy acceptance checkbox",
+      "effort": "Low",
+      "impact": "High - May be legally required"
+    },
+    {
+      "priority": "P3 - Low",
+      "category": "UX",
+      "recommendation": "Consider adding captcha or honeypot for spam prevention",
+      "effort": "Medium",
+      "impact": "Medium - Prevents bot registrations"
+    }
+  ],
+  "comparisonWithLogin": {
+    "consistency": "Good",
+    "notes": [
+      "Both pages use identical layout structure",
+      "Both have OAuth + email/password options",
+      "Both use same loading states and error handling pattern",
+      "Both use Suspense with loading fallback",
+      "Login has 'Forgot password' link, Register has 'Already have account' link (appropriate)",
+      "Minor inconsistency: Login uses 'Continue with', Register uses 'Sign up with' for OAuth buttons"
+    ]
+  },
+  "backendIntegration": {
+    "status": "Complete and robust",
+    "apiEndpoint": "/api/auth/register",
+    "features": [
+      "Zod validation with detailed error messages",
+      "PBKDF2 password hashing (100k iterations, SHA-512)",
+      "Database transaction for user + account creation",
+      "Email verification token generation",
+      "Welcome email sending",
+      "Avatar generation",
+      "Proper error codes and responses",
+      "Duplicate email detection",
+      "Environment-based email verification"
+    ],
+    "notes": "Backend is production-ready. Frontend validation needs to match server schema."
+  },
+  "securityNotes": {
+    "strengths": [
+      "Password hashing with strong algorithm (PBKDF2, 100k iterations)",
+      "No passwords in logs or responses",
+      "Proper use of autoComplete attributes",
+      "CSRF protection via NextAuth",
+      "Email verification support"
+    ],
+    "improvements": [
+      "Add rate limiting UI feedback",
+      "Consider adding captcha",
+      "Add password strength requirements in UI",
+      "Consider adding 'Have I Been Pwned' check"
+    ]
+  },
+  "detailedScores": {
+    "uxScore": {
+      "score": 6,
+      "breakdown": {
+        "formFlow": 7,
+        "errorHandling": 5,
+        "validation": 4,
+        "feedback": 5,
+        "requirements": 3,
+        "successHandling": 5
+      },
+      "reasoning": "Good basic flow but missing critical UX elements like password requirements visibility, real-time validation, and field-specific errors. Success handling is minimal."
+    },
+    "uiScore": {
+      "score": 7,
+      "breakdown": {
+        "consistency": 8,
+        "polish": 7,
+        "shadcnUsage": 8,
+        "responsiveness": 7,
+        "darkMode": 7
+      },
+      "reasoning": "Professional look, good use of shadcn/ui, consistent with login. Missing some polish elements like password toggles and strength indicators."
+    },
+    "completenessScore": {
+      "score": 7,
+      "breakdown": {
+        "coreFeatures": 9,
+        "validation": 6,
+        "errorHandling": 7,
+        "accessibility": 4,
+        "documentation": 7
+      },
+      "reasoning": "Core functionality is complete and backend is robust. Accessibility is the weakest area. Client validation doesn't match server schema."
+    }
+  }
+}

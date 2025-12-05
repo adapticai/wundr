@@ -15,6 +15,14 @@ import {
   ThreadPanel,
   TypingIndicator,
 } from '@/components/chat';
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/use-auth';
 import { useHuddle } from '@/hooks/use-call';
@@ -113,6 +121,9 @@ export default function DMPage() {
   const [localIsStarred, setLocalIsStarred] = useState<boolean | null>(null);
   const [isStarring, setIsStarring] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  // Search state
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Convert auth user to chat User type
   const currentUser = useMemo<User | null>(() => {
@@ -628,10 +639,75 @@ export default function DMPage() {
     toast.success('Huddle link copied to clipboard');
   }, [workspaceSlug, dmId]);
 
+  // Search filtered messages
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return [];
+    }
+    const query = searchQuery.toLowerCase();
+    return messages
+      .filter(msg => {
+        // Search in message content
+        if (msg.content.toLowerCase().includes(query)) {
+          return true;
+        }
+        // Search in author name
+        if (msg.author?.name?.toLowerCase().includes(query)) {
+          return true;
+        }
+        // Search in attachments
+        if (
+          msg.attachments?.some(att => att.name.toLowerCase().includes(query))
+        ) {
+          return true;
+        }
+        return false;
+      })
+      .map(msg => {
+        // Get snippet context
+        const contentLower = msg.content.toLowerCase();
+        const queryIndex = contentLower.indexOf(query);
+        let snippet = msg.content;
+        if (queryIndex !== -1 && msg.content.length > 100) {
+          const start = Math.max(0, queryIndex - 40);
+          const end = Math.min(msg.content.length, queryIndex + query.length + 40);
+          snippet =
+            (start > 0 ? '...' : '') +
+            msg.content.slice(start, end) +
+            (end < msg.content.length ? '...' : '');
+        }
+        return {
+          message: msg,
+          snippet: snippet.slice(0, 150),
+        };
+      });
+  }, [messages, searchQuery]);
+
   // Handle search
   const handleSearch = useCallback(() => {
-    // TODO: Implement search in conversation
-    toast.info('Search in conversation coming soon');
+    setIsSearchOpen(true);
+  }, []);
+
+  // Handle scroll to message
+  const handleScrollToMessage = useCallback((messageId: string) => {
+    // Close search dialog
+    setIsSearchOpen(false);
+    setSearchQuery('');
+
+    // Find message element and scroll to it
+    setTimeout(() => {
+      const messageElement = document.querySelector(
+        `[data-message-id="${messageId}"]`
+      );
+      if (messageElement) {
+        messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Highlight the message temporarily
+        messageElement.classList.add('bg-accent/50');
+        setTimeout(() => {
+          messageElement.classList.remove('bg-accent/50');
+        }, 2000);
+      }
+    }, 100);
   }, []);
 
   // Handle star toggle
@@ -989,6 +1065,67 @@ export default function DMPage() {
         onArchive={handleArchive}
         onLeave={handleLeave}
       />
+
+      {/* Search dialog */}
+      <CommandDialog
+        open={isSearchOpen}
+        onOpenChange={open => {
+          setIsSearchOpen(open);
+          if (!open) {
+            setSearchQuery('');
+          }
+        }}
+      >
+        <CommandInput
+          placeholder='Search messages...'
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+        />
+        <CommandList>
+          <CommandEmpty>No messages found.</CommandEmpty>
+          <CommandGroup heading='Messages'>
+            {searchResults.map(({ message, snippet }) => {
+              const timestamp = new Date(message.createdAt).toLocaleString(
+                undefined,
+                {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                }
+              );
+              return (
+                <CommandItem
+                  key={message.id}
+                  value={message.id}
+                  onSelect={() => handleScrollToMessage(message.id)}
+                  className='flex flex-col items-start gap-1 py-3'
+                >
+                  <div className='flex w-full items-center justify-between gap-2'>
+                    <span className='font-medium text-sm'>
+                      {message.author?.name || 'Unknown'}
+                    </span>
+                    <span className='text-xs text-muted-foreground'>
+                      {timestamp}
+                    </span>
+                  </div>
+                  <p className='text-sm text-muted-foreground line-clamp-2'>
+                    {snippet}
+                  </p>
+                  {message.attachments && message.attachments.length > 0 && (
+                    <span className='text-xs text-muted-foreground'>
+                      {message.attachments.length}{' '}
+                      {message.attachments.length === 1
+                        ? 'attachment'
+                        : 'attachments'}
+                    </span>
+                  )}
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </div>
   );
 }
