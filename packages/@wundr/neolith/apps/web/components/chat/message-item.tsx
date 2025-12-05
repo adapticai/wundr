@@ -37,6 +37,12 @@ interface MessageItemProps {
   onReaction?: (messageId: string, emoji: string) => void;
   /** Callback fired when opening the message thread */
   onOpenThread?: (message: Message) => void;
+  /** Callback fired when pinning/unpinning a message */
+  onPin?: (messageId: string) => void;
+  /** Whether this message is pinned */
+  isPinned?: boolean;
+  /** Whether the current user can pin messages */
+  canPin?: boolean;
   /** Whether this is rendered in a thread view */
   isThreadView?: boolean;
   /** Whether to show a date separator above this message */
@@ -56,6 +62,9 @@ export const MessageItem = memo(function MessageItem({
   onDelete,
   onReaction,
   onOpenThread,
+  onPin,
+  isPinned = false,
+  canPin = false,
   isThreadView = false,
   showDateSeparator,
   isUnreadSeparator,
@@ -68,6 +77,7 @@ export const MessageItem = memo(function MessageItem({
   const [savedItemId, setSavedItemId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isPinning, setIsPinning] = useState(false);
 
   const isOwn = message.authorId === currentUser.id;
 
@@ -185,6 +195,20 @@ export const MessageItem = memo(function MessageItem({
     },
     [onDelete],
   );
+
+  const handlePin = useCallback(async () => {
+    if (!onPin || isPinning) {
+      return;
+    }
+    setIsPinning(true);
+    try {
+      await onPin(message.id);
+    } catch (error) {
+      console.error('Failed to toggle pin:', error);
+    } finally {
+      setIsPinning(false);
+    }
+  }, [onPin, message.id, isPinning]);
 
   if (message.isDeleted) {
     return (
@@ -311,33 +335,64 @@ export const MessageItem = memo(function MessageItem({
               </div>
             )}
 
-            {/* Thread indicator - Enhanced with better visibility */}
+            {/* Thread indicator - Enhanced with better visibility and preview */}
             {!isThreadView && message.replyCount > 0 && (
-              <button
-                type='button'
-                onClick={() => onOpenThread?.(message)}
-                className='mt-2 inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/10 hover:text-primary'
-                aria-label={`View thread with ${message.replyCount} ${message.replyCount === 1 ? 'reply' : 'replies'}`}
-              >
-                <ThreadIcon className='h-4 w-4' />
-                <span className='font-semibold'>
-                  {message.replyCount}{' '}
-                  {message.replyCount === 1 ? 'reply' : 'replies'}
-                </span>
-                {message.replyPreview && message.replyPreview.length > 0 && (
-                  <GroupAvatar
-                    users={message.replyPreview
-                      .slice(0, 3)
-                      .filter(reply => reply.author)
-                      .map(reply => reply.author!)}
-                    max={3}
-                    size='xs'
-                  />
-                )}
-                <span className='text-xs text-muted-foreground'>
-                  View thread →
-                </span>
-              </button>
+              <div className='mt-3'>
+                <button
+                  type='button'
+                  onClick={() => onOpenThread?.(message)}
+                  className='group inline-flex w-full max-w-md items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-left transition-all hover:border-primary/40 hover:bg-primary/10 hover:shadow-sm'
+                  aria-label={`View thread with ${message.replyCount} ${message.replyCount === 1 ? 'reply' : 'replies'}`}
+                >
+                  <ThreadIcon className='mt-0.5 h-4 w-4 shrink-0 text-primary' />
+                  <div className='min-w-0 flex-1 space-y-1.5'>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-sm font-semibold text-primary'>
+                        {message.replyCount}{' '}
+                        {message.replyCount === 1 ? 'reply' : 'replies'}
+                      </span>
+                      {message.replyPreview && message.replyPreview.length > 0 && (
+                        <div className='flex items-center gap-1.5'>
+                          <GroupAvatar
+                            users={message.replyPreview
+                              .slice(0, 3)
+                              .filter(reply => reply.author)
+                              .map(reply => reply.author!)}
+                            max={3}
+                            size='xs'
+                          />
+                        </div>
+                      )}
+                    </div>
+                    {message.replyPreview && message.replyPreview.length > 0 && (
+                      <div className='text-xs text-muted-foreground'>
+                        <span className='font-medium'>
+                          {message.replyPreview[message.replyPreview.length - 1]?.author?.name}:
+                        </span>{' '}
+                        <span className='line-clamp-1'>
+                          {message.replyPreview[message.replyPreview.length - 1]?.content}
+                        </span>
+                      </div>
+                    )}
+                    <div className='flex items-center gap-1.5 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100'>
+                      <span>View thread</span>
+                      <svg
+                        width='12'
+                        height='12'
+                        viewBox='0 0 24 24'
+                        fill='none'
+                        stroke='currentColor'
+                        strokeWidth='2'
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                      >
+                        <path d='M5 12h14' />
+                        <path d='m12 5 7 7-7 7' />
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -362,6 +417,16 @@ export const MessageItem = memo(function MessageItem({
                 onClick={handleSaveForLater}
                 className={cn(
                   isSaved && 'text-yellow-500 hover:text-yellow-600',
+                )}
+              />
+            )}
+            {canPin && !isThreadView && (
+              <ActionButton
+                icon={<PinIcon filled={isPinned} loading={isPinning} />}
+                title={isPinned ? 'Unpin message' : 'Pin message'}
+                onClick={handlePin}
+                className={cn(
+                  isPinned && 'text-primary hover:text-primary/80',
                 )}
               />
             )}
@@ -1076,6 +1141,47 @@ function BookmarkIcon({
       strokeLinejoin='round'
     >
       <path d='m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z' />
+    </svg>
+  );
+}
+
+function PinIcon({
+  filled,
+  loading,
+}: {
+  filled?: boolean;
+  loading?: boolean;
+}) {
+  if (loading) {
+    return (
+      <svg
+        width='16'
+        height='16'
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        className='animate-spin'
+      >
+        <path d='M21 12a9 9 0 1 1-6.219-8.56' />
+      </svg>
+    );
+  }
+  return (
+    <svg
+      width='16'
+      height='16'
+      viewBox='0 0 24 24'
+      fill={filled ? 'currentColor' : 'none'}
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    >
+      <path d='M12 17v5' />
+      <path d='M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z' />
     </svg>
   );
 }

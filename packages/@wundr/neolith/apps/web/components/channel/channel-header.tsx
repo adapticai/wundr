@@ -11,6 +11,7 @@ import {
   LogOut,
   MoreHorizontal,
   Phone,
+  Pin,
   Search,
   Settings,
   Sparkles,
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useState, useMemo } from 'react';
 
+import { ChannelNotificationBell } from '@/components/channels/channel-notification-settings';
 import { ConnectedUserAvatar } from '@/components/presence/user-avatar-with-presence';
 import { Button } from '@/components/ui/button';
 import {
@@ -79,6 +81,10 @@ interface ChannelHeaderProps {
   onSearchInChannel?: () => void;
   /** Callback for invite people */
   onInvite?: () => void;
+  /** Callback for viewing pinned messages */
+  onViewPins?: () => void;
+  /** Number of pinned messages */
+  pinnedCount?: number;
   /** Callback for starting a huddle */
   onStartHuddle?: () => void;
   /** Callback for starting a call */
@@ -118,6 +124,8 @@ export function ChannelHeader({
   onAddWorkflow,
   onSearchInChannel,
   onInvite,
+  onViewPins,
+  pinnedCount = 0,
   onStartHuddle,
   onStartCall,
   hasActiveHuddle = false,
@@ -218,6 +226,12 @@ export function ChannelHeader({
                 <Sparkles className='mr-2 h-4 w-4' />
                 Summarise channel
               </DropdownMenuItem>
+              {onViewPins && pinnedCount > 0 && (
+                <DropdownMenuItem onClick={onViewPins}>
+                  <Pin className='mr-2 h-4 w-4' />
+                  View pins ({pinnedCount})
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onEditNotifications}>
                 <Bell className='mr-2 h-4 w-4' />
@@ -284,6 +298,9 @@ export function ChannelHeader({
 
         {/* Right side: Members and actions */}
         <div className='flex items-center gap-2'>
+          {/* Notification bell */}
+          <ChannelNotificationBell channelId={channel.id} variant='icon' />
+
           {/* Call buttons */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

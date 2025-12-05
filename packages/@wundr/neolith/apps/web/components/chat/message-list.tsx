@@ -44,6 +44,12 @@ interface MessageListProps {
   onReaction?: (messageId: string, emoji: string) => void;
   /** Callback fired when opening a message thread */
   onOpenThread?: (message: Message) => void;
+  /** Callback fired when pinning/unpinning a message */
+  onPin?: (messageId: string) => void;
+  /** Set of pinned message IDs */
+  pinnedMessageIds?: Set<string>;
+  /** Whether the current user can pin messages */
+  canPin?: boolean;
   /** Whether this is a thread view (affects UI rendering) */
   isThreadView?: boolean;
   /** Additional CSS class names */
@@ -65,6 +71,9 @@ export function MessageList({
   onDelete,
   onReaction,
   onOpenThread,
+  onPin,
+  pinnedMessageIds,
+  canPin = false,
   isThreadView = false,
   className,
 }: MessageListProps) {
@@ -297,6 +306,9 @@ export function MessageList({
               onDelete={onDelete}
               onReaction={onReaction}
               onOpenThread={onOpenThread}
+              onPin={onPin}
+              isPinned={pinnedMessageIds?.has(message.id) || false}
+              canPin={canPin}
               isThreadView={isThreadView}
             />
           ),

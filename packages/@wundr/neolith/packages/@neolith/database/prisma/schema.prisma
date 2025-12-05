@@ -90,29 +90,52 @@ model channelMember {
 }
 
 model channel {
-  id             String          @id @default(cuid())
-  name           String
-  slug           String
-  description    String?
-  topic          String?
-  type           ChannelType     @default(PUBLIC)
-  isArchived     Boolean         @default(false) @map("is_archived")
-  settings       Json            @default("{}")
-  workspaceId    String          @map("workspace_id")
-  createdById    String?         @map("created_by_id")
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
-  channelMembers channelMember[]
-  createdBy      user?           @relation(fields: [createdById], references: [id])
-  workspace      workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  messages       message[]
-  tasks          task[]
+  id               String            @id @default(cuid())
+  name             String
+  slug             String
+  description      String?
+  topic            String?
+  type             ChannelType       @default(PUBLIC)
+  isArchived       Boolean           @default(false) @map("is_archived")
+  settings         Json              @default("{}")
+  workspaceId      String            @map("workspace_id")
+  createdById      String?           @map("created_by_id")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  channelMembers   channelMember[]
+  createdBy        user?             @relation(fields: [createdById], references: [id])
+  workspace        workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  messages         message[]
+  tasks            task[]
+  channelTemplates channelTemplate[]
 
   @@unique([workspaceId, slug])
   @@index([isArchived])
   @@index([type])
   @@index([workspaceId])
   @@map("channels")
+}
+
+model channelTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  content     String
+  icon        String?
+  metadata    Json     @default("{}")
+  isSystem    Boolean  @default(false) @map("is_system")
+  channelId   String   @map("channel_id")
+  createdById String   @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  channel     channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  createdBy   user     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, name])
+  @@index([channelId])
+  @@index([createdById])
+  @@index([isSystem])
+  @@map("channel_templates")
 }
 
 model daemonCredential {
@@ -401,6 +424,7 @@ model user {
   accounts               account[]
   channelMembers         channelMember[]
   channels               channel[]
+  channelTemplates       channelTemplate[]
   files                  file[]
   messages               message[]
   notifications          notification[]

@@ -10,6 +10,10 @@ import { EditChannelDialog } from '@/components/channel/edit-channel-dialog';
 import { FilesTab } from '@/components/channel/files-tab';
 import { InviteDialog } from '@/components/channel/invite-dialog';
 import { NotificationsDialog } from '@/components/channel/notifications-dialog';
+import { AudioRoom } from '@/components/call/audio-room';
+import { HuddleBar } from '@/components/call/huddle-bar';
+import { ChannelAIAssistant } from '@/components/channels/channel-ai-assistant';
+import { PinnedMessagesPanel } from '@/components/channels/pinned-messages-panel';
 import {
   MessageList,
   MessageInput,
@@ -19,6 +23,7 @@ import {
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/use-auth';
 import { useChannelPermissions } from '@/hooks/use-channel';
+import { useChannelHuddle } from '@/hooks/use-channel-huddle';
 import {
   useMessages,
   useSendMessage,
@@ -46,13 +51,22 @@ export default function ChannelPage() {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ChannelTab>('messages');
 
+  // Huddle state
+  const [showHuddleRoom, setShowHuddleRoom] = useState(false);
+  const [isHuddleMuted, setIsHuddleMuted] = useState(false);
+
   // Dialog and panel states
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showNotificationsDialog, setShowNotificationsDialog] = useState(false);
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [showPinnedPanel, setShowPinnedPanel] = useState(false);
   // isStarred is derived from channel data, with local state for optimistic updates
   const [localIsStarred, setLocalIsStarred] = useState<boolean | null>(null);
+
+  // Pinned messages state
+  const [pinnedMessageIds, setPinnedMessageIds] = useState<Set<string>>(new Set());
 
   // Convert auth user to chat User type
   const currentUser = useMemo<User | null>(() => {
@@ -79,7 +93,23 @@ export default function ChannelPage() {
   const {
     permissions,
     isLoading: isPermissionsLoading,
-  } = useChannelPermissions(channelId, currentUser?.id || '');
+  } = useChannelPermissions(channelId);
+
+  // Huddle management
+  const {
+    huddle,
+    isInHuddle,
+    isLoading: isHuddleLoading,
+    joinData,
+    startHuddle,
+    joinHuddle,
+    leaveHuddle,
+    refreshStatus: refreshHuddleStatus,
+  } = useChannelHuddle({
+    channelId,
+    autoPoll: true,
+    pollInterval: 30000,
+  });
 
   // Derive isStarred: use local state for optimistic updates, fallback to channel data
   const channelWithStarred = channel as typeof channel & {
@@ -147,6 +177,96 @@ export default function ChannelPage() {
       }).catch(console.error);
     }
   }, [channelId, currentUser, isMessagesLoading]);
+
+  // Fetch pinned messages
+  const fetchPinnedMessages = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/channels/${channelId}/pins`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch pinned messages');
+      }
+      const result = await response.json();
+      const pinnedIds = new Set<string>((result.data || []).map((msg: Message) => msg.id));
+      setPinnedMessageIds(pinnedIds);
+    } catch (error) {
+      console.error('Failed to fetch pinned messages:', error);
+      setPinnedMessageIds(new Set<string>());
+    }
+  }, [channelId]);
+
+  // Load pinned messages on mount
+  useEffect(() => {
+    fetchPinnedMessages();
+  }, [fetchPinnedMessages]);
+
+  // Handle pin/unpin message
+  const handlePinMessage = useCallback(
+    async (messageId: string) => {
+      const isPinned = pinnedMessageIds.has(messageId);
+      const previousState = new Set(pinnedMessageIds);
+
+      try {
+        // Optimistic update
+        if (isPinned) {
+          setPinnedMessageIds(prev => {
+            const next = new Set(prev);
+            next.delete(messageId);
+            return next;
+          });
+        } else {
+          setPinnedMessageIds(prev => new Set([...prev, messageId]));
+        }
+
+        // Make API call
+        const response = await fetch(
+          isPinned
+            ? `/api/channels/${channelId}/pins?messageId=${messageId}`
+            : `/api/channels/${channelId}/pins`,
+          {
+            method: isPinned ? 'DELETE' : 'POST',
+            headers: isPinned ? undefined : { 'Content-Type': 'application/json' },
+            body: isPinned ? undefined : JSON.stringify({ messageId, channelId }),
+          }
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || `Failed to ${isPinned ? 'unpin' : 'pin'} message`);
+        }
+
+        toast({
+          title: isPinned ? 'Message unpinned' : 'Message pinned',
+          description: isPinned
+            ? 'The message has been removed from pins'
+            : 'The message has been pinned to the channel',
+        });
+      } catch (error) {
+        // Revert optimistic update on error
+        setPinnedMessageIds(previousState);
+        toast({
+          title: 'Error',
+          description:
+            error instanceof Error ? error.message : `Failed to ${isPinned ? 'unpin' : 'pin'} message`,
+          variant: 'destructive',
+        });
+      }
+    },
+    [channelId, pinnedMessageIds, toast]
+  );
+
+  // Handle jump to message from pinned panel
+  const handleJumpToMessage = useCallback((messageId: string) => {
+    // Find the message element and scroll to it
+    const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (messageElement) {
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Highlight the message briefly
+      messageElement.classList.add('bg-primary/10');
+      setTimeout(() => {
+        messageElement.classList.remove('bg-primary/10');
+      }, 2000);
+    }
+  }, []);
 
   // Handle send message
   const handleSendMessage = useCallback(
@@ -715,6 +835,61 @@ export default function ChannelPage() {
     }
   }, []);
 
+  // Huddle handlers
+  const handleStartHuddle = useCallback(async () => {
+    try {
+      await startHuddle(false);
+      setShowHuddleRoom(true);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to start huddle',
+        variant: 'destructive',
+      });
+    }
+  }, [startHuddle, toast]);
+
+  const handleJoinHuddle = useCallback(async () => {
+    try {
+      await joinHuddle(false);
+      setShowHuddleRoom(true);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to join huddle',
+        variant: 'destructive',
+      });
+    }
+  }, [joinHuddle, toast]);
+
+  const handleLeaveHuddle = useCallback(async () => {
+    try {
+      await leaveHuddle();
+      setShowHuddleRoom(false);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to leave huddle',
+        variant: 'destructive',
+      });
+    }
+  }, [leaveHuddle, toast]);
+
+  const handleToggleHuddleMute = useCallback(() => {
+    setIsHuddleMuted(prev => !prev);
+  }, []);
+
+  const handleExpandHuddle = useCallback(() => {
+    setShowHuddleRoom(true);
+  }, []);
+
+  const handleCloseHuddleRoom = useCallback(() => {
+    setShowHuddleRoom(false);
+  }, []);
+
   const isLoading = isChannelLoading || isMessagesLoading || isAuthLoading || isPermissionsLoading;
 
   if (isLoading) {
@@ -796,12 +971,22 @@ export default function ChannelPage() {
   // Default to restrictive permissions if not loaded yet
   const effectivePermissions: ChannelPermissions = isPermissionsLoading
     ? {
+        canPost: false,
+        canRead: true,
+        canInvite: false,
+        canKick: false,
+        canRemoveMembers: false,
+        canEditChannel: false,
         canEdit: false,
         canDelete: false,
         canArchive: false,
-        canInvite: false,
-        canRemoveMembers: false,
+        canDeleteMessages: false,
+        canPin: false,
         canChangeRoles: false,
+        isOwner: false,
+        isAdmin: false,
+        isMember: true,
+        role: null,
       }
     : permissions;
 
@@ -819,9 +1004,7 @@ export default function ChannelPage() {
           onLeave={handleLeaveChannel}
           onOpenDetails={() => setShowDetailsPanel(true)}
           onOpenSettings={() => setShowEditDialog(true)}
-          onSummarize={() =>
-            console.log('Summarize channel - AI feature coming soon')
-          }
+          onSummarize={() => setShowAIAssistant(true)}
           onEditNotifications={() => setShowNotificationsDialog(true)}
           onAddTemplate={() =>
             console.log('Add template - feature coming soon')
@@ -833,11 +1016,14 @@ export default function ChannelPage() {
             console.log('Search in channel - feature coming soon')
           }
           onInvite={() => setShowDetailsPanel(true)}
-          onStartHuddle={() =>
-            toast({
-              title: 'Coming Soon',
-              description: 'Huddle feature is under development. Stay tuned!',
-            })
+          onViewPins={
+            pinnedMessageIds.size > 0
+              ? () => setShowPinnedPanel(true)
+              : undefined
+          }
+          pinnedCount={pinnedMessageIds.size}
+          onStartHuddle={
+            huddle?.status === 'active' ? handleJoinHuddle : handleStartHuddle
           }
           onStartCall={type =>
             toast({
@@ -845,6 +1031,8 @@ export default function ChannelPage() {
               description: `${type === 'video' ? 'Video' : 'Audio'} calls are under development. Stay tuned!`,
             })
           }
+          hasActiveHuddle={huddle?.status === 'active'}
+          huddleParticipantCount={huddle?.participantCount || 0}
         />
       )}
 
@@ -865,6 +1053,9 @@ export default function ChannelPage() {
               onDelete={handleDeleteMessage}
               onReaction={handleReaction}
               onOpenThread={handleOpenThread}
+              onPin={handlePinMessage}
+              pinnedMessageIds={pinnedMessageIds}
+              canPin={effectivePermissions.canPin || false}
             />
 
             {/* Typing indicator */}
@@ -911,7 +1102,51 @@ export default function ChannelPage() {
             onReaction={handleReaction}
           />
         )}
+
+        {/* AI Assistant panel */}
+        {activeTab === 'messages' && channel && (
+          <ChannelAIAssistant
+            channelId={channelId}
+            channelName={channel.name}
+            isOpen={showAIAssistant}
+            onClose={() => setShowAIAssistant(false)}
+          />
+        )}
       </div>
+
+      {/* Huddle Bar - shown when in huddle but room not expanded */}
+      {isInHuddle && !showHuddleRoom && huddle && (
+        <HuddleBar
+          huddle={{
+            id: huddle.id,
+            name: huddle.name || `#${channel?.name} Huddle`,
+            workspaceId: workspaceSlug,
+            channelId,
+            participants: [],
+            createdAt: huddle.createdAt
+              ? new Date(huddle.createdAt).toISOString()
+              : new Date().toISOString(),
+            isActive: huddle.status === 'active',
+          }}
+          isMuted={isHuddleMuted}
+          onToggleMute={handleToggleHuddleMute}
+          onLeave={handleLeaveHuddle}
+          onExpand={handleExpandHuddle}
+        />
+      )}
+
+      {/* Huddle Room - full audio room when expanded */}
+      {showHuddleRoom && isInHuddle && joinData && (
+        <div className='fixed inset-0 z-50 bg-background'>
+          <AudioRoom
+            token={joinData.token}
+            serverUrl={joinData.serverUrl || 'wss://localhost:7880'}
+            roomName={joinData.roomName}
+            channelName={channel?.name}
+            onDisconnect={handleCloseHuddleRoom}
+          />
+        </div>
+      )}
 
       {/* Dialogs and Panels */}
       {channelForHeader && (
@@ -961,6 +1196,16 @@ export default function ChannelPage() {
             channelId={channelId}
             channelName={channelForHeader.name}
             existingMemberIds={channelForHeader.members.map(m => m.userId)}
+          />
+
+          <PinnedMessagesPanel
+            channelId={channelId}
+            channelName={channelForHeader.name}
+            isOpen={showPinnedPanel}
+            onClose={() => setShowPinnedPanel(false)}
+            onMessageClick={handleJumpToMessage}
+            canManagePins={effectivePermissions.canPin || false}
+            currentUserId={currentUser?.id}
           />
         </>
       )}

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 
 import { InviteDialog } from '@/components/channel/invite-dialog';
+import { ChannelWorkflowsPanel } from '@/components/channels/channel-workflows-panel';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/use-auth';
 import {
@@ -17,12 +18,13 @@ import { cn, getInitials } from '@/lib/utils';
 
 import type { ChannelMember } from '@/types/channel';
 
-type Tab = 'overview' | 'members' | 'permissions' | 'advanced';
+type Tab = 'overview' | 'members' | 'permissions' | 'workflows' | 'advanced';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'members', label: 'Members' },
   { id: 'permissions', label: 'Permissions' },
+  { id: 'workflows', label: 'Workflows' },
   { id: 'advanced', label: 'Advanced' },
 ];
 
@@ -49,7 +51,7 @@ export default function ChannelSettingsPage() {
     refetch: refetchMembers,
   } = useChannelMembers(channelId);
   const { permissions, isLoading: isPermissionsLoading } =
-    useChannelPermissions(channelId, authUser?.id || '');
+    useChannelPermissions(channelId);
   const {
     updateChannel,
     deleteChannel,
@@ -233,6 +235,15 @@ export default function ChannelSettingsPage() {
               channelId={channelId}
               channelType={channel.type}
               permissions={permissions}
+            />
+          )}
+
+          {activeTab === 'workflows' && (
+            <ChannelWorkflowsPanel
+              channelId={channelId}
+              channelName={channel.name}
+              workspaceId={workspaceSlug}
+              className='max-w-4xl'
             />
           )}
 

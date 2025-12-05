@@ -37,8 +37,11 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { usePageHeader } from '@/contexts/page-header-context';
-import { useChannels } from '@/hooks/use-channel';
 import { useDebouncedValue } from '@/hooks/use-performance';
+import {
+  useRealtimeChannels,
+  type RealtimeChannel,
+} from '@/hooks/use-realtime-channels';
 import { useToast } from '@/hooks/use-toast';
 
 import type { Channel } from '@/types/channel';
@@ -71,8 +74,56 @@ export default function ChannelsPage() {
     setPageHeader('Channels', 'Communicate with your team');
   }, [setPageHeader]);
 
-  // Fetch channels using the hook
-  const { channels, isLoading, error, refetch } = useChannels(workspaceSlug);
+  // Real-time channels with SWR
+  const {
+    channels,
+    isLoading,
+    isRefreshing,
+    error,
+    newChannelCount,
+    refresh,
+    clearNewChannels,
+  } = useRealtimeChannels({
+    workspaceId: workspaceSlug,
+    pollingInterval: 20000, // 20 seconds
+    includeTyping: true,
+    includeOnlineStatus: true,
+    onNewChannels: (newChannels) => {
+      // Show toast for new channels
+      newChannels.forEach(channel => {
+        toast({
+          title: 'New Channel Created',
+          description: `${channel.name} was created`,
+          duration: 5000,
+        });
+      });
+
+      // Add to animating set
+      setAnimatingChannels(prev => {
+        const next = new Set(prev);
+        newChannels.forEach(c => next.add(c.id));
+        return next;
+      });
+
+      // Remove from animating set after animation completes
+      setTimeout(() => {
+        setAnimatingChannels(prev => {
+          const next = new Set(prev);
+          newChannels.forEach(c => next.delete(c.id));
+          return next;
+        });
+      }, 1000);
+    },
+    onChannelsDeleted: (deletedIds) => {
+      if (deletedIds.length > 0) {
+        toast({
+          title: 'Channel Deleted',
+          description: `${deletedIds.length} channel(s) removed`,
+          duration: 3000,
+        });
+      }
+    },
+  });
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -92,10 +143,7 @@ export default function ChannelsPage() {
     description?: string;
   }>({});
 
-  // Real-time updates via polling
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const previousChannelIdsRef = useRef<Set<string>>(new Set());
-  const mountedRef = useRef(true);
+  // Animation state for new channels
   const [animatingChannels, setAnimatingChannels] = useState<Set<string>>(
     new Set(),
   );
@@ -126,93 +174,15 @@ export default function ChannelsPage() {
     localStorage.setItem('channels-sort-preference', value);
   };
 
-  // Track channel IDs for change detection
+  // Clear new channel indicator when user views the page
   useEffect(() => {
-    const currentChannelIds = new Set(channels.map(c => c.id));
-
-    // Detect new channels (created by other users)
-    if (previousChannelIdsRef.current.size > 0) {
-      const newChannels = channels.filter(
-        c => !previousChannelIdsRef.current.has(c.id),
-      );
-
-      if (newChannels.length > 0) {
-        // Add to animating set
-        setAnimatingChannels(prev => {
-          const next = new Set(prev);
-          newChannels.forEach(c => next.add(c.id));
-          return next;
-        });
-
-        // Show toast for new channels
-        newChannels.forEach(channel => {
-          toast({
-            title: 'New Channel Created',
-            description: `${channel.name} was created by another user`,
-            duration: 5000,
-          });
-        });
-
-        // Remove from animating set after animation completes
-        setTimeout(() => {
-          setAnimatingChannels(prev => {
-            const next = new Set(prev);
-            newChannels.forEach(c => next.delete(c.id));
-            return next;
-          });
-        }, 1000);
-      }
-
-      // Detect deleted channels
-      const deletedChannelIds = Array.from(
-        previousChannelIdsRef.current,
-      ).filter(id => !currentChannelIds.has(id));
-
-      if (deletedChannelIds.length > 0) {
-        toast({
-          title: 'Channel Deleted',
-          description: `${deletedChannelIds.length} channel(s) removed`,
-          duration: 3000,
-        });
-      }
+    if (newChannelCount > 0) {
+      const timer = setTimeout(() => {
+        clearNewChannels();
+      }, 3000);
+      return () => clearTimeout(timer);
     }
-
-    previousChannelIdsRef.current = currentChannelIds;
-  }, [channels, toast]);
-
-  // Setup polling for real-time updates
-  const pollForUpdates = useCallback(async () => {
-    if (!mountedRef.current || isLoading) {
-      return;
-    }
-
-    try {
-      await refetch();
-    } catch (error) {
-      console.error('[ChannelsPage] Polling error:', error);
-    }
-  }, [refetch, isLoading]);
-
-  useEffect(() => {
-    // Start polling every 30 seconds
-    pollingIntervalRef.current = setInterval(() => {
-      pollForUpdates();
-    }, 30000);
-
-    // Cleanup
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-      }
-    };
-  }, [pollForUpdates]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
+  }, [newChannelCount, clearNewChannels]);
 
   const validateForm = (): boolean => {
     const errors: { name?: string; description?: string } = {};
@@ -284,7 +254,7 @@ export default function ChannelsPage() {
       setIsCreateDialogOpen(false);
 
       // Refetch channels to update the list
-      await refetch();
+      await refresh();
 
       // Navigate to the new channel
       if (result.data?.id) {
@@ -503,7 +473,7 @@ export default function ChannelsPage() {
       {/* Channel Grid */}
       {!isLoading && !error && filteredAndSortedChannels.length > 0 && (
         <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {filteredAndSortedChannels.map((channel: Channel) => {
+          {filteredAndSortedChannels.map((channel: RealtimeChannel) => {
             const isAnimating = animatingChannels.has(channel.id);
             return (
               <button
@@ -544,14 +514,36 @@ export default function ChannelsPage() {
 
                 {/* Channel Stats */}
                 <div className='mt-3 flex items-center gap-4 text-xs text-muted-foreground'>
-                  {/* Member Count */}
+                  {/* Member Count with Online Status */}
                   <div className='flex items-center gap-1'>
                     <Users className='h-3.5 w-3.5' />
-                    <span>{channel.memberCount || 0}</span>
+                    <span>
+                      {channel.onlineStatus ? (
+                        <>
+                          <span className='text-green-600 dark:text-green-400 font-medium'>
+                            {channel.onlineStatus.onlineCount}
+                          </span>
+                          <span className='text-muted-foreground'>
+                            /{channel.onlineStatus.totalCount}
+                          </span>
+                        </>
+                      ) : (
+                        channel.memberCount || 0
+                      )}
+                    </span>
                   </div>
 
-                  {/* Message Count or Last Activity */}
-                  {channel.lastMessage ? (
+                  {/* Typing Indicator or Last Activity */}
+                  {channel.typingUsers && channel.typingUsers.length > 0 ? (
+                    <div className='flex items-center gap-1 text-blue-600 dark:text-blue-400'>
+                      <MessageSquare className='h-3.5 w-3.5 animate-pulse' />
+                      <span className='truncate flex-1'>
+                        {channel.typingUsers.length === 1
+                          ? `${channel.typingUsers[0].userName} is typing...`
+                          : `${channel.typingUsers.length} people typing...`}
+                      </span>
+                    </div>
+                  ) : channel.lastMessage ? (
                     <div className='flex items-center gap-1'>
                       <MessageSquare className='h-3.5 w-3.5' />
                       <span className='truncate flex-1'>

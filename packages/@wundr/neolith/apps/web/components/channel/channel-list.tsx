@@ -5,6 +5,7 @@ import {
   Copy,
   Link as LinkIcon,
   Bell,
+  BellOff,
   Star,
   ExternalLink,
   LogOut,
@@ -816,6 +817,9 @@ function ChannelItem({
         >
           <ChannelTypeIcon type={channel.type} className='h-4 w-4 shrink-0' />
           <span className='flex-1 truncate font-sans'>{channel.name}</span>
+          {(channel as { isMuted?: boolean }).isMuted && (
+            <BellOff className='h-3.5 w-3.5 text-muted-foreground' />
+          )}
           {hasUnread && !isActive && (
             <span className='flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground'>
               {unreadDisplay}

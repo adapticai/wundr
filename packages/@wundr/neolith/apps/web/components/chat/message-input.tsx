@@ -751,28 +751,6 @@ export function MessageInput({
               disabled={disabled}
               title='Mention someone'
             />
-
-            <div className='w-px h-5 bg-border mx-1' />
-
-            {/* Video recording */}
-            <ToolButton
-              icon={<VideoIcon />}
-              onClick={() => {
-                /* Video recording not implemented */
-              }}
-              disabled={disabled}
-              title='Record video clip'
-            />
-
-            {/* Voice message */}
-            <ToolButton
-              icon={<MicrophoneIcon />}
-              onClick={() => {
-                /* Voice recording not implemented */
-              }}
-              disabled={disabled}
-              title='Record voice message'
-            />
           </div>
 
           {/* Right side - send button with schedule dropdown */}
@@ -1078,7 +1056,21 @@ function AttachmentPreview({ file, onRemove }: AttachmentPreviewProps) {
   };
 
   const isImage = file.type.startsWith('image/');
+  const isPdf = file.type === 'application/pdf';
   const showImage = isImage && previewUrl && !imageError;
+
+  const getFileIcon = () => {
+    if (isPdf) {
+      return <PdfIcon className='h-10 w-10 text-muted-foreground' />;
+    }
+    if (file.type.startsWith('video/')) {
+      return <VideoIcon className='h-10 w-10 text-muted-foreground' />;
+    }
+    if (file.type.startsWith('audio/')) {
+      return <AudioIcon className='h-10 w-10 text-muted-foreground' />;
+    }
+    return <FileIcon className='h-10 w-10 text-muted-foreground' />;
+  };
 
   return (
     <div className='group relative flex items-center gap-2 rounded-md border bg-background px-3 py-2'>
@@ -1093,7 +1085,7 @@ function AttachmentPreview({ file, onRemove }: AttachmentPreviewProps) {
       ) : isImage && !imageError ? (
         <div className='h-10 w-10 rounded bg-muted animate-pulse' />
       ) : (
-        <FileIcon className='h-10 w-10 text-muted-foreground' />
+        getFileIcon()
       )}
       <div className='min-w-0 flex-1'>
         <div className='truncate text-sm font-medium'>{file.name}</div>
@@ -1430,43 +1422,6 @@ function AtIcon() {
   );
 }
 
-function VideoIcon() {
-  return (
-    <svg
-      width='20'
-      height='20'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <path d='m22 8-6 4 6 4V8Z' />
-      <rect width='14' height='12' x='2' y='6' rx='2' ry='2' />
-    </svg>
-  );
-}
-
-function MicrophoneIcon() {
-  return (
-    <svg
-      width='20'
-      height='20'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <path d='M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z' />
-      <path d='M19 10v2a7 7 0 0 1-14 0v-2' />
-      <line x1='12' x2='12' y1='19' y2='22' />
-    </svg>
-  );
-}
-
 function SendIcon() {
   return (
     <svg
@@ -1630,6 +1585,60 @@ function UploadIcon({ className }: { className?: string }) {
       <path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' />
       <polyline points='17 8 12 3 7 8' />
       <line x1='12' x2='12' y1='3' y2='15' />
+    </svg>
+  );
+}
+
+function PdfIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    >
+      <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' />
+      <polyline points='14 2 14 8 20 8' />
+      <path d='M10 12h4' />
+      <path d='M10 16h2' />
+    </svg>
+  );
+}
+
+function VideoIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    >
+      <polygon points='23 7 16 12 23 17 23 7' />
+      <rect width='15' height='14' x='1' y='5' rx='2' ry='2' />
+    </svg>
+  );
+}
+
+function AudioIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    >
+      <path d='M9 18V5l12-2v13' />
+      <circle cx='6' cy='18' r='3' />
+      <circle cx='18' cy='16' r='3' />
     </svg>
   );
 }

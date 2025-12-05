@@ -1,17 +1,40 @@
 'use client';
 
-import { useState, memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 import type { Reaction } from '@/types/chat';
+
+/**
+ * User data for reaction tooltips
+ */
+interface ReactionUser {
+  id: string;
+  name: string | null;
+  displayName: string | null;
+  avatarUrl?: string | null;
+}
+
+/**
+ * Extended reaction type with user details
+ */
+export interface ReactionWithUsers extends Reaction {
+  users?: ReactionUser[];
+}
 
 /**
  * Props for the ReactionDisplay component
  */
 interface ReactionDisplayProps {
   /** Array of reactions to display */
-  reactions: readonly Reaction[];
+  reactions: readonly ReactionWithUsers[];
   /** Callback fired when toggling a reaction */
   onToggleReaction: (emoji: string) => void;
   /** Additional CSS class names */
@@ -28,24 +51,26 @@ export const ReactionDisplay = memo(function ReactionDisplay({
   }
 
   return (
-    <div
-      className={cn('flex flex-wrap gap-1', className)}
-      role='group'
-      aria-label='Message reactions'
-    >
-      {reactions.map(reaction => (
-        <ReactionBadge
-          key={reaction.emoji}
-          reaction={reaction}
-          onClick={() => onToggleReaction(reaction.emoji)}
-        />
-      ))}
-    </div>
+    <TooltipProvider delayDuration={300}>
+      <div
+        className={cn('flex flex-wrap gap-1', className)}
+        role='group'
+        aria-label='Message reactions'
+      >
+        {reactions.map(reaction => (
+          <ReactionBadge
+            key={reaction.emoji}
+            reaction={reaction}
+            onClick={() => onToggleReaction(reaction.emoji)}
+          />
+        ))}
+      </div>
+    </TooltipProvider>
   );
 });
 
 interface ReactionBadgeProps {
-  reaction: Reaction;
+  reaction: ReactionWithUsers;
   onClick: () => void;
 }
 
@@ -53,59 +78,81 @@ const ReactionBadge = memo(function ReactionBadge({
   reaction,
   onClick,
 }: ReactionBadgeProps) {
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  const getUserNames = useCallback(() => {
-    // Note: The Reaction type uses userIds, not user objects
-    // This function would need user data from a parent context or prop
-    // For now, returning a simple count message
-    if (reaction.count === 0) {
-      return '';
+  /**
+   * Generate user names for tooltip display
+   * Shows individual names for small groups, count for large groups
+   */
+  const tooltipContent = useMemo(() => {
+    if (!reaction.users || reaction.users.length === 0) {
+      if (reaction.count === 0) {
+        return null;
+      }
+      if (reaction.count === 1) {
+        return '1 person reacted';
+      }
+      return `${reaction.count} people reacted`;
     }
-    if (reaction.count === 1) {
-      return '1 person reacted';
-    }
-    return `${reaction.count} people reacted`;
-  }, [reaction.count]);
 
-  const handleMouseEnter = useCallback(() => setShowTooltip(true), []);
-  const handleMouseLeave = useCallback(() => setShowTooltip(false), []);
+    const names = reaction.users.map(
+      user => user.displayName || user.name || 'Unknown User',
+    );
+
+    // For 1-5 users, show all names
+    if (names.length <= 5) {
+      if (names.length === 1) {
+        return names[0];
+      }
+      if (names.length === 2) {
+        return `${names[0]} and ${names[1]}`;
+      }
+      const lastName = names.pop();
+      return `${names.join(', ')}, and ${lastName}`;
+    }
+
+    // For 6+ users, show first few and count
+    const displayNames = names.slice(0, 3);
+    const remaining = names.length - 3;
+    return `${displayNames.join(', ')}, and ${remaining} ${remaining === 1 ? 'other' : 'others'}`;
+  }, [reaction.users, reaction.count]);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick();
+    },
+    [onClick],
+  );
+
+  const reactionCount = Number.isNaN(reaction.count) ? 0 : reaction.count ?? 0;
 
   return (
-    <div className='relative'>
-      <button
-        type='button'
-        onClick={onClick}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        className={cn(
-          'flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-          reaction.hasReacted
-            ? 'border-primary/50 bg-primary/10 text-primary hover:border-primary'
-            : 'border-border bg-muted/50 hover:border-muted-foreground/50 hover:bg-muted',
-        )}
-        aria-label={`${reaction.emoji} reaction, ${Number.isNaN(reaction.count) ? 0 : (reaction.count ?? 0)} ${reaction.count === 1 ? 'person' : 'people'}`}
-      >
-        <span className='text-base leading-none' aria-hidden='true'>
-          {reaction.emoji}
-        </span>
-        <span className='min-w-[1ch] text-xs font-medium tabular-nums'>
-          {Number.isNaN(reaction.count) ? 0 : (reaction.count ?? 0)}
-        </span>
-      </button>
-
-      {/* Tooltip */}
-      {showTooltip && reaction.count > 0 && (
-        <div
-          className='pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-lg ring-1 ring-border'
-          role='tooltip'
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type='button'
+          onClick={handleClick}
+          className={cn(
+            'flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+            reaction.hasReacted
+              ? 'border-primary/50 bg-primary/10 text-primary hover:border-primary hover:bg-primary/20 shadow-sm'
+              : 'border-border bg-muted/50 hover:border-muted-foreground/50 hover:bg-muted',
+          )}
+          aria-label={`${reaction.emoji} reaction, ${reactionCount} ${reactionCount === 1 ? 'person' : 'people'}`}
         >
-          {getUserNames()}
-          <div className='absolute left-1/2 top-full -translate-x-1/2'>
-            <div className='h-0 w-0 border-x-4 border-t-4 border-x-transparent border-t-popover' />
-          </div>
-        </div>
+          <span className='text-base leading-none' aria-hidden='true'>
+            {reaction.emoji}
+          </span>
+          <span className='min-w-[1ch] text-xs font-medium tabular-nums'>
+            {reactionCount}
+          </span>
+        </button>
+      </TooltipTrigger>
+      {tooltipContent && (
+        <TooltipContent side='top' className='max-w-xs'>
+          <p className='text-xs'>{tooltipContent}</p>
+        </TooltipContent>
       )}
-    </div>
+    </Tooltip>
   );
 });

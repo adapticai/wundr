@@ -126,23 +126,49 @@ export async function GET(
       );
     }
 
-    // Calculate permissions
+    // Calculate permissions based on roles and channel type
+    const isOrgOwner = orgMembership.role === 'OWNER';
     const isOrgAdmin = ['OWNER', 'ADMIN'].includes(orgMembership.role);
+    const isChannelOwner = channelMembership?.role === 'OWNER';
     const isChannelAdmin = channelMembership?.role === 'ADMIN';
     const isMember = !!channelMembership;
+    const isPublicChannel = channel.type === 'PUBLIC';
 
+    // Comprehensive permission set based on requirements
     const permissions = {
-      canEdit: isOrgAdmin || isChannelAdmin,
-      canDelete: isOrgAdmin, // Only org admins/owners can delete
-      canArchive: isOrgAdmin || isChannelAdmin,
+      // Post and interaction permissions
+      canPost: isMember || isPublicChannel,
+      canRead: isMember || isPublicChannel,
+
+      // Member management permissions
       canInvite:
-        isOrgAdmin || isChannelAdmin || (channel.type === 'PUBLIC' && isMember),
-      canRemoveMembers: isOrgAdmin || isChannelAdmin,
-      canChangeRoles: isOrgAdmin || isChannelAdmin,
-      canPost: isMember || channel.type === 'PUBLIC',
-      canRead: isMember || channel.type === 'PUBLIC',
-      role: channelMembership?.role || null,
+        isOrgAdmin ||
+        isChannelOwner ||
+        isChannelAdmin ||
+        (isPublicChannel && isMember),
+      canKick: isOrgAdmin || isChannelOwner || isChannelAdmin,
+      canRemoveMembers: isOrgAdmin || isChannelOwner || isChannelAdmin, // Alias for canKick
+
+      // Channel management permissions
+      canEditChannel: isOrgAdmin || isChannelOwner || isChannelAdmin,
+      canEdit: isOrgAdmin || isChannelOwner || isChannelAdmin, // Alias for canEditChannel
+      canDelete: isOrgOwner, // Only org owners can delete channels
+      canArchive: isOrgAdmin || isChannelOwner || isChannelAdmin,
+
+      // Message management permissions
+      canDeleteMessages: isOrgAdmin || isChannelOwner || isChannelAdmin,
+      canPin: isOrgAdmin || isChannelOwner || isChannelAdmin,
+
+      // Role management permissions
+      canChangeRoles: isOrgAdmin || isChannelOwner,
+
+      // Role indicators
+      isOwner: isChannelOwner,
+      isAdmin: isChannelAdmin,
       isMember,
+
+      // Current role in channel
+      role: channelMembership?.role || null,
     };
 
     return NextResponse.json(permissions);

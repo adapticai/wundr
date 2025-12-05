@@ -934,55 +934,92 @@ export function useChannelMutations(): UseChannelMutationsReturn {
 
 /**
  * Hook for user permissions in a channel
+ * Fetches and caches permissions from the API
  */
 export function useChannelPermissions(
   channelId: string,
-  currentUserId: string,
 ): UseChannelPermissionsReturn {
   const [permissions, setPermissions] = useState<ChannelPermissions>({
+    canPost: false,
+    canRead: false,
+    canInvite: false,
+    canKick: false,
+    canRemoveMembers: false,
+    canEditChannel: false,
     canEdit: false,
     canDelete: false,
     canArchive: false,
-    canInvite: false,
-    canRemoveMembers: false,
+    canDeleteMessages: false,
+    canPin: false,
     canChangeRoles: false,
+    isOwner: false,
+    isAdmin: false,
+    isMember: false,
+    role: null,
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!channelId || !currentUserId) {
+  const fetchPermissions = useCallback(async () => {
+    if (!channelId) {
       setIsLoading(false);
       return;
     }
 
-    const fetchPermissions = async () => {
-      setIsLoading(true);
+    setIsLoading(true);
 
-      try {
-        const response = await fetch(`/api/channels/${channelId}/permissions`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch permissions');
-        }
+    const abortController = new AbortController();
 
-        const data = await response.json();
-        setPermissions(data);
-      } catch {
-        // Default to no permissions on error
-        setPermissions({
-          canEdit: false,
-          canDelete: false,
-          canArchive: false,
-          canInvite: false,
-          canRemoveMembers: false,
-          canChangeRoles: false,
-        });
-      } finally {
-        setIsLoading(false);
+    try {
+      const response = await fetch(`/api/channels/${channelId}/permissions`, {
+        signal: abortController.signal,
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to fetch permissions' }));
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            'Failed to fetch permissions',
+        );
       }
-    };
 
+      const data: ChannelPermissions = await response.json();
+      setPermissions(data);
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return; // Request was cancelled, don't update state
+      }
+
+      // Default to no permissions on error
+      setPermissions({
+        canPost: false,
+        canRead: false,
+        canInvite: false,
+        canKick: false,
+        canRemoveMembers: false,
+        canEditChannel: false,
+        canEdit: false,
+        canDelete: false,
+        canArchive: false,
+        canDeleteMessages: false,
+        canPin: false,
+        canChangeRoles: false,
+        isOwner: false,
+        isAdmin: false,
+        isMember: false,
+        role: null,
+      });
+    } finally {
+      setIsLoading(false);
+      abortController.abort();
+    }
+  }, [channelId]);
+
+  useEffect(() => {
     fetchPermissions();
-  }, [channelId, currentUserId]);
+  }, [fetchPermissions]);
 
   return {
     permissions,

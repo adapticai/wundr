@@ -8,6 +8,7 @@ import { AddPeopleDialog } from '@/components/channel/add-people-dialog';
 import { ConversationDetailsDialog } from '@/components/channel/conversation-details-dialog';
 import { DMDetailsPanel } from '@/components/channel/dm-details-panel';
 import { DMHeader } from '@/components/channel/dm-header';
+import { DMSummaryPanel } from '@/components/channel/dm-summary-panel';
 import { FilesTab } from '@/components/channel/files-tab';
 import {
   MessageList,
@@ -15,6 +16,11 @@ import {
   ThreadPanel,
   TypingIndicator,
 } from '@/components/chat';
+import { DMBookmarks } from '@/components/dm/dm-bookmarks';
+import { DMCanvas } from '@/components/dm/dm-canvas';
+import { DMSearchPanel } from '@/components/dm/dm-search-panel';
+import { DMListsTab } from '@/components/dm/dm-lists';
+import { DMWorkflowsTab } from '@/components/dm/dm-workflows';
 import {
   CommandDialog,
   CommandEmpty,
@@ -123,7 +129,10 @@ export default function DMPage() {
   const [isMuted, setIsMuted] = useState(false);
   // Search state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  // Summary state
+  const [showSummary, setShowSummary] = useState(false);
 
   // Convert auth user to chat User type
   const currentUser = useMemo<User | null>(() => {
@@ -683,9 +692,22 @@ export default function DMPage() {
       });
   }, [messages, searchQuery]);
 
-  // Handle search
+  // Handle search - toggle search panel
   const handleSearch = useCallback(() => {
-    setIsSearchOpen(true);
+    setIsSearchPanelOpen(prev => !prev);
+  }, []);
+
+  // Global keyboard shortcut for Cmd+F to open search panel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+        e.preventDefault();
+        setIsSearchPanelOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // Handle scroll to message
@@ -814,8 +836,7 @@ export default function DMPage() {
 
   // Handle AI summarize
   const handleSummarize = useCallback(() => {
-    // TODO: Implement AI summarize
-    toast.info('AI summarization coming soon');
+    setShowSummary(true);
   }, []);
 
   // Handle notification change
@@ -943,6 +964,17 @@ export default function DMPage() {
         onAddTab={handleAddTab}
       />
 
+      {/* Search Panel - appears below header when open */}
+      <DMSearchPanel
+        isOpen={isSearchPanelOpen}
+        messages={messages}
+        onClose={() => setIsSearchPanelOpen(false)}
+        onScrollToMessage={handleScrollToMessage}
+      />
+
+      {/* AI Summary Panel */}
+      {showSummary && <DMSummaryPanel conversationId={dmId} />}
+
       {/* Main content */}
       <div className='flex flex-1 overflow-hidden'>
         {/* Tab content */}
@@ -983,23 +1015,42 @@ export default function DMPage() {
             workspaceSlug={workspaceSlug}
             currentUserId={currentUser?.id}
             mode='conversation'
-            className='flex-1'
           />
         )}
 
         {activeTab === 'canvas' && (
-          <div className='flex flex-1 items-center justify-center text-muted-foreground'>
-            Canvas tab coming soon
-          </div>
+          <DMCanvas
+            channelId={dmId}
+            currentUserId={currentUser?.id || ''}
+            currentUserName={currentUser?.name || 'Unknown User'}
+            currentUserImage={currentUser?.image || undefined}
+            className='flex-1'
+          />
         )}
 
-        {(activeTab === 'lists' ||
-          activeTab === 'workflows' ||
-          activeTab === 'bookmarks') && (
-          <div className='flex flex-1 items-center justify-center text-muted-foreground'>
-            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab coming
-            soon
-          </div>
+        {activeTab === 'bookmarks' && (
+          <DMBookmarks
+            workspaceSlug={workspaceSlug}
+            channelId={dmId}
+            onScrollToMessage={handleScrollToMessage}
+          />
+        )}
+
+                {activeTab === 'lists' && (
+          <DMListsTab
+            channelId={dmId}
+            workspaceSlug={workspaceSlug}
+            participants={participants}
+            currentUserId={currentUser.id}
+          />
+        )}
+
+        {activeTab === 'workflows' && (
+          <DMWorkflowsTab
+            channelId={dmId}
+            workspaceSlug={workspaceSlug}
+            currentUserId={currentUser.id}
+          />
         )}
 
         {/* Thread panel - only show on messages tab */}

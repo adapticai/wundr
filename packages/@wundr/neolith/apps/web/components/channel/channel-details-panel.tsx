@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useState, useCallback, useEffect, useMemo } from 'react';
 
+import { ChannelNotificationSettings } from '@/components/channels/channel-notification-settings';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -69,7 +70,9 @@ export function ChannelDetailsPanel({
   onChangeMemberRole,
   currentUserId,
 }: ChannelDetailsPanelProps) {
-  const [activeTab, setActiveTab] = useState<'about' | 'members'>('about');
+  const [activeTab, setActiveTab] = useState<
+    'about' | 'members' | 'notifications'
+  >('about');
   const [members, setMembers] = useState<ChannelMember[]>([]);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
 
@@ -210,6 +213,19 @@ export function ChannelDetailsPanel({
           <Users className='mr-2 inline h-4 w-4' />
           Members ({channel.memberCount})
         </button>
+        <button
+          type='button'
+          onClick={() => setActiveTab('notifications')}
+          className={cn(
+            'flex-1 border-b-2 px-4 py-3 text-sm font-medium transition-colors',
+            activeTab === 'notifications'
+              ? 'border-primary text-foreground'
+              : 'border-transparent text-muted-foreground hover:text-foreground',
+          )}
+        >
+          <Bell className='mr-2 inline h-4 w-4' />
+          Notifications
+        </button>
       </div>
 
       {/* Tab content */}
@@ -237,6 +253,8 @@ export function ChannelDetailsPanel({
               <p className='text-sm capitalize'>{channel.type}</p>
             </div>
           </div>
+        ) : activeTab === 'notifications' ? (
+          <ChannelNotificationSettings channelId={channel.id} />
         ) : (
           <div className='p-4'>
             {isLoadingMembers ? (

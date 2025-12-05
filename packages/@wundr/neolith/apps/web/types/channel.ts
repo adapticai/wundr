@@ -116,18 +116,51 @@ export interface UpdateChannelInput {
  * Permission flags for what the current user can do in a channel
  */
 export interface ChannelPermissions {
+  // Post and interaction permissions
+  /** Whether the user can post messages in the channel */
+  canPost: boolean;
+  /** Whether the user can read messages in the channel */
+  canRead: boolean;
+
+  // Member management permissions
+  /** Whether the user can invite new members to the channel */
+  canInvite: boolean;
+  /** Whether the user can kick/remove members from the channel */
+  canKick: boolean;
+  /** Whether the user can remove members from the channel (alias for canKick) */
+  canRemoveMembers: boolean;
+
+  // Channel management permissions
   /** Whether the user can edit channel settings */
+  canEditChannel: boolean;
+  /** Whether the user can edit channel settings (alias for canEditChannel) */
   canEdit: boolean;
   /** Whether the user can delete the channel */
   canDelete: boolean;
   /** Whether the user can archive the channel */
   canArchive: boolean;
-  /** Whether the user can invite new members */
-  canInvite: boolean;
-  /** Whether the user can remove members from the channel */
-  canRemoveMembers: boolean;
-  /** Whether the user can change member roles */
+
+  // Message management permissions
+  /** Whether the user can delete messages in the channel */
+  canDeleteMessages: boolean;
+  /** Whether the user can pin messages in the channel */
+  canPin: boolean;
+
+  // Role management permissions
+  /** Whether the user can change member roles in the channel */
   canChangeRoles: boolean;
+
+  // Role indicators
+  /** Whether the user is the owner of the channel */
+  isOwner: boolean;
+  /** Whether the user is an admin of the channel */
+  isAdmin: boolean;
+  /** Whether the user is a member of the channel */
+  isMember: boolean;
+
+  // Current role
+  /** The user's current role in the channel */
+  role: ChannelMemberRole | null;
 }
 
 /**
