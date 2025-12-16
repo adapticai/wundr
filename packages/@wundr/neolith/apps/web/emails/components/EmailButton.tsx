@@ -28,7 +28,7 @@ export const EmailButton = ({
 
   return (
     <Button style={buttonStyle} href={href}>
-      {children}
+      {children as any}
     </Button>
   );
 };

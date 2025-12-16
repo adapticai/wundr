@@ -10,7 +10,7 @@
 
 import { GraphQLError } from 'graphql';
 
-import type { PrismaClient, file as PrismaFile, Prisma } from '@prisma/client';
+import type { PrismaClient, File as PrismaFile, Prisma } from '@neolith/database';
 
 // =============================================================================
 // TYPE DEFINITIONS

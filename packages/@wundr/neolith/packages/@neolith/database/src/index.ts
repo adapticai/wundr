@@ -148,6 +148,10 @@ export type BacklogWhereInput = Prisma.backlogWhereInput;
 export type BacklogWhereUniqueInput = Prisma.backlogWhereUniqueInput;
 export type BacklogItemWhereInput = Prisma.backlogItemWhereInput;
 export type BacklogItemWhereUniqueInput = Prisma.backlogItemWhereUniqueInput;
+export type FileWhereInput = Prisma.fileWhereInput;
+export type FileWhereUniqueInput = Prisma.fileWhereUniqueInput;
+export type MessageWhereInput = Prisma.messageWhereInput;
+export type MessageWhereUniqueInput = Prisma.messageWhereUniqueInput;
 
 // Future where types (uncomment after adding models):
 // export type OrganizationWhereInput = Prisma.OrganizationWhereInput;

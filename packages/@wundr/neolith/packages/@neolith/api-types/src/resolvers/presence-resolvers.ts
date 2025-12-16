@@ -8,7 +8,9 @@
  * @module @genesis/api-types/resolvers/presence-resolvers
  */
 
-import type { Prisma, PrismaClient, UserStatus } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
+import type { JsonValue } from '@neolith/database';
+import { UserStatus } from '@neolith/database';
 import { GraphQLError } from 'graphql';
 
 // =============================================================================
@@ -280,7 +282,7 @@ function isUserOnline(lastActiveAt: Date | null): boolean {
  * @returns Presence status or null
  */
 function getPresenceFromPreferences(
-  preferences: Prisma.JsonValue
+  preferences: JsonValue
 ): UserPreferences {
   if (
     typeof preferences === 'object' &&
@@ -351,7 +353,7 @@ function buildUserPresence(user: {
   id: string;
   status: UserStatus;
   lastActiveAt: Date | null;
-  preferences: Prisma.JsonValue;
+  preferences: JsonValue;
 }): UserPresence {
   const prefs = getPresenceFromPreferences(user.preferences);
   const online = isUserOnline(user.lastActiveAt);

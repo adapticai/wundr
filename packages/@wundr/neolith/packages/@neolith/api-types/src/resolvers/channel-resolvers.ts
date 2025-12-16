@@ -10,13 +10,12 @@
 
 import { GraphQLError } from 'graphql';
 
+import type { PrismaClient, Prisma } from '@prisma/client';
 import type {
-  PrismaClient,
-  channel as PrismaChannel,
+  Channel as PrismaChannel,
   ChannelType as PrismaChannelType,
   ChannelRole as PrismaChannelRole,
-  Prisma,
-} from '@prisma/client';
+} from '@neolith/database';
 
 // =============================================================================
 // TYPE DEFINITIONS

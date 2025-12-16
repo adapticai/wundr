@@ -11,9 +11,9 @@
 import type {
   Prisma,
   PrismaClient,
-  orchestrator as PrismaOrchestrator,
+  Orchestrator as PrismaOrchestrator,
   OrchestratorStatus as PrismaOrchestratorStatus,
-} from '@prisma/client';
+} from '@neolith/database';
 import { GraphQLError } from 'graphql';
 
 // =============================================================================

@@ -8,12 +8,12 @@
  * @module @genesis/api-types/resolvers/organization-resolvers
  */
 
+import type { Prisma, PrismaClient } from '@prisma/client';
 import type {
-  Prisma,
-  PrismaClient,
-  organization as PrismaOrganization,
-  OrganizationRole as PrismaOrgRole,
-} from '@prisma/client';
+  Organization,
+  OrganizationRole,
+  InputJsonValue,
+} from '@neolith/database';
 import { GraphQLError } from 'graphql';
 
 // =============================================================================
@@ -21,16 +21,9 @@ import { GraphQLError } from 'graphql';
 // =============================================================================
 
 /**
- * Organization role enum matching the Prisma schema
+ * Organization role type alias for better readability
  */
-export const OrganizationRole = {
-  Owner: 'OWNER',
-  Admin: 'ADMIN',
-  Member: 'MEMBER',
-} as const;
-
-export type OrganizationRoleType =
-  (typeof OrganizationRole)[keyof typeof OrganizationRole];
+export type OrganizationRoleType = OrganizationRole;
 
 /**
  * User role for authorization checks
@@ -70,25 +63,17 @@ export interface GraphQLContext {
 }
 
 /**
- * Organization entity type for resolvers
+ * Organization entity type for resolvers (mapped from Prisma type)
+ * Using the Organization type from @neolith/database which maps from lowercase organization
  */
-interface Organization {
-  id: string;
-  name: string;
-  slug: string;
-  avatarUrl: string | null;
-  description: string | null;
-  settings: unknown;
-  createdAt: Date;
-  updatedAt: Date;
-}
+type OrganizationEntity = Organization;
 
 /**
  * Organization member info
  */
 interface OrganizationMemberInfo {
   isMember: boolean;
-  role: PrismaOrgRole | null;
+  role: OrganizationRole | null;
 }
 
 // =============================================================================
@@ -173,7 +158,7 @@ interface UpdateOrganizationMemberRoleArgs {
 // =============================================================================
 
 interface OrganizationPayload {
-  organization: Organization | null;
+  organization: OrganizationEntity | null;
   errors: Array<{ code: string; message: string; path?: string[] }>;
 }
 
@@ -186,7 +171,7 @@ interface DeletePayload {
 interface MemberPayload {
   member: {
     id: string;
-    role: PrismaOrgRole;
+    role: OrganizationRole;
     joinedAt: Date;
     user: { id: string; email: string; name: string | null };
   } | null;
@@ -370,7 +355,7 @@ function parseCursor(cursor: string): { timestamp: Date; id: string } | null {
 /**
  * Create success payload
  */
-function createSuccessPayload(organization: Organization): OrganizationPayload {
+function createSuccessPayload(organization: OrganizationEntity): OrganizationPayload {
   return { organization, errors: [] };
 }
 
@@ -393,18 +378,10 @@ function createErrorPayload(
 
 /**
  * Convert Prisma organization to resolver organization type
+ * Since we're using the same type from @neolith/database, this is a passthrough
  */
-function toOrganization(prismaOrg: PrismaOrganization): Organization {
-  return {
-    id: prismaOrg.id,
-    name: prismaOrg.name,
-    slug: prismaOrg.slug,
-    avatarUrl: prismaOrg.avatarUrl,
-    description: prismaOrg.description,
-    settings: prismaOrg.settings,
-    createdAt: prismaOrg.createdAt,
-    updatedAt: prismaOrg.updatedAt,
-  };
+function toOrganization(prismaOrg: Organization): OrganizationEntity {
+  return prismaOrg;
 }
 
 // =============================================================================
@@ -439,7 +416,7 @@ export const organizationQueries = {
     _parent: unknown,
     args: OrganizationQueryArgs,
     context: GraphQLContext
-  ): Promise<Organization | null> => {
+  ): Promise<OrganizationEntity | null> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
         extensions: { code: 'UNAUTHENTICATED' },
@@ -488,7 +465,7 @@ export const organizationQueries = {
     _parent: unknown,
     args: OrganizationBySlugArgs,
     context: GraphQLContext
-  ): Promise<Organization | null> => {
+  ): Promise<OrganizationEntity | null> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
         extensions: { code: 'UNAUTHENTICATED' },
@@ -613,27 +590,28 @@ export const organizationQueries = {
     }
 
     // Build where clause
-    const where: Prisma.organizationMemberWhereInput = {
+    const where = {
       organizationId: orgId,
+      ...(role ? { role: role as OrganizationRole } : {}),
     };
 
-    if (role) {
-      where.role = role as PrismaOrgRole;
-    }
-
     // Handle cursor pagination
+    let whereWithCursor: Record<string, unknown> = { ...where };
     if (args.after) {
       const parsed = parseCursor(args.after);
       if (parsed) {
-        where.OR = [
-          { joinedAt: { lt: parsed.timestamp } },
-          { joinedAt: parsed.timestamp, id: { lt: parsed.id } },
-        ];
+        whereWithCursor = {
+          ...where,
+          OR: [
+            { joinedAt: { lt: parsed.timestamp } },
+            { joinedAt: parsed.timestamp, id: { lt: parsed.id } },
+          ],
+        };
       }
     }
 
     const members = await context.prisma.organizationMember.findMany({
-      where,
+      where: whereWithCursor,
       take: first + 1,
       orderBy: [{ joinedAt: 'desc' }, { id: 'desc' }],
       include: {
@@ -652,7 +630,7 @@ export const organizationQueries = {
     const totalCount = await context.prisma.organizationMember.count({
       where: {
         organizationId: orgId,
-        ...(role ? { role: role as PrismaOrgRole } : {}),
+        ...(role ? { role: role as OrganizationRole } : {}),
       },
     });
 
@@ -844,7 +822,12 @@ export const organizationMutations = {
     }
 
     // Build update data
-    const updateData: Prisma.organizationUpdateInput = {};
+    const updateData: {
+      name?: string;
+      description?: string | null;
+      avatarUrl?: string | null;
+      settings?: InputJsonValue;
+    } = {};
 
     if (input.name !== undefined && input.name !== null) {
       updateData.name = input.name;
@@ -856,7 +839,7 @@ export const organizationMutations = {
       updateData.avatarUrl = input.avatarUrl;
     }
     if (input.settings !== undefined && input.settings !== null) {
-      updateData.settings = input.settings as Prisma.InputJsonValue;
+      updateData.settings = input.settings as InputJsonValue;
     }
 
     const org = await context.prisma.organization.update({
@@ -1033,7 +1016,7 @@ export const organizationMutations = {
       data: {
         organizationId: orgId,
         userId,
-        role: role as PrismaOrgRole,
+        role: role as OrganizationRole,
       },
       include: {
         user: {
@@ -1238,7 +1221,7 @@ export const organizationMutations = {
           userId,
         },
       },
-      data: { role: role as PrismaOrgRole },
+      data: { role: role as OrganizationRole },
       include: {
         user: {
           select: { id: true, email: true, name: true },
@@ -1275,7 +1258,7 @@ export const OrganizationFieldResolvers = {
    * @returns Array of workspaces in the organization
    */
   workspaces: async (
-    parent: Organization,
+    parent: OrganizationEntity,
     _args: unknown,
     context: GraphQLContext
   ) => {
@@ -1294,7 +1277,7 @@ export const OrganizationFieldResolvers = {
    * @returns Array of organization members
    */
   members: async (
-    parent: Organization,
+    parent: OrganizationEntity,
     _args: unknown,
     context: GraphQLContext
   ) => {
@@ -1324,7 +1307,7 @@ export const OrganizationFieldResolvers = {
    * @returns Number of members in the organization
    */
   memberCount: async (
-    parent: Organization,
+    parent: OrganizationEntity,
     _args: unknown,
     context: GraphQLContext
   ): Promise<number> => {
@@ -1342,7 +1325,7 @@ export const OrganizationFieldResolvers = {
    * @returns Array of VPs in the organization
    */
   orchestrators: async (
-    parent: Organization,
+    parent: OrganizationEntity,
     _args: unknown,
     context: GraphQLContext
   ) => {

@@ -10,12 +10,14 @@
 
 import { GraphQLError } from 'graphql';
 
+import type { PrismaClient, Prisma } from '@prisma/client';
 import type {
-  PrismaClient,
-  message as PrismaMessage,
+  Message as PrismaMessage,
   MessageType as PrismaMessageType,
-  Prisma,
-} from '@prisma/client';
+  MessageWhereInput,
+  JsonValue,
+  InputJsonValue,
+} from '@neolith/database';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -853,7 +855,7 @@ export const messageQueries = {
 
     // Build where clause - exclude soft-deleted messages
     // Use parentId (not parentMessageId) as per Prisma schema
-    const where: Prisma.messageWhereInput = {
+    const where: MessageWhereInput = {
       channelId,
       isDeleted: false,
       parentId: null, // Only top-level messages, not thread replies
@@ -976,7 +978,7 @@ export const messageQueries = {
     }
 
     // Build where clause - use parentId as per Prisma schema
-    const where: Prisma.messageWhereInput = {
+    const where: MessageWhereInput = {
       parentId: parentMessageId,
       isDeleted: false,
     };
@@ -1076,7 +1078,7 @@ export const messageQueries = {
     );
 
     // Build search query
-    const where: Prisma.messageWhereInput = {
+    const where: MessageWhereInput = {
       channelId: { in: accessibleChannelIds },
       isDeleted: false,
       content: { contains: query, mode: 'insensitive' },
@@ -1224,7 +1226,7 @@ export const messageMutations = {
 
     // Process content if message service is available
     let processedContent = input.content;
-    let metadata: Prisma.InputJsonValue = {};
+    let metadata: InputJsonValue = {};
 
     if (context.messageService) {
       processedContent = await context.messageService.processContent(
@@ -1232,7 +1234,7 @@ export const messageMutations = {
       );
       const extractedMetadata =
         await context.messageService.extractMetadata(processedContent);
-      metadata = extractedMetadata as Prisma.InputJsonValue;
+      metadata = extractedMetadata as InputJsonValue;
     }
 
     // Rate limiting: Check if user has exceeded message rate limit
@@ -1379,7 +1381,7 @@ export const messageMutations = {
         parentId: input.parentMessageId ?? null,
         isEdited: false,
         isDeleted: false,
-        metadata: (input.metadata ?? {}) as Prisma.InputJsonValue,
+        metadata: (input.metadata ?? {}) as InputJsonValue,
       },
     });
 
@@ -1931,7 +1933,7 @@ export const messageMutations = {
     const updatedMessage = await context.prisma.message.update({
       where: { id: args.id },
       data: {
-        metadata: restMetadata as Prisma.InputJsonValue,
+        metadata: restMetadata as InputJsonValue,
       },
     });
 

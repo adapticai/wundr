@@ -40,7 +40,7 @@ export const EmailText = ({
 
   return (
     <ReactEmailText style={{ ...baseStyle, ...customStyle }}>
-      {children}
+      {children as any}
     </ReactEmailText>
   );
 };

@@ -11,11 +11,12 @@
 import { GraphQLError } from 'graphql';
 
 import type {
-  PrismaClient,
-  file as PrismaFile,
+  File as PrismaFile,
   FileStatus,
-  Prisma,
-} from '@prisma/client';
+  FileWhereInput,
+  InputJsonValue,
+  PrismaClient,
+} from '@neolith/database';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -698,7 +699,7 @@ export const fileQueries = {
     }
 
     // Build where clause
-    const where: Prisma.fileWhereInput = {
+    const where: FileWhereInput = {
       workspaceId,
       status: { not: 'FAILED' },
       ...(mimeType && { mimeType }),
@@ -778,7 +779,7 @@ export const fileQueries = {
     }
 
     // Build where clause
-    const where: Prisma.fileWhereInput = {
+    const where: FileWhereInput = {
       workspaceId,
     };
 
@@ -996,7 +997,7 @@ export const fileMutations = {
         status: 'READY',
         workspaceId,
         uploadedById: context.user.id,
-        metadata: (metadata ?? {}) as Prisma.InputJsonValue,
+        metadata: (metadata ?? {}) as InputJsonValue,
       },
     });
 
@@ -1015,7 +1016,7 @@ export const fileMutations = {
             thumbnailUrl,
             metadata: {
               ...(file.metadata as object),
-            } as Prisma.InputJsonValue,
+            } as InputJsonValue,
           },
         });
 

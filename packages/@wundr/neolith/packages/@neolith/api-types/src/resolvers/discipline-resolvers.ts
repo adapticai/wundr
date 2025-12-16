@@ -12,15 +12,30 @@
  * @module @genesis/api-types/resolvers/discipline-resolvers
  */
 
-import type {
-  PrismaClient,
-  orchestrator as PrismaOrchestrator,
-} from '@prisma/client';
+import type { PrismaClient, Prisma } from '@prisma/client';
 import { GraphQLError } from 'graphql';
 
 // =============================================================================
 // TYPE DEFINITIONS
 // =============================================================================
+
+/**
+ * Prisma Orchestrator type from database model
+ */
+type PrismaOrchestrator = {
+  id: string;
+  userId: string;
+  organizationId: string;
+  workspaceId: string | null;
+  disciplineId: string | null;
+  discipline: string;
+  role: string;
+  capabilities: unknown;
+  daemonEndpoint: string | null;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 /**
  * User role for authorization checks

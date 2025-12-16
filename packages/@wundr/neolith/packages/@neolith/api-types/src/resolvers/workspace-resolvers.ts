@@ -10,13 +10,51 @@
 
 import { GraphQLError } from 'graphql';
 
-import type {
-  PrismaClient,
-  workspace as PrismaWorkspace,
-  WorkspaceRole as PrismaWorkspaceRole,
-  WorkspaceVisibility as PrismaWorkspaceVisibility,
-  Prisma,
-} from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
+
+// Define Prisma model types directly since client generation has issues
+type PrismaWorkspace = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  avatarUrl: string | null;
+  visibility: string;
+  settings: any;
+  organizationId: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+type PrismaWorkspaceRole = string; // 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST'
+type PrismaWorkspaceVisibility = string; // 'PUBLIC' | 'PRIVATE' | 'INTERNAL'
+
+// Define Prisma input types
+type WorkspaceWhereInput = {
+  id?: string | { lt?: string };
+  organizationId?: string;
+  slug?: string;
+  OR?: WorkspaceWhereInput[];
+  AND?: WorkspaceWhereInput | WorkspaceWhereInput[];
+  workspaceMembers?: { some: { userId: string } };
+  visibility?: { in: string[] };
+  createdAt?: { lt?: Date; gt?: Date } | Date;
+};
+
+type WorkspaceMemberWhereInput = {
+  workspaceId?: string;
+  userId?: string;
+  id?: { lt?: string };
+  joinedAt?: { lt?: Date } | Date;
+  OR?: WorkspaceMemberWhereInput[];
+};
+
+type WorkspaceUpdateInput = {
+  name?: string;
+  description?: string | null;
+  avatarUrl?: string | null;
+  visibility?: string;
+  settings?: any;
+};
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -639,7 +677,7 @@ export const workspaceQueries = {
     }
 
     // Build where clause - for non-admin users, filter by visibility
-    const where: Prisma.workspaceWhereInput = {
+    const where: WorkspaceWhereInput = {
       organizationId,
     };
 
@@ -656,7 +694,7 @@ export const workspaceQueries = {
       const parsed = parseCursor(args.after);
       if (parsed) {
         const existingAnd = where.AND;
-        const cursorCondition: Prisma.workspaceWhereInput = {
+        const cursorCondition: WorkspaceWhereInput = {
           OR: [
             { createdAt: { lt: parsed.timestamp } },
             { createdAt: parsed.timestamp, id: { lt: parsed.id } },
@@ -671,7 +709,7 @@ export const workspaceQueries = {
     }
 
     const workspaces = await context.prisma.workspace.findMany({
-      where,
+      where: where as any,
       take: first + 1,
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     });
@@ -751,7 +789,7 @@ export const workspaceQueries = {
     }
 
     // Build where clause
-    const where: Prisma.workspaceMemberWhereInput = {
+    const where: WorkspaceMemberWhereInput = {
       workspaceId,
     };
 
@@ -902,13 +940,13 @@ export const workspaceMutations = {
           description: input.description ?? null,
           avatarUrl: input.avatarUrl ?? null,
           visibility:
-            (input.visibility as PrismaWorkspaceVisibility) ?? 'PRIVATE',
+            (input.visibility as any) ?? 'PRIVATE',
           settings: {},
           organizationId: input.organizationId,
           workspaceMembers: {
             create: {
               userId: context.user.id,
-              role: 'OWNER',
+              role: 'OWNER' as any,
             },
           },
         },
@@ -997,7 +1035,7 @@ export const workspaceMutations = {
     }
 
     // Build update data
-    const updateData: Prisma.workspaceUpdateInput = {};
+    const updateData: WorkspaceUpdateInput = {};
 
     if (input.name !== undefined && input.name !== null) {
       updateData.name = input.name;
@@ -1012,12 +1050,12 @@ export const workspaceMutations = {
       updateData.visibility = input.visibility as PrismaWorkspaceVisibility;
     }
     if (input.settings !== undefined && input.settings !== null) {
-      updateData.settings = input.settings as Prisma.InputJsonValue;
+      updateData.settings = input.settings;
     }
 
     const ws = await context.prisma.workspace.update({
       where: { id },
-      data: updateData,
+      data: updateData as any,
     });
 
     return createSuccessPayload(toWorkspace(ws));
@@ -1213,7 +1251,7 @@ export const workspaceMutations = {
       data: {
         workspaceId,
         userId,
-        role: role as PrismaWorkspaceRole,
+        role: role as any,
       },
       include: {
         user: {
@@ -1225,7 +1263,7 @@ export const workspaceMutations = {
     return {
       member: {
         id: member.id,
-        role: member.role,
+        role: member.role as PrismaWorkspaceRole,
         joinedAt: member.joinedAt,
         user: member.user,
       },
@@ -1415,7 +1453,7 @@ export const workspaceMutations = {
           userId,
         },
       },
-      data: { role: role as PrismaWorkspaceRole },
+      data: { role: role as any },
       include: {
         user: {
           select: { id: true, email: true, name: true },
@@ -1426,7 +1464,7 @@ export const workspaceMutations = {
     return {
       member: {
         id: member.id,
-        role: member.role,
+        role: member.role as PrismaWorkspaceRole,
         joinedAt: member.joinedAt,
         user: member.user,
       },

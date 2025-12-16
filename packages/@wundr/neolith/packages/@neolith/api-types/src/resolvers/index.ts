@@ -53,9 +53,11 @@ export {
   organizationQueries,
   organizationMutations,
   OrganizationFieldResolvers,
-  OrganizationRole,
   type OrganizationRoleType,
 } from './organization-resolvers.js';
+
+// Re-export OrganizationRole enum from database
+export { OrganizationRole } from '@neolith/database';
 
 // =============================================================================
 // WORKSPACE RESOLVERS

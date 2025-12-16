@@ -1042,7 +1042,7 @@ export const adminQueries = {
   ): Promise<MemberInfo[]> => {
     await requireAdmin(context, args.workspaceId);
 
-    const where: Prisma.workspaceMemberWhereInput = {
+    const where: Record<string, unknown> = {
       workspaceId: args.workspaceId,
     };
 
@@ -1077,7 +1077,7 @@ export const adminQueries = {
     });
 
     return members.map(
-      (m: Prisma.workspaceMemberGetPayload<{ include: { user: true } }>) => ({
+      (m: { id: string; userId: string; workspaceId: string; role: string; joinedAt: Date; user: unknown }) => ({
         id: m.id,
         userId: m.userId,
         workspaceId: m.workspaceId,
