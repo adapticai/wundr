@@ -18,6 +18,8 @@ import { OrchestratorWebSocketServer } from './websocket-server';
 import { MemoryManager } from '../memory/memory-manager';
 import { SessionManager } from '../session/session-manager';
 import { Logger, LogLevel } from '../utils/logger';
+import { AuthConfigSchema } from '../auth/types';
+import type { AuthConfig } from '../auth/types';
 import { createOpenAIClient } from '../llm';
 import { McpToolRegistryImpl } from '../mcp/tool-registry';
 import type { LLMClient } from '@wundr.io/ai-integration/dist/llm/client';
@@ -73,8 +75,11 @@ export class OrchestratorDaemon extends EventEmitter {
       successRate: 1.0,
     };
 
+    // Initialize WebSocket auth (reads from environment variables)
+    const authConfig = this.resolveAuthConfig();
+
     // Initialize WebSocket server
-    this.wsServer = new OrchestratorWebSocketServer(this.config.port, this.config.host);
+    this.wsServer = new OrchestratorWebSocketServer(this.config.port, this.config.host, authConfig ?? undefined);
 
     // Initialize memory manager with default config
     const defaultMemoryConfig: MemoryConfig = {
@@ -496,5 +501,76 @@ export class OrchestratorDaemon extends EventEmitter {
       this.logger.debug('Running cleanup...');
       this.sessionManager.cleanup();
     }, 60000); // Cleanup every minute
+  }
+
+  /**
+   * Build auth configuration from environment variables.
+   *
+   * Required env vars (when auth is enabled):
+   *   DAEMON_AUTH_JWT_SECRET   - HMAC-SHA256 secret (>= 32 chars)
+   *
+   * Optional env vars:
+   *   DAEMON_AUTH_MODE             - "jwt" | "api-key" | "both" (default: "both")
+   *   DAEMON_AUTH_JWT_ISSUER       - JWT iss claim
+   *   DAEMON_AUTH_JWT_AUDIENCE     - JWT aud claim
+   *   DAEMON_AUTH_JWT_EXPIRES_SEC  - Token lifetime in seconds
+   *   DAEMON_AUTH_API_KEYS         - JSON array of {key, clientId, scopes?}
+   *   DAEMON_AUTH_ALLOW_LOOPBACK   - "true" to allow unauthenticated loopback
+   *   DAEMON_AUTH_RATE_LIMIT_MAX   - Max messages per window
+   *   DAEMON_AUTH_RATE_LIMIT_WINDOW_MS - Window duration ms
+   *   DAEMON_AUTH_MAX_CONNECTIONS  - Max connections per client
+   *
+   * Returns `null` if no JWT secret is configured (auth disabled).
+   */
+  private resolveAuthConfig(): AuthConfig | null {
+    const jwtSecret = process.env['DAEMON_AUTH_JWT_SECRET'];
+    if (!jwtSecret) {
+      this.logger.warn(
+        'DAEMON_AUTH_JWT_SECRET not set -- WebSocket authentication is DISABLED. ' +
+        'Set this variable to enable authentication.',
+      );
+      return null;
+    }
+
+    let apiKeys: Array<{ key: string; clientId: string; scopes?: string[] }> = [];
+    const apiKeysJson = process.env['DAEMON_AUTH_API_KEYS'];
+    if (apiKeysJson) {
+      try {
+        apiKeys = JSON.parse(apiKeysJson);
+      } catch {
+        this.logger.error('Failed to parse DAEMON_AUTH_API_KEYS as JSON; ignoring.');
+      }
+    }
+
+    const raw = {
+      mode: process.env['DAEMON_AUTH_MODE'] ?? 'both',
+      jwtSecret,
+      jwtIssuer: process.env['DAEMON_AUTH_JWT_ISSUER'] ?? 'wundr-orchestrator',
+      jwtAudience: process.env['DAEMON_AUTH_JWT_AUDIENCE'] ?? 'wundr-daemon',
+      jwtExpiresInSeconds: process.env['DAEMON_AUTH_JWT_EXPIRES_SEC']
+        ? Number(process.env['DAEMON_AUTH_JWT_EXPIRES_SEC'])
+        : 3600,
+      apiKeys,
+      allowLoopback: process.env['DAEMON_AUTH_ALLOW_LOOPBACK'] === 'true',
+      rateLimitMaxMessages: process.env['DAEMON_AUTH_RATE_LIMIT_MAX']
+        ? Number(process.env['DAEMON_AUTH_RATE_LIMIT_MAX'])
+        : 100,
+      rateLimitWindowMs: process.env['DAEMON_AUTH_RATE_LIMIT_WINDOW_MS']
+        ? Number(process.env['DAEMON_AUTH_RATE_LIMIT_WINDOW_MS'])
+        : 60_000,
+      maxConnectionsPerClient: process.env['DAEMON_AUTH_MAX_CONNECTIONS']
+        ? Number(process.env['DAEMON_AUTH_MAX_CONNECTIONS'])
+        : 10,
+    };
+
+    const parsed = AuthConfigSchema.safeParse(raw);
+    if (!parsed.success) {
+      this.logger.error('Invalid auth configuration:', parsed.error.format());
+      this.logger.warn('Falling back to NO authentication.');
+      return null;
+    }
+
+    this.logger.info(`WebSocket auth configured: mode=${parsed.data.mode}, loopback=${parsed.data.allowLoopback}`);
+    return parsed.data;
   }
 }

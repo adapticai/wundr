@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+
+  "_comment": [
+    "TypeScript Strict Mode Migration Configuration",
+    "",
+    "This file defines the target strict mode settings for all Wundr packages.",
+    "It mirrors config/typescript/tsconfig.base.json (which is already fully strict)",
+    "and serves as documentation for the migration plan.",
+    "",
+    "Migration order (per package, one flag at a time):",
+    "  1. strictBindCallApply     - rarely triggers errors",
+    "  2. strictFunctionTypes     - catches contravariance bugs",
+    "  3. noImplicitReturns       - forces explicit returns",
+    "  4. noImplicitAny           - biggest batch, most valuable",
+    "  5. strictNullChecks        - most impactful, null/undefined handling",
+    "  6. strictPropertyInitialization - constructor/definite assignment",
+    "",
+    "Package migration waves:",
+    "  Wave 1 (low risk):   packages/shared-config, packages/core, tsconfig.dev.json",
+    "  Wave 2 (medium risk): @wundr/docs, packages/cli",
+    "  Wave 3 (high risk):  @wundr/computer-setup",
+    "",
+    "Packages already strict:",
+    "  @wundr/core, @wundr/config, @wundr/dashboard, @wundr/plugin-system,",
+    "  @wundr/security, @wundr/environment (via base), packages/analysis-engine (via base),",
+    "  packages/web-client (via base), tools/web-client, tests/",
+    "",
+    "See: .claude/analysis/wave2/22-cicd-pipeline.md for full details"
+  ],
+
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "module": "CommonJS",
+    "moduleResolution": "node",
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "importHelpers": true,
+    "downlevelIteration": true,
+
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": false,
+
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}

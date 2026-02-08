@@ -630,3 +630,252 @@ export function createEnhancedOptions(
 }
 
 export default EnhancedProjectOptions;
+
+// =============================================================================
+// Claude Code v2.1.37 Type Definitions
+// =============================================================================
+
+/**
+ * Claude Code model alias for subagents and skills
+ */
+export type ClaudeModelAlias = 'sonnet' | 'opus' | 'haiku' | 'inherit';
+
+/**
+ * Claude Code permission mode for subagents
+ */
+export type PermissionMode =
+  | 'default'
+  | 'acceptEdits'
+  | 'delegate'
+  | 'dontAsk'
+  | 'bypassPermissions'
+  | 'plan';
+
+/**
+ * Claude Code persistent memory scope for subagents
+ */
+export type MemoryScope = 'user' | 'project' | 'local';
+
+/**
+ * Agent teams display mode
+ */
+export type TeammateMode = 'auto' | 'in-process' | 'tmux';
+
+/**
+ * MCP server configuration for inline definitions
+ */
+export interface McpServerConfig {
+  /** Command to start the MCP server */
+  command: string;
+  /** Arguments for the command */
+  args?: string[];
+  /** Environment variables for the server */
+  env?: Record<string, string>;
+  /** Server description */
+  description?: string;
+}
+
+/**
+ * Hook handler definition for Claude Code v2.1.37
+ *
+ * Supports three types: command (shell), prompt (LLM single-turn), agent (LLM multi-turn)
+ */
+export interface HookHandler {
+  /** Hook type: command runs a shell script, prompt sends to LLM, agent spawns a subagent */
+  type: 'command' | 'prompt' | 'agent';
+  /** Shell command to execute (for type: command) */
+  command?: string;
+  /** Prompt text with $ARGUMENTS placeholder (for type: prompt or agent) */
+  prompt?: string;
+  /** Model override for prompt/agent hooks */
+  model?: string;
+  /** Timeout in seconds. Defaults: 600 command, 30 prompt, 60 agent */
+  timeout?: number;
+  /** Custom spinner message while hook runs */
+  statusMessage?: string;
+  /** Run in background without blocking (command hooks only) */
+  async?: boolean;
+  /** Run only once per session (skills/agents only) */
+  once?: boolean;
+}
+
+/**
+ * Hook matcher group: a regex matcher and its associated handlers
+ */
+export interface HookMatcherGroup {
+  /** Regex matcher to filter when hooks fire. Omit or use "*" for all */
+  matcher?: string;
+  /** Hook handlers to run when matched */
+  hooks: HookHandler[];
+}
+
+/**
+ * All 14 Claude Code v2.1.37 lifecycle hook events
+ */
+export interface HooksConfig {
+  /** Fires when a session begins or resumes */
+  SessionStart?: HookMatcherGroup[];
+  /** Fires when user submits a prompt, before Claude processes it */
+  UserPromptSubmit?: HookMatcherGroup[];
+  /** Fires before a tool call executes. Can block it */
+  PreToolUse?: HookMatcherGroup[];
+  /** Fires when a permission dialog appears */
+  PermissionRequest?: HookMatcherGroup[];
+  /** Fires after a tool call succeeds */
+  PostToolUse?: HookMatcherGroup[];
+  /** Fires after a tool call fails */
+  PostToolUseFailure?: HookMatcherGroup[];
+  /** Fires when Claude Code sends a notification */
+  Notification?: HookMatcherGroup[];
+  /** Fires when a subagent is spawned */
+  SubagentStart?: HookMatcherGroup[];
+  /** Fires when a subagent finishes */
+  SubagentStop?: HookMatcherGroup[];
+  /** Fires when Claude finishes responding */
+  Stop?: HookMatcherGroup[];
+  /** Fires when an agent team teammate is about to go idle */
+  TeammateIdle?: HookMatcherGroup[];
+  /** Fires when a task is being marked as completed */
+  TaskCompleted?: HookMatcherGroup[];
+  /** Fires before context compaction */
+  PreCompact?: HookMatcherGroup[];
+  /** Fires when a session terminates */
+  SessionEnd?: HookMatcherGroup[];
+}
+
+/**
+ * Claude Code v2.1.37 subagent configuration
+ *
+ * Maps directly to the YAML frontmatter fields supported by Claude Code.
+ * See: https://code.claude.com/docs/en/sub-agents
+ */
+export interface AgentConfigV2 {
+  /** Unique identifier using lowercase letters and hyphens (required) */
+  name: string;
+  /** When Claude should delegate to this subagent (required) */
+  description: string;
+  /** Organizational category for file placement (not part of Claude Code schema) */
+  category?: string;
+  /** Tools the subagent can use. Inherits all tools if omitted */
+  tools?: string[];
+  /** Tools to deny, removed from inherited or specified list */
+  disallowedTools?: string[];
+  /** Model to use: sonnet, opus, haiku, or inherit. Defaults to inherit */
+  model?: ClaudeModelAlias;
+  /** Permission mode for the subagent */
+  permissionMode?: PermissionMode;
+  /** Maximum number of agentic turns before the subagent stops */
+  maxTurns?: number;
+  /** Skills to preload into context at startup */
+  skills?: string[];
+  /** MCP servers: named references or inline definitions */
+  mcpServers?: Record<string, McpServerConfig | string>;
+  /** Lifecycle hooks scoped to this subagent */
+  hooks?: HooksConfig;
+  /** Persistent memory scope: user, project, or local */
+  memory?: MemoryScope;
+  /** System prompt (the markdown body after frontmatter) */
+  systemPrompt: string;
+}
+
+/**
+ * Claude Code v2.1.37 skill configuration
+ *
+ * Maps directly to the SKILL.md frontmatter fields.
+ * See: https://code.claude.com/docs/en/skills
+ */
+export interface SkillConfigV2 {
+  /** Skill identifier, lowercase letters, numbers, hyphens (max 64 chars) */
+  name: string;
+  /** What the skill does and when to use it */
+  description: string;
+  /** Hint shown during autocomplete, e.g. "[issue-number]" */
+  argumentHint?: string;
+  /** Prevent Claude from auto-loading this skill. Default: false */
+  disableModelInvocation?: boolean;
+  /** Hide from the / menu. Default: true */
+  userInvocable?: boolean;
+  /** Tools Claude can use without permission when this skill is active */
+  allowedTools?: string[];
+  /** Model to use when this skill is active */
+  model?: string;
+  /** Run in a forked subagent context */
+  context?: 'fork';
+  /** Subagent type for context: fork. Built-in: Explore, Plan, general-purpose */
+  agent?: string;
+  /** Lifecycle hooks scoped to this skill */
+  hooks?: HooksConfig;
+  /** Skill instructions (the markdown body) */
+  instructions: string;
+  /** Supporting files to generate alongside SKILL.md */
+  supportingFiles?: Record<string, string>;
+}
+
+/**
+ * Path-scoped rule configuration for .claude/rules/
+ */
+export interface RuleConfig {
+  /** Rule filename (without .md extension) */
+  name: string;
+  /** Subdirectory within .claude/rules/ (optional) */
+  subdirectory?: string;
+  /** Glob patterns this rule applies to. Omit for unconditional rules */
+  paths?: string[];
+  /** Rule content in markdown */
+  content: string;
+}
+
+/**
+ * Claude Code v2.1.37 settings.json schema
+ *
+ * See: https://code.claude.com/docs/en/settings
+ */
+export interface ClaudeSettingsV2 {
+  /** Environment variables available to Claude Code */
+  env?: Record<string, string>;
+  /** Permission configuration */
+  permissions?: {
+    /** Allowed tool patterns, e.g. "Bash(npm run lint)" */
+    allow?: string[];
+    /** Denied tool patterns, e.g. "Bash(rm -rf /)" */
+    deny?: string[];
+  };
+  /** Lifecycle hooks for all 14 events */
+  hooks?: HooksConfig;
+  /** Include Co-Authored-By in git commits */
+  includeCoAuthoredBy?: boolean;
+  /** Enabled MCP servers from .mcp.json */
+  enabledMcpjsonServers?: string[];
+  /** Agent teams display mode */
+  teammateMode?: TeammateMode;
+  /** Disable all hooks without removing them */
+  disableAllHooks?: boolean;
+}
+
+/**
+ * Enhanced project options extended with v2 Claude Code configuration
+ */
+export interface EnhancedProjectOptionsV2 extends EnhancedProjectOptions {
+  /** Claude Code v2.1.37 subagent definitions */
+  agentsV2?: AgentConfigV2[];
+  /** Claude Code v2.1.37 skill definitions */
+  skillsV2?: SkillConfigV2[];
+  /** Claude Code v2.1.37 hooks configuration */
+  hooksConfig?: HooksConfig;
+  /** Modular rules for .claude/rules/ */
+  rules?: RuleConfig[];
+  /** CLAUDE.md project memory content */
+  projectMemory?: string;
+  /** Enable agent teams (experimental) */
+  enableAgentTeams?: boolean;
+  /** Permission allow rules */
+  permissionAllow?: string[];
+  /** Permission deny rules */
+  permissionDeny?: string[];
+  /** Environment variables for settings.json */
+  settingsEnv?: Record<string, string>;
+  /** MCP server names to enable */
+  mcpServers?: string[];
+  /** Agent teams display mode */
+  teammateMode?: TeammateMode;
+}

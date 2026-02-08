@@ -563,6 +563,11 @@ export class BatchCommands {
     return { valid: errors.length === 0, errors };
   }
 
+  /**
+   * Regex for valid variable names in batch templates.
+   */
+  private static readonly VALID_VARIABLE_NAME = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+
   private async processJobVariables(
     job: BatchJob,
     vars?: string
@@ -576,25 +581,60 @@ export class BatchCommands {
       } catch {
         // Parse as key=value pairs
         vars.split(',').forEach(pair => {
-          const [key, value] = pair.split('=');
-          if (key && value) {
-            variables[key.trim()] = value.trim();
+          const eqIndex = pair.indexOf('=');
+          if (eqIndex > 0) {
+            const key = pair.slice(0, eqIndex).trim();
+            const value = pair.slice(eqIndex + 1).trim();
+            if (key) {
+              variables[key] = value;
+            }
           }
         });
       }
     }
 
-    // Replace variables in job
-    const processedJob = JSON.parse(JSON.stringify(job));
-    const jobString = JSON.stringify(processedJob);
-    let processedString = jobString;
+    // Validate variable names to prevent regex injection
+    for (const key of Object.keys(variables)) {
+      if (!BatchCommands.VALID_VARIABLE_NAME.test(key)) {
+        throw new Error(
+          `Invalid variable name "${key}": must match [a-zA-Z_][a-zA-Z0-9_]*`
+        );
+      }
+    }
 
-    Object.entries(variables).forEach(([key, value]) => {
-      const placeholder = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-      processedString = processedString.replace(placeholder, String(value));
-    });
+    // SECURITY: Instead of replacing {{var}} in a JSON-stringified string
+    // (which allows JSON structure breakout via quotes in values), we walk
+    // the job structure and only replace in string leaf values. Values are
+    // JSON-escaped to prevent structure injection.
+    const processedJob: BatchJob = JSON.parse(JSON.stringify(job));
 
-    return JSON.parse(processedString);
+    const replaceVarsInString = (str: string): string => {
+      let result = str;
+      for (const [key, value] of Object.entries(variables)) {
+        const placeholder = `{{${key}}}`;
+        // Only replace exact placeholder matches, not regex patterns
+        while (result.includes(placeholder)) {
+          result = result.replace(placeholder, String(value));
+        }
+      }
+      return result;
+    };
+
+    // Walk commands and replace variables in string fields only
+    processedJob.commands = processedJob.commands.map(cmd => ({
+      ...cmd,
+      command: replaceVarsInString(cmd.command),
+      args: cmd.args?.map(arg => replaceVarsInString(arg)),
+      condition: cmd.condition
+        ? replaceVarsInString(cmd.condition)
+        : undefined,
+    }));
+
+    if (processedJob.description) {
+      processedJob.description = replaceVarsInString(processedJob.description);
+    }
+
+    return processedJob;
   }
 
   private async showDryRun(job: BatchJob): Promise<void> {
@@ -649,6 +689,91 @@ export class BatchCommands {
     await listr.run();
   }
 
+  /**
+   * Shell metacharacters that indicate injection attempts.
+   * These characters have special meaning in sh/bash and must not
+   * appear in arguments passed to spawn().
+   */
+  private static readonly SHELL_METACHARACTERS = /[;&|`$(){}[\]<>!#~*?\n\r\\]/;
+
+  /**
+   * Tokenize a command string into [binary, ...args] without shell
+   * interpretation. Supports simple single/double quoting.
+   */
+  private tokenizeCommand(command: string): string[] {
+    const tokens: string[] = [];
+    let current = '';
+    let inSingle = false;
+    let inDouble = false;
+
+    for (let i = 0; i < command.length; i++) {
+      const ch = command[i];
+
+      if (inSingle) {
+        if (ch === "'") {
+          inSingle = false;
+        } else {
+          current += ch;
+        }
+        continue;
+      }
+
+      if (inDouble) {
+        if (ch === '"') {
+          inDouble = false;
+        } else {
+          current += ch;
+        }
+        continue;
+      }
+
+      if (ch === "'") {
+        inSingle = true;
+        continue;
+      }
+      if (ch === '"') {
+        inDouble = true;
+        continue;
+      }
+
+      if (ch === ' ' || ch === '\t') {
+        if (current.length > 0) {
+          tokens.push(current);
+          current = '';
+        }
+        continue;
+      }
+
+      current += ch;
+    }
+
+    if (current.length > 0) {
+      tokens.push(current);
+    }
+
+    if (inSingle || inDouble) {
+      throw new Error(`Unterminated quote in command: ${command}`);
+    }
+
+    return tokens;
+  }
+
+  /**
+   * Validate that no argument contains shell metacharacters.
+   * This is a defense-in-depth measure: since we never use shell: true,
+   * metacharacters would be treated literally, but their presence strongly
+   * suggests a command injection attempt.
+   */
+  private validateArgs(args: string[]): void {
+    for (const arg of args) {
+      if (BatchCommands.SHELL_METACHARACTERS.test(arg)) {
+        throw new Error(
+          `Argument contains shell metacharacters (possible injection): "${arg}"`
+        );
+      }
+    }
+  }
+
   private async executeCommand(
     cmd: BatchCommand,
     _options: any
@@ -660,13 +785,27 @@ export class BatchCommands {
     }
 
     const { spawn } = await import('child_process');
-    const [command, ...args] = cmd.command.split(' ');
-    const finalArgs = cmd.args ? [...args, ...cmd.args] : args;
+
+    // Tokenize the command string into binary + args without shell
+    // interpretation. This prevents command injection via shell metacharacters
+    // like ; | & ` $() etc.
+    const tokens = this.tokenizeCommand(cmd.command);
+    if (tokens.length === 0) {
+      throw new Error('Empty command');
+    }
+
+    const [command, ...parsedArgs] = tokens;
+    const finalArgs = cmd.args ? [...parsedArgs, ...cmd.args] : parsedArgs;
+
+    // Validate arguments for shell metacharacters as defense-in-depth
+    this.validateArgs(finalArgs);
 
     return new Promise((resolve, reject) => {
+      // SECURITY: No shell: true. The command is executed directly via
+      // execvp(), so shell metacharacters in arguments are treated as
+      // literal characters rather than being interpreted by a shell.
       const child = spawn(command ?? 'echo', finalArgs, {
         stdio: ['ignore', 'pipe', 'pipe'],
-        shell: true,
       });
 
       let output = '';

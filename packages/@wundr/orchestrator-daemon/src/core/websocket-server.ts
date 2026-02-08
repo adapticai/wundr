@@ -8,6 +8,9 @@ import { EventEmitter } from 'eventemitter3';
 import { Server as WebSocketServer, WebSocket } from 'ws';
 
 import { Logger } from '../utils/logger';
+import { AuthMiddleware } from '../auth/middleware';
+import type { AuthenticatedWebSocket } from '../auth/middleware';
+import type { AuthConfig, ClientIdentity } from '../auth/types';
 
 import type { WSMessage, WSResponse, StreamChunk, ToolCallInfo } from '../types';
 
@@ -19,14 +22,17 @@ export class OrchestratorWebSocketServer extends EventEmitter {
   private sessionClients: Map<string, Set<WebSocket>>; // Track which clients are subscribed to which sessions
   private port: number;
   private host: string;
+  private authMiddleware: AuthMiddleware | null = null;
+  private authConfig: AuthConfig | null = null;
 
-  constructor(port: number, host: string) {
+  constructor(port: number, host: string, authConfig?: AuthConfig) {
     super();
     this.logger = new Logger('WebSocketServer');
     this.clients = new Set();
     this.sessionClients = new Map();
     this.port = port;
     this.host = host;
+    this.authConfig = authConfig ?? null;
   }
 
   /**
@@ -46,11 +52,43 @@ export class OrchestratorWebSocketServer extends EventEmitter {
           }
         });
 
-        // Create WebSocket server
-        this.wss = new WebSocketServer({ server: this.httpServer });
+        // Create WebSocket server.
+        // When auth is enabled, we use `noServer: true` so the auth
+        // middleware controls the upgrade handshake.  When auth is
+        // disabled, we bind directly to the HTTP server for backward
+        // compatibility.
+        if (this.authConfig) {
+          this.wss = new WebSocketServer({ noServer: true });
+          this.authMiddleware = new AuthMiddleware(this.authConfig);
+          this.authMiddleware.install(
+            this.httpServer,
+            this.wss,
+            (ws: AuthenticatedWebSocket) => {
+              this.handleConnection(ws);
+              const identity = ws.__identity;
+              if (identity) {
+                this.logger.info(
+                  `Authenticated connection: client=${identity.clientId} method=${identity.method}`,
+                );
+              }
+            },
+          );
+          this.logger.info('WebSocket auth middleware enabled');
+        } else {
+          this.wss = new WebSocketServer({ server: this.httpServer });
+          this.logger.warn('WebSocket server started WITHOUT authentication');
+        }
 
         this.wss.on('connection', (ws: WebSocket) => {
-          this.handleConnection(ws);
+          // When auth middleware is installed, handleConnection is
+          // called from the middleware callback above.  The 'connection'
+          // event from wss is still emitted by ws internally after
+          // handleUpgrade, but we only call handleConnection once --
+          // the middleware callback handles it.  Without auth, we
+          // handle it here.
+          if (!this.authMiddleware) {
+            this.handleConnection(ws);
+          }
         });
 
         this.wss.on('error', (error: Error) => {
@@ -81,6 +119,12 @@ export class OrchestratorWebSocketServer extends EventEmitter {
   async stop(): Promise<void> {
     return new Promise((resolve) => {
       this.logger.info('Stopping WebSocket server...');
+
+      // Tear down auth middleware
+      if (this.authMiddleware) {
+        this.authMiddleware.destroy();
+        this.authMiddleware = null;
+      }
 
       // Close all client connections
       this.clients.forEach((client) => {
@@ -117,8 +161,23 @@ export class OrchestratorWebSocketServer extends EventEmitter {
 
     ws.on('message', (data: Buffer) => {
       try {
-        const message = JSON.parse(data.toString()) as WSMessage;
-        this.handleMessage(ws, message);
+        // When auth middleware is active, validate per-message auth
+        // and rate limits before dispatching.
+        if (this.authMiddleware) {
+          const validated = this.authMiddleware.validateMessage(
+            ws as AuthenticatedWebSocket,
+            data,
+          );
+          if (!validated) {
+            // Message was rejected; error already sent to client.
+            return;
+          }
+          const message = validated.payload as WSMessage;
+          this.handleMessage(ws, message);
+        } else {
+          const message = JSON.parse(data.toString()) as WSMessage;
+          this.handleMessage(ws, message);
+        }
       } catch (error) {
         this.logger.error('Failed to parse message:', error);
         this.sendError(ws, 'Invalid message format');
@@ -388,5 +447,21 @@ export class OrchestratorWebSocketServer extends EventEmitter {
    */
   getActiveSessionIds(): string[] {
     return Array.from(this.sessionClients.keys());
+  }
+
+  /**
+   * Get the authenticated identity for a WebSocket connection.
+   * Returns undefined if auth is not enabled or the socket has no identity.
+   */
+  getClientIdentity(ws: WebSocket): ClientIdentity | undefined {
+    if (!this.authMiddleware) return undefined;
+    return this.authMiddleware.getIdentity(ws as AuthenticatedWebSocket);
+  }
+
+  /**
+   * Check whether authentication is enabled on this server.
+   */
+  isAuthEnabled(): boolean {
+    return this.authMiddleware !== null;
   }
 }

@@ -1,7 +1,22 @@
 /**
  * Profile Management for Developer Setup
- * Handles different developer profiles and their configurations
+ *
+ * This module provides both the legacy ProfileManager (for backward compatibility)
+ * and the upgraded profile system with composable, version-pinned, platform-aware
+ * profile definitions.
+ *
+ * New code should use ProfileLoader, ProfileComposer, PlatformAdapter, and
+ * ProfileValidator from the upgraded modules.
+ *
+ * @module profiles
  */
+
+// Re-export upgraded profile system
+export * from './profile-types';
+export { ProfileLoader } from './profile-loader';
+export { ProfileComposer } from './profile-composer';
+export { PlatformAdapter } from './platform-adapter';
+export { ProfileValidator } from './profile-validator';
 
 import * as os from 'os';
 import * as path from 'path';
