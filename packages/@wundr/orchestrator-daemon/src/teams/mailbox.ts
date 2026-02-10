@@ -38,6 +38,8 @@ export interface TeamMessage {
   readonly sentAt: Date;
   deliveredAt: Date | null;
   readAt: Date | null;
+  /** Optional expiry time. Expired messages are excluded from inbox queries. */
+  readonly expiresAt: Date | null;
   readonly metadata: Record<string, unknown>;
 }
 
@@ -47,6 +49,8 @@ export interface SendMessageInput {
   readonly type?: MessageType;
   readonly priority?: MessagePriority;
   readonly metadata?: Record<string, unknown>;
+  /** Time-to-live in ms. If set, message expires after this duration. */
+  readonly ttlMs?: number;
 }
 
 export interface BroadcastOptions {
@@ -54,6 +58,8 @@ export interface BroadcastOptions {
   readonly priority?: MessagePriority;
   readonly metadata?: Record<string, unknown>;
   readonly excludeIds?: string[];
+  /** Time-to-live in ms. If set, messages expire after this duration. */
+  readonly ttlMs?: number;
 }
 
 export interface MessageFilter {
@@ -213,6 +219,7 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
       input.type ?? 'direct',
       input.priority ?? 'normal',
       input.metadata ?? {},
+      input.ttlMs,
     );
 
     // Deliver to recipient's inbox
@@ -242,7 +249,9 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
     const messages: TeamMessage[] = [];
 
     for (const memberId of this.memberIds) {
-      if (excludeIds.has(memberId)) continue;
+      if (excludeIds.has(memberId)) {
+continue;
+}
 
       const message = this.createMessage(
         fromId,
@@ -251,6 +260,7 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
         options?.type ?? 'broadcast',
         options?.priority ?? 'normal',
         options?.metadata ?? {},
+        options?.ttlMs,
       );
 
       this.deliverToInbox(memberId, message);
@@ -292,10 +302,16 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
 
   /**
    * Get messages for a specific member.
+   * Automatically excludes expired messages.
    */
   getInbox(memberId: string, filter?: MessageFilter): TeamMessage[] {
     const inbox = this.inboxes.get(memberId) ?? [];
-    let result = [...inbox];
+    const now = Date.now();
+
+    // Exclude expired messages
+    let result = inbox.filter(m =>
+      m.expiresAt === null || m.expiresAt.getTime() > now,
+    );
 
     if (filter) {
       if (filter.type !== undefined) {
@@ -317,6 +333,13 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
     }
 
     return result;
+  }
+
+  /**
+   * Get a single message by ID.
+   */
+  getMessage(messageId: string): TeamMessage | undefined {
+    return this.archive.get(messageId);
   }
 
   /**
@@ -483,6 +506,34 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
   }
 
   /**
+   * Remove expired messages from all inboxes and the archive.
+   * Returns the number of purged messages.
+   */
+  purgeExpired(): number {
+    const now = Date.now();
+    let purgedCount = 0;
+
+    // Purge from inboxes
+    for (const [memberId, inbox] of this.inboxes) {
+      const before = inbox.length;
+      const filtered = inbox.filter(m =>
+        m.expiresAt === null || m.expiresAt.getTime() > now,
+      );
+      purgedCount += before - filtered.length;
+      this.inboxes.set(memberId, filtered);
+    }
+
+    // Purge from archive
+    for (const [messageId, message] of this.archive) {
+      if (message.expiresAt !== null && message.expiresAt.getTime() <= now) {
+        this.archive.delete(messageId);
+      }
+    }
+
+    return purgedCount;
+  }
+
+  /**
    * Clear all messages and members (used during team cleanup).
    */
   clear(): void {
@@ -505,6 +556,7 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
     type: MessageType,
     priority: MessagePriority,
     metadata: Record<string, unknown>,
+    ttlMs?: number,
   ): TeamMessage {
     const messageId = `msg_${this.teamId}_${this.nextMessageNumber++}`;
     const now = new Date();
@@ -520,6 +572,7 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
       sentAt: now,
       deliveredAt: null,
       readAt: null,
+      expiresAt: ttlMs ? new Date(now.getTime() + ttlMs) : null,
       metadata,
     };
 
@@ -541,7 +594,9 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
 
   private validateMember(memberId: string, role: string): void {
     // Allow __system__ as a pseudo-member
-    if (memberId === '__system__') return;
+    if (memberId === '__system__') {
+return;
+}
 
     if (!this.memberIds.has(memberId)) {
       throw new MailboxError(

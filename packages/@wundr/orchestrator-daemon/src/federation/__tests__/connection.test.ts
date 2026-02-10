@@ -3,8 +3,12 @@
  */
 
 import { EventEmitter } from 'events';
+
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import WebSocket from 'ws';
+
 import { OrchestratorConnection } from '../connection';
+
 import type { DelegationRequest, FederationMessage, OrchestratorCapability } from '../types';
 
 // Mock WebSocket
@@ -173,17 +177,15 @@ describe('OrchestratorConnection', () => {
       mockSocket.emit('open');
 
       // Mock old heartbeat
-      const oldDate = new Date();
-      oldDate.setTime(oldDate.getTime() - 10000); // 10 seconds ago
       connection.handleHeartbeat();
 
-      // Wait for timeout check
-      jest.useFakeTimers();
-      jest.advanceTimersByTime(6000);
+      // Use fake timers to simulate timeout
+      vi.useFakeTimers();
+      vi.advanceTimersByTime(6000);
 
       expect(connection.isHealthy()).toBe(false);
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should return true if connection is open and heartbeat recent', () => {
@@ -209,25 +211,29 @@ describe('OrchestratorConnection', () => {
   });
 
   describe('handleHeartbeat', () => {
-    it('should update lastHeartbeat timestamp', () => {
+    it('should update lastHeartbeat timestamp', async () => {
       const before = connection.lastHeartbeat;
 
       // Wait a bit
-      setTimeout(() => {
-        connection.handleHeartbeat();
-        const after = connection.lastHeartbeat;
+      await new Promise(resolve => setTimeout(resolve, 10));
 
-        expect(after.getTime()).toBeGreaterThanOrEqual(before.getTime());
-      }, 10);
+      connection.handleHeartbeat();
+      const after = connection.lastHeartbeat;
+
+      expect(after.getTime()).toBeGreaterThanOrEqual(before.getTime());
     });
 
-    it('should emit heartbeat event', (done) => {
-      connection.on('heartbeat', (timestamp) => {
-        expect(timestamp).toBeInstanceOf(Date);
-        done();
+    it('should emit heartbeat event', async () => {
+      const heartbeatPromise = new Promise<Date>((resolve) => {
+        connection.on('heartbeat', (timestamp: Date) => {
+          resolve(timestamp);
+        });
       });
 
       connection.handleHeartbeat();
+
+      const timestamp = await heartbeatPromise;
+      expect(timestamp).toBeInstanceOf(Date);
     });
   });
 
@@ -267,10 +273,11 @@ describe('OrchestratorConnection', () => {
   });
 
   describe('message handling', () => {
-    it('should handle delegation messages', (done) => {
-      connection.on('delegation', (request) => {
-        expect(request.task.id).toBe('task-1');
-        done();
+    it('should handle delegation messages', async () => {
+      const delegationPromise = new Promise<any>((resolve) => {
+        connection.on('delegation', (request: any) => {
+          resolve(request);
+        });
       });
 
       const message = {
@@ -295,13 +302,16 @@ describe('OrchestratorConnection', () => {
       };
 
       mockSocket.emit('message', JSON.stringify(message));
+
+      const request = await delegationPromise;
+      expect(request.task.id).toBe('task-1');
     });
 
-    it('should handle callback messages', (done) => {
-      connection.on('callback', (callback) => {
-        expect(callback.taskId).toBe('task-1');
-        expect(callback.status).toBe('completed');
-        done();
+    it('should handle callback messages', async () => {
+      const callbackPromise = new Promise<any>((resolve) => {
+        connection.on('callback', (callback: any) => {
+          resolve(callback);
+        });
       });
 
       const message = {
@@ -317,12 +327,17 @@ describe('OrchestratorConnection', () => {
       };
 
       mockSocket.emit('message', JSON.stringify(message));
+
+      const callback = await callbackPromise;
+      expect(callback.taskId).toBe('task-1');
+      expect(callback.status).toBe('completed');
     });
 
-    it('should handle broadcast messages', (done) => {
-      connection.on('broadcast', (payload) => {
-        expect(payload.topic).toBe('test-topic');
-        done();
+    it('should handle broadcast messages', async () => {
+      const broadcastPromise = new Promise<any>((resolve) => {
+        connection.on('broadcast', (payload: any) => {
+          resolve(payload);
+        });
       });
 
       const message = {
@@ -337,15 +352,22 @@ describe('OrchestratorConnection', () => {
       };
 
       mockSocket.emit('message', JSON.stringify(message));
+
+      const payload = await broadcastPromise;
+      expect(payload.topic).toBe('test-topic');
     });
 
-    it('should emit error on malformed message', (done) => {
-      connection.on('error', (error) => {
-        expect(error).toBeInstanceOf(Error);
-        done();
+    it('should emit error on malformed message', async () => {
+      const errorPromise = new Promise<Error>((resolve) => {
+        connection.on('error', (error: Error) => {
+          resolve(error);
+        });
       });
 
       mockSocket.emit('message', 'invalid json');
+
+      const error = await errorPromise;
+      expect(error).toBeInstanceOf(Error);
     });
   });
 });

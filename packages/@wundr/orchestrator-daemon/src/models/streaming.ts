@@ -11,7 +11,21 @@ import type {
   ToolCall,
   TokenUsage,
   FinishReason,
-} from '@wundr.io/ai-integration';
+} from '../types/llm';
+
+// ---------------------------------------------------------------------------
+// Extended chunk type with thinking support
+// ---------------------------------------------------------------------------
+
+/**
+ * Extended ChatChunk that includes thinking content deltas.
+ * Providers that support reasoning (Anthropic, OpenAI o-series) may emit
+ * thinking content in a separate field.
+ */
+export interface ExtendedChatChunk extends ChatChunk {
+  /** Thinking/reasoning content delta */
+  thinkingDelta?: string;
+}
 
 // ---------------------------------------------------------------------------
 // Stream event types

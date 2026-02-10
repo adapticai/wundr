@@ -5,11 +5,12 @@
  * Implements pre-flight budget checks, token reservations, and threshold monitoring.
  */
 
-import { EventEmitter } from 'eventemitter3';
-import { createClient, RedisClientType } from 'redis';
 import { randomUUID } from 'crypto';
 
-import {
+import { EventEmitter } from 'eventemitter3';
+import { createClient } from 'redis';
+
+import type {
   TokenUsage,
   BudgetCheck,
   ReservationResult,
@@ -23,6 +24,7 @@ import {
   TokenReservation,
   BudgetThresholdEvent,
 } from './types';
+import type { RedisClientType } from 'redis';
 
 /**
  * Token Budget Tracker Events
@@ -141,7 +143,7 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
   async checkBudget(
     orchestratorId: string,
     estimatedTokens: number,
-    period: BudgetPeriod = 'hourly'
+    period: BudgetPeriod = 'hourly',
   ): Promise<BudgetCheck> {
     if (!this.connected) {
       throw new Error('Redis not connected');
@@ -187,7 +189,7 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
   async reserveTokens(
     orchestratorId: string,
     tokens: number,
-    period: BudgetPeriod = 'hourly'
+    period: BudgetPeriod = 'hourly',
   ): Promise<ReservationResult> {
     if (!this.connected) {
       throw new Error('Redis not connected');
@@ -239,7 +241,7 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
    */
   async releaseReservation(
     reservationId: string,
-    actualUsed: number
+    actualUsed: number,
   ): Promise<void> {
     if (!this.connected) {
       throw new Error('Redis not connected');
@@ -283,7 +285,7 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
    */
   async getUsageStats(
     orchestratorId: string,
-    period: BudgetPeriod = 'hourly'
+    period: BudgetPeriod = 'hourly',
   ): Promise<UsageStats> {
     if (!this.connected) {
       throw new Error('Redis not connected');
@@ -444,7 +446,7 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
    */
   private async checkThresholds(
     orchestratorId: string,
-    period: BudgetPeriod
+    period: BudgetPeriod,
   ): Promise<void> {
     const stats = await this.getUsageStats(orchestratorId, period);
     const cacheKey = `${orchestratorId}:${period}`;
@@ -519,7 +521,7 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
     try {
       await this.redis.ping();
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

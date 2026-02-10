@@ -529,6 +529,57 @@ export class OutputFormatter implements OutputFormatterInterface {
   }
 
   // -------------------------------------------------------------------------
+  // YAML
+  // -------------------------------------------------------------------------
+
+  /**
+   * Format data as YAML.
+   * Uses a lightweight built-in serializer to avoid external dependencies.
+   *
+   * @param data - Any serializable data
+   * @param indent - Indentation level (used for recursion). Defaults to 0.
+   * @returns YAML-formatted string
+   */
+  yaml(data: unknown, indent: number = 0): string {
+    return this.toYaml(data, indent);
+  }
+
+  // -------------------------------------------------------------------------
+  // Multi-format output
+  // -------------------------------------------------------------------------
+
+  /**
+   * Format data in the specified output format.
+   *
+   * @param data - Data to format
+   * @param format - Output format
+   * @returns Formatted string
+   */
+  formatAs(
+    data: unknown,
+    format: 'json' | 'yaml' | 'table' | 'plain',
+  ): string {
+    switch (format) {
+      case 'json':
+        return this.json(data);
+      case 'yaml':
+        return this.yaml(data);
+      case 'table':
+        if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
+          return this.table(data as Record<string, unknown>[]);
+        }
+        if (typeof data === 'object' && data !== null) {
+          return this.keyValue(data as Record<string, unknown>);
+        }
+        return String(data);
+      case 'plain':
+        if (typeof data === 'string') return data;
+        if (typeof data === 'object') return JSON.stringify(data, null, 2);
+        return String(data);
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // Smart Output
   // -------------------------------------------------------------------------
 
@@ -646,6 +697,72 @@ export class OutputFormatter implements OutputFormatterInterface {
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
+  }
+
+  /**
+   * Lightweight YAML serializer.
+   */
+  private toYaml(data: unknown, indent: number): string {
+    const prefix = '  '.repeat(indent);
+
+    if (data === null || data === undefined) {
+      return 'null';
+    }
+
+    if (typeof data === 'string') {
+      // Quote strings that need it
+      if (
+        data === '' ||
+        data.includes('\n') ||
+        data.includes(':') ||
+        data.includes('#') ||
+        data === 'true' ||
+        data === 'false' ||
+        data === 'null' ||
+        /^\d+$/.test(data)
+      ) {
+        return `"${data.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
+      }
+      return data;
+    }
+
+    if (typeof data === 'number' || typeof data === 'boolean') {
+      return String(data);
+    }
+
+    if (Array.isArray(data)) {
+      if (data.length === 0) return '[]';
+      const items = data.map(item => {
+        const val = this.toYaml(item, indent + 1);
+        if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
+          // Object items: put first key on same line as dash
+          const firstNewline = val.indexOf('\n');
+          if (firstNewline === -1) {
+            return `${prefix}- ${val}`;
+          }
+          return `${prefix}- ${val}`;
+        }
+        return `${prefix}- ${val}`;
+      });
+      return '\n' + items.join('\n');
+    }
+
+    if (typeof data === 'object') {
+      const entries = Object.entries(data as Record<string, unknown>);
+      if (entries.length === 0) return '{}';
+
+      const lines = entries.map(([key, value]) => {
+        const serialized = this.toYaml(value, indent + 1);
+        if (typeof value === 'object' && value !== null) {
+          return `${prefix}${key}:${serialized.startsWith('\n') ? serialized : ' ' + serialized}`;
+        }
+        return `${prefix}${key}: ${serialized}`;
+      });
+
+      return (indent > 0 ? '\n' : '') + lines.join('\n');
+    }
+
+    return String(data);
   }
 
   private renderTreeChildren(

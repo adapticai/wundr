@@ -4,7 +4,9 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import WebSocket = require('ws');
+
 import type { Session, Task } from '../types';
 
 /**
@@ -356,7 +358,7 @@ export class DaemonNode extends EventEmitter {
         this.healthMetrics = response.health;
         return response.health;
       }
-    } catch (error) {
+    } catch {
       return { ...this.healthMetrics, status: 'offline' };
     }
 

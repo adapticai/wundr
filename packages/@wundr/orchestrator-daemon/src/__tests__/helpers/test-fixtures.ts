@@ -10,8 +10,8 @@
  *   const config = FIXTURES.config.minimal;
  */
 
-import type { MemoryConfig } from '../../types';
 import type { AuthConfig } from '../../auth/types';
+import type { MemoryConfig } from '../../types';
 
 // ---------------------------------------------------------------------------
 // Auth fixtures

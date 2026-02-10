@@ -6,9 +6,9 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
-import { createClient, RedisClientType } from 'redis';
+import { createClient } from 'redis';
 
-import {
+import type {
   RegistryOrchestratorMetadata,
   RegistryOrchestratorMetrics,
   RegistryOrchestratorStatus,
@@ -16,6 +16,7 @@ import {
   FederationRegistryEvents,
   OrchestratorQuery,
 } from './registry-types';
+import type { RedisClientType } from 'redis';
 
 export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
   private redis: RedisClientType;
@@ -395,7 +396,7 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
     updates: {
       currentSessions?: number;
       tokensUsed?: number;
-    }
+    },
   ): Promise<void> {
     if (!this.connected) {
       throw new Error('Redis not connected');
@@ -469,7 +470,7 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
     try {
       await this.redis.ping();
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

@@ -4,6 +4,10 @@
  * Implements the EmbeddingProvider interface for OpenAI's text-embedding-3 family.
  * Supports text-embedding-3-small (1536 dims) and text-embedding-3-large (3072 dims),
  * including Matryoshka dimension reduction.
+ *
+ * Enhanced with lazy initialization -- the provider validates its configuration
+ * eagerly but defers no resources until the first embed call. This keeps
+ * process startup lightweight when the provider is created but not immediately used.
  */
 
 import {
@@ -59,6 +63,9 @@ const MAX_BATCH_SIZE = 2048;
  *
  * Uses the `/v1/embeddings` endpoint. Supports dimension reduction for
  * text-embedding-3-* models via the `dimensions` parameter.
+ *
+ * The provider is created synchronously but defers its first API call
+ * until `embedText` or `embedBatch` is invoked (lazy initialization).
  */
 export class OpenAIEmbeddingProvider implements EmbeddingProvider {
   readonly id = 'openai' as const;
@@ -72,6 +79,9 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
   private readonly rateLimiter: RateLimiter;
   private readonly requestedDimensions: number | undefined;
   readonly costTracker: CostTracker;
+
+  /** Whether the first successful call has been made (for lazy-init validation). */
+  private initialized = false;
 
   constructor(config: {
     model: string;
@@ -98,12 +108,12 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
     this.costTracker = createCostTracker();
   }
 
-  async embedText(text: string, options?: EmbedOptions): Promise<EmbeddingResult> {
+  async embedText(text: string, _options?: EmbedOptions): Promise<EmbeddingResult> {
     const results = await this.callApi([text]);
     return results[0]!;
   }
 
-  async embedBatch(texts: string[], options?: EmbedOptions): Promise<EmbeddingResult[]> {
+  async embedBatch(texts: string[], _options?: EmbedOptions): Promise<EmbeddingResult[]> {
     if (texts.length === 0) {
       return [];
     }
@@ -121,6 +131,7 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
 
   async dispose(): Promise<void> {
     // No persistent resources to clean up for HTTP-based provider.
+    this.initialized = false;
   }
 
   // ==========================================================================
@@ -131,11 +142,11 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
     const totalTokens = input.reduce((sum, text) => sum + estimateTokens(text), 0);
 
     // Rate limit check with retry
-    const rateLimitConfig = this.rateLimiter as unknown as { config: RateLimitConfig };
     const maxRetries = PROVIDER_RATE_LIMITS.openai.maxRetries;
     let attempt = 0;
+    let retrying = true;
 
-    while (true) {
+    while (retrying) {
       const delay = this.rateLimiter.check(totalTokens);
       if (delay > 0) {
         await sleep(delay);
@@ -194,6 +205,9 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
         // Map results back in input order (API may return out of order)
         const sorted = [...data].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
 
+        this.initialized = true;
+        retrying = false;
+
         return sorted.map((entry, idx) => ({
           embedding: normalizeEmbedding(entry.embedding ?? []),
           tokenCount: estimateTokens(input[idx] ?? ''),
@@ -212,6 +226,9 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
         throw err;
       }
     }
+
+    // Unreachable, but satisfies TypeScript return type
+    throw new Error('OpenAI embeddings: unexpected loop exit');
   }
 }
 

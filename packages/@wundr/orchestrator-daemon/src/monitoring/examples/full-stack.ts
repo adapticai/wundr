@@ -12,7 +12,6 @@ import {
   createMetricsServer,
   createMetricsCollector,
   metricsRegistry,
-  daemonMetrics,
   type MetricsServer,
   type MetricsCollector,
 } from '../index';
@@ -79,7 +78,7 @@ class OrchestratorWorkload {
     this.collector.recordTokenUsage(
       this.orchestratorId,
       'claude-sonnet-4',
-      tokens
+      tokens,
     );
 
     // Simulate tool invocations
@@ -90,7 +89,7 @@ class OrchestratorWorkload {
     this.collector.recordToolInvocation(
       this.orchestratorId,
       tool,
-      success ? 'success' : 'error'
+      success ? 'success' : 'error',
     );
 
     // Occasionally record errors
@@ -107,7 +106,7 @@ class OrchestratorWorkload {
     this.collector.updateBudgetUtilization(
       this.orchestratorId,
       'daily',
-      budgetPercent
+      budgetPercent,
     );
 
     // Occasionally record delegations
@@ -116,13 +115,13 @@ class OrchestratorWorkload {
       this.collector.recordDelegation(
         this.orchestratorId,
         'orch-federation',
-        delegateSuccess ? 'success' : 'error'
+        delegateSuccess ? 'success' : 'error',
       );
     }
 
     console.log(
       `[${this.orchestratorId}] Processed message in ${durationMs}ms, ` +
-      `used ${tokens} tokens, invoked ${tool} (${success ? 'success' : 'error'})`
+      `used ${tokens} tokens, invoked ${tool} (${success ? 'success' : 'error'})`,
     );
   }
 }

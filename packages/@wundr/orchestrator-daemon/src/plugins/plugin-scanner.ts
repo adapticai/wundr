@@ -12,6 +12,7 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
+
 import type { PluginManifest } from './plugin-manifest';
 
 // ---------------------------------------------------------------------------
@@ -265,10 +266,14 @@ export function scanSource(source: string, filePath: string): ScanFinding[] {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      if (!line) continue;
+      if (!line) {
+continue;
+}
 
       const match = rule.pattern.exec(line);
-      if (!match) continue;
+      if (!match) {
+continue;
+}
 
       // Special handling for suspicious-network: check port
       if (rule.ruleId === 'suspicious-network') {
@@ -360,7 +365,9 @@ export function scanSourceWithManifest(
   const seenHosts = new Set<string>();
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (!line) continue;
+    if (!line) {
+continue;
+}
 
     let match: RegExpExecArray | null;
     while ((match = urlPattern.exec(line)) !== null) {
@@ -389,7 +396,9 @@ export function scanSourceWithManifest(
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (!line) continue;
+    if (!line) {
+continue;
+}
 
     let match: RegExpExecArray | null;
     while ((match = absolutePathPattern.exec(line)) !== null) {
@@ -427,17 +436,22 @@ async function walkDirWithLimit(dirPath: string, maxFiles: number): Promise<stri
 
   while (stack.length > 0 && files.length < maxFiles) {
     const currentDir = stack.pop();
-    if (!currentDir) break;
+    if (!currentDir) {
+break;
+}
 
-    let entries: Awaited<ReturnType<typeof fs.readdir>>;
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    let entries: import('fs').Dirent[];
     try {
-      entries = await fs.readdir(currentDir, { withFileTypes: true });
+      entries = await fs.readdir(currentDir, { withFileTypes: true, encoding: 'utf-8' });
     } catch {
       continue;
     }
 
     for (const entry of entries) {
-      if (files.length >= maxFiles) break;
+      if (files.length >= maxFiles) {
+break;
+}
 
       // Skip hidden dirs and node_modules
       if (entry.name.startsWith('.') || entry.name === 'node_modules') {
@@ -487,7 +501,9 @@ export async function scanPluginDirectory(
 
   for (const file of files) {
     const source = await readFileIfSmall(file, maxFileBytes);
-    if (source == null) continue;
+    if (source === null || source === undefined) {
+continue;
+}
 
     scannedFiles++;
 
@@ -526,8 +542,8 @@ export async function scanPluginDirectory(
  */
 export function formatScanReport(summary: ScanSummary): string {
   const lines: string[] = [];
-  lines.push(`Plugin Scan Report`);
-  lines.push(`==================`);
+  lines.push('Plugin Scan Report');
+  lines.push('==================');
   lines.push(`Files scanned: ${summary.scannedFiles}`);
   lines.push(`Critical: ${summary.critical}  Warn: ${summary.warn}  Info: ${summary.info}`);
   lines.push(`Result: ${summary.passed ? 'PASSED' : 'FAILED'}`);
@@ -548,7 +564,9 @@ export function formatScanReport(summary: ScanSummary): string {
 
   for (const severity of ['critical', 'warn', 'info'] as ScanSeverity[]) {
     const group = bySeverity.get(severity);
-    if (!group || group.length === 0) continue;
+    if (!group || group.length === 0) {
+continue;
+}
 
     lines.push(`--- ${severity.toUpperCase()} ---`);
     for (const f of group) {

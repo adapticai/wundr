@@ -468,6 +468,99 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
     return [...available, ...cooldownSorted];
   }
 
+  /**
+   * List all profiles for a provider with their current status.
+   * Useful for monitoring dashboards.
+   */
+  listProfiles(provider?: string): Array<{
+    profile: AuthProfile;
+    stats: ProfileUsageStats;
+    available: boolean;
+  }> {
+    const result: Array<{
+      profile: AuthProfile;
+      stats: ProfileUsageStats;
+      available: boolean;
+    }> = [];
+    const now = Date.now();
+
+    for (const [id, profile] of this.profiles) {
+      if (provider && profile.provider.toLowerCase() !== provider.toLowerCase()) {
+        continue;
+      }
+      const stats = this.usageStats.get(id) ?? {
+        errorCount: 0,
+        failureCounts: {},
+      };
+      result.push({
+        profile: { ...profile, credential: '***' },
+        stats,
+        available: this.isProfileValid(id, now) && !this.isInCooldown(id),
+      });
+    }
+    return result;
+  }
+
+  /**
+   * Get a summary of provider health across all profiles.
+   */
+  getProviderSummary(): Array<{
+    provider: string;
+    totalProfiles: number;
+    availableProfiles: number;
+    cooldownProfiles: number;
+    disabledProfiles: number;
+  }> {
+    const now = Date.now();
+    const summary = new Map<
+      string,
+      { total: number; available: number; cooldown: number; disabled: number }
+    >();
+
+    for (const [id, profile] of this.profiles) {
+      const provider = profile.provider.toLowerCase();
+      if (!summary.has(provider)) {
+        summary.set(provider, { total: 0, available: 0, cooldown: 0, disabled: 0 });
+      }
+      const entry = summary.get(provider)!;
+      entry.total++;
+
+      if (!this.isProfileValid(id, now)) {
+        entry.disabled++;
+      } else if (this.isInCooldown(id)) {
+        const stats = this.usageStats.get(id);
+        if (stats?.disabledUntil && now < stats.disabledUntil) {
+          entry.disabled++;
+        } else {
+          entry.cooldown++;
+        }
+      } else {
+        entry.available++;
+      }
+    }
+
+    return Array.from(summary.entries()).map(([provider, data]) => ({
+      provider,
+      totalProfiles: data.total,
+      availableProfiles: data.available,
+      cooldownProfiles: data.cooldown,
+      disabledProfiles: data.disabled,
+    }));
+  }
+
+  /**
+   * Reset all cooldowns for a provider (manual recovery).
+   */
+  resetProvider(provider: string): void {
+    const normalizedProvider = provider.toLowerCase();
+    for (const [id, profile] of this.profiles) {
+      if (profile.provider.toLowerCase() === normalizedProvider) {
+        this.clearCooldown(id);
+        this.emit('profile:recovered', id, profile.provider);
+      }
+    }
+  }
+
   private sortByRoundRobin(profileIds: string[], now: number): string[] {
     const available: string[] = [];
     const inCooldown: Array<{ id: string; until: number }> = [];

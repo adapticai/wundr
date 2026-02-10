@@ -17,6 +17,7 @@
  */
 
 import { randomBytes } from 'crypto';
+
 import { EventEmitter } from 'eventemitter3';
 
 // ---------------------------------------------------------------------------
@@ -245,7 +246,9 @@ export class Tracer extends EventEmitter<TracerEvents> {
    */
   endSpan(spanId: string, status: SpanStatus = 'ok'): Span | undefined {
     const span = this.activeSpans.get(spanId);
-    if (!span) return undefined;
+    if (!span) {
+return undefined;
+}
 
     span.endTime = Date.now();
     span.duration = span.endTime - span.startTime;
@@ -280,7 +283,9 @@ export class Tracer extends EventEmitter<TracerEvents> {
    */
   failSpan(spanId: string, error: Error): Span | undefined {
     const span = this.activeSpans.get(spanId);
-    if (!span) return undefined;
+    if (!span) {
+return undefined;
+}
 
     span.attributes['error.message'] = error.message;
     span.attributes['error.type'] = error.constructor.name;
@@ -310,7 +315,9 @@ export class Tracer extends EventEmitter<TracerEvents> {
     attributes?: Record<string, string | number | boolean>,
   ): void {
     const span = this.activeSpans.get(spanId);
-    if (!span) return;
+    if (!span) {
+return;
+}
 
     span.events.push({
       name,
@@ -327,7 +334,9 @@ export class Tracer extends EventEmitter<TracerEvents> {
     attributes: Record<string, string | number | boolean>,
   ): void {
     const span = this.activeSpans.get(spanId);
-    if (!span) return;
+    if (!span) {
+return;
+}
 
     Object.assign(span.attributes, attributes);
   }
@@ -405,11 +414,18 @@ export class Tracer extends EventEmitter<TracerEvents> {
    */
   static fromTraceparent(header: string): TraceContext | undefined {
     const parts = header.split('-');
-    if (parts.length < 4) return undefined;
+    if (parts.length < 4) {
+return undefined;
+}
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_version, traceId, spanId, _flags] = parts;
-    if (!traceId || traceId.length !== 32) return undefined;
-    if (!spanId || spanId.length !== 16) return undefined;
+    if (!traceId || traceId.length !== 32) {
+return undefined;
+}
+    if (!spanId || spanId.length !== 16) {
+return undefined;
+}
 
     return Object.freeze({
       traceId,
@@ -430,7 +446,9 @@ export class Tracer extends EventEmitter<TracerEvents> {
       (payload['x-trace-id'] as string) ??
       (payload['trace_id'] as string);
 
-    if (!traceId || typeof traceId !== 'string') return undefined;
+    if (!traceId || typeof traceId !== 'string') {
+return undefined;
+}
 
     const spanId =
       (payload['spanId'] as string) ??
@@ -472,7 +490,9 @@ export class Tracer extends EventEmitter<TracerEvents> {
   /** Get all completed spans for a given trace ID. */
   getTraceSpans(traceId: string): Span[] {
     const traceMap = this.completedSpans.get(traceId);
-    if (!traceMap) return [];
+    if (!traceMap) {
+return [];
+}
     return Array.from(traceMap.values());
   }
 
@@ -608,4 +628,240 @@ export function resetTracer(): void {
  */
 export function createTracer(config?: TracingConfig): Tracer {
   return new Tracer(config);
+}
+
+// ---------------------------------------------------------------------------
+// OpenTelemetry-Compatible Span Export
+// ---------------------------------------------------------------------------
+
+/**
+ * OTLP-compatible span representation for export to OpenTelemetry collectors.
+ * Follows the OpenTelemetry protobuf specification for spans.
+ */
+export interface OTLPSpan {
+  traceId: string;
+  spanId: string;
+  parentSpanId?: string;
+  name: string;
+  kind: number; // 0=UNSPECIFIED, 1=INTERNAL, 2=SERVER, 3=CLIENT, 4=PRODUCER, 5=CONSUMER
+  startTimeUnixNano: string;
+  endTimeUnixNano: string;
+  attributes: Array<{
+    key: string;
+    value: { stringValue?: string; intValue?: string; boolValue?: boolean };
+  }>;
+  events: Array<{
+    timeUnixNano: string;
+    name: string;
+    attributes: Array<{
+      key: string;
+      value: { stringValue?: string; intValue?: string; boolValue?: boolean };
+    }>;
+  }>;
+  status: {
+    code: number; // 0=UNSET, 1=OK, 2=ERROR
+    message?: string;
+  };
+}
+
+/**
+ * Configuration for the span exporter.
+ */
+export interface SpanExporterConfig {
+  /** Batch size before auto-flush. Default: 100. */
+  batchSize?: number;
+  /** Maximum time between flushes (ms). Default: 5000. */
+  flushIntervalMs?: number;
+  /** Export handler: receives batches of OTLP spans. */
+  exportFn?: (spans: OTLPSpan[]) => Promise<void>;
+}
+
+/**
+ * Converts internal Span objects to OTLP format and batches them for export.
+ *
+ * @example
+ * ```ts
+ * const exporter = new SpanExporter({
+ *   exportFn: async (spans) => {
+ *     await fetch('http://collector:4318/v1/traces', {
+ *       method: 'POST',
+ *       body: JSON.stringify({ resourceSpans: [{ scopeSpans: [{ spans }] }] }),
+ *     });
+ *   },
+ * });
+ *
+ * const tracer = getTracer();
+ * exporter.attachToTracer(tracer);
+ * exporter.start();
+ * ```
+ */
+export class SpanExporter {
+  private readonly config: Required<SpanExporterConfig>;
+  private readonly buffer: OTLPSpan[] = [];
+  private flushTimer: NodeJS.Timeout | null = null;
+  private unsubscribe: (() => void) | null = null;
+
+  constructor(config?: SpanExporterConfig) {
+    this.config = {
+      batchSize: config?.batchSize ?? 100,
+      flushIntervalMs: config?.flushIntervalMs ?? 5000,
+      exportFn: config?.exportFn ?? (async () => {}),
+    };
+  }
+
+  /**
+   * Attach to a Tracer instance and listen for completed spans.
+   */
+  attachToTracer(tracer: Tracer): void {
+    this.detach();
+
+    const handler = (span: Span) => {
+      this.buffer.push(this.spanToOTLP(span));
+      if (this.buffer.length >= this.config.batchSize) {
+        void this.flush();
+      }
+    };
+
+    tracer.on('span:end', handler);
+    this.unsubscribe = () => tracer.off('span:end', handler);
+  }
+
+  /**
+   * Detach from the tracer.
+   */
+  detach(): void {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
+  }
+
+  /**
+   * Start the periodic flush timer.
+   */
+  start(): void {
+    if (this.flushTimer) {
+return;
+}
+
+    this.flushTimer = setInterval(
+      () => void this.flush(),
+      this.config.flushIntervalMs,
+    );
+
+    if (this.flushTimer.unref) {
+      this.flushTimer.unref();
+    }
+  }
+
+  /**
+   * Stop the periodic flush timer and flush remaining spans.
+   */
+  async stop(): Promise<void> {
+    if (this.flushTimer) {
+      clearInterval(this.flushTimer);
+      this.flushTimer = null;
+    }
+    await this.flush();
+    this.detach();
+  }
+
+  /**
+   * Flush all buffered spans to the export function.
+   */
+  async flush(): Promise<void> {
+    if (this.buffer.length === 0) {
+return;
+}
+
+    const batch = this.buffer.splice(0, this.buffer.length);
+
+    try {
+      await this.config.exportFn(batch);
+    } catch {
+      // On failure, re-queue the batch (with size cap).
+      if (this.buffer.length + batch.length <= this.config.batchSize * 10) {
+        this.buffer.unshift(...batch);
+      }
+      // Otherwise drop to prevent unbounded memory growth.
+    }
+  }
+
+  /**
+   * Get the number of buffered spans awaiting export.
+   */
+  getBufferSize(): number {
+    return this.buffer.length;
+  }
+
+  // -----------------------------------------------------------------------
+  // Internal
+  // -----------------------------------------------------------------------
+
+  private spanToOTLP(span: Span): OTLPSpan {
+    const msToNano = (ms: number): string => (BigInt(ms) * 1_000_000n).toString();
+
+    const attributes: OTLPSpan['attributes'] = [];
+    for (const [key, val] of Object.entries(span.attributes)) {
+      if (typeof val === 'string') {
+        attributes.push({ key, value: { stringValue: val } });
+      } else if (typeof val === 'number') {
+        attributes.push({ key, value: { intValue: String(val) } });
+      } else if (typeof val === 'boolean') {
+        attributes.push({ key, value: { boolValue: val } });
+      }
+    }
+
+    const events: OTLPSpan['events'] = span.events.map((event) => {
+      const eventAttrs: OTLPSpan['attributes'] = [];
+      if (event.attributes) {
+        for (const [key, val] of Object.entries(event.attributes)) {
+          if (typeof val === 'string') {
+            eventAttrs.push({ key, value: { stringValue: val } });
+          } else if (typeof val === 'number') {
+            eventAttrs.push({ key, value: { intValue: String(val) } });
+          } else if (typeof val === 'boolean') {
+            eventAttrs.push({ key, value: { boolValue: val } });
+          }
+        }
+      }
+      return {
+        timeUnixNano: msToNano(event.timestamp),
+        name: event.name,
+        attributes: eventAttrs,
+      };
+    });
+
+    let statusCode = 0;
+    if (span.status === 'ok') {
+statusCode = 1;
+} else if (span.status === 'error') {
+statusCode = 2;
+}
+
+    return {
+      traceId: span.context.traceId,
+      spanId: span.context.spanId,
+      parentSpanId: span.context.parentSpanId,
+      name: span.name,
+      kind: 1, // INTERNAL
+      startTimeUnixNano: msToNano(span.startTime),
+      endTimeUnixNano: msToNano(span.endTime ?? span.startTime),
+      attributes,
+      events,
+      status: {
+        code: statusCode,
+        message: span.status === 'error'
+          ? (span.attributes['error.message'] as string | undefined)
+          : undefined,
+      },
+    };
+  }
+}
+
+/**
+ * Create a span exporter instance.
+ */
+export function createSpanExporter(config?: SpanExporterConfig): SpanExporter {
+  return new SpanExporter(config);
 }

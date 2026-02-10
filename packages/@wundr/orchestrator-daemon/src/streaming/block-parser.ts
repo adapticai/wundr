@@ -7,7 +7,7 @@
  * metadata needed for differentiated rendering.
  */
 
-import type { FinishReason, TokenUsage } from '@wundr.io/ai-integration';
+import type { FinishReason, TokenUsage } from '../types/llm';
 
 /**
  * Discriminated union of all stream events emitted by provider adapters
@@ -170,43 +170,90 @@ export class BlockParser {
    *
    * Returns zero or more coalesced StreamEvents to emit downstream.
    * The caller should iterate the returned array and emit each event.
+   *
+   * Any events produced by the idle-flush timer since the last process()
+   * call are drained first, ensuring nothing is lost.
    */
   process(event: StreamEvent): StreamEvent[] {
+    // Drain any events that were produced by the idle flush timer
+    // between the previous process() call and this one.
+    const pending = this.drainPending();
+
+    let result: StreamEvent[];
+
     switch (event.type) {
       case 'text_delta':
-        return this.handleTextDelta(event);
+        result = this.handleTextDelta(event);
+        break;
 
       case 'thinking_delta':
-        return this.handleThinkingDelta(event);
+        result = this.handleThinkingDelta(event);
+        break;
 
       case 'tool_use_start':
-        return this.handleToolUseStart(event);
+        result = this.handleToolUseStart(event);
+        break;
 
       case 'tool_use_delta':
-        return this.handleToolUseDelta(event);
+        result = this.handleToolUseDelta(event);
+        break;
 
       case 'tool_use_end':
-        return this.handleToolUseEnd(event);
+        result = this.handleToolUseEnd(event);
+        break;
 
       case 'content_block_stop':
-        return this.handleContentBlockStop(event);
+        result = this.handleContentBlockStop(event);
+        break;
 
       case 'stream_start':
       case 'usage':
         // Pass through unmodified
-        return [event];
+        result = [event];
+        break;
 
       case 'error':
         // Flush any buffered content, then pass through error
-        return [...this.flushBuffer(), event];
+        result = [...this.flushBuffer(), event];
+        break;
 
       case 'stream_end':
         // Flush any remaining buffer, then pass through end
-        return [...this.flushBuffer(), event];
+        result = [...this.flushBuffer(), event];
+        break;
 
       default:
-        return [event];
+        result = [event];
+        break;
     }
+
+    if (pending.length > 0) {
+      return [...pending, ...result];
+    }
+    return result;
+  }
+
+  /**
+   * Check whether the parser has buffered content that has not yet been
+   * emitted. Useful for the StreamHandler pipeline to know if it should
+   * poll for idle-flushed events.
+   */
+  hasPendingEvents(): boolean {
+    return this.pendingFlush.length > 0;
+  }
+
+  /**
+   * Drain and return any events accumulated by the idle flush timer.
+   * Called at the start of process() and can also be called externally
+   * by the pipeline during quiet periods.
+   */
+  drainPending(): StreamEvent[] {
+    if (this.pendingFlush.length === 0) {
+      return [];
+    }
+    const drained = this.pendingFlush;
+    this.pendingFlush = [];
+    return drained;
   }
 
   /**

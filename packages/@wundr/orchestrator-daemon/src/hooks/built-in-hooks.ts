@@ -10,6 +10,7 @@
  * 'built-in' source and can be disabled via config.
  */
 
+import type { HookRegistry } from './hook-registry';
 import type {
   HookRegistration,
   HookLogger,
@@ -30,7 +31,6 @@ import type {
   UserPromptSubmitMetadata,
   UserPromptSubmitResult,
 } from './hook-types';
-import type { HookRegistry } from './hook-registry';
 
 // =============================================================================
 // Built-in Hook Definitions
@@ -184,7 +184,7 @@ function createDangerousToolBlocker(logger: HookLogger): HookRegistration<'PreTo
           });
           return {
             block: true,
-            blockReason: `Tool input matches dangerous pattern. ` +
+            blockReason: 'Tool input matches dangerous pattern. ' +
               'Review and approve the operation manually.',
           };
         }

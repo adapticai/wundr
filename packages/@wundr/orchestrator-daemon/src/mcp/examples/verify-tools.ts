@@ -5,10 +5,11 @@
  * Quick verification that all tools are functional
  */
 
-import { createMcpToolRegistry } from '../tool-registry';
-import * as path from 'path';
-import * as os from 'os';
 import { promises as fs } from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+
+import { createMcpToolRegistry } from '../tool-registry';
 
 async function verifyTools() {
   console.log('🔧 MCP Tool Registry Verification\n');
@@ -92,10 +93,10 @@ async function verifyTools() {
   });
 
   if (!dangerResult.success && dangerResult.error?.includes('dangerous')) {
-    console.log(`  ✅ Dangerous command blocked correctly\n`);
+    console.log('  ✅ Dangerous command blocked correctly\n');
     passed++;
   } else {
-    console.log(`  ❌ Safety check failed!\n`);
+    console.log('  ❌ Safety check failed!\n');
     failed++;
   }
 
@@ -106,7 +107,7 @@ async function verifyTools() {
   });
 
   if (deleteResult.success) {
-    console.log(`  ✅ Delete successful\n`);
+    console.log('  ✅ Delete successful\n');
     passed++;
   } else {
     console.log(`  ❌ Delete failed: ${deleteResult.error}\n`);
@@ -138,7 +139,7 @@ async function verifyTools() {
     console.log(`  ✅ Custom tool works: 21 * 2 = ${customResult.data?.doubled}\n`);
     passed++;
   } else {
-    console.log(`  ❌ Custom tool failed\n`);
+    console.log('  ❌ Custom tool failed\n');
     failed++;
   }
 

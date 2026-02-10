@@ -2,8 +2,9 @@
  * Tests for TaskDelegator
  */
 import { TaskDelegator, InMemoryDelegationTracker } from '../task-delegator';
-import type { OrchestratorInfo, DelegationCallback } from '../types';
+
 import type { Task } from '../../types';
+import type { OrchestratorInfo, DelegationCallback } from '../types';
 
 describe('TaskDelegator', () => {
   let delegator: TaskDelegator;

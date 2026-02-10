@@ -4,6 +4,7 @@
 
 import { EventEmitter } from 'eventemitter3';
 import { v4 as uuidv4 } from 'uuid';
+
 import type { Task } from '../types';
 import type {
   DelegationRecord,
@@ -50,7 +51,7 @@ export class InMemoryDelegationTracker implements DelegationTracker {
 
   async getByOrchestrator(orchestratorId: string): Promise<DelegationRecord[]> {
     return Array.from(this.delegations.values()).filter(
-      (d) => d.fromOrchestrator === orchestratorId || d.toOrchestrator === orchestratorId
+      (d) => d.fromOrchestrator === orchestratorId || d.toOrchestrator === orchestratorId,
     );
   }
 
@@ -85,7 +86,7 @@ export class TaskDelegator extends EventEmitter {
 
   constructor(
     tracker?: DelegationTracker,
-    config: TaskDelegatorConfig = {}
+    config: TaskDelegatorConfig = {},
   ) {
     super();
 
@@ -105,7 +106,7 @@ export class TaskDelegator extends EventEmitter {
   selectBestOrchestrator(
     task: Task,
     availableOrchestrators: OrchestratorInfo[],
-    context?: DelegationContext
+    context?: DelegationContext,
   ): OrchestratorInfo | null {
     // Filter out unavailable orchestrators
     let candidates = availableOrchestrators.filter((o) => o.available);
@@ -113,14 +114,14 @@ export class TaskDelegator extends EventEmitter {
     // Apply exclusions
     if (context?.excludedOrchestrators?.length) {
       candidates = candidates.filter(
-        (o) => !context.excludedOrchestrators!.includes(o.id)
+        (o) => !context.excludedOrchestrators!.includes(o.id),
       );
     }
 
     // Apply preferred orchestrators first
     if (context?.preferredOrchestrators?.length) {
       const preferred = candidates.filter((o) =>
-        context.preferredOrchestrators!.includes(o.id)
+        context.preferredOrchestrators!.includes(o.id),
       );
       if (preferred.length > 0) {
         candidates = preferred;
@@ -133,7 +134,7 @@ export class TaskDelegator extends EventEmitter {
 
     // Score each candidate
     const scores = candidates.map((orchestrator) =>
-      this.scoreOrchestrator(orchestrator, task, context)
+      this.scoreOrchestrator(orchestrator, task, context),
     );
 
     // Sort by score (highest first)
@@ -150,7 +151,7 @@ export class TaskDelegator extends EventEmitter {
   private scoreOrchestrator(
     orchestrator: OrchestratorInfo,
     task: Task,
-    context?: DelegationContext
+    context?: DelegationContext,
   ): CapabilityScore {
     const breakdown = {
       capabilityMatch: 0,
@@ -164,7 +165,7 @@ export class TaskDelegator extends EventEmitter {
     const capabilityScore = this.calculateCapabilityMatch(
       orchestrator.capabilities,
       task,
-      context?.requiredCapabilities
+      context?.requiredCapabilities,
     );
     breakdown.capabilityMatch = capabilityScore;
 
@@ -233,7 +234,7 @@ export class TaskDelegator extends EventEmitter {
   private calculateCapabilityMatch(
     capabilities: string[],
     task: Task,
-    requiredCapabilities?: string[]
+    requiredCapabilities?: string[],
   ): number {
     let score = 0;
 
@@ -246,7 +247,7 @@ export class TaskDelegator extends EventEmitter {
     // Required capabilities matching
     if (requiredCapabilities?.length) {
       const matchedCapabilities = capabilities.filter((c) =>
-        requiredCapabilities.includes(c)
+        requiredCapabilities.includes(c),
       );
       const matchPercentage = matchedCapabilities.length / requiredCapabilities.length;
       score += matchPercentage * 20;
@@ -265,7 +266,7 @@ export class TaskDelegator extends EventEmitter {
     task: Task,
     targetOrchestrator: OrchestratorInfo,
     context: DelegationContext = {},
-    fromOrchestrator: string = 'local'
+    fromOrchestrator: string = 'local',
   ): Promise<string> {
     const delegationId = uuidv4();
 
@@ -312,7 +313,7 @@ export class TaskDelegator extends EventEmitter {
   private simulateDelegation(
     delegationId: string,
     targetOrchestrator: OrchestratorInfo,
-    task: Task
+    task: Task,
   ): void {
     // This is a placeholder - in real implementation, this would:
     // 1. Establish connection with target orchestrator
@@ -333,7 +334,7 @@ export class TaskDelegator extends EventEmitter {
    */
   async waitForResult(
     delegationId: string,
-    timeout?: number
+    timeout?: number,
   ): Promise<DelegationResult> {
     const waitTimeout = timeout || this.config.callbackTimeout;
 

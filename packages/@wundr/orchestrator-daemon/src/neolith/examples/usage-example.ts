@@ -163,7 +163,7 @@ async function messagingExample() {
         source: 'automated',
         timestamp: new Date().toISOString(),
       },
-    }
+    },
   );
   console.log('Message sent with ID:', messageId);
   console.log();
@@ -176,7 +176,7 @@ async function messagingExample() {
       'This is a reply to the first message',
       {
         threadId: messages[0].id,
-      }
+      },
     );
     console.log('Reply sent with ID:', replyId);
   }
@@ -362,7 +362,7 @@ async function fullDaemonExample() {
         type: 'system',
         timestamp: new Date().toISOString(),
       },
-    }
+    },
   );
   console.log('✓ Status message sent');
 

@@ -10,6 +10,11 @@
  * - skill-scanner: Security scanning for malicious patterns
  * - skill-registry: Centralized registry with lifecycle management
  * - skill-executor: Runtime invocation with argument substitution
+ * - skill-dependencies: Topological dependency resolution
+ * - skill-validator: Structural and availability validation
+ * - skill-search: Full-text and faceted metadata indexing
+ * - skill-watcher: Hot-reload via filesystem monitoring
+ * - skill-analytics: Usage tracking and reporting
  * - types: Complete type system for the skills framework
  *
  * @example
@@ -57,6 +62,13 @@ export type {
   SkillFrontmatter,
   ParsedSkillFrontmatter,
 
+  // Hooks
+  SkillHooks,
+
+  // Install preferences
+  SkillInstallPreference,
+  SkillsInstallPreferences,
+
   // Metadata
   WundrSkillMetadata,
   SkillInstallSpec,
@@ -81,6 +93,35 @@ export type {
   SkillConfigEntry,
   SkillsConfig,
   SkillsChangeEvent,
+
+  // Search
+  SkillSearchQuery,
+  SkillSearchResult,
+
+  // Command Execution
+  CommandExecutionResult,
+  CommandExecutionOptions,
+
+  // Validation
+  SkillValidationSeverity,
+  SkillValidationIssue,
+  SkillValidationResult,
+
+  // Caching
+  SkillCacheEntry,
+
+  // Versioning
+  SkillVersionInfo,
+
+  // Analytics
+  SkillUsageEntry,
+  SkillAnalyticsSummary,
+
+  // Dependencies
+  SkillDependencyResolution,
+
+  // File watching
+  SkillFileEvent,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -91,11 +132,21 @@ export {
   parseFrontmatter,
   resolveWundrMetadata,
   resolveInvocationPolicy,
+  resolveHooks,
   resolveSkillFrontmatter,
+  resolveInstallPreferences,
+  resolveDiscoveryDirs,
   loadSkillsFromDir,
   loadAllSkillEntries,
   resolveBundledSkillsDir,
   formatSkillsForPrompt,
+  buildVersionInfo,
+  getAllVersionInfo,
+  clearParseCache,
+  getParseCacheSize,
+  normalizeStringList,
+  parseBooleanValue,
+  resolveUserPath,
 } from './skill-loader';
 
 // ---------------------------------------------------------------------------
@@ -129,3 +180,42 @@ export {
   parseSkillCommand,
   findMatchingSkill,
 } from './skill-executor';
+
+// ---------------------------------------------------------------------------
+// Dependencies
+// ---------------------------------------------------------------------------
+
+export {
+  resolveDependencies,
+  resolveDependenciesBatch,
+  wouldCreateCycle,
+} from './skill-dependencies';
+
+// ---------------------------------------------------------------------------
+// Validator
+// ---------------------------------------------------------------------------
+
+export {
+  validateSkill,
+  validateAllSkills,
+  formatValidationReport,
+} from './skill-validator';
+
+// ---------------------------------------------------------------------------
+// Search Index
+// ---------------------------------------------------------------------------
+
+export { SkillSearchIndex } from './skill-search';
+
+// ---------------------------------------------------------------------------
+// File Watcher
+// ---------------------------------------------------------------------------
+
+export { SkillWatcher } from './skill-watcher';
+export type { SkillChangeCallback } from './skill-watcher';
+
+// ---------------------------------------------------------------------------
+// Analytics
+// ---------------------------------------------------------------------------
+
+export { SkillAnalytics } from './skill-analytics';

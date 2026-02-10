@@ -3,29 +3,40 @@
  *
  * Discovers and parses SKILL.md files from multiple directories with
  * configurable precedence. Handles YAML frontmatter parsing, metadata
- * resolution, and multi-source merging.
+ * resolution, multi-source merging, caching, and versioning.
  *
  * Directory precedence (lowest to highest):
  * 1. Extra dirs (configured via skills.load.extraDirs)
  * 2. Bundled (ships with Wundr)
  * 3. Managed (user's global ~/.wundr/skills/)
- * 4. Workspace (project-local ./skills/)
+ * 4. Workspace (project-local ./skills/ and .claude/skills/)
+ *
+ * OpenClaw-compatible features:
+ * - YAML frontmatter with hooks, dependencies, version
+ * - $ARGUMENTS substitution placeholders
+ * - Auto-discovery from .claude/skills/ and ~/.claude/skills/
+ * - Install preferences (accept, reject, ask)
  *
  * @module skills/skill-loader
  */
 
+import * as crypto from 'crypto';
 import * as fs from 'fs';
-import * as path from 'path';
 import * as os from 'os';
+import * as path from 'path';
 
 import type {
   ParsedSkillFrontmatter,
   Skill,
+  SkillCacheEntry,
   SkillEntry,
   SkillFrontmatter,
+  SkillHooks,
   SkillInvocationPolicy,
   SkillSource,
   SkillsConfig,
+  SkillsInstallPreferences,
+  SkillVersionInfo,
   WundrSkillMetadata,
   SkillInstallSpec,
 } from './types';
@@ -38,6 +49,126 @@ const SKILL_FILENAME = 'SKILL.md';
 const FRONTMATTER_DELIMITER = '---';
 const WUNDR_CONFIG_DIR = path.join(os.homedir(), '.wundr');
 const MANAGED_SKILLS_DIR = path.join(WUNDR_CONFIG_DIR, 'skills');
+
+// ---------------------------------------------------------------------------
+// Parse Cache
+// ---------------------------------------------------------------------------
+
+/**
+ * In-process cache for parsed SKILL.md files. Keyed by absolute file path.
+ * Entries are invalidated when the file's mtime or size changes.
+ */
+const parseCache = new Map<string, SkillCacheEntry>();
+
+/**
+ * Clear the entire parse cache. Useful after bulk file changes or testing.
+ */
+export function clearParseCache(): void {
+  parseCache.clear();
+}
+
+/**
+ * Get the current size of the parse cache.
+ */
+export function getParseCacheSize(): number {
+  return parseCache.size;
+}
+
+/**
+ * Check whether a cached entry is still valid by comparing mtime and size.
+ */
+function isCacheValid(entry: SkillCacheEntry): boolean {
+  try {
+    const stat = fs.statSync(entry.filePath);
+    return stat.mtimeMs === entry.mtimeMs && stat.size === entry.size;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Retrieve a cached skill or return undefined if the cache is stale or missing.
+ */
+function getCachedSkill(filePath: string): Skill | undefined {
+  const entry = parseCache.get(filePath);
+  if (!entry) {
+return undefined;
+}
+  if (!isCacheValid(entry)) {
+    parseCache.delete(filePath);
+    return undefined;
+  }
+  return entry.skill;
+}
+
+/**
+ * Store a parsed skill in the cache.
+ */
+function setCachedSkill(filePath: string, skill: Skill | undefined): void {
+  try {
+    const stat = fs.statSync(filePath);
+    parseCache.set(filePath, {
+      filePath,
+      mtimeMs: stat.mtimeMs,
+      size: stat.size,
+      skill,
+      cachedAt: Date.now(),
+    });
+  } catch {
+    // Cannot stat file -- do not cache
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Version Tracking
+// ---------------------------------------------------------------------------
+
+/**
+ * Previous version hashes, keyed by skill name.
+ * Used to detect updates between loads.
+ */
+const previousVersions = new Map<string, string>();
+
+/**
+ * Compute a content hash for version comparison.
+ */
+function computeContentHash(content: string): string {
+  return crypto.createHash('sha256').update(content).digest('hex').slice(0, 12);
+}
+
+/**
+ * Build version info for a skill by comparing current content to prior load.
+ */
+export function buildVersionInfo(skill: Skill): SkillVersionInfo {
+  const version = skill.frontmatter.version ?? computeContentHash(skill.body);
+  const prev = previousVersions.get(skill.name);
+  const updated = prev !== undefined && prev !== version;
+
+  // Store current version for next comparison
+  previousVersions.set(skill.name, version);
+
+  let mtimeMs = 0;
+  try {
+    mtimeMs = fs.statSync(skill.filePath).mtimeMs;
+  } catch {
+    // ignore
+  }
+
+  return {
+    name: skill.name,
+    currentVersion: version,
+    previousVersion: prev,
+    updated,
+    mtimeMs,
+  };
+}
+
+/**
+ * Get all version info entries from the tracker.
+ */
+export function getAllVersionInfo(): Map<string, string> {
+  return new Map(previousVersions);
+}
 
 // ---------------------------------------------------------------------------
 // Frontmatter Parsing
@@ -171,7 +302,9 @@ function parseYamlSimple(yaml: string): ParsedSkillFrontmatter {
 function countChar(str: string, char: string): number {
   let count = 0;
   for (const c of str) {
-    if (c === char) count++;
+    if (c === char) {
+count++;
+}
   }
   return count;
 }
@@ -188,15 +321,21 @@ export function resolveWundrMetadata(
   frontmatter: ParsedSkillFrontmatter,
 ): WundrSkillMetadata | undefined {
   const raw = frontmatter['metadata'];
-  if (!raw) return undefined;
+  if (!raw) {
+return undefined;
+}
 
   try {
     const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object') return undefined;
+    if (!parsed || typeof parsed !== 'object') {
+return undefined;
+}
 
     // Look for wundr-specific metadata (also support 'openclaw' for compat)
     const metadataObj = parsed['wundr'] ?? parsed['openclaw'];
-    if (!metadataObj || typeof metadataObj !== 'object') return undefined;
+    if (!metadataObj || typeof metadataObj !== 'object') {
+return undefined;
+}
 
     const requiresRaw = typeof metadataObj.requires === 'object' && metadataObj.requires !== null
       ? metadataObj.requires as Record<string, unknown>
@@ -245,6 +384,28 @@ export function resolveInvocationPolicy(
 }
 
 /**
+ * Resolve lifecycle hooks from frontmatter.
+ */
+export function resolveHooks(
+  frontmatter: ParsedSkillFrontmatter,
+): SkillHooks | undefined {
+  const before = frontmatter['hook-before']?.trim() || frontmatter['hooks-before']?.trim();
+  const after = frontmatter['hook-after']?.trim() || frontmatter['hooks-after']?.trim();
+
+  if (!before && !after) {
+return undefined;
+}
+  const hooks: SkillHooks = {};
+  if (before) {
+hooks.before = before;
+}
+  if (after) {
+hooks.after = after;
+}
+  return hooks;
+}
+
+/**
  * Resolve a strongly-typed SkillFrontmatter from raw key-value pairs.
  */
 export function resolveSkillFrontmatter(
@@ -253,7 +414,9 @@ export function resolveSkillFrontmatter(
   const name = raw['name']?.trim();
   const description = raw['description']?.trim();
 
-  if (!name || !description) return undefined;
+  if (!name || !description) {
+return undefined;
+}
 
   const result: SkillFrontmatter = { name, description };
 
@@ -263,13 +426,19 @@ export function resolveSkillFrontmatter(
   }
 
   const model = raw['model']?.trim();
-  if (model) result.model = model;
+  if (model) {
+result.model = model;
+}
 
   const tools = raw['tools']?.trim();
-  if (tools) result.tools = normalizeStringList(tools);
+  if (tools) {
+result.tools = normalizeStringList(tools);
+}
 
   const allowedTools = raw['allowed_tools'] ?? raw['allowed-tools'];
-  if (allowedTools) result.allowedTools = normalizeStringList(allowedTools);
+  if (allowedTools) {
+result.allowedTools = normalizeStringList(allowedTools);
+}
 
   if (raw['user-invocable'] !== undefined) {
     result.userInvocable = parseBooleanValue(raw['user-invocable']);
@@ -277,6 +446,11 @@ export function resolveSkillFrontmatter(
   if (raw['disable-model-invocation'] !== undefined) {
     result.disableModelInvocation = parseBooleanValue(raw['disable-model-invocation']);
   }
+
+  const tags = raw['tags']?.trim();
+  if (tags) {
+result.tags = normalizeStringList(tags);
+}
 
   const metadataRaw = raw['metadata']?.trim();
   if (metadataRaw) {
@@ -287,7 +461,51 @@ export function resolveSkillFrontmatter(
     }
   }
 
+  // Hooks
+  const hooks = resolveHooks(raw);
+  if (hooks) {
+result.hooks = hooks;
+}
+
+  // Dependencies
+  const deps = raw['dependencies']?.trim() || raw['depends-on']?.trim();
+  if (deps) {
+    result.dependencies = normalizeStringList(deps);
+  }
+
+  // Version
+  const version = raw['version']?.trim();
+  if (version) {
+result.version = version;
+}
+
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// Install Preferences
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve install preferences from skills configuration (OpenClaw-compatible).
+ */
+export function resolveInstallPreferences(
+  config?: SkillsConfig,
+): SkillsInstallPreferences {
+  const raw = config?.install;
+  const preferBrew = raw?.preferBrew ?? true;
+  const managerRaw = typeof raw?.nodeManager === 'string' ? raw.nodeManager.trim() : '';
+  const manager = managerRaw.toLowerCase();
+  const nodeManager: SkillsInstallPreferences['nodeManager'] =
+    manager === 'pnpm' || manager === 'yarn' || manager === 'bun' || manager === 'npm'
+      ? manager
+      : 'npm';
+  const prefRaw = raw?.preference?.trim().toLowerCase() ?? '';
+  const preference: SkillsInstallPreferences['preference'] =
+    prefRaw === 'accept' || prefRaw === 'reject' || prefRaw === 'ask'
+      ? prefRaw
+      : 'ask';
+  return { preferBrew, nodeManager, preference };
 }
 
 // ---------------------------------------------------------------------------
@@ -300,12 +518,16 @@ export function resolveSkillFrontmatter(
  * Supports two layouts:
  * 1. Flat: directory contains individual .md files (each is a skill)
  * 2. Nested: directory contains subdirectories, each with a SKILL.md
+ *
+ * Uses the parse cache to avoid re-parsing unchanged files.
  */
 export function loadSkillsFromDir(
   dir: string,
   source: SkillSource,
 ): Skill[] {
-  if (!fs.existsSync(dir)) return [];
+  if (!fs.existsSync(dir)) {
+return [];
+}
 
   const skills: Skill[] = [];
 
@@ -317,8 +539,12 @@ export function loadSkillsFromDir(
   }
 
   for (const entry of entries) {
-    if (entry.name.startsWith('.')) continue;
-    if (entry.name === 'node_modules') continue;
+    if (entry.name.startsWith('.')) {
+continue;
+}
+    if (entry.name === 'node_modules') {
+continue;
+}
 
     const fullPath = path.join(dir, entry.name);
 
@@ -327,12 +553,16 @@ export function loadSkillsFromDir(
       const skillFile = path.join(fullPath, SKILL_FILENAME);
       if (fs.existsSync(skillFile)) {
         const skill = loadSingleSkill(skillFile, fullPath, source);
-        if (skill) skills.push(skill);
+        if (skill) {
+skills.push(skill);
+}
       }
     } else if (entry.isFile() && entry.name.endsWith('.md') && entry.name !== 'README.md') {
       // Flat layout: .md file is itself a skill
       const skill = loadSingleSkill(fullPath, dir, source);
-      if (skill) skills.push(skill);
+      if (skill) {
+skills.push(skill);
+}
     }
   }
 
@@ -340,13 +570,22 @@ export function loadSkillsFromDir(
 }
 
 /**
- * Load a single skill from a SKILL.md file path.
+ * Load a single skill from a SKILL.md file path, using cache when available.
  */
 function loadSingleSkill(
   filePath: string,
   baseDir: string,
   source: SkillSource,
 ): Skill | undefined {
+  const resolvedPath = path.resolve(filePath);
+
+  // Check cache first
+  const cached = getCachedSkill(resolvedPath);
+  if (cached) {
+    // Return cached with potentially updated source (source depends on call site)
+    return { ...cached, source };
+  }
+
   let content: string;
   try {
     content = fs.readFileSync(filePath, 'utf-8');
@@ -357,16 +596,18 @@ function loadSingleSkill(
   const { frontmatter: raw, body } = parseFrontmatter(content);
   const frontmatter = resolveSkillFrontmatter(raw);
 
+  let skill: Skill | undefined;
+
   if (!frontmatter) {
     // Fall back to using filename as name if frontmatter is incomplete
     const basename = path.basename(filePath, path.extname(filePath));
     if (basename === 'SKILL') {
       // Use parent directory name
       const dirName = path.basename(baseDir);
-      return {
+      skill = {
         name: dirName,
         description: `Skill: ${dirName}`,
-        filePath: path.resolve(filePath),
+        filePath: resolvedPath,
         baseDir: path.resolve(baseDir),
         source,
         body,
@@ -374,20 +615,25 @@ function loadSingleSkill(
           name: dirName,
           description: `Skill: ${dirName}`,
         },
+        tags: [],
       };
     }
-    return undefined;
+  } else {
+    skill = {
+      name: frontmatter.name,
+      description: frontmatter.description,
+      filePath: resolvedPath,
+      baseDir: path.resolve(baseDir),
+      source,
+      body,
+      frontmatter,
+      tags: frontmatter.tags ?? [],
+    };
   }
 
-  return {
-    name: frontmatter.name,
-    description: frontmatter.description,
-    filePath: path.resolve(filePath),
-    baseDir: path.resolve(baseDir),
-    source,
-    body,
-    frontmatter,
-  };
+  // Cache the result (even if undefined, to avoid re-parsing bad files)
+  setCachedSkill(resolvedPath, skill);
+  return skill;
 }
 
 // ---------------------------------------------------------------------------
@@ -400,20 +646,68 @@ function loadSingleSkill(
  */
 export function resolveBundledSkillsDir(): string | undefined {
   const override = process.env['WUNDR_BUNDLED_SKILLS_DIR']?.trim();
-  if (override && fs.existsSync(override)) return override;
+  if (override && fs.existsSync(override)) {
+return override;
+}
 
   // Look relative to this module's location
   let current = __dirname;
   for (let depth = 0; depth < 6; depth++) {
     const candidate = path.join(current, 'skills');
-    if (looksLikeSkillsDir(candidate)) return candidate;
+    if (looksLikeSkillsDir(candidate)) {
+return candidate;
+}
 
     const next = path.dirname(current);
-    if (next === current) break;
+    if (next === current) {
+break;
+}
     current = next;
   }
 
   return undefined;
+}
+
+/**
+ * Resolve all auto-discovery directories for skills (OpenClaw-compatible).
+ * Returns directories in precedence order (lowest to highest).
+ */
+export function resolveDiscoveryDirs(
+  workspaceDir: string,
+  config?: SkillsConfig,
+  managedSkillsDir?: string,
+  bundledSkillsDir?: string,
+): Array<{ dir: string; source: SkillSource }> {
+  const dirs: Array<{ dir: string; source: SkillSource }> = [];
+
+  // Extra dirs (lowest precedence)
+  const extraDirs = (config?.load?.extraDirs ?? [])
+    .map(d => typeof d === 'string' ? d.trim() : '')
+    .filter(Boolean)
+    .map(d => resolveUserPath(d));
+  for (const dir of extraDirs) {
+    dirs.push({ dir, source: 'extra' });
+  }
+
+  // Bundled
+  const resolvedBundledDir = bundledSkillsDir ?? resolveBundledSkillsDir();
+  if (resolvedBundledDir) {
+    dirs.push({ dir: resolvedBundledDir, source: 'bundled' });
+  }
+
+  // Managed (user global)
+  const resolvedManagedDir = managedSkillsDir ?? MANAGED_SKILLS_DIR;
+  dirs.push({ dir: resolvedManagedDir, source: 'managed' });
+
+  // Also check ~/.claude/skills/ for global OpenClaw-style skills
+  const claudeGlobal = path.join(os.homedir(), '.claude', 'skills');
+  dirs.push({ dir: claudeGlobal, source: 'managed' });
+
+  // Workspace: project-local ./skills/ and .claude/skills/ (OpenClaw compat)
+  dirs.push({ dir: path.join(workspaceDir, 'skills'), source: 'workspace' });
+  dirs.push({ dir: path.join(workspaceDir, '.claude', 'skills'), source: 'workspace' });
+
+  return dirs;
 }
 
 /**
@@ -431,39 +725,18 @@ export function loadAllSkillEntries(
   managedSkillsDir?: string,
   bundledSkillsDir?: string,
 ): SkillEntry[] {
-  const resolvedManagedDir = managedSkillsDir ?? MANAGED_SKILLS_DIR;
-  const resolvedBundledDir = bundledSkillsDir ?? resolveBundledSkillsDir();
-
-  // Extra dirs (lowest precedence)
-  const extraDirs = (config?.load?.extraDirs ?? [])
-    .map(d => typeof d === 'string' ? d.trim() : '')
-    .filter(Boolean)
-    .map(d => resolveUserPath(d));
-  const extraSkills = extraDirs.flatMap(dir => loadSkillsFromDir(dir, 'extra'));
-
-  // Bundled skills
-  const bundledSkills = resolvedBundledDir
-    ? loadSkillsFromDir(resolvedBundledDir, 'bundled')
-    : [];
-
-  // Managed skills (user global)
-  const managedSkills = loadSkillsFromDir(resolvedManagedDir, 'managed');
-
-  // Workspace skills (highest precedence)
-  const workspaceSkillsDirs = [
-    path.join(workspaceDir, 'skills'),
-    path.join(workspaceDir, '.claude', 'skills'),
-  ];
-  const workspaceSkills = workspaceSkillsDirs.flatMap(
-    dir => loadSkillsFromDir(dir, 'workspace'),
+  const discoveryDirs = resolveDiscoveryDirs(
+    workspaceDir, config, managedSkillsDir, bundledSkillsDir,
   );
 
-  // Merge by name with precedence: extra < bundled < managed < workspace
+  // Load from all directories in precedence order
   const merged = new Map<string, Skill>();
-  for (const skill of extraSkills) merged.set(skill.name, skill);
-  for (const skill of bundledSkills) merged.set(skill.name, skill);
-  for (const skill of managedSkills) merged.set(skill.name, skill);
-  for (const skill of workspaceSkills) merged.set(skill.name, skill);
+  for (const { dir, source } of discoveryDirs) {
+    const skills = loadSkillsFromDir(dir, source);
+    for (const skill of skills) {
+      merged.set(skill.name, skill);
+    }
+  }
 
   // Build entries with resolved metadata
   return Array.from(merged.values()).map(skill => {
@@ -491,7 +764,9 @@ export function loadAllSkillEntries(
  * always-present prompt. The full body is loaded on demand when a skill triggers.
  */
 export function formatSkillsForPrompt(skills: Skill[]): string {
-  if (skills.length === 0) return '';
+  if (skills.length === 0) {
+return '';
+}
 
   const lines: string[] = [
     'Available skills (invoke with /skill-name):',
@@ -503,7 +778,9 @@ export function formatSkillsForPrompt(skills: Skill[]): string {
       ? (skill.frontmatter.metadata['wundr'] as Record<string, unknown>)?.['emoji'] ?? ''
       : '';
     const prefix = emoji ? `${emoji} ` : '';
-    lines.push(`- **${prefix}${skill.name}**: ${skill.description}`);
+    const version = skill.frontmatter.version ? ` (v${skill.frontmatter.version})` : '';
+    const context = skill.frontmatter.context === 'fork' ? ' [fork]' : '';
+    lines.push(`- **${prefix}${skill.name}**${version}${context}: ${skill.description}`);
   }
 
   return lines.join('\n');
@@ -513,8 +790,10 @@ export function formatSkillsForPrompt(skills: Skill[]): string {
 // Utilities
 // ---------------------------------------------------------------------------
 
-function normalizeStringList(input: unknown): string[] {
-  if (!input) return [];
+export function normalizeStringList(input: unknown): string[] {
+  if (!input) {
+return [];
+}
   if (Array.isArray(input)) {
     return input.map(v => String(v).trim()).filter(Boolean);
   }
@@ -527,7 +806,9 @@ function normalizeStringList(input: unknown): string[] {
 }
 
 function parseInstallSpec(input: unknown): SkillInstallSpec | undefined {
-  if (!input || typeof input !== 'object') return undefined;
+  if (!input || typeof input !== 'object') {
+return undefined;
+}
 
   const raw = input as Record<string, unknown>;
   const kindRaw = typeof raw.kind === 'string'
@@ -536,39 +817,71 @@ function parseInstallSpec(input: unknown): SkillInstallSpec | undefined {
   const kind = kindRaw.trim().toLowerCase();
 
   const validKinds = ['brew', 'apt', 'node', 'go', 'uv', 'download'];
-  if (!validKinds.includes(kind)) return undefined;
+  if (!validKinds.includes(kind)) {
+return undefined;
+}
 
   const spec: SkillInstallSpec = {
     kind: kind as SkillInstallSpec['kind'],
   };
 
-  if (typeof raw.id === 'string') spec.id = raw.id;
-  if (typeof raw.label === 'string') spec.label = raw.label;
+  if (typeof raw.id === 'string') {
+spec.id = raw.id;
+}
+  if (typeof raw.label === 'string') {
+spec.label = raw.label;
+}
   const bins = normalizeStringList(raw.bins);
-  if (bins.length > 0) spec.bins = bins;
+  if (bins.length > 0) {
+spec.bins = bins;
+}
   const osList = normalizeStringList(raw.os);
-  if (osList.length > 0) spec.os = osList;
-  if (typeof raw.formula === 'string') spec.formula = raw.formula;
-  if (typeof raw.package === 'string') spec.package = raw.package;
-  if (typeof raw.module === 'string') spec.module = raw.module;
-  if (typeof raw.url === 'string') spec.url = raw.url;
-  if (typeof raw.archive === 'string') spec.archive = raw.archive;
-  if (typeof raw.extract === 'boolean') spec.extract = raw.extract;
-  if (typeof raw.stripComponents === 'number') spec.stripComponents = raw.stripComponents;
-  if (typeof raw.targetDir === 'string') spec.targetDir = raw.targetDir;
+  if (osList.length > 0) {
+spec.os = osList;
+}
+  if (typeof raw.formula === 'string') {
+spec.formula = raw.formula;
+}
+  if (typeof raw.package === 'string') {
+spec.package = raw.package;
+}
+  if (typeof raw.module === 'string') {
+spec.module = raw.module;
+}
+  if (typeof raw.url === 'string') {
+spec.url = raw.url;
+}
+  if (typeof raw.archive === 'string') {
+spec.archive = raw.archive;
+}
+  if (typeof raw.extract === 'boolean') {
+spec.extract = raw.extract;
+}
+  if (typeof raw.stripComponents === 'number') {
+spec.stripComponents = raw.stripComponents;
+}
+  if (typeof raw.targetDir === 'string') {
+spec.targetDir = raw.targetDir;
+}
 
   return spec;
 }
 
-function parseBooleanValue(value: string | undefined): boolean | undefined {
-  if (value === undefined || value === null || value === '') return undefined;
+export function parseBooleanValue(value: string | undefined): boolean | undefined {
+  if (value === undefined || value === null || value === '') {
+return undefined;
+}
   const lower = String(value).trim().toLowerCase();
-  if (lower === 'true' || lower === '1' || lower === 'yes') return true;
-  if (lower === 'false' || lower === '0' || lower === 'no') return false;
+  if (lower === 'true' || lower === '1' || lower === 'yes') {
+return true;
+}
+  if (lower === 'false' || lower === '0' || lower === 'no') {
+return false;
+}
   return undefined;
 }
 
-function resolveUserPath(inputPath: string): string {
+export function resolveUserPath(inputPath: string): string {
   if (inputPath.startsWith('~')) {
     return path.join(os.homedir(), inputPath.slice(1));
   }
@@ -579,10 +892,16 @@ function looksLikeSkillsDir(dir: string): boolean {
   try {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
-      if (entry.name.startsWith('.')) continue;
-      if (entry.isFile() && entry.name.endsWith('.md')) return true;
+      if (entry.name.startsWith('.')) {
+continue;
+}
+      if (entry.isFile() && entry.name.endsWith('.md')) {
+return true;
+}
       if (entry.isDirectory()) {
-        if (fs.existsSync(path.join(dir, entry.name, SKILL_FILENAME))) return true;
+        if (fs.existsSync(path.join(dir, entry.name, SKILL_FILENAME))) {
+return true;
+}
       }
     }
   } catch {

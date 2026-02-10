@@ -66,6 +66,49 @@ export class MissingEnvVarError extends Error {
 }
 
 // =============================================================================
+// Types
+// =============================================================================
+
+/**
+ * Array merge strategies for deep merge operations.
+ *
+ * - 'concat':  Concatenate arrays (default)
+ * - 'replace': Source array replaces target entirely
+ * - 'union':   Deduplicate elements (primitives only; uses strict equality)
+ * - 'prepend': Source elements are prepended to target
+ * - 'byKey':   Merge array-of-objects by a key field (e.g. merge by "id")
+ */
+export type ArrayMergeStrategy =
+  | 'concat'
+  | 'replace'
+  | 'union'
+  | 'prepend'
+  | 'byKey';
+
+export interface DeepMergeOptions {
+  /**
+   * Default array merge strategy.
+   * @default 'concat'
+   */
+  arrayStrategy?: ArrayMergeStrategy;
+
+  /**
+   * Per-path array merge overrides.
+   * Keys are dot-separated config paths; values are the strategy to use.
+   *
+   * Example:
+   *   { 'agents.list': 'byKey', 'security.cors.origins': 'union' }
+   */
+  arrayStrategyByPath?: Record<string, ArrayMergeStrategy>;
+
+  /**
+   * Key field name for 'byKey' array strategy.
+   * @default 'id'
+   */
+  arrayMergeKey?: string;
+}
+
+// =============================================================================
 // Utilities
 // =============================================================================
 
@@ -78,27 +121,180 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   );
 }
 
-/**
- * Deep merge two values.
- *
- * - Arrays: concatenate
- * - Objects: merge recursively (source wins for conflicts)
- * - Primitives: source wins
- */
-export function deepMerge(target: unknown, source: unknown): unknown {
+// =============================================================================
+// Array Merge Strategies
+// =============================================================================
+
+function mergeArrayConcat(target: unknown[], source: unknown[]): unknown[] {
+  return [...target, ...source];
+}
+
+function mergeArrayReplace(_target: unknown[], source: unknown[]): unknown[] {
+  return [...source];
+}
+
+function mergeArrayUnion(target: unknown[], source: unknown[]): unknown[] {
+  const result = [...target];
+  for (const item of source) {
+    if (!result.includes(item)) {
+      result.push(item);
+    }
+  }
+  return result;
+}
+
+function mergeArrayPrepend(target: unknown[], source: unknown[]): unknown[] {
+  return [...source, ...target];
+}
+
+function mergeArrayByKey(
+  target: unknown[],
+  source: unknown[],
+  mergeKey: string,
+): unknown[] {
+  const result = [...target];
+  const indexMap = new Map<unknown, number>();
+
+  for (let i = 0; i < result.length; i++) {
+    const item = result[i];
+    if (isPlainObject(item) && mergeKey in item) {
+      indexMap.set(item[mergeKey], i);
+    }
+  }
+
+  for (const sourceItem of source) {
+    if (!isPlainObject(sourceItem) || !(mergeKey in sourceItem)) {
+      result.push(sourceItem);
+      continue;
+    }
+
+    const key = sourceItem[mergeKey];
+    const existingIdx = indexMap.get(key);
+
+    if (existingIdx !== undefined) {
+      // Merge with existing item
+      result[existingIdx] = deepMergeInternal(
+        result[existingIdx],
+        sourceItem,
+        'concat',
+        {},
+        'id',
+        '',
+      );
+    } else {
+      result.push(sourceItem);
+      indexMap.set(key, result.length - 1);
+    }
+  }
+
+  return result;
+}
+
+function applyArrayStrategy(
+  target: unknown[],
+  source: unknown[],
+  strategy: ArrayMergeStrategy,
+  mergeKey: string,
+): unknown[] {
+  switch (strategy) {
+    case 'concat':
+      return mergeArrayConcat(target, source);
+    case 'replace':
+      return mergeArrayReplace(target, source);
+    case 'union':
+      return mergeArrayUnion(target, source);
+    case 'prepend':
+      return mergeArrayPrepend(target, source);
+    case 'byKey':
+      return mergeArrayByKey(target, source, mergeKey);
+    default:
+      return mergeArrayConcat(target, source);
+  }
+}
+
+// =============================================================================
+// Internal Deep Merge
+// =============================================================================
+
+function resolveArrayStrategy(
+  currentPath: string,
+  defaultStrategy: ArrayMergeStrategy,
+  byPath: Record<string, ArrayMergeStrategy>,
+): ArrayMergeStrategy {
+  if (currentPath && currentPath in byPath) {
+    return byPath[currentPath];
+  }
+  return defaultStrategy;
+}
+
+function deepMergeInternal(
+  target: unknown,
+  source: unknown,
+  arrayStrategy: ArrayMergeStrategy,
+  arrayStrategyByPath: Record<string, ArrayMergeStrategy>,
+  arrayMergeKey: string,
+  currentPath: string,
+): unknown {
   if (Array.isArray(target) && Array.isArray(source)) {
-    return [...target, ...source];
+    const strategy = resolveArrayStrategy(
+      currentPath,
+      arrayStrategy,
+      arrayStrategyByPath,
+    );
+    return applyArrayStrategy(target, source, strategy, arrayMergeKey);
   }
   if (isPlainObject(target) && isPlainObject(source)) {
     const result: Record<string, unknown> = { ...target };
     for (const key of Object.keys(source)) {
+      const childPath = currentPath ? `${currentPath}.${key}` : key;
       result[key] = key in result
-        ? deepMerge(result[key], source[key])
+        ? deepMergeInternal(
+            result[key],
+            source[key],
+            arrayStrategy,
+            arrayStrategyByPath,
+            arrayMergeKey,
+            childPath,
+          )
         : source[key];
     }
     return result;
   }
   return source;
+}
+
+// =============================================================================
+// Public Deep Merge
+// =============================================================================
+
+/**
+ * Deep merge two values.
+ *
+ * - Arrays: strategy-dependent (default: concatenate)
+ * - Objects: merge recursively (source wins for conflicts)
+ * - Primitives: source wins
+ *
+ * @param target - Base value
+ * @param source - Override value
+ * @param options - Merge options (array strategies, per-path overrides)
+ */
+export function deepMerge(
+  target: unknown,
+  source: unknown,
+  options?: DeepMergeOptions,
+): unknown {
+  const arrayStrategy = options?.arrayStrategy ?? 'concat';
+  const arrayStrategyByPath = options?.arrayStrategyByPath ?? {};
+  const arrayMergeKey = options?.arrayMergeKey ?? 'id';
+
+  return deepMergeInternal(
+    target,
+    source,
+    arrayStrategy,
+    arrayStrategyByPath,
+    arrayMergeKey,
+    '',
+  );
 }
 
 /**

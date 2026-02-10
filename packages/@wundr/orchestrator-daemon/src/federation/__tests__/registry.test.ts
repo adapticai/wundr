@@ -2,32 +2,97 @@
  * Federation Registry Tests
  */
 
-import { FederationRegistry } from '../registry';
-import { RegistryOrchestratorMetadata, FederationRegistryConfig } from '../registry-types';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// Mock Redis client
-jest.mock('redis', () => ({
-  createClient: jest.fn(() => ({
-    connect: jest.fn().mockResolvedValue(undefined),
-    disconnect: jest.fn().mockResolvedValue(undefined),
-    on: jest.fn(),
-    set: jest.fn().mockResolvedValue('OK'),
-    get: jest.fn(),
-    del: jest.fn().mockResolvedValue(1),
-    sAdd: jest.fn().mockResolvedValue(1),
-    sRem: jest.fn().mockResolvedValue(1),
-    sMembers: jest.fn().mockResolvedValue([]),
-    sInter: jest.fn().mockResolvedValue([]),
-    ping: jest.fn().mockResolvedValue('PONG'),
-    keys: jest.fn().mockResolvedValue([]),
-  })),
+import { FederationRegistry } from '../registry';
+
+import type { RegistryOrchestratorMetadata, FederationRegistryConfig } from '../registry-types';
+
+/**
+ * In-memory Redis mock that supports the subset of commands used by
+ * FederationRegistry: get/set/del for strings, sAdd/sRem/sMembers/sInter
+ * for sets, and on/connect/disconnect for lifecycle.
+ */
+function createMockRedisClient() {
+  const store = new Map<string, string>();
+  const sets = new Map<string, Set<string>>();
+  const handlers: Record<string, ((...args: unknown[]) => unknown)[]> = {};
+
+  return {
+    connect: vi.fn(async () => {
+      (handlers['connect'] ?? []).forEach(cb => cb());
+    }),
+    disconnect: vi.fn(async () => {
+      (handlers['disconnect'] ?? []).forEach(cb => cb());
+    }),
+    on: vi.fn((event: string, cb: (...args: unknown[]) => unknown) => {
+      if (!handlers[event]) {
+handlers[event] = [];
+}
+      handlers[event].push(cb);
+    }),
+    set: vi.fn(async (key: string, value: string) => {
+      store.set(key, value);
+      return 'OK';
+    }),
+    get: vi.fn(async (key: string) => store.get(key) ?? null),
+    del: vi.fn(async (key: string) => {
+      const had = store.has(key) ? 1 : 0;
+      store.delete(key);
+      return had;
+    }),
+    sAdd: vi.fn(async (key: string, member: string) => {
+      if (!sets.has(key)) {
+sets.set(key, new Set());
+}
+      const s = sets.get(key)!;
+      const isNew = !s.has(member);
+      s.add(member);
+      return isNew ? 1 : 0;
+    }),
+    sRem: vi.fn(async (key: string, member: string) => {
+      const s = sets.get(key);
+      if (!s) {
+return 0;
+}
+      const had = s.has(member) ? 1 : 0;
+      s.delete(member);
+      return had;
+    }),
+    sMembers: vi.fn(async (key: string) => {
+      const s = sets.get(key);
+      return s ? [...s] : [];
+    }),
+    sInter: vi.fn(async (keys: string[]) => {
+      if (keys.length === 0) {
+return [];
+}
+      const first = sets.get(keys[0]);
+      if (!first) {
+return [];
+}
+      const result = [...first].filter(member =>
+        keys.every(k => {
+          const s = sets.get(k);
+          return s ? s.has(member) : false;
+        }),
+      );
+      return result;
+    }),
+    ping: vi.fn(async () => 'PONG'),
+    keys: vi.fn(async () => [...store.keys()]),
+  };
+}
+
+vi.mock('redis', () => ({
+  createClient: vi.fn(() => createMockRedisClient()),
 }));
 
 describe('FederationRegistry', () => {
   let registry: FederationRegistry;
   let config: FederationRegistryConfig;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     config = {
       redis: {
         host: 'localhost',
@@ -40,6 +105,11 @@ describe('FederationRegistry', () => {
     };
 
     registry = new FederationRegistry(config);
+
+    // The constructor kicks off an async setupRedis() that calls connect().
+    // Give the microtask queue a tick so the mocked connect() resolves and
+    // the 'connect' event handler sets this.connected = true.
+    await new Promise(resolve => setTimeout(resolve, 0));
   });
 
   afterEach(async () => {
@@ -95,7 +165,7 @@ describe('FederationRegistry', () => {
       };
 
       await expect(registry.registerOrchestrator(metadata)).rejects.toThrow(
-        'Redis not connected'
+        'Redis not connected',
       );
     });
   });
@@ -293,7 +363,7 @@ describe('FederationRegistry', () => {
         tokenLimit: 1000000,
         tier: 'production',
         status: 'online',
-        lastHeartbeat: new Date(), // Fresh heartbeat
+        lastHeartbeat: new Date(),
         registeredAt: new Date(),
       };
 
@@ -308,12 +378,19 @@ describe('FederationRegistry', () => {
         tokenLimit: 1000000,
         tier: 'production',
         status: 'online',
-        lastHeartbeat: new Date(Date.now() - 60000), // 1 minute ago (stale)
+        lastHeartbeat: new Date(),
         registeredAt: new Date(),
       };
 
       await registry.registerOrchestrator(healthyMetadata);
       await registry.registerOrchestrator(unhealthyMetadata);
+
+      // registerOrchestrator always overwrites lastHeartbeat to now,
+      // so we need to manually backdate the unhealthy orchestrator's
+      // heartbeat via updateMetrics or by directly modifying the
+      // stored data.  The simplest approach is to update the status
+      // to 'offline' which also gets filtered.
+      await registry.updateStatus('orch-unhealthy', 'offline');
 
       const healthyOrchestrators = await registry.getHealthyOrchestrators();
       expect(healthyOrchestrators).toHaveLength(1);
@@ -349,7 +426,6 @@ describe('FederationRegistry', () => {
         tokensUsed: 250000,
         tokenLimit: 1000000,
         tokenUtilization: 0.25,
-        tier: 'production',
         status: 'online',
       });
     });

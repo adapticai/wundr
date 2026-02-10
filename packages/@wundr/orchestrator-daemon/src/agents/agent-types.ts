@@ -6,6 +6,8 @@
  * for lifecycle tracking, and supporting types for groups, mailbox, and resources.
  *
  * Design reference: OpenClaw's SubagentRunRecord + Wundr's 54-agent taxonomy.
+ * Extended with memory scopes, tool restrictions, permission inheritance,
+ * heartbeat-based health monitoring, and persisted agent state.
  */
 
 import { z } from 'zod';
@@ -73,6 +75,119 @@ export const RunStatusSchema = z.enum([
   'cancelled',
 ]);
 export type RunStatus = z.infer<typeof RunStatusSchema>;
+
+// =============================================================================
+// Memory Scopes
+// =============================================================================
+
+/**
+ * Memory scope levels for agent state isolation.
+ * Adapted from OpenClaw's agent-scope patterns:
+ *   - user:    scoped to the current user across all projects
+ *   - project: scoped to the current project across all sessions
+ *   - local:   scoped to the current session only (ephemeral)
+ *   - global:  shared across all users and projects
+ */
+export const MemoryScopeSchema = z.enum([
+  'user',
+  'project',
+  'local',
+  'global',
+]);
+export type MemoryScope = z.infer<typeof MemoryScopeSchema>;
+
+// =============================================================================
+// Tool Restrictions
+// =============================================================================
+
+/**
+ * Restricts which tools an agent may use.
+ * At most one of `allowed` or `denied` should be set.
+ * If both are omitted, the agent inherits from its parent or uses all tools.
+ */
+export interface ToolRestrictions {
+  /** Explicit allowlist of tool names. If set, only these tools are available. */
+  readonly allowed?: readonly string[];
+  /** Explicit denylist of tool names. If set, these tools are removed from the available set. */
+  readonly denied?: readonly string[];
+}
+
+export const ToolRestrictionsSchema = z.object({
+  allowed: z.array(z.string()).optional(),
+  denied: z.array(z.string()).optional(),
+}).optional();
+
+// =============================================================================
+// Agent Permissions
+// =============================================================================
+
+/**
+ * Permission set that can be inherited from parent to child agent.
+ * When a child agent is spawned, its effective permissions are the
+ * intersection of its own declared permissions and its parent's grants.
+ */
+export interface AgentPermissions {
+  /** Permission mode for file edits */
+  readonly permissionMode: PermissionMode;
+  /** Tool restrictions (allowed/denied) */
+  readonly toolRestrictions?: ToolRestrictions;
+  /** Maximum turns this agent may execute */
+  readonly maxTurns: number;
+  /** Maximum timeout in ms */
+  readonly maxTimeoutMs: number;
+  /** Whether the agent can spawn sub-agents */
+  readonly canSpawnSubagents: boolean;
+  /** Allowed memory scopes */
+  readonly memoryScopes: readonly MemoryScope[];
+  /** Tier ceiling - child cannot exceed parent's tier */
+  readonly maxTier: AgentTier;
+}
+
+// =============================================================================
+// Max Turns Configuration Per Agent Type
+// =============================================================================
+
+/**
+ * Default max turns by agent type.
+ * OpenClaw uses per-agent maxTurns in frontmatter; these are fallback defaults.
+ */
+export const DEFAULT_MAX_TURNS_BY_TYPE: Readonly<Record<AgentType, number>> = {
+  developer: 50,
+  coordinator: 30,
+  evaluator: 20,
+  'session-manager': 40,
+  researcher: 30,
+  reviewer: 25,
+  tester: 40,
+  planner: 25,
+  specialist: 35,
+  'swarm-coordinator': 30,
+};
+
+// =============================================================================
+// Heartbeat Configuration
+// =============================================================================
+
+/**
+ * Heartbeat configuration for agent health monitoring.
+ */
+export interface HeartbeatConfig {
+  /** Interval between heartbeats in ms. Default: 30_000 */
+  readonly intervalMs: number;
+  /** Number of missed heartbeats before an agent is considered dead. Default: 3 */
+  readonly missedThreshold: number;
+  /** Whether to auto-restart dead agents. Default: false */
+  readonly autoRestart: boolean;
+  /** Maximum number of automatic restarts before giving up. Default: 2 */
+  readonly maxRestarts: number;
+}
+
+export const DEFAULT_HEARTBEAT_CONFIG: HeartbeatConfig = {
+  intervalMs: 30_000,
+  missedThreshold: 3,
+  autoRestart: false,
+  maxRestarts: 2,
+};
 
 // =============================================================================
 // Agent Metadata Schema (YAML Frontmatter)
@@ -159,6 +274,33 @@ export const AgentMetadataSchema = z.object({
 
   // Inheritance
   extends: z.string().optional(),
+
+  // === New: Subagent lifecycle fields (from OpenClaw integration) ===
+
+  // Tool Restrictions
+  toolRestrictions: ToolRestrictionsSchema,
+
+  // Memory Scope
+  memoryScope: MemoryScopeSchema.optional(),
+
+  // Heartbeat override
+  heartbeatIntervalMs: z.number().int().positive().optional(),
+  heartbeatMissedThreshold: z.number().int().positive().optional(),
+
+  // Instance limits
+  maxInstances: z.number().int().positive().optional(),
+
+  // State persistence
+  persistState: z.boolean().optional(),
+
+  // Parent agent for permission inheritance
+  parentAgentId: z.string().optional(),
+
+  // Restart policy
+  maxRestarts: z.number().int().min(0).optional(),
+
+  // Whether this agent can spawn sub-agents
+  canSpawnSubagents: z.boolean().optional(),
 }).passthrough();
 
 export type AgentMetadata = z.infer<typeof AgentMetadataSchema>;
@@ -248,22 +390,55 @@ export interface AgentRunRecord {
   // Resource tracking
   tokensUsed?: number;
   costEstimate?: number;
+  turnsUsed?: number;
 
   // Communication
   mailbox?: MailboxMessage[];
+
+  // === New: Extended lifecycle fields ===
+
+  // Parent-child relationship
+  parentRunId?: string;
+
+  // Health monitoring
+  lastHeartbeat?: number;
+  missedHeartbeats?: number;
+  restartCount?: number;
+  maxRestarts?: number;
+
+  // Memory scope for this run
+  memoryScope?: MemoryScope;
+
+  // Tool restrictions snapshot
+  effectiveToolRestrictions?: ToolRestrictions;
+
+  // Permission inheritance chain
+  permissionChainIds?: string[];
+
+  // Output fragments collected during execution
+  outputFragments?: AgentOutputFragment[];
 }
 
 // =============================================================================
 // Persistence Schema (Versioned)
 // =============================================================================
 
-export const REGISTRY_VERSION = 1 as const;
+export const REGISTRY_VERSION = 2 as const;
 
 /**
  * On-disk format for persisted agent run records.
  */
 export interface PersistedAgentRegistry {
   readonly version: typeof REGISTRY_VERSION;
+  readonly runs: Record<string, AgentRunRecord>;
+  readonly agentStates?: Record<string, AgentPersistedState>;
+}
+
+/**
+ * Legacy V1 persistence format for migration support.
+ */
+export interface PersistedAgentRegistryV1 {
+  readonly version: 1;
   readonly runs: Record<string, AgentRunRecord>;
 }
 
@@ -291,6 +466,14 @@ export interface SpawnParams {
   readonly timeoutMs?: number;
   /** Override model selection */
   readonly model?: ModelPreference;
+  /** Parent run ID for permission inheritance */
+  readonly parentRunId?: string;
+  /** Override memory scope */
+  readonly memoryScope?: MemoryScope;
+  /** Override tool restrictions */
+  readonly toolRestrictions?: ToolRestrictions;
+  /** Override max turns */
+  readonly maxTurns?: number;
 }
 
 // =============================================================================
@@ -313,6 +496,8 @@ export interface ResourceLimits {
   readonly maxTimeoutMs: number;
   /** Minutes after completion before archiving runs. Default: 60 */
   readonly archiveAfterMinutes: number;
+  /** Per-agent maximum concurrent instances (overrides per-type). Default: undefined */
+  readonly maxConcurrentPerAgent?: Readonly<Record<string, number>>;
 }
 
 export const DEFAULT_RESOURCE_LIMITS: ResourceLimits = {
@@ -331,6 +516,7 @@ export interface ResourceUsage {
   readonly totalActive: number;
   readonly activeByType: Readonly<Record<string, number>>;
   readonly activeByTier: Readonly<Record<number, number>>;
+  readonly activeByAgent: Readonly<Record<string, number>>;
   readonly totalCompleted: number;
   readonly totalFailed: number;
 }
@@ -408,4 +594,176 @@ export interface SynthesizedResult {
   readonly confidence?: number;
   readonly conflicts: readonly SynthesisConflict[];
   readonly duration: number;
+}
+
+// =============================================================================
+// Spawn Mode (how the agent process is launched)
+// =============================================================================
+
+export const SpawnModeSchema = z.enum([
+  'in-process',
+  'worker-thread',
+  'child-process',
+  'tmux-session',
+]);
+export type SpawnMode = z.infer<typeof SpawnModeSchema>;
+
+// =============================================================================
+// Health Check Types
+// =============================================================================
+
+export interface AgentHealthStatus {
+  readonly runId: string;
+  readonly agentId: string;
+  readonly healthy: boolean;
+  readonly lastHeartbeat: number;
+  readonly uptimeMs: number;
+  readonly memoryUsageMb?: number;
+  readonly cpuPercent?: number;
+  readonly pendingMessages: number;
+  readonly errorCount: number;
+  /** Number of consecutive missed heartbeats */
+  readonly missedHeartbeats: number;
+  /** Whether this agent has been marked for restart */
+  readonly pendingRestart: boolean;
+}
+
+// =============================================================================
+// Execution Context (passed to a spawned agent)
+// =============================================================================
+
+export interface AgentExecutionContext {
+  readonly runId: string;
+  readonly agentId: string;
+  readonly task: string;
+  readonly systemPrompt: string;
+  readonly model: ModelPreference;
+  readonly permissionMode: PermissionMode;
+  readonly tools: readonly string[];
+  readonly maxTurns: number;
+  readonly timeoutMs: number;
+  readonly spawnMode: SpawnMode;
+  readonly workingDirectory: string;
+  readonly environmentVariables: Readonly<Record<string, string>>;
+  readonly parentRunId?: string;
+  /** Effective permissions (intersection of parent grants and agent config) */
+  readonly permissions: AgentPermissions;
+  /** Memory scope for this agent's state */
+  readonly memoryScope: MemoryScope;
+}
+
+// =============================================================================
+// Agent Events (emitted during lifecycle)
+// =============================================================================
+
+export type AgentEventType =
+  | 'agent:spawned'
+  | 'agent:started'
+  | 'agent:heartbeat'
+  | 'agent:output'
+  | 'agent:message'
+  | 'agent:completed'
+  | 'agent:failed'
+  | 'agent:timeout'
+  | 'agent:stopped'
+  | 'agent:health:dead'
+  | 'agent:health:restarted'
+  | 'agent:state:saved'
+  | 'agent:state:restored';
+
+export interface AgentEvent {
+  readonly type: AgentEventType;
+  readonly runId: string;
+  readonly agentId: string;
+  readonly timestamp: number;
+  readonly payload?: unknown;
+}
+
+// =============================================================================
+// Agent Output Fragment (collected during execution)
+// =============================================================================
+
+export interface AgentOutputFragment {
+  readonly runId: string;
+  readonly sequence: number;
+  readonly content: string;
+  readonly timestamp: number;
+  readonly isFinal: boolean;
+}
+
+// =============================================================================
+// Group Configuration (extended for team management)
+// =============================================================================
+
+export interface AgentGroupConfig {
+  readonly groupId: string;
+  readonly agentIds: readonly string[];
+  readonly description?: string;
+  readonly strategy: SynthesisStrategy;
+  readonly maxParallel: number;
+  readonly failurePolicy: 'fail-fast' | 'continue' | 'retry';
+  readonly timeoutMs: number;
+}
+
+// =============================================================================
+// Multi-Directory Loader Configuration
+// =============================================================================
+
+export interface AgentDirectorySource {
+  /** Absolute path to agents directory */
+  readonly path: string;
+  /** Priority for conflict resolution (higher wins) */
+  readonly priority: number;
+  /** Optional label (e.g., 'built-in', 'project', 'user') */
+  readonly label: string;
+}
+
+// =============================================================================
+// Agent State Persistence (per-agent saved state across sessions)
+// =============================================================================
+
+/**
+ * Serializable snapshot of an agent's accumulated state.
+ * Persisted alongside run records for cross-session continuity.
+ */
+export interface AgentPersistedState {
+  /** Agent definition ID */
+  readonly agentId: string;
+  /** Memory scope under which this state was saved */
+  readonly scope: MemoryScope;
+  /** Arbitrary key-value state the agent has accumulated */
+  readonly data: Readonly<Record<string, unknown>>;
+  /** Timestamp of last state save */
+  readonly savedAt: number;
+  /** Number of runs that have contributed to this state */
+  readonly runCount: number;
+  /** Version for migration support */
+  readonly version: number;
+}
+
+export const PERSISTED_STATE_VERSION = 1 as const;
+
+// =============================================================================
+// Directory Scanning Configuration (frontmatter-driven)
+// =============================================================================
+
+/**
+ * Extended metadata fields for `.claude/agents/` frontmatter config.
+ * These augment the base AgentMetadata with subagent lifecycle settings.
+ */
+export interface AgentFrontmatterConfig {
+  /** Tool restriction mode for this agent */
+  readonly toolRestrictions?: ToolRestrictions;
+  /** Default memory scope */
+  readonly memoryScope?: MemoryScope;
+  /** Heartbeat configuration override */
+  readonly heartbeat?: Partial<HeartbeatConfig>;
+  /** Maximum number of concurrent instances of this agent */
+  readonly maxInstances?: number;
+  /** Whether this agent persists state across sessions */
+  readonly persistState?: boolean;
+  /** Parent agent ID for permission inheritance */
+  readonly parentAgentId?: string;
+  /** Restart policy: how many times to auto-restart on failure */
+  readonly maxRestarts?: number;
 }

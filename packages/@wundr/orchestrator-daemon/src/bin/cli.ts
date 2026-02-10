@@ -9,7 +9,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { OrchestratorDaemon } from '../core/orchestrator-daemon';
+
 import type { DaemonConfig } from '../types';
 
 interface CLIOptions {
@@ -47,7 +49,7 @@ function parseArgs(): CLIOptions {
         break;
 
       case '--port':
-      case '-p':
+      case '-p': {
         if (i + 1 >= args.length) {
           console.error('Error: --port requires a value');
           process.exit(1);
@@ -59,6 +61,7 @@ function parseArgs(): CLIOptions {
         }
         options.port = port;
         break;
+      }
 
       case '--host':
         if (i + 1 >= args.length) {
@@ -82,7 +85,7 @@ function parseArgs(): CLIOptions {
         options.config = args[++i];
         break;
 
-      case '--max-sessions':
+      case '--max-sessions': {
         if (i + 1 >= args.length) {
           console.error('Error: --max-sessions requires a value');
           process.exit(1);
@@ -94,6 +97,7 @@ function parseArgs(): CLIOptions {
         }
         options.maxSessions = maxSessions;
         break;
+      }
 
       default:
         console.error(`Error: Unknown option: ${arg}`);

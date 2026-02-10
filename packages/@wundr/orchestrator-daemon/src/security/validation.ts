@@ -35,6 +35,7 @@ const SHELL_METACHARACTERS = /[;&|`$(){}[\]<>!#~*?\n\r\\]/;
 /**
  * Characters that are always dangerous in any context.
  */
+// eslint-disable-next-line no-control-regex
 const CONTROL_CHARACTERS = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
 
 /**
@@ -150,7 +151,7 @@ export class PathTraversalError extends ValidationError {
     super(
       'PATH_TRAVERSAL',
       `Path "${attemptedPath}" escapes boundary "${boundary}"`,
-      { attemptedPath, boundary }
+      { attemptedPath, boundary },
     );
     this.name = 'PathTraversalError';
   }
@@ -176,12 +177,13 @@ const SafeId = z
   .max(MAX_ID_LENGTH)
   .regex(
     /^[a-zA-Z0-9_-]+$/,
-    'Identifier must contain only alphanumeric characters, hyphens, and underscores'
+    'Identifier must contain only alphanumeric characters, hyphens, and underscores',
   );
 
 /**
  * UUID schema for session and orchestrator IDs.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const UUIDString = z.string().uuid();
 
 /**
@@ -296,7 +298,7 @@ export type ValidatedWSMessage = z.infer<typeof WSMessageSchema>;
  * Returns a discriminated result so callers can handle errors cleanly.
  */
 export function validateWSMessage(
-  data: Buffer | string
+  data: Buffer | string,
 ): { ok: true; message: ValidatedWSMessage } | { ok: false; error: string } {
   const raw = typeof data === 'string' ? data : data.toString('utf8');
 
@@ -372,14 +374,14 @@ export type ValidatedBatchJob = z.infer<typeof BatchJobSchema>;
  * Validate a batch job definition (from YAML or JSON source).
  */
 export function validateBatchJob(
-  input: unknown
+  input: unknown,
 ): { ok: true; job: ValidatedBatchJob } | { ok: false; errors: string[] } {
   const result = BatchJobSchema.safeParse(input);
   if (!result.success) {
     return {
       ok: false,
       errors: result.error.issues.map(
-        (i) => `${i.path.join('.')}: ${i.message}`
+        (i) => `${i.path.join('.')}: ${i.message}`,
       ),
     };
   }
@@ -411,7 +413,7 @@ const VALID_VARIABLE_NAME = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
  * the injection vector entirely.
  */
 export function resolveVariables(
-  vars: string | undefined
+  vars: string | undefined,
 ): { ok: true; variables: Record<string, string> } | { ok: false; error: string } {
   if (!vars) {
     return { ok: true, variables: {} };
@@ -551,7 +553,7 @@ function validateArgument(arg: string, index: number): void {
   if (containsShellMetacharacters(arg)) {
     throw new CommandInjectionError(
       `Argument at index ${index} contains shell metacharacters`,
-      { argument: arg, index }
+      { argument: arg, index },
     );
   }
 }
@@ -613,7 +615,7 @@ export const SafeCommandBuilder = {
       allowlist?: Set<string>;
       allowUnknownBinaries?: boolean;
       cwd?: string;
-    }
+    },
   ): SafeCommand {
     const allowlist = options?.allowlist ?? DEFAULT_ALLOWED_BINARIES;
     const allowUnknown = options?.allowUnknownBinaries ?? false;
@@ -645,7 +647,7 @@ export const SafeCommandBuilder = {
       throw new CommandInjectionError(
         `Binary "${binary}" is not in the allowed list. ` +
           `Allowed: ${Array.from(allowlist).sort().join(', ')}`,
-        { binary, binaryName }
+        { binary, binaryName },
       );
     }
 
@@ -665,7 +667,7 @@ export const SafeCommandBuilder = {
     options?: {
       allowlist?: Set<string>;
       allowUnknownBinaries?: boolean;
-    }
+    },
   ): SafeCommand {
     if (argv.length === 0) {
       throw new CommandInjectionError('Empty argv');
@@ -721,7 +723,7 @@ export function safePath(untrustedPath: string, boundary: string): string {
  */
 export function isWithinBoundary(
   untrustedPath: string,
-  boundary: string
+  boundary: string,
 ): boolean {
   try {
     safePath(untrustedPath, boundary);
@@ -739,7 +741,7 @@ export function safeFilename(filename: string): string {
   if (normalized !== filename || normalized === '.' || normalized === '..') {
     throw new PathTraversalError(
       filename,
-      'Filename must not contain directory components'
+      'Filename must not contain directory components',
     );
   }
   return normalized;
@@ -759,7 +761,7 @@ export const PluginManifestSchema = z.object({
     .max(128)
     .regex(
       /^[a-z0-9@][a-z0-9._/-]*$/,
-      'Plugin name must follow npm naming conventions'
+      'Plugin name must follow npm naming conventions',
     ),
   version: z
     .string()
@@ -808,7 +810,7 @@ export function validatePluginName(name: string): string {
     throw new ValidationError(
       'INVALID_PLUGIN_NAME',
       `Invalid plugin name: "${name}"`,
-      { name }
+      { name },
     );
   }
 
@@ -861,9 +863,11 @@ export function sanitizeForSQL(input: string): string {
   return input
     .replace(/'/g, "''")
     .replace(/\\/g, '\\\\')
+    // eslint-disable-next-line no-control-regex
     .replace(/\x00/g, '')
     .replace(/\n/g, '\\n')
     .replace(/\r/g, '\\r')
+    // eslint-disable-next-line no-control-regex
     .replace(/\x1a/g, '\\Z');
 }
 
@@ -873,7 +877,7 @@ export function sanitizeForSQL(input: string): string {
 export function truncate(
   input: string,
   maxLength: number,
-  suffix = '...'
+  suffix = '...',
 ): string {
   if (input.length <= maxLength) {
     return input;

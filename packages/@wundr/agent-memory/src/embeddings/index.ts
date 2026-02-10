@@ -2,7 +2,8 @@
  * @wundr/agent-memory - Embedding Providers Index
  *
  * Factory module that creates the appropriate embedding provider based on
- * configuration. Implements auto-detection and fallback chains.
+ * configuration. Implements auto-detection, fallback chains, orchestrated
+ * caching, health monitoring, chunking, and benchmarking.
  *
  * @example
  * ```typescript
@@ -19,6 +20,15 @@
  *   dimensions: 1024,
  *   fallback: 'gemini',
  * });
+ *
+ * // Create an orchestrated provider with caching, failover, chunking
+ * const orchestrator = createEmbeddingOrchestrator({
+ *   primary: { provider: 'openai' },
+ *   cache: { enabled: true, maxEntries: 10000 },
+ *   chunking: { strategy: 'sliding-window', chunkSize: 512, overlap: 64 },
+ *   failoverChain: ['gemini', 'voyage'],
+ *   onProgress: (p) => console.log(`${p.fraction * 100}% complete`),
+ * });
  * ```
  */
 
@@ -32,12 +42,26 @@ export {
   type EmbeddingProviderResult,
   type RateLimitConfig,
   type CostTracker,
+  type BatchProgress,
+  type BatchProgressCallback,
+  type EmbeddingCacheConfig,
+  type ChunkingConfig,
+  type ChunkingStrategy,
+  type HealthMonitorConfig,
+  type ProviderHealthSnapshot,
+  type BenchmarkResult,
   normalizeEmbedding,
+  validateDimensions,
+  cosineSimilarity,
   estimateTokens,
+  computeCacheKey,
   createCostTracker,
   RateLimiter,
   DEFAULT_RATE_LIMIT,
   PROVIDER_RATE_LIMITS,
+  DEFAULT_EMBEDDING_CACHE_CONFIG,
+  DEFAULT_HEALTH_MONITOR_CONFIG,
+  DEFAULT_CHUNKING_CONFIG,
 } from './provider';
 
 // Re-export provider implementations
@@ -45,6 +69,23 @@ export { OpenAIEmbeddingProvider, createOpenAIProvider, DEFAULT_OPENAI_EMBEDDING
 export { VoyageEmbeddingProvider, createVoyageProvider, DEFAULT_VOYAGE_EMBEDDING_MODEL } from './voyage';
 export { GeminiEmbeddingProvider, createGeminiProvider, DEFAULT_GEMINI_EMBEDDING_MODEL } from './gemini';
 export { LocalEmbeddingProvider, createLocalProvider, DEFAULT_TRANSFORMERS_MODEL } from './local';
+
+// Re-export cache module
+export { InMemoryEmbeddingCache, type InMemoryCacheStats } from './cache';
+
+// Re-export health monitor
+export { HealthMonitor } from './health';
+
+// Re-export chunking utilities
+export { chunkText, meanPoolEmbeddings, type TextChunk } from './chunking';
+
+// Re-export orchestrator
+export {
+  EmbeddingOrchestrator,
+  type OrchestratorConfig,
+  type OrchestratorStatus,
+  type ProviderFactory,
+} from './orchestrator';
 
 // Internal imports for the factory
 import type {
@@ -58,6 +99,7 @@ import { createOpenAIProvider } from './openai';
 import { createVoyageProvider } from './voyage';
 import { createGeminiProvider } from './gemini';
 import { createLocalProvider } from './local';
+import { EmbeddingOrchestrator, type OrchestratorConfig } from './orchestrator';
 
 // ============================================================================
 // Auto-detection Priority
@@ -76,7 +118,49 @@ const AUTO_DETECTION_ORDER: EmbeddingProviderId[] = [
 ];
 
 // ============================================================================
-// Factory
+// Provider Factory (used by the orchestrator)
+// ============================================================================
+
+/**
+ * Synchronous factory that creates a raw provider from config.
+ * This is the function the orchestrator calls to create providers.
+ */
+function rawProviderFactory(config: EmbeddingProviderConfig): EmbeddingProvider {
+  const id = config.provider === 'auto' ? detectBestProvider(config) : config.provider;
+  switch (id) {
+    case 'openai':
+      return createOpenAIProvider(config);
+    case 'voyage':
+      return createVoyageProvider(config);
+    case 'gemini':
+      return createGeminiProvider(config);
+    case 'local':
+      return createLocalProvider(config);
+  }
+}
+
+/**
+ * Detect the best available provider based on environment.
+ */
+function detectBestProvider(config: EmbeddingProviderConfig): EmbeddingProviderId {
+  // Local if explicitly configured
+  if (config.local?.modelPath) {
+    return 'local';
+  }
+  if (config.apiKey || process.env['OPENAI_API_KEY']) {
+    return 'openai';
+  }
+  if (process.env['GOOGLE_API_KEY'] || process.env['GEMINI_API_KEY']) {
+    return 'gemini';
+  }
+  if (process.env['VOYAGE_API_KEY']) {
+    return 'voyage';
+  }
+  return 'local';
+}
+
+// ============================================================================
+// Factory Functions
 // ============================================================================
 
 /**
@@ -93,18 +177,6 @@ const AUTO_DETECTION_ORDER: EmbeddingProviderId[] = [
  *
  * @param config - Provider configuration
  * @returns The resolved provider, metadata about fallback, and a cost tracker
- *
- * @example
- * ```typescript
- * const { provider, costTracker } = await createEmbeddingProvider({
- *   provider: 'auto',
- *   fallback: 'local',
- * });
- *
- * const result = await provider.embedText('semantic search query');
- * console.log(`Embedding dimensions: ${result.embedding.length}`);
- * console.log(`Total cost: $${costTracker.estimatedCostUsd.toFixed(6)}`);
- * ```
  */
 export async function createEmbeddingProvider(
   config: EmbeddingProviderConfig,
@@ -196,4 +268,47 @@ export async function createEmbeddingProvider(
 
     throw new Error(`Embedding provider "${requestedProvider}" failed: ${reason}`);
   }
+}
+
+/**
+ * Create an EmbeddingOrchestrator with full caching, failover, health
+ * monitoring, chunking, and progress tracking.
+ *
+ * This is the recommended entry point for production use. The orchestrator
+ * implements the `EmbeddingProvider` interface, so it can be used as a
+ * drop-in replacement for any raw provider.
+ *
+ * @param config - Orchestrator configuration
+ * @returns An EmbeddingOrchestrator instance
+ *
+ * @example
+ * ```typescript
+ * const orchestrator = createEmbeddingOrchestrator({
+ *   primary: {
+ *     provider: 'openai',
+ *     model: 'text-embedding-3-small',
+ *   },
+ *   cache: { enabled: true, maxEntries: 10000 },
+ *   chunking: { strategy: 'sentence', maxSentences: 5 },
+ *   failoverChain: ['gemini', 'voyage'],
+ *   healthMonitor: { enabled: true },
+ *   onProgress: (p) => console.log(`${Math.round(p.fraction * 100)}%`),
+ * });
+ *
+ * // Use like any EmbeddingProvider
+ * const result = await orchestrator.embedText('Hello');
+ * const batch = await orchestrator.embedBatch(['A', 'B', 'C']);
+ *
+ * // Orchestrator-specific features
+ * const status = orchestrator.getStatus();
+ * const benchmarks = await orchestrator.benchmark();
+ *
+ * // Cleanup
+ * await orchestrator.dispose();
+ * ```
+ */
+export function createEmbeddingOrchestrator(
+  config: OrchestratorConfig,
+): EmbeddingOrchestrator {
+  return new EmbeddingOrchestrator(config, rawProviderFactory);
 }

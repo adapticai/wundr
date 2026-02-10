@@ -5,6 +5,9 @@
  * Compatible with OpenClaw's skill format while extending it for Wundr's
  * orchestrator daemon architecture.
  *
+ * Covers: frontmatter parsing, dependency resolution, versioning, caching,
+ * install preferences, analytics, hot-reload, and metadata indexing.
+ *
  * @module skills/types
  */
 
@@ -43,6 +46,24 @@ export interface SkillInstallSpec {
   stripComponents?: number;
   /** Target directory for installation */
   targetDir?: string;
+}
+
+/**
+ * Install preference for the skills system (OpenClaw-compatible).
+ * Controls whether skill installs proceed automatically.
+ */
+export type SkillInstallPreference = 'accept' | 'reject' | 'ask';
+
+/**
+ * Resolved install preferences for the skills system.
+ */
+export interface SkillsInstallPreferences {
+  /** Whether to prefer Homebrew for installations (default: true) */
+  preferBrew: boolean;
+  /** Preferred Node.js package manager */
+  nodeManager: 'npm' | 'pnpm' | 'yarn' | 'bun';
+  /** Install action preference for new skills (default: 'ask') */
+  preference: SkillInstallPreference;
 }
 
 // ---------------------------------------------------------------------------
@@ -123,8 +144,26 @@ export interface SkillFrontmatter {
   userInvocable?: boolean;
   /** Prevent model from auto-triggering (default: false) */
   disableModelInvocation?: boolean;
+  /** Tags for categorization and search */
+  tags?: string[];
   /** Raw metadata object (may contain wundr-specific config) */
   metadata?: Record<string, unknown>;
+  /** Lifecycle hooks to run before/after execution */
+  hooks?: SkillHooks;
+  /** Named skills this skill depends on (resolved before execution) */
+  dependencies?: string[];
+  /** Semantic version string (e.g., '1.2.3') */
+  version?: string;
+}
+
+/**
+ * Lifecycle hooks for skill execution.
+ */
+export interface SkillHooks {
+  /** Shell command to run before the skill prompt is rendered */
+  before?: string;
+  /** Shell command to run after execution completes */
+  after?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -158,6 +197,8 @@ export interface Skill {
   body: string;
   /** Parsed and validated frontmatter */
   frontmatter: SkillFrontmatter;
+  /** Tags for categorization and search */
+  tags: string[];
 }
 
 /**
@@ -245,6 +286,8 @@ export interface SkillExecutionOptions {
   timeoutMs?: number;
   /** Environment variable overrides */
   env?: Record<string, string>;
+  /** Whether to execute !command lines for dynamic context injection */
+  enableDynamicContext?: boolean;
 }
 
 /**
@@ -269,6 +312,8 @@ export interface SkillExecutionResult {
     output: string;
     exitCode: number;
   }>;
+  /** Resolved dependency prompts prepended to the rendered prompt */
+  resolvedDependencies?: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -357,6 +402,15 @@ export interface SkillsConfig {
     /** Debounce interval for file watcher in ms (default: 250) */
     watchDebounceMs?: number;
   };
+  /** Install preferences for skill dependencies */
+  install?: {
+    /** Whether to prefer Homebrew (default: true) */
+    preferBrew?: boolean;
+    /** Preferred Node.js package manager */
+    nodeManager?: string;
+    /** Install action preference (default: 'ask') */
+    preference?: SkillInstallPreference;
+  };
   /** Per-skill configuration entries */
   entries?: Record<string, SkillConfigEntry>;
   /** Allowlist for bundled skills (empty means all allowed) */
@@ -370,6 +424,229 @@ export interface SkillsConfig {
     /** Allowed command prefixes for !command syntax */
     allowedCommandPrefixes?: string[];
   };
+  /** Analytics configuration */
+  analytics?: {
+    /** Whether to track skill usage (default: true) */
+    enabled?: boolean;
+    /** Maximum number of analytics entries to keep in memory */
+    maxEntries?: number;
+  };
+  /** List of available model identifiers for skill validation */
+  availableModels?: string[];
+  /** List of available tool names for skill validation */
+  availableTools?: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Search
+// ---------------------------------------------------------------------------
+
+/**
+ * Query for searching skills in the registry.
+ */
+export interface SkillSearchQuery {
+  /** Free-text query for fuzzy matching */
+  text?: string;
+  /** Substring match against skill name */
+  name?: string;
+  /** Match skills with any of these tags */
+  tags?: string[];
+  /** Match skills in this category */
+  category?: string;
+  /** Match skills from this source */
+  source?: SkillSource;
+  /** Filter by execution context */
+  context?: 'inline' | 'fork';
+  /** Filter by model name */
+  model?: string;
+  /** Maximum results to return (default: 50) */
+  limit?: number;
+}
+
+/**
+ * Result item from a skill search.
+ */
+export interface SkillSearchResult {
+  /** The matched skill entry */
+  entry: SkillEntry;
+  /** Match score (0-1) for ranking */
+  score: number;
+  /** Which fields matched */
+  matchedFields: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Command Execution (for !command dynamic context)
+// ---------------------------------------------------------------------------
+
+/**
+ * Result of executing a single !command line.
+ */
+export interface CommandExecutionResult {
+  /** The original command string */
+  command: string;
+  /** Stdout output (truncated to maxOutputBytes) */
+  output: string;
+  /** Process exit code */
+  exitCode: number;
+  /** Whether the command timed out */
+  timedOut: boolean;
+  /** Execution duration in milliseconds */
+  durationMs: number;
+}
+
+/**
+ * Options for controlling !command execution within skills.
+ */
+export interface CommandExecutionOptions {
+  /** Working directory for command execution */
+  cwd?: string;
+  /** Timeout per command in milliseconds (default: 30000) */
+  timeoutMs?: number;
+  /** Maximum output size in bytes (default: 65536) */
+  maxOutputBytes?: number;
+  /** Allowed command prefixes (if empty, all are allowed) */
+  allowedPrefixes?: string[];
+  /** Environment variables to pass to the command */
+  env?: Record<string, string>;
+}
+
+// ---------------------------------------------------------------------------
+// Validation
+// ---------------------------------------------------------------------------
+
+/**
+ * Severity levels for validation issues.
+ */
+export type SkillValidationSeverity = 'error' | 'warning' | 'info';
+
+/**
+ * A single validation finding for a skill.
+ */
+export interface SkillValidationIssue {
+  /** Validation rule that triggered the issue */
+  rule: string;
+  /** Severity level */
+  severity: SkillValidationSeverity;
+  /** Human-readable description */
+  message: string;
+  /** The skill field that triggered the issue */
+  field?: string;
+}
+
+/**
+ * Result of validating a single skill.
+ */
+export interface SkillValidationResult {
+  /** Name of the validated skill */
+  skillName: string;
+  /** Whether validation passed (no errors, warnings allowed) */
+  valid: boolean;
+  /** All validation issues found */
+  issues: SkillValidationIssue[];
+}
+
+// ---------------------------------------------------------------------------
+// Caching
+// ---------------------------------------------------------------------------
+
+/**
+ * Cached parse result for a SKILL.md file.
+ * Avoids re-parsing unchanged files on subsequent loads.
+ */
+export interface SkillCacheEntry {
+  /** Absolute path to the SKILL.md file */
+  filePath: string;
+  /** File modification time at parse time (ms since epoch) */
+  mtimeMs: number;
+  /** File size at parse time (bytes) */
+  size: number;
+  /** The parsed skill (undefined if parse failed) */
+  skill?: Skill;
+  /** Timestamp when this cache entry was created */
+  cachedAt: number;
+}
+
+// ---------------------------------------------------------------------------
+// Versioning
+// ---------------------------------------------------------------------------
+
+/**
+ * Version information for a loaded skill.
+ */
+export interface SkillVersionInfo {
+  /** Skill name */
+  name: string;
+  /** Current version string (from frontmatter or computed hash) */
+  currentVersion: string;
+  /** Previous version string (undefined on first load) */
+  previousVersion?: string;
+  /** Whether the skill was updated since last load */
+  updated: boolean;
+  /** File modification time */
+  mtimeMs: number;
+}
+
+// ---------------------------------------------------------------------------
+// Analytics
+// ---------------------------------------------------------------------------
+
+/**
+ * A single usage analytics entry for a skill execution.
+ */
+export interface SkillUsageEntry {
+  /** Name of the executed skill */
+  skillName: string;
+  /** Timestamp of execution (ms since epoch) */
+  timestamp: number;
+  /** Duration of execution in milliseconds */
+  durationMs: number;
+  /** Whether execution succeeded */
+  success: boolean;
+  /** Execution context used */
+  executionContext: 'inline' | 'fork';
+  /** Session ID (if available) */
+  sessionId?: string;
+  /** Error message (if failed) */
+  error?: string;
+}
+
+/**
+ * Aggregated analytics summary for a single skill.
+ */
+export interface SkillAnalyticsSummary {
+  /** Skill name */
+  skillName: string;
+  /** Total number of executions */
+  totalExecutions: number;
+  /** Number of successful executions */
+  successCount: number;
+  /** Number of failed executions */
+  failureCount: number;
+  /** Average execution duration in milliseconds */
+  avgDurationMs: number;
+  /** Timestamp of last execution */
+  lastExecutedAt: number;
+  /** Timestamp of first recorded execution */
+  firstExecutedAt: number;
+}
+
+// ---------------------------------------------------------------------------
+// Dependency Resolution
+// ---------------------------------------------------------------------------
+
+/**
+ * Result of resolving a skill's dependency graph.
+ */
+export interface SkillDependencyResolution {
+  /** Topologically ordered list of skill names to execute */
+  order: string[];
+  /** Whether the resolution succeeded (no cycles, all deps found) */
+  resolved: boolean;
+  /** Missing dependency names */
+  missing: string[];
+  /** Dependency cycle path (if a cycle was detected) */
+  cyclePath?: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -386,4 +663,16 @@ export interface SkillsChangeEvent {
   reason: 'watch' | 'manual' | 'reload';
   /** Path of the changed file (if applicable) */
   changedPath?: string;
+}
+
+/**
+ * Event emitted when a skill file is created, modified, or deleted.
+ */
+export interface SkillFileEvent {
+  /** Type of file system event */
+  type: 'add' | 'change' | 'unlink';
+  /** Absolute path to the changed file */
+  filePath: string;
+  /** Skill name affected (if determinable) */
+  skillName?: string;
 }

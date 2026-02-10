@@ -22,7 +22,6 @@ import {
   TEST_JWT_SECRET,
   TEST_API_KEY,
 } from '../../helpers';
-import { FIXTURES } from '../../helpers/test-fixtures';
 
 const ISSUER = 'wundr-orchestrator';
 const AUDIENCE = 'wundr-daemon';

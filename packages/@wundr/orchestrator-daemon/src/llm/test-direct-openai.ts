@@ -5,8 +5,9 @@
  * Run with: npx tsx src/llm/test-direct-openai.ts
  */
 
-import { llmCall, createLLMCall } from './direct-openai';
 import * as dotenv from 'dotenv';
+
+import { llmCall, createLLMCall } from './direct-openai';
 
 // Load environment variables
 dotenv.config();

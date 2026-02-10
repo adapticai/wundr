@@ -230,7 +230,7 @@ export class NeolithApiClient {
    */
   async getMessages(
     channelId: string,
-    options: GetMessagesOptions = {}
+    options: GetMessagesOptions = {},
   ): Promise<MessagesResponse> {
     const params = new URLSearchParams();
     params.set('channelId', channelId);
@@ -279,7 +279,7 @@ export class NeolithApiClient {
   async sendMessage(
     channelId: string,
     content: string,
-    options: SendMessageOptions = {}
+    options: SendMessageOptions = {},
   ): Promise<SendMessageResponse> {
     return this.request<SendMessageResponse>({
       method: 'POST',
@@ -310,7 +310,7 @@ export class NeolithApiClient {
    */
   async updateStatus(
     status: OrchestratorStatus,
-    options: UpdateStatusOptions = {}
+    options: UpdateStatusOptions = {},
   ): Promise<{ success: true }> {
     return this.request<{ success: true }>({
       method: 'PUT',

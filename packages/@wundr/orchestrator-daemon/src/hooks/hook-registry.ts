@@ -14,6 +14,7 @@ import type {
   HookRegistration,
   HookSource,
   HooksConfig,
+  HookOverrideConfig,
   IHookRegistry,
   HookLogger,
 } from './hook-types';
@@ -216,12 +217,12 @@ export class HookRegistry implements IHookRegistry {
   /**
    * Load hooks from a HooksConfig object (e.g., parsed from a config file).
    * Existing hooks are NOT cleared; new hooks are added/replaced.
+   *
+   * After loading hook definitions, applies any per-hook overrides from
+   * `config.hookOverrides`. Overrides can modify enabled state, timeout,
+   * priority, and environment variables without redefining the hook.
    */
   loadFromConfig(config: HooksConfig): void {
-    if (!config.hooks || !Array.isArray(config.hooks)) {
-      return;
-    }
-
     if (config.enabled === false) {
       this.logger.info('[HookRegistry] Hooks config has enabled=false; skipping load');
       return;
@@ -230,26 +231,89 @@ export class HookRegistry implements IHookRegistry {
     let loadedCount = 0;
     let errorCount = 0;
 
-    for (const hookDef of config.hooks) {
-      try {
-        this.register({
-          ...hookDef,
-          source: 'config-file',
-          // Apply global defaults from config
-          timeoutMs: hookDef.timeoutMs ?? config.defaultTimeoutMs,
-        } as HookRegistration);
-        loadedCount++;
-      } catch (err) {
-        errorCount++;
-        this.logger.error(
-          `[HookRegistry] Failed to load hook from config: ${err instanceof Error ? err.message : String(err)}`,
-        );
+    // Load hook definitions
+    if (config.hooks && Array.isArray(config.hooks)) {
+      for (const hookDef of config.hooks) {
+        try {
+          this.register({
+            ...hookDef,
+            source: 'config-file',
+            // Apply global defaults from config
+            timeoutMs: hookDef.timeoutMs ?? config.defaultTimeoutMs,
+          } as HookRegistration);
+          loadedCount++;
+        } catch (err) {
+          errorCount++;
+          this.logger.error(
+            `[HookRegistry] Failed to load hook from config: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
       }
+    }
+
+    // Apply per-hook overrides
+    if (config.hookOverrides) {
+      this.applyOverrides(config.hookOverrides);
     }
 
     this.logger.info(
       `[HookRegistry] Loaded ${loadedCount} hooks from config` +
         (errorCount > 0 ? ` (${errorCount} errors)` : ''),
+    );
+  }
+
+  /**
+   * Apply per-hook configuration overrides.
+   * Overrides are matched by hook ID. Unknown IDs are silently ignored
+   * (the hook might be registered later by discovery or programmatic code).
+   */
+  applyOverrides(overrides: Record<string, HookOverrideConfig>): void {
+    for (const [hookId, override] of Object.entries(overrides)) {
+      const registration = this.hooks.get(hookId);
+      if (!registration) {
+        // Try matching by hook name (for discovered hooks with auto-generated IDs)
+        let matched = false;
+        for (const hook of this.hooks.values()) {
+          if (hook.name === hookId) {
+            this.applyOverride(hook, override);
+            matched = true;
+          }
+        }
+        if (!matched) {
+          this.logger.debug(
+            `[HookRegistry] Override for "${hookId}" did not match any registered hook`,
+          );
+        }
+        continue;
+      }
+      this.applyOverride(registration, override);
+    }
+  }
+
+  /**
+   * Apply a single override to a registration, mutating it in place.
+   */
+  private applyOverride(
+    registration: HookRegistration,
+    override: HookOverrideConfig,
+  ): void {
+    if (override.enabled !== undefined) {
+      registration.enabled = override.enabled;
+    }
+    if (override.timeoutMs !== undefined) {
+      registration.timeoutMs = override.timeoutMs;
+    }
+    if (override.priority !== undefined) {
+      registration.priority = override.priority;
+    }
+    if (override.env) {
+      registration.env = {
+        ...registration.env,
+        ...override.env,
+      };
+    }
+    this.logger.debug(
+      `[HookRegistry] Applied override to hook "${registration.id}"`,
     );
   }
 

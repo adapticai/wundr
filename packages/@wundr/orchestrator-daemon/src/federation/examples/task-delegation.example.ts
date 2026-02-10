@@ -6,8 +6,9 @@
  */
 
 import { TaskDelegator, InMemoryDelegationTracker } from '../task-delegator';
-import type { OrchestratorInfo, DelegationContext, DelegationCallback } from '../types';
+
 import type { Task } from '../../types';
+import type { OrchestratorInfo, DelegationContext, DelegationCallback } from '../types';
 
 async function main() {
   console.log('=== Task Delegation Example ===\n');
@@ -118,10 +119,10 @@ async function main() {
     task,
     selectedOrchestrator,
     context,
-    'local-orchestrator'
+    'local-orchestrator',
   );
 
-  console.log(`✓ Task delegated successfully`);
+  console.log('✓ Task delegated successfully');
   console.log(`  Delegation ID: ${delegationId}\n`);
 
   // 7. Simulate receiving callbacks (in a real scenario, these would come from the remote orchestrator)

@@ -127,7 +127,9 @@ export class TeamHooks extends EventEmitter<TeamHooksEvents> {
    */
   removeHook(teamId: string, hookType: HookType): boolean {
     const teamHooks = this.hooks.get(teamId);
-    if (!teamHooks) return false;
+    if (!teamHooks) {
+return false;
+}
 
     const removed = teamHooks.delete(hookType);
     if (removed) {
@@ -146,7 +148,9 @@ export class TeamHooks extends EventEmitter<TeamHooksEvents> {
    */
   getRegisteredHooks(teamId: string): HookConfig[] {
     const teamHooks = this.hooks.get(teamId);
-    if (!teamHooks) return [];
+    if (!teamHooks) {
+return [];
+}
     return Array.from(teamHooks.values());
   }
 
@@ -155,7 +159,9 @@ export class TeamHooks extends EventEmitter<TeamHooksEvents> {
    */
   hasHook(teamId: string, hookType: HookType): boolean {
     const teamHooks = this.hooks.get(teamId);
-    if (!teamHooks) return false;
+    if (!teamHooks) {
+return false;
+}
     const config = teamHooks.get(hookType);
     return config !== undefined && config.enabled;
   }
@@ -276,10 +282,14 @@ export class TeamHooks extends EventEmitter<TeamHooksEvents> {
 
   private getHookConfig(teamId: string, hookType: HookType): HookConfig | null {
     const teamHooks = this.hooks.get(teamId);
-    if (!teamHooks) return null;
+    if (!teamHooks) {
+return null;
+}
 
     const config = teamHooks.get(hookType);
-    if (!config || !config.enabled) return null;
+    if (!config || !config.enabled) {
+return null;
+}
 
     return config;
   }
@@ -402,7 +412,9 @@ export class TeamHooks extends EventEmitter<TeamHooksEvents> {
       });
 
       const finish = (exitCode: number) => {
-        if (settled) return;
+        if (settled) {
+return;
+}
         settled = true;
         clearTimeout(timeoutHandle);
 

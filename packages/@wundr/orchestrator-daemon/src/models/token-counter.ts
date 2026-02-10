@@ -8,7 +8,7 @@
  * Inspired by OpenClaw's context-window-guard.ts.
  */
 
-import type { Message, ToolDefinition } from '@wundr.io/ai-integration';
+import type { Message, ToolDefinition } from '../types/llm';
 
 // ---------------------------------------------------------------------------
 // Constants

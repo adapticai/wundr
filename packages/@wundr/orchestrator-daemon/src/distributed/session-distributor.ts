@@ -4,12 +4,12 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
-import { createClient, RedisClientType } from 'redis';
+import { createClient } from 'redis';
 
 import { Logger } from '../utils/logger';
-import type { Session, Task } from '../types';
 
-import { LoadBalancer, LoadBalancerNode, NodeSelectionOptions } from './load-balancer';
+import type { LoadBalancer, LoadBalancerNode, NodeSelectionOptions } from './load-balancer';
+import type { Session, Task } from '../types';
 import type {
   DaemonNode,
   SpawnSessionRequest,
@@ -19,10 +19,10 @@ import type {
   SessionLocation,
   SessionMigrationPlan,
   NodeStatus,
-  NodeLoad,
   DistributedSessionConfig,
   SessionSpawnResult,
 } from './types';
+import type { RedisClientType } from 'redis';
 
 /**
  * Distributed Session Manager Events

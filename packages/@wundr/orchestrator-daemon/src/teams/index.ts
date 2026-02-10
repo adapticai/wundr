@@ -11,29 +11,51 @@
  * ```typescript
  * import { TeamCoordinator } from './teams';
  *
- * const coordinator = new TeamCoordinator(sessionManager);
+ * const coordinator = new TeamCoordinator(sessionManager, {
+ *   assignmentStrategy: 'load-balanced',
+ *   settings: { maxTeamSize: 8, autoAssignOnIdle: true },
+ * });
  *
  * // Create a team
  * const team = coordinator.createTeam('lead-session-id', {
  *   name: 'code-review-team',
  *   teammateMode: 'auto',
  *   maxTeammates: 5,
+ *   assignmentStrategy: 'capability-based',
  * });
  *
- * // Spawn teammates
+ * // Spawn teammates with capabilities
  * const reviewer = await coordinator.spawnTeammate(team.id, {
  *   name: 'Security Reviewer',
  *   role: 'security-review',
  *   prompt: 'Review the auth module for security vulnerabilities.',
+ *   capabilities: ['security', 'auth', 'jwt'],
+ *   maxConcurrentTasks: 2,
  * });
  *
- * // Create shared tasks
+ * // Create shared tasks with dependencies
  * const taskList = coordinator.getTaskList(team.id)!;
- * taskList.createTask(team.members[0].id, {
+ * const task1 = taskList.createTask(team.members[0].id, {
  *   title: 'Review JWT handling',
- *   description: 'Check for token expiry, refresh, and storage vulnerabilities.',
+ *   description: 'Check for token expiry, refresh, and storage.',
  *   priority: 'high',
+ *   metadata: { requiredCapabilities: ['security', 'jwt'] },
  * });
+ * const task2 = taskList.createTask(team.members[0].id, {
+ *   title: 'Write security report',
+ *   description: 'Summarize all findings.',
+ *   dependencies: [task1.id],
+ * });
+ *
+ * // Auto-assign pending tasks
+ * await coordinator.autoAssignPendingTasks(team.id);
+ *
+ * // Track dependencies and detect deadlocks
+ * coordinator.addTaskDependency(team.id, task2.id, task1.id);
+ * coordinator.detectDeadlocks(team.id);
+ *
+ * // Shared context between teammates
+ * coordinator.setSharedContext(team.id, 'findings', [], reviewer.id);
  *
  * // Send messages between teammates
  * const mailbox = coordinator.getMailbox(team.id)!;
@@ -42,19 +64,20 @@
  *   content: 'Found a potential issue with token storage.',
  * });
  *
+ * // Get team progress
+ * const progress = coordinator.getTeamProgress(team.id);
+ *
  * // Register quality gate hooks
  * coordinator.registerHook(team.id, {
  *   type: 'TaskCompleted',
  *   mode: 'function',
- *   handler: async (ctx) => {
- *     // Reject if no tests were written
- *     return { exitCode: 0 };
- *   },
+ *   handler: async (ctx) => ({ exitCode: 0 }),
  *   timeout: 30000,
  *   enabled: true,
  * });
  *
- * // Clean up when done
+ * // Aggregate results and clean up
+ * const results = coordinator.aggregateResults(team.id);
  * await coordinator.requestShutdown(team.id, reviewer.id);
  * coordinator.cleanupTeam(team.id);
  * ```
@@ -83,6 +106,7 @@ export type {
   SpawnTeammateOptions,
   TeamSessionManager,
   TeamCoordinatorEvents,
+  TeamCoordinatorOptions,
 } from './team-coordinator';
 
 // ---------------------------------------------------------------------------
@@ -146,3 +170,61 @@ export type {
   HookHandlerFn,
   TeamHooksEvents,
 } from './team-hooks';
+
+// ---------------------------------------------------------------------------
+// Task Assignment
+// ---------------------------------------------------------------------------
+
+export {
+  TaskAssigner,
+  AssignmentError,
+  AssignmentErrorCode,
+} from './task-assignment';
+
+export type {
+  AssignmentStrategy,
+  TeammateCapabilities,
+  AssignmentCandidate,
+  AssignmentDecision,
+  TaskAssignmentEvents,
+  AssignableTask,
+} from './task-assignment';
+
+// ---------------------------------------------------------------------------
+// Dependency Tracker
+// ---------------------------------------------------------------------------
+
+export {
+  DependencyTracker,
+  DependencyError,
+  DependencyErrorCode,
+} from './dependency-tracker';
+
+export type {
+  DependencyEdge,
+  DependencyInfo,
+  CycleDetectionResult,
+  TopologicalOrder,
+  DependencyTrackerEvents,
+} from './dependency-tracker';
+
+// ---------------------------------------------------------------------------
+// Team Context (shared memory, progress, results, settings)
+// ---------------------------------------------------------------------------
+
+export {
+  TeamContext,
+  TeamContextError,
+  TeamContextErrorCode,
+  DEFAULT_TEAM_SETTINGS,
+} from './team-context';
+
+export type {
+  SharedContextEntry,
+  TeamProgress,
+  TeamResult,
+  TaskResult,
+  MemberContribution,
+  TeamSettingsConfig,
+  TeamContextEvents,
+} from './team-context';

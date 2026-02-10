@@ -21,13 +21,31 @@
  * const lifecycle = createAgentLifecycleManager(registry, '/path/to/state');
  * lifecycle.restore(); // Resume from disk
  *
- * // Spawn an agent
+ * // Spawn an agent with permission inheritance
  * const run = lifecycle.spawn({
  *   agentId: 'eng-code-surgeon',
  *   task: 'Refactor auth module',
  *   requesterSessionKey: 'agent:main:main',
  *   requesterDisplayKey: 'main',
+ *   parentRunId: parentRun.runId,
+ *   memoryScope: 'project',
  * });
+ *
+ * // Record heartbeats from the running agent
+ * lifecycle.recordHeartbeat(run.runId);
+ *
+ * // Check health of all running agents
+ * const { dead, restarted } = lifecycle.checkHealth();
+ *
+ * // Save/restore agent state across sessions
+ * lifecycle.saveAgentState('eng-code-surgeon', 'project', { lastFile: 'auth.ts' });
+ * const state = lifecycle.getAgentState('eng-code-surgeon');
+ *
+ * // Resolve effective tools with parent restrictions
+ * const tools = registry.resolveEffectiveTools('eng-code-surgeon', allTools, parentRestrictions);
+ *
+ * // Find agents eligible for Task(developer) spawn
+ * const candidates = registry.findSpawnCandidates('developer', { maxTier: 3 });
  * ```
  */
 
@@ -40,12 +58,19 @@ export type {
   PermissionMode,
   CleanupMode,
   RunStatus,
+  MemoryScope,
+  ToolRestrictions,
+  AgentPermissions,
+  HeartbeatConfig,
   AgentMetadata,
   AgentDefinition,
   AgentRunOutcome,
   MailboxMessage,
   AgentRunRecord,
   PersistedAgentRegistry,
+  PersistedAgentRegistryV1,
+  AgentPersistedState,
+  AgentFrontmatterConfig,
   SpawnParams,
   ResourceLimits,
   ResourceUsage,
@@ -55,6 +80,14 @@ export type {
   SynthesisStrategy,
   SynthesisConflict,
   SynthesizedResult,
+  SpawnMode,
+  AgentHealthStatus,
+  AgentExecutionContext,
+  AgentEventType,
+  AgentEvent,
+  AgentOutputFragment,
+  AgentGroupConfig,
+  AgentDirectorySource,
 } from './agent-types';
 
 // Schemas
@@ -66,10 +99,16 @@ export {
   PermissionModeSchema,
   CleanupModeSchema,
   RunStatusSchema,
+  MemoryScopeSchema,
+  ToolRestrictionsSchema,
   AgentMetadataSchema,
   SynthesisStrategySchema,
+  SpawnModeSchema,
   DEFAULT_RESOURCE_LIMITS,
+  DEFAULT_HEARTBEAT_CONFIG,
+  DEFAULT_MAX_TURNS_BY_TYPE,
   REGISTRY_VERSION,
+  PERSISTED_STATE_VERSION,
 } from './agent-types';
 
 // Loader

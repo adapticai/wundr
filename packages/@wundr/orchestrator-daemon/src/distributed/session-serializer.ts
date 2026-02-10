@@ -3,8 +3,9 @@
  * Supports compression, checkpointing, and validation for session migration
  */
 
-import { z } from 'zod';
 import { deflateSync, inflateSync } from 'zlib';
+
+import { z } from 'zod';
 
 import type { Session, MemoryContext, SessionMetrics, Task } from '../types';
 
@@ -212,7 +213,7 @@ export class SessionSerializer {
   getCheckpoint(
     session: Session,
     newMessages: Message[],
-    contextUpdates: Record<string, unknown> = {}
+    contextUpdates: Record<string, unknown> = {},
   ): SessionCheckpoint {
     const currentVersion = this.getCurrentVersion(session.id);
     const newVersion = currentVersion + 1;
@@ -239,7 +240,7 @@ export class SessionSerializer {
     session: Session,
     checkpoint: SessionCheckpoint,
     currentMessages: Message[],
-    currentContext: Record<string, unknown>
+    currentContext: Record<string, unknown>,
   ): {
     messages: Message[];
     context: Record<string, unknown>;
@@ -252,7 +253,7 @@ export class SessionSerializer {
     const currentVersion = this.getCurrentVersion(session.id);
     if (checkpoint.baseVersion !== currentVersion) {
       throw new Error(
-        `Checkpoint version mismatch: expected base version ${currentVersion}, got ${checkpoint.baseVersion}`
+        `Checkpoint version mismatch: expected base version ${currentVersion}, got ${checkpoint.baseVersion}`,
       );
     }
 
@@ -393,7 +394,7 @@ export class SessionSerializer {
   private validateVersion(version: number): void {
     if (version > this.maxSupportedVersion) {
       throw new Error(
-        `Unsupported checkpoint version: ${version}. Maximum supported version: ${this.maxSupportedVersion}`
+        `Unsupported checkpoint version: ${version}. Maximum supported version: ${this.maxSupportedVersion}`,
       );
     }
 

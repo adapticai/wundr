@@ -29,6 +29,7 @@ const DurationMs = z.number().int().min(0);
 const Percentage = z.number().min(0).max(1);
 
 /** URL string with format validation */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const UrlString = z.string().url();
 
 /** Non-empty trimmed string */

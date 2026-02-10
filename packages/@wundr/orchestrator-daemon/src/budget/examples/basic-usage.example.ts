@@ -7,12 +7,13 @@
 
 import {
   UsageReporter,
-  CostCalculator,
   getCostCalculator,
+} from '../index';
+
+import type {
   TokenUsageRecord,
   ReportParams,
-  BudgetStatus,
-} from '../index';
+  BudgetStatus} from '../index';
 
 /**
  * Example 1: Basic Setup and Usage Recording

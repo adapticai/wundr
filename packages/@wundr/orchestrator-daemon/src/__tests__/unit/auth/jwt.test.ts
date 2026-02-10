@@ -13,6 +13,7 @@
  */
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
+
 import { signJwt, verifyJwt, createToken } from '../../../auth/jwt';
 import {
   createMockJwtPayload,
@@ -79,19 +80,25 @@ describe('JWT module', () => {
     it('should reject token with fewer than 3 parts', () => {
       const result = verifyJwt('only.two', TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_malformed');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_malformed');
+}
     });
 
     it('should reject token with more than 3 parts', () => {
       const result = verifyJwt('a.b.c.d', TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_malformed');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_malformed');
+}
     });
 
     it('should reject empty string', () => {
       const result = verifyJwt('', TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_malformed');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_malformed');
+}
     });
 
     it('should reject token with invalid base64url header', () => {
@@ -115,7 +122,9 @@ describe('JWT module', () => {
 
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_algorithm_unsupported');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_algorithm_unsupported');
+}
     });
 
     it('should reject tokens with "none" algorithm (algorithm confusion attack)', () => {
@@ -125,7 +134,9 @@ describe('JWT module', () => {
 
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_algorithm_unsupported');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_algorithm_unsupported');
+}
     });
 
     it('should reject tokens with RS256 algorithm (key confusion attack)', () => {
@@ -136,7 +147,9 @@ describe('JWT module', () => {
 
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_algorithm_unsupported');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_algorithm_unsupported');
+}
     });
   });
 
@@ -151,7 +164,9 @@ describe('JWT module', () => {
 
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_signature_invalid');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_signature_invalid');
+}
     });
 
     it('should reject token with tampered payload', () => {
@@ -167,7 +182,9 @@ describe('JWT module', () => {
 
       const result = verifyJwt(tampered, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_signature_invalid');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_signature_invalid');
+}
     });
 
     it('should reject token with tampered header', () => {
@@ -183,7 +200,9 @@ describe('JWT module', () => {
 
       const result = verifyJwt(tampered, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_signature_invalid');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_signature_invalid');
+}
     });
 
     it('should reject token with truncated signature', () => {
@@ -196,7 +215,9 @@ describe('JWT module', () => {
 
       const result = verifyJwt(truncated, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_signature_invalid');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_signature_invalid');
+}
     });
   });
 
@@ -212,7 +233,9 @@ describe('JWT module', () => {
 
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_expired');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_expired');
+}
     });
 
     it('should reject a token that expires at the current second', () => {
@@ -222,7 +245,9 @@ describe('JWT module', () => {
 
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_expired');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_expired');
+}
     });
 
     it('should accept a token that expires in the future', () => {
@@ -246,7 +271,9 @@ describe('JWT module', () => {
 
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_issuer_mismatch');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_issuer_mismatch');
+}
     });
 
     it('should reject token with wrong audience', () => {
@@ -255,7 +282,9 @@ describe('JWT module', () => {
 
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_audience_mismatch');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_audience_mismatch');
+}
     });
   });
 
@@ -269,6 +298,7 @@ describe('JWT module', () => {
       const invalidPayload = Buffer.from(JSON.stringify({ sub: 'test' })).toString('base64url');
 
       // Sign it with the correct secret so the signature passes
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { createHmac } = require('node:crypto');
       const signingInput = `${header}.${invalidPayload}`;
       const signature = createHmac('sha256', TEST_JWT_SECRET)
@@ -278,7 +308,9 @@ describe('JWT module', () => {
 
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.reason).toBe('jwt_payload_schema_invalid');
+      if (!result.ok) {
+expect(result.reason).toBe('jwt_payload_schema_invalid');
+}
     });
   });
 

@@ -7,7 +7,7 @@
 
 import { Logger } from '../utils/logger';
 
-import type { ToolCall, Message } from '@wundr.io/ai-integration';
+import type { ToolCall, Message } from '../types/llm';
 
 /**
  * MCP Tool Registry interface (minimal interface for tool execution)
@@ -193,7 +193,7 @@ export class ToolExecutor {
   private parseToolArguments(argumentsStr: string): any {
     try {
       return JSON.parse(argumentsStr);
-    } catch (error) {
+    } catch {
       this.logger.warn(`Failed to parse tool arguments: ${argumentsStr}`);
       // Return as object with raw string if parsing fails
       return { raw: argumentsStr };

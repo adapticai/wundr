@@ -17,6 +17,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { Logger, LogLevel } from '../utils/logger';
 
 // ---------------------------------------------------------------------------
@@ -108,7 +109,9 @@ export class InMemoryElectionStore implements ElectionStore {
 
   async setNX(key: string, value: string, ttlMs: number): Promise<boolean> {
     this.cleanup();
-    if (this.data.has(key)) return false;
+    if (this.data.has(key)) {
+return false;
+}
     this.data.set(key, { value, expiresAt: Date.now() + ttlMs });
     return true;
   }
@@ -121,7 +124,9 @@ export class InMemoryElectionStore implements ElectionStore {
   ): Promise<boolean> {
     this.cleanup();
     const entry = this.data.get(key);
-    if (!entry || entry.value !== expectedValue) return false;
+    if (!entry || entry.value !== expectedValue) {
+return false;
+}
     this.data.set(key, { value, expiresAt: Date.now() + ttlMs });
     return true;
   }
@@ -134,7 +139,9 @@ export class InMemoryElectionStore implements ElectionStore {
   async deleteIfMatch(key: string, expectedValue: string): Promise<boolean> {
     this.cleanup();
     const entry = this.data.get(key);
-    if (!entry || entry.value !== expectedValue) return false;
+    if (!entry || entry.value !== expectedValue) {
+return false;
+}
     this.data.delete(key);
     return true;
   }
@@ -224,7 +231,9 @@ export class LeaderElection extends EventEmitter<ElectionEvents> {
    * attempts to discover the current leader.
    */
   async start(): Promise<void> {
-    if (this.running) return;
+    if (this.running) {
+return;
+}
     this.running = true;
 
     this.logger.info(`Starting leader election for node ${this.nodeId}`);
@@ -256,7 +265,9 @@ export class LeaderElection extends EventEmitter<ElectionEvents> {
    * releases the lease.
    */
   async stop(): Promise<void> {
-    if (!this.running) return;
+    if (!this.running) {
+return;
+}
     this.running = false;
 
     this.logger.info('Stopping leader election');
@@ -331,11 +342,15 @@ export class LeaderElection extends EventEmitter<ElectionEvents> {
     leaderId: string;
     term: number;
   } | null> {
-    if (!this.store.isConnected()) return null;
+    if (!this.store.isConnected()) {
+return null;
+}
 
     try {
       const leaseValue = await this.store.get(this.leaseKey());
-      if (!leaseValue) return null;
+      if (!leaseValue) {
+return null;
+}
 
       const parsed = JSON.parse(leaseValue);
       return { leaderId: parsed.leaderId, term: parsed.term };
@@ -414,12 +429,6 @@ export class LeaderElection extends EventEmitter<ElectionEvents> {
 
     // Release the lease
     if (this.store.isConnected()) {
-      const leaseValue = JSON.stringify({
-        leaderId: this.nodeId,
-        term: oldTerm,
-        acquiredAt: '', // Not checked by deleteIfMatch
-      });
-
       try {
         // We need to check that we still own the lease
         const currentLease = await this.store.get(this.leaseKey());
@@ -538,7 +547,9 @@ export class LeaderElection extends EventEmitter<ElectionEvents> {
       jitter / 2;
 
     this.electionTimer = setTimeout(async () => {
-      if (!this.running) return;
+      if (!this.running) {
+return;
+}
 
       if (this.state.role === 'follower') {
         this.logger.info(
@@ -606,7 +617,9 @@ export class LeaderElection extends EventEmitter<ElectionEvents> {
 
   private transitionTo(newRole: ElectionRole): void {
     const oldRole = this.state.role;
-    if (oldRole === newRole) return;
+    if (oldRole === newRole) {
+return;
+}
 
     this.state.role = newRole;
     this.logger.info(`Role transition: ${oldRole} -> ${newRole}`);
@@ -614,7 +627,9 @@ export class LeaderElection extends EventEmitter<ElectionEvents> {
   }
 
   private advanceTerm(newTerm: number): void {
-    if (newTerm <= this.state.currentTerm) return;
+    if (newTerm <= this.state.currentTerm) {
+return;
+}
 
     const oldTerm = this.state.currentTerm;
     this.state.currentTerm = newTerm;

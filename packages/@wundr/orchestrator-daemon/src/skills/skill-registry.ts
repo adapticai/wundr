@@ -2,7 +2,8 @@
  * Skill Registry
  *
  * Centralized registry for managing loaded skills with lifecycle management,
- * eligibility filtering, prompt building, and command spec generation.
+ * eligibility filtering, prompt building, command spec generation, validation,
+ * search indexing, version tracking, hot-reload, and analytics integration.
  *
  * The registry is the primary integration point between the skills system
  * and the orchestrator daemon. It handles:
@@ -13,6 +14,10 @@
  * - Building formatted prompts for system context injection
  * - Generating slash command specs from registered skills
  * - Snapshot versioning for cache invalidation
+ * - Skill validation (tools, models, dependencies)
+ * - Metadata indexing for search
+ * - Version tracking and update detection
+ * - Hot-reload via file watcher integration
  *
  * @module skills/skill-registry
  */
@@ -21,16 +26,19 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {
+  buildVersionInfo,
   loadAllSkillEntries,
   formatSkillsForPrompt,
-  resolveWundrMetadata,
-  resolveInvocationPolicy,
 } from './skill-loader';
 import {
   scanSkillComplete,
   hasCriticalFindings,
   formatScanReport,
 } from './skill-scanner';
+import { SkillSearchIndex } from './skill-search';
+import { validateAllSkills, formatValidationReport } from './skill-validator';
+import { SkillWatcher } from './skill-watcher';
+
 import type {
   Skill,
   SkillCommandSpec,
@@ -38,8 +46,12 @@ import type {
   SkillEligibilityContext,
   SkillEntry,
   SkillScanSummary,
+  SkillSearchQuery,
+  SkillSearchResult,
   SkillSnapshot,
   SkillsConfig,
+  SkillValidationResult,
+  SkillVersionInfo,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -59,9 +71,13 @@ const SKILL_COMMAND_DESCRIPTION_MAX_LENGTH = 100;
  */
 export interface SkillRegistryEvents {
   /** Emitted when skills are loaded or reloaded */
-  loaded: { count: number; version: number };
+  loaded: { count: number; version: number; updated: string[] };
   /** Emitted when a skill fails security scan */
   scanFailed: { skillName: string; summary: SkillScanSummary };
+  /** Emitted when skills are validated with issues */
+  validationComplete: { results: SkillValidationResult[] };
+  /** Emitted when a file watcher detects changes */
+  fileChanged: { filePath: string; skillName?: string };
   /** Emitted on any error during operation */
   error: { message: string; context?: Record<string, unknown> };
 }
@@ -84,6 +100,12 @@ type EventListener<K extends keyof SkillRegistryEvents> = (
  * const snapshot = registry.buildSnapshot();
  * const commands = registry.buildCommandSpecs();
  * const skill = registry.getSkill('review-pr');
+ *
+ * // Search skills
+ * const results = registry.search({ text: 'docker' });
+ *
+ * // Start hot-reload
+ * registry.startWatching();
  * ```
  */
 export class SkillRegistry {
@@ -95,6 +117,10 @@ export class SkillRegistry {
   private bundledSkillsDir?: string;
   private listeners: Map<string, Set<EventListener<any>>> = new Map();
   private scanResults: Map<string, SkillScanSummary> = new Map();
+  private searchIndex: SkillSearchIndex = new SkillSearchIndex();
+  private versionInfoMap: Map<string, SkillVersionInfo> = new Map();
+  private watcher?: SkillWatcher;
+  private lastValidationResults: SkillValidationResult[] = [];
 
   constructor(opts: {
     workspaceDir: string;
@@ -124,7 +150,9 @@ export class SkillRegistry {
       this.listeners.set(key, new Set());
     }
     this.listeners.get(key)!.add(listener);
-    return () => { this.listeners.get(key)?.delete(listener); };
+    return () => {
+ this.listeners.get(key)?.delete(listener); 
+};
   }
 
   private emit<K extends keyof SkillRegistryEvents>(
@@ -133,7 +161,9 @@ export class SkillRegistry {
   ): void {
     const key = event as string;
     const set = this.listeners.get(key);
-    if (!set) return;
+    if (!set) {
+return;
+}
     for (const listener of set) {
       try {
         listener(data);
@@ -156,7 +186,10 @@ export class SkillRegistry {
    * 3. Run security scans (if enabled in config)
    * 4. Filter by eligibility requirements
    * 5. Register in the internal map
-   * 6. Bump version for cache invalidation
+   * 6. Track version changes
+   * 7. Rebuild the search index
+   * 8. Run validation
+   * 9. Bump version for cache invalidation
    */
   async load(eligibility?: SkillEligibilityContext): Promise<void> {
     if (this.config?.enabled === false) {
@@ -219,9 +252,34 @@ export class SkillRegistry {
       this.entries.set(entry.skill.name, entry);
     }
 
-    // Step 6: Bump version
+    // Step 6: Track version changes
+    const updatedSkills: string[] = [];
+    this.versionInfoMap.clear();
+    for (const entry of eligible) {
+      const versionInfo = buildVersionInfo(entry.skill);
+      this.versionInfoMap.set(entry.skill.name, versionInfo);
+      if (versionInfo.updated) {
+        updatedSkills.push(entry.skill.name);
+      }
+    }
+
+    // Step 7: Rebuild search index
+    this.searchIndex.rebuild(eligible);
+
+    // Step 8: Validation
+    this.lastValidationResults = validateAllSkills(eligible, this.config);
+    const hasIssues = this.lastValidationResults.some(r => r.issues.length > 0);
+    if (hasIssues) {
+      this.emit('validationComplete', { results: this.lastValidationResults });
+    }
+
+    // Step 9: Bump version
     this.version = bumpVersion(this.version);
-    this.emit('loaded', { count: this.entries.size, version: this.version });
+    this.emit('loaded', {
+      count: this.entries.size,
+      version: this.version,
+      updated: updatedSkills,
+    });
   }
 
   /**
@@ -232,6 +290,9 @@ export class SkillRegistry {
     eligibility?: SkillEligibilityContext,
   ): Promise<void> {
     this.workspaceDir = workspaceDir;
+    if (this.watcher) {
+      this.watcher.setWorkspaceDir(workspaceDir);
+    }
     await this.load(eligibility);
   }
 
@@ -243,7 +304,65 @@ export class SkillRegistry {
     eligibility?: SkillEligibilityContext,
   ): Promise<void> {
     this.config = config;
+    if (this.watcher) {
+      this.watcher.updateConfig(config);
+    }
     await this.load(eligibility);
+  }
+
+  // -------------------------------------------------------------------------
+  // Hot-Reload / File Watching
+  // -------------------------------------------------------------------------
+
+  /**
+   * Start watching skill directories for changes.
+   * Automatically reloads skills when files change.
+   */
+  startWatching(): void {
+    if (this.watcher?.isRunning()) {
+return;
+}
+
+    this.watcher = new SkillWatcher({
+      workspaceDir: this.workspaceDir,
+      config: this.config,
+      managedSkillsDir: this.managedSkillsDir,
+      bundledSkillsDir: this.bundledSkillsDir,
+    });
+
+    this.watcher.onChange((event) => {
+      this.emit('fileChanged', {
+        filePath: event.filePath,
+        skillName: event.skillName,
+      });
+
+      // Trigger async reload
+      this.load().catch(err => {
+        this.emit('error', {
+          message: `Hot-reload failed: ${err instanceof Error ? err.message : String(err)}`,
+          context: { filePath: event.filePath },
+        });
+      });
+    });
+
+    this.watcher.start();
+  }
+
+  /**
+   * Stop watching skill directories.
+   */
+  stopWatching(): void {
+    if (this.watcher) {
+      this.watcher.stop();
+      this.watcher = undefined;
+    }
+  }
+
+  /**
+   * Whether the file watcher is currently active.
+   */
+  isWatching(): boolean {
+    return this.watcher?.isRunning() ?? false;
   }
 
   // -------------------------------------------------------------------------
@@ -269,6 +388,13 @@ export class SkillRegistry {
    */
   getAllEntries(): SkillEntry[] {
     return Array.from(this.entries.values());
+  }
+
+  /**
+   * Get the internal entries map (for dependency resolution).
+   */
+  getEntriesMap(): Map<string, SkillEntry> {
+    return this.entries;
   }
 
   /**
@@ -304,6 +430,76 @@ export class SkillRegistry {
    */
   getScanResult(name: string): SkillScanSummary | undefined {
     return this.scanResults.get(name);
+  }
+
+  // -------------------------------------------------------------------------
+  // Version Tracking
+  // -------------------------------------------------------------------------
+
+  /**
+   * Get version info for a specific skill.
+   */
+  getVersionInfo(name: string): SkillVersionInfo | undefined {
+    return this.versionInfoMap.get(name);
+  }
+
+  /**
+   * Get all version info entries.
+   */
+  getAllVersionInfo(): SkillVersionInfo[] {
+    return Array.from(this.versionInfoMap.values());
+  }
+
+  /**
+   * Get names of skills that were updated on the last load.
+   */
+  getUpdatedSkills(): string[] {
+    return this.getAllVersionInfo()
+      .filter(v => v.updated)
+      .map(v => v.name);
+  }
+
+  // -------------------------------------------------------------------------
+  // Search
+  // -------------------------------------------------------------------------
+
+  /**
+   * Search skills using the metadata index.
+   */
+  search(query: SkillSearchQuery): SkillSearchResult[] {
+    return this.searchIndex.search(query);
+  }
+
+  /**
+   * Get all unique categories from registered skills.
+   */
+  getCategories(): string[] {
+    return this.searchIndex.getCategories();
+  }
+
+  /**
+   * Get all unique tags from registered skills.
+   */
+  getAllTags(): string[] {
+    return this.searchIndex.getAllTags();
+  }
+
+  // -------------------------------------------------------------------------
+  // Validation
+  // -------------------------------------------------------------------------
+
+  /**
+   * Get the validation results from the last load.
+   */
+  getValidationResults(): SkillValidationResult[] {
+    return this.lastValidationResults;
+  }
+
+  /**
+   * Get a formatted validation report from the last load.
+   */
+  getValidationReport(): string {
+    return formatValidationReport(this.lastValidationResults);
   }
 
   // -------------------------------------------------------------------------
@@ -404,27 +600,49 @@ export class SkillRegistry {
   exportState(): {
     version: number;
     skillCount: number;
+    watching: boolean;
     skills: Array<{
       name: string;
       description: string;
       source: string;
       category?: string;
       context?: string;
+      skillVersion?: string;
+      updated: boolean;
       hasScanResult: boolean;
+      validationIssues: number;
     }>;
   } {
+    const validationMap = new Map<string, number>();
+    for (const result of this.lastValidationResults) {
+      validationMap.set(result.skillName, result.issues.length);
+    }
+
     return {
       version: this.version,
       skillCount: this.entries.size,
+      watching: this.isWatching(),
       skills: Array.from(this.entries.values()).map(e => ({
         name: e.skill.name,
         description: e.skill.description,
         source: e.skill.source,
         category: e.metadata?.category,
         context: e.skill.frontmatter.context,
+        skillVersion: e.skill.frontmatter.version,
+        updated: this.versionInfoMap.get(e.skill.name)?.updated ?? false,
         hasScanResult: this.scanResults.has(e.skill.name),
+        validationIssues: validationMap.get(e.skill.name) ?? 0,
       })),
     };
+  }
+
+  /**
+   * Dispose all resources (watchers, listeners).
+   */
+  dispose(): void {
+    this.stopWatching();
+    this.listeners.clear();
+    this.entries.clear();
   }
 }
 
@@ -455,7 +673,9 @@ function shouldIncludeSkill(
 
   // Check per-skill config override
   const skillConfig = resolveSkillConfig(config, skillKey);
-  if (skillConfig?.enabled === false) return false;
+  if (skillConfig?.enabled === false) {
+return false;
+}
 
   // Check bundled allowlist
   const allowBundled = config?.allowBundled;
@@ -476,7 +696,9 @@ function shouldIncludeSkill(
   }
 
   // Skills marked as "always" bypass requirement checks
-  if (entry.metadata?.always === true) return true;
+  if (entry.metadata?.always === true) {
+return true;
+}
 
   // Check required binaries (all must be present)
   const requiredBins = entry.metadata?.requires?.bins ?? [];
@@ -493,16 +715,24 @@ function shouldIncludeSkill(
   if (requiredAnyBins.length > 0) {
     const anyFound = requiredAnyBins.some(bin => hasBinary(bin))
       || eligibility?.remote?.hasAnyBin?.(requiredAnyBins);
-    if (!anyFound) return false;
+    if (!anyFound) {
+return false;
+}
   }
 
   // Check required environment variables
   const requiredEnv = entry.metadata?.requires?.env ?? [];
   if (requiredEnv.length > 0) {
     for (const envName of requiredEnv) {
-      if (process.env[envName]) continue;
-      if (skillConfig?.env?.[envName]) continue;
-      if (skillConfig?.apiKey && entry.metadata?.primaryEnv === envName) continue;
+      if (process.env[envName]) {
+continue;
+}
+      if (skillConfig?.env?.[envName]) {
+continue;
+}
+      if (skillConfig?.apiKey && entry.metadata?.primaryEnv === envName) {
+continue;
+}
       return false;
     }
   }
@@ -511,7 +741,9 @@ function shouldIncludeSkill(
   const requiredConfig = entry.metadata?.requires?.config ?? [];
   if (requiredConfig.length > 0) {
     for (const configPath of requiredConfig) {
-      if (!isConfigPathTruthy(config, configPath)) return false;
+      if (!isConfigPathTruthy(config, configPath)) {
+return false;
+}
     }
   }
 
@@ -536,13 +768,23 @@ function isConfigPathTruthy(
   const parts = pathStr.split('.').filter(Boolean);
   let current: unknown = config;
   for (const part of parts) {
-    if (typeof current !== 'object' || current === null) return false;
+    if (typeof current !== 'object' || current === null) {
+return false;
+}
     current = (current as Record<string, unknown>)[part];
   }
-  if (current === undefined || current === null) return false;
-  if (typeof current === 'boolean') return current;
-  if (typeof current === 'number') return current !== 0;
-  if (typeof current === 'string') return current.trim().length > 0;
+  if (current === undefined || current === null) {
+return false;
+}
+  if (typeof current === 'boolean') {
+return current;
+}
+  if (typeof current === 'number') {
+return current !== 0;
+}
+  if (typeof current === 'string') {
+return current.trim().length > 0;
+}
   return true;
 }
 
@@ -572,13 +814,17 @@ function sanitizeSkillCommandName(raw: string): string {
 
 function resolveUniqueCommandName(base: string, used: Set<string>): string {
   const normalizedBase = base.toLowerCase();
-  if (!used.has(normalizedBase)) return base;
+  if (!used.has(normalizedBase)) {
+return base;
+}
 
   for (let index = 2; index < 1000; index++) {
     const suffix = `_${index}`;
     const maxBaseLength = Math.max(1, SKILL_COMMAND_MAX_LENGTH - suffix.length);
     const candidate = `${base.slice(0, maxBaseLength)}${suffix}`;
-    if (!used.has(candidate.toLowerCase())) return candidate;
+    if (!used.has(candidate.toLowerCase())) {
+return candidate;
+}
   }
 
   return `${base.slice(0, Math.max(1, SKILL_COMMAND_MAX_LENGTH - 2))}_x`;

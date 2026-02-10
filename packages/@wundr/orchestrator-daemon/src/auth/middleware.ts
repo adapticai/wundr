@@ -17,17 +17,16 @@
  * decorates WebSocket instances with identity metadata.
  */
 
-import type { IncomingMessage } from 'node:http';
-import type * as http from 'node:http';
 
-import type { WebSocket } from 'ws';
-import { Server as WebSocketServer } from 'ws';
 
-import { Logger } from '../utils/logger';
 import { Authenticator } from './authenticator';
 import { RateLimiter } from './rate-limiter';
-import type { AuthConfig, ClientIdentity, AuthenticatedMessage } from './types';
 import { AuthConfigSchema, AuthenticatedMessageSchema } from './types';
+import { Logger } from '../utils/logger';
+
+import type { AuthConfig, ClientIdentity } from './types';
+import type http from 'node:http';
+import type { Server as WebSocketServer , WebSocket } from 'ws';
 
 // ---------------------------------------------------------------------------
 // Augmented WebSocket type
@@ -82,13 +81,13 @@ export class AuthMiddleware {
   install(
     httpServer: http.Server,
     wss: WebSocketServer,
-    onAuthenticated: (ws: AuthenticatedWebSocket, req: IncomingMessage) => void,
+    onAuthenticated: (ws: AuthenticatedWebSocket, req: http.IncomingMessage) => void,
   ): void {
     // Remove the default upgrade listener that `ws` installs so we can
     // intercept it.
     httpServer.removeAllListeners('upgrade');
 
-    httpServer.on('upgrade', (req: IncomingMessage, socket, head) => {
+    httpServer.on('upgrade', (req: http.IncomingMessage, socket, head) => {
       // --- Authenticate ---
       const authResult = this.authenticator.authenticateConnection(req);
 

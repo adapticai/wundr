@@ -13,6 +13,12 @@
  * - Abort/cancellation via AbortController
  */
 
+import type { StreamEvent, ContentBlockType } from './block-parser';
+import type {
+  ChatParams,
+  TokenUsage,
+  FinishReason,
+} from '../types/llm';
 import type Anthropic from '@anthropic-ai/sdk';
 import type { MessageStream } from '@anthropic-ai/sdk/lib/MessageStream';
 import type {
@@ -21,13 +27,7 @@ import type {
   ToolUseBlock,
 } from '@anthropic-ai/sdk/resources/messages';
 
-import type {
-  ChatParams,
-  TokenUsage,
-  FinishReason,
-} from '@wundr.io/ai-integration';
 
-import type { StreamEvent, ContentBlockType } from './block-parser';
 
 /**
  * Metadata tracked per content block during streaming.
@@ -69,9 +69,10 @@ function convertMessages(messages: ChatParams['messages']): {
   systemMessage?: string;
   messages: Anthropic.MessageParam[];
 } {
-  const systemMessages = messages.filter((m) => m.role === 'system');
+  type Msg = ChatParams['messages'][number];
+  const systemMessages = messages.filter((m: Msg) => m.role === 'system');
   const systemMessage =
-    systemMessages.map((m) => m.content).join('\n') || undefined;
+    systemMessages.map((m: Msg) => m.content).join('\n') || undefined;
 
   const anthropicMessages: Anthropic.MessageParam[] = [];
 
@@ -129,9 +130,11 @@ function convertMessages(messages: ChatParams['messages']): {
 function convertTools(
   tools?: ChatParams['tools'],
 ): Anthropic.Tool[] | undefined {
-  if (!tools || tools.length === 0) return undefined;
+  if (!tools || tools.length === 0) {
+return undefined;
+}
 
-  return tools.map((tool) => ({
+  return tools.map((tool: NonNullable<ChatParams['tools']>[number]) => ({
     name: tool.name,
     description: tool.description,
     input_schema: tool.inputSchema,
@@ -279,14 +282,40 @@ export async function* createAnthropicStream(
       error instanceof Error &&
       (error.name === 'AbortError' || abortController?.signal.aborted);
 
+    // Detect rate limit from Anthropic error types and HTTP status codes
     const isRateLimit =
-      error instanceof Error && error.message.includes('rate_limit');
+      error instanceof Error &&
+      (error.message.includes('rate_limit') ||
+        error.message.includes('429') ||
+        (error as any).status === 429 ||
+        (error as any).error?.type === 'rate_limit_error');
+
+    // Detect overloaded errors (Anthropic 529) -- retryable
+    const isOverloaded =
+      error instanceof Error &&
+      ((error as any).status === 529 ||
+        error.message.includes('overloaded'));
+
+    // Compute retry-after from error headers or use defaults
+    let retryAfterMs = 5000;
+    if (isRateLimit || isOverloaded) {
+      const headerRetry = (error as any).headers?.['retry-after'];
+      if (headerRetry) {
+        const parsed = Number(headerRetry);
+        retryAfterMs = Number.isNaN(parsed) ? 5000 : parsed * 1000;
+      }
+      if (isOverloaded) {
+        retryAfterMs = Math.max(retryAfterMs, 10000);
+      }
+    }
+
+    const recoverable = (isRateLimit || isOverloaded) && !isAbort;
 
     yield {
       type: 'error',
       error: error instanceof Error ? error : new Error(String(error)),
-      recoverable: isRateLimit,
-      ...(isRateLimit && { retryAfter: 5000 }),
+      recoverable,
+      ...(recoverable && { retryAfter: retryAfterMs }),
     };
 
     if (!isAbort) {
@@ -305,7 +334,7 @@ export async function* createAnthropicStream(
 function convertStreamEvent(
   event: MessageStreamEvent,
   activeBlocks: Map<number, ActiveBlock>,
-  currentMessageId: string,
+  _currentMessageId: string,
 ): StreamEvent[] {
   const events: StreamEvent[] = [];
 
@@ -348,7 +377,7 @@ function convertStreamEvent(
           toolId: toolBlock.id,
           blockIndex: index,
         });
-      } else if (block.type === 'thinking') {
+      } else if ((block.type as unknown) === 'thinking') {
         activeBlocks.set(index, {
           index,
           type: 'thinking',
@@ -375,7 +404,7 @@ function convertStreamEvent(
           text: delta.text,
           blockIndex: index,
         });
-      } else if (delta.type === 'thinking_delta') {
+      } else if ((delta.type as unknown) === 'thinking_delta') {
         events.push({
           type: 'thinking_delta',
           text: (delta as any).thinking,

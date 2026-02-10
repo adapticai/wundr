@@ -470,18 +470,28 @@ export class HealthChecker {
    * - No components = healthy (vacuously true)
    */
   private computeAggregateStatus(statuses: HealthStatus[]): HealthStatus {
-    if (statuses.length === 0) return 'healthy';
+    if (statuses.length === 0) {
+return 'healthy';
+}
 
     let hasUnhealthy = false;
     let hasDegraded = false;
 
     for (const status of statuses) {
-      if (status === 'unhealthy') hasUnhealthy = true;
-      if (status === 'degraded') hasDegraded = true;
+      if (status === 'unhealthy') {
+hasUnhealthy = true;
+}
+      if (status === 'degraded') {
+hasDegraded = true;
+}
     }
 
-    if (hasUnhealthy) return 'unhealthy';
-    if (hasDegraded) return 'degraded';
+    if (hasUnhealthy) {
+return 'unhealthy';
+}
+    if (hasDegraded) {
+return 'degraded';
+}
     return 'healthy';
   }
 

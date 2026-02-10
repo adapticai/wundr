@@ -2,8 +2,8 @@
  * Type definitions for Multi-Orchestrator Federation
  */
 
-import type { WebSocket } from 'ws';
 import type { Task } from '../types';
+import type { WebSocket } from 'ws';
 
 /**
  * Orchestrator capabilities for federation

@@ -13,8 +13,6 @@
 import { EventEmitter } from 'eventemitter3';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Logger } from '../utils/logger';
-
 import {
   CreateTaskInputSchema,
   UpdateTaskInputSchema,
@@ -27,6 +25,8 @@ import {
   TaskError,
   TaskErrorCode,
 } from './task-types';
+import { Logger } from '../utils/logger';
+
 
 import type {
   ITaskStore,
@@ -283,7 +283,9 @@ export class TaskManager extends EventEmitter<TaskEventMap> {
       const toRemove = new Set(parsed.data.removeBlocks);
       const before = blocks.length;
       blocks = blocks.filter((b) => !toRemove.has(b));
-      if (blocks.length !== before) depsChanged = true;
+      if (blocks.length !== before) {
+depsChanged = true;
+}
     }
     if (parsed.data.addBlockedBy?.length) {
       for (const blockerId of parsed.data.addBlockedBy) {
@@ -297,7 +299,9 @@ export class TaskManager extends EventEmitter<TaskEventMap> {
       const toRemove = new Set(parsed.data.removeBlockedBy);
       const before = blockedBy.length;
       blockedBy = blockedBy.filter((b) => !toRemove.has(b));
-      if (blockedBy.length !== before) depsChanged = true;
+      if (blockedBy.length !== before) {
+depsChanged = true;
+}
     }
 
     if (depsChanged) {
@@ -725,7 +729,9 @@ export class TaskManager extends EventEmitter<TaskEventMap> {
     const allTasks = await this.store.getAll();
 
     for (const task of allTasks) {
-      if (task.id === taskId) continue;
+      if (task.id === taskId) {
+continue;
+}
 
       let needsUpdate = false;
       let newBlocks = task.blocks;
@@ -763,7 +769,9 @@ export class TaskManager extends EventEmitter<TaskEventMap> {
 
     for (const blockedId of blockedIds) {
       const blocked = await this.store.get(blockedId);
-      if (!blocked) continue;
+      if (!blocked) {
+continue;
+}
 
       const newBlockedBy = blocked.blockedBy.filter((b) => b !== completedId);
       await this.store.update(blockedId, {
@@ -794,7 +802,9 @@ export class TaskManager extends EventEmitter<TaskEventMap> {
   private async checkAndUnblockTasks(taskIds: string[]): Promise<void> {
     for (const taskId of taskIds) {
       const task = await this.store.get(taskId);
-      if (!task || task.status === 'completed' || task.status === 'deleted') continue;
+      if (!task || task.status === 'completed' || task.status === 'deleted') {
+continue;
+}
 
       const activeBlockers = await this.getActiveBlockers(task);
       if (activeBlockers.length === 0 && task.blockedBy.length > 0) {
@@ -829,7 +839,9 @@ export class TaskManager extends EventEmitter<TaskEventMap> {
 
       visited.add(current);
       const task = await this.store.get(current);
-      if (!task) return false;
+      if (!task) {
+return false;
+}
 
       for (const downstream of task.blocks) {
         path.push(downstream);

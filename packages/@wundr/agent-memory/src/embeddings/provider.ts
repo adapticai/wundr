@@ -2,7 +2,8 @@
  * @wundr/agent-memory - Embedding Provider Interface
  *
  * Defines the uniform contract that all embedding providers must implement.
- * Includes shared types for configuration, results, rate limiting, and cost tracking.
+ * Includes shared types for configuration, results, rate limiting, cost tracking,
+ * progress callbacks, health monitoring, chunking, and benchmarking.
  */
 
 // ============================================================================
@@ -112,6 +113,31 @@ export interface CostTracker {
 }
 
 /**
+ * Progress callback for batch operations.
+ */
+export interface BatchProgressCallback {
+  (progress: BatchProgress): void;
+}
+
+/**
+ * Progress information emitted during batch embedding.
+ */
+export interface BatchProgress {
+  /** Provider processing this batch. */
+  providerId: EmbeddingProviderId;
+  /** Total texts in the entire batch. */
+  totalTexts: number;
+  /** Number of texts completed so far. */
+  completedTexts: number;
+  /** Fraction complete (0 to 1). */
+  fraction: number;
+  /** Number of cache hits (texts that did not require API calls). */
+  cacheHits: number;
+  /** Elapsed time in milliseconds since the batch started. */
+  elapsedMs: number;
+}
+
+/**
  * Full configuration for creating an embedding provider.
  */
 export interface EmbeddingProviderConfig {
@@ -141,6 +167,16 @@ export interface EmbeddingProviderConfig {
     /** Directory for caching downloaded models. */
     modelCacheDir?: string;
   };
+  /** In-memory LRU cache configuration. */
+  cache?: Partial<EmbeddingCacheConfig>;
+  /** Chunking strategy for long texts. */
+  chunking?: ChunkingConfig;
+  /** Progress callback for batch operations. */
+  onProgress?: BatchProgressCallback;
+  /** Failover chain (ordered list of providers to try on failure). */
+  failoverChain?: EmbeddingProviderId[];
+  /** Provider health monitoring configuration. */
+  healthMonitor?: Partial<HealthMonitorConfig>;
 }
 
 /**
@@ -157,6 +193,105 @@ export interface EmbeddingProviderResult {
   fallbackReason?: string;
   /** Cost tracker for the active provider. */
   costTracker: CostTracker;
+}
+
+// ============================================================================
+// Caching Configuration
+// ============================================================================
+
+/**
+ * Configuration for the in-memory embedding LRU cache.
+ */
+export interface EmbeddingCacheConfig {
+  /** Whether the in-memory cache is enabled. */
+  enabled: boolean;
+  /** Maximum number of entries before LRU eviction. */
+  maxEntries: number;
+  /** TTL in milliseconds per cache entry. 0 = no TTL. */
+  ttlMs: number;
+}
+
+// ============================================================================
+// Chunking Configuration
+// ============================================================================
+
+/**
+ * Strategy for splitting long text before embedding.
+ */
+export type ChunkingStrategy = 'none' | 'sliding-window' | 'sentence';
+
+/**
+ * Configuration for text chunking before embedding.
+ */
+export interface ChunkingConfig {
+  /** Which strategy to use. */
+  strategy: ChunkingStrategy;
+  /** Target chunk size in tokens (for sliding-window). */
+  chunkSize?: number;
+  /** Overlap between consecutive chunks in tokens (for sliding-window). */
+  overlap?: number;
+  /** Maximum sentences per chunk (for sentence strategy). */
+  maxSentences?: number;
+}
+
+// ============================================================================
+// Health Monitoring Configuration
+// ============================================================================
+
+/**
+ * Configuration for provider health monitoring.
+ */
+export interface HealthMonitorConfig {
+  /** Whether health monitoring is enabled. */
+  enabled: boolean;
+  /** Window size in milliseconds for computing health metrics. */
+  windowMs: number;
+  /** Error rate threshold (0 to 1) that marks a provider unhealthy. */
+  unhealthyThreshold: number;
+  /** Minimum requests in window before health is evaluated. */
+  minRequestsForEvaluation: number;
+  /** Cooldown in ms before an unhealthy provider is retried. */
+  cooldownMs: number;
+}
+
+/**
+ * A snapshot of a provider's health.
+ */
+export interface ProviderHealthSnapshot {
+  providerId: EmbeddingProviderId;
+  healthy: boolean;
+  totalRequests: number;
+  failedRequests: number;
+  errorRate: number;
+  avgLatencyMs: number;
+  lastErrorMessage?: string;
+  lastErrorAt?: number;
+  cooldownUntil?: number;
+}
+
+// ============================================================================
+// Benchmarking Types
+// ============================================================================
+
+/**
+ * Result of benchmarking a single provider.
+ */
+export interface BenchmarkResult {
+  providerId: EmbeddingProviderId;
+  model: string;
+  dimensions: number;
+  /** Average latency per single text embed in milliseconds. */
+  avgLatencyMs: number;
+  /** Average latency per batch embed call in milliseconds. */
+  avgBatchLatencyMs: number;
+  /** Texts per second throughput. */
+  throughput: number;
+  /** Estimated cost per 1M tokens in USD. */
+  costPerMillionTokens: number;
+  /** Whether the provider passed all validation checks. */
+  valid: boolean;
+  /** Human-readable notes. */
+  notes: string[];
 }
 
 // ============================================================================
@@ -204,6 +339,36 @@ export const PROVIDER_RATE_LIMITS: Record<EmbeddingProviderId, RateLimitConfig> 
   },
 };
 
+/**
+ * Default in-memory cache configuration.
+ */
+export const DEFAULT_EMBEDDING_CACHE_CONFIG: EmbeddingCacheConfig = {
+  enabled: true,
+  maxEntries: 5000,
+  ttlMs: 0,
+};
+
+/**
+ * Default health monitor configuration.
+ */
+export const DEFAULT_HEALTH_MONITOR_CONFIG: HealthMonitorConfig = {
+  enabled: true,
+  windowMs: 60_000,
+  unhealthyThreshold: 0.5,
+  minRequestsForEvaluation: 3,
+  cooldownMs: 30_000,
+};
+
+/**
+ * Default chunking configuration.
+ */
+export const DEFAULT_CHUNKING_CONFIG: ChunkingConfig = {
+  strategy: 'none',
+  chunkSize: 512,
+  overlap: 64,
+  maxSentences: 5,
+};
+
 // ============================================================================
 // Shared Utilities
 // ============================================================================
@@ -221,6 +386,32 @@ export function normalizeEmbedding(vec: number[]): number[] {
     return sanitized;
   }
   return sanitized.map((v) => v / magnitude);
+}
+
+/**
+ * Validate that an embedding vector has the expected dimensionality.
+ * Throws if the dimensions do not match.
+ */
+export function validateDimensions(vec: number[], expected: number, label?: string): void {
+  if (vec.length !== expected) {
+    const prefix = label ? `[${label}] ` : '';
+    throw new Error(
+      `${prefix}Embedding dimension mismatch: expected ${expected}, got ${vec.length}`,
+    );
+  }
+}
+
+/**
+ * Compute the cosine similarity between two L2-normalized vectors.
+ * Assumes both vectors are already normalized (i.e. this is a dot product).
+ */
+export function cosineSimilarity(a: number[], b: number[]): number {
+  const len = Math.min(a.length, b.length);
+  let dot = 0;
+  for (let i = 0; i < len; i++) {
+    dot += (a[i] ?? 0) * (b[i] ?? 0);
+  }
+  return dot;
 }
 
 /**
@@ -321,4 +512,18 @@ export function backoffDelay(attempt: number, baseMs: number, maxMs: number): nu
   const exponential = baseMs * Math.pow(2, attempt);
   const jitter = 1 + Math.random() * 0.2;
   return Math.min(maxMs, Math.round(exponential * jitter));
+}
+
+/**
+ * Compute a hash key for cache lookups given a text, provider, and model.
+ */
+export function computeCacheKey(text: string, providerId: string, model: string): string {
+  // Simple FNV-1a-like hash for speed
+  let hash = 0x811c9dc5;
+  const combined = `${providerId}:${model}:${text}`;
+  for (let i = 0; i < combined.length; i++) {
+    hash ^= combined.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(36);
 }

@@ -4,8 +4,10 @@
  */
 
 import { EventEmitter } from 'events';
-import * as WebSocket from 'ws';
-import {
+
+import WebSocket from 'ws';
+
+import type {
   FederationMessage,
   DelegationRequest,
   DelegationResponse,

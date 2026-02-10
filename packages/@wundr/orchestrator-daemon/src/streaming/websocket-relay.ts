@@ -11,17 +11,15 @@
  * - Graceful handling of disconnected clients
  */
 
-import type { WebSocket } from 'ws';
 
 import { Logger } from '../utils/logger';
 
-import type { OrchestratorWebSocketServer } from '../core/websocket-server';
-import type { StreamChunk, ToolCallInfo } from '../types';
 import type {
   StreamEvent,
   TextDeltaEvent,
   ThinkingDeltaEvent,
 } from './block-parser';
+import type { OrchestratorWebSocketServer } from '../core/websocket-server';
 
 /**
  * Configuration for the WebSocket relay.
@@ -229,7 +227,7 @@ export class WebSocketStreamRelay {
         });
         break;
 
-      case 'error':
+      case 'error': {
         this.flushTextBuffer(sessionId, state);
         this.flushThinkingBuffer(sessionId, state);
 
@@ -252,6 +250,7 @@ export class WebSocketStreamRelay {
           );
         }
         break;
+      }
 
       case 'stream_end':
         this.flushTextBuffer(sessionId, state);
@@ -326,7 +325,9 @@ export class WebSocketStreamRelay {
   }
 
   private flushTextBuffer(sessionId: string, state: SessionRelayState): void {
-    if (state.textBuffer.length === 0) return;
+    if (state.textBuffer.length === 0) {
+return;
+}
 
     const text = state.textBuffer;
     state.textBuffer = '';
@@ -347,7 +348,9 @@ export class WebSocketStreamRelay {
     sessionId: string,
     state: SessionRelayState,
   ): void {
-    if (state.thinkingBuffer.length === 0) return;
+    if (state.thinkingBuffer.length === 0) {
+return;
+}
 
     const text = state.thinkingBuffer;
     state.thinkingBuffer = '';

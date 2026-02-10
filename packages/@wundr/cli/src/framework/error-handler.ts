@@ -170,6 +170,85 @@ export class CliError extends Error {
 }
 
 // ---------------------------------------------------------------------------
+// Error Classification
+// ---------------------------------------------------------------------------
+
+/**
+ * High-level error classification for routing error handling behavior.
+ */
+export type ErrorClassification = 'user' | 'system' | 'network' | 'config' | 'plugin' | 'unknown';
+
+/**
+ * Classified error with category and recommended action.
+ */
+export interface ClassifiedError {
+  classification: ErrorClassification;
+  retryable: boolean;
+  userFacing: boolean;
+  exitCode: number;
+}
+
+/**
+ * Classify an error code into a high-level category.
+ *
+ * User errors: bad input, missing args, invalid config values
+ * System errors: file not found, permission denied, disk full
+ * Network errors: connection refused, timeout, DNS failure
+ * Config errors: missing config, validation failure
+ * Plugin errors: plugin not found, incompatible, activation failure
+ */
+export function classifyError(code: ErrorCode): ClassifiedError {
+  if (code.includes('_CLI_')) {
+    return { classification: 'user', retryable: false, userFacing: true, exitCode: 1 };
+  }
+  if (code.includes('_CONFIG_')) {
+    return { classification: 'config', retryable: false, userFacing: true, exitCode: 1 };
+  }
+  if (code.includes('_PLUGIN_')) {
+    return { classification: 'plugin', retryable: true, userFacing: true, exitCode: 1 };
+  }
+  if (code === 'WUNDR_SYS_003' || code.includes('ECONNREFUSED') || code.includes('ETIMEDOUT') || code.includes('ENOTFOUND')) {
+    return { classification: 'network', retryable: true, userFacing: true, exitCode: 2 };
+  }
+  if (code.startsWith('WUNDR_SYS_')) {
+    return { classification: 'system', retryable: false, userFacing: true, exitCode: 3 };
+  }
+  if (code.includes('_DAEMON_003')) {
+    return { classification: 'system', retryable: false, userFacing: true, exitCode: 3 };
+  }
+  return { classification: 'unknown', retryable: false, userFacing: true, exitCode: 1 };
+}
+
+/**
+ * Classify any Error (including non-CliError) into a high-level category.
+ */
+export function classifyAnyError(error: Error): ClassifiedError {
+  if (error instanceof CliError) {
+    return classifyError(error.code);
+  }
+
+  // Check for system error codes
+  const systemError = error as Error & { code?: string };
+  if (systemError.code) {
+    const mapping = SYSTEM_ERROR_MAP[systemError.code];
+    if (mapping) {
+      return classifyError(mapping.code);
+    }
+  }
+
+  // Check message heuristics
+  const msg = error.message.toLowerCase();
+  if (msg.includes('network') || msg.includes('timeout') || msg.includes('connection')) {
+    return { classification: 'network', retryable: true, userFacing: true, exitCode: 2 };
+  }
+  if (msg.includes('permission') || msg.includes('access denied')) {
+    return { classification: 'system', retryable: false, userFacing: true, exitCode: 3 };
+  }
+
+  return { classification: 'unknown', retryable: false, userFacing: true, exitCode: 1 };
+}
+
+// ---------------------------------------------------------------------------
 // Error Recovery Handler
 // ---------------------------------------------------------------------------
 

@@ -178,7 +178,9 @@ export class WsTestClient {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         const idx = this.messageWaiters.findIndex((w) => w.timeout === timer);
-        if (idx !== -1) this.messageWaiters.splice(idx, 1);
+        if (idx !== -1) {
+this.messageWaiters.splice(idx, 1);
+}
         reject(
           new Error(
             `Timeout waiting for message${type ? ` of type "${type}"` : ''} after ${ms}ms`,

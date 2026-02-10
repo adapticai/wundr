@@ -13,7 +13,9 @@
  */
 
 import * as path from 'path';
+
 import { minimatch } from 'minimatch';
+
 import type { PluginManifest, PluginPermissions } from './plugin-manifest';
 
 // ---------------------------------------------------------------------------
@@ -75,8 +77,12 @@ function compileToolPattern(pattern: string): CompiledPattern {
 }
 
 function matchesToolPattern(name: string, pattern: CompiledPattern): boolean {
-  if (pattern.kind === 'all') return true;
-  if (pattern.kind === 'exact') return name === pattern.value;
+  if (pattern.kind === 'all') {
+return true;
+}
+  if (pattern.kind === 'exact') {
+return name === pattern.value;
+}
   return minimatch(name, pattern.value);
 }
 
@@ -301,10 +307,16 @@ export class PermissionGuard {
 
     // Check host
     const hostAllowed = allowedHosts.some(allowed => {
-      if (allowed === '*') return true;
-      if (allowed === normalizedHost) return true;
+      if (allowed === '*') {
+return true;
+}
+      if (allowed === normalizedHost) {
+return true;
+}
       // Wildcard subdomain: *.example.com matches foo.example.com
-      if (allowed.startsWith('*.') && normalizedHost.endsWith(allowed.slice(1))) return true;
+      if (allowed.startsWith('*.') && normalizedHost.endsWith(allowed.slice(1))) {
+return true;
+}
       return false;
     });
 
@@ -352,9 +364,15 @@ export class PermissionGuard {
     }
 
     const isAllowed = allowed.some(a => {
-      if (a === '*') return true;
-      if (a === basename) return true;
-      if (a === executable) return true;
+      if (a === '*') {
+return true;
+}
+      if (a === basename) {
+return true;
+}
+      if (a === executable) {
+return true;
+}
       return false;
     });
 
@@ -385,10 +403,16 @@ export class PermissionGuard {
     }
 
     const isAllowed = allowed.some(a => {
-      if (a === '*') return true;
-      if (a === varName) return true;
+      if (a === '*') {
+return true;
+}
+      if (a === varName) {
+return true;
+}
       // Prefix match: PLUGIN_* matches PLUGIN_KEY, PLUGIN_SECRET
-      if (a.endsWith('*') && varName.startsWith(a.slice(0, -1))) return true;
+      if (a.endsWith('*') && varName.startsWith(a.slice(0, -1))) {
+return true;
+}
       return false;
     });
 
@@ -415,9 +439,15 @@ export class PermissionGuard {
     }
 
     const isAllowed = allowed.some(a => {
-      if (a === '*') return true;
-      if (a === varName) return true;
-      if (a.endsWith('*') && varName.startsWith(a.slice(0, -1))) return true;
+      if (a === '*') {
+return true;
+}
+      if (a === varName) {
+return true;
+}
+      if (a.endsWith('*') && varName.startsWith(a.slice(0, -1))) {
+return true;
+}
       return false;
     });
 
@@ -553,14 +583,20 @@ export class PermissionGuard {
     const byDomain: Record<string, { allowed: number; denied: number }> = {};
 
     for (const entry of this.auditLog) {
-      if (entry.decision === 'allow') allowed++;
-      else denied++;
+      if (entry.decision === 'allow') {
+allowed++;
+} else {
+denied++;
+}
 
       if (!byDomain[entry.domain]) {
         byDomain[entry.domain] = { allowed: 0, denied: 0 };
       }
-      if (entry.decision === 'allow') byDomain[entry.domain]!.allowed++;
-      else byDomain[entry.domain]!.denied++;
+      if (entry.decision === 'allow') {
+byDomain[entry.domain]!.allowed++;
+} else {
+byDomain[entry.domain]!.denied++;
+}
     }
 
     return { total: this.auditLog.length, allowed, denied, byDomain };
@@ -634,6 +670,7 @@ export function buildSandboxedFsProxy(guard: PermissionGuard): Record<string, (.
     },
     readFileSync: (filePath: string, ...rest: any[]) => {
       guard.requireFilesystemRead(filePath);
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const realFs = require('fs');
       return realFs.readFileSync(filePath, ...rest);
     },
@@ -644,6 +681,7 @@ export function buildSandboxedFsProxy(guard: PermissionGuard): Record<string, (.
     },
     writeFileSync: (filePath: string, data: any, ...rest: any[]) => {
       guard.requireFilesystemWrite(filePath);
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const realFs = require('fs');
       return realFs.writeFileSync(filePath, data, ...rest);
     },

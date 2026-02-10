@@ -5,6 +5,11 @@
 /**
  * Token usage record
  */
+/**
+ * Usage reporter configuration
+ */
+import { z } from 'zod';
+
 export interface TokenUsage {
   orchestratorId: string;
   sessionId: string;
@@ -361,17 +366,12 @@ export interface BudgetStatusExtended {
   resetAt: Date;
 }
 
-/**
- * Usage reporter configuration
- */
-import { z } from 'zod';
-
 export const UsageReporterConfigSchema = z.object({
   enabled: z.boolean().default(true),
   persistToDatabase: z.boolean().default(true),
   retentionDays: z.number().int().positive().default(90),
   aggregationIntervals: z.array(
-    z.enum(['hourly', 'daily', 'weekly', 'monthly'])
+    z.enum(['hourly', 'daily', 'weekly', 'monthly']),
   ).default(['hourly', 'daily', 'monthly']),
   anomalyDetection: z.object({
     enabled: z.boolean().default(true),

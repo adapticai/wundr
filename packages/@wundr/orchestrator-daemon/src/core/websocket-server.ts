@@ -7,11 +7,11 @@ import * as http from 'http';
 import { EventEmitter } from 'eventemitter3';
 import { Server as WebSocketServer, WebSocket } from 'ws';
 
-import { Logger } from '../utils/logger';
 import { AuthMiddleware } from '../auth/middleware';
+import { Logger } from '../utils/logger';
+
 import type { AuthenticatedWebSocket } from '../auth/middleware';
 import type { AuthConfig, ClientIdentity } from '../auth/types';
-
 import type { WSMessage, WSResponse, StreamChunk, ToolCallInfo } from '../types';
 
 export class OrchestratorWebSocketServer extends EventEmitter {
@@ -374,7 +374,7 @@ export class OrchestratorWebSocketServer extends EventEmitter {
       toolInput?: Record<string, unknown>;
       result?: unknown;
       error?: string;
-    }
+    },
   ): void {
     const toolCallInfo: ToolCallInfo = {
       sessionId,
@@ -454,7 +454,9 @@ export class OrchestratorWebSocketServer extends EventEmitter {
    * Returns undefined if auth is not enabled or the socket has no identity.
    */
   getClientIdentity(ws: WebSocket): ClientIdentity | undefined {
-    if (!this.authMiddleware) return undefined;
+    if (!this.authMiddleware) {
+return undefined;
+}
     return this.authMiddleware.getIdentity(ws as AuthenticatedWebSocket);
   }
 
@@ -463,5 +465,24 @@ export class OrchestratorWebSocketServer extends EventEmitter {
    */
   isAuthEnabled(): boolean {
     return this.authMiddleware !== null;
+  }
+
+  /**
+   * Get all WebSocket clients subscribed to a session.
+   * Used by the streaming relay for per-socket backpressure checks.
+   */
+  getSessionClients(sessionId: string): Set<WebSocket> | undefined {
+    return this.sessionClients.get(sessionId);
+  }
+
+  /**
+   * Subscribe a client to a session from external code (e.g. streaming relay).
+   * This is the public counterpart of the private subscribeToSession method.
+   */
+  subscribeClientToSession(ws: WebSocket, sessionId: string): void {
+    if (!this.sessionClients.has(sessionId)) {
+      this.sessionClients.set(sessionId, new Set());
+    }
+    this.sessionClients.get(sessionId)!.add(ws);
   }
 }

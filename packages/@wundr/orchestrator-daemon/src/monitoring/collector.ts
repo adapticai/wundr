@@ -5,9 +5,11 @@
  * timing utilities, and aggregation capabilities.
  */
 
-import { daemonMetrics, MetricsRegistry } from './metrics';
-import type { DaemonMetrics } from './types';
+import { daemonMetrics } from './metrics';
 import { Logger } from '../utils/logger';
+
+import type { MetricsRegistry } from './metrics';
+import type { DaemonMetrics } from './types';
 
 /**
  * Configuration for metrics collector
@@ -73,7 +75,7 @@ export class MetricsCollector {
 
   constructor(
     metricsRegistry: MetricsRegistry,
-    config: CollectorConfig = {}
+    config: CollectorConfig = {},
   ) {
     this.metrics = daemonMetrics;
     this.metricsRegistry = metricsRegistry;
@@ -115,7 +117,7 @@ export class MetricsCollector {
    */
   recordSessionEnd(
     orchestratorId: string,
-    sessionType: 'claude-code' | 'claude-flow'
+    sessionType: 'claude-code' | 'claude-flow',
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
@@ -139,7 +141,7 @@ export class MetricsCollector {
   recordTokenUsage(
     orchestratorId: string,
     model: string,
-    tokens: number
+    tokens: number,
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
@@ -186,7 +188,7 @@ export class MetricsCollector {
   recordToolInvocation(
     orchestratorId: string,
     toolName: string,
-    status: 'success' | 'error' | 'timeout'
+    status: 'success' | 'error' | 'timeout',
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
@@ -199,7 +201,7 @@ export class MetricsCollector {
       this.metrics.toolInvocations.inc({
         orchestrator_id: orchestratorId,
         tool_name: toolName,
-        status
+        status,
       });
     }
 
@@ -214,7 +216,7 @@ export class MetricsCollector {
   recordDelegation(
     fromOrchestrator: string,
     toOrchestrator: string,
-    status: 'success' | 'error' | 'rejected'
+    status: 'success' | 'error' | 'rejected',
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
@@ -227,7 +229,7 @@ export class MetricsCollector {
       this.metrics.federationDelegations.inc({
         from_orchestrator: fromOrchestrator,
         to_orchestrator: toOrchestrator,
-        status
+        status,
       });
     }
 
@@ -241,7 +243,7 @@ export class MetricsCollector {
    */
   recordError(
     orchestratorId: string,
-    errorType: string
+    errorType: string,
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
@@ -253,7 +255,7 @@ export class MetricsCollector {
     } else {
       this.metrics.errorCount.inc({
         orchestrator_id: orchestratorId,
-        error_type: errorType
+        error_type: errorType,
       });
     }
 
@@ -289,7 +291,7 @@ export class MetricsCollector {
   updateBudgetUtilization(
     orchestratorId: string,
     period: 'daily' | 'weekly' | 'monthly',
-    percent: number
+    percent: number,
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
@@ -302,7 +304,7 @@ export class MetricsCollector {
     } else {
       this.metrics.budgetUtilization.set(
         { orchestrator_id: orchestratorId, period },
-        percent
+        percent,
       );
     }
 
@@ -354,7 +356,7 @@ export class MetricsCollector {
    */
   async withMetrics<T>(
     fn: () => Promise<T>,
-    labels: { orchestrator_id: string }
+    labels: { orchestrator_id: string },
   ): Promise<T> {
     const startTime = Date.now();
 
@@ -386,7 +388,7 @@ export class MetricsCollector {
    */
   async getAggregatedStats(
     orchestratorId: string,
-    timeRange?: { start: Date; end: Date }
+    timeRange?: { start: Date; end: Date },
   ): Promise<AggregatedStats> {
     const end = timeRange?.end || new Date();
     const start = timeRange?.start || new Date(end.getTime() - 3600000); // Default: last hour
@@ -594,7 +596,7 @@ export class MetricsCollector {
  */
 export function createMetricsCollector(
   metricsRegistry: MetricsRegistry,
-  config?: CollectorConfig
+  config?: CollectorConfig,
 ): MetricsCollector {
   return new MetricsCollector(metricsRegistry, config);
 }

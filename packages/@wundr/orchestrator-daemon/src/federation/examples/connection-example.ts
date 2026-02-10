@@ -4,7 +4,9 @@
  */
 
 import * as WebSocket from 'ws';
+
 import { OrchestratorConnection } from '../connection';
+
 import type { DelegationRequest, FederationMessage, OrchestratorCapability } from '../types';
 
 /**

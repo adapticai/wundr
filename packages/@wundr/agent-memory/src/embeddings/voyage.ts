@@ -6,6 +6,9 @@
  *
  * Voyage distinguishes between query and document embeddings via the `input_type`
  * parameter, which improves retrieval quality.
+ *
+ * Enhanced with lazy initialization -- the provider validates its configuration
+ * eagerly but defers no resources until the first embed call.
  */
 
 import {
@@ -68,6 +71,8 @@ const MAX_BATCH_SIZE = 128;
  *
  * Uses the `/v1/embeddings` endpoint with `input_type` differentiation
  * for queries vs documents, which improves retrieval accuracy.
+ *
+ * Created synchronously; first API call is deferred until embedText/embedBatch.
  */
 export class VoyageEmbeddingProvider implements EmbeddingProvider {
   readonly id = 'voyage' as const;
@@ -80,6 +85,8 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
   private readonly headers: Record<string, string>;
   private readonly rateLimiter: RateLimiter;
   readonly costTracker: CostTracker;
+
+  private initialized = false;
 
   constructor(config: {
     model: string;
@@ -129,6 +136,7 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
 
   async dispose(): Promise<void> {
     // No persistent resources to clean up.
+    this.initialized = false;
   }
 
   // ==========================================================================
@@ -142,8 +150,9 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
     const totalTokens = input.reduce((sum, text) => sum + estimateTokens(text), 0);
     const maxRetries = PROVIDER_RATE_LIMITS.voyage.maxRetries;
     let attempt = 0;
+    let retrying = true;
 
-    while (true) {
+    while (retrying) {
       const delay = this.rateLimiter.check(totalTokens);
       if (delay > 0) {
         await sleep(delay);
@@ -198,6 +207,9 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
         // Sort by index to ensure correct order
         const sorted = [...data].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
 
+        this.initialized = true;
+        retrying = false;
+
         return sorted.map((entry, idx) => ({
           embedding: normalizeEmbedding(entry.embedding ?? []),
           tokenCount: estimateTokens(input[idx] ?? ''),
@@ -216,6 +228,9 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
         throw err;
       }
     }
+
+    // Unreachable, but satisfies TypeScript return type
+    throw new Error('Voyage embeddings: unexpected loop exit');
   }
 }
 

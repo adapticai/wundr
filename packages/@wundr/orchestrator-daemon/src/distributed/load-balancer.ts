@@ -3,6 +3,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { Logger } from '../utils/logger';
 
 /**
@@ -527,7 +528,7 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
       );
       if (exactMatch) {
         score += 50;
-        reasons.push(`exact_match: yes`);
+        reasons.push('exact_match: yes');
       }
 
       // Penalize nodes with many extra capabilities (more specialized = better)

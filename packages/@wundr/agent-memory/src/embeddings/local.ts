@@ -13,6 +13,9 @@
  * The local provider has no rate limiting, no cost tracking, and no network
  * dependency. It trades latency (slower than remote APIs on CPU) for privacy
  * and zero API cost.
+ *
+ * Both backends use lazy initialization -- the model is loaded on the first
+ * embed call, not at provider creation time. This keeps process startup fast.
  */
 
 import {
@@ -85,7 +88,8 @@ function createTransformersBackend(modelName: string): LocalBackend {
 
     try {
       // Dynamic import to avoid bundling transformers.js when not used
-      // @ts-ignore -- optional peer dependency
+      // @ts-expect-error -- optional peer dependency
+      // eslint-disable-next-line import/no-unresolved
       const { pipeline: createPipeline } = await import('@huggingface/transformers');
       pipeline = (await createPipeline('feature-extraction', modelName, {
         quantized: true,
@@ -129,8 +133,8 @@ function createTransformersBackend(modelName: string): LocalBackend {
  */
 function createLlamaCppBackend(modelPath: string, modelCacheDir?: string): LocalBackend {
   let context: { getEmbeddingFor: (text: string) => Promise<{ vector: Float32Array }> } | null = null;
-  let model: { close?: () => void } | null = null;
-  let llamaInstance: { close?: () => void } | null = null;
+  let _model: { close?: () => void } | null = null;
+  let _llamaInstance: { close?: () => void } | null = null;
   let resolvedDimensions = DEFAULT_DIMENSIONS;
 
   const ensureContext = async () => {
@@ -139,13 +143,14 @@ function createLlamaCppBackend(modelPath: string, modelCacheDir?: string): Local
     }
 
     try {
-      // @ts-ignore -- optional peer dependency
+      // @ts-expect-error -- optional peer dependency
+      // eslint-disable-next-line import/no-unresolved
       const { getLlama, resolveModelFile, LlamaLogLevel } = await import('node-llama-cpp');
       const llama = await getLlama({ logLevel: LlamaLogLevel.error });
-      llamaInstance = llama as unknown as { close?: () => void };
+      _llamaInstance = llama as unknown as { close?: () => void };
       const resolved = await resolveModelFile(modelPath, modelCacheDir || undefined);
       const loadedModel = await llama.loadModel({ modelPath: resolved });
-      model = loadedModel as unknown as { close?: () => void };
+      _model = loadedModel as unknown as { close?: () => void };
       context = await loadedModel.createEmbeddingContext();
       return context;
     } catch (err) {
@@ -172,8 +177,8 @@ function createLlamaCppBackend(modelPath: string, modelCacheDir?: string): Local
     },
     async dispose(): Promise<void> {
       context = null;
-      model = null;
-      llamaInstance = null;
+      _model = null;
+      _llamaInstance = null;
     },
   };
 }
@@ -191,6 +196,8 @@ function createLlamaCppBackend(modelPath: string, modelCacheDir?: string): Local
  *
  * Since everything runs locally, there is no rate limiting, no cost,
  * and no API key required.
+ *
+ * The underlying model is lazy-loaded on first embed call.
  */
 export class LocalEmbeddingProvider implements EmbeddingProvider {
   readonly id = 'local' as const;
@@ -266,6 +273,8 @@ function isGgufModel(modelPath: string): boolean {
  * Automatically selects the appropriate backend based on the model path:
  * - GGUF models -> node-llama-cpp
  * - All others -> transformers.js (ONNX)
+ *
+ * The model itself is not loaded until the first embed call (lazy initialization).
  */
 export function createLocalProvider(
   config: EmbeddingProviderConfig,

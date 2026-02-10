@@ -10,13 +10,13 @@
  * @packageDocumentation
  */
 
+
 import type {
   ChannelId,
   ChannelLogger,
   ChatType,
   NormalizedMessage,
 } from './types.js';
-import { ChannelRegistry } from './registry.js';
 
 // ---------------------------------------------------------------------------
 // Route Types

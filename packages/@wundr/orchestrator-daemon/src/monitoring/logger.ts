@@ -146,7 +146,9 @@ function formatJson(entry: LogEntry): string {
 // ---------------------------------------------------------------------------
 
 function serializeError(err: unknown): LogEntry['error'] | undefined {
-  if (!err) return undefined;
+  if (!err) {
+return undefined;
+}
 
   if (err instanceof Error) {
     return {
@@ -296,7 +298,9 @@ export class StructuredLogger {
   }
 
   private log(level: LogLevel, message: string, args: unknown[]): void {
-    if (LOG_LEVEL_VALUES[level] < this.level) return;
+    if (LOG_LEVEL_VALUES[level] < this.level) {
+return;
+}
 
     // Separate error objects from metadata objects in the args list.
     let errorObj: LogEntry['error'] | undefined;
@@ -311,6 +315,7 @@ export class StructuredLogger {
         if ('duration' in obj && typeof obj['duration'] === 'number') {
           duration = obj['duration'] as number;
           // Copy remaining keys to metadata
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { duration: _d, ...rest } = obj;
           metadata = metadata ? { ...metadata, ...rest } : (Object.keys(rest).length > 0 ? rest : undefined);
         } else {
@@ -327,16 +332,34 @@ export class StructuredLogger {
     };
 
     // Attach context fields
-    if (this.context.traceId) entry.traceId = this.context.traceId;
-    if (this.context.spanId) entry.spanId = this.context.spanId;
-    if (this.context.parentSpanId) entry.parentSpanId = this.context.parentSpanId;
-    if (this.context.sessionId) entry.sessionId = this.context.sessionId as string;
-    if (this.context.orchestratorId) entry.orchestratorId = this.context.orchestratorId as string;
-    if (this.context.correlationId) entry.correlationId = this.context.correlationId as string;
+    if (this.context.traceId) {
+entry.traceId = this.context.traceId;
+}
+    if (this.context.spanId) {
+entry.spanId = this.context.spanId;
+}
+    if (this.context.parentSpanId) {
+entry.parentSpanId = this.context.parentSpanId;
+}
+    if (this.context.sessionId) {
+entry.sessionId = this.context.sessionId as string;
+}
+    if (this.context.orchestratorId) {
+entry.orchestratorId = this.context.orchestratorId as string;
+}
+    if (this.context.correlationId) {
+entry.correlationId = this.context.correlationId as string;
+}
 
-    if (duration !== undefined) entry.duration = duration;
-    if (errorObj) entry.error = errorObj;
-    if (metadata && Object.keys(metadata).length > 0) entry.metadata = metadata;
+    if (duration !== undefined) {
+entry.duration = duration;
+}
+    if (errorObj) {
+entry.error = errorObj;
+}
+    if (metadata && Object.keys(metadata).length > 0) {
+entry.metadata = metadata;
+}
 
     const raw = this.format === 'json' ? formatJson(entry) : formatText(entry);
     this.writer.write(entry, raw);
@@ -382,6 +405,127 @@ export class InMemoryLogWriter implements LogWriter {
 }
 
 // ---------------------------------------------------------------------------
+// Global Log Level Registry (dynamic adjustment)
+// ---------------------------------------------------------------------------
+
+/**
+ * Global log level registry that allows runtime adjustment of log levels
+ * for all loggers created through the registry. Useful for temporarily
+ * increasing verbosity during incident response.
+ *
+ * @example
+ * ```ts
+ * const registry = LogLevelRegistry.getInstance();
+ *
+ * // Set all loggers to debug
+ * registry.setGlobalLevel('debug');
+ *
+ * // Set a specific component to debug
+ * registry.setComponentLevel('SessionExecutor', 'debug');
+ *
+ * // Reset to default
+ * registry.resetAll();
+ * ```
+ */
+export class LogLevelRegistry {
+  private static instance: LogLevelRegistry | null = null;
+
+  private globalLevel: LogLevel | null = null;
+  private componentLevels: Map<string, LogLevel> = new Map();
+  private listeners: Set<(component: string, level: LogLevel) => void> = new Set();
+
+  private constructor() {}
+
+  static getInstance(): LogLevelRegistry {
+    if (!LogLevelRegistry.instance) {
+      LogLevelRegistry.instance = new LogLevelRegistry();
+    }
+    return LogLevelRegistry.instance;
+  }
+
+  /**
+   * Reset the singleton instance (for testing).
+   */
+  static resetInstance(): void {
+    if (LogLevelRegistry.instance) {
+      LogLevelRegistry.instance.listeners.clear();
+      LogLevelRegistry.instance.componentLevels.clear();
+      LogLevelRegistry.instance.globalLevel = null;
+    }
+    LogLevelRegistry.instance = null;
+  }
+
+  /**
+   * Set the log level for all loggers.
+   */
+  setGlobalLevel(level: LogLevel): void {
+    this.globalLevel = level;
+    this.notifyListeners('*', level);
+  }
+
+  /**
+   * Set the log level for a specific component.
+   */
+  setComponentLevel(component: string, level: LogLevel): void {
+    this.componentLevels.set(component, level);
+    this.notifyListeners(component, level);
+  }
+
+  /**
+   * Get the effective log level for a component.
+   * Priority: component-specific > global > null (use logger default).
+   */
+  getEffectiveLevel(component: string): LogLevel | null {
+    return this.componentLevels.get(component) ?? this.globalLevel ?? null;
+  }
+
+  /**
+   * Clear all overrides.
+   */
+  resetAll(): void {
+    this.globalLevel = null;
+    this.componentLevels.clear();
+  }
+
+  /**
+   * Remove the override for a specific component.
+   */
+  resetComponent(component: string): void {
+    this.componentLevels.delete(component);
+  }
+
+  /**
+   * Subscribe to level changes. Returns an unsubscribe function.
+   */
+  onLevelChange(
+    listener: (component: string, level: LogLevel) => void,
+  ): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  /**
+   * Get a snapshot of all current overrides for debugging.
+   */
+  getSnapshot(): { globalLevel: LogLevel | null; componentLevels: Record<string, LogLevel> } {
+    return {
+      globalLevel: this.globalLevel,
+      componentLevels: Object.fromEntries(this.componentLevels),
+    };
+  }
+
+  private notifyListeners(component: string, level: LogLevel): void {
+    for (const listener of this.listeners) {
+      try {
+        listener(component, level);
+      } catch {
+        // Ignore listener errors.
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
 
@@ -405,4 +549,11 @@ export function createChildLogger(
   context: LogContext,
 ): StructuredLogger {
   return parent.child(context);
+}
+
+/**
+ * Get the global log level registry for dynamic log level adjustment.
+ */
+export function getLogLevelRegistry(): LogLevelRegistry {
+  return LogLevelRegistry.getInstance();
 }

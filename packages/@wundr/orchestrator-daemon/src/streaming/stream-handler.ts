@@ -14,21 +14,18 @@
 
 import { EventEmitter } from 'eventemitter3';
 
+
+import { createAnthropicStream } from './anthropic-stream';
+import { BlockParser } from './block-parser';
+import { createOpenAIStream } from './openai-stream';
 import { Logger } from '../utils/logger';
 
-import { BlockParser } from './block-parser';
-import { createAnthropicStream } from './anthropic-stream';
-import { createOpenAIStream } from './openai-stream';
-
 import type { BlockParserConfig, StreamEvent } from './block-parser';
-import type { AnthropicStreamOptions } from './anthropic-stream';
-import type { OpenAIStreamOptions } from './openai-stream';
-
 import type {
   LLMClient,
   ChatParams,
   TokenUsage,
-} from '@wundr.io/ai-integration';
+} from '../types/llm';
 
 /**
  * Options for starting a stream.
@@ -252,12 +249,20 @@ export class StreamHandler extends EventEmitter {
 
     // Check client.provider field
     const clientProvider = client.provider?.toLowerCase();
-    if (clientProvider === 'anthropic') return 'anthropic';
-    if (clientProvider === 'openai') return 'openai';
+    if (clientProvider === 'anthropic') {
+return 'anthropic';
+}
+    if (clientProvider === 'openai') {
+return 'openai';
+}
 
     // Infer from model name
-    if (params.model.startsWith('claude-')) return 'anthropic';
-    if (params.model.startsWith('gpt-') || params.model.startsWith('o1-')) return 'openai';
+    if (params.model.startsWith('claude-')) {
+return 'anthropic';
+}
+    if (params.model.startsWith('gpt-') || params.model.startsWith('o1-')) {
+return 'openai';
+}
 
     // Default to OpenAI as it has broader model name compatibility
     this.logger.warn(

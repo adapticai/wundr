@@ -546,7 +546,7 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
             orchestrator.socket.off('message', responseHandler);
             resolve(response.result as DelegationResult);
           }
-        } catch (error) {
+        } catch {
           // Ignore parse errors, wait for correct message
         }
       };
@@ -584,7 +584,7 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
             orchestrator.socket.off('message', responseHandler);
             resolve(response.context as SharedContext);
           }
-        } catch (error) {
+        } catch {
           // Ignore parse errors
         }
       };

@@ -12,6 +12,7 @@
 
 import { EventEmitter } from 'events';
 
+import type { AuthConfig, ClientIdentity, JwtPayload } from '../../auth/types';
 import type {
   DaemonConfig,
   DaemonStatus,
@@ -23,9 +24,7 @@ import type {
   SessionMetrics,
   SpawnSessionPayload,
   Task,
-  WSMessage,
 } from '../../types';
-import type { AuthConfig, ClientIdentity, JwtPayload } from '../../auth/types';
 
 // ---------------------------------------------------------------------------
 // ID generator (deterministic in tests -- counter-based)
@@ -285,7 +284,9 @@ export class MockWebSocket extends EventEmitter {
 
   send(data: string, callback?: (error?: Error) => void): void {
     this.sentMessages.push(data);
-    if (callback) callback();
+    if (callback) {
+callback();
+}
   }
 
   ping(): void {
@@ -302,7 +303,9 @@ export class MockWebSocket extends EventEmitter {
   /** Parse the last sent message as JSON. */
   lastSentJson<T = unknown>(): T {
     const last = this.sentMessages[this.sentMessages.length - 1];
-    if (!last) throw new Error('No messages sent');
+    if (!last) {
+throw new Error('No messages sent');
+}
     return JSON.parse(last) as T;
   }
 

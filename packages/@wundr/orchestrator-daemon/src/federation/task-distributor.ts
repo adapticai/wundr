@@ -16,10 +16,12 @@
  *     is used (least-loaded or round-robin).
  */
 
-import { EventEmitter } from 'eventemitter3';
 import * as crypto from 'crypto';
 
+import { EventEmitter } from 'eventemitter3';
+
 import { Logger, LogLevel } from '../utils/logger';
+
 import type { Task } from '../types';
 import type { ClusterNode, NodeCapability } from './node-registry';
 
@@ -277,7 +279,9 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
    * Get the node that owns a given hash key. Useful for session affinity.
    */
   getOwner(key: string): string | null {
-    if (this.ring.length === 0) return null;
+    if (this.ring.length === 0) {
+return null;
+}
 
     const hash = this.hash(key);
     const entry = this.findRingEntry(hash);
@@ -300,8 +304,12 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
     swarmAgentIds: string[],
     preferredNodeId?: string,
   ): AgentMigrationPlan[] {
-    if (!this.config.agentMigration.enabled) return [];
-    if (swarmAgentIds.length <= 1) return [];
+    if (!this.config.agentMigration.enabled) {
+return [];
+}
+    if (swarmAgentIds.length <= 1) {
+return [];
+}
 
     const plans: AgentMigrationPlan[] = [];
 
@@ -320,7 +328,9 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
 
     for (const [nodeId, count] of nodeAgentCounts.entries()) {
       const node = this.nodes.get(nodeId);
-      if (!node || this.isNodeOverloaded(nodeId)) continue;
+      if (!node || this.isNodeOverloaded(nodeId)) {
+continue;
+}
 
       if (count > maxAgents) {
         maxAgents = count;
@@ -328,12 +338,16 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
       }
     }
 
-    if (!targetNodeId) return [];
+    if (!targetNodeId) {
+return [];
+}
 
     // Plan migrations for agents not on the target node
     for (const agentId of swarmAgentIds) {
       const currentNodeId = agentLocations.get(agentId);
-      if (!currentNodeId || currentNodeId === targetNodeId) continue;
+      if (!currentNodeId || currentNodeId === targetNodeId) {
+continue;
+}
 
       // Check cooldown
       const lastMigration = this.migrationCooldowns.get(agentId);
@@ -373,14 +387,18 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
   planRebalanceMigrations(
     sessionLocations: Map<string, string>,
   ): AgentMigrationPlan[] {
-    if (!this.config.agentMigration.enabled) return [];
+    if (!this.config.agentMigration.enabled) {
+return [];
+}
 
     const plans: AgentMigrationPlan[] = [];
     const activeNodes = Array.from(this.nodes.values()).filter(
       (n) => n.status === 'active',
     );
 
-    if (activeNodes.length < 2) return [];
+    if (activeNodes.length < 2) {
+return [];
+}
 
     // Calculate average load
     const loads = activeNodes.map((n) => n.load.activeSessions);
@@ -401,12 +419,16 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
 
     // Move sessions from overloaded to underloaded
     for (const overloaded of sortedNodes) {
-      if (overloaded.load.activeSessions <= avgLoad) break;
+      if (overloaded.load.activeSessions <= avgLoad) {
+break;
+}
 
       const underloaded = sortedNodes.filter(
         (n) => n.load.activeSessions < avgLoad,
       );
-      if (underloaded.length === 0) break;
+      if (underloaded.length === 0) {
+break;
+}
 
       const sessionsToMove = Math.ceil(overloaded.load.activeSessions - avgLoad);
 
@@ -479,7 +501,9 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
    * (clockwise search on the ring).
    */
   private findRingEntry(hash: number): RingEntry | null {
-    if (this.ring.length === 0) return null;
+    if (this.ring.length === 0) {
+return null;
+}
 
     // Binary search for the first entry >= hash
     let lo = 0;
@@ -509,7 +533,9 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
     hash: number,
     eligibleNodeIds: Set<string>,
   ): RingEntry | null {
-    if (this.ring.length === 0) return null;
+    if (this.ring.length === 0) {
+return null;
+}
 
     // Binary search for starting position
     let lo = 0;
@@ -549,7 +575,9 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
     const eligibleSet = new Set(eligibleNodeIds);
 
     const entry = this.findEligibleRingEntry(hash, eligibleSet);
-    if (!entry) return null;
+    if (!entry) {
+return null;
+}
 
     return {
       nodeId: entry.nodeId,
@@ -571,7 +599,9 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
 
     for (const nodeId of eligibleNodeIds) {
       const node = this.nodes.get(nodeId);
-      if (!node) continue;
+      if (!node) {
+continue;
+}
 
       let score = node.capabilities.length * 10;
       score += (1 - this.getNodeLoadFraction(nodeId)) * 50;
@@ -582,7 +612,9 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
       }
     }
 
-    if (!bestNodeId) return null;
+    if (!bestNodeId) {
+return null;
+}
 
     reasons.push(`best capability score: ${bestScore.toFixed(1)}`);
 
@@ -608,7 +640,9 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
       }
     }
 
-    if (!leastLoaded) return null;
+    if (!leastLoaded) {
+return null;
+}
 
     return {
       nodeId: leastLoaded,
@@ -626,7 +660,9 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
       (id) => !excludeNodes.includes(id),
     );
 
-    if (candidates.length === 0) return null;
+    if (candidates.length === 0) {
+return null;
+}
 
     switch (this.config.routing.fallbackStrategy) {
       case 'least-loaded':
@@ -661,8 +697,12 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
 
     return Array.from(this.nodes.entries())
       .filter(([id, node]) => {
-        if (excludeSet.has(id)) return false;
-        if (node.status !== 'active') return false;
+        if (excludeSet.has(id)) {
+return false;
+}
+        if (node.status !== 'active') {
+return false;
+}
 
         if (requiredCapabilities.length > 0) {
           return requiredCapabilities.every((cap) =>
@@ -677,7 +717,9 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
 
   private getNodeLoadFraction(nodeId: string): number {
     const node = this.nodes.get(nodeId);
-    if (!node) return 1;
+    if (!node) {
+return 1;
+}
 
     // Composite load: weighted average of CPU, memory, and session ratio
     const sessionLoad = node.load.activeSessions / 100; // Assume 100 max

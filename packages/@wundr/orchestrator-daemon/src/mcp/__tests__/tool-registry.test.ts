@@ -2,10 +2,14 @@
  * MCP Tool Registry Tests
  */
 
-import { createMcpToolRegistry, McpToolRegistry } from '../tool-registry';
+
 import { promises as fs } from 'fs';
-import * as path from 'path';
 import * as os from 'os';
+import * as path from 'path';
+
+import { createMcpToolRegistry } from '../tool-registry';
+
+import type { McpToolRegistry } from '../tool-registry';
 
 describe('McpToolRegistry', () => {
   let registry: McpToolRegistry;
@@ -13,7 +17,8 @@ describe('McpToolRegistry', () => {
 
   beforeEach(async () => {
     registry = createMcpToolRegistry({ safetyChecks: true });
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mcp-test-'));
+    // Resolve the real path to handle macOS symlinks (/var -> /private/var)
+    tempDir = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'mcp-test-')));
   });
 
   afterEach(async () => {
@@ -138,7 +143,8 @@ describe('McpToolRegistry', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data?.stdout).toBe(path.resolve(tempDir));
+      // tempDir is already resolved via fs.realpath in beforeEach
+      expect(result.data?.stdout).toBe(tempDir);
     });
   });
 
@@ -250,7 +256,7 @@ describe('McpToolRegistry', () => {
       );
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('not found');
+      expect(result.error).toContain('No tool registered with ID');
     });
 
     test('should handle tool execution errors', async () => {

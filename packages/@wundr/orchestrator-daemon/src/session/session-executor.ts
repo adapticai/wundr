@@ -10,17 +10,17 @@
 
 import { EventEmitter } from 'eventemitter3';
 
-import { Logger } from '../utils/logger';
 import { ToolExecutor } from './tool-executor';
+import { Logger } from '../utils/logger';
 
 import type { Session, Task, SessionMetrics, MemoryEntry } from '../types';
+import type { McpToolRegistry } from './tool-executor';
 import type {
   LLMClient,
   ChatParams,
   Message,
   ToolDefinition,
-} from '@wundr.io/ai-integration';
-import type { McpToolRegistry } from './tool-executor';
+} from '../types/llm';
 
 /**
  * Session execution options
@@ -109,7 +109,7 @@ export class SessionExecutor extends EventEmitter {
       const tools = this.getAvailableToolDefinitions();
 
       // Execute conversation loop with tool calls
-      let currentMessages = messages;
+      const currentMessages = messages;
       let iterations = 0;
       let totalTokens = 0;
       let toolCallsMade = 0;

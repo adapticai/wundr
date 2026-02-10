@@ -56,6 +56,8 @@ export interface CommandResult {
  * Error thrown when a command fails after all retry attempts.
  */
 export class CommandError extends Error {
+  declare readonly cause?: Error;
+
   constructor(
     public readonly command: string,
     public readonly args: string[],

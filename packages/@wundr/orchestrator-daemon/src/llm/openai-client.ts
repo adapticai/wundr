@@ -6,6 +6,7 @@
  */
 
 import { lumic } from '@adaptic/lumic-utils';
+
 import type {
   LLMClient,
   ChatParams,
@@ -15,9 +16,9 @@ import type {
   ToolDefinition,
   ToolCall,
   FinishReason,
-} from '@wundr.io/ai-integration/dist/llm/client';
-import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat';
+} from '../types/llm';
 import type { LLMResponse, LLMOptions } from '@adaptic/lumic-utils/dist/types/openai-types';
+import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat';
 
 /**
  * Configuration for OpenAI client
@@ -101,7 +102,7 @@ export class OpenAIClient implements LLMClient {
       const response: LLMResponse<string> = await lumic.llm.call(
         content,
         'text',
-        options
+        options,
       );
 
       if (this.config.debug) {
@@ -132,7 +133,7 @@ export class OpenAIClient implements LLMClient {
       yield {
         id: response.id,
         delta: response.content,
-        toolCallDeltas: response.toolCalls?.map(tc => ({
+        toolCallDeltas: response.toolCalls?.map((tc: ToolCall) => ({
           id: tc.id,
           name: tc.name,
           arguments: tc.arguments,
@@ -223,7 +224,7 @@ export class OpenAIClient implements LLMClient {
         return {
           role: 'assistant' as const,
           content: msg.content || null,
-          tool_calls: msg.toolCalls.map(tc => ({
+          tool_calls: msg.toolCalls.map((tc: ToolCall) => ({
             id: tc.id,
             type: 'function' as const,
             function: {
@@ -261,7 +262,7 @@ export class OpenAIClient implements LLMClient {
   private convertResponse(response: LLMResponse<string>): ChatResponse {
     // Extract tool calls if present
     const toolCalls: ToolCall[] = response.tool_calls
-      ? response.tool_calls.map(tc => {
+      ? response.tool_calls.map((tc: { id: string; function?: { name: string; arguments: string } }) => {
           // Handle both function and custom tool call types
           const functionData = 'function' in tc ? tc.function : null;
           return {

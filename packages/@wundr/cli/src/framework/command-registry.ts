@@ -26,7 +26,6 @@ import type {
   CommandResult,
   ValidationResult,
   GlobalOptions,
-  CATEGORY_LABELS,
 } from './command-interface';
 import { validationOk } from './command-interface';
 
@@ -200,21 +199,21 @@ export class CommandRegistry {
         if (exported.module && typeof exported.module === 'object') {
           // CommandModule export
           const mod = exported.module as CommandModule;
-          if (mod.command && mod.command.name && mod.command.execute) {
+          if (mod.command && mod.command.name && typeof mod.command.execute === 'function') {
             this.registerModule(mod);
             count++;
           }
         } else if (exported.command && typeof exported.command === 'object') {
           // Direct CommandDefinition export
           const def = exported.command as CommandDefinition;
-          if (def.name && def.execute) {
+          if (def.name && typeof def.execute === 'function') {
             this.register(def);
             count++;
           }
         } else if (exported.default && typeof exported.default === 'object') {
           // Default export
           const def = exported.default as CommandDefinition;
-          if (def.name && def.execute) {
+          if (def.name && typeof def.execute === 'function') {
             this.register(def);
             count++;
           }
@@ -233,6 +232,24 @@ export class CommandRegistry {
   }
 
   // -------------------------------------------------------------------------
+  // Multi-Directory Discovery
+  // -------------------------------------------------------------------------
+
+  /**
+   * Discover commands from multiple directories.
+   *
+   * @param directories - Array of directory paths to scan
+   * @returns Total number of commands discovered
+   */
+  async discoverFromDirectories(directories: string[]): Promise<number> {
+    let total = 0;
+    for (const dir of directories) {
+      total += await this.discoverCommands(dir);
+    }
+    return total;
+  }
+
+  // -------------------------------------------------------------------------
   // Lookup
   // -------------------------------------------------------------------------
 
@@ -241,6 +258,26 @@ export class CommandRegistry {
    */
   get(name: string): CommandDefinition | undefined {
     return this.commands.get(name)?.definition;
+  }
+
+  /**
+   * Find a command by name or alias.
+   * Searches direct name first, then aliases.
+   */
+  findByNameOrAlias(nameOrAlias: string): CommandDefinition | undefined {
+    // Direct name lookup
+    const direct = this.commands.get(nameOrAlias);
+    if (direct) return direct.definition;
+
+    // Search aliases
+    for (const registered of Array.from(this.commands.values())) {
+      const { definition } = registered;
+      if (definition.aliases && definition.aliases.includes(nameOrAlias)) {
+        return definition;
+      }
+    }
+
+    return undefined;
   }
 
   /**
@@ -788,7 +825,8 @@ _${programName}
   private generateBashCaseClauses(): string {
     const clauses: string[] = [];
 
-    for (const { definition } of this.commands.values()) {
+    for (const registered of Array.from(this.commands.values())) {
+      const { definition } = registered;
       if (definition.hidden || definition.name.includes(':')) continue;
 
       const subNames: string[] = [];
@@ -822,7 +860,8 @@ _${programName}
   private generateZshCaseClauses(): string {
     const clauses: string[] = [];
 
-    for (const { definition } of this.commands.values()) {
+    for (const registered of Array.from(this.commands.values())) {
+      const { definition } = registered;
       if (definition.hidden || definition.name.includes(':')) continue;
 
       const args: string[] = [];

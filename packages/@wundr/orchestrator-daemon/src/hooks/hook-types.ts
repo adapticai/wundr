@@ -5,6 +5,10 @@
  * Claude Code's hooks architecture (OpenClaw). Supports 14 hook types
  * spanning session lifecycle, tool execution, subagent management,
  * permission handling, notifications, and context compaction.
+ *
+ * Additionally provides types for directory-based hook discovery,
+ * frontmatter-driven metadata, hook eligibility, and config-file
+ * loading -- mirroring OpenClaw's full hook lifecycle support.
  */
 
 // =============================================================================
@@ -391,7 +395,9 @@ export type HookSource =
   | 'config-file'    // From wundr.config.ts or hooks config file
   | 'programmatic'   // Registered via API at runtime
   | 'plugin'         // Registered by a plugin
-  | 'built-in';      // Shipped with the orchestrator
+  | 'built-in'       // Shipped with the orchestrator
+  | 'directory'      // Discovered from a hooks directory on disk
+  | 'workspace';     // Loaded from a workspace hooks directory
 
 // =============================================================================
 // Hook Configuration (Config File Format)
@@ -432,6 +438,171 @@ export interface HooksConfig {
   maxConcurrency?: number;
   /** Hook registrations */
   hooks?: Array<Omit<HookRegistration, 'handler' | 'source'>>;
+  /** Per-hook config overrides, keyed by hook ID or hook key */
+  hookOverrides?: Record<string, HookOverrideConfig>;
+  /** Directory paths to scan for hooks (in addition to any defaults) */
+  hookDirs?: string[];
+  /** Legacy handler definitions for backwards compatibility */
+  handlers?: Array<LegacyHandlerConfig>;
+}
+
+/**
+ * Per-hook override configuration within a HooksConfig.
+ * Allows enabling/disabling individual hooks or overriding their
+ * timeouts and environment from the config file.
+ */
+export interface HookOverrideConfig {
+  /** Override enabled state for this hook */
+  enabled?: boolean;
+  /** Override timeout for this hook */
+  timeoutMs?: number;
+  /** Extra environment variables to inject */
+  env?: Record<string, string>;
+  /** Override priority */
+  priority?: number;
+}
+
+/**
+ * Legacy handler config for backwards-compatible hook loading.
+ * Mirrors OpenClaw's `config.hooks.internal.handlers` shape.
+ */
+export interface LegacyHandlerConfig {
+  /** Event key (e.g. "PostToolUse" or "SessionStart") */
+  event: string;
+  /** Module path (absolute or relative to cwd) */
+  module: string;
+  /** Export name within the module (default: "default") */
+  export?: string;
+}
+
+// =============================================================================
+// Directory-based Hook Discovery Types (OpenClaw Pattern)
+// =============================================================================
+
+/**
+ * Metadata extracted from a HOOK.md frontmatter file.
+ * Mirrors OpenClaw's OpenClawHookMetadata structure.
+ */
+export interface HookFileMetadata {
+  /** If true, this hook is always loaded regardless of requirements */
+  always?: boolean;
+  /** Canonical key for config lookups (defaults to hook name) */
+  hookKey?: string;
+  /** Display emoji */
+  emoji?: string;
+  /** Homepage/docs URL */
+  homepage?: string;
+  /** Events this hook handles (e.g., ["PreToolUse", "PostToolUse"]) */
+  events: string[];
+  /** Named export from the handler module (default: "default") */
+  export?: string;
+  /** OS platform filter (e.g., ["darwin", "linux"]) */
+  os?: string[];
+  /** Requirements that must be met before loading */
+  requires?: {
+    /** All listed binaries must be available on PATH */
+    bins?: string[];
+    /** At least one of these binaries must be available */
+    anyBins?: string[];
+    /** All listed environment variables must be set */
+    env?: string[];
+    /** All listed config paths must be truthy */
+    config?: string[];
+  };
+  /** Installation specs for the hook */
+  install?: HookInstallSpec[];
+}
+
+/**
+ * Specification for installing a hook dependency.
+ */
+export interface HookInstallSpec {
+  /** Unique ID for this install spec */
+  id?: string;
+  /** Installation method */
+  kind: 'bundled' | 'npm' | 'git';
+  /** Human-readable label */
+  label?: string;
+  /** npm package name */
+  package?: string;
+  /** Git repository URL */
+  repository?: string;
+  /** Required binaries that this install provides */
+  bins?: string[];
+}
+
+/**
+ * Invocation policy for a discovered hook.
+ */
+export interface HookInvocationPolicy {
+  /** Whether the hook should be invoked */
+  enabled: boolean;
+}
+
+/**
+ * Parsed frontmatter from a HOOK.md file.
+ */
+export type ParsedHookFrontmatter = Record<string, string>;
+
+/**
+ * A discovered hook on disk, before loading its handler.
+ */
+export interface DiscoveredHook {
+  /** Hook name (derived from directory name or frontmatter) */
+  name: string;
+  /** Human-readable description */
+  description: string;
+  /** Where this hook was found */
+  source: HookSource;
+  /** Plugin ID if registered by a plugin */
+  pluginId?: string;
+  /** Path to the HOOK.md file */
+  filePath: string;
+  /** Directory containing the hook */
+  baseDir: string;
+  /** Path to the handler module (handler.ts/handler.js) */
+  handlerPath: string;
+}
+
+/**
+ * A fully resolved hook entry, ready for registration.
+ * Combines the discovered hook with its parsed metadata.
+ */
+export interface HookEntry {
+  /** The discovered hook */
+  hook: DiscoveredHook;
+  /** Parsed frontmatter key-value pairs */
+  frontmatter: ParsedHookFrontmatter;
+  /** Structured metadata extracted from frontmatter */
+  metadata?: HookFileMetadata;
+  /** Invocation policy */
+  invocation?: HookInvocationPolicy;
+}
+
+/**
+ * Context for checking hook eligibility against the runtime environment.
+ */
+export interface HookEligibilityContext {
+  /** Remote execution environment capabilities */
+  remote?: {
+    platforms: string[];
+    hasBin: (bin: string) => boolean;
+    hasAnyBin: (bins: string[]) => boolean;
+    note?: string;
+  };
+}
+
+/**
+ * Serializable snapshot of the hooks state.
+ * Useful for caching and diagnostics.
+ */
+export interface HookSnapshot {
+  /** Summary of registered hooks */
+  hooks: Array<{ name: string; events: string[] }>;
+  /** Full hook details */
+  resolvedHooks?: DiscoveredHook[];
+  /** Snapshot format version */
+  version?: number;
 }
 
 // =============================================================================

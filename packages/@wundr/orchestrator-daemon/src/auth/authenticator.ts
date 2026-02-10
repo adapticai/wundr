@@ -11,12 +11,13 @@
  */
 
 import { timingSafeEqual } from 'node:crypto';
-import type { IncomingMessage } from 'node:http';
 import { URL } from 'node:url';
 
-import { Logger } from '../utils/logger';
 import { verifyJwt } from './jwt';
+import { Logger } from '../utils/logger';
+
 import type { AuthConfig, AuthResult, ClientIdentity } from './types';
+import type { IncomingMessage } from 'node:http';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -33,11 +34,21 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 function isLoopbackAddress(ip: string | undefined): boolean {
-  if (!ip) return false;
-  if (ip === '127.0.0.1') return true;
-  if (ip.startsWith('127.')) return true;
-  if (ip === '::1') return true;
-  if (ip.startsWith('::ffff:127.')) return true;
+  if (!ip) {
+return false;
+}
+  if (ip === '127.0.0.1') {
+return true;
+}
+  if (ip.startsWith('127.')) {
+return true;
+}
+  if (ip === '::1') {
+return true;
+}
+  if (ip.startsWith('::ffff:127.')) {
+return true;
+}
   return false;
 }
 
@@ -46,7 +57,9 @@ function isLoopbackAddress(ip: string | undefined): boolean {
  */
 function extractBearerToken(req: IncomingMessage): string | undefined {
   const header = req.headers['authorization'];
-  if (typeof header !== 'string') return undefined;
+  if (typeof header !== 'string') {
+return undefined;
+}
   const parts = header.split(' ');
   if (parts.length === 2 && parts[0]!.toLowerCase() === 'bearer') {
     return parts[1];
@@ -118,6 +131,7 @@ export class Authenticator {
           clientId: 'loopback',
           method: 'loopback',
           scopes: [],
+          role: 'admin',
           authenticatedAt: new Date(),
         },
       };
@@ -192,6 +206,7 @@ export class Authenticator {
       clientId: result.payload.sub,
       method: 'jwt',
       scopes: result.payload.scopes ?? [],
+      role: 'user',
       authenticatedAt: new Date(),
       expiresAt: new Date(result.payload.exp * 1000),
     };
@@ -210,6 +225,7 @@ export class Authenticator {
           clientId: entry.clientId,
           method: 'api-key',
           scopes: entry.scopes,
+          role: entry.role ?? 'user',
           authenticatedAt: new Date(),
         };
         return { ok: true, identity };

@@ -2,7 +2,8 @@
  * Model Routing Module
  *
  * Public API for the model routing system with failover, auth profile
- * rotation, streaming, token counting, and cost tracking.
+ * rotation, streaming, token counting, cost tracking, provider health
+ * monitoring, token budget management, and retry utilities.
  */
 
 // -- Model Router (primary entry point) --
@@ -12,11 +13,14 @@ export {
   FailoverError,
   RoutingExhaustedError,
   ContextOverflowError,
+  BudgetExceededError,
 } from './model-router';
 
 export type {
   ThinkingMode,
   TaskComplexity,
+  RequiredCapabilities,
+  RoutingStrategy,
   RoutingRequest,
   RoutingResult,
   FailoverAttempt,
@@ -94,3 +98,40 @@ export type {
   TokenEstimate,
   TokenCounterConfig,
 } from './token-counter';
+
+// -- Provider Health (circuit breaker, latency tracking, concurrency) --
+export {
+  ProviderHealthTracker,
+} from './provider-health';
+
+export type {
+  CircuitState,
+  ProviderHealthConfig,
+  ProviderHealthSnapshot,
+} from './provider-health';
+
+// -- Token Budget (per-session budget enforcement) --
+export {
+  TokenBudgetManager,
+} from './token-budget';
+
+export type {
+  BudgetWindowKind,
+  SessionBudget,
+  SessionUsage,
+  BudgetCheck,
+  TokenBudgetConfig,
+} from './token-budget';
+
+// -- Retry (exponential backoff with jitter) --
+export {
+  withRetry,
+  calculateBackoffMs,
+  isTransientError,
+  DEFAULT_RETRY_CONFIG,
+} from './retry';
+
+export type {
+  RetryConfig,
+  RetryResult,
+} from './retry';

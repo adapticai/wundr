@@ -37,7 +37,6 @@ import type {
   SetupPlatform,
   SetupProgress,
   SetupResult,
-  SetupStep,
   ContextEngineeringOptions,
   OrchestrationOptions,
   SecurityOptions,
@@ -127,7 +126,7 @@ interface PersistedState {
 
 const STATE_FILE = path.join(os.homedir(), '.wundr', 'setup-state.json');
 
-const PHASES = [
+const _PHASES = [
   'platform-validation',
   'profile-resolution',
   'security',
@@ -138,7 +137,7 @@ const PHASES = [
   'verification-finalization',
 ] as const;
 
-type Phase = (typeof PHASES)[number];
+type Phase = (typeof _PHASES)[number];
 
 // ───────────────────────────────────────────────────────
 // Implementation
@@ -659,12 +658,16 @@ export class UnifiedOrchestrator extends EventEmitter {
         await generateClaudeCodeStructure({
           projectName: profile.name,
           projectPath: this.config.conventionsProjectPath,
-          projectType: 'application',
+          projectType: 'node' as const,
+          includeClaudeSetup: true,
+          includeAgents: true,
           includeHooks: true,
+          includeGitWorktree: false,
+          includeTemplates: true,
           agents: [],
           skills: [],
           commands: [],
-        });
+        } as Parameters<typeof generateClaudeCodeStructure>[0]);
         this.logger.info('Claude Code conventions generated');
       } catch (error) {
         this.logger.warn('Failed to generate Claude Code conventions:', error);

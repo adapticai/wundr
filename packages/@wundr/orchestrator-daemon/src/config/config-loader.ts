@@ -14,14 +14,6 @@ import * as os from 'os';
 import * as path from 'path';
 
 import {
-  type WundrConfig,
-  type ConfigValidationIssue,
-  type ConfigValidationResult,
-  WundrConfigSchema,
-  CURRENT_CONFIG_VERSION,
-  validateConfig,
-} from './schemas';
-import {
   resolveConfigIncludes,
   resolveEnvVars,
   applyOverrides,
@@ -30,6 +22,13 @@ import {
   ConfigIncludeError,
   MissingEnvVarError,
 } from './config-merger';
+import {
+  type WundrConfig,
+  type ConfigValidationIssue,
+  WundrConfigSchema,
+  CURRENT_CONFIG_VERSION,
+  validateConfig,
+} from './schemas';
 
 // Re-export error types for consumer convenience
 export { ConfigIncludeError, MissingEnvVarError } from './config-merger';
@@ -146,7 +145,7 @@ export function applyMigrations(
   const configObj = config as Record<string, unknown>;
   const meta = configObj.meta as Record<string, unknown> | undefined;
   let version = typeof meta?.$version === 'number' ? meta.$version : 1;
-  let current = config;
+  let current: unknown = config;
   const applied: string[] = [];
 
   for (const migration of migrations) {
@@ -237,18 +236,24 @@ export function resolveConfigSnapshotHash(snapshot: {
 // =============================================================================
 
 function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
-  if (!value) return defaultValue;
+  if (!value) {
+return defaultValue;
+}
   return value.toLowerCase() === 'true' || value === '1';
 }
 
 function parseNumber(value: string | undefined, defaultValue: number): number {
-  if (!value) return defaultValue;
+  if (!value) {
+return defaultValue;
+}
   const parsed = parseInt(value, 10);
   return isNaN(parsed) ? defaultValue : parsed;
 }
 
 function parseArray(value: string | undefined): string[] {
-  if (!value) return [];
+  if (!value) {
+return [];
+}
   return value
     .split(',')
     .map((v) => v.trim())

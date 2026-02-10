@@ -12,9 +12,8 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
-import { AuthMiddleware } from '../../../auth/middleware';
-import type { AuthenticatedWebSocket } from '../../../auth/middleware';
 import { createToken } from '../../../auth/jwt';
+import { AuthMiddleware } from '../../../auth/middleware';
 import {
   createMockAuthConfig,
   createMockClientIdentity,
@@ -22,6 +21,8 @@ import {
   TEST_JWT_SECRET,
   TEST_API_KEY,
 } from '../../helpers';
+
+import type { AuthenticatedWebSocket } from '../../../auth/middleware';
 
 describe('AuthMiddleware', () => {
   let middleware: AuthMiddleware;

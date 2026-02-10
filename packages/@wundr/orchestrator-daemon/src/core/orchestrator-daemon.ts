@@ -7,7 +7,6 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { EventEmitter } from 'eventemitter3';
-import type { WebSocket } from 'ws';
 import YAML from 'yaml';
 
 import {
@@ -15,16 +14,28 @@ import {
   OrchestratorCharterSchema,
 } from '../types';
 import { OrchestratorWebSocketServer } from './websocket-server';
-import { MemoryManager } from '../memory/memory-manager';
-import { SessionManager } from '../session/session-manager';
-import { Logger, LogLevel } from '../utils/logger';
+import { AgentRegistry } from '../agents';
 import { AuthConfigSchema } from '../auth/types';
-import type { AuthConfig } from '../auth/types';
+import { ChannelRegistry } from '../channels';
+import { startConfigWatcher } from '../config';
+import { createHookRegistry, createHookEngine, registerBuiltInHooks } from '../hooks';
 import { createOpenAIClient } from '../llm';
 import { McpToolRegistryImpl } from '../mcp/tool-registry';
-import type { LLMClient } from '@wundr.io/ai-integration/dist/llm/client';
-import type { McpToolRegistry } from '../session/tool-executor';
+import { MemoryManager } from '../memory/memory-manager';
+import { ModelRouter } from '../models';
+import { PluginLifecycleManager } from '../plugins';
+import { MessageRouter } from '../protocol';
+import { SecurityGate } from '../security';
+import { SessionManager } from '../session/session-manager';
+import { SkillRegistry } from '../skills';
+import { StreamHandler } from '../streaming';
+import { TeamCoordinator } from '../teams';
+import { Logger, LogLevel } from '../utils/logger';
 
+import type { AuthConfig } from '../auth/types';
+import type { ConfigWatcher } from '../config';
+import type { HookRegistry, HookEngine} from '../hooks';
+import type { McpToolRegistry } from '../session/tool-executor';
 import type {
   DaemonConfig,
   DaemonStatus,
@@ -35,6 +46,8 @@ import type {
   MemoryConfig,
   SpawnSessionPayload,
   ExecuteTaskPayload} from '../types';
+import type { LLMClient } from '../types/llm';
+import type { WebSocket } from 'ws';
 
 export class OrchestratorDaemon extends EventEmitter {
   private logger: Logger;
@@ -50,6 +63,20 @@ export class OrchestratorDaemon extends EventEmitter {
   private metrics: DaemonMetrics;
   private healthCheckInterval: NodeJS.Timeout | null = null;
   private cleanupInterval: NodeJS.Timeout | null = null;
+
+  // Wave 3 subsystems
+  private hookRegistry: HookRegistry;
+  private hookEngine: HookEngine;
+  private skillRegistry: SkillRegistry;
+  private teamCoordinator: TeamCoordinator;
+  private agentRegistry: AgentRegistry;
+  private modelRouter: ModelRouter;
+  private channelRegistry: ChannelRegistry;
+  private securityGate: SecurityGate;
+  private streamHandler: StreamHandler;
+  private protocolRouter: MessageRouter;
+  private pluginManager: PluginLifecycleManager;
+  private configWatcher: ConfigWatcher | null = null;
 
   constructor(config: DaemonConfig) {
     super();
@@ -150,6 +177,95 @@ export class OrchestratorDaemon extends EventEmitter {
       this.metrics.totalTokensUsed += tokensUsed;
     });
 
+    // -----------------------------------------------------------------------
+    // Wave 3 subsystem initialization
+    // -----------------------------------------------------------------------
+
+    // Hook system: registry + engine
+    this.hookRegistry = createHookRegistry({
+      logger: {
+        debug: (msg: string) => this.logger.debug(msg),
+        info: (msg: string) => this.logger.info(msg),
+        warn: (msg: string) => this.logger.warn(msg),
+        error: (msg: string) => this.logger.error(msg),
+      },
+    });
+    registerBuiltInHooks(this.hookRegistry, {
+      debug: (msg: string) => this.logger.debug(msg),
+      info: (msg: string) => this.logger.info(msg),
+      warn: (msg: string) => this.logger.warn(msg),
+      error: (msg: string) => this.logger.error(msg),
+    });
+    this.hookEngine = createHookEngine({
+      registry: this.hookRegistry,
+      logger: {
+        debug: (msg: string) => this.logger.debug(msg),
+        info: (msg: string) => this.logger.info(msg),
+        warn: (msg: string) => this.logger.warn(msg),
+        error: (msg: string) => this.logger.error(msg),
+      },
+    });
+
+    // Skill registry
+    this.skillRegistry = new SkillRegistry({
+      workspaceDir: process.cwd(),
+      config: { enabled: true },
+    });
+
+    // Team coordinator
+    this.teamCoordinator = new TeamCoordinator(this.sessionManager);
+
+    // Agent registry
+    this.agentRegistry = new AgentRegistry({
+      projectRoot: process.cwd(),
+    });
+
+    // Model router (alternative LLM routing with failover)
+    this.modelRouter = new ModelRouter({
+      primary: process.env['OPENAI_MODEL'] || 'openai/gpt-5-mini',
+      clientFactory: (_provider: string, cfg: { apiKey: string; baseUrl?: string }) =>
+        createOpenAIClient({
+          apiKey: cfg.apiKey || openaiApiKey,
+          defaultModel: openaiModel,
+          temperature: 0.7,
+          maxTokens: 4096,
+          debug: this.config.verbose,
+        }),
+    });
+
+    // Channel registry
+    this.channelRegistry = new ChannelRegistry({
+      logger: {
+        info: (msg: string) => this.logger.info(msg),
+        warn: (msg: string) => this.logger.warn(msg),
+        error: (msg: string) => this.logger.error(msg),
+        debug: (msg: string) => this.logger.debug(msg),
+      },
+    });
+
+    // Security gate (combines exec-approvals, tool-policy, redaction)
+    this.securityGate = new SecurityGate();
+
+    // Stream handler for real LLM streaming
+    this.streamHandler = new StreamHandler();
+
+    // Protocol v2 message router
+    this.protocolRouter = new MessageRouter({
+      serverVersion: '2.0.0',
+      authenticate: async () => ({ ok: true, scopes: [] }),
+      logger: {
+        debug: (msg: string) => this.logger.debug(msg),
+        info: (msg: string) => this.logger.info(msg),
+        warn: (msg: string) => this.logger.warn(msg),
+        error: (msg: string) => this.logger.error(msg),
+      },
+    });
+
+    // Plugin lifecycle manager
+    this.pluginManager = new PluginLifecycleManager({
+      pluginsDir: path.join(process.cwd(), '.wundr', 'plugins'),
+    });
+
     this.setupEventHandlers();
   }
 
@@ -172,6 +288,60 @@ export class OrchestratorDaemon extends EventEmitter {
 
       // Start cleanup routine
       this.startCleanup();
+
+      // ---------------------------------------------------------------------
+      // Start Wave 3 subsystems
+      // ---------------------------------------------------------------------
+
+      // Load skills from workspace
+      try {
+        await this.skillRegistry.load();
+        this.logger.info('Skills loaded successfully');
+      } catch (error) {
+        this.logger.warn('Failed to load skills, continuing without:', error);
+      }
+
+      // Load agent definitions from project directory
+      try {
+        await this.agentRegistry.loadFromDirectory();
+        this.logger.info('Agent definitions loaded successfully');
+      } catch (error) {
+        this.logger.warn('Failed to load agent definitions, continuing without:', error);
+      }
+
+      // Load plugins
+      try {
+        const pluginResult = await this.pluginManager.loadAll();
+        this.logger.info(`Plugins loaded: ${pluginResult.loaded.length} succeeded, ${pluginResult.failed.length} failed`);
+      } catch (error) {
+        this.logger.warn('Failed to load plugins, continuing without:', error);
+      }
+
+      // Start config watcher
+      try {
+        const configDir = path.join(os.homedir(), 'orchestrator-daemon');
+        const configFilePath = path.join(configDir, 'wundr.yaml');
+        const { generateDefaultConfig, readConfigSnapshot } = await import('../config');
+        this.configWatcher = startConfigWatcher({
+          initialConfig: generateDefaultConfig(),
+          readSnapshot: () => readConfigSnapshot({ configPath: configFilePath }),
+          onHotReload: async (plan, _nextConfig) => {
+            this.logger.info('Config hot-reloaded', { changedPaths: plan.changedPaths });
+          },
+          onRestart: (plan, _nextConfig) => {
+            this.logger.warn('Config change requires daemon restart', { restartReasons: plan.restartReasons });
+          },
+          watchPath: configFilePath,
+          log: {
+            info: (msg: string) => this.logger.info(msg),
+            warn: (msg: string) => this.logger.warn(msg),
+            error: (msg: string) => this.logger.error(msg),
+          },
+        });
+        this.logger.info('Config watcher started');
+      } catch (error) {
+        this.logger.warn('Failed to start config watcher, continuing without:', error);
+      }
 
       this.status = 'running';
       this.startTime = Date.now();
@@ -213,6 +383,37 @@ export class OrchestratorDaemon extends EventEmitter {
     await Promise.all(
       activeSessions.map((session) => this.sessionManager.stopSession(session.id)),
     );
+
+    // -----------------------------------------------------------------------
+    // Stop Wave 3 subsystems
+    // -----------------------------------------------------------------------
+
+    // Stop config watcher
+    if (this.configWatcher) {
+      try {
+        await this.configWatcher.stop();
+      } catch (error) {
+        this.logger.warn('Error stopping config watcher:', error);
+      }
+      this.configWatcher = null;
+    }
+
+    // Shutdown plugins
+    try {
+      await this.pluginManager.shutdown();
+    } catch (error) {
+      this.logger.warn('Error shutting down plugins:', error);
+    }
+
+    // Disconnect all channel adapters
+    try {
+      await this.channelRegistry.disconnectAll();
+    } catch (error) {
+      this.logger.warn('Error disconnecting channels:', error);
+    }
+
+    // Clean up team coordinator (no active teams to shut down if sessions already stopped)
+    // TeamCoordinator cleanup is handled via session stop events
 
     // Stop WebSocket server
     await this.wsServer.stop();
@@ -308,6 +509,50 @@ export class OrchestratorDaemon extends EventEmitter {
         },
         mcpRegistry: {
           status: 'running',
+          lastCheck: new Date(),
+        },
+        hookEngine: {
+          status: 'running',
+          lastCheck: new Date(),
+        },
+        skillRegistry: {
+          status: 'running',
+          lastCheck: new Date(),
+        },
+        teamCoordinator: {
+          status: 'running',
+          lastCheck: new Date(),
+        },
+        agentRegistry: {
+          status: 'running',
+          lastCheck: new Date(),
+        },
+        modelRouter: {
+          status: 'running',
+          lastCheck: new Date(),
+        },
+        channelRegistry: {
+          status: 'running',
+          lastCheck: new Date(),
+        },
+        securityGate: {
+          status: 'running',
+          lastCheck: new Date(),
+        },
+        streamHandler: {
+          status: 'running',
+          lastCheck: new Date(),
+        },
+        protocolRouter: {
+          status: 'running',
+          lastCheck: new Date(),
+        },
+        pluginManager: {
+          status: 'running',
+          lastCheck: new Date(),
+        },
+        configWatcher: {
+          status: this.configWatcher ? 'running' : 'stopped',
           lastCheck: new Date(),
         },
       },

@@ -8,10 +8,11 @@
  * Validation happens at install time and again at load time to catch tampering.
  */
 
-import { z } from 'zod';
 import * as crypto from 'crypto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Trust Levels

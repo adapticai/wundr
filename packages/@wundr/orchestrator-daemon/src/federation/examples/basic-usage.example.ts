@@ -5,6 +5,7 @@
  */
 
 import { FederationRegistry } from '../registry';
+
 import type { RegistryOrchestratorMetadata, FederationRegistryConfig } from '../registry-types';
 
 async function main() {

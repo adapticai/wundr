@@ -203,6 +203,146 @@ export interface OutboundAttachment {
 }
 
 // ---------------------------------------------------------------------------
+// Media Pipeline Types
+// ---------------------------------------------------------------------------
+
+/**
+ * Supported media categories for classification and policy enforcement.
+ */
+export type MediaCategory = 'image' | 'video' | 'audio' | 'document' | 'archive' | 'executable' | 'unknown';
+
+/**
+ * Result of scanning a file for malware / policy violations.
+ */
+export interface ScanResult {
+  /** Whether the file passed the scan. */
+  readonly clean: boolean;
+  /** Scanner that produced this result. */
+  readonly scanner: string;
+  /** Human-readable verdict. */
+  readonly verdict: string;
+  /** Threat name if malicious. */
+  readonly threatName?: string;
+}
+
+/**
+ * Progress event emitted during upload or download operations.
+ */
+export interface MediaProgressEvent {
+  /** Operation type. */
+  readonly operation: 'upload' | 'download' | 'resize' | 'scan';
+  /** Bytes transferred so far. */
+  readonly bytesTransferred: number;
+  /** Total bytes (0 if unknown). */
+  readonly totalBytes: number;
+  /** Progress as a fraction 0..1 (NaN if total is unknown). */
+  readonly fraction: number;
+  /** Target channel. */
+  readonly channelId: ChannelId;
+  /** Filename being processed. */
+  readonly filename: string;
+}
+
+/**
+ * Callback for upload/download progress tracking.
+ */
+export type MediaProgressCallback = (event: MediaProgressEvent) => void;
+
+/**
+ * Channel-specific format adaptation target.
+ */
+export type ChannelFormatTarget = 'slack' | 'discord' | 'telegram' | 'plain' | (string & {});
+
+/**
+ * Result of converting markdown content to a channel-native format.
+ */
+export interface ChannelFormattedContent {
+  /** The formatted text in the target channel's native markup. */
+  readonly text: string;
+  /** Whether the content was truncated. */
+  readonly truncated: boolean;
+  /** Original length before conversion. */
+  readonly originalLength: number;
+  /** Overflow chunks if the content was split. */
+  readonly chunks: readonly string[];
+}
+
+/**
+ * Options for image resize operations.
+ */
+export interface ImageResizeOptions {
+  /** Maximum width in pixels. */
+  readonly maxWidth?: number;
+  /** Maximum height in pixels. */
+  readonly maxHeight?: number;
+  /** Maximum file size in bytes after resize. */
+  readonly maxBytes?: number;
+  /** Output format (defaults to same as input). */
+  readonly format?: 'jpeg' | 'png' | 'webp';
+  /** JPEG/WebP quality 1-100. */
+  readonly quality?: number;
+}
+
+/**
+ * Interface for pluggable malware/virus scanning.
+ */
+export interface MediaScannerProvider {
+  /** Unique name for this scanner. */
+  readonly name: string;
+  /** Scan a buffer and return the result. */
+  scan(buffer: Buffer, filename: string): Promise<ScanResult>;
+}
+
+/**
+ * Interface for pluggable image resize/optimization.
+ */
+export interface ImageResizerProvider {
+  /**
+   * Resize an image buffer. Returns the resized buffer and the new MIME type.
+   * Return null if the image does not need resizing.
+   */
+  resize(
+    buffer: Buffer,
+    mimeType: string,
+    options: ImageResizeOptions,
+  ): Promise<{ buffer: Buffer; mimeType: string } | null>;
+}
+
+/**
+ * Cache entry for a previously uploaded media file.
+ */
+export interface MediaCacheEntry {
+  /** Cache key (content hash). */
+  readonly key: string;
+  /** Channel the file was uploaded to. */
+  readonly channelId: ChannelId;
+  /** Platform-native file ID or URL. */
+  readonly platformFileId: string;
+  /** When this entry was cached. */
+  readonly cachedAt: Date;
+  /** When this entry expires. */
+  readonly expiresAt: Date;
+  /** Original filename. */
+  readonly filename: string;
+  /** File size in bytes. */
+  readonly sizeBytes: number;
+}
+
+/**
+ * Interface for pluggable media cache backends.
+ */
+export interface MediaCacheProvider {
+  /** Look up a cached upload by content hash + channel. */
+  get(key: string, channelId: ChannelId): Promise<MediaCacheEntry | null>;
+  /** Store a cache entry. */
+  set(entry: MediaCacheEntry): Promise<void>;
+  /** Invalidate a cache entry. */
+  delete(key: string, channelId: ChannelId): Promise<void>;
+  /** Clear all entries for a channel. */
+  clearChannel(channelId: ChannelId): Promise<void>;
+}
+
+// ---------------------------------------------------------------------------
 // Delivery Result
 // ---------------------------------------------------------------------------
 
@@ -237,13 +377,157 @@ export interface TypingHandle {
 
 /**
  * Ack reaction scope -- controls when the Orchestrator reacts to acknowledge
- * receipt of a message.
+ * receipt of a message. Mirrors OpenClaw's AckReactionScope.
  */
 export type AckReactionScope =
   | 'all'
   | 'direct'
+  | 'group-all'
   | 'group-mentions'
-  | 'off';
+  | 'off'
+  | 'none';
+
+// ---------------------------------------------------------------------------
+// Threading
+// ---------------------------------------------------------------------------
+
+/**
+ * Reply-to mode for thread management, matching OpenClaw's threading model.
+ *
+ * - "off": never auto-thread replies
+ * - "first": thread only the first reply, then stop
+ * - "all": always thread replies into the source thread
+ */
+export type ReplyToMode = 'off' | 'first' | 'all';
+
+/**
+ * Thread context passed to tool invocations so they can thread-aware send.
+ * Modeled after OpenClaw's ChannelThreadingToolContext.
+ */
+export interface ThreadingToolContext {
+  /** Current channel ID for auto-threading. */
+  readonly currentChannelId?: string;
+  /** Current thread timestamp for auto-threading. */
+  readonly currentThreadTs?: string;
+  /** Reply-to mode for auto-threading. */
+  readonly replyToMode?: ReplyToMode;
+  /** Mutable ref to track if a reply was sent (for "first" mode). */
+  readonly hasRepliedRef?: { value: boolean };
+}
+
+// ---------------------------------------------------------------------------
+// Slash Commands
+// ---------------------------------------------------------------------------
+
+/**
+ * Parsed slash command from a platform.
+ */
+export interface SlashCommandPayload {
+  /** The command name (e.g., "/wundr"). */
+  readonly command: string;
+  /** The text after the command. */
+  readonly text: string;
+  /** User ID who invoked the command. */
+  readonly userId: string;
+  /** Channel ID where the command was invoked. */
+  readonly channelId: string;
+  /** Thread timestamp if invoked in a thread. */
+  readonly threadTs?: string;
+  /** Trigger ID for opening modals. */
+  readonly triggerId?: string;
+  /** Response URL for deferred responses. */
+  readonly responseUrl?: string;
+  /** Team/workspace ID. */
+  readonly teamId?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Interactive Components
+// ---------------------------------------------------------------------------
+
+/**
+ * Block Kit element action payload from Slack interactive components.
+ */
+export interface InteractiveAction {
+  /** The type of interaction (block_actions, view_submission, etc.). */
+  readonly type: string;
+  /** Action ID from the block element. */
+  readonly actionId: string;
+  /** Block ID containing the action. */
+  readonly blockId?: string;
+  /** The selected value or text. */
+  readonly value?: string;
+  /** User who triggered the action. */
+  readonly userId: string;
+  /** Channel where the action occurred. */
+  readonly channelId?: string;
+  /** Message timestamp if the action is on a message. */
+  readonly messageTs?: string;
+  /** Trigger ID for opening modals. */
+  readonly triggerId?: string;
+  /** Response URL for updating the source message. */
+  readonly responseUrl?: string;
+  /** Raw platform payload. */
+  readonly raw: unknown;
+}
+
+// ---------------------------------------------------------------------------
+// Block Kit Message Formatting
+// ---------------------------------------------------------------------------
+
+/**
+ * Slack Block Kit block element.
+ * https://api.slack.com/reference/block-kit/blocks
+ */
+export interface BlockKitBlock {
+  readonly type: string;
+  readonly block_id?: string;
+  readonly text?: BlockKitText;
+  readonly elements?: readonly BlockKitElement[];
+  readonly accessory?: BlockKitElement;
+  readonly fields?: readonly BlockKitText[];
+  readonly [key: string]: unknown;
+}
+
+export interface BlockKitText {
+  readonly type: 'plain_text' | 'mrkdwn';
+  readonly text: string;
+  readonly emoji?: boolean;
+}
+
+export interface BlockKitElement {
+  readonly type: string;
+  readonly action_id?: string;
+  readonly text?: BlockKitText;
+  readonly value?: string;
+  readonly url?: string;
+  readonly options?: readonly BlockKitOption[];
+  readonly [key: string]: unknown;
+}
+
+export interface BlockKitOption {
+  readonly text: BlockKitText;
+  readonly value: string;
+  readonly description?: BlockKitText;
+}
+
+// ---------------------------------------------------------------------------
+// Rate Limiting
+// ---------------------------------------------------------------------------
+
+/**
+ * Rate limit state for API calls.
+ */
+export interface RateLimitState {
+  /** Number of requests remaining in the current window. */
+  readonly remaining: number;
+  /** Unix timestamp (seconds) when the rate limit resets. */
+  readonly resetAt: number;
+  /** Whether we are currently being rate-limited. */
+  readonly limited: boolean;
+  /** Retry-After header value in seconds, if rate-limited. */
+  readonly retryAfterSec: number;
+}
 
 // ---------------------------------------------------------------------------
 // DM Pairing / Security
@@ -311,6 +595,8 @@ export type ChannelEventType =
   | 'presence_change'
   | 'member_joined'
   | 'member_left'
+  | 'slash_command'
+  | 'interactive_action'
   | 'connected'
   | 'disconnected'
   | 'error';
@@ -367,6 +653,8 @@ export interface ChannelEventMap {
     conversationId: string;
     userId: string;
   };
+  slash_command: SlashCommandPayload;
+  interactive_action: InteractiveAction;
   connected: {
     channelId: ChannelId;
     accountId?: string;

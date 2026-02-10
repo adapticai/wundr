@@ -8,7 +8,6 @@ import type {
   CostBreakdown,
   CostProjection,
   TokenUsageRecord,
-  UsageDataPoint,
 } from './types';
 
 /**
@@ -142,7 +141,7 @@ export class CostCalculator {
    */
   public calculateRecordCost(
     record: TokenUsageRecord,
-    targetCurrency: 'USD' | 'EUR' | 'GBP' = 'USD'
+    targetCurrency: 'USD' | 'EUR' | 'GBP' = 'USD',
   ): number {
     const pricing = this.pricingMap.get(record.modelId);
     if (!pricing) {
@@ -166,7 +165,7 @@ export class CostCalculator {
     records: TokenUsageRecord[],
     targetCurrency: 'USD' | 'EUR' | 'GBP' = 'USD',
     includeProjection = false,
-    projectionPeriod?: 'daily' | 'weekly' | 'monthly'
+    projectionPeriod?: 'daily' | 'weekly' | 'monthly',
   ): CostEstimate {
     // Group records by model
     const modelGroups = new Map<string, TokenUsageRecord[]>();
@@ -192,8 +191,6 @@ export class CostCalculator {
 
       const inputCost = (inputTokens / 1_000_000) * pricing.inputTokenCost;
       const outputCost = (outputTokens / 1_000_000) * pricing.outputTokenCost;
-      const modelTotal = inputCost + outputCost;
-
       const convertedInputCost = this.convertCurrency(inputCost, pricing.currency, targetCurrency);
       const convertedOutputCost = this.convertCurrency(outputCost, pricing.currency, targetCurrency);
       const convertedTotal = convertedInputCost + convertedOutputCost;
@@ -240,7 +237,7 @@ export class CostCalculator {
   private calculateProjection(
     records: TokenUsageRecord[],
     currentCost: number,
-    period: 'daily' | 'weekly' | 'monthly'
+    period: 'daily' | 'weekly' | 'monthly',
   ): CostProjection {
     if (records.length === 0) {
       return {
@@ -297,7 +294,7 @@ export class CostCalculator {
   public convertCurrency(
     amount: number,
     fromCurrency: 'USD' | 'EUR' | 'GBP',
-    toCurrency: 'USD' | 'EUR' | 'GBP'
+    toCurrency: 'USD' | 'EUR' | 'GBP',
   ): number {
     if (fromCurrency === toCurrency) {
       return amount;
@@ -320,7 +317,7 @@ export class CostCalculator {
    */
   public getCostPer1KTokens(
     modelId: string,
-    type: 'input' | 'output'
+    type: 'input' | 'output',
   ): number | null {
     const pricing = this.pricingMap.get(modelId);
     if (!pricing) {

@@ -160,9 +160,17 @@ export {
   PROTOCOL_V2_EVENTS,
   type ProtocolEvent,
 
-  // Scope map
+  // Scope map and param registries
   METHOD_SCOPE_MAP,
   METHOD_PARAM_SCHEMAS,
+  EVENT_PAYLOAD_SCHEMAS,
+
+  // Frame utilities
+  parseFrame,
+  type ParseFrameResult,
+  successResponse,
+  errorResponse,
+  eventFrame,
 } from './protocol-v2';
 
 // RPC handler
@@ -170,9 +178,12 @@ export {
   type HandlerContext,
   type MethodHandler,
   type MethodHandlerMap,
+  type RequestMetrics,
+  type RpcHandlerOptions,
   RpcHandler,
   createSubscriptionHandlers,
   createHealthPingHandler,
+  createDiscoveryHandlers,
 } from './rpc-handler';
 
 // Subscription manager
@@ -193,3 +204,78 @@ export {
   type BinaryFrameHandler,
   MessageRouter,
 } from './message-router';
+
+// Rate limiter
+export {
+  type RateLimitConfig,
+  type RateLimitResult,
+  RateLimiter,
+  DEFAULT_RATE_LIMIT_CONFIG,
+  METHOD_COST_MAP,
+} from './rate-limiter';
+
+// Message codec (compression, batching, binary encoding)
+export {
+  type CompressionAlgorithm,
+  type CodecConfig,
+  type EncodeResult,
+  type DecodeTextResult,
+  type DecodeBinaryResult,
+  MessageCodec,
+} from './message-codec';
+
+// Streaming response
+export {
+  type StreamSink,
+  type StreamProgress,
+  type StreamState,
+  StreamingResponse,
+  StreamGuard,
+  createStreamingResponse,
+} from './streaming-response';
+
+// Method registry (discovery)
+export {
+  type MethodDescriptor,
+  type EventDescriptor,
+  type DiscoveryResult,
+  type RpcDiscoverParams,
+  type RpcDescribeParams,
+  MethodRegistry,
+  RpcDiscoverParamsSchema,
+  RpcDescribeParamsSchema,
+} from './method-registry';
+
+// JSON-RPC 2.0 compatibility
+export {
+  type JsonRpcRequest,
+  type JsonRpcNotification,
+  type JsonRpcSuccessResponse,
+  type JsonRpcErrorResponse,
+  type JsonRpcMessage,
+  type InboundResult,
+  isJsonRpcMessage,
+  isJsonRpcBatch,
+  jsonRpcToNative,
+  nativeResponseToJsonRpc,
+  nativeEventToJsonRpc,
+  jsonRpcErrorResponse,
+  wundrErrorToJsonRpcCode,
+  jsonRpcCodeToWundrError,
+} from './jsonrpc-compat';
+
+// Protocol upgrade (v1 -> v2)
+export {
+  type V1Request,
+  type V1Response,
+  type V1Event,
+  type DetectedFormat,
+  isV1Message,
+  isJsonRpc2,
+  isNativeV2,
+  detectFormat,
+  v1RequestToV2,
+  v2ResponseToV1,
+  v2EventToV1,
+  V1Adapter,
+} from './protocol-upgrade';

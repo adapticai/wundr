@@ -12,7 +12,8 @@
  * existing /metrics endpoint serves everything without changes.
  */
 
-import { Counter, Gauge, Histogram, Registry, register as defaultRegister } from 'prom-client';
+import { Counter, Gauge, Histogram, Summary, register as defaultRegister } from 'prom-client';
+
 import type {
   DaemonMetrics,
   IMetricsRegistry,
@@ -25,6 +26,7 @@ import type {
   ErrorLabels,
   BudgetLabels,
 } from './types';
+import type { Registry} from 'prom-client';
 
 // ===========================================================================
 // Legacy Metrics (orchestrator_* prefix) -- unchanged for backward compat
@@ -436,6 +438,111 @@ export const systemMetrics: SystemResourceMetrics = {
   }),
 };
 
+// ---- Channel Metrics ----
+
+export interface ChannelMetrics {
+  messagesSent: Counter<string>;
+  messagesReceived: Counter<string>;
+  messageLatency: Histogram<string>;
+  errors: Counter<string>;
+  activeChannels: Gauge<string>;
+}
+
+export const channelMetrics: ChannelMetrics = {
+  messagesSent: new Counter<string>({
+    name: 'wundr_channel_messages_sent_total',
+    help: 'Total messages sent per channel',
+    labelNames: ['channel', 'message_type'],
+  }),
+  messagesReceived: new Counter<string>({
+    name: 'wundr_channel_messages_received_total',
+    help: 'Total messages received per channel',
+    labelNames: ['channel', 'message_type'],
+  }),
+  messageLatency: new Histogram<string>({
+    name: 'wundr_channel_message_latency_seconds',
+    help: 'Channel message delivery latency in seconds',
+    labelNames: ['channel'],
+    buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5],
+  }),
+  errors: new Counter<string>({
+    name: 'wundr_channel_errors_total',
+    help: 'Total channel errors by type',
+    labelNames: ['channel', 'error_type'],
+  }),
+  activeChannels: new Gauge<string>({
+    name: 'wundr_channel_active',
+    help: 'Number of currently active channels',
+    labelNames: ['channel_type'],
+  }),
+};
+
+// ---- Plugin Metrics ----
+
+export interface PluginMetrics {
+  executionDuration: Histogram<string>;
+  executionTotal: Counter<string>;
+  errors: Counter<string>;
+  activePlugins: Gauge<string>;
+  loadDuration: Histogram<string>;
+}
+
+export const pluginMetrics: PluginMetrics = {
+  executionDuration: new Histogram<string>({
+    name: 'wundr_plugin_execution_duration_seconds',
+    help: 'Plugin execution duration in seconds',
+    labelNames: ['plugin_name', 'hook', 'status'],
+    buckets: [0.001, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 30],
+  }),
+  executionTotal: new Counter<string>({
+    name: 'wundr_plugin_execution_total',
+    help: 'Total plugin executions',
+    labelNames: ['plugin_name', 'hook', 'status'],
+  }),
+  errors: new Counter<string>({
+    name: 'wundr_plugin_errors_total',
+    help: 'Total plugin execution errors',
+    labelNames: ['plugin_name', 'hook', 'error_type'],
+  }),
+  activePlugins: new Gauge<string>({
+    name: 'wundr_plugin_active',
+    help: 'Number of currently loaded plugins',
+    labelNames: [],
+  }),
+  loadDuration: new Histogram<string>({
+    name: 'wundr_plugin_load_duration_seconds',
+    help: 'Plugin load/initialization duration in seconds',
+    labelNames: ['plugin_name'],
+    buckets: [0.01, 0.05, 0.1, 0.5, 1, 5],
+  }),
+};
+
+// ---- Request Summary Metrics (Summary type for quantile tracking) ----
+
+export interface RequestSummaryMetrics {
+  requestDuration: Summary<string>;
+  tokenUsageSummary: Summary<string>;
+}
+
+export const requestSummaryMetrics: RequestSummaryMetrics = {
+  requestDuration: new Summary<string>({
+    name: 'wundr_request_duration_summary_seconds',
+    help: 'Request duration summary with quantiles',
+    labelNames: ['method', 'endpoint'],
+    percentiles: [0.5, 0.9, 0.95, 0.99],
+    maxAgeSeconds: 600,
+    ageBuckets: 5,
+  }),
+  tokenUsageSummary: new Summary<string>({
+    name: 'wundr_token_usage_summary',
+    help: 'Token usage summary with quantiles',
+    labelNames: ['provider', 'model'],
+    percentiles: [0.5, 0.9, 0.95, 0.99],
+    maxAgeSeconds: 600,
+    ageBuckets: 5,
+  }),
+};
+
 // ===========================================================================
 // System Metrics Collector
 // ===========================================================================
@@ -448,7 +555,9 @@ let systemMetricsTimer: NodeJS.Timeout | null = null;
 let eventLoopLagTimer: NodeJS.Timeout | null = null;
 
 export function startSystemMetricsCollection(intervalMs: number = 15000): void {
-  if (systemMetricsTimer) return;
+  if (systemMetricsTimer) {
+return;
+}
 
   const collectSystemMetrics = () => {
     const mem = process.memoryUsage();
@@ -547,7 +656,7 @@ export class MetricsRegistry implements IMetricsRegistry {
    * @returns The requested metric or undefined if not found
    */
   getMetric(
-    name: keyof DaemonMetrics
+    name: keyof DaemonMetrics,
   ): Counter<string> | Gauge<string> | Histogram<string> | undefined {
     return daemonMetrics[name];
   }
@@ -778,6 +887,105 @@ export function recordMemoryOperation(params: {
   } else if (params.operation === 'compact') {
     memoryMetrics.compactions.inc({ tier: params.tier, strategy: 'summarize-and-archive' });
   }
+}
+
+/**
+ * Record a channel message sent.
+ */
+export function recordChannelMessageSent(
+  channel: string,
+  messageType: string = 'default',
+): void {
+  channelMetrics.messagesSent.inc({ channel, message_type: messageType });
+}
+
+/**
+ * Record a channel message received.
+ */
+export function recordChannelMessageReceived(
+  channel: string,
+  messageType: string = 'default',
+): void {
+  channelMetrics.messagesReceived.inc({ channel, message_type: messageType });
+}
+
+/**
+ * Record channel message delivery latency.
+ */
+export function recordChannelLatency(
+  channel: string,
+  durationSeconds: number,
+): void {
+  channelMetrics.messageLatency.observe({ channel }, durationSeconds);
+}
+
+/**
+ * Record a channel error.
+ */
+export function recordChannelError(
+  channel: string,
+  errorType: string,
+): void {
+  channelMetrics.errors.inc({ channel, error_type: errorType });
+}
+
+/**
+ * Record a plugin execution with duration.
+ */
+export function recordPluginExecution(
+  pluginName: string,
+  hook: string,
+  status: 'success' | 'error' | 'timeout',
+  durationSeconds: number,
+): void {
+  pluginMetrics.executionTotal.inc({ plugin_name: pluginName, hook, status });
+  pluginMetrics.executionDuration.observe(
+    { plugin_name: pluginName, hook, status },
+    durationSeconds,
+  );
+}
+
+/**
+ * Record a plugin error.
+ */
+export function recordPluginError(
+  pluginName: string,
+  hook: string,
+  errorType: string,
+): void {
+  pluginMetrics.errors.inc({
+    plugin_name: pluginName,
+    hook,
+    error_type: errorType,
+  });
+}
+
+/**
+ * Record a request duration in the summary metric for quantile tracking.
+ */
+export function recordRequestDuration(
+  method: string,
+  endpoint: string,
+  durationSeconds: number,
+): void {
+  requestSummaryMetrics.requestDuration.observe(
+    { method, endpoint },
+    durationSeconds,
+  );
+}
+
+/**
+ * Record token usage in the summary metric for quantile tracking.
+ */
+export function recordTokenUsageSummary(
+  provider: string,
+  model: string,
+  tokenCount: number,
+): void {
+  requestSummaryMetrics.tokenUsageSummary.observe(
+    { provider, model },
+    tokenCount,
+  );
 }
 
 /**

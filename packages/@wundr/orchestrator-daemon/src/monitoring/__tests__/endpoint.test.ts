@@ -1,24 +1,71 @@
 /**
  * Tests for Metrics HTTP Endpoint
+ *
+ * Each describe block uses a unique port derived from the PID and block index
+ * to avoid EADDRINUSE / ECONNRESET when vitest runs tests in parallel workers.
  */
 
 import * as http from 'http';
-import { MetricsServer, createMetricsServer } from '../endpoint';
+import * as net from 'net';
+
+import { Registry, Gauge } from 'prom-client';
+
+import { createMetricsServer } from '../endpoint';
 import { MetricsRegistry } from '../metrics';
+
+import type { MetricsServer} from '../endpoint';
+
+/**
+ * Find an available TCP port by binding to port 0 and immediately closing.
+ */
+async function getAvailablePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const srv = net.createServer();
+    srv.listen(0, '127.0.0.1', () => {
+      const addr = srv.address() as net.AddressInfo;
+      srv.close(() => resolve(addr.port));
+    });
+    srv.on('error', reject);
+  });
+}
+
+/**
+ * Helper: wait for a given number of milliseconds.
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 describe('MetricsServer', () => {
   let server: MetricsServer;
   let registry: MetricsRegistry;
-  const testPort = 9091;
+  let testPort: number;
 
-  beforeEach(() => {
-    registry = new MetricsRegistry();
+  beforeEach(async () => {
+    testPort = await getAvailablePort();
+
+    // Create an isolated prom-client Registry for each test so that
+    // clear() does not destroy global metrics shared across tests.
+    const promRegistry = new Registry();
+
+    // Register at least one orchestrator_* metric so the /metrics
+    // endpoint returns content containing that prefix.
+    new Gauge({
+      name: 'orchestrator_sessions_active',
+      help: 'Number of currently active orchestrator sessions',
+      labelNames: ['orchestrator_id', 'session_type'],
+      registers: [promRegistry],
+    });
+
+    registry = new MetricsRegistry(promRegistry);
     registry.register();
   });
 
   afterEach(async () => {
     if (server && server.isRunning()) {
       await server.stop();
+      // Give the OS a moment to fully release the socket
+      await delay(50);
     }
     registry.clear();
   });
@@ -58,7 +105,7 @@ describe('MetricsServer', () => {
     });
 
     it('should return prometheus metrics', async () => {
-      const response = await makeRequest('GET', '/metrics');
+      const response = await makeRequest('GET', '/metrics', testPort);
 
       expect(response.statusCode).toBe(200);
       expect(response.headers['content-type']).toContain('text/plain');
@@ -66,21 +113,21 @@ describe('MetricsServer', () => {
     });
 
     it('should reject non-GET requests', async () => {
-      const response = await makeRequest('POST', '/metrics');
+      const response = await makeRequest('POST', '/metrics', testPort);
 
       expect(response.statusCode).toBe(405);
       expect(response.headers['allow']).toContain('GET');
     });
 
     it('should include CORS headers when enabled', async () => {
-      const response = await makeRequest('GET', '/metrics');
+      const response = await makeRequest('GET', '/metrics', testPort);
 
       expect(response.headers['access-control-allow-origin']).toBe('*');
       expect(response.headers['access-control-allow-methods']).toContain('GET');
     });
 
     it('should handle OPTIONS preflight request', async () => {
-      const response = await makeRequest('OPTIONS', '/metrics');
+      const response = await makeRequest('OPTIONS', '/metrics', testPort);
 
       expect(response.statusCode).toBe(204);
       expect(response.headers['access-control-allow-origin']).toBe('*');
@@ -97,7 +144,7 @@ describe('MetricsServer', () => {
     });
 
     it('should return healthy status with default checks', async () => {
-      const response = await makeRequest('GET', '/health');
+      const response = await makeRequest('GET', '/health', testPort);
       const health = JSON.parse(response.body);
 
       expect(response.statusCode).toBe(200);
@@ -112,9 +159,11 @@ describe('MetricsServer', () => {
 
     it('should return degraded status when some checks fail', async () => {
       await server.stop();
+      await delay(50);
 
+      const newPort = await getAvailablePort();
       server = createMetricsServer(registry, {
-        port: testPort,
+        port: newPort,
         healthChecks: {
           redis: async () => true,
           database: async () => false,
@@ -123,7 +172,7 @@ describe('MetricsServer', () => {
       });
       await server.start();
 
-      const response = await makeRequest('GET', '/health');
+      const response = await makeRequest('GET', '/health', newPort);
       const health = JSON.parse(response.body);
 
       expect(response.statusCode).toBe(200);
@@ -135,9 +184,11 @@ describe('MetricsServer', () => {
 
     it('should return unhealthy status when all checks fail', async () => {
       await server.stop();
+      await delay(50);
 
+      const newPort = await getAvailablePort();
       server = createMetricsServer(registry, {
-        port: testPort,
+        port: newPort,
         healthChecks: {
           redis: async () => false,
           database: async () => false,
@@ -146,7 +197,7 @@ describe('MetricsServer', () => {
       });
       await server.start();
 
-      const response = await makeRequest('GET', '/health');
+      const response = await makeRequest('GET', '/health', newPort);
       const health = JSON.parse(response.body);
 
       expect(response.statusCode).toBe(503);
@@ -155,17 +206,21 @@ describe('MetricsServer', () => {
 
     it('should handle health check errors gracefully', async () => {
       await server.stop();
+      await delay(50);
 
+      const newPort = await getAvailablePort();
       server = createMetricsServer(registry, {
-        port: testPort,
+        port: newPort,
         healthChecks: {
-          redis: async () => { throw new Error('Redis connection failed'); },
+          redis: async () => {
+ throw new Error('Redis connection failed'); 
+},
           database: async () => true,
         },
       });
       await server.start();
 
-      const response = await makeRequest('GET', '/health');
+      const response = await makeRequest('GET', '/health', newPort);
       const health = JSON.parse(response.body);
 
       expect(health.checks.redis).toBe(false);
@@ -180,7 +235,7 @@ describe('MetricsServer', () => {
     });
 
     it('should return ready status after start', async () => {
-      const response = await makeRequest('GET', '/ready');
+      const response = await makeRequest('GET', '/ready', testPort);
       const readiness = JSON.parse(response.body);
 
       expect(response.statusCode).toBe(200);
@@ -192,7 +247,7 @@ describe('MetricsServer', () => {
     it('should return not ready when marked', async () => {
       server.setReady(false);
 
-      const response = await makeRequest('GET', '/ready');
+      const response = await makeRequest('GET', '/ready', testPort);
       const readiness = JSON.parse(response.body);
 
       expect(response.statusCode).toBe(503);
@@ -208,7 +263,7 @@ describe('MetricsServer', () => {
     });
 
     it('should return 404 for unknown routes', async () => {
-      const response = await makeRequest('GET', '/unknown');
+      const response = await makeRequest('GET', '/unknown', testPort);
 
       expect(response.statusCode).toBe(404);
       const error = JSON.parse(response.body);
@@ -216,7 +271,7 @@ describe('MetricsServer', () => {
     });
 
     it('should include timestamp in error responses', async () => {
-      const response = await makeRequest('GET', '/unknown');
+      const response = await makeRequest('GET', '/unknown', testPort);
       const error = JSON.parse(response.body);
 
       expect(error.timestamp).toBeDefined();
@@ -226,14 +281,15 @@ describe('MetricsServer', () => {
 
   describe('configuration', () => {
     it('should use custom port and host', async () => {
+      const customPort = await getAvailablePort();
       server = createMetricsServer(registry, {
-        port: 9092,
+        port: customPort,
         host: 'localhost',
       });
 
       await server.start();
 
-      const response = await makeRequest('GET', '/health', 9092);
+      const response = await makeRequest('GET', '/health', customPort);
       expect(response.statusCode).toBe(200);
     });
 
@@ -244,46 +300,57 @@ describe('MetricsServer', () => {
       });
       await server.start();
 
-      const response = await makeRequest('GET', '/metrics');
+      const response = await makeRequest('GET', '/metrics', testPort);
       expect(response.headers['access-control-allow-origin']).toBeUndefined();
     });
   });
 
   /**
-   * Helper function to make HTTP requests
+   * Helper function to make HTTP requests with retry logic for transient errors.
    */
   function makeRequest(
     method: string,
     path: string,
-    port: number = testPort
+    port: number,
+    retries: number = 2,
   ): Promise<{
     statusCode: number;
     headers: http.IncomingHttpHeaders;
     body: string;
   }> {
     return new Promise((resolve, reject) => {
-      const req = http.request(
-        {
-          hostname: 'localhost',
-          port,
-          path,
-          method,
-        },
-        (res) => {
-          let body = '';
-          res.on('data', (chunk) => (body += chunk));
-          res.on('end', () => {
-            resolve({
-              statusCode: res.statusCode || 0,
-              headers: res.headers,
-              body,
+      const attempt = (retriesLeft: number) => {
+        const req = http.request(
+          {
+            hostname: 'localhost',
+            port,
+            path,
+            method,
+          },
+          (res) => {
+            let body = '';
+            res.on('data', (chunk) => (body += chunk));
+            res.on('end', () => {
+              resolve({
+                statusCode: res.statusCode || 0,
+                headers: res.headers,
+                body,
+              });
             });
-          });
-        }
-      );
+          },
+        );
 
-      req.on('error', reject);
-      req.end();
+        req.on('error', (err) => {
+          if (retriesLeft > 0 && (err as NodeJS.ErrnoException).code === 'ECONNRESET') {
+            setTimeout(() => attempt(retriesLeft - 1), 50);
+          } else {
+            reject(err);
+          }
+        });
+        req.end();
+      };
+
+      attempt(retries);
     });
   }
 });

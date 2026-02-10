@@ -697,6 +697,9 @@ export const PROTOCOL_V2_METHODS = [
   // Subscription
   'subscribe',
   'unsubscribe',
+  // Discovery
+  'rpc.discover',
+  'rpc.describe',
 ] as const;
 
 export type ProtocolMethod = (typeof PROTOCOL_V2_METHODS)[number];
@@ -708,6 +711,7 @@ export const PROTOCOL_V2_EVENTS = [
   'stream.chunk',
   'stream.end',
   'stream.error',
+  'stream.progress',
   // Tool
   'tool.request',
   'tool.result',
@@ -777,6 +781,10 @@ export const METHOD_SCOPE_MAP: Record<string, Scope[]> = {
   // Subscriptions
   'subscribe': [Scopes.READ],
   'unsubscribe': [Scopes.READ],
+
+  // Discovery (no scope required -- publicly available)
+  'rpc.discover': [],
+  'rpc.describe': [],
 };
 
 // ---------------------------------------------------------------------------
@@ -849,3 +857,125 @@ export const METHOD_PARAM_SCHEMAS: Partial<Record<string, z.ZodType>> = {
   'subscribe': SubscribeParamsSchema,
   'unsubscribe': UnsubscribeParamsSchema,
 };
+
+// ---------------------------------------------------------------------------
+// Event payload schema registry -- maps event names to their Zod payload schemas
+// ---------------------------------------------------------------------------
+
+export const EVENT_PAYLOAD_SCHEMAS: Partial<Record<string, z.ZodType>> = {
+  'stream.start': StreamStartPayloadSchema,
+  'stream.chunk': StreamChunkPayloadSchema,
+  'stream.end': StreamEndPayloadSchema,
+  'stream.error': StreamErrorPayloadSchema,
+  'stream.progress': z.object({
+    streamId: z.string().min(1),
+    requestId: z.string().min(1),
+    index: z.number().int().nonnegative(),
+    data: z.unknown(),
+    progress: z.number().min(0).max(1).optional(),
+    message: z.string().optional(),
+  }),
+  'tool.request': ToolRequestPayloadSchema,
+  'tool.result': ToolResultPayloadSchema,
+  'tool.status': ToolStatusPayloadSchema,
+  'agent.status': AgentStatusPayloadSchema,
+  'agent.spawned': AgentStatusPayloadSchema,
+  'agent.stopped': AgentStatusPayloadSchema,
+  'team.status': TeamStatusPayloadSchema,
+  'team.message': TeamMessageParamsSchema,
+  'team.dissolved': TeamDissolveParamsSchema,
+  'health.heartbeat': HeartbeatPayloadSchema,
+  'session.status': z.object({
+    sessionId: z.string().min(1),
+    status: z.enum(['initializing', 'running', 'paused', 'completed', 'failed', 'terminated']),
+    metadata: z.record(z.unknown()).optional(),
+  }),
+  'session.created': z.object({
+    sessionId: z.string().min(1),
+    sessionType: SessionTypeSchema,
+    metadata: z.record(z.unknown()).optional(),
+  }),
+  'session.stopped': z.object({
+    sessionId: z.string().min(1),
+    reason: z.string().optional(),
+  }),
+};
+
+// ---------------------------------------------------------------------------
+// Frame parsing utility
+// ---------------------------------------------------------------------------
+
+export type ParseFrameResult =
+  | { ok: true; frame: ProtocolFrame }
+  | { ok: false; error: string; requestId?: string };
+
+/**
+ * Parse a raw JSON string into a validated ProtocolFrame.
+ *
+ * Returns a discriminated result so the caller can extract the request ID
+ * for error responses even when the frame is malformed.
+ */
+export function parseFrame(data: string): ParseFrameResult {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return { ok: false, error: 'malformed JSON' };
+  }
+
+  // Extract id for error correlation even on parse failure
+  const maybeId =
+    parsed && typeof parsed === 'object' && 'id' in parsed
+      ? String((parsed as Record<string, unknown>).id)
+      : undefined;
+
+  const result = ProtocolFrameSchema.safeParse(parsed);
+  if (!result.success) {
+    return {
+      ok: false,
+      error: `invalid frame: ${result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')}`,
+      requestId: maybeId,
+    };
+  }
+
+  return { ok: true, frame: result.data };
+}
+
+// ---------------------------------------------------------------------------
+// Response construction helpers
+// ---------------------------------------------------------------------------
+
+/** Build a success ResponseFrame. */
+export function successResponse(id: string, payload?: unknown): ResponseFrame {
+  return { type: 'res', id, ok: true, payload };
+}
+
+/** Build an error ResponseFrame. */
+export function errorResponse(
+  id: string,
+  code: ErrorCode,
+  message: string,
+  opts?: { details?: unknown; retryable?: boolean; retryAfterMs?: number },
+): ResponseFrame {
+  return {
+    type: 'res',
+    id,
+    ok: false,
+    error: errorShape(code, message, opts),
+  };
+}
+
+/** Build an EventFrame. */
+export function eventFrame(
+  event: string,
+  payload?: unknown,
+  opts?: { seq?: number; subscriptionId?: string },
+): EventFrame {
+  return {
+    type: 'event',
+    event,
+    payload,
+    seq: opts?.seq,
+    subscriptionId: opts?.subscriptionId,
+  };
+}

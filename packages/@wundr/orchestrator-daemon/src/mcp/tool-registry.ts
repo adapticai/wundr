@@ -8,12 +8,13 @@
  * - Integration with neolith-mcp-server tools
  */
 
-import { promises as fs } from 'fs';
 import { exec } from 'child_process';
-import { promisify } from 'util';
-import * as path from 'path';
-import * as https from 'https';
+import { promises as fs } from 'fs';
 import * as http from 'http';
+import * as https from 'https';
+import * as path from 'path';
+import { promisify } from 'util';
+
 import { Logger } from '../utils/logger';
 
 const execAsync = promisify(exec);
@@ -417,14 +418,14 @@ export class McpToolRegistryImpl implements McpToolRegistry {
         required: ['path'],
       },
       execute: async (params: { path: string; recursive?: boolean }) => {
-        const { path: dirPath, recursive = false } = params;
+        const { path: dirPath } = params;
 
         if (this.safetyChecks && this.isPathDangerous(dirPath)) {
           throw new Error(`Access denied: Path is unsafe - ${dirPath}`);
         }
 
         const resolvedPath = path.resolve(dirPath);
-        const entries = await fs.readdir(resolvedPath, { withFileTypes: true });
+        const entries = await fs.readdir(resolvedPath, { withFileTypes: true, encoding: 'utf-8' });
 
         const files = await Promise.all(
           entries.map(async (entry) => {
@@ -501,7 +502,6 @@ export class McpToolRegistryImpl implements McpToolRegistry {
    * Check if a path is potentially dangerous
    */
   private isPathDangerous(filePath: string): boolean {
-    const normalized = path.normalize(filePath);
     const resolved = path.resolve(filePath);
 
     // Check for path traversal in the input
@@ -510,6 +510,7 @@ export class McpToolRegistryImpl implements McpToolRegistry {
     }
 
     // Allow temp directories
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const tmpDir = path.normalize(require('os').tmpdir());
     if (resolved.startsWith(tmpDir)) {
       return false;
@@ -522,6 +523,7 @@ export class McpToolRegistryImpl implements McpToolRegistry {
     }
 
     // Allow user home directory
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const homeDir = require('os').homedir();
     if (resolved.startsWith(homeDir)) {
       return false;

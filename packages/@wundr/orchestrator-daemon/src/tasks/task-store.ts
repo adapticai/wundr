@@ -10,8 +10,8 @@
  * strings when stored in SQLite, and deserialize on read.
  */
 
-import { Logger } from '../utils/logger';
 import { TaskStoreError, DuplicateTaskError } from './task-types';
+import { Logger } from '../utils/logger';
 
 import type { ITaskStore, ManagedTask, TaskQuery, TaskStatus, TaskPriority } from './task-types';
 
@@ -412,11 +412,16 @@ function rowToTask(row: SqliteRow): ManagedTask {
 
 /**
  * Dynamically loads the better-sqlite3 module. Returns the Database constructor.
+ * Uses a string variable for the module name to avoid static analysis by the
+ * TypeScript compiler, since better-sqlite3 is an optional peer dependency.
  */
 async function loadSqliteDriver(): Promise<new (path: string) => SqliteDatabase> {
   try {
-    const mod = await import('better-sqlite3');
-    return (mod.default ?? mod) as unknown as new (path: string) => SqliteDatabase;
+    // Use a variable to prevent TypeScript from resolving the module statically.
+    const moduleName = 'better-sqlite3';
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+    const mod = require(moduleName);
+    return (mod.default ?? mod) as new (path: string) => SqliteDatabase;
   } catch {
     throw new TaskStoreError(
       'better-sqlite3 is required for SqliteTaskStore. Install with: pnpm add better-sqlite3',

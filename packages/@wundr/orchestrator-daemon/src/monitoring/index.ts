@@ -1,7 +1,7 @@
 /**
  * Monitoring Module
  * Exports for Prometheus metrics, structured logging, tracing,
- * health checks, and monitoring functionality.
+ * health checks, alerting, retention, and monitoring functionality.
  */
 
 // ---------------------------------------------------------------------------
@@ -30,6 +30,9 @@ export {
   modelMetrics,
   queueMetrics,
   systemMetrics,
+  channelMetrics,
+  pluginMetrics,
+  requestSummaryMetrics,
   // Enhanced helper functions
   recordAgentSpawned,
   recordAgentCompleted,
@@ -41,6 +44,14 @@ export {
   recordWsMessageSent,
   recordToolExecution,
   recordMemoryOperation,
+  recordChannelMessageSent,
+  recordChannelMessageReceived,
+  recordChannelLatency,
+  recordChannelError,
+  recordPluginExecution,
+  recordPluginError,
+  recordRequestDuration,
+  recordTokenUsageSummary,
   // System metrics collection
   startSystemMetricsCollection,
   stopSystemMetricsCollection,
@@ -55,6 +66,9 @@ export type {
   ModelRoutingMetrics,
   QueueMetrics,
   SystemResourceMetrics,
+  ChannelMetrics,
+  PluginMetrics,
+  RequestSummaryMetrics,
 } from './metrics';
 
 // ---------------------------------------------------------------------------
@@ -97,8 +111,10 @@ export type {
 export {
   StructuredLogger,
   InMemoryLogWriter,
+  LogLevelRegistry,
   createLogger,
   createChildLogger,
+  getLogLevelRegistry,
 } from './logger';
 
 export type {
@@ -121,6 +137,8 @@ export {
   createTracer,
   generateTraceId,
   generateSpanId,
+  SpanExporter,
+  createSpanExporter,
 } from './tracing';
 
 export type {
@@ -130,6 +148,8 @@ export type {
   SpanEvent,
   SpanOptions,
   TracingConfig,
+  OTLPSpan,
+  SpanExporterConfig,
 } from './tracing';
 
 // ---------------------------------------------------------------------------
@@ -153,6 +173,41 @@ export type {
   HealthCheckConfig,
   DaemonStatusProvider,
 } from './health';
+
+// ---------------------------------------------------------------------------
+// Alert thresholds
+// ---------------------------------------------------------------------------
+
+export {
+  AlertManager,
+  createAlertManager,
+} from './alerts';
+
+export type {
+  AlertSeverity,
+  AlertState,
+  ComparisonOp,
+  AlertThreshold,
+  Alert,
+  AlertManagerConfig,
+} from './alerts';
+
+// ---------------------------------------------------------------------------
+// Metric retention and rollup
+// ---------------------------------------------------------------------------
+
+export {
+  MetricRetentionStore,
+  createRetentionStore,
+} from './retention';
+
+export type {
+  DataPoint,
+  RollupPoint,
+  RetentionConfig,
+  MetricTimeSeries,
+  DashboardExport,
+} from './retention';
 
 // ---------------------------------------------------------------------------
 // Types (legacy)

@@ -2,7 +2,9 @@
  * LoadBalancer Usage Examples
  */
 
-import { LoadBalancer, LoadBalancerNode } from '../load-balancer';
+import { LoadBalancer } from '../load-balancer';
+
+import type { LoadBalancerNode } from '../load-balancer';
 
 /**
  * Example 1: Basic Round-Robin Load Balancing

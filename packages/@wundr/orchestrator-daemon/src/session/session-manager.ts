@@ -4,14 +4,14 @@
 
 import { EventEmitter } from 'eventemitter3';
 
-import { MemoryContext } from '../types';
+import { SessionExecutor } from './session-executor';
 import { Logger } from '../utils/logger';
-import { SessionExecutor, SessionExecutionOptions } from './session-executor';
 
+import type { SessionExecutionOptions } from './session-executor';
 import type { MemoryManager } from '../memory/memory-manager';
 import type { Session, Task, SessionMetrics} from '../types';
-import type { LLMClient } from '@wundr.io/ai-integration/dist/llm/client';
 import type { McpToolRegistry } from './tool-executor';
+import type { LLMClient } from '../types/llm';
 
 export class SessionManager extends EventEmitter {
   private logger: Logger;

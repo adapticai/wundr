@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { z } from 'zod';
 
@@ -209,7 +210,7 @@ function deepMerge<T extends Record<string, any>>(base: T, override: Partial<T>)
     ) {
       result[key as Extract<keyof T, string>] = deepMerge(
         baseValue as Record<string, any>,
-        overrideValue as Record<string, any>
+        overrideValue as Record<string, any>,
       ) as T[Extract<keyof T, string>];
     } else if (overrideValue !== undefined) {
       result[key as Extract<keyof T, string>] = overrideValue as T[Extract<keyof T, string>];
@@ -260,7 +261,7 @@ export async function loadCharterFromFile(filePath: string): Promise<Charter> {
  */
 export async function loadCharter(
   filePath?: string,
-  options: { useEnvOverrides?: boolean } = {}
+  options: { useEnvOverrides?: boolean } = {},
 ): Promise<Charter> {
   let charter = DEFAULT_CHARTER;
 

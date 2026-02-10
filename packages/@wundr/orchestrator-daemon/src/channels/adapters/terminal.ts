@@ -13,6 +13,9 @@
  */
 
 import * as readline from 'node:readline';
+
+import { BaseChannelAdapter } from '../types.js';
+
 import type {
   ChannelCapabilities,
   ChannelConfig,
@@ -22,13 +25,10 @@ import type {
   ChatType,
   DeliveryResult,
   NormalizedMessage,
-  NormalizedSender,
-  OutboundAttachment,
   OutboundMessage,
   PairingConfig,
   SenderValidation,
 } from '../types.js';
-import { BaseChannelAdapter } from '../types.js';
 
 // ---------------------------------------------------------------------------
 // Terminal-Specific Configuration
@@ -120,7 +120,7 @@ export class TerminalChannelAdapter extends BaseChannelAdapter {
 
     process.stdout.write(`\n${banner}\n`);
     process.stdout.write(
-      `Type messages to interact with the Orchestrator. Ctrl+C to exit.\n\n`,
+      'Type messages to interact with the Orchestrator. Ctrl+C to exit.\n\n',
     );
 
     this.rl.prompt();
@@ -235,7 +235,9 @@ export class TerminalChannelAdapter extends BaseChannelAdapter {
   // -----------------------------------------------------------------------
 
   private setupEventHandlers(): void {
-    if (!this.rl) return;
+    if (!this.rl) {
+return;
+}
 
     this.rl.on('line', (input: string) => {
       const trimmed = input.trim();

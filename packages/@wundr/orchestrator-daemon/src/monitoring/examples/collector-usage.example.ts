@@ -63,7 +63,7 @@ async function example() {
 
   const result = await collector.withMetrics(
     processTask,
-    { orchestrator_id: 'orch-1' }
+    { orchestrator_id: 'orch-1' },
   );
   console.log('Task result:', result);
 

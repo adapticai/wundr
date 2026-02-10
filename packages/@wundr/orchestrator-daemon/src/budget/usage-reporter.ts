@@ -3,6 +3,11 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
+import { getCostCalculator } from './cost-calculator';
+import { UsageReporterConfigSchema } from './types';
+
+import type { CostCalculator} from './cost-calculator';
 import type {
   TokenUsageRecord,
   ReportParams,
@@ -12,14 +17,11 @@ import type {
   Anomaly,
   UsageDataPoint,
   UsageStatistics,
-  AnomalyDetectionConfig,
   BudgetStatus,
   UsageReporterConfig,
   CostParams,
   CostEstimate,
 } from './types';
-import { UsageReporterConfigSchema } from './types';
-import { CostCalculator, getCostCalculator } from './cost-calculator';
 
 /**
  * In-memory storage interface (for databases, implement this)
@@ -88,7 +90,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
   constructor(
     config?: Partial<UsageReporterConfig>,
     storage?: UsageStorage,
-    costCalculator?: CostCalculator
+    costCalculator?: CostCalculator,
   ) {
     super();
     this.config = UsageReporterConfigSchema.parse(config || {});
@@ -156,7 +158,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
       records,
       this.config.defaultCurrency,
       true,
-      'monthly'
+      'monthly',
     );
 
     return {
@@ -187,7 +189,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
       records,
       params.currency || this.config.defaultCurrency,
       params.includeProjection || false,
-      'monthly'
+      'monthly',
     );
   }
 
@@ -251,7 +253,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
   public async getBudgetStatus(
     orchestratorId: string,
     period: 'hourly' | 'daily' | 'monthly',
-    limit: number
+    limit: number,
   ): Promise<BudgetStatus> {
     const now = new Date();
     let startTime: Date;
@@ -355,7 +357,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
    */
   private calculateBreakdown(
     records: TokenUsageRecord[],
-    groupBy?: ('orchestrator' | 'session' | 'model' | 'tool')[]
+    groupBy?: ('orchestrator' | 'session' | 'model' | 'tool')[],
   ): UsageBreakdown[] {
     if (!groupBy || groupBy.length === 0) {
       groupBy = ['orchestrator', 'model'];
@@ -417,7 +419,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
    */
   private groupByTimeWindows(
     records: TokenUsageRecord[],
-    windowSizeMs: number
+    windowSizeMs: number,
   ): UsageDataPoint[] {
     const windows = new Map<number, TokenUsageRecord[]>();
 
@@ -483,7 +485,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
     // Run cleanup daily
     this.cleanupInterval = setInterval(
       () => this.cleanupOldRecords(),
-      24 * 60 * 60 * 1000
+      24 * 60 * 60 * 1000,
     );
   }
 

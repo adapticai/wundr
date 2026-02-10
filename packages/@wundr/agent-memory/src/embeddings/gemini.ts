@@ -6,6 +6,9 @@
  *
  * Gemini uses task-type hints (RETRIEVAL_QUERY vs RETRIEVAL_DOCUMENT) to optimize
  * embeddings for different use cases.
+ *
+ * Enhanced with lazy initialization -- the provider validates its configuration
+ * eagerly but defers no resources until the first embed call.
  */
 
 import {
@@ -62,6 +65,8 @@ const MAX_BATCH_SIZE = 100;
  * Uses the REST API for embeddings:
  * - Single: `POST /v1beta/models/{model}:embedContent`
  * - Batch:  `POST /v1beta/models/{model}:batchEmbedContents`
+ *
+ * Created synchronously; first API call is deferred until embedText/embedBatch.
  */
 export class GeminiEmbeddingProvider implements EmbeddingProvider {
   readonly id = 'gemini' as const;
@@ -75,6 +80,8 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
   private readonly headers: Record<string, string>;
   private readonly rateLimiter: RateLimiter;
   readonly costTracker: CostTracker;
+
+  private initialized = false;
 
   constructor(config: {
     model: string;
@@ -125,6 +132,7 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
 
   async dispose(): Promise<void> {
     // No persistent resources to clean up.
+    this.initialized = false;
   }
 
   // ==========================================================================
@@ -138,8 +146,9 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
     const tokenCount = estimateTokens(text);
     const maxRetries = PROVIDER_RATE_LIMITS.gemini.maxRetries;
     let attempt = 0;
+    let retrying = true;
 
-    while (true) {
+    while (retrying) {
       const delay = this.rateLimiter.check(tokenCount);
       if (delay > 0) {
         await sleep(delay);
@@ -185,6 +194,9 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
         const costPerMillion = MODEL_COST_PER_MILLION[this.model] ?? 0;
         this.costTracker.estimatedCostUsd += (tokenCount / 1_000_000) * costPerMillion;
 
+        this.initialized = true;
+        retrying = false;
+
         return {
           embedding: normalizeEmbedding(payload.embedding?.values ?? []),
           tokenCount,
@@ -203,6 +215,9 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
         throw err;
       }
     }
+
+    // Unreachable, but satisfies TypeScript return type
+    throw new Error('Gemini embeddings: unexpected loop exit');
   }
 
   private async callBatchApi(
@@ -212,8 +227,9 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
     const totalTokens = texts.reduce((sum, text) => sum + estimateTokens(text), 0);
     const maxRetries = PROVIDER_RATE_LIMITS.gemini.maxRetries;
     let attempt = 0;
+    let retrying = true;
 
-    while (true) {
+    while (retrying) {
       const delay = this.rateLimiter.check(totalTokens);
       if (delay > 0) {
         await sleep(delay);
@@ -262,6 +278,9 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
         const costPerMillion = MODEL_COST_PER_MILLION[this.model] ?? 0;
         this.costTracker.estimatedCostUsd += (totalTokens / 1_000_000) * costPerMillion;
 
+        this.initialized = true;
+        retrying = false;
+
         return texts.map((text, idx) => ({
           embedding: normalizeEmbedding(embeddings[idx]?.values ?? []),
           tokenCount: estimateTokens(text),
@@ -280,6 +299,9 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
         throw err;
       }
     }
+
+    // Unreachable, but satisfies TypeScript return type
+    throw new Error('Gemini batch embeddings: unexpected loop exit');
   }
 }
 

@@ -12,19 +12,33 @@
  * - Shared task list + mailbox for coordination
  * - TeammateIdle and TaskCompleted hooks for quality gates
  *
+ * Comprehensive coordination features:
+ * - TaskAssigner: round-robin, capability-based, and load-balanced assignment
+ * - DependencyTracker: DAG-based dependency tracking with deadlock detection
+ * - TeamContext: shared memory, progress reporting, and result aggregation
+ * - Team configuration from settings (TeamSettingsConfig)
+ * - Max team size enforcement via settings
+ * - Session cleanup tracking with timeout
+ *
  * Integration points:
  * - SessionManager: spawns teammate sessions
  * - SharedTaskList: cross-session task coordination
  * - Mailbox: inter-teammate messaging
  * - TeamHooks: quality gate enforcement
+ * - TaskAssigner: automatic task distribution
+ * - DependencyTracker: dependency graph and deadlock detection
+ * - TeamContext: shared context, progress, and results
  */
 
 import { execFileSync } from 'child_process';
 
 import { EventEmitter } from 'eventemitter3';
 
+import { DependencyTracker } from './dependency-tracker';
 import { Mailbox } from './mailbox';
 import { SharedTaskList, type CreateTaskInput } from './shared-task-list';
+import { TaskAssigner, type AssignmentCandidate, type AssignmentStrategy, type TeammateCapabilities } from './task-assignment';
+import { TeamContext, type TeamSettingsConfig, type TeamProgress, type TeamResult } from './team-context';
 import { TeamHooks, type HookConfig } from './team-hooks';
 
 // ---------------------------------------------------------------------------
@@ -73,6 +87,10 @@ export interface CreateTeamInput {
   readonly maxTeammates?: number;
   readonly delegateMode?: boolean;
   readonly metadata?: Record<string, unknown>;
+  /** Team-specific settings (merged with global defaults). */
+  readonly settings?: Partial<TeamSettingsConfig>;
+  /** Initial task assignment strategy. */
+  readonly assignmentStrategy?: AssignmentStrategy;
 }
 
 export interface SpawnTeammateOptions {
@@ -82,6 +100,10 @@ export interface SpawnTeammateOptions {
   readonly model?: string;
   readonly planApprovalRequired?: boolean;
   readonly agentType?: string;
+  /** Capabilities for capability-based task assignment. */
+  readonly capabilities?: string[];
+  /** Max concurrent tasks this teammate can handle. */
+  readonly maxConcurrentTasks?: number;
 }
 
 /**
@@ -110,13 +132,35 @@ export interface TeamCoordinatorEvents {
   'team:active': (team: TeamConfig) => void;
   'team:shutting-down': (teamId: string) => void;
   'team:cleaned-up': (teamId: string) => void;
+  'team:all-tasks-complete': (teamId: string, result: TeamResult) => void;
   'teammate:spawned': (teamId: string, member: TeamMember) => void;
   'teammate:active': (teamId: string, memberId: string) => void;
   'teammate:idle': (teamId: string, memberId: string) => void;
   'teammate:stopped': (teamId: string, memberId: string) => void;
   'teammate:shutdown-requested': (teamId: string, memberId: string) => void;
   'teammate:crash-recovered': (teamId: string, memberId: string, releasedTasks: string[]) => void;
+  'teammate:work-redistributed': (teamId: string, memberId: string, assignedTaskIds: string[]) => void;
   'delegate-mode:changed': (teamId: string, enabled: boolean) => void;
+  'monitor:heartbeat': (teamId: string, activeCount: number, staleCount: number) => void;
+  'monitor:stale-detected': (teamId: string, memberId: string) => void;
+  'task:auto-assigned': (teamId: string, taskId: string, assigneeId: string, strategy: string) => void;
+  'dependency:deadlock-detected': (teamId: string, cyclePath: string[]) => void;
+  'progress:updated': (teamId: string, progress: TeamProgress) => void;
+}
+
+export interface TeamCoordinatorOptions {
+  /** Interval in ms between session health checks. Default: 30000 */
+  readonly monitorIntervalMs?: number;
+  /** Max time in ms a teammate session can be unresponsive before considered stale. Default: 120000 */
+  readonly staleThresholdMs?: number;
+  /** Whether to auto-start session monitoring. Default: false */
+  readonly autoMonitor?: boolean;
+  /** Global team settings (applied as defaults for all teams). */
+  readonly settings?: Partial<TeamSettingsConfig>;
+  /** Default task assignment strategy. */
+  readonly assignmentStrategy?: AssignmentStrategy;
+  /** Default max concurrent tasks per teammate. */
+  readonly defaultMaxConcurrentTasks?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -181,11 +225,51 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
    */
   private readonly hooks: TeamHooks = new TeamHooks();
 
+  /**
+   * Task assigners per team.
+   */
+  private readonly assigners: Map<string, TaskAssigner> = new Map();
+
+  /**
+   * Dependency trackers per team.
+   */
+  private readonly dependencyTrackers: Map<string, DependencyTracker> = new Map();
+
+  /**
+   * Team context (shared memory, progress, results) - global instance.
+   */
+  private readonly teamContext: TeamContext;
+
+  /**
+   * Session health monitoring interval handle.
+   */
+  private monitorInterval: ReturnType<typeof setInterval> | null = null;
+
+  /**
+   * Last heartbeat timestamp per teammate session (sessionId -> timestamp).
+   */
+  private readonly lastHeartbeat: Map<string, number> = new Map();
+
+  private readonly monitorIntervalMs: number;
+  private readonly staleThresholdMs: number;
+  private readonly defaultMaxConcurrentTasks: number;
+
   private nextTeamNumber = 1;
   private nextMemberNumber = 1;
 
-  constructor(private readonly sessionManager: TeamSessionManager) {
+  constructor(
+    private readonly sessionManager: TeamSessionManager,
+    private readonly options: TeamCoordinatorOptions = {},
+  ) {
     super();
+    this.monitorIntervalMs = options.monitorIntervalMs ?? 30_000;
+    this.staleThresholdMs = options.staleThresholdMs ?? 120_000;
+    this.defaultMaxConcurrentTasks = options.defaultMaxConcurrentTasks ?? 3;
+    this.teamContext = new TeamContext(options.settings);
+
+    if (options.autoMonitor) {
+      this.startMonitoring();
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -210,8 +294,12 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
       );
     }
 
+    // Resolve effective settings
+    const settings = this.teamContext.getSettings();
+    const maxTeammates = input.maxTeammates ?? settings.maxTeamSize;
+
     const teamId = `team_${this.nextTeamNumber++}_${Date.now()}`;
-    const teammateMode = input.teammateMode ?? 'auto';
+    const teammateMode = input.teammateMode ?? settings.defaultTeammateMode;
     const resolvedBackend = this.detectBackend(teammateMode);
 
     const team: TeamConfig = {
@@ -220,8 +308,8 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
       leadSessionId,
       teammateMode,
       resolvedBackend,
-      maxTeammates: input.maxTeammates ?? 10,
-      delegateMode: input.delegateMode ?? false,
+      maxTeammates,
+      delegateMode: input.delegateMode ?? settings.defaultDelegateMode,
       createdAt: new Date(),
       status: 'creating',
       members: [],
@@ -257,11 +345,56 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
     mailbox.registerMember(leadMember.id, leadMember.name, true);
     this.mailboxes.set(teamId, mailbox);
 
+    // Initialize task assigner
+    const assignmentStrategy = input.assignmentStrategy
+      ?? this.options.assignmentStrategy
+      ?? settings.defaultAssignmentStrategy;
+    const assigner = new TaskAssigner({
+      strategy: assignmentStrategy,
+      defaultMaxConcurrent: settings.defaultMaxConcurrentTasks,
+    });
+    this.assigners.set(teamId, assigner);
+
+    // Initialize dependency tracker
+    const depTracker = new DependencyTracker();
+    this.dependencyTrackers.set(teamId, depTracker);
+
+    // Register team in context
+    this.teamContext.registerTeam(teamId, input.settings);
+
     // Wire hooks into task list and mailbox
     taskList.setTaskCompletedHook(
       this.hooks.createTaskCompletedCallback(memberId => this.getMemberName(teamId, memberId)),
     );
     mailbox.setTeammateIdleHook(this.hooks.createTeammateIdleCallback());
+
+    // Wire task completion event to track results and check for team completion
+    taskList.on('task:completed', (task, teammateId) => {
+      this.teamContext.recordTaskResult(teamId, {
+        taskId: task.id,
+        taskTitle: task.title,
+        status: 'completed',
+        completedBy: teammateId,
+        durationMs: task.completedAt
+          ? task.completedAt.getTime() - task.createdAt.getTime()
+          : 0,
+        output: task.metadata['output'] ?? null,
+      });
+
+      // Mark completed in dependency tracker and auto-unblock
+      depTracker.markCompleted(task.id);
+
+      // Check if all tasks are now complete
+      const stats = taskList.getStats();
+      if (stats.total > 0 && stats.completed === stats.total) {
+        this.onAllTasksComplete(teamId);
+      }
+    });
+
+    // Wire dependency cycle detection
+    depTracker.on('dependency:cycle-detected', (cyclePath) => {
+      this.emit('dependency:deadlock-detected', teamId, cyclePath);
+    });
 
     // Transition to active
     team.status = 'active';
@@ -289,10 +422,19 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
     const activeTeammates = team.members.filter(
       m => m.role !== 'lead' && m.status !== 'stopped',
     );
+
+    // Enforce both team config limit and settings limit
     if (activeTeammates.length >= team.maxTeammates) {
       throw new TeamError(
         TeamErrorCode.MAX_TEAMMATES_REACHED,
         `Team ${teamId} has reached the maximum of ${team.maxTeammates} teammates`,
+      );
+    }
+
+    if (!this.teamContext.validateTeamSize(teamId, activeTeammates.length)) {
+      throw new TeamError(
+        TeamErrorCode.MAX_TEAMMATES_REACHED,
+        `Team ${teamId} has reached the settings limit`,
       );
     }
 
@@ -316,6 +458,7 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
           role: options.role,
           agentType: options.agentType ?? 'teammate',
           planApprovalRequired: options.planApprovalRequired ?? false,
+          capabilities: options.capabilities ?? [],
         },
       });
     } catch (error) {
@@ -342,6 +485,17 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
 
     team.members.push(member);
     this.teammateSessionToTeam.set(session.id, teamId);
+    this.lastHeartbeat.set(session.id, Date.now());
+
+    // Register capabilities in task assigner
+    const assigner = this.assigners.get(teamId);
+    if (assigner) {
+      assigner.registerCapabilities({
+        memberId,
+        capabilities: options.capabilities ?? [],
+        maxConcurrent: options.maxConcurrentTasks ?? this.defaultMaxConcurrentTasks,
+      });
+    }
 
     // Register in mailbox
     const mailbox = this.mailboxes.get(teamId)!;
@@ -404,6 +558,12 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
     member.status = 'stopped';
     this.teammateSessionToTeam.delete(member.sessionId);
 
+    // Unregister from task assigner
+    const assigner = this.assigners.get(teamId);
+    if (assigner) {
+      assigner.unregisterCapabilities(memberId);
+    }
+
     // Notify mailbox
     const mailbox = this.mailboxes.get(teamId);
     if (mailbox) {
@@ -435,6 +595,11 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
       );
     }
 
+    // Start cleanup tracking
+    if (!this.teamContext.isCleanupInProgress(teamId)) {
+      this.teamContext.startCleanup(teamId);
+    }
+
     team.status = 'shutting-down';
     this.emit('team:shutting-down', teamId);
 
@@ -454,17 +619,43 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
       this.mailboxes.delete(teamId);
     }
 
+    // Clean up task assigner
+    const assigner = this.assigners.get(teamId);
+    if (assigner) {
+      assigner.clear();
+      assigner.removeAllListeners();
+      this.assigners.delete(teamId);
+    }
+
+    // Clean up dependency tracker
+    const depTracker = this.dependencyTrackers.get(teamId);
+    if (depTracker) {
+      depTracker.clear();
+      depTracker.removeAllListeners();
+      this.dependencyTrackers.delete(teamId);
+    }
+
     // Clean up hooks
     this.hooks.clearHooks(teamId);
 
-    // Clean up session mappings
+    // Clean up session mappings and heartbeats
     this.sessionToTeam.delete(team.leadSessionId);
     for (const member of team.members) {
       this.teammateSessionToTeam.delete(member.sessionId);
+      this.lastHeartbeat.delete(member.sessionId);
     }
+
+    // Complete cleanup tracking and unregister context
+    this.teamContext.completeCleanup(teamId);
+    this.teamContext.unregisterTeam(teamId);
 
     team.status = 'cleaned-up';
     this.teams.delete(teamId);
+
+    // Stop monitoring if no teams remain
+    if (this.teams.size === 0) {
+      this.stopMonitoring();
+    }
 
     this.emit('team:cleaned-up', teamId);
   }
@@ -534,6 +725,433 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
   }
 
   // -------------------------------------------------------------------------
+  // Task Assignment
+  // -------------------------------------------------------------------------
+
+  /**
+   * Get the task assigner for a team.
+   */
+  getAssigner(teamId: string): TaskAssigner | undefined {
+    return this.assigners.get(teamId);
+  }
+
+  /**
+   * Set the assignment strategy for a team.
+   */
+  setAssignmentStrategy(teamId: string, strategy: AssignmentStrategy): void {
+    const assigner = this.assigners.get(teamId);
+    if (!assigner) {
+      throw new TeamError(
+        TeamErrorCode.TEAM_NOT_FOUND,
+        `Task assigner not found for team: ${teamId}`,
+      );
+    }
+    assigner.setStrategy(strategy);
+  }
+
+  /**
+   * Register capabilities for a team member.
+   */
+  registerMemberCapabilities(teamId: string, config: TeammateCapabilities): void {
+    const assigner = this.assigners.get(teamId);
+    if (!assigner) {
+      throw new TeamError(
+        TeamErrorCode.TEAM_NOT_FOUND,
+        `Task assigner not found for team: ${teamId}`,
+      );
+    }
+    assigner.registerCapabilities(config);
+  }
+
+  /**
+   * Auto-assign all pending tasks to available teammates.
+   * Uses the team's configured assignment strategy.
+   *
+   * @returns Array of task IDs that were assigned.
+   */
+  async autoAssignPendingTasks(teamId: string): Promise<string[]> {
+    const team = this.getTeamOrThrow(teamId);
+    const taskList = this.getTaskListOrThrow(teamId);
+    const assigner = this.assigners.get(teamId);
+    if (!assigner) {
+return [];
+}
+
+    const pendingTasks = taskList.getClaimableTasks();
+    if (pendingTasks.length === 0) {
+return [];
+}
+
+    const candidates = this.buildAssignmentCandidates(team, taskList);
+    if (candidates.length === 0) {
+return [];
+}
+
+    const assignableTasks = pendingTasks.map(t => ({
+      id: t.id,
+      title: t.title,
+      priority: t.priority,
+      metadata: t.metadata,
+    }));
+
+    const decisions = assigner.selectAssignees(assignableTasks, candidates);
+    const assignedTaskIds: string[] = [];
+
+    for (const decision of decisions) {
+      try {
+        await taskList.claimTask(decision.taskId, decision.assigneeId);
+        assignedTaskIds.push(decision.taskId);
+
+        // Update member's assigned tasks
+        const member = team.members.find(m => m.id === decision.assigneeId);
+        if (member) {
+          member.assignedTasks.push(decision.taskId);
+        }
+
+        this.emit('task:auto-assigned', teamId, decision.taskId, decision.assigneeId, decision.strategy);
+      } catch {
+        // Task may have been claimed by another teammate in the meantime -- skip
+      }
+    }
+
+    return assignedTaskIds;
+  }
+
+  /**
+   * Redistribute work when a teammate becomes idle.
+   * Assigns pending tasks to the idle teammate.
+   *
+   * @returns Array of task IDs assigned to the idle teammate.
+   */
+  async redistributeWorkToIdle(teamId: string, idleMemberId: string): Promise<string[]> {
+    const team = this.getTeamOrThrow(teamId);
+    const taskList = this.getTaskListOrThrow(teamId);
+    const assigner = this.assigners.get(teamId);
+    if (!assigner) {
+return [];
+}
+
+    const pendingTasks = taskList.getClaimableTasks(idleMemberId);
+    if (pendingTasks.length === 0) {
+return [];
+}
+
+    const assignedTaskIds: string[] = [];
+
+    // Assign tasks directly to the idle member (bypass strategy for idle redistribution)
+    const caps = assigner.getCapabilities(idleMemberId);
+    const maxConcurrent = caps?.maxConcurrent ?? this.defaultMaxConcurrentTasks;
+    const currentTasks = taskList.getTasksForTeammate(idleMemberId)
+      .filter(t => t.status === 'in_progress');
+
+    const availableSlots = maxConcurrent - currentTasks.length;
+    const tasksToAssign = pendingTasks.slice(0, Math.max(0, availableSlots));
+
+    for (const task of tasksToAssign) {
+      try {
+        await taskList.claimTask(task.id, idleMemberId);
+        assignedTaskIds.push(task.id);
+
+        const member = team.members.find(m => m.id === idleMemberId);
+        if (member) {
+          member.assignedTasks.push(task.id);
+        }
+      } catch {
+        // Skip tasks that cannot be claimed
+      }
+    }
+
+    if (assignedTaskIds.length > 0) {
+      this.emit('teammate:work-redistributed', teamId, idleMemberId, assignedTaskIds);
+    }
+
+    return assignedTaskIds;
+  }
+
+  // -------------------------------------------------------------------------
+  // Dependency Tracking
+  // -------------------------------------------------------------------------
+
+  /**
+   * Get the dependency tracker for a team.
+   */
+  getDependencyTracker(teamId: string): DependencyTracker | undefined {
+    return this.dependencyTrackers.get(teamId);
+  }
+
+  /**
+   * Add a dependency between tasks: taskId depends on dependsOnId.
+   * Validates against circular dependencies.
+   */
+  addTaskDependency(teamId: string, taskId: string, dependsOnId: string): void {
+    const depTracker = this.dependencyTrackers.get(teamId);
+    if (!depTracker) {
+      throw new TeamError(
+        TeamErrorCode.TEAM_NOT_FOUND,
+        `Dependency tracker not found for team: ${teamId}`,
+      );
+    }
+    depTracker.addDependency(taskId, dependsOnId);
+  }
+
+  /**
+   * Run deadlock detection across all tasks in a team.
+   * Emits 'dependency:deadlock-detected' if a cycle is found.
+   *
+   * @returns true if a deadlock was detected.
+   */
+  detectDeadlocks(teamId: string): boolean {
+    const depTracker = this.dependencyTrackers.get(teamId);
+    if (!depTracker) {
+return false;
+}
+
+    const result = depTracker.detectCycles();
+    if (result.hasCycle) {
+      this.emit('dependency:deadlock-detected', teamId, result.cyclePath);
+    }
+    return result.hasCycle;
+  }
+
+  // -------------------------------------------------------------------------
+  // Shared Context
+  // -------------------------------------------------------------------------
+
+  /**
+   * Get the team context manager.
+   */
+  getTeamContext(): TeamContext {
+    return this.teamContext;
+  }
+
+  /**
+   * Set a shared context value for a team.
+   */
+  setSharedContext(teamId: string, key: string, value: unknown, memberId: string): void {
+    this.getTeamOrThrow(teamId);
+    this.teamContext.set(teamId, key, value, memberId);
+  }
+
+  /**
+   * Get a shared context value for a team.
+   */
+  getSharedContext<T = unknown>(teamId: string, key: string, memberId?: string): T | undefined {
+    return this.teamContext.get<T>(teamId, key, memberId);
+  }
+
+  /**
+   * Get all shared context as a plain object.
+   */
+  getAllSharedContext(teamId: string): Record<string, unknown> {
+    return this.teamContext.getAll(teamId);
+  }
+
+  // -------------------------------------------------------------------------
+  // Progress Reporting
+  // -------------------------------------------------------------------------
+
+  /**
+   * Get the current progress report for a team.
+   */
+  getTeamProgress(teamId: string): TeamProgress | undefined {
+    const team = this.teams.get(teamId);
+    if (!team) {
+return undefined;
+}
+
+    const taskList = this.taskLists.get(teamId);
+    const taskStats = taskList?.getStats() ?? {
+      total: 0,
+      pending: 0,
+      inProgress: 0,
+      completed: 0,
+      blocked: 0,
+    };
+
+    const activeTeammates = team.members.filter(
+      m => m.role !== 'lead' && m.status === 'active',
+    ).length;
+    const totalTeammates = team.members.filter(
+      m => m.role !== 'lead',
+    ).length;
+
+    const progress = this.teamContext.getProgress(
+      teamId,
+      taskStats,
+      activeTeammates,
+      totalTeammates,
+    );
+
+    this.emit('progress:updated', teamId, progress);
+    return progress;
+  }
+
+  // -------------------------------------------------------------------------
+  // Result Aggregation
+  // -------------------------------------------------------------------------
+
+  /**
+   * Aggregate final results for a team.
+   * Typically called when all tasks are complete or the team is being torn down.
+   */
+  aggregateResults(teamId: string): TeamResult | undefined {
+    const team = this.teams.get(teamId);
+    if (!team) {
+return undefined;
+}
+
+    const memberInfo = new Map<string, { name: string; tasksCompleted: number; tasksFailed: number }>();
+    const taskList = this.taskLists.get(teamId);
+
+    for (const member of team.members) {
+      if (member.role === 'lead') {
+continue;
+}
+
+      const memberTasks = taskList?.getTasksForTeammate(member.id) ?? [];
+      const completed = memberTasks.filter(t => t.status === 'completed').length;
+
+      memberInfo.set(member.id, {
+        name: member.name,
+        tasksCompleted: completed,
+        tasksFailed: 0,
+      });
+    }
+
+    return this.teamContext.aggregateResults(teamId, team.name, memberInfo);
+  }
+
+  // -------------------------------------------------------------------------
+  // Session Monitoring
+  // -------------------------------------------------------------------------
+
+  /**
+   * Start periodic session health monitoring.
+   * Checks that teammate sessions are still alive and marks stale ones.
+   */
+  startMonitoring(): void {
+    if (this.monitorInterval) {
+return;
+} // Already running
+
+    this.monitorInterval = setInterval(() => {
+      this.runHealthCheck();
+    }, this.monitorIntervalMs);
+
+    // Prevent the interval from keeping the process alive
+    if (this.monitorInterval.unref) {
+      this.monitorInterval.unref();
+    }
+  }
+
+  /**
+   * Stop session health monitoring.
+   */
+  stopMonitoring(): void {
+    if (this.monitorInterval) {
+      clearInterval(this.monitorInterval);
+      this.monitorInterval = null;
+    }
+  }
+
+  /**
+   * Record a heartbeat for a teammate session.
+   * Called when a session sends a heartbeat or produces output.
+   */
+  recordHeartbeat(sessionId: string): void {
+    this.lastHeartbeat.set(sessionId, Date.now());
+  }
+
+  /**
+   * Run a single health check across all teams.
+   * For each active teammate, checks if the underlying session is still alive.
+   */
+  runHealthCheck(): void {
+    const now = Date.now();
+
+    for (const team of this.teams.values()) {
+      if (team.status !== 'active') {
+continue;
+}
+
+      let activeCount = 0;
+      let staleCount = 0;
+
+      for (const member of team.members) {
+        if (member.role === 'lead' || member.status === 'stopped') {
+continue;
+}
+        if (member.status === 'shutting-down') {
+continue;
+}
+
+        // Check if session still exists in session manager
+        const session = this.sessionManager.getSession(member.sessionId);
+        if (!session || session.status === 'stopped' || session.status === 'failed') {
+          // Session is gone -- handle as crash
+          void this.handleTeammateCrash(member.sessionId);
+          staleCount++;
+          continue;
+        }
+
+        // Check heartbeat staleness
+        const lastBeat = this.lastHeartbeat.get(member.sessionId);
+        if (lastBeat !== undefined && (now - lastBeat) > this.staleThresholdMs) {
+          this.emit('monitor:stale-detected', team.id, member.id);
+          staleCount++;
+
+          // Mark as idle if currently active
+          if (member.status === 'active') {
+            member.status = 'idle';
+            this.emit('teammate:idle', team.id, member.id);
+          }
+        } else {
+          activeCount++;
+        }
+      }
+
+      this.emit('monitor:heartbeat', team.id, activeCount, staleCount);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Force Shutdown
+  // -------------------------------------------------------------------------
+
+  /**
+   * Force shutdown all teammates and clean up a team.
+   * Used when graceful shutdown is not possible or the team needs to be
+   * torn down immediately.
+   */
+  async forceShutdownTeam(teamId: string): Promise<void> {
+    const team = this.getTeamOrThrow(teamId);
+
+    team.status = 'shutting-down';
+    this.emit('team:shutting-down', teamId);
+
+    // Stop all non-lead members in parallel
+    const shutdownPromises = team.members
+      .filter(m => m.role !== 'lead' && m.status !== 'stopped')
+      .map(async member => {
+        member.status = 'shutting-down';
+        try {
+          await this.sessionManager.stopSession(member.sessionId);
+        } catch {
+          // Session may already be stopped -- ignore
+        }
+        member.status = 'stopped';
+        this.teammateSessionToTeam.delete(member.sessionId);
+        this.lastHeartbeat.delete(member.sessionId);
+        this.emit('teammate:stopped', teamId, member.id);
+      });
+
+    await Promise.all(shutdownPromises);
+
+    // Now clean up the team
+    this.cleanupTeam(teamId);
+  }
+
+  // -------------------------------------------------------------------------
   // Crash Recovery
   // -------------------------------------------------------------------------
 
@@ -547,16 +1165,23 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
    */
   async handleTeammateCrash(sessionId: string): Promise<void> {
     const teamId = this.teammateSessionToTeam.get(sessionId);
-    if (!teamId) return; // Not a team session
+    if (!teamId) {
+return;
+} // Not a team session
 
     const team = this.teams.get(teamId);
-    if (!team) return;
+    if (!team) {
+return;
+}
 
     const member = team.members.find(m => m.sessionId === sessionId);
-    if (!member) return;
+    if (!member) {
+return;
+}
 
     member.status = 'stopped';
     this.teammateSessionToTeam.delete(sessionId);
+    this.lastHeartbeat.delete(sessionId);
 
     // Release in-progress tasks
     const taskList = this.taskLists.get(teamId);
@@ -569,6 +1194,12 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
           releasedTasks.push(task.id);
         }
       }
+    }
+
+    // Unregister from task assigner
+    const assigner = this.assigners.get(teamId);
+    if (assigner) {
+      assigner.unregisterCapabilities(member.id);
     }
 
     // Notify lead
@@ -598,11 +1229,15 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
    */
   getTeamForSession(sessionId: string): TeamConfig | undefined {
     const teamId = this.sessionToTeam.get(sessionId);
-    if (teamId) return this.teams.get(teamId);
+    if (teamId) {
+return this.teams.get(teamId);
+}
 
     // Check if it's a teammate session
     const teammateTeamId = this.teammateSessionToTeam.get(sessionId);
-    if (teammateTeamId) return this.teams.get(teammateTeamId);
+    if (teammateTeamId) {
+return this.teams.get(teammateTeamId);
+}
 
     return undefined;
   }
@@ -619,7 +1254,9 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
    */
   getMember(teamId: string, memberId: string): TeamMember | undefined {
     const team = this.teams.get(teamId);
-    if (!team) return undefined;
+    if (!team) {
+return undefined;
+}
     return team.members.find(m => m.id === memberId);
   }
 
@@ -628,7 +1265,9 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
    */
   getActiveTeammates(teamId: string): TeamMember[] {
     const team = this.teams.get(teamId);
-    if (!team) return [];
+    if (!team) {
+return [];
+}
     return team.members.filter(m => m.role !== 'lead' && m.status !== 'stopped');
   }
 
@@ -640,18 +1279,30 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
     taskStats: ReturnType<SharedTaskList['getStats']>;
     mailboxStats: ReturnType<Mailbox['getStats']>;
     hooks: HookConfig[];
+    assignmentStrategy: AssignmentStrategy | null;
+    dependencyStats: ReturnType<DependencyTracker['getStats']> | null;
+    sharedContextSize: number;
+    settings: TeamSettingsConfig;
   } | undefined {
     const team = this.teams.get(teamId);
-    if (!team) return undefined;
+    if (!team) {
+return undefined;
+}
 
     const taskList = this.taskLists.get(teamId);
     const mailbox = this.mailboxes.get(teamId);
+    const assigner = this.assigners.get(teamId);
+    const depTracker = this.dependencyTrackers.get(teamId);
 
     return {
       team,
       taskStats: taskList?.getStats() ?? { total: 0, pending: 0, inProgress: 0, completed: 0, blocked: 0 },
       mailboxStats: mailbox?.getStats() ?? { totalMessages: 0, memberCount: 0, unreadByMember: {} },
       hooks: this.hooks.getRegisteredHooks(teamId),
+      assignmentStrategy: assigner?.getStrategy() ?? null,
+      dependencyStats: depTracker?.getStats() ?? null,
+      sharedContextSize: this.teamContext.size(teamId),
+      settings: this.teamContext.getSettings(teamId),
     };
   }
 
@@ -778,9 +1429,50 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
 
   private getMemberName(teamId: string, memberId: string): string {
     const team = this.teams.get(teamId);
-    if (!team) return memberId;
+    if (!team) {
+return memberId;
+}
     const member = team.members.find(m => m.id === memberId);
     return member?.name ?? memberId;
+  }
+
+  /**
+   * Build assignment candidates from active teammates.
+   */
+  private buildAssignmentCandidates(team: TeamConfig, taskList: SharedTaskList): AssignmentCandidate[] {
+    const assigner = this.assigners.get(team.id);
+
+    return team.members
+      .filter(m => m.role !== 'lead' && (m.status === 'active' || m.status === 'idle'))
+      .map(m => {
+        const caps = assigner?.getCapabilities(m.id);
+        const activeTasks = taskList.getTasksForTeammate(m.id)
+          .filter(t => t.status === 'in_progress');
+
+        return {
+          memberId: m.id,
+          name: m.name,
+          activeTaskCount: activeTasks.length,
+          capabilities: caps?.capabilities ?? [],
+          maxConcurrent: caps?.maxConcurrent ?? this.defaultMaxConcurrentTasks,
+        };
+      });
+  }
+
+  /**
+   * Called when all tasks in a team's task list are completed.
+   * Aggregates results and optionally auto-cleans up.
+   */
+  private onAllTasksComplete(teamId: string): void {
+    const settings = this.teamContext.getSettings(teamId);
+    const result = this.aggregateResults(teamId);
+    if (result) {
+      this.emit('team:all-tasks-complete', teamId, result);
+    }
+
+    if (settings.autoCleanupOnComplete) {
+      void this.forceShutdownTeam(teamId);
+    }
   }
 
   /**

@@ -229,20 +229,28 @@ export function scanSource(source: string, filePath: string): SkillScanFinding[]
 
   // Line rules: test each line, report first match per rule
   for (const rule of LINE_RULES) {
-    if (matchedLineRules.has(rule.ruleId)) continue;
+    if (matchedLineRules.has(rule.ruleId)) {
+continue;
+}
 
     // Skip rule if context requirement is not met
-    if (rule.requiresContext && !rule.requiresContext.test(source)) continue;
+    if (rule.requiresContext && !rule.requiresContext.test(source)) {
+continue;
+}
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const match = rule.pattern.exec(line);
-      if (!match) continue;
+      if (!match) {
+continue;
+}
 
       // Special handling for suspicious-network: ignore standard ports
       if (rule.ruleId === 'suspicious-network') {
         const port = parseInt(match[1], 10);
-        if (STANDARD_PORTS.has(port)) continue;
+        if (STANDARD_PORTS.has(port)) {
+continue;
+}
       }
 
       findings.push({
@@ -262,10 +270,16 @@ export function scanSource(source: string, filePath: string): SkillScanFinding[]
   const matchedSourceRules = new Set<string>();
   for (const rule of SOURCE_RULES) {
     const ruleKey = `${rule.ruleId}::${rule.message}`;
-    if (matchedSourceRules.has(ruleKey)) continue;
+    if (matchedSourceRules.has(ruleKey)) {
+continue;
+}
 
-    if (!rule.pattern.test(source)) continue;
-    if (rule.requiresContext && !rule.requiresContext.test(source)) continue;
+    if (!rule.pattern.test(source)) {
+continue;
+}
+    if (rule.requiresContext && !rule.requiresContext.test(source)) {
+continue;
+}
 
     // Find the first matching line for evidence
     let matchLine = 1;
@@ -339,18 +353,25 @@ async function walkDirWithLimit(dirPath: string, maxFiles: number): Promise<stri
 
   while (stack.length > 0 && files.length < maxFiles) {
     const currentDir = stack.pop();
-    if (!currentDir) break;
+    if (!currentDir) {
+break;
+}
 
-    let entries: Awaited<ReturnType<typeof fs.readdir>>;
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    let entries: import('fs').Dirent[];
     try {
-      entries = await fs.readdir(currentDir, { withFileTypes: true });
+      entries = await fs.readdir(currentDir, { withFileTypes: true, encoding: 'utf-8' });
     } catch {
       continue;
     }
 
     for (const entry of entries) {
-      if (files.length >= maxFiles) break;
-      if (entry.name.startsWith('.') || IGNORED_DIRS.has(entry.name)) continue;
+      if (files.length >= maxFiles) {
+break;
+}
+      if (entry.name.startsWith('.') || IGNORED_DIRS.has(entry.name)) {
+continue;
+}
 
       const fullPath = path.join(currentDir, entry.name);
       if (entry.isDirectory()) {
@@ -373,7 +394,9 @@ async function readScannableSource(
 ): Promise<string | null> {
   try {
     const stat = await fs.stat(filePath);
-    if (!stat.isFile() || stat.size > maxFileBytes) return null;
+    if (!stat.isFile() || stat.size > maxFileBytes) {
+return null;
+}
     return await fs.readFile(filePath, 'utf-8');
   } catch {
     return null;
@@ -392,12 +415,18 @@ async function collectScannableFiles(
   const forcedFiles: string[] = [];
   for (const rawPath of opts.includeFiles) {
     const includePath = path.resolve(dirPath, rawPath);
-    if (!isPathInside(dirPath, includePath)) continue;
-    if (!isScannable(includePath)) continue;
+    if (!isPathInside(dirPath, includePath)) {
+continue;
+}
+    if (!isScannable(includePath)) {
+continue;
+}
 
     try {
       const stat = await fs.stat(includePath);
-      if (stat.isFile()) forcedFiles.push(includePath);
+      if (stat.isFile()) {
+forcedFiles.push(includePath);
+}
     } catch {
       continue;
     }
@@ -413,9 +442,13 @@ async function collectScannableFiles(
   const result = [...forcedFiles];
 
   for (const file of walkedFiles) {
-    if (result.length >= opts.maxFiles) break;
+    if (result.length >= opts.maxFiles) {
+break;
+}
     const resolved = path.resolve(file);
-    if (seen.has(resolved)) continue;
+    if (seen.has(resolved)) {
+continue;
+}
     result.push(file);
     seen.add(resolved);
   }
@@ -454,7 +487,9 @@ export async function scanDirectory(
 
   for (const file of files) {
     const source = await readScannableSource(file, scanOptions.maxFileBytes);
-    if (source === null) continue;
+    if (source === null) {
+continue;
+}
     allFindings.push(...scanSource(source, file));
   }
 
@@ -479,7 +514,9 @@ export async function scanDirectoryWithSummary(
 
   for (const file of files) {
     const source = await readScannableSource(file, scanOptions.maxFileBytes);
-    if (source === null) continue;
+    if (source === null) {
+continue;
+}
     scannedFiles++;
     allFindings.push(...scanSource(source, file));
   }
@@ -539,7 +576,7 @@ export function hasCriticalFindings(summary: SkillScanSummary): boolean {
  */
 export function formatScanReport(summary: SkillScanSummary): string {
   const lines: string[] = [
-    `Security Scan Results:`,
+    'Security Scan Results:',
     `  Files scanned: ${summary.scannedFiles}`,
     `  Critical: ${summary.critical}`,
     `  Warnings: ${summary.warn}`,

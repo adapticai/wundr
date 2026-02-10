@@ -6,31 +6,33 @@
  *
  * Supports three execution mechanisms:
  * - command: Spawns a child process, passes metadata via env + stdin JSON
- * - prompt:  Sends an interpolated prompt to the LLM (placeholder for integration)
- * - agent:   Spawns a sub-orchestrator invocation (placeholder for integration)
+ * - prompt:  Sends an interpolated prompt to the LLM, parses the response
+ * - agent:   Spawns a sub-orchestrator invocation via SessionManager
  *
  * Also supports direct handler functions for programmatic hooks.
  *
  * Void hooks run in parallel for performance.
  * Modifying hooks run sequentially in priority order, merging results.
+ *
+ * Includes a TTL-based result cache for frequently-fired hooks and
+ * hook chaining that passes prior hook output as context to subsequent hooks.
  */
 
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
+import type { HookRegistry } from './hook-registry';
 import type {
   HookEventName,
   HookExecutionResult,
   HookFireResult,
   HookLogger,
   HookMetadataMap,
-  HookMatcher,
   HookRegistration,
   HookResultMap,
   IHookEngine,
   ModifyingHookEvent,
 } from './hook-types';
-import type { HookRegistry } from './hook-registry';
 
 const execFileAsync = promisify(execFile);
 
@@ -48,6 +50,63 @@ const MODIFYING_EVENTS = new Set<string>([
 
 /** Default max concurrency for parallel void hooks */
 const DEFAULT_MAX_CONCURRENCY = 20;
+
+/** Default cache TTL in milliseconds (5 seconds) */
+const DEFAULT_CACHE_TTL_MS = 5_000;
+
+/** Maximum cache entries before eviction */
+const MAX_CACHE_ENTRIES = 200;
+
+// =============================================================================
+// LLM Client Interface (minimal contract for prompt hooks)
+// =============================================================================
+
+/**
+ * Minimal LLM client interface used by prompt hooks.
+ * This matches the orchestrator's LLMClient.chat() signature.
+ */
+export interface HookLLMClient {
+  chat(params: {
+    model?: string;
+    messages: Array<{ role: string; content: string }>;
+    maxTokens?: number;
+    temperature?: number;
+  }): Promise<{
+    content: string;
+    usage: { totalTokens: number };
+  }>;
+}
+
+// =============================================================================
+// Session Spawner Interface (minimal contract for agent hooks)
+// =============================================================================
+
+/**
+ * Minimal session spawner interface used by agent hooks.
+ * This allows agent hooks to spawn sub-sessions without depending on
+ * the full SessionManager implementation.
+ */
+export interface HookSessionSpawner {
+  spawnHookSession(config: {
+    agentConfig: string | Record<string, unknown>;
+    metadata: Record<string, unknown>;
+    timeoutMs: number;
+  }): Promise<{
+    success: boolean;
+    output?: string;
+    error?: string;
+  }>;
+}
+
+// =============================================================================
+// Cache Types
+// =============================================================================
+
+interface CacheEntry<E extends HookEventName = HookEventName> {
+  result: HookFireResult<E>;
+  expiresAt: number;
+  key: string;
+}
 
 // =============================================================================
 // Default Logger
@@ -75,6 +134,14 @@ export interface HookEngineOptions {
   catchErrors?: boolean;
   /** Shell to use for command hooks (default: /bin/sh on Unix, cmd.exe on Windows) */
   shell?: string;
+  /** LLM client for prompt hooks. If not provided, prompt hooks run in placeholder mode. */
+  llmClient?: HookLLMClient;
+  /** Session spawner for agent hooks. If not provided, agent hooks run in placeholder mode. */
+  sessionSpawner?: HookSessionSpawner;
+  /** Cache TTL in milliseconds for frequently-fired void hooks. Set to 0 to disable. */
+  cacheTtlMs?: number;
+  /** Enable hook chaining (pass prior hook output as context). Default: true */
+  enableChaining?: boolean;
 }
 
 // =============================================================================
@@ -87,7 +154,23 @@ export class HookEngine implements IHookEngine {
   private readonly maxConcurrency: number;
   private readonly globalCatchErrors: boolean;
   private readonly shell: string;
+  private readonly llmClient?: HookLLMClient;
+  private readonly sessionSpawner?: HookSessionSpawner;
+  private readonly cacheTtlMs: number;
+  private readonly enableChaining: boolean;
   private disposed = false;
+
+  /** TTL-based result cache for void hook events */
+  private readonly cache = new Map<string, CacheEntry>();
+
+  /** Execution statistics for monitoring */
+  private stats = {
+    totalFired: 0,
+    totalCacheHits: 0,
+    totalCacheMisses: 0,
+    totalErrors: 0,
+    totalTimeouts: 0,
+  };
 
   constructor(options: HookEngineOptions) {
     this.registry = options.registry;
@@ -95,6 +178,10 @@ export class HookEngine implements IHookEngine {
     this.maxConcurrency = options.maxConcurrency ?? DEFAULT_MAX_CONCURRENCY;
     this.globalCatchErrors = options.catchErrors ?? true;
     this.shell = options.shell ?? (process.platform === 'win32' ? 'cmd.exe' : '/bin/sh');
+    this.llmClient = options.llmClient;
+    this.sessionSpawner = options.sessionSpawner;
+    this.cacheTtlMs = options.cacheTtlMs ?? DEFAULT_CACHE_TTL_MS;
+    this.enableChaining = options.enableChaining ?? true;
   }
 
   // ---------------------------------------------------------------------------
@@ -106,9 +193,11 @@ export class HookEngine implements IHookEngine {
    *
    * For modifying events (UserPromptSubmit, PreToolUse, PermissionRequest, PreCompact):
    *   Hooks run sequentially in priority order. Results are merged.
+   *   Chaining passes merged result from prior hooks as context.
    *
    * For void events (everything else):
    *   Hooks run in parallel, bounded by maxConcurrency.
+   *   Results may be served from cache for frequently-fired events.
    */
   async fire<E extends HookEventName>(
     event: E,
@@ -118,11 +207,26 @@ export class HookEngine implements IHookEngine {
       return this.emptyResult(event);
     }
 
+    this.stats.totalFired++;
+
     const startTime = Date.now();
     const hooks = this.registry.getHooksForEvent(event);
 
     if (hooks.length === 0) {
       return this.emptyResult(event);
+    }
+
+    // Check cache for void events (modifying events are never cached)
+    if (!MODIFYING_EVENTS.has(event) && this.cacheTtlMs > 0) {
+      const cached = this.getCachedResult<E>(event, metadata);
+      if (cached) {
+        this.stats.totalCacheHits++;
+        this.logger.debug(
+          `[HookEngine] Cache hit for "${event}"`,
+        );
+        return cached;
+      }
+      this.stats.totalCacheMisses++;
     }
 
     this.logger.debug(
@@ -132,13 +236,12 @@ export class HookEngine implements IHookEngine {
 
     // Filter by matchers
     const eligible = hooks.filter((hook) => this.matchesFilter(hook, event, metadata));
-    const skippedByMatcher = hooks.length - eligible.length;
 
     let results: Array<HookExecutionResult<E>>;
     let mergedResult: HookFireResult<E>['mergedResult'];
 
     if (MODIFYING_EVENTS.has(event)) {
-      // Sequential execution with result merging
+      // Sequential execution with result merging and chaining
       const { results: seqResults, merged } = await this.executeSequential(
         eligible as unknown as Array<HookRegistration<ModifyingHookEvent>>,
         event as unknown as ModifyingHookEvent,
@@ -177,7 +280,7 @@ export class HookEngine implements IHookEngine {
         `(${successCount} ok, ${failureCount} failed, ${skippedCount} skipped)`,
     );
 
-    return {
+    const fireResult: HookFireResult<E> = {
       event,
       results: allResults,
       totalDurationMs,
@@ -186,6 +289,13 @@ export class HookEngine implements IHookEngine {
       skippedCount,
       mergedResult,
     };
+
+    // Store in cache for void events
+    if (!MODIFYING_EVENTS.has(event) && this.cacheTtlMs > 0) {
+      this.setCachedResult(event, metadata, fireResult);
+    }
+
+    return fireResult;
   }
 
   /**
@@ -203,15 +313,38 @@ export class HookEngine implements IHookEngine {
   }
 
   /**
+   * Get execution statistics for monitoring.
+   */
+  getStats(): Readonly<typeof this.stats> {
+    return { ...this.stats };
+  }
+
+  /**
+   * Clear the result cache.
+   */
+  clearCache(): void {
+    this.cache.clear();
+    this.logger.debug('[HookEngine] Cache cleared');
+  }
+
+  /**
+   * Get the current cache size.
+   */
+  getCacheSize(): number {
+    return this.cache.size;
+  }
+
+  /**
    * Dispose of engine resources.
    */
   async dispose(): Promise<void> {
     this.disposed = true;
+    this.cache.clear();
     this.logger.info('[HookEngine] Disposed');
   }
 
   // ---------------------------------------------------------------------------
-  // Sequential Execution (Modifying Hooks)
+  // Sequential Execution (Modifying Hooks) with Chaining
   // ---------------------------------------------------------------------------
 
   private async executeSequential<E extends ModifyingHookEvent>(
@@ -226,7 +359,17 @@ export class HookEngine implements IHookEngine {
     let merged: HookResultMap[E] | undefined;
 
     for (const hook of hooks) {
-      const result = await this.executeSingle(hook, event, metadata);
+      // For chaining: pass accumulated merged result as _chainContext
+      // on the metadata so subsequent hooks can see prior decisions
+      let enrichedMetadata = metadata;
+      if (this.enableChaining && merged !== undefined) {
+        enrichedMetadata = {
+          ...metadata,
+          _chainContext: merged,
+        } as HookMetadataMap[E];
+      }
+
+      const result = await this.executeSingle(hook, event, enrichedMetadata);
       results.push(result);
 
       // Merge result if the hook returned one
@@ -274,12 +417,10 @@ export class HookEngine implements IHookEngine {
     const shouldCatch = hook.catchErrors ?? this.globalCatchErrors;
 
     try {
-      let result: unknown;
-
       // Execute with timeout
       const timeoutMs = hook.timeoutMs ?? 10_000;
 
-      result = await Promise.race([
+      const result = await Promise.race([
         this.executeHandler(hook, event, metadata),
         this.createTimeout(timeoutMs, hook.id),
       ]);
@@ -296,6 +437,12 @@ export class HookEngine implements IHookEngine {
       const durationMs = Date.now() - startTime;
       const errorMessage = err instanceof Error ? err.message : String(err);
       const errorStack = err instanceof Error ? err.stack : undefined;
+      const isTimeout = errorMessage.includes('timed out after');
+
+      if (isTimeout) {
+        this.stats.totalTimeouts++;
+      }
+      this.stats.totalErrors++;
 
       this.logger.error(
         `[HookEngine] Hook "${hook.id}" failed for "${event}": ${errorMessage}`,
@@ -415,9 +562,11 @@ export class HookEngine implements IHookEngine {
   /**
    * Execute a prompt hook by interpolating the template and calling the LLM.
    *
-   * This is a placeholder implementation. In production, this would integrate
-   * with the orchestrator's LLM client to send the interpolated prompt and
-   * parse the response.
+   * When an LLM client is configured, the interpolated prompt is sent to the
+   * model specified in the hook (or a default). The LLM response is parsed
+   * as JSON if possible, otherwise returned as a string.
+   *
+   * Falls back to placeholder mode when no LLM client is provided.
    */
   private async executePromptHook<E extends HookEventName>(
     hook: HookRegistration<E>,
@@ -428,20 +577,50 @@ export class HookEngine implements IHookEngine {
       throw new Error(`[HookEngine] Prompt hook "${hook.id}" has no promptTemplate`);
     }
 
-    const interpolatedPrompt = this.interpolateTemplate(hook.promptTemplate, metadata as unknown as Record<string, unknown>);
-
-    this.logger.debug(
-      `[HookEngine] Prompt hook "${hook.id}" would send: ${interpolatedPrompt.substring(0, 200)}...`,
+    const interpolatedPrompt = this.interpolateTemplate(
+      hook.promptTemplate,
+      metadata as unknown as Record<string, unknown>,
     );
 
-    // Placeholder: In production, this calls the LLM client.
-    // The actual integration point is:
-    //   const response = await this.llmClient.chat({ messages: [{ role: 'user', content: interpolatedPrompt }], model: hook.model });
-    //   return response;
+    // If we have a real LLM client, use it
+    if (this.llmClient) {
+      this.logger.debug(
+        `[HookEngine] Prompt hook "${hook.id}" sending to LLM: ${interpolatedPrompt.substring(0, 200)}...`,
+      );
+
+      const response = await this.llmClient.chat({
+        model: hook.model,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a hook handler in the Wundr orchestrator system. ' +
+              'Respond with valid JSON when the hook expects a structured result. ' +
+              'Be concise and follow the instructions precisely.',
+          },
+          { role: 'user', content: interpolatedPrompt },
+        ],
+        maxTokens: 1024,
+        temperature: 0.3,
+      });
+
+      const content = response.content.trim();
+
+      // Try to parse as JSON
+      try {
+        return JSON.parse(content);
+      } catch {
+        return content;
+      }
+    }
+
+    // Placeholder mode: no LLM client
+    this.logger.debug(
+      `[HookEngine] Prompt hook "${hook.id}" in placeholder mode: ${interpolatedPrompt.substring(0, 200)}...`,
+    );
 
     this.logger.warn(
       `[HookEngine] Prompt hook "${hook.id}" executed in placeholder mode. ` +
-        'Wire up LLM client integration for production use.',
+        'Provide an llmClient in HookEngineOptions for production use.',
     );
 
     return { prompt: interpolatedPrompt, placeholderMode: true };
@@ -450,29 +629,62 @@ export class HookEngine implements IHookEngine {
   /**
    * Execute an agent hook by spawning a sub-orchestrator invocation.
    *
-   * This is a placeholder implementation. In production, this would
-   * use the SessionManager to spawn a sub-session with the agent config.
+   * When a session spawner is configured, a sub-session is created with the
+   * hook's agent config and metadata. The sub-session runs to completion
+   * (bounded by the hook timeout) and its output is returned.
+   *
+   * Falls back to placeholder mode when no session spawner is provided.
    */
   private async executeAgentHook<E extends HookEventName>(
     hook: HookRegistration<E>,
     _event: E,
     metadata: HookMetadataMap[E],
   ): Promise<unknown> {
+    const agentConfig = hook.agentConfig;
+
+    // If we have a session spawner, use it
+    if (this.sessionSpawner && agentConfig) {
+      this.logger.debug(
+        `[HookEngine] Agent hook "${hook.id}" spawning sub-session`,
+        { agentConfig },
+      );
+
+      const result = await this.sessionSpawner.spawnHookSession({
+        agentConfig,
+        metadata: metadata as unknown as Record<string, unknown>,
+        timeoutMs: hook.timeoutMs ?? 60_000,
+      });
+
+      if (!result.success) {
+        throw new Error(
+          `[HookEngine] Agent hook "${hook.id}" sub-session failed: ${result.error ?? 'unknown error'}`,
+        );
+      }
+
+      // Try to parse output as JSON
+      if (result.output) {
+        try {
+          return JSON.parse(result.output);
+        } catch {
+          return result.output;
+        }
+      }
+
+      return undefined;
+    }
+
+    // Placeholder mode: no session spawner
     this.logger.debug(
       `[HookEngine] Agent hook "${hook.id}" would spawn sub-agent`,
-      { agentConfig: hook.agentConfig },
+      { agentConfig },
     );
-
-    // Placeholder: In production, this spawns a sub-session.
-    // const session = await this.sessionManager.spawnSession(agentConfig, { metadata });
-    // return session.result;
 
     this.logger.warn(
       `[HookEngine] Agent hook "${hook.id}" executed in placeholder mode. ` +
-        'Wire up SessionManager integration for production use.',
+        'Provide a sessionSpawner in HookEngineOptions for production use.',
     );
 
-    return { agentConfig: hook.agentConfig, metadata, placeholderMode: true };
+    return { agentConfig, metadata, placeholderMode: true };
   }
 
   // ---------------------------------------------------------------------------
@@ -481,7 +693,7 @@ export class HookEngine implements IHookEngine {
 
   private matchesFilter<E extends HookEventName>(
     hook: HookRegistration<E>,
-    event: E,
+    _event: E,
     metadata: HookMetadataMap[E],
   ): boolean {
     const matcher = hook.matcher;
@@ -544,7 +756,7 @@ export class HookEngine implements IHookEngine {
    * Later results override earlier ones (field-level merge).
    */
   private mergeResult<E extends ModifyingHookEvent>(
-    event: E,
+    _event: E,
     accumulated: HookResultMap[E] | undefined,
     next: HookResultMap[E],
   ): HookResultMap[E] {
@@ -561,6 +773,99 @@ export class HookEngine implements IHookEngine {
     }
 
     return merged as HookResultMap[E];
+  }
+
+  // ---------------------------------------------------------------------------
+  // Cache
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Build a cache key from event name and metadata.
+   * Uses a stable JSON serialization of the metadata object.
+   */
+  private buildCacheKey<E extends HookEventName>(
+    event: E,
+    metadata: HookMetadataMap[E],
+  ): string {
+    try {
+      // Sort keys for stable serialization
+      const sortedMeta = JSON.stringify(metadata, Object.keys(metadata as object).sort());
+      return `${event}:${sortedMeta}`;
+    } catch {
+      // If metadata cannot be serialized (circular refs, etc.), skip caching
+      return '';
+    }
+  }
+
+  /**
+   * Retrieve a cached result if it exists and has not expired.
+   */
+  private getCachedResult<E extends HookEventName>(
+    event: E,
+    metadata: HookMetadataMap[E],
+  ): HookFireResult<E> | undefined {
+    const key = this.buildCacheKey(event, metadata);
+    if (!key) {
+      return undefined;
+    }
+
+    const entry = this.cache.get(key);
+    if (!entry) {
+      return undefined;
+    }
+
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key);
+      return undefined;
+    }
+
+    return entry.result as HookFireResult<E>;
+  }
+
+  /**
+   * Store a result in the cache with the configured TTL.
+   * Evicts oldest entries when the cache exceeds MAX_CACHE_ENTRIES.
+   */
+  private setCachedResult<E extends HookEventName>(
+    event: E,
+    metadata: HookMetadataMap[E],
+    result: HookFireResult<E>,
+  ): void {
+    const key = this.buildCacheKey(event, metadata);
+    if (!key) {
+      return;
+    }
+
+    // Evict expired entries if cache is large
+    if (this.cache.size >= MAX_CACHE_ENTRIES) {
+      this.evictExpiredEntries();
+    }
+
+    // If still too large after eviction, remove oldest
+    if (this.cache.size >= MAX_CACHE_ENTRIES) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
+    }
+
+    this.cache.set(key, {
+      result: result as HookFireResult,
+      expiresAt: Date.now() + this.cacheTtlMs,
+      key,
+    });
+  }
+
+  /**
+   * Remove all expired cache entries.
+   */
+  private evictExpiredEntries(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.cache) {
+      if (now > entry.expiresAt) {
+        this.cache.delete(key);
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------

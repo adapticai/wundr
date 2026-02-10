@@ -13,21 +13,22 @@
  * - Abort/cancellation via AbortController
  */
 
+import type { StreamEvent } from './block-parser';
+import type {
+  ChatParams,
+  TokenUsage,
+  FinishReason,
+  Message,
+  ToolCall,
+  ToolDefinition,
+} from '../types/llm';
 import type OpenAI from 'openai';
 import type {
   ChatCompletionChunk,
   ChatCompletionCreateParamsStreaming,
 } from 'openai/resources/chat';
 
-import type {
-  ChatParams,
-  TokenUsage,
-  FinishReason,
-  Message,
-  ToolDefinition,
-} from '@wundr.io/ai-integration';
 
-import type { StreamEvent } from './block-parser';
 
 /**
  * Tracked state per tool call index during streaming.
@@ -71,7 +72,7 @@ function convertMessages(
       return {
         role: 'assistant' as const,
         content: msg.content || null,
-        tool_calls: msg.toolCalls.map((tc) => ({
+        tool_calls: msg.toolCalls.map((tc: ToolCall) => ({
           id: tc.id,
           type: 'function' as const,
           function: {
@@ -95,7 +96,9 @@ function convertMessages(
 function convertTools(
   tools?: ToolDefinition[],
 ): OpenAI.ChatCompletionTool[] | undefined {
-  if (!tools || tools.length === 0) return undefined;
+  if (!tools || tools.length === 0) {
+return undefined;
+}
 
   return tools.map((tool) => ({
     type: 'function' as const,
@@ -348,13 +351,38 @@ export async function* createOpenAIStream(
     const isRateLimit =
       error instanceof Error &&
       ((error as any).status === 429 ||
-        error.message.includes('rate_limit'));
+        error.message.includes('rate_limit') ||
+        error.message.includes('Rate limit'));
+
+    // OpenAI can return 500/502/503 for transient server issues
+    const isServerError =
+      error instanceof Error &&
+      ((error as any).status === 500 ||
+        (error as any).status === 502 ||
+        (error as any).status === 503);
+
+    // Compute retry-after from headers or use defaults
+    let retryAfterMs = 5000;
+    if (isRateLimit || isServerError) {
+      const headerRetry =
+        (error as any).headers?.['retry-after'] ||
+        (error as any).headers?.['x-ratelimit-reset-requests'];
+      if (headerRetry) {
+        const parsed = Number(headerRetry);
+        retryAfterMs = Number.isNaN(parsed) ? 5000 : parsed * 1000;
+      }
+      if (isServerError) {
+        retryAfterMs = Math.max(retryAfterMs, 3000);
+      }
+    }
+
+    const recoverable = (isRateLimit || isServerError) && !isAbort;
 
     yield {
       type: 'error',
       error: error instanceof Error ? error : new Error(String(error)),
-      recoverable: isRateLimit,
-      ...(isRateLimit && { retryAfter: 5000 }),
+      recoverable,
+      ...(recoverable && { retryAfter: retryAfterMs }),
     };
 
     if (!isAbort) {

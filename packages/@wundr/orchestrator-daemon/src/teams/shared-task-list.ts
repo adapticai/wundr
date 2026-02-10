@@ -282,7 +282,9 @@ export class SharedTaskList extends EventEmitter<SharedTaskListEvents> {
 
     result.sort((a, b) => {
       const pDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-      if (pDiff !== 0) return pDiff;
+      if (pDiff !== 0) {
+return pDiff;
+}
       return a.createdAt.getTime() - b.createdAt.getTime();
     });
 
@@ -306,10 +308,18 @@ export class SharedTaskList extends EventEmitter<SharedTaskListEvents> {
 
       const previousStatus = task.status;
 
-      if (input.title !== undefined) task.title = input.title;
-      if (input.description !== undefined) task.description = input.description;
-      if (input.priority !== undefined) task.priority = input.priority;
-      if (input.assigneeId !== undefined) task.assigneeId = input.assigneeId;
+      if (input.title !== undefined) {
+task.title = input.title;
+}
+      if (input.description !== undefined) {
+task.description = input.description;
+}
+      if (input.priority !== undefined) {
+task.priority = input.priority;
+}
+      if (input.assigneeId !== undefined) {
+task.assigneeId = input.assigneeId;
+}
       if (input.metadata !== undefined) {
         task.metadata = { ...task.metadata, ...input.metadata };
       }
@@ -498,8 +508,12 @@ export class SharedTaskList extends EventEmitter<SharedTaskListEvents> {
    */
   getClaimableTasks(teammateId?: string): SharedTask[] {
     return Array.from(this.tasks.values()).filter(task => {
-      if (task.status !== 'pending') return false;
-      if (task.assigneeId !== null && task.assigneeId !== teammateId) return false;
+      if (task.status !== 'pending') {
+return false;
+}
+      if (task.assigneeId !== null && task.assigneeId !== teammateId) {
+return false;
+}
       return true;
     });
   }
@@ -591,8 +605,12 @@ export class SharedTaskList extends EventEmitter<SharedTaskListEvents> {
    */
   private resolveDependencies(completedTaskId: string): void {
     for (const task of this.tasks.values()) {
-      if (task.status !== 'blocked') continue;
-      if (!task.dependencies.includes(completedTaskId)) continue;
+      if (task.status !== 'blocked') {
+continue;
+}
+      if (!task.dependencies.includes(completedTaskId)) {
+continue;
+}
 
       // Check if ALL dependencies are now completed
       const allDepsCompleted = task.dependencies.every(depId => {

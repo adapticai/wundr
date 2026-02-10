@@ -9,8 +9,9 @@
  */
 
 import { SessionSerializer } from '../session-serializer';
-import type { Message, SerializedSession, SessionCheckpoint } from '../session-serializer';
+
 import type { Session, Task, MemoryContext, SessionMetrics } from '../../types';
+import type { Message, SerializedSession } from '../session-serializer';
 
 /**
  * Example: Basic session serialization and deserialization

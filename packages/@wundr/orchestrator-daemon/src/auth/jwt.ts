@@ -12,8 +12,9 @@
 
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
-import type { JwtPayload } from './types';
 import { JwtPayloadSchema } from './types';
+
+import type { JwtPayload } from './types';
 
 // ---------------------------------------------------------------------------
 // Helpers

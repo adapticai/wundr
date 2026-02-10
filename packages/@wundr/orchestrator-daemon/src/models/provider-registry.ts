@@ -10,7 +10,6 @@
 
 import { EventEmitter } from 'eventemitter3';
 
-import type { LLMProvider } from '@wundr.io/ai-integration';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -422,5 +421,83 @@ export class ProviderRegistry extends EventEmitter<ProviderRegistryEvents> {
   supportsReasoning(provider: string, modelId: string): boolean {
     const entry = this.findModel(provider, modelId);
     return entry?.capabilities.reasoning ?? false;
+  }
+
+  /**
+   * Get the full capabilities object for a model.
+   */
+  getModelCapabilities(provider: string, modelId: string): ModelCapabilities | null {
+    const entry = this.findModel(provider, modelId);
+    return entry?.capabilities ?? null;
+  }
+
+  /**
+   * Check if a model supports a specific capability.
+   */
+  supportsCapability(
+    provider: string,
+    modelId: string,
+    capability: keyof ModelCapabilities,
+  ): boolean {
+    const entry = this.findModel(provider, modelId);
+    if (!entry) {
+      return false;
+    }
+    return entry.capabilities[capability] ?? false;
+  }
+
+  /**
+   * Get the max output tokens for a model.
+   */
+  getMaxOutputTokens(provider: string, modelId: string): number {
+    const entry = this.findModel(provider, modelId);
+    return entry?.maxOutputTokens ?? 4_096;
+  }
+
+  /**
+   * Register a model entry at runtime (for custom/local models).
+   */
+  registerModel(entry: ModelEntry): void {
+    const key = modelKey(entry.provider, entry.id);
+    this.models.set(key, entry);
+    if (entry.aliases) {
+      for (const alias of entry.aliases) {
+        this.aliases.set(alias.toLowerCase(), {
+          provider: entry.provider,
+          model: entry.id,
+        });
+      }
+    }
+    this.emit('model:registered', entry);
+  }
+
+  /**
+   * Remove a model from the registry.
+   */
+  removeModel(provider: string, modelId: string): boolean {
+    const key = modelKey(normalizeProviderId(provider), modelId);
+    const entry = this.models.get(key);
+    if (!entry) {
+      return false;
+    }
+    this.models.delete(key);
+    // Remove any aliases pointing to this model
+    if (entry.aliases) {
+      for (const alias of entry.aliases) {
+        this.aliases.delete(alias.toLowerCase());
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Get unique list of registered provider kinds.
+   */
+  listProviders(): string[] {
+    const providers = new Set<string>();
+    for (const entry of this.models.values()) {
+      providers.add(entry.provider);
+    }
+    return Array.from(providers);
   }
 }

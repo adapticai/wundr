@@ -6,11 +6,12 @@
  * in-memory gossip state for partition tolerance.
  */
 
-import { EventEmitter } from 'eventemitter3';
 import * as crypto from 'crypto';
 import * as fs from 'fs/promises';
-import * as path from 'path';
 import * as os from 'os';
+import * as path from 'path';
+
+import { EventEmitter } from 'eventemitter3';
 
 import { Logger, LogLevel } from '../utils/logger';
 
@@ -313,10 +314,14 @@ export class NodeRegistry extends EventEmitter<NodeRegistryEvents> {
    * Update this node's health/load snapshot.
    */
   async updateSelfLoad(load: Partial<NodeLoadSnapshot>): Promise<void> {
-    if (!this.selfId) return;
+    if (!this.selfId) {
+return;
+}
 
     const self = this.nodes.get(this.selfId);
-    if (!self) return;
+    if (!self) {
+return;
+}
 
     self.load = {
       ...self.load,
@@ -334,7 +339,9 @@ export class NodeRegistry extends EventEmitter<NodeRegistryEvents> {
    */
   async touchNode(nodeId: string, load?: Partial<NodeLoadSnapshot>): Promise<void> {
     const node = this.nodes.get(nodeId);
-    if (!node) return;
+    if (!node) {
+return;
+}
 
     const wasSuspect = node.status === 'suspect';
 
@@ -357,7 +364,9 @@ export class NodeRegistry extends EventEmitter<NodeRegistryEvents> {
    */
   async drainNode(nodeId: string): Promise<void> {
     const node = this.nodes.get(nodeId);
-    if (!node) return;
+    if (!node) {
+return;
+}
 
     node.status = 'draining';
     await this.persistNode(node);
@@ -370,7 +379,9 @@ export class NodeRegistry extends EventEmitter<NodeRegistryEvents> {
    */
   async updateNodeRole(nodeId: string, role: NodeRole): Promise<void> {
     const node = this.nodes.get(nodeId);
-    if (!node) return;
+    if (!node) {
+return;
+}
 
     node.role = role;
     await this.persistNode(node);
@@ -448,11 +459,17 @@ export class NodeRegistry extends EventEmitter<NodeRegistryEvents> {
     const discovered: ClusterNode[] = [];
 
     for (const memberId of memberIds) {
-      if (memberId === this.selfId) continue;
-      if (this.nodes.has(memberId)) continue;
+      if (memberId === this.selfId) {
+continue;
+}
+      if (this.nodes.has(memberId)) {
+continue;
+}
 
       const raw = await this.store.get(this.nodeKey(memberId));
-      if (!raw) continue;
+      if (!raw) {
+continue;
+}
 
       try {
         const node = this.deserializeNode(raw);
@@ -478,7 +495,9 @@ export class NodeRegistry extends EventEmitter<NodeRegistryEvents> {
     let changed = false;
 
     for (const peerNode of peerNodes) {
-      if (peerNode.id === this.selfId) continue;
+      if (peerNode.id === this.selfId) {
+continue;
+}
 
       const existing = this.nodes.get(peerNode.id);
 
@@ -541,7 +560,9 @@ export class NodeRegistry extends EventEmitter<NodeRegistryEvents> {
     const now = Date.now();
 
     for (const node of this.nodes.values()) {
-      if (node.id === this.selfId) continue;
+      if (node.id === this.selfId) {
+continue;
+}
 
       const elapsed = now - node.lastSeen.getTime();
 
@@ -570,7 +591,9 @@ export class NodeRegistry extends EventEmitter<NodeRegistryEvents> {
   // -----------------------------------------------------------------------
 
   private async persistNode(node: ClusterNode): Promise<void> {
-    if (!this.store.isConnected()) return;
+    if (!this.store.isConnected()) {
+return;
+}
 
     try {
       await this.store.set(this.nodeKey(node.id), this.serializeNode(node));
