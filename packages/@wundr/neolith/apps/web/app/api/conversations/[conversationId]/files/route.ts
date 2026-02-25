@@ -39,7 +39,7 @@ interface RouteContext {
  * Conversation ID validation schema
  */
 const conversationIdParamSchema = z.object({
-  conversationId: z.string().cuid('Invalid conversation ID format'),
+  conversationId: z.string().min(1, 'Invalid conversation ID format'),
 });
 
 /**

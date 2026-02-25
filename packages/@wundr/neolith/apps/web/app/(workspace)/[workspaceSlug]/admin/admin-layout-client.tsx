@@ -271,18 +271,17 @@ export function AdminLayoutClient({
 
   const breadcrumbs = generateBreadcrumbs();
 
-  // Auto-collapse main workspace sidebar
+  // Auto-collapse main workspace sidebar on mount, restore on unmount
   useEffect(() => {
-    if (previousOpenState.current === null) {
-      previousOpenState.current = open;
-    }
+    previousOpenState.current = open;
     setOpen(false);
     return () => {
       if (previousOpenState.current !== null) {
         setOpen(previousOpenState.current);
       }
     };
-  }, [setOpen, open]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {

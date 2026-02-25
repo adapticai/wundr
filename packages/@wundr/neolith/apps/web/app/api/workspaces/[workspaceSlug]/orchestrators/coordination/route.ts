@@ -36,11 +36,11 @@ interface RouteContext {
  */
 const createMultiOrchestratorTaskSchema = z.object({
   /** Primary OrchestratorID for the task */
-  primaryOrchestratorId: z.string().cuid('Invalid primary OrchestratorID'),
+  primaryOrchestratorId: z.string().min(1, 'Invalid primary OrchestratorID'),
 
   /** Additional OrchestratorIDs required for consensus */
   requiredOrchestratorIds: z
-    .array(z.string().cuid('Invalid OrchestratorID'))
+    .array(z.string().min(1, 'Invalid OrchestratorID'))
     .min(1, 'At least one additional Orchestrator required'),
 
   /** Task details */

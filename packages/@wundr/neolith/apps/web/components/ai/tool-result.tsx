@@ -125,70 +125,76 @@ export function ToolResult({
         {/* Content */}
         <CollapsibleContent>
           <div className='p-3 space-y-3'>
-            {(
-              <>
-                {/* Approval Required */}
-                {metadata?.requiresApproval && metadata.approvalId && (
-              <div className='rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-3'>
-                <div className='flex items-center gap-2 mb-2'>
-                  <AlertCircle className='h-4 w-4 text-amber-600 dark:text-amber-400' />
-                  <span className='font-medium text-sm text-amber-900 dark:text-amber-100'>
-                    Approval Required
-                  </span>
-                </div>
-                <p className='text-xs text-amber-700 dark:text-amber-300 mb-3'>
-                  This tool requires approval before execution. Please review
-                  the operation and approve or reject.
-                </p>
-                <div className='flex gap-2'>
-                  <Button
-                    size='sm'
-                    variant='default'
-                    onClick={handleApprove}
-                    className='bg-amber-600 hover:bg-amber-700'
-                  >
-                    Approve & Execute
-                  </Button>
-                  <Button size='sm' variant='outline' onClick={handleReject}>
-                    Reject
-                  </Button>
-                </div>
-              </div>
-            )}
-
-                <ErrorSection success={success} error={error} />
-
-                {/* Success Data Display */}
-                {success && data && (
-                  <div className='space-y-2'>
-                    <div className='flex items-center justify-between'>
-                      <span className='text-xs font-medium text-muted-foreground'>
-                        Result
-                      </span>
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        className='h-6 px-2 text-xs'
-                        onClick={handleCopy}
-                      >
-                        {copied ? (
-                          <>
-                            <Check className='h-3 w-3 mr-1' />
-                            Copied
-                          </>
-                        ) : (
-                          <>
-                            <Copy className='h-3 w-3 mr-1' />
-                            Copy
-                          </>
-                        )}
-                      </Button>
+            {
+              (
+                <>
+                  {/* Approval Required */}
+                  {metadata?.requiresApproval && metadata.approvalId && (
+                    <div className='rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-3'>
+                      <div className='flex items-center gap-2 mb-2'>
+                        <AlertCircle className='h-4 w-4 text-amber-600 dark:text-amber-400' />
+                        <span className='font-medium text-sm text-amber-900 dark:text-amber-100'>
+                          Approval Required
+                        </span>
+                      </div>
+                      <p className='text-xs text-amber-700 dark:text-amber-300 mb-3'>
+                        This tool requires approval before execution. Please
+                        review the operation and approve or reject.
+                      </p>
+                      <div className='flex gap-2'>
+                        <Button
+                          size='sm'
+                          variant='default'
+                          onClick={handleApprove}
+                          className='bg-amber-600 hover:bg-amber-700'
+                        >
+                          Approve & Execute
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='outline'
+                          onClick={handleReject}
+                        >
+                          Reject
+                        </Button>
+                      </div>
                     </div>
-                    <ResultRenderer category={category} data={data} />
-                  </div>
-                )}
-              </>
-            ) as React.ReactNode}
+                  )}
+
+                  <ErrorSection success={success} error={error} />
+
+                  {/* Success Data Display */}
+                  {success && data && (
+                    <div className='space-y-2'>
+                      <div className='flex items-center justify-between'>
+                        <span className='text-xs font-medium text-muted-foreground'>
+                          Result
+                        </span>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          className='h-6 px-2 text-xs'
+                          onClick={handleCopy}
+                        >
+                          {copied ? (
+                            <>
+                              <Check className='h-3 w-3 mr-1' />
+                              Copied
+                            </>
+                          ) : (
+                            <>
+                              <Copy className='h-3 w-3 mr-1' />
+                              Copy
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <ResultRenderer category={category} data={data} />
+                    </div>
+                  )}
+                </>
+              ) as React.ReactNode
+            }
           </div>
         </CollapsibleContent>
       </Collapsible>

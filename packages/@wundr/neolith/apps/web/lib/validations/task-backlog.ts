@@ -16,7 +16,7 @@ import { taskPriorityEnum, taskStatusEnum } from './task';
  */
 export const assignTaskSchema = z.object({
   /** ID of user being assigned (can be Orchestrator user) */
-  assigneeId: z.string().cuid('Invalid assignee ID format'),
+  assigneeId: z.string().min(1, 'Invalid assignee ID format'),
 
   /** Type of assignee */
   assigneeType: z.enum(['ORCHESTRATOR', 'USER'], {
@@ -155,7 +155,11 @@ export const addBacklogTaskSchema = z.object({
   status: taskStatusEnum.default('TODO'),
 
   /** Optional channel ID for task context */
-  channelId: z.string().cuid('Invalid channel ID format').optional().nullable(),
+  channelId: z
+    .string()
+    .min(1, 'Invalid channel ID format')
+    .optional()
+    .nullable(),
 
   /** Estimated hours to complete */
   estimatedHours: z
@@ -173,12 +177,12 @@ export const addBacklogTaskSchema = z.object({
   tags: z.array(z.string().max(50)).default([]),
 
   /** Task dependencies (array of Task IDs) */
-  dependsOn: z.array(z.string().cuid('Invalid task ID')).default([]),
+  dependsOn: z.array(z.string().min(1, 'Invalid task ID')).default([]),
 
   /** Assigned to user ID (can be human or VP) */
   assignedToId: z
     .string()
-    .cuid('Invalid assignee ID format')
+    .min(1, 'Invalid assignee ID format')
     .optional()
     .nullable(),
 

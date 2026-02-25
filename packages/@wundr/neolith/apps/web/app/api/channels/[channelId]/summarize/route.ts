@@ -655,8 +655,8 @@ export async function POST(
       prompt: messagesText,
     });
 
-    // Return streaming response
-    return result.toTextStreamResponse();
+    // Return streaming response in AI SDK UI message stream format (for useChat/DefaultChatTransport)
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error('[POST /api/channels/:channelId/summarize] Error:', error);
     return NextResponse.json(

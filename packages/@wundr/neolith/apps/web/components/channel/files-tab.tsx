@@ -155,7 +155,15 @@ export function FilesTab({
             : `/api/channels/${channelId}/files`;
         const response = await fetch(`${endpoint}?${params.toString()}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch files');
+          // Don't throw for expected errors (403 = not member, 401 = not auth)
+          if (response.status === 403 || response.status === 401) {
+            setFiles([]);
+            setHasMore(false);
+            return;
+          }
+          const errorBody = await response.text().catch(() => '');
+          console.error(`Files API error ${response.status}:`, errorBody);
+          throw new Error(`Failed to fetch files (${response.status})`);
         }
 
         const result = await response.json();

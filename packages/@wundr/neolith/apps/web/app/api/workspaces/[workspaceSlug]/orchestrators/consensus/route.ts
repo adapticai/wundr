@@ -52,14 +52,14 @@ const initiateConsensusSchema = z.object({
 
   /** OrchestratorIDs required to vote */
   requiredOrchestratorIds: z
-    .array(z.string().cuid('Invalid OrchestratorID'))
+    .array(z.string().min(1, 'Invalid OrchestratorID'))
     .min(2, 'At least two Orchestrators required for consensus'),
 
   /** Threshold percentage for consensus (50-100) */
   threshold: z.number().min(50).max(100).default(75),
 
   /** Optional task ID if consensus is task-related */
-  taskId: z.string().cuid('Invalid task ID').optional(),
+  taskId: z.string().min(1, 'Invalid task ID').optional(),
 
   /** Optional voting deadline */
   deadline: z.string().datetime('Invalid datetime format').optional(),
@@ -73,10 +73,10 @@ const initiateConsensusSchema = z.object({
  */
 const castVoteSchema = z.object({
   /** Consensus ID */
-  consensusId: z.string().cuid('Invalid consensus ID'),
+  consensusId: z.string().min(1, 'Invalid consensus ID'),
 
   /** OrchestratorID casting the vote */
-  orchestratorId: z.string().cuid('Invalid OrchestratorID'),
+  orchestratorId: z.string().min(1, 'Invalid OrchestratorID'),
 
   /** Vote decision */
   vote: z.enum(['APPROVE', 'REJECT', 'ABSTAIN']),

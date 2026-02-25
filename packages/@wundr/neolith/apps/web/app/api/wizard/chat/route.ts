@@ -232,7 +232,7 @@ export async function POST(req: Request) {
     });
 
     // Return streaming response compatible with useChat hook
-    return result.toTextStreamResponse();
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error('[POST /api/wizard/chat] Error:', error);
     return new Response(

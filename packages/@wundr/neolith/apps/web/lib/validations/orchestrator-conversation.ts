@@ -94,13 +94,13 @@ export function createErrorResponse(
  * Initiate conversation schema
  */
 export const initiateConversationSchema = z.object({
-  orchestratorId: z.string().uuid().optional(),
+  orchestratorId: z.string().min(1).optional(),
   title: z.string().max(200).optional(),
   context: conversationContextSchema.optional(),
   content: z.string().min(1).max(10000),
-  targetId: z.string().uuid(),
+  targetId: z.string().min(1),
   targetType: z.enum(['channel', 'user']),
-  parentId: z.string().uuid().optional(),
+  parentId: z.string().min(1).optional(),
   metadata: z.record(z.unknown()).optional(),
   participants: z.array(z.string()).optional(),
 });
@@ -113,16 +113,16 @@ export type InitiateConversationInput = z.infer<
  * Delegate task schema
  */
 export const delegateTaskSchema = z.object({
-  taskId: z.string().uuid(),
-  targetOrchestrator: z.string().uuid(),
-  targetUserId: z.string().uuid(),
+  taskId: z.string().min(1),
+  targetOrchestrator: z.string().min(1),
+  targetUserId: z.string().min(1),
   priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   context: z.record(z.unknown()).optional(),
   note: z.string().max(2000).optional(),
   dueDate: z.string().datetime().optional(),
   metadata: z.record(z.unknown()).optional(),
   createNotification: z.boolean().optional().default(true),
-  channelId: z.string().uuid().optional(),
+  channelId: z.string().min(1).optional(),
 });
 
 export type DelegateTaskInput = z.infer<typeof delegateTaskSchema>;
@@ -131,14 +131,14 @@ export type DelegateTaskInput = z.infer<typeof delegateTaskSchema>;
  * Escalate task schema
  */
 export const escalateTaskSchema = z.object({
-  taskId: z.string().uuid(),
+  taskId: z.string().min(1),
   reason: z.string().min(1).max(500),
   priority: z.enum(['low', 'medium', 'high', 'critical']),
   severity: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   context: z.record(z.unknown()).optional(),
   targetLevel: z.enum(['supervisor', 'admin', 'human']).optional(),
-  targetUserIds: z.array(z.string().uuid()).optional(),
-  channelId: z.string().uuid().optional(),
+  targetUserIds: z.array(z.string().min(1)).optional(),
+  channelId: z.string().min(1).optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 
@@ -153,8 +153,8 @@ export const statusUpdateSchema = z.object({
   statusType: z
     .enum(['progress', 'milestone', 'announcement', 'completion', 'issue'])
     .optional(),
-  taskId: z.string().uuid().optional(),
-  channelIds: z.array(z.string().uuid()).optional(),
+  taskId: z.string().min(1).optional(),
+  channelIds: z.array(z.string().min(1)).optional(),
   reason: z.string().max(500).optional(),
   metadata: z.record(z.unknown()).optional(),
 });
@@ -165,8 +165,8 @@ export type StatusUpdateInput = z.infer<typeof statusUpdateSchema>;
  * Orchestrator mentions filters schema
  */
 export const orchestratorMentionsFiltersSchema = z.object({
-  orchestratorId: z.string().uuid().optional(),
-  channelId: z.string().uuid().optional(),
+  orchestratorId: z.string().min(1).optional(),
+  channelId: z.string().min(1).optional(),
   handled: z.boolean().optional(),
   includeResolved: z.boolean().optional(),
   startDate: z.string().datetime().optional(),
@@ -188,9 +188,9 @@ export type OrchestratorMentionsFiltersInput = z.infer<
  * Mark mentions handled schema
  */
 export const markMentionsHandledSchema = z.object({
-  mentionIds: z.array(z.string().uuid()).min(1),
+  mentionIds: z.array(z.string().min(1)).min(1),
   handled: z.boolean(),
-  handledBy: z.string().uuid().optional(),
+  handledBy: z.string().min(1).optional(),
   note: z.string().max(2000).optional(),
   response: z.string().max(2000).optional(),
 });

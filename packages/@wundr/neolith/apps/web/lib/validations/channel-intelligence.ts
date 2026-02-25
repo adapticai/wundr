@@ -76,10 +76,10 @@ export const autoJoinChannelsSchema = z.object({
   maxChannels: z.number().int().positive().max(20).optional().default(5),
 
   /** Channel IDs to explicitly include (override score) */
-  explicitChannelIds: z.array(z.string().cuid()).optional().default([]),
+  explicitChannelIds: z.array(z.string().min(1)).optional().default([]),
 
   /** Channel IDs to explicitly exclude */
-  excludeChannelIds: z.array(z.string().cuid()).optional().default([]),
+  excludeChannelIds: z.array(z.string().min(1)).optional().default([]),
 });
 
 export type AutoJoinChannelsInput = z.infer<typeof autoJoinChannelsSchema>;
@@ -164,7 +164,7 @@ export type ActivityMetricsFiltersInput = z.infer<
  */
 export const calculateRelevanceSchema = z.object({
   /** OrchestratorID to calculate relevance for */
-  orchestratorId: z.string().cuid('Invalid OrchestratorID'),
+  orchestratorId: z.string().min(1, 'Invalid OrchestratorID'),
 
   /** Optional: Override Orchestrator discipline for calculation */
   disciplineOverride: z.string().max(100).optional(),

@@ -89,7 +89,7 @@ export function createErrorResponse(
  * Orchestrator ID param schema (for session manager routes)
  */
 export const orchestratorIdParamSchema = z.object({
-  orchestratorId: z.string().uuid(),
+  orchestratorId: z.string().min(1),
 });
 
 export type OrchestratorIdParam = z.infer<typeof orchestratorIdParamSchema>;
@@ -98,7 +98,7 @@ export type OrchestratorIdParam = z.infer<typeof orchestratorIdParamSchema>;
  * Session Manager ID param schema
  */
 export const sessionManagerIdParamSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().min(1),
 });
 
 export type SessionManagerIdParam = z.infer<typeof sessionManagerIdParamSchema>;
@@ -112,7 +112,7 @@ export const createSessionManagerSchema = z.object({
   charterId: z.string().optional(),
   charterData: z.record(z.unknown()).optional(),
   disciplineId: z.string().optional(),
-  orchestratorId: z.string().uuid().optional(), // Made optional since it comes from route params
+  orchestratorId: z.string().min(1).optional(), // Made optional since it comes from route params
   isGlobal: z.boolean().optional().default(false),
   globalConfig: z.record(z.unknown()).optional(),
   maxConcurrentSubagents: z.number().positive().optional().default(20),

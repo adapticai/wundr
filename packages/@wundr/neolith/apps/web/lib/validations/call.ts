@@ -84,7 +84,7 @@ export function createCallErrorResponse(
  * Call ID parameter schema
  */
 export const callIdParamSchema = z.object({
-  callId: z.string().uuid('Invalid call ID format'),
+  callId: z.string().min(1, 'Invalid call ID format'),
 });
 
 export type CallIdParam = z.infer<typeof callIdParamSchema>;
@@ -93,7 +93,7 @@ export type CallIdParam = z.infer<typeof callIdParamSchema>;
  * Huddle ID parameter schema
  */
 export const huddleIdParamSchema = z.object({
-  huddleId: z.string().uuid('Invalid huddle ID format'),
+  huddleId: z.string().min(1, 'Invalid huddle ID format'),
 });
 
 export type HuddleIdParam = z.infer<typeof huddleIdParamSchema>;
@@ -137,10 +137,10 @@ export type CallStatus = z.infer<typeof callStatusEnum>;
  * Create call input schema
  */
 export const createCallSchema = z.object({
-  channelId: z.string().uuid('Invalid channel ID'),
+  channelId: z.string().min(1, 'Invalid channel ID'),
   type: callTypeEnum.default('video'),
-  participantIds: z.array(z.string().uuid()).optional(),
-  invitees: z.array(z.string().uuid()).optional(),
+  participantIds: z.array(z.string().min(1)).optional(),
+  invitees: z.array(z.string().min(1)).optional(),
 });
 
 export type CreateCallInput = z.infer<typeof createCallSchema>;
@@ -153,7 +153,7 @@ export const callFiltersSchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
   status: callStatusEnum.optional(),
   search: z.string().optional(),
-  channelId: z.string().uuid().optional(),
+  channelId: z.string().min(1).optional(),
   type: callTypeEnum.optional(),
   activeOnly: z.coerce.boolean().optional(),
   sortBy: z.enum(['createdAt', 'startedAt', 'endedAt', 'status']).optional(),
@@ -244,7 +244,7 @@ export type HuddleStatus = z.infer<typeof huddleStatusEnum>;
  * Start huddle input schema
  */
 export const startHuddleSchema = z.object({
-  channelId: z.string().uuid('Invalid channel ID'),
+  channelId: z.string().min(1, 'Invalid channel ID'),
 });
 
 export type StartHuddleInput = z.infer<typeof startHuddleSchema>;
@@ -253,8 +253,8 @@ export type StartHuddleInput = z.infer<typeof startHuddleSchema>;
  * Create huddle input schema
  */
 export const createHuddleSchema = z.object({
-  channelId: z.string().uuid('Invalid channel ID').optional(),
-  workspaceId: z.string().uuid('Invalid workspace ID'),
+  channelId: z.string().min(1, 'Invalid channel ID').optional(),
+  workspaceId: z.string().min(1, 'Invalid workspace ID'),
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
   isPublic: z.boolean().optional(),
@@ -282,7 +282,7 @@ export const huddleFiltersSchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
   status: huddleStatusEnum.optional(),
   search: z.string().optional(),
-  workspaceId: z.string().uuid().optional(),
+  workspaceId: z.string().min(1).optional(),
   activeOnly: z.coerce.boolean().optional(),
   publicOnly: z.coerce.boolean().optional(),
   sortBy: z
@@ -440,7 +440,7 @@ export interface RecordingResponse {
  * Start recording input schema
  */
 export const startRecordingSchema = z.object({
-  callId: z.string().uuid('Invalid call ID'),
+  callId: z.string().min(1, 'Invalid call ID'),
   format: z.enum(['mp4', 'webm', 'ogg']).default('mp4'),
 });
 
@@ -454,7 +454,7 @@ export type StartRecordingInput = z.infer<typeof startRecordingSchema>;
  * Call invite input schema
  */
 export const callInviteSchema = z.object({
-  userIds: z.array(z.string().uuid()).min(1, 'At least one user is required'),
+  userIds: z.array(z.string().min(1)).min(1, 'At least one user is required'),
 });
 
 export type CallInviteInput = z.infer<typeof callInviteSchema>;
@@ -463,7 +463,7 @@ export type CallInviteInput = z.infer<typeof callInviteSchema>;
  * Invite to call input schema (extended for invite route)
  */
 export const inviteToCallSchema = z.object({
-  userIds: z.array(z.string().uuid()).min(1, 'At least one user is required'),
+  userIds: z.array(z.string().min(1)).min(1, 'At least one user is required'),
   message: z
     .string()
     .max(500, 'Message must be less than 500 characters')

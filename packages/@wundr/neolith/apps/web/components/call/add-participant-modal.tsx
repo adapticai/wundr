@@ -146,7 +146,9 @@ export function AddParticipantModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={cn('max-w-md max-h-[80vh] flex flex-col p-0', className)}>
+      <DialogContent
+        className={cn('max-w-md max-h-[80vh] flex flex-col p-0', className)}
+      >
         <DialogHeader className='p-4 border-b border-border'>
           <DialogTitle>Add people to call</DialogTitle>
         </DialogHeader>
@@ -249,11 +251,7 @@ export function AddParticipantModal({
             {selectedUsers.size} selected
           </div>
           <div className='flex items-center gap-2'>
-            <Button
-              onClick={onClose}
-              variant='ghost'
-              size='sm'
-            >
+            <Button onClick={onClose} variant='ghost' size='sm'>
               Cancel
             </Button>
             <Button

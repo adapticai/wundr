@@ -805,11 +805,14 @@ export default function ChannelPage() {
   const handleInviteByEmail = useCallback(
     async (emails: string[], role: 'admin' | 'member') => {
       try {
-        const response = await fetch(`/api/channels/${channelId}/invite`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ emails, role: role.toUpperCase() }),
-        });
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/channels/${channelId}/invites`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ emails, role: role.toUpperCase() }),
+          }
+        );
 
         if (!response.ok) {
           const error = await response
@@ -836,7 +839,7 @@ export default function ChannelPage() {
         throw error;
       }
     },
-    [channelId, toast]
+    [channelId, workspaceSlug, toast]
   );
 
   // Tab change handler - filter to only supported tabs for channels

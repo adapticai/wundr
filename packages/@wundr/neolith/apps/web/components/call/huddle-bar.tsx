@@ -157,127 +157,127 @@ export function HuddleBar({
         role='region'
         aria-label={`Active huddle: ${huddle.name}`}
       >
-      {/* Speaking indicator / Wave animation */}
-      <div className='flex items-center gap-1'>
-        {speakingParticipants.length > 0 ? (
-          <div
-            className='flex items-center gap-0.5 h-4'
-            aria-label='Someone is speaking'
-          >
-            {[1, 2, 3].map(bar => (
-              <div
-                key={bar}
-                className='w-0.5 bg-green-500 rounded-full animate-pulse'
-                style={{
-                  height: `${Math.random() * 12 + 4}px`,
-                  animationDelay: `${bar * 100}ms`,
-                }}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className='w-4 h-4 rounded-full bg-muted flex items-center justify-center'>
-            <div className='w-1.5 h-1.5 bg-muted-foreground rounded-full' />
-          </div>
-        )}
-      </div>
+        {/* Speaking indicator / Wave animation */}
+        <div className='flex items-center gap-1'>
+          {speakingParticipants.length > 0 ? (
+            <div
+              className='flex items-center gap-0.5 h-4'
+              aria-label='Someone is speaking'
+            >
+              {[1, 2, 3].map(bar => (
+                <div
+                  key={bar}
+                  className='w-0.5 bg-green-500 rounded-full animate-pulse'
+                  style={{
+                    height: `${Math.random() * 12 + 4}px`,
+                    animationDelay: `${bar * 100}ms`,
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className='w-4 h-4 rounded-full bg-muted flex items-center justify-center'>
+              <div className='w-1.5 h-1.5 bg-muted-foreground rounded-full' />
+            </div>
+          )}
+        </div>
 
-      {/* Huddle name */}
-      <button
-        onClick={onExpand}
-        onKeyDown={e => handleKeyDown(e, onExpand)}
-        className={cn(
-          'text-sm font-medium text-foreground',
-          'hover:text-stone-700 dark:hover:text-stone-300 transition-colors',
-          'truncate max-w-[120px]'
-        )}
-        aria-label={`Expand huddle: ${huddle.name}`}
-      >
-        {huddle.name}
-      </button>
+        {/* Huddle name */}
+        <button
+          onClick={onExpand}
+          onKeyDown={e => handleKeyDown(e, onExpand)}
+          className={cn(
+            'text-sm font-medium text-foreground',
+            'hover:text-stone-700 dark:hover:text-stone-300 transition-colors',
+            'truncate max-w-[120px]'
+          )}
+          aria-label={`Expand huddle: ${huddle.name}`}
+        >
+          {huddle.name}
+        </button>
 
-      {/* Divider */}
-      <div className='w-px h-4 bg-border' />
+        {/* Divider */}
+        <div className='w-px h-4 bg-border' />
 
-      {/* Participant avatars */}
-      <StackedAvatars participants={huddle.participants} maxVisible={3} />
+        {/* Participant avatars */}
+        <StackedAvatars participants={huddle.participants} maxVisible={3} />
 
-      {/* Participant count */}
-      <span className='text-xs text-muted-foreground'>
-        {huddle.participants.length}
-      </span>
+        {/* Participant count */}
+        <span className='text-xs text-muted-foreground'>
+          {huddle.participants.length}
+        </span>
 
-      {/* Divider */}
-      <div className='w-px h-4 bg-border' />
+        {/* Divider */}
+        <div className='w-px h-4 bg-border' />
 
-      {/* Mute toggle */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={onToggleMute}
-            onKeyDown={e => handleKeyDown(e, onToggleMute)}
-            className={cn(
-              'w-8 h-8 rounded-full flex items-center justify-center transition-all',
-              isMuted
-                ? 'bg-red-500 hover:bg-red-600 text-white'
-                : 'bg-muted hover:bg-muted/80 text-foreground'
-            )}
-            aria-label={isMuted ? 'Unmute' : 'Mute'}
-            aria-pressed={isMuted}
-          >
-            {isMuted ? (
-              <MicOff className='w-4 h-4' />
-            ) : (
-              <Mic className='w-4 h-4' />
-            )}
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{isMuted ? 'Unmute' : 'Mute'}</p>
-        </TooltipContent>
-      </Tooltip>
+        {/* Mute toggle */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={onToggleMute}
+              onKeyDown={e => handleKeyDown(e, onToggleMute)}
+              className={cn(
+                'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                isMuted
+                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  : 'bg-muted hover:bg-muted/80 text-foreground'
+              )}
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
+              aria-pressed={isMuted}
+            >
+              {isMuted ? (
+                <MicOff className='w-4 h-4' />
+              ) : (
+                <Mic className='w-4 h-4' />
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{isMuted ? 'Unmute' : 'Mute'}</p>
+          </TooltipContent>
+        </Tooltip>
 
-      {/* Expand button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={onExpand}
-            onKeyDown={e => handleKeyDown(e, onExpand)}
-            className={cn(
-              'w-8 h-8 rounded-full flex items-center justify-center',
-              'bg-muted hover:bg-muted/80 text-foreground',
-              'transition-colors'
-            )}
-            aria-label='Expand to full view'
-          >
-            <Maximize2 className='w-4 h-4' />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Expand to full view</p>
-        </TooltipContent>
-      </Tooltip>
+        {/* Expand button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={onExpand}
+              onKeyDown={e => handleKeyDown(e, onExpand)}
+              className={cn(
+                'w-8 h-8 rounded-full flex items-center justify-center',
+                'bg-muted hover:bg-muted/80 text-foreground',
+                'transition-colors'
+              )}
+              aria-label='Expand to full view'
+            >
+              <Maximize2 className='w-4 h-4' />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Expand to full view</p>
+          </TooltipContent>
+        </Tooltip>
 
-      {/* Leave button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={onLeave}
-            onKeyDown={e => handleKeyDown(e, onLeave)}
-            className={cn(
-              'w-8 h-8 rounded-full flex items-center justify-center',
-              'bg-destructive hover:bg-destructive/90 text-destructive-foreground',
-              'transition-colors'
-            )}
-            aria-label='Leave huddle'
-          >
-            <PhoneOff className='w-4 h-4' />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Leave huddle</p>
-        </TooltipContent>
-      </Tooltip>
+        {/* Leave button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={onLeave}
+              onKeyDown={e => handleKeyDown(e, onLeave)}
+              className={cn(
+                'w-8 h-8 rounded-full flex items-center justify-center',
+                'bg-destructive hover:bg-destructive/90 text-destructive-foreground',
+                'transition-colors'
+              )}
+              aria-label='Leave huddle'
+            >
+              <PhoneOff className='w-4 h-4' />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Leave huddle</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </TooltipProvider>
   );

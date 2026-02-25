@@ -132,7 +132,7 @@ export const workspaceImportSchema = z.object({
  */
 export const generateOrgSchema = z.object({
   organizationName: z.string().min(1, 'Organization name is required'),
-  organizationId: z.string().uuid('Invalid organization ID'),
+  organizationId: z.string().min(1, 'Invalid organization ID'),
   workspaceName: z.string().min(1, 'Workspace name is required'),
   workspaceSlug: z
     .string()

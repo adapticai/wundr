@@ -33,7 +33,7 @@ interface RouteContext {
  * Channel ID validation schema
  */
 const channelIdParamSchema = z.object({
-  channelId: z.string().cuid('Invalid channel ID format'),
+  channelId: z.string().min(1, 'Invalid channel ID format'),
 });
 
 /**

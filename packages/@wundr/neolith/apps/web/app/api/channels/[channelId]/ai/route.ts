@@ -263,8 +263,8 @@ export async function POST(req: Request, context: RouteContext) {
       messages: modelMessages,
     });
 
-    // Return streaming response
-    return result.toTextStreamResponse();
+    // Return streaming response in AI SDK UI message stream format (for useChat/DefaultChatTransport)
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error('[POST /api/channels/:channelId/ai] Error:', error);
     return new Response(

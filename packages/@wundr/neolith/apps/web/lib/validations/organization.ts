@@ -96,7 +96,7 @@ export const createWorkspaceSchema = z.object({
     .min(2, 'Name must be at least 2 characters')
     .max(100, 'Name must be less than 100 characters'),
   slug: workspaceSlugSchema,
-  organizationId: z.string().uuid('Invalid organization ID'),
+  organizationId: z.string().min(1, 'Invalid organization ID'),
   description: z
     .string()
     .max(500, 'Description must be less than 500 characters')
@@ -237,7 +237,7 @@ export type UpdateOrganizationInput = z.infer<typeof updateOrganizationSchema>;
  * Workspace filters input schema for listing workspaces
  */
 export const workspaceFiltersSchema = z.object({
-  organizationId: z.string().uuid().optional(),
+  organizationId: z.string().min(1).optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
   search: z.string().optional(),
@@ -255,7 +255,7 @@ export type WorkspaceFiltersInput = z.infer<typeof workspaceFiltersSchema>;
  * Organization ID parameter schema
  */
 export const organizationIdParamSchema = z.object({
-  id: z.string().uuid('Invalid organization ID'),
+  id: z.string().min(1, 'Invalid organization ID'),
 });
 
 export type OrganizationIdParam = z.infer<typeof organizationIdParamSchema>;
@@ -264,7 +264,7 @@ export type OrganizationIdParam = z.infer<typeof organizationIdParamSchema>;
  * Workspace ID parameter schema
  */
 export const workspaceIdParamSchema = z.object({
-  workspaceId: z.string().uuid('Invalid workspace ID'),
+  id: z.string().min(1, 'Invalid workspace ID'),
 });
 
 export type WorkspaceIdParam = z.infer<typeof workspaceIdParamSchema>;
@@ -273,7 +273,7 @@ export type WorkspaceIdParam = z.infer<typeof workspaceIdParamSchema>;
  * User ID parameter schema
  */
 export const userIdParamSchema = z.object({
-  userId: z.string().uuid('Invalid user ID'),
+  userId: z.string().min(1, 'Invalid user ID'),
 });
 
 export type UserIdParam = z.infer<typeof userIdParamSchema>;
@@ -282,7 +282,7 @@ export type UserIdParam = z.infer<typeof userIdParamSchema>;
  * Channel ID parameter schema
  */
 export const channelIdParamSchema = z.object({
-  channelId: z.string().uuid('Invalid channel ID'),
+  channelId: z.string().min(1, 'Invalid channel ID'),
 });
 
 export type ChannelIdParam = z.infer<typeof channelIdParamSchema>;
@@ -291,7 +291,7 @@ export type ChannelIdParam = z.infer<typeof channelIdParamSchema>;
  * Discipline ID parameter schema
  */
 export const disciplineIdParamSchema = z.object({
-  disciplineId: z.string().uuid('Invalid discipline ID'),
+  disciplineId: z.string().min(1, 'Invalid discipline ID'),
 });
 
 export type DisciplineIdParam = z.infer<typeof disciplineIdParamSchema>;
@@ -311,7 +311,7 @@ export type OrganizationRole = z.infer<typeof organizationRoleEnum>;
  * Add organization member input schema
  */
 export const addOrganizationMemberSchema = z.object({
-  userId: z.string().uuid('Invalid user ID'),
+  userId: z.string().min(1, 'Invalid user ID'),
   role: organizationRoleEnum.default('MEMBER'),
 });
 
@@ -338,7 +338,7 @@ export type UpdateOrganizationMemberRoleInput = z.infer<
  * Add workspace member input schema
  */
 export const addWorkspaceMemberSchema = z.object({
-  userId: z.string().uuid('Invalid user ID'),
+  userId: z.string().min(1, 'Invalid user ID'),
   role: memberRoleEnum.default('MEMBER'),
 });
 
@@ -411,9 +411,9 @@ export const createChannelSchema = z.object({
     .max(200, 'Topic must be less than 200 characters')
     .optional(),
   isPrivate: z.boolean().default(false),
-  workspaceId: z.string().uuid('Invalid workspace ID').optional(),
-  disciplineId: z.string().uuid('Invalid discipline ID').optional(),
-  memberIds: z.array(z.string().uuid('Invalid member ID')).default([]),
+  workspaceId: z.string().min(1, 'Invalid workspace ID').optional(),
+  disciplineId: z.string().min(1, 'Invalid discipline ID').optional(),
+  memberIds: z.array(z.string().min(1, 'Invalid member ID')).default([]),
 });
 
 export type CreateChannelInput = z.infer<typeof createChannelSchema>;
@@ -458,8 +458,8 @@ export type UpdateChannelMemberRoleInput = z.infer<
  * Channel filters input schema for listing channels
  */
 export const channelFiltersSchema = z.object({
-  workspaceId: z.string().uuid().optional(),
-  disciplineId: z.string().uuid().optional(),
+  workspaceId: z.string().min(1).optional(),
+  disciplineId: z.string().min(1).optional(),
   type: channelTypeEnum.optional(),
   isPrivate: z.coerce.boolean().optional(),
   includeArchived: z.coerce.boolean().default(false),
@@ -480,9 +480,9 @@ export type ChannelFiltersInput = z.infer<typeof channelFiltersSchema>;
  * Create direct message input schema
  */
 export const createDMSchema = z.object({
-  userId: z.string().uuid('Invalid user ID'),
-  workspaceId: z.string().uuid('Invalid workspace ID'),
-  recipientId: z.string().uuid('Invalid recipient ID').optional(),
+  userId: z.string().min(1, 'Invalid user ID'),
+  workspaceId: z.string().min(1, 'Invalid workspace ID'),
+  recipientId: z.string().min(1, 'Invalid recipient ID').optional(),
   message: z
     .string()
     .min(1, 'Message cannot be empty')
@@ -504,8 +504,8 @@ export const createDisciplineSchema = z.object({
     .string()
     .min(2, 'Name must be at least 2 characters')
     .max(100, 'Name must be less than 100 characters'),
-  workspaceId: z.string().uuid('Invalid workspace ID'),
-  organizationId: z.string().uuid('Invalid organization ID'),
+  workspaceId: z.string().min(1, 'Invalid workspace ID'),
+  organizationId: z.string().min(1, 'Invalid organization ID'),
   description: z
     .string()
     .max(500, 'Description must be less than 500 characters')
@@ -546,8 +546,8 @@ export type UpdateDisciplineInput = z.infer<typeof updateDisciplineSchema>;
  * Discipline filters input schema for listing disciplines
  */
 export const disciplineFiltersSchema = z.object({
-  workspaceId: z.string().uuid().optional(),
-  organizationId: z.string().uuid().optional(),
+  workspaceId: z.string().min(1).optional(),
+  organizationId: z.string().min(1).optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
   search: z.string().optional(),

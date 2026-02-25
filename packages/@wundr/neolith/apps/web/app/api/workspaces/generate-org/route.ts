@@ -35,6 +35,47 @@ import type {
 } from '@/types/api';
 import type { NextRequest } from 'next/server';
 
+// Map wizard team sizes to org-genesis size tiers
+function mapTeamSizeToOrgSize(
+  teamSize: string
+): 'small' | 'medium' | 'large' | 'enterprise' {
+  switch (teamSize) {
+    case '1-10':
+      return 'small';
+    case '11-50':
+      return 'medium';
+    case '51-200':
+      return 'large';
+    case '201-500':
+    case '500+':
+      return 'enterprise';
+    default:
+      return 'medium';
+  }
+}
+
+// Map wizard org types to org-genesis industry types
+function mapOrgTypeToIndustry(orgType: string): string {
+  switch (orgType) {
+    case 'startup':
+      return 'technology';
+    case 'enterprise':
+      return 'technology';
+    case 'agency':
+      return 'marketing';
+    case 'nonprofit':
+      return 'custom';
+    case 'government':
+      return 'custom';
+    case 'education':
+      return 'custom';
+    case 'other':
+      return 'custom';
+    default:
+      return 'custom';
+  }
+}
+
 // Dynamic imports for org-genesis packages to avoid build-time resolution issues
 // These packages are loaded at runtime when the API is called
 async function getOrgGenesisModules() {
@@ -353,9 +394,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       genesisResult = await genesisEngine.generate(
         `Create an organization named "${input.organizationName}" focused on ${input.description}. Strategy: ${input.strategy}. Target assets: ${input.targetAssets.join(', ')}.`,
         {
-          industry: input.organizationType as any,
-          size: input.teamSize as any,
-          customContext: `Risk tolerance: ${input.riskTolerance}. Team size preference: ${input.teamSize}.`,
+          industry: mapOrgTypeToIndustry(input.organizationType) as any,
+          size: mapTeamSizeToOrgSize(input.teamSize),
+          customContext: `Risk tolerance: ${input.riskTolerance}. Team size preference: ${input.teamSize}. Organization type: ${input.organizationType}.`,
           dryRun: input.dryRun,
         }
       );
@@ -733,6 +774,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         data: workspace,
+        // Include full neolith result for frontend preview
+        manifest: neolithResult.manifest,
+        orchestrators: neolithResult.orchestrators,
+        disciplines: neolithResult.disciplines,
+        agents: neolithResult.agents,
+        metadata: neolithResult.metadata,
         genesis: {
           manifestId: genesisResult.manifest.id,
           orchestratorCount: genesisResult.stats.orchestratorCount,

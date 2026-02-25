@@ -39,7 +39,7 @@ export type StatusUpdateType = z.infer<typeof statusUpdateTypeEnum>;
  * Schema for work session status response
  */
 export const workSessionStatusSchema = z.object({
-  taskId: z.string().cuid('Invalid task ID').nullable(),
+  taskId: z.string().min(1, 'Invalid task ID').nullable(),
   status: workSessionStatusEnum,
   startedAt: z.string().datetime().nullable(),
   progress: z.number().min(0).max(100).default(0),
@@ -55,7 +55,7 @@ export type WorkSessionStatusResponse = z.infer<typeof workSessionStatusSchema>;
  */
 export const captureOutputSchema = z.object({
   /** Task ID for this output */
-  taskId: z.string().cuid('Invalid task ID'),
+  taskId: z.string().min(1, 'Invalid task ID'),
 
   /** Incremental output/logs from Orchestrator */
   output: z.string().max(100000, 'Output exceeds maximum length'),
@@ -96,7 +96,7 @@ export type UpdateTaskStatusInput = z.infer<typeof updateTaskStatusSchema>;
  */
 export const postStatusUpdateSchema = z.object({
   /** Channel ID to post to */
-  channelId: z.string().cuid('Invalid channel ID'),
+  channelId: z.string().min(1, 'Invalid channel ID'),
 
   /** Status update message */
   message: z.string().min(1).max(2000, 'Message too long'),
@@ -128,7 +128,7 @@ export const uploadArtifactSchema = z.object({
   content: z.string().min(1, 'Content is required'),
 
   /** Task ID this artifact belongs to */
-  taskId: z.string().cuid('Invalid task ID'),
+  taskId: z.string().min(1, 'Invalid task ID'),
 
   /** Additional metadata */
   metadata: z.record(z.unknown()).optional(),
@@ -140,7 +140,7 @@ export type UploadArtifactInput = z.infer<typeof uploadArtifactSchema>;
  * Schema for file upload (multipart form data alternative)
  */
 export const fileUploadMetadataSchema = z.object({
-  taskId: z.string().cuid('Invalid task ID'),
+  taskId: z.string().min(1, 'Invalid task ID'),
   filename: z.string().min(1).max(255),
   contentType: z.string().min(1),
   metadata: z.record(z.unknown()).optional(),

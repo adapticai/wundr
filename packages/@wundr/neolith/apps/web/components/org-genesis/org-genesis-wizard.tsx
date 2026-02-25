@@ -118,16 +118,27 @@ export function OrgGenesisWizard() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to generate organization');
+        throw new Error(
+          result.message || result.error || 'Failed to generate organization'
+        );
       }
 
-      // API returns { data: workspace, genesis: {...}, ... }
-      // Add workspaceId to the result for easy access
+      // API returns { data: workspace, manifest, orchestrators, disciplines, agents, ... }
       const orgData = {
-        ...result,
+        success: true,
         workspaceId: result.data?.id,
+        manifest: result.manifest,
+        orchestrators: result.orchestrators || [],
+        disciplines: result.disciplines || [],
+        agents: result.agents || [],
+        metadata: result.metadata || {
+          generatedAt: new Date().toISOString(),
+          generatorVersion: '1.0.0',
+          configHash: '',
+          durationMs: result.durationMs || 0,
+        },
       };
-      setGeneratedOrg(orgData);
+      setGeneratedOrg(orgData as OrgGenerationResponse);
       setCurrentStep('preview');
     } catch (err) {
       const errorMessage =
@@ -250,7 +261,11 @@ function BasicInfoStep({
 }) {
   const form = useForm<OrgBasicInfo>({
     resolver: zodResolver(orgBasicInfoSchema),
-    defaultValues: initialData,
+    defaultValues: {
+      name: '',
+      type: undefined,
+      ...initialData,
+    },
   });
 
   return (
@@ -341,7 +356,11 @@ function DescriptionStep({
 }) {
   const form = useForm<OrgDescription>({
     resolver: zodResolver(orgDescriptionSchema),
-    defaultValues: initialData,
+    defaultValues: {
+      description: '',
+      strategy: '',
+      ...initialData,
+    },
   });
 
   return (

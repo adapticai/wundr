@@ -345,7 +345,9 @@ export function CallInviteDialog({
             <label className='flex items-center gap-2 cursor-pointer'>
               <Checkbox
                 checked={sendNotification}
-                onCheckedChange={checked => setSendNotification(checked as boolean)}
+                onCheckedChange={checked =>
+                  setSendNotification(checked as boolean)
+                }
               />
               <span className='text-sm text-foreground'>
                 Send notification to invited users

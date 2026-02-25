@@ -180,7 +180,8 @@ export const imageIdParamSchema = z.object({
 
 // List schemas
 export const workspaceFilesSchema = z.object({
-  workspaceId: z.string(),
+  // workspaceId is optional because channel/conversation file routes get it from membership lookup
+  workspaceId: z.string().optional(),
   limit: z.coerce.number().min(1).max(100).optional().default(50),
   offset: z.coerce.number().min(0).optional().default(0),
   category: z
@@ -188,7 +189,7 @@ export const workspaceFilesSchema = z.object({
     .optional(),
   type: z.enum(['image', 'video', 'audio', 'document', 'archive']).optional(),
   cursor: z.string().optional(),
-  channelId: z.string().uuid().optional(),
+  channelId: z.string().min(1).optional(),
 });
 
 export type WorkspaceFilesInput = z.infer<typeof workspaceFilesSchema>;

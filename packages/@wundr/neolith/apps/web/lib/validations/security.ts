@@ -51,7 +51,7 @@ export type TwoFactorDisableInput = z.infer<typeof twoFactorDisableSchema>;
  * Session validation
  */
 export const sessionIdSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.string().min(1),
 });
 
 export type SessionIdInput = z.infer<typeof sessionIdSchema>;
@@ -72,7 +72,7 @@ export const securityQuestionsSchema = z.object({
 });
 
 export const verifySecurityAnswerSchema = z.object({
-  questionId: z.string().uuid(),
+  questionId: z.string().min(1),
   answer: z.string().min(1),
 });
 

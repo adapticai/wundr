@@ -359,7 +359,7 @@ Error: ${execution.error || 'None'}`;
     });
 
     // Return streaming response compatible with useChat hook
-    return result.toTextStreamResponse();
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error(
       '[POST /api/workspaces/[workspaceSlug]/workflows/ai] Error:',

@@ -35,7 +35,7 @@ interface RouteContext {
  */
 const markAsReadSchema = z.object({
   /** Message ID to mark as read up to (inclusive) */
-  messageId: z.string().cuid('Invalid message ID').optional(),
+  messageId: z.string().min(1, 'Invalid message ID').optional(),
 });
 
 type MarkAsReadInput = z.infer<typeof markAsReadSchema>;

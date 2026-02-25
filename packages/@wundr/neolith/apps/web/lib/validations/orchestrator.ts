@@ -109,7 +109,7 @@ export const createOrchestratorUserSchema = z.object({
 export const createOrchestratorSchema = z.object({
   discipline: z.string().min(1).max(100),
   role: z.string().min(1).max(100),
-  organizationId: z.string().uuid(),
+  organizationId: z.string().min(1),
   capabilities: z.record(z.unknown()).optional(),
   daemonEndpoint: z.string().url().optional(),
   status: z.enum(['ONLINE', 'OFFLINE', 'BUSY', 'AWAY']).default('OFFLINE'),
@@ -150,7 +150,7 @@ export type UpdateOrchestratorInput = z.infer<typeof updateOrchestratorSchema>;
  * Orchestrator ID param schema
  */
 export const orchestratorIdParamSchema = z.object({
-  orchestratorId: z.string().uuid(),
+  orchestratorId: z.string().min(1),
 });
 
 export type OrchestratorIdParam = z.infer<typeof orchestratorIdParamSchema>;
@@ -175,7 +175,7 @@ export type OrchestratorStatusUpdate = z.infer<
  * Orchestrator filters schema
  */
 export const orchestratorFiltersSchema = z.object({
-  organizationId: z.string().uuid().optional(),
+  organizationId: z.string().min(1).optional(),
   discipline: z.string().optional(),
   status: z.enum(['ONLINE', 'OFFLINE', 'BUSY', 'AWAY']).optional(),
   search: z.string().max(100).optional(),
@@ -212,8 +212,8 @@ export type OrchestratorAction = z.infer<typeof orchestratorActionSchema>;
  */
 export const orchestratorBulkActionSchema = z
   .object({
-    orchestratorIds: z.array(z.string().uuid()).min(1).max(50).optional(),
-    ids: z.array(z.string().uuid()).min(1).max(50).optional(),
+    orchestratorIds: z.array(z.string().min(1)).min(1).max(50).optional(),
+    ids: z.array(z.string().min(1)).min(1).max(50).optional(),
     action: z.enum([
       'activate',
       'deactivate',
@@ -240,12 +240,12 @@ export type OrchestratorBulkAction = z.infer<
  * Escalate task schema
  */
 export const escalateTaskSchema = z.object({
-  taskId: z.string().uuid(),
+  taskId: z.string().min(1),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']),
   reason: z.string().min(1).max(500),
   severity: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
   context: z.record(z.unknown()).optional(),
-  channelId: z.string().uuid().optional(),
+  channelId: z.string().min(1).optional(),
   assignTo: z.string().optional(),
   metadata: z.record(z.unknown()).optional(),
 });
@@ -256,12 +256,12 @@ export type EscalateTaskInput = z.infer<typeof escalateTaskSchema>;
  * Initiate conversation schema
  */
 export const initiateConversationSchema = z.object({
-  orchestratorId: z.string().uuid(),
+  orchestratorId: z.string().min(1),
   message: z.string().min(1).max(5000).optional(),
   content: z.string().min(1).max(5000),
   targetType: z.enum(['channel', 'user']).optional(),
-  targetId: z.string().uuid().optional(),
-  parentId: z.string().uuid().optional(),
+  targetId: z.string().min(1).optional(),
+  parentId: z.string().min(1).optional(),
   context: z.record(z.unknown()).optional(),
   metadata: z
     .object({
@@ -281,7 +281,7 @@ export type InitiateConversationInput = z.infer<
  */
 export const generateApiKeySchema = z.object({
   name: z.string().min(1).max(100),
-  orchestratorId: z.string().uuid().optional(),
+  orchestratorId: z.string().min(1).optional(),
   expiresInDays: z.number().int().positive().optional(),
   scopes: z
     .array(z.enum(['read', 'write', 'execute', 'admin']))

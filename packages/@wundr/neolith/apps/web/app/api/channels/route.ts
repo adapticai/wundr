@@ -32,8 +32,11 @@ import type { NextRequest } from 'next/server';
  * Helper to check workspace access
  */
 async function checkWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  // Support both workspace ID and slug for lookup
+  const workspace = await prisma.workspace.findFirst({
+    where: {
+      OR: [{ id: workspaceId }, { slug: workspaceId }],
+    },
   });
 
   if (!workspace) {
@@ -139,12 +142,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Use the actual workspace ID from the access check
+    const actualWorkspaceId = access.workspace.id;
+
     // Build where clause
     // User sees: public channels + private channels they are a member of
     const channelMemberships = await prisma.channelMember.findMany({
       where: {
         userId: session.user.id,
-        channel: { workspaceId: filters.workspaceId },
+        channel: { workspaceId: actualWorkspaceId },
       },
       select: {
         channelId: true,
@@ -159,7 +165,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
 
     const where: Prisma.channelWhereInput = {
-      workspaceId: filters.workspaceId,
+      workspaceId: actualWorkspaceId,
       OR: [{ type: 'PUBLIC' }, { id: { in: memberChannelIds } }],
       ...(!filters.includeArchived && { isArchived: false }),
       ...(filters.type && { type: filters.type }),
@@ -346,8 +352,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .replace(/^-|-$/g, '');
 
     // Create channel with creator as admin and initial members
-    // At this point, workspaceId is guaranteed to exist due to the check above
-    const workspaceId = input.workspaceId;
+    // Use the actual workspace ID from the access check (not the input which may be a slug)
+    const workspaceId = access.workspace.id;
 
     const channel = await prisma.$transaction(async tx => {
       // Create the channel
