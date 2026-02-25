@@ -93,8 +93,6 @@ function createTransformersBackend(modelName: string): LocalBackend {
 
     try {
       // Dynamic import to avoid bundling transformers.js when not used
-      // @ts-expect-error -- optional peer dependency
-      // eslint-disable-next-line import/no-unresolved
       const { pipeline: createPipeline } =
         await import('@huggingface/transformers');
       pipeline = (await createPipeline('feature-extraction', modelName, {
@@ -157,8 +155,6 @@ function createLlamaCppBackend(
     }
 
     try {
-      // @ts-expect-error -- optional peer dependency
-      // eslint-disable-next-line import/no-unresolved
       const { getLlama, resolveModelFile, LlamaLogLevel } =
         await import('node-llama-cpp');
       const llama = await getLlama({ logLevel: LlamaLogLevel.error });
