@@ -80,14 +80,14 @@ export class ProfileComposer {
 
     // Estimated time: take the max, not the sum (parallel installs)
     const estimatedTimeMinutes = Math.max(
-      ...definitions.map((d) => d.estimatedTimeMinutes)
+      ...definitions.map(d => d.estimatedTimeMinutes)
     );
 
     // Build display name
     const displayName =
       types.length === 1
         ? definitions[0].displayName
-        : types.map((t) => capitalize(t)).join(' + ') + ' Developer';
+        : types.map(t => capitalize(t)).join(' + ') + ' Developer';
 
     let composed: ComposedProfile = {
       sourceProfiles: types,
@@ -135,14 +135,14 @@ export class ProfileComposer {
     const globalPackages = this.mergeGlobalPackages(definitions);
     const claudeConventions = this.mergeClaudeConventions(definitions);
     const estimatedTimeMinutes = Math.max(
-      ...definitions.map((d) => d.estimatedTimeMinutes)
+      ...definitions.map(d => d.estimatedTimeMinutes)
     );
 
-    const types = definitions.map((d) => d.type);
+    const types = definitions.map(d => d.type);
     const displayName =
       definitions.length === 1
         ? definitions[0].displayName
-        : types.map((t) => capitalize(t)).join(' + ') + ' Developer';
+        : types.map(t => capitalize(t)).join(' + ') + ' Developer';
 
     let composed: ComposedProfile = {
       sourceProfiles: types,
@@ -309,7 +309,10 @@ export class ProfileComposer {
         'tiered',
         'memgpt',
       ];
-      if (archOrder.indexOf(conv.memoryArchitecture) > archOrder.indexOf(memoryArchitecture)) {
+      if (
+        archOrder.indexOf(conv.memoryArchitecture) >
+        archOrder.indexOf(memoryArchitecture)
+      ) {
         memoryArchitecture = conv.memoryArchitecture;
       }
     }
@@ -337,27 +340,27 @@ export class ProfileComposer {
     // Remove tools
     if (overrides.removeTools && overrides.removeTools.length > 0) {
       const removeSet = new Set(overrides.removeTools);
-      tools = tools.filter((t) => !removeSet.has(t.name));
+      tools = tools.filter(t => !removeSet.has(t.name));
       logger.info(`Removed tools: ${overrides.removeTools.join(', ')}`);
     }
 
     // Add tools
     if (overrides.addTools && overrides.addTools.length > 0) {
-      const existingNames = new Set(tools.map((t) => t.name));
+      const existingNames = new Set(tools.map(t => t.name));
       for (const addTool of overrides.addTools) {
         if (!existingNames.has(addTool.name)) {
           tools.push(addTool);
         }
       }
       logger.info(
-        `Added tools: ${overrides.addTools.map((t) => t.name).join(', ')}`
+        `Added tools: ${overrides.addTools.map(t => t.name).join(', ')}`
       );
     }
 
     // Version pins (user overrides always win)
     if (overrides.versionPins) {
       for (const [toolName, version] of Object.entries(overrides.versionPins)) {
-        const existing = tools.find((t) => t.name === toolName);
+        const existing = tools.find(t => t.name === toolName);
         if (existing) {
           existing.version = version;
         }
@@ -368,7 +371,7 @@ export class ProfileComposer {
     let extensions = [...composed.extensions];
     if (overrides.removeExtensions && overrides.removeExtensions.length > 0) {
       const removeSet = new Set(overrides.removeExtensions);
-      extensions = extensions.filter((e) => !removeSet.has(e));
+      extensions = extensions.filter(e => !removeSet.has(e));
     }
     if (overrides.addExtensions && overrides.addExtensions.length > 0) {
       const existingSet = new Set(extensions);

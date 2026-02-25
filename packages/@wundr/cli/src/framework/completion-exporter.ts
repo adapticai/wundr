@@ -8,10 +8,7 @@
  * @module framework/completion-exporter
  */
 
-import type {
-  CommandDefinition,
-  CommandCategory,
-} from './command-interface';
+import type { CommandDefinition, CommandCategory } from './command-interface';
 import { CATEGORY_LABELS } from './command-interface';
 import type { CommandRegistry } from './command-registry';
 
@@ -79,7 +76,7 @@ export class CompletionExporter {
 
   constructor(
     private registry: CommandRegistry,
-    programName: string = 'wundr',
+    programName: string = 'wundr'
   ) {
     this.programName = programName;
   }
@@ -113,7 +110,8 @@ export class CompletionExporter {
    * Useful for custom completion integrations or IDE plugins.
    */
   exportData(version: string = '1.0.0'): CompletionData {
-    const commands = this.registry.list()
+    const commands = this.registry
+      .list()
       .filter(cmd => !cmd.name.includes(':'))
       .map(cmd => this.commandToCompletionData(cmd));
 
@@ -122,14 +120,56 @@ export class CompletionExporter {
       version,
       commands,
       globalOptions: [
-        { long: '--verbose', description: 'Enable verbose logging', required: false, takesValue: false },
-        { long: '--quiet', description: 'Suppress output', required: false, takesValue: false },
-        { long: '--json', description: 'Output as JSON', required: false, takesValue: false },
-        { long: '--no-color', description: 'Disable colored output', required: false, takesValue: false },
-        { long: '--dry-run', description: 'Show what would be done', required: false, takesValue: false },
-        { long: '--config', description: 'Specify config file', required: false, takesValue: true },
-        { long: '--help', short: '-h', description: 'Show help', required: false, takesValue: false },
-        { long: '--version', short: '-v', description: 'Show version', required: false, takesValue: false },
+        {
+          long: '--verbose',
+          description: 'Enable verbose logging',
+          required: false,
+          takesValue: false,
+        },
+        {
+          long: '--quiet',
+          description: 'Suppress output',
+          required: false,
+          takesValue: false,
+        },
+        {
+          long: '--json',
+          description: 'Output as JSON',
+          required: false,
+          takesValue: false,
+        },
+        {
+          long: '--no-color',
+          description: 'Disable colored output',
+          required: false,
+          takesValue: false,
+        },
+        {
+          long: '--dry-run',
+          description: 'Show what would be done',
+          required: false,
+          takesValue: false,
+        },
+        {
+          long: '--config',
+          description: 'Specify config file',
+          required: false,
+          takesValue: true,
+        },
+        {
+          long: '--help',
+          short: '-h',
+          description: 'Show help',
+          required: false,
+          takesValue: false,
+        },
+        {
+          long: '--version',
+          short: '-v',
+          description: 'Show version',
+          required: false,
+          takesValue: false,
+        },
       ],
     };
   }
@@ -159,14 +199,24 @@ export class CompletionExporter {
 
     // Global options
     lines.push('# Global options');
-    lines.push(`complete -c ${this.programName} -l verbose -d 'Enable verbose logging'`);
+    lines.push(
+      `complete -c ${this.programName} -l verbose -d 'Enable verbose logging'`
+    );
     lines.push(`complete -c ${this.programName} -l quiet -d 'Suppress output'`);
     lines.push(`complete -c ${this.programName} -l json -d 'Output as JSON'`);
-    lines.push(`complete -c ${this.programName} -l no-color -d 'Disable colored output'`);
-    lines.push(`complete -c ${this.programName} -l dry-run -d 'Show what would be done'`);
-    lines.push(`complete -c ${this.programName} -l config -d 'Specify config file' -r`);
+    lines.push(
+      `complete -c ${this.programName} -l no-color -d 'Disable colored output'`
+    );
+    lines.push(
+      `complete -c ${this.programName} -l dry-run -d 'Show what would be done'`
+    );
+    lines.push(
+      `complete -c ${this.programName} -l config -d 'Specify config file' -r`
+    );
     lines.push(`complete -c ${this.programName} -s h -l help -d 'Show help'`);
-    lines.push(`complete -c ${this.programName} -s v -l version -d 'Show version'`);
+    lines.push(
+      `complete -c ${this.programName} -s v -l version -d 'Show version'`
+    );
     lines.push('');
 
     // Commands
@@ -175,12 +225,16 @@ export class CompletionExporter {
       if (cmd.hidden || cmd.name.includes(':')) continue;
 
       const desc = cmd.description.replace(/'/g, "\\'");
-      lines.push(`complete -c ${this.programName} -n '__fish_use_subcommand' -a '${cmd.name}' -d '${desc}'`);
+      lines.push(
+        `complete -c ${this.programName} -n '__fish_use_subcommand' -a '${cmd.name}' -d '${desc}'`
+      );
 
       // Aliases
       if (cmd.aliases) {
         for (const alias of cmd.aliases) {
-          lines.push(`complete -c ${this.programName} -n '__fish_use_subcommand' -a '${alias}' -d '${desc}'`);
+          lines.push(
+            `complete -c ${this.programName} -n '__fish_use_subcommand' -a '${alias}' -d '${desc}'`
+          );
         }
       }
 
@@ -212,7 +266,7 @@ export class CompletionExporter {
           const subDesc = sub.description.replace(/'/g, "\\'");
           lines.push(
             `complete -c ${this.programName} -n '__fish_seen_subcommand_from ${cmd.name}' ` +
-            `-a '${sub.name}' -d '${subDesc}'`
+              `-a '${sub.name}' -d '${subDesc}'`
           );
         }
       }
@@ -231,7 +285,9 @@ export class CompletionExporter {
     lines.push(`# PowerShell completion for ${this.programName}`);
     lines.push(`# Generated by @wundr/cli framework`);
     lines.push('');
-    lines.push(`Register-ArgumentCompleter -CommandName '${this.programName}' -ScriptBlock {`);
+    lines.push(
+      `Register-ArgumentCompleter -CommandName '${this.programName}' -ScriptBlock {`
+    );
     lines.push('    param($wordToComplete, $commandAst, $cursorPosition)');
     lines.push('');
     lines.push('    $commands = @(');
@@ -245,19 +301,35 @@ export class CompletionExporter {
     lines.push('    )');
     lines.push('');
     lines.push('    $globalOptions = @(');
-    lines.push("        @{ Name = '--verbose'; Description = 'Enable verbose logging' }");
-    lines.push("        @{ Name = '--quiet'; Description = 'Suppress output' }");
+    lines.push(
+      "        @{ Name = '--verbose'; Description = 'Enable verbose logging' }"
+    );
+    lines.push(
+      "        @{ Name = '--quiet'; Description = 'Suppress output' }"
+    );
     lines.push("        @{ Name = '--json'; Description = 'Output as JSON' }");
-    lines.push("        @{ Name = '--no-color'; Description = 'Disable colored output' }");
-    lines.push("        @{ Name = '--dry-run'; Description = 'Show what would be done' }");
-    lines.push("        @{ Name = '--config'; Description = 'Specify config file' }");
+    lines.push(
+      "        @{ Name = '--no-color'; Description = 'Disable colored output' }"
+    );
+    lines.push(
+      "        @{ Name = '--dry-run'; Description = 'Show what would be done' }"
+    );
+    lines.push(
+      "        @{ Name = '--config'; Description = 'Specify config file' }"
+    );
     lines.push('    )');
     lines.push('');
     lines.push('    $elements = $commandAst.CommandElements');
     lines.push('    if ($elements.Count -le 2) {');
-    lines.push('        $items = if ($wordToComplete.StartsWith("-")) { $globalOptions } else { $commands }');
-    lines.push('        $items | Where-Object { $_.Name -like "$wordToComplete*" } | ForEach-Object {');
-    lines.push("            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Description)");
+    lines.push(
+      '        $items = if ($wordToComplete.StartsWith("-")) { $globalOptions } else { $commands }'
+    );
+    lines.push(
+      '        $items | Where-Object { $_.Name -like "$wordToComplete*" } | ForEach-Object {'
+    );
+    lines.push(
+      "            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Description)"
+    );
     lines.push('        }');
     lines.push('    }');
     lines.push('}');
@@ -283,7 +355,9 @@ export class CompletionExporter {
         variadic: arg.variadic ?? false,
       })),
       options: (cmd.options ?? []).map(opt => this.parseOptionFlags(opt)),
-      subcommands: (cmd.subcommands ?? []).map(sub => this.commandToCompletionData(sub)),
+      subcommands: (cmd.subcommands ?? []).map(sub =>
+        this.commandToCompletionData(sub)
+      ),
     };
   }
 

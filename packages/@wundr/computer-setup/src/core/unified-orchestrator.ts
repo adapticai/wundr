@@ -276,17 +276,24 @@ export class UnifiedOrchestrator extends EventEmitter {
       // Phase 3: Security Configuration
       this.transitionState('executing');
       if (this.config.security) {
-        await this.executePhase('security', 'Security Configuration', async () => {
-          this.logger.info('Security configuration phase (delegated to security-setup module)');
-          // Actual security setup is delegated to the security-setup module
-          // which the caller can invoke separately with full options
-        }, result, 10, 15);
+        await this.executePhase(
+          'security',
+          'Security Configuration',
+          async () => {
+            this.logger.info(
+              'Security configuration phase (delegated to security-setup module)'
+            );
+            // Actual security setup is delegated to the security-setup module
+            // which the caller can invoke separately with full options
+          },
+          result,
+          10,
+          15
+        );
       }
 
       // Phase 4: Core System Tools
-      const coreTools = sortedPlan.filter(
-        t => t.category === 'system'
-      );
+      const coreTools = sortedPlan.filter(t => t.category === 'system');
       await this.executeToolPhase(
         'core-system',
         'Core System Tools',
@@ -298,9 +305,7 @@ export class UnifiedOrchestrator extends EventEmitter {
       );
 
       // Phase 5: Development Tools
-      const devTools = sortedPlan.filter(
-        t => t.category === 'development'
-      );
+      const devTools = sortedPlan.filter(t => t.category === 'development');
       await this.executeToolPhase(
         'development-tools',
         'Development Tools',
@@ -567,9 +572,7 @@ export class UnifiedOrchestrator extends EventEmitter {
     }
 
     if (!installer) {
-      this.logger.warn(
-        `No installer registered for "${tool.id}"; skipping`
-      );
+      this.logger.warn(`No installer registered for "${tool.id}"; skipping`);
       this.skippedToolIds.add(tool.id);
       return;
     }
@@ -595,9 +598,7 @@ export class UnifiedOrchestrator extends EventEmitter {
       if (installer.validate) {
         const valid = await installer.validate(platform);
         if (!valid) {
-          throw new Error(
-            `${tool.displayName} installation failed validation`
-          );
+          throw new Error(`${tool.displayName} installation failed validation`);
         }
       }
 
@@ -652,9 +653,8 @@ export class UnifiedOrchestrator extends EventEmitter {
       try {
         // Dynamic import to avoid circular dependency.
         // The conventions generator is in project-init/claude-code-conventions.ts
-        const { generateClaudeCodeStructure } = await import(
-          '../project-init/claude-code-conventions.js'
-        );
+        const { generateClaudeCodeStructure } =
+          await import('../project-init/claude-code-conventions.js');
         await generateClaudeCodeStructure({
           projectName: profile.name,
           projectPath: this.config.conventionsProjectPath,
@@ -802,9 +802,7 @@ export class UnifiedOrchestrator extends EventEmitter {
       const group: ProfileToolEntry[] = [];
 
       for (const tool of remaining) {
-        const depsResolved = tool.dependencies.every(dep =>
-          completed.has(dep)
-        );
+        const depsResolved = tool.dependencies.every(dep => completed.has(dep));
         if (depsResolved) {
           group.push(tool);
         }
@@ -834,12 +832,8 @@ export class UnifiedOrchestrator extends EventEmitter {
   // Progress reporting
   // ─────────────────────────────────────────────────
 
-  private emitProgress(
-    message: string,
-    percentage: number | null
-  ): void {
-    const pct =
-      percentage !== null ? percentage : this.calculateProgress();
+  private emitProgress(message: string, percentage: number | null): void {
+    const pct = percentage !== null ? percentage : this.calculateProgress();
 
     const progress: SetupProgress = {
       totalSteps: this.totalSteps,

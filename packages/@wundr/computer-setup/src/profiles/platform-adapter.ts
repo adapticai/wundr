@@ -123,7 +123,7 @@ export class PlatformAdapter {
    * Resolve commands for all tools in a list.
    */
   resolveAllToolCommands(tools: ToolSpec[]): ResolvedToolCommand[] {
-    return tools.map((t) => this.resolveToolCommand(t));
+    return tools.map(t => this.resolveToolCommand(t));
   }
 
   /**
@@ -158,7 +158,7 @@ export class PlatformAdapter {
         }
 
         this.cachedPackageManagers = {
-          primary: all.find((m) => m.primary) || all[0] || null,
+          primary: all.find(m => m.primary) || all[0] || null,
           all,
           platform,
           linuxFamily,
@@ -174,18 +174,18 @@ export class PlatformAdapter {
     }
 
     // Mark first as primary if none explicitly set
-    if (all.length > 0 && !all.some((m) => m.primary)) {
+    if (all.length > 0 && !all.some(m => m.primary)) {
       all[0].primary = true;
     }
 
     this.cachedPackageManagers = {
-      primary: all.find((m) => m.primary) || null,
+      primary: all.find(m => m.primary) || null,
       all,
       platform,
     };
 
     logger.info(
-      `Detected package managers: ${all.map((m) => m.name).join(', ') || 'none'}`
+      `Detected package managers: ${all.map(m => m.name).join(', ') || 'none'}`
     );
 
     return this.cachedPackageManagers;
@@ -217,12 +217,10 @@ export class PlatformAdapter {
   > {
     try {
       const osRelease = await fs.readFile('/etc/os-release', 'utf-8');
-      const idLine = osRelease
-        .split('\n')
-        .find((line) => line.startsWith('ID='));
+      const idLine = osRelease.split('\n').find(line => line.startsWith('ID='));
       const idLikeLine = osRelease
         .split('\n')
-        .find((line) => line.startsWith('ID_LIKE='));
+        .find(line => line.startsWith('ID_LIKE='));
 
       const id = idLine?.split('=')[1]?.replace(/"/g, '').trim().toLowerCase();
       const idLike = idLikeLine

@@ -13,10 +13,7 @@
 
 import chalk from 'chalk';
 
-import type {
-  CommandDefinition,
-  CommandCategory,
-} from './command-interface';
+import type { CommandDefinition, CommandCategory } from './command-interface';
 import { CATEGORY_LABELS } from './command-interface';
 import type { CommandRegistry } from './command-registry';
 
@@ -62,11 +59,11 @@ export class HelpGenerator {
 
   constructor(
     private registry: CommandRegistry,
-    options: HelpGeneratorOptions = {},
+    options: HelpGeneratorOptions = {}
   ) {
     this.programName = options.programName ?? 'wundr';
-    this.maxWidth = options.maxWidth ?? (process.stdout.columns ?? 80);
-    this.useColor = options.color ?? (process.stdout.isTTY === true);
+    this.maxWidth = options.maxWidth ?? process.stdout.columns ?? 80;
+    this.useColor = options.color ?? process.stdout.isTTY === true;
     this.format = options.format ?? 'terminal';
   }
 
@@ -103,20 +100,25 @@ export class HelpGenerator {
       if (!commands || commands.length === 0) continue;
 
       // Skip hidden commands
-      const visible = commands.filter(cmd => !cmd.hidden && !cmd.name.includes(':'));
+      const visible = commands.filter(
+        cmd => !cmd.hidden && !cmd.name.includes(':')
+      );
       if (visible.length === 0) continue;
 
-      const label = category === 'uncategorized'
-        ? 'Other Commands'
-        : CATEGORY_LABELS[category as CommandCategory] ?? category;
+      const label =
+        category === 'uncategorized'
+          ? 'Other Commands'
+          : (CATEGORY_LABELS[category as CommandCategory] ?? category);
 
       lines.push(this.sectionTitle(label));
 
       // Find max name width for alignment
-      const maxNameWidth = Math.max(...visible.map(cmd => {
-        const aliases = cmd.aliases ? `, ${cmd.aliases.join(', ')}` : '';
-        return cmd.name.length + aliases.length;
-      }));
+      const maxNameWidth = Math.max(
+        ...visible.map(cmd => {
+          const aliases = cmd.aliases ? `, ${cmd.aliases.join(', ')}` : '';
+          return cmd.name.length + aliases.length;
+        })
+      );
 
       for (const cmd of visible) {
         const aliases = cmd.aliases ? `, ${cmd.aliases.join(', ')}` : '';
@@ -140,7 +142,11 @@ export class HelpGenerator {
     lines.push('');
 
     // Footer
-    lines.push(this.dim(`Run '${this.programName} <command> --help' for detailed help on a command.`));
+    lines.push(
+      this.dim(
+        `Run '${this.programName} <command> --help' for detailed help on a command.`
+      )
+    );
     lines.push('');
 
     return lines.join('\n');
@@ -182,13 +188,21 @@ export class HelpGenerator {
     // Arguments
     if (command.arguments && command.arguments.length > 0) {
       lines.push(this.sectionTitle('Arguments'));
-      const maxArgWidth = Math.max(...command.arguments.map(a => a.name.length));
+      const maxArgWidth = Math.max(
+        ...command.arguments.map(a => a.name.length)
+      );
 
       for (const arg of command.arguments) {
         const nameCol = arg.name.padEnd(maxArgWidth + 2);
-        const required = arg.required ? this.warn('(required)') : this.dim('(optional)');
-        const defaultVal = arg.defaultValue ? this.dim(` [default: ${arg.defaultValue}]`) : '';
-        lines.push(`  ${this.highlight(nameCol)}  ${arg.description} ${required}${defaultVal}`);
+        const required = arg.required
+          ? this.warn('(required)')
+          : this.dim('(optional)');
+        const defaultVal = arg.defaultValue
+          ? this.dim(` [default: ${arg.defaultValue}]`)
+          : '';
+        lines.push(
+          `  ${this.highlight(nameCol)}  ${arg.description} ${required}${defaultVal}`
+        );
       }
       lines.push('');
     }
@@ -196,15 +210,24 @@ export class HelpGenerator {
     // Options
     if (command.options && command.options.length > 0) {
       lines.push(this.sectionTitle('Options'));
-      const maxFlagWidth = Math.max(...command.options.map(o => o.flags.length));
+      const maxFlagWidth = Math.max(
+        ...command.options.map(o => o.flags.length)
+      );
 
       for (const opt of command.options) {
         const flagCol = opt.flags.padEnd(maxFlagWidth + 2);
         const required = opt.required ? this.warn('(required)') : '';
-        const choices = opt.choices ? this.dim(` [${opt.choices.join('|')}]`) : '';
-        const defaultVal = opt.defaultValue !== undefined ? this.dim(` [default: ${opt.defaultValue}]`) : '';
+        const choices = opt.choices
+          ? this.dim(` [${opt.choices.join('|')}]`)
+          : '';
+        const defaultVal =
+          opt.defaultValue !== undefined
+            ? this.dim(` [default: ${opt.defaultValue}]`)
+            : '';
         const envVar = opt.envVar ? this.dim(` [env: ${opt.envVar}]`) : '';
-        lines.push(`  ${this.highlight(flagCol)}  ${opt.description}${required}${choices}${defaultVal}${envVar}`);
+        lines.push(
+          `  ${this.highlight(flagCol)}  ${opt.description}${required}${choices}${defaultVal}${envVar}`
+        );
       }
       lines.push('');
     }
@@ -212,7 +235,9 @@ export class HelpGenerator {
     // Subcommands
     if (command.subcommands && command.subcommands.length > 0) {
       lines.push(this.sectionTitle('Subcommands'));
-      const maxSubWidth = Math.max(...command.subcommands.map(s => s.name.length));
+      const maxSubWidth = Math.max(
+        ...command.subcommands.map(s => s.name.length)
+      );
 
       for (const sub of command.subcommands) {
         const nameCol = sub.name.padEnd(maxSubWidth + 2);
@@ -252,7 +277,10 @@ export class HelpGenerator {
       let matchType: SearchResult['matchType'] = 'name';
 
       // Name match
-      const nameScore = this.fuzzyScore(normalizedQuery, command.name.toLowerCase());
+      const nameScore = this.fuzzyScore(
+        normalizedQuery,
+        command.name.toLowerCase()
+      );
       if (nameScore > bestScore) {
         bestScore = nameScore;
         matchType = 'name';
@@ -261,7 +289,10 @@ export class HelpGenerator {
       // Alias match
       if (command.aliases) {
         for (const alias of command.aliases) {
-          const aliasScore = this.fuzzyScore(normalizedQuery, alias.toLowerCase());
+          const aliasScore = this.fuzzyScore(
+            normalizedQuery,
+            alias.toLowerCase()
+          );
           if (aliasScore > bestScore) {
             bestScore = aliasScore;
             matchType = 'alias';
@@ -270,7 +301,9 @@ export class HelpGenerator {
       }
 
       // Description match
-      const descScore = this.fuzzyScore(normalizedQuery, command.description.toLowerCase()) * 0.6;
+      const descScore =
+        this.fuzzyScore(normalizedQuery, command.description.toLowerCase()) *
+        0.6;
       if (descScore > bestScore) {
         bestScore = descScore;
         matchType = 'description';
@@ -320,12 +353,15 @@ export class HelpGenerator {
       const commands = grouped.get(category);
       if (!commands || commands.length === 0) continue;
 
-      const visible = commands.filter(cmd => !cmd.hidden && !cmd.name.includes(':'));
+      const visible = commands.filter(
+        cmd => !cmd.hidden && !cmd.name.includes(':')
+      );
       if (visible.length === 0) continue;
 
-      const label = category === 'uncategorized'
-        ? 'Other Commands'
-        : CATEGORY_LABELS[category as CommandCategory] ?? category;
+      const label =
+        category === 'uncategorized'
+          ? 'Other Commands'
+          : (CATEGORY_LABELS[category as CommandCategory] ?? category);
 
       lines.push(`## ${label}`);
       lines.push('');
@@ -383,7 +419,9 @@ export class HelpGenerator {
       lines.push('| Name | Description | Required | Default |');
       lines.push('|------|-------------|----------|---------|');
       for (const arg of command.arguments) {
-        lines.push(`| \`${arg.name}\` | ${arg.description} | ${arg.required ? 'Yes' : 'No'} | ${arg.defaultValue ?? '-'} |`);
+        lines.push(
+          `| \`${arg.name}\` | ${arg.description} | ${arg.required ? 'Yes' : 'No'} | ${arg.defaultValue ?? '-'} |`
+        );
       }
       lines.push('');
     }
@@ -394,8 +432,11 @@ export class HelpGenerator {
       lines.push('| Flag | Description | Required | Default |');
       lines.push('|------|-------------|----------|---------|');
       for (const opt of command.options) {
-        const defaultVal = opt.defaultValue !== undefined ? String(opt.defaultValue) : '-';
-        lines.push(`| \`${opt.flags}\` | ${opt.description} | ${opt.required ? 'Yes' : 'No'} | ${defaultVal} |`);
+        const defaultVal =
+          opt.defaultValue !== undefined ? String(opt.defaultValue) : '-';
+        lines.push(
+          `| \`${opt.flags}\` | ${opt.description} | ${opt.required ? 'Yes' : 'No'} | ${defaultVal} |`
+        );
       }
       lines.push('');
     }

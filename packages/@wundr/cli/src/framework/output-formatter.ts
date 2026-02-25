@@ -202,24 +202,32 @@ export type StatusState =
 // Constants
 // ---------------------------------------------------------------------------
 
-const STATUS_CONFIG: Record<StatusState, { icon: string; color: (s: string) => string }> = {
-  running:    { icon: '[RUNNING]',    color: chalk.green },
-  active:     { icon: '[ACTIVE]',     color: chalk.green },
-  healthy:    { icon: '[HEALTHY]',    color: chalk.green },
-  done:       { icon: '[DONE]',       color: chalk.blue },
-  stopped:    { icon: '[STOPPED]',    color: chalk.yellow },
-  paused:     { icon: '[PAUSED]',     color: chalk.yellow },
-  warning:    { icon: '[WARNING]',    color: chalk.yellow },
-  degraded:   { icon: '[DEGRADED]',   color: chalk.yellow },
-  pending:    { icon: '[PENDING]',    color: chalk.cyan },
-  error:      { icon: '[ERROR]',      color: chalk.red },
-  unhealthy:  { icon: '[UNHEALTHY]',  color: chalk.red },
+const STATUS_CONFIG: Record<
+  StatusState,
+  { icon: string; color: (s: string) => string }
+> = {
+  running: { icon: '[RUNNING]', color: chalk.green },
+  active: { icon: '[ACTIVE]', color: chalk.green },
+  healthy: { icon: '[HEALTHY]', color: chalk.green },
+  done: { icon: '[DONE]', color: chalk.blue },
+  stopped: { icon: '[STOPPED]', color: chalk.yellow },
+  paused: { icon: '[PAUSED]', color: chalk.yellow },
+  warning: { icon: '[WARNING]', color: chalk.yellow },
+  degraded: { icon: '[DEGRADED]', color: chalk.yellow },
+  pending: { icon: '[PENDING]', color: chalk.cyan },
+  error: { icon: '[ERROR]', color: chalk.red },
+  unhealthy: { icon: '[UNHEALTHY]', color: chalk.red },
   terminated: { icon: '[TERMINATED]', color: chalk.gray },
-  skipped:    { icon: '[SKIPPED]',    color: chalk.gray },
+  skipped: { icon: '[SKIPPED]', color: chalk.gray },
 };
 
 const TREE_CHARS = {
-  unicode: { branch: '\u251c\u2500\u2500 ', last: '\u2514\u2500\u2500 ', pipe: '\u2502   ', empty: '    ' },
+  unicode: {
+    branch: '\u251c\u2500\u2500 ',
+    last: '\u2514\u2500\u2500 ',
+    pipe: '\u2502   ',
+    empty: '    ',
+  },
   ascii: { branch: '|-- ', last: '`-- ', pipe: '|   ', empty: '    ' },
 };
 
@@ -231,7 +239,7 @@ export class OutputFormatter implements OutputFormatterInterface {
   private noColor: boolean;
 
   constructor(options: { noColor?: boolean } = {}) {
-    this.noColor = options.noColor ?? (process.env['NO_COLOR'] === '1');
+    this.noColor = options.noColor ?? process.env['NO_COLOR'] === '1';
   }
 
   // -------------------------------------------------------------------------
@@ -262,7 +270,11 @@ export class OutputFormatter implements OutputFormatterInterface {
 
     const headerLine = columns
       .map((col, i) => {
-        const text = this.padCell(col.header, widths[i] ?? 10, col.align ?? 'left');
+        const text = this.padCell(
+          col.header,
+          widths[i] ?? 10,
+          col.align ?? 'left'
+        );
         return this.applyHeaderStyle(text, options.headerStyle ?? 'bold');
       })
       .join('  ');
@@ -284,9 +296,15 @@ export class OutputFormatter implements OutputFormatterInterface {
       const cells = columns
         .map((col, i) => {
           const rawValue = row[col.key];
-          const formatted = col.format ? col.format(rawValue) : String(rawValue ?? '');
+          const formatted = col.format
+            ? col.format(rawValue)
+            : String(rawValue ?? '');
           const truncated = this.truncate(formatted, widths[i] ?? 10);
-          const padded = this.padCell(truncated, widths[i] ?? 10, col.align ?? 'left');
+          const padded = this.padCell(
+            truncated,
+            widths[i] ?? 10,
+            col.align ?? 'left'
+          );
           return col.color ? col.color(rawValue) : padded;
         })
         .join('  ');
@@ -296,7 +314,9 @@ export class OutputFormatter implements OutputFormatterInterface {
 
     // Truncation notice
     if (options.maxRows && data.length > options.maxRows) {
-      lines.push(chalk.gray(`... and ${data.length - options.maxRows} more rows`));
+      lines.push(
+        chalk.gray(`... and ${data.length - options.maxRows} more rows`)
+      );
     }
 
     return lines.join('\n');
@@ -331,7 +351,10 @@ export class OutputFormatter implements OutputFormatterInterface {
    * @param options - Formatting options
    * @returns Formatted key-value string
    */
-  keyValue(data: Record<string, unknown>, options: KeyValueOptions = {}): string {
+  keyValue(
+    data: Record<string, unknown>,
+    options: KeyValueOptions = {}
+  ): string {
     const separator = options.separator ?? ': ';
     const indent = ' '.repeat(options.indent ?? 0);
     const keyColor = options.keyColor ?? chalk.white;
@@ -343,7 +366,8 @@ export class OutputFormatter implements OutputFormatterInterface {
     }
 
     // Calculate key width for alignment
-    const keyWidth = options.keyWidth ?? Math.max(...entries.map(([k]) => k.length));
+    const keyWidth =
+      options.keyWidth ?? Math.max(...entries.map(([k]) => k.length));
 
     return entries
       .map(([key, value]) => {
@@ -374,9 +398,7 @@ export class OutputFormatter implements OutputFormatterInterface {
 
     return items
       .map((item, index) => {
-        const prefix = ordered
-          ? chalk.gray(`${index + 1}.`)
-          : chalk.gray('-');
+        const prefix = ordered ? chalk.gray(`${index + 1}.`) : chalk.gray('-');
         return `${indent}${prefix} ${item}`;
       })
       .join('\n');
@@ -394,7 +416,8 @@ export class OutputFormatter implements OutputFormatterInterface {
    * @returns Formatted tree string
    */
   tree(node: TreeNode, options: TreeOptions = {}): string {
-    const chars = options.unicode !== false ? TREE_CHARS.unicode : TREE_CHARS.ascii;
+    const chars =
+      options.unicode !== false ? TREE_CHARS.unicode : TREE_CHARS.ascii;
     const maxDepth = options.maxDepth ?? Infinity;
 
     const lines: string[] = [];
@@ -555,17 +578,18 @@ export class OutputFormatter implements OutputFormatterInterface {
    * @param format - Output format
    * @returns Formatted string
    */
-  formatAs(
-    data: unknown,
-    format: 'json' | 'yaml' | 'table' | 'plain',
-  ): string {
+  formatAs(data: unknown, format: 'json' | 'yaml' | 'table' | 'plain'): string {
     switch (format) {
       case 'json':
         return this.json(data);
       case 'yaml':
         return this.yaml(data);
       case 'table':
-        if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
+        if (
+          Array.isArray(data) &&
+          data.length > 0 &&
+          typeof data[0] === 'object'
+        ) {
           return this.table(data as Record<string, unknown>[]);
         }
         if (typeof data === 'object' && data !== null) {
@@ -625,12 +649,12 @@ export class OutputFormatter implements OutputFormatterInterface {
   private calculateColumnWidths(
     columns: ColumnDefinition[],
     data: Record<string, unknown>[],
-    maxWidth?: number,
+    maxWidth?: number
   ): number[] {
-    const termWidth = maxWidth ?? (process.stdout.columns ?? 120);
+    const termWidth = maxWidth ?? process.stdout.columns ?? 120;
     const gap = 2; // gap between columns
 
-    return columns.map((col) => {
+    return columns.map(col => {
       // Header width
       let width = col.header.length;
 
@@ -650,7 +674,11 @@ export class OutputFormatter implements OutputFormatterInterface {
     });
   }
 
-  private padCell(text: string, width: number, align: 'left' | 'right' | 'center'): string {
+  private padCell(
+    text: string,
+    width: number,
+    align: 'left' | 'right' | 'center'
+  ): string {
     if (text.length >= width) return text.substring(0, width);
 
     switch (align) {
@@ -668,10 +696,14 @@ export class OutputFormatter implements OutputFormatterInterface {
 
   private applyHeaderStyle(text: string, style: string): string {
     switch (style) {
-      case 'bold': return chalk.bold(text);
-      case 'underline': return chalk.underline(text);
-      case 'dim': return chalk.dim(text);
-      default: return text;
+      case 'bold':
+        return chalk.bold(text);
+      case 'underline':
+        return chalk.underline(text);
+      case 'dim':
+        return chalk.dim(text);
+      default:
+        return text;
     }
   }
 
@@ -682,7 +714,8 @@ export class OutputFormatter implements OutputFormatterInterface {
 
   private formatValue(value: unknown): string {
     if (value === null || value === undefined) return chalk.gray('(none)');
-    if (typeof value === 'boolean') return value ? chalk.green('true') : chalk.red('false');
+    if (typeof value === 'boolean')
+      return value ? chalk.green('true') : chalk.red('false');
     if (typeof value === 'number') return chalk.cyan(String(value));
     if (Array.isArray(value)) return value.join(', ');
     if (typeof value === 'object') return JSON.stringify(value);
@@ -771,7 +804,7 @@ export class OutputFormatter implements OutputFormatterInterface {
     chars: typeof TREE_CHARS.unicode,
     lines: string[],
     depth: number,
-    maxDepth: number,
+    maxDepth: number
   ): void {
     if (depth >= maxDepth) return;
 
@@ -787,7 +820,14 @@ export class OutputFormatter implements OutputFormatterInterface {
 
       if (child.children && child.children.length > 0) {
         const childPrefix = prefix + (isLast ? chars.empty : chars.pipe);
-        this.renderTreeChildren(child.children, childPrefix, chars, lines, depth + 1, maxDepth);
+        this.renderTreeChildren(
+          child.children,
+          childPrefix,
+          chars,
+          lines,
+          depth + 1,
+          maxDepth
+        );
       }
     }
   }

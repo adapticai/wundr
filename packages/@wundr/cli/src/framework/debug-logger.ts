@@ -110,13 +110,18 @@ export class DebugLogger implements ContextLogger {
 
   constructor(options: DebugLoggerOptions = {}) {
     this.level = options.level ?? 'info';
-    this.isTTY = options.isTTY ?? (process.stdout.isTTY === true);
-    this.noColor = options.noColor ?? (process.env['NO_COLOR'] === '1' || !this.isTTY);
-    this.showTimestamps = options.timestamps ?? (this.level === 'debug' || this.level === 'trace');
-    this.includeTags = options.includeTags ? new Set(options.includeTags) : null;
+    this.isTTY = options.isTTY ?? process.stdout.isTTY === true;
+    this.noColor =
+      options.noColor ?? (process.env['NO_COLOR'] === '1' || !this.isTTY);
+    this.showTimestamps =
+      options.timestamps ?? (this.level === 'debug' || this.level === 'trace');
+    this.includeTags = options.includeTags
+      ? new Set(options.includeTags)
+      : null;
     this.excludeTags = new Set(options.excludeTags ?? []);
     this.write = options.write ?? ((msg: string) => process.stderr.write(msg));
-    this.writeError = options.writeError ?? ((msg: string) => process.stderr.write(msg));
+    this.writeError =
+      options.writeError ?? ((msg: string) => process.stderr.write(msg));
     this.collectEntries = options.collectEntries ?? false;
 
     // Disable chalk color if not TTY or noColor
@@ -160,7 +165,13 @@ export class DebugLogger implements ContextLogger {
   }
 
   success(message: string, ...args: unknown[]): void {
-    this.log('info', message, undefined, args.length > 0 ? args : undefined, true);
+    this.log(
+      'info',
+      message,
+      undefined,
+      args.length > 0 ? args : undefined,
+      true
+    );
   }
 
   trace(message: string, ...args: unknown[]): void {
@@ -181,7 +192,12 @@ export class DebugLogger implements ContextLogger {
   /**
    * Log a message with a specific tag.
    */
-  logTagged(level: LogLevel, tag: string, message: string, data?: unknown): void {
+  logTagged(
+    level: LogLevel,
+    tag: string,
+    message: string,
+    data?: unknown
+  ): void {
     this.log(level, message, tag, data);
   }
 
@@ -300,7 +316,7 @@ export class DebugLogger implements ContextLogger {
     message: string,
     tag?: string,
     data?: unknown,
-    isSuccess?: boolean,
+    isSuccess?: boolean
   ): void {
     // Check level threshold
     if (LEVEL_ORDER[level] > LEVEL_ORDER[this.level]) {
@@ -331,10 +347,12 @@ export class DebugLogger implements ContextLogger {
 
     // Write data details in debug/trace mode
     if (data !== undefined && LEVEL_ORDER[this.level] >= LEVEL_ORDER['debug']) {
-      const dataStr = typeof data === 'string'
-        ? data
-        : JSON.stringify(data, null, 2);
-      const indented = dataStr.split('\n').map(line => '  ' + line).join('\n');
+      const dataStr =
+        typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      const indented = dataStr
+        .split('\n')
+        .map(line => '  ' + line)
+        .join('\n');
       writeFn(this.colorize('gray', indented) + '\n');
     }
   }
@@ -346,7 +364,7 @@ export class DebugLogger implements ContextLogger {
     level: LogLevel,
     message: string,
     tag?: string,
-    isSuccess?: boolean,
+    isSuccess?: boolean
   ): string {
     const parts: string[] = [];
 
@@ -384,12 +402,18 @@ export class DebugLogger implements ContextLogger {
     if (this.noColor) return `[${text}]`;
 
     switch (level) {
-      case 'error': return chalk.red.bold(`[${text}]`);
-      case 'warn': return chalk.yellow(`[${text}]`);
-      case 'info': return chalk.blue(`[${text}]`);
-      case 'debug': return chalk.gray(`[${text}]`);
-      case 'trace': return chalk.dim(`[${text}]`);
-      default: return `[${text}]`;
+      case 'error':
+        return chalk.red.bold(`[${text}]`);
+      case 'warn':
+        return chalk.yellow(`[${text}]`);
+      case 'info':
+        return chalk.blue(`[${text}]`);
+      case 'debug':
+        return chalk.gray(`[${text}]`);
+      case 'trace':
+        return chalk.dim(`[${text}]`);
+      default:
+        return `[${text}]`;
     }
   }
 
@@ -400,10 +424,14 @@ export class DebugLogger implements ContextLogger {
     if (this.noColor) return text;
 
     switch (level) {
-      case 'error': return chalk.red(text);
-      case 'warn': return chalk.yellow(text);
-      case 'trace': return chalk.dim(text);
-      default: return text;
+      case 'error':
+        return chalk.red(text);
+      case 'warn':
+        return chalk.yellow(text);
+      case 'trace':
+        return chalk.dim(text);
+      default:
+        return text;
     }
   }
 
@@ -413,7 +441,9 @@ export class DebugLogger implements ContextLogger {
   private colorize(color: string, text: string): string {
     if (this.noColor) return text;
 
-    const colorFn = (chalk as unknown as Record<string, (s: string) => string>)[color];
+    const colorFn = (chalk as unknown as Record<string, (s: string) => string>)[
+      color
+    ];
     return colorFn ? colorFn(text) : text;
   }
 
@@ -439,26 +469,51 @@ export class DebugLogger implements ContextLogger {
 export class TaggedLogger implements ContextLogger {
   constructor(
     private parent: DebugLogger,
-    private tag: string,
+    private tag: string
   ) {}
 
   debug(message: string, ...args: unknown[]): void {
-    this.parent.logTagged('debug', this.tag, message, args.length > 0 ? args : undefined);
+    this.parent.logTagged(
+      'debug',
+      this.tag,
+      message,
+      args.length > 0 ? args : undefined
+    );
   }
 
   info(message: string, ...args: unknown[]): void {
-    this.parent.logTagged('info', this.tag, message, args.length > 0 ? args : undefined);
+    this.parent.logTagged(
+      'info',
+      this.tag,
+      message,
+      args.length > 0 ? args : undefined
+    );
   }
 
   warn(message: string, ...args: unknown[]): void {
-    this.parent.logTagged('warn', this.tag, message, args.length > 0 ? args : undefined);
+    this.parent.logTagged(
+      'warn',
+      this.tag,
+      message,
+      args.length > 0 ? args : undefined
+    );
   }
 
   error(message: string, ...args: unknown[]): void {
-    this.parent.logTagged('error', this.tag, message, args.length > 0 ? args : undefined);
+    this.parent.logTagged(
+      'error',
+      this.tag,
+      message,
+      args.length > 0 ? args : undefined
+    );
   }
 
   success(message: string, ...args: unknown[]): void {
-    this.parent.logTagged('info', this.tag, message, args.length > 0 ? args : undefined);
+    this.parent.logTagged(
+      'info',
+      this.tag,
+      message,
+      args.length > 0 ? args : undefined
+    );
   }
 }

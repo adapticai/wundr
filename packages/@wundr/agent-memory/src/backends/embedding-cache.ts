@@ -354,7 +354,10 @@ export class EmbeddingCache {
     embeddings: number[][];
     missingIndices: number[];
   } {
-    const embeddings: number[][] = Array.from({ length: chunks.length }, () => []);
+    const embeddings: number[][] = Array.from(
+      { length: chunks.length },
+      () => []
+    );
     const missingIndices: number[] = [];
 
     if (!this.config.enabled) {
@@ -366,7 +369,7 @@ export class EmbeddingCache {
 
     const cached = this.load(
       db,
-      chunks.map((c) => c.hash)
+      chunks.map(c => c.hash)
     );
 
     for (let i = 0; i < chunks.length; i++) {

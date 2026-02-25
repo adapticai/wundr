@@ -32,7 +32,8 @@ import {
 // ============================================================================
 
 export const DEFAULT_GEMINI_EMBEDDING_MODEL = 'gemini-embedding-001';
-const DEFAULT_GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
+const DEFAULT_GEMINI_BASE_URL =
+  'https://generativelanguage.googleapis.com/v1beta';
 
 const MODEL_DIMENSIONS: Record<string, number> = {
   'gemini-embedding-001': 768,
@@ -46,8 +47,8 @@ const MODEL_MAX_TOKENS: Record<string, number> = {
 
 /** Cost per 1M tokens in USD. */
 const MODEL_COST_PER_MILLION: Record<string, number> = {
-  'gemini-embedding-001': 0.00, // Free tier available
-  'text-embedding-004': 0.00,
+  'gemini-embedding-001': 0.0, // Free tier available
+  'text-embedding-004': 0.0,
 };
 
 /**
@@ -108,17 +109,27 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
     this.costTracker = createCostTracker();
   }
 
-  async embedText(text: string, options?: EmbedOptions): Promise<EmbeddingResult> {
-    const taskType = options?.taskType === 'document' ? 'RETRIEVAL_DOCUMENT' : 'RETRIEVAL_QUERY';
+  async embedText(
+    text: string,
+    options?: EmbedOptions
+  ): Promise<EmbeddingResult> {
+    const taskType =
+      options?.taskType === 'document'
+        ? 'RETRIEVAL_DOCUMENT'
+        : 'RETRIEVAL_QUERY';
     return this.callSingleApi(text, taskType);
   }
 
-  async embedBatch(texts: string[], options?: EmbedOptions): Promise<EmbeddingResult[]> {
+  async embedBatch(
+    texts: string[],
+    options?: EmbedOptions
+  ): Promise<EmbeddingResult[]> {
     if (texts.length === 0) {
       return [];
     }
 
-    const taskType = options?.taskType === 'query' ? 'RETRIEVAL_QUERY' : 'RETRIEVAL_DOCUMENT';
+    const taskType =
+      options?.taskType === 'query' ? 'RETRIEVAL_QUERY' : 'RETRIEVAL_DOCUMENT';
     const results: EmbeddingResult[] = [];
 
     for (let i = 0; i < texts.length; i += this.maxBatchSize) {
@@ -141,7 +152,7 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
 
   private async callSingleApi(
     text: string,
-    taskType: string,
+    taskType: string
   ): Promise<EmbeddingResult> {
     const tokenCount = estimateTokens(text);
     const maxRetries = PROVIDER_RATE_LIMITS.gemini.maxRetries;
@@ -175,13 +186,15 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
             const retryDelay = backoffDelay(
               attempt,
               PROVIDER_RATE_LIMITS.gemini.baseRetryDelayMs,
-              PROVIDER_RATE_LIMITS.gemini.maxRetryDelayMs,
+              PROVIDER_RATE_LIMITS.gemini.maxRetryDelayMs
             );
             await sleep(retryDelay);
             continue;
           }
 
-          throw new Error(`Gemini embeddings failed: ${res.status} ${errorText}`);
+          throw new Error(
+            `Gemini embeddings failed: ${res.status} ${errorText}`
+          );
         }
 
         const payload = (await res.json()) as {
@@ -192,7 +205,8 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
         this.costTracker.totalTokens += tokenCount;
         this.costTracker.totalRequests += 1;
         const costPerMillion = MODEL_COST_PER_MILLION[this.model] ?? 0;
-        this.costTracker.estimatedCostUsd += (tokenCount / 1_000_000) * costPerMillion;
+        this.costTracker.estimatedCostUsd +=
+          (tokenCount / 1_000_000) * costPerMillion;
 
         this.initialized = true;
         retrying = false;
@@ -207,7 +221,7 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
           const retryDelay = backoffDelay(
             attempt,
             PROVIDER_RATE_LIMITS.gemini.baseRetryDelayMs,
-            PROVIDER_RATE_LIMITS.gemini.maxRetryDelayMs,
+            PROVIDER_RATE_LIMITS.gemini.maxRetryDelayMs
           );
           await sleep(retryDelay);
           continue;
@@ -222,9 +236,12 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
 
   private async callBatchApi(
     texts: string[],
-    taskType: string,
+    taskType: string
   ): Promise<EmbeddingResult[]> {
-    const totalTokens = texts.reduce((sum, text) => sum + estimateTokens(text), 0);
+    const totalTokens = texts.reduce(
+      (sum, text) => sum + estimateTokens(text),
+      0
+    );
     const maxRetries = PROVIDER_RATE_LIMITS.gemini.maxRetries;
     let attempt = 0;
     let retrying = true;
@@ -237,7 +254,7 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
 
       try {
         const url = `${this.baseUrl}/${this.modelPath}:batchEmbedContents`;
-        const requests = texts.map((text) => ({
+        const requests = texts.map(text => ({
           model: this.modelPath,
           content: { parts: [{ text }] },
           taskType,
@@ -257,26 +274,31 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
             const retryDelay = backoffDelay(
               attempt,
               PROVIDER_RATE_LIMITS.gemini.baseRetryDelayMs,
-              PROVIDER_RATE_LIMITS.gemini.maxRetryDelayMs,
+              PROVIDER_RATE_LIMITS.gemini.maxRetryDelayMs
             );
             await sleep(retryDelay);
             continue;
           }
 
-          throw new Error(`Gemini batch embeddings failed: ${res.status} ${errorText}`);
+          throw new Error(
+            `Gemini batch embeddings failed: ${res.status} ${errorText}`
+          );
         }
 
         const payload = (await res.json()) as {
           embeddings?: Array<{ values?: number[] }>;
         };
 
-        const embeddings = Array.isArray(payload.embeddings) ? payload.embeddings : [];
+        const embeddings = Array.isArray(payload.embeddings)
+          ? payload.embeddings
+          : [];
 
         this.rateLimiter.record(totalTokens);
         this.costTracker.totalTokens += totalTokens;
         this.costTracker.totalRequests += 1;
         const costPerMillion = MODEL_COST_PER_MILLION[this.model] ?? 0;
-        this.costTracker.estimatedCostUsd += (totalTokens / 1_000_000) * costPerMillion;
+        this.costTracker.estimatedCostUsd +=
+          (totalTokens / 1_000_000) * costPerMillion;
 
         this.initialized = true;
         retrying = false;
@@ -291,7 +313,7 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
           const retryDelay = backoffDelay(
             attempt,
             PROVIDER_RATE_LIMITS.gemini.baseRetryDelayMs,
-            PROVIDER_RATE_LIMITS.gemini.maxRetryDelayMs,
+            PROVIDER_RATE_LIMITS.gemini.maxRetryDelayMs
           );
           await sleep(retryDelay);
           continue;
@@ -318,14 +340,16 @@ export class GeminiEmbeddingProvider implements EmbeddingProvider {
  * 3. `GEMINI_API_KEY` environment variable
  */
 export function createGeminiProvider(
-  config: EmbeddingProviderConfig,
+  config: EmbeddingProviderConfig
 ): GeminiEmbeddingProvider {
   const apiKey =
-    config.apiKey ?? process.env['GOOGLE_API_KEY'] ?? process.env['GEMINI_API_KEY'];
+    config.apiKey ??
+    process.env['GOOGLE_API_KEY'] ??
+    process.env['GEMINI_API_KEY'];
   if (!apiKey) {
     throw new Error(
       'No API key found for Gemini embeddings. ' +
-        'Set the GOOGLE_API_KEY or GEMINI_API_KEY environment variable or pass apiKey in config.',
+        'Set the GOOGLE_API_KEY or GEMINI_API_KEY environment variable or pass apiKey in config.'
     );
   }
 
@@ -383,6 +407,6 @@ function isRateLimitError(status: number, body: string): boolean {
 function isRetryableError(err: unknown): boolean {
   const message = err instanceof Error ? err.message : String(err);
   return /(rate.?limit|too many requests|429|resource has been exhausted|5\d\d|cloudflare|timeout|econnreset)/i.test(
-    message,
+    message
   );
 }

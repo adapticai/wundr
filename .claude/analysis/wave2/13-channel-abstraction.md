@@ -6,8 +6,8 @@
 
 ### Plugin System (types.plugin.ts)
 
-OpenClaw's channel system is built around a `ChannelPlugin` interface that decomposes
-channel concerns into composable adapter interfaces:
+OpenClaw's channel system is built around a `ChannelPlugin` interface that decomposes channel
+concerns into composable adapter interfaces:
 
 - **id + meta + capabilities**: Identity, display metadata, and feature flags
 - **config**: Account resolution, enable/disable, allow-lists
@@ -51,6 +51,7 @@ channel concerns into composable adapter interfaces:
 ### Dock System (dock.ts)
 
 Lightweight channel metadata layer that avoids importing heavy plugin modules:
+
 - Capabilities, outbound limits, streaming defaults, threading config
 - Shared code imports from dock, not from full plugins
 - Plugin docks auto-generated from ChannelPlugin via `buildDockFromPlugin`
@@ -68,32 +69,33 @@ Lightweight channel metadata layer that avoids importing heavy plugin modules:
 ### Existing Slack Integration (@wundr/slack-agent)
 
 The `SlackUserAgent` class is a monolithic integration that:
+
 - Wraps `@slack/web-api` WebClient + `@slack/socket-mode` SocketModeClient
 - Composes 16 capability modules (reactions, channels, threading, etc.)
 - Operates as a "Virtual Principal" (full user account, not a bot)
-- Supports: messaging, reactions, files, channels, profiles, search, reminders,
-  usergroups, DND, stars, bookmarks, threading, proactive messaging
+- Supports: messaging, reactions, files, channels, profiles, search, reminders, usergroups, DND,
+  stars, bookmarks, threading, proactive messaging
 - Socket Mode event routing via EventEmitter pattern
 
 ### Gap Analysis
 
-| Concern | OpenClaw | Wundr Current | Gap |
-|---------|----------|---------------|-----|
-| Multi-channel | 7+ channels | Slack only | Need abstraction layer |
-| Plugin interface | Decomposed adapters | Monolithic class | Need ChannelPlugin interface |
-| Message format | Per-channel normalizers | Slack-native | Need unified NormalizedMessage |
-| Routing | Binding chain | N/A | Need channel router |
-| Session keys | agent:channel:peer | N/A | Need session key generator |
-| DM pairing | Allow-list + approval | N/A | Need security model |
-| Media pipeline | Per-channel limits | Slack files only | Need media abstraction |
-| Typing/ack | Callback pairs + scope | N/A | Need indicator system |
+| Concern          | OpenClaw                | Wundr Current    | Gap                            |
+| ---------------- | ----------------------- | ---------------- | ------------------------------ |
+| Multi-channel    | 7+ channels             | Slack only       | Need abstraction layer         |
+| Plugin interface | Decomposed adapters     | Monolithic class | Need ChannelPlugin interface   |
+| Message format   | Per-channel normalizers | Slack-native     | Need unified NormalizedMessage |
+| Routing          | Binding chain           | N/A              | Need channel router            |
+| Session keys     | agent:channel:peer      | N/A              | Need session key generator     |
+| DM pairing       | Allow-list + approval   | N/A              | Need security model            |
+| Media pipeline   | Per-channel limits      | Slack files only | Need media abstraction         |
+| Typing/ack       | Callback pairs + scope  | N/A              | Need indicator system          |
 
 ## 3. Design: Channel Abstraction Layer
 
 ### 3.1 Core Interface (`types.ts`)
 
-The `ChannelPlugin` interface follows OpenClaw's decomposition but adapts it
-for Wundr's Orchestrator model where the agent operates as a full user (not a bot):
+The `ChannelPlugin` interface follows OpenClaw's decomposition but adapts it for Wundr's
+Orchestrator model where the agent operates as a full user (not a bot):
 
 ```
 ChannelPlugin

@@ -14,7 +14,7 @@ import type { GlobalOptions } from '../../../src/framework/command-interface';
 // ---------------------------------------------------------------------------
 
 function createLogger(
-  overrides: Partial<ConstructorParameters<typeof DebugLogger>[0]> = {},
+  overrides: Partial<ConstructorParameters<typeof DebugLogger>[0]> = {}
 ) {
   const output: string[] = [];
   const errorOutput: string[] = [];
@@ -317,7 +317,10 @@ describe('DebugLogger', () => {
 
   describe('data logging in debug mode', () => {
     it('should output data as indented JSON when at debug level', () => {
-      const { logger, output } = createLogger({ level: 'debug', noColor: true });
+      const { logger, output } = createLogger({
+        level: 'debug',
+        noColor: true,
+      });
 
       logger.info('with data', { key: 'value' });
 

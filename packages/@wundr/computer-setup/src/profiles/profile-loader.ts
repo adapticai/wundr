@@ -37,37 +37,109 @@ const FRONTEND_PROFILE: ProfileDefinition = {
   tools: [
     // System
     tool('homebrew', 'Homebrew', 'system', true, [], {
-      darwin: { supported: true, installCommand: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' },
-      linux: { supported: true, installCommand: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' },
-      win32: { supported: false, unsupportedReason: 'Use winget/chocolatey/scoop on Windows' },
+      darwin: {
+        supported: true,
+        installCommand:
+          '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      },
+      linux: {
+        supported: true,
+        installCommand:
+          '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      },
+      win32: {
+        supported: false,
+        unsupportedReason: 'Use winget/chocolatey/scoop on Windows',
+      },
     }),
     tool('git', 'Git', 'system', true, ['homebrew']),
     // Languages
-    tool('node', 'Node.js', 'language', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install node@22' },
-      linux: { supported: true, installCommand: 'brew install node@22', alternativeCommands: { apt: 'curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs', dnf: 'sudo dnf module install nodejs:22' } },
-      win32: { supported: true, installCommand: 'winget install OpenJS.NodeJS.LTS' },
-    }, '22'),
-    tool('typescript', 'TypeScript', 'language', true, ['node'], undefined, 'latest'),
+    tool(
+      'node',
+      'Node.js',
+      'language',
+      true,
+      ['homebrew'],
+      {
+        darwin: { supported: true, installCommand: 'brew install node@22' },
+        linux: {
+          supported: true,
+          installCommand: 'brew install node@22',
+          alternativeCommands: {
+            apt: 'curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs',
+            dnf: 'sudo dnf module install nodejs:22',
+          },
+        },
+        win32: {
+          supported: true,
+          installCommand: 'winget install OpenJS.NodeJS.LTS',
+        },
+      },
+      '22'
+    ),
+    tool(
+      'typescript',
+      'TypeScript',
+      'language',
+      true,
+      ['node'],
+      undefined,
+      'latest'
+    ),
     // Package managers
-    tool('pnpm', 'pnpm', 'package-manager', true, ['node'], undefined, 'latest'),
+    tool(
+      'pnpm',
+      'pnpm',
+      'package-manager',
+      true,
+      ['node'],
+      undefined,
+      'latest'
+    ),
     // Frameworks (validation only, installed per-project)
     tool('vite', 'Vite', 'framework', false, ['node'], undefined, 'latest'),
     // Editors
     tool('vscode', 'Visual Studio Code', 'editor', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install --cask visual-studio-code' },
-      linux: { supported: true, installCommand: 'brew install --cask visual-studio-code', alternativeCommands: { apt: 'sudo snap install code --classic' } },
-      win32: { supported: true, installCommand: 'winget install Microsoft.VisualStudioCode' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install --cask visual-studio-code',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'brew install --cask visual-studio-code',
+        alternativeCommands: { apt: 'sudo snap install code --classic' },
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Microsoft.VisualStudioCode',
+      },
     }),
     // AI
     tool('claude', 'Claude Code', 'ai', true, ['node'], {
-      darwin: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
-      linux: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
-      win32: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
+      darwin: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
+      win32: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
     }),
     // Utilities
     tool('eslint', 'ESLint', 'utility', false, ['node'], undefined, 'latest'),
-    tool('prettier', 'Prettier', 'utility', false, ['node'], undefined, 'latest'),
+    tool(
+      'prettier',
+      'Prettier',
+      'utility',
+      false,
+      ['node'],
+      undefined,
+      'latest'
+    ),
   ],
   extensions: [
     'dbaeumer.vscode-eslint',
@@ -87,7 +159,8 @@ const FRONTEND_PROFILE: ProfileDefinition = {
     memoryArchitecture: 'tiered',
     skills: ['code-review', 'refactor', 'test-generation', 'documentation'],
     commands: ['review', 'test', 'fix'],
-    claudeInstructions: 'Focus on React/Next.js best practices, component architecture, accessibility, and responsive design.',
+    claudeInstructions:
+      'Focus on React/Next.js best practices, component architecture, accessibility, and responsive design.',
   },
 };
 
@@ -99,62 +172,200 @@ const BACKEND_PROFILE: ProfileDefinition = {
   estimatedTimeMinutes: 30,
   tools: [
     tool('homebrew', 'Homebrew', 'system', true, [], {
-      darwin: { supported: true, installCommand: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' },
-      linux: { supported: true, installCommand: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' },
-      win32: { supported: false, unsupportedReason: 'Use winget/chocolatey/scoop on Windows' },
+      darwin: {
+        supported: true,
+        installCommand:
+          '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      },
+      linux: {
+        supported: true,
+        installCommand:
+          '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      },
+      win32: {
+        supported: false,
+        unsupportedReason: 'Use winget/chocolatey/scoop on Windows',
+      },
     }),
     tool('git', 'Git', 'system', true, ['homebrew']),
     // Languages
-    tool('node', 'Node.js', 'language', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install node@22' },
-      linux: { supported: true, installCommand: 'brew install node@22', alternativeCommands: { apt: 'curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs' } },
-      win32: { supported: true, installCommand: 'winget install OpenJS.NodeJS.LTS' },
-    }, '22'),
-    tool('python', 'Python', 'language', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install python@3.12' },
-      linux: { supported: true, installCommand: 'brew install python@3.12', alternativeCommands: { apt: 'sudo apt install python3.12 python3.12-venv python3-pip', dnf: 'sudo dnf install python3.12' } },
-      win32: { supported: true, installCommand: 'winget install Python.Python.3.12' },
-    }, '3.12'),
-    tool('go', 'Go', 'language', false, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install go' },
-      linux: { supported: true, installCommand: 'brew install go', alternativeCommands: { apt: 'sudo apt install golang-go' } },
-      win32: { supported: true, installCommand: 'winget install GoLang.Go' },
-    }, '1.22'),
-    tool('rust', 'Rust', 'language', false, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y' },
-      linux: { supported: true, installCommand: 'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y' },
-      win32: { supported: true, installCommand: 'winget install Rustlang.Rustup' },
-    }, '1.77'),
+    tool(
+      'node',
+      'Node.js',
+      'language',
+      true,
+      ['homebrew'],
+      {
+        darwin: { supported: true, installCommand: 'brew install node@22' },
+        linux: {
+          supported: true,
+          installCommand: 'brew install node@22',
+          alternativeCommands: {
+            apt: 'curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs',
+          },
+        },
+        win32: {
+          supported: true,
+          installCommand: 'winget install OpenJS.NodeJS.LTS',
+        },
+      },
+      '22'
+    ),
+    tool(
+      'python',
+      'Python',
+      'language',
+      true,
+      ['homebrew'],
+      {
+        darwin: { supported: true, installCommand: 'brew install python@3.12' },
+        linux: {
+          supported: true,
+          installCommand: 'brew install python@3.12',
+          alternativeCommands: {
+            apt: 'sudo apt install python3.12 python3.12-venv python3-pip',
+            dnf: 'sudo dnf install python3.12',
+          },
+        },
+        win32: {
+          supported: true,
+          installCommand: 'winget install Python.Python.3.12',
+        },
+      },
+      '3.12'
+    ),
+    tool(
+      'go',
+      'Go',
+      'language',
+      false,
+      ['homebrew'],
+      {
+        darwin: { supported: true, installCommand: 'brew install go' },
+        linux: {
+          supported: true,
+          installCommand: 'brew install go',
+          alternativeCommands: { apt: 'sudo apt install golang-go' },
+        },
+        win32: { supported: true, installCommand: 'winget install GoLang.Go' },
+      },
+      '1.22'
+    ),
+    tool(
+      'rust',
+      'Rust',
+      'language',
+      false,
+      ['homebrew'],
+      {
+        darwin: {
+          supported: true,
+          installCommand:
+            'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y',
+        },
+        linux: {
+          supported: true,
+          installCommand:
+            'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y',
+        },
+        win32: {
+          supported: true,
+          installCommand: 'winget install Rustlang.Rustup',
+        },
+      },
+      '1.77'
+    ),
     // Package managers
-    tool('pnpm', 'pnpm', 'package-manager', true, ['node'], undefined, 'latest'),
+    tool(
+      'pnpm',
+      'pnpm',
+      'package-manager',
+      true,
+      ['node'],
+      undefined,
+      'latest'
+    ),
     // Containers
     tool('docker', 'Docker', 'container', true, ['homebrew'], {
       darwin: { supported: true, installCommand: 'brew install --cask docker' },
-      linux: { supported: true, installCommand: 'brew install docker', alternativeCommands: { apt: 'sudo apt install docker.io docker-compose-plugin' } },
-      win32: { supported: true, installCommand: 'winget install Docker.DockerDesktop' },
+      linux: {
+        supported: true,
+        installCommand: 'brew install docker',
+        alternativeCommands: {
+          apt: 'sudo apt install docker.io docker-compose-plugin',
+        },
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Docker.DockerDesktop',
+      },
     }),
     // Databases
-    tool('postgresql', 'PostgreSQL', 'database', false, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install postgresql@16' },
-      linux: { supported: true, installCommand: 'brew install postgresql@16', alternativeCommands: { apt: 'sudo apt install postgresql-16' } },
-      win32: { supported: true, installCommand: 'winget install PostgreSQL.PostgreSQL.16' },
-    }, '16'),
+    tool(
+      'postgresql',
+      'PostgreSQL',
+      'database',
+      false,
+      ['homebrew'],
+      {
+        darwin: {
+          supported: true,
+          installCommand: 'brew install postgresql@16',
+        },
+        linux: {
+          supported: true,
+          installCommand: 'brew install postgresql@16',
+          alternativeCommands: { apt: 'sudo apt install postgresql-16' },
+        },
+        win32: {
+          supported: true,
+          installCommand: 'winget install PostgreSQL.PostgreSQL.16',
+        },
+      },
+      '16'
+    ),
     tool('redis', 'Redis', 'database', false, ['homebrew'], {
       darwin: { supported: true, installCommand: 'brew install redis' },
-      linux: { supported: true, installCommand: 'brew install redis', alternativeCommands: { apt: 'sudo apt install redis-server' } },
-      win32: { supported: false, unsupportedReason: 'Use Redis via Docker on Windows' },
+      linux: {
+        supported: true,
+        installCommand: 'brew install redis',
+        alternativeCommands: { apt: 'sudo apt install redis-server' },
+      },
+      win32: {
+        supported: false,
+        unsupportedReason: 'Use Redis via Docker on Windows',
+      },
     }),
     // Editors
     tool('vscode', 'Visual Studio Code', 'editor', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install --cask visual-studio-code' },
-      linux: { supported: true, installCommand: 'brew install --cask visual-studio-code', alternativeCommands: { apt: 'sudo snap install code --classic' } },
-      win32: { supported: true, installCommand: 'winget install Microsoft.VisualStudioCode' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install --cask visual-studio-code',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'brew install --cask visual-studio-code',
+        alternativeCommands: { apt: 'sudo snap install code --classic' },
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Microsoft.VisualStudioCode',
+      },
     }),
     // AI
     tool('claude', 'Claude Code', 'ai', true, ['node'], {
-      darwin: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
-      linux: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
-      win32: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
+      darwin: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
+      win32: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
     }),
   ],
   extensions: [
@@ -177,14 +388,16 @@ const BACKEND_PROFILE: ProfileDefinition = {
     memoryArchitecture: 'tiered',
     skills: ['code-review', 'refactor', 'test-generation', 'documentation'],
     commands: ['review', 'test', 'fix'],
-    claudeInstructions: 'Focus on API design, database optimization, error handling, and server-side security best practices.',
+    claudeInstructions:
+      'Focus on API design, database optimization, error handling, and server-side security best practices.',
   },
 };
 
 const FULLSTACK_PROFILE: ProfileDefinition = {
   type: 'fullstack',
   displayName: 'Full Stack Developer',
-  description: 'Complete development stack combining frontend and backend tools',
+  description:
+    'Complete development stack combining frontend and backend tools',
   estimatedTimeMinutes: 35,
   tools: [
     // Inherits all backend tools (which is the larger superset)
@@ -233,83 +446,199 @@ const DEVOPS_PROFILE: ProfileDefinition = {
   estimatedTimeMinutes: 40,
   tools: [
     tool('homebrew', 'Homebrew', 'system', true, [], {
-      darwin: { supported: true, installCommand: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' },
-      linux: { supported: true, installCommand: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' },
-      win32: { supported: false, unsupportedReason: 'Use winget/chocolatey/scoop on Windows' },
+      darwin: {
+        supported: true,
+        installCommand:
+          '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      },
+      linux: {
+        supported: true,
+        installCommand:
+          '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      },
+      win32: {
+        supported: false,
+        unsupportedReason: 'Use winget/chocolatey/scoop on Windows',
+      },
     }),
     tool('git', 'Git', 'system', true, ['homebrew']),
     // Languages
-    tool('python', 'Python', 'language', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install python@3.12' },
-      linux: { supported: true, installCommand: 'brew install python@3.12', alternativeCommands: { apt: 'sudo apt install python3.12 python3.12-venv python3-pip' } },
-      win32: { supported: true, installCommand: 'winget install Python.Python.3.12' },
-    }, '3.12'),
-    tool('go', 'Go', 'language', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install go' },
-      linux: { supported: true, installCommand: 'brew install go', alternativeCommands: { apt: 'sudo apt install golang-go' } },
-      win32: { supported: true, installCommand: 'winget install GoLang.Go' },
-    }, '1.22'),
+    tool(
+      'python',
+      'Python',
+      'language',
+      true,
+      ['homebrew'],
+      {
+        darwin: { supported: true, installCommand: 'brew install python@3.12' },
+        linux: {
+          supported: true,
+          installCommand: 'brew install python@3.12',
+          alternativeCommands: {
+            apt: 'sudo apt install python3.12 python3.12-venv python3-pip',
+          },
+        },
+        win32: {
+          supported: true,
+          installCommand: 'winget install Python.Python.3.12',
+        },
+      },
+      '3.12'
+    ),
+    tool(
+      'go',
+      'Go',
+      'language',
+      true,
+      ['homebrew'],
+      {
+        darwin: { supported: true, installCommand: 'brew install go' },
+        linux: {
+          supported: true,
+          installCommand: 'brew install go',
+          alternativeCommands: { apt: 'sudo apt install golang-go' },
+        },
+        win32: { supported: true, installCommand: 'winget install GoLang.Go' },
+      },
+      '1.22'
+    ),
     // Containers
     tool('docker', 'Docker', 'container', true, ['homebrew'], {
       darwin: { supported: true, installCommand: 'brew install --cask docker' },
-      linux: { supported: true, installCommand: 'brew install docker', alternativeCommands: { apt: 'sudo apt install docker.io docker-compose-plugin' } },
-      win32: { supported: true, installCommand: 'winget install Docker.DockerDesktop' },
+      linux: {
+        supported: true,
+        installCommand: 'brew install docker',
+        alternativeCommands: {
+          apt: 'sudo apt install docker.io docker-compose-plugin',
+        },
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Docker.DockerDesktop',
+      },
     }),
     tool('kubectl', 'Kubernetes CLI', 'container', true, ['homebrew'], {
       darwin: { supported: true, installCommand: 'brew install kubectl' },
-      linux: { supported: true, installCommand: 'brew install kubectl', alternativeCommands: { apt: 'sudo snap install kubectl --classic' } },
-      win32: { supported: true, installCommand: 'winget install Kubernetes.kubectl' },
+      linux: {
+        supported: true,
+        installCommand: 'brew install kubectl',
+        alternativeCommands: { apt: 'sudo snap install kubectl --classic' },
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Kubernetes.kubectl',
+      },
     }),
     tool('helm', 'Helm', 'container', true, ['homebrew', 'kubectl'], {
       darwin: { supported: true, installCommand: 'brew install helm' },
-      linux: { supported: true, installCommand: 'brew install helm', alternativeCommands: { apt: 'sudo snap install helm --classic' } },
+      linux: {
+        supported: true,
+        installCommand: 'brew install helm',
+        alternativeCommands: { apt: 'sudo snap install helm --classic' },
+      },
       win32: { supported: true, installCommand: 'winget install Helm.Helm' },
     }),
     // Infrastructure as Code
     tool('terraform', 'Terraform', 'cloud', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install hashicorp/tap/terraform' },
-      linux: { supported: true, installCommand: 'brew install hashicorp/tap/terraform', alternativeCommands: { apt: 'sudo apt install terraform' } },
-      win32: { supported: true, installCommand: 'winget install Hashicorp.Terraform' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install hashicorp/tap/terraform',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'brew install hashicorp/tap/terraform',
+        alternativeCommands: { apt: 'sudo apt install terraform' },
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Hashicorp.Terraform',
+      },
     }),
     tool('ansible', 'Ansible', 'cloud', false, ['python'], {
       darwin: { supported: true, installCommand: 'pip3 install ansible' },
       linux: { supported: true, installCommand: 'pip3 install ansible' },
-      win32: { supported: false, unsupportedReason: 'Ansible does not natively support Windows as a control node' },
+      win32: {
+        supported: false,
+        unsupportedReason:
+          'Ansible does not natively support Windows as a control node',
+      },
     }),
     // Cloud CLIs
     tool('awscli', 'AWS CLI', 'cloud', false, ['homebrew'], {
       darwin: { supported: true, installCommand: 'brew install awscli' },
-      linux: { supported: true, installCommand: 'brew install awscli', alternativeCommands: { apt: 'sudo apt install awscli' } },
-      win32: { supported: true, installCommand: 'winget install Amazon.AWSCLI' },
+      linux: {
+        supported: true,
+        installCommand: 'brew install awscli',
+        alternativeCommands: { apt: 'sudo apt install awscli' },
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Amazon.AWSCLI',
+      },
     }),
     tool('gcloud', 'Google Cloud CLI', 'cloud', false, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install --cask google-cloud-sdk' },
-      linux: { supported: true, installCommand: 'brew install --cask google-cloud-sdk' },
-      win32: { supported: true, installCommand: 'winget install Google.CloudSDK' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install --cask google-cloud-sdk',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'brew install --cask google-cloud-sdk',
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Google.CloudSDK',
+      },
     }),
     // CI
     tool('gh', 'GitHub CLI', 'ci', true, ['homebrew'], {
       darwin: { supported: true, installCommand: 'brew install gh' },
-      linux: { supported: true, installCommand: 'brew install gh', alternativeCommands: { apt: 'sudo apt install gh' } },
+      linux: {
+        supported: true,
+        installCommand: 'brew install gh',
+        alternativeCommands: { apt: 'sudo apt install gh' },
+      },
       win32: { supported: true, installCommand: 'winget install GitHub.cli' },
     }),
     // Monitoring
     tool('prometheus', 'Prometheus', 'monitoring', false, ['homebrew'], {
       darwin: { supported: true, installCommand: 'brew install prometheus' },
       linux: { supported: true, installCommand: 'brew install prometheus' },
-      win32: { supported: false, unsupportedReason: 'Use Prometheus via Docker on Windows' },
+      win32: {
+        supported: false,
+        unsupportedReason: 'Use Prometheus via Docker on Windows',
+      },
     }),
     // Editors
     tool('vscode', 'Visual Studio Code', 'editor', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install --cask visual-studio-code' },
-      linux: { supported: true, installCommand: 'brew install --cask visual-studio-code', alternativeCommands: { apt: 'sudo snap install code --classic' } },
-      win32: { supported: true, installCommand: 'winget install Microsoft.VisualStudioCode' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install --cask visual-studio-code',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'brew install --cask visual-studio-code',
+        alternativeCommands: { apt: 'sudo snap install code --classic' },
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Microsoft.VisualStudioCode',
+      },
     }),
     // AI
     tool('claude', 'Claude Code', 'ai', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
-      linux: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
-      win32: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
+      darwin: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
+      win32: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
     }),
   ],
   extensions: [
@@ -349,55 +678,146 @@ const DATA_SCIENCE_PROFILE: ProfileDefinition = {
   estimatedTimeMinutes: 35,
   tools: [
     tool('homebrew', 'Homebrew', 'system', true, [], {
-      darwin: { supported: true, installCommand: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' },
-      linux: { supported: true, installCommand: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' },
-      win32: { supported: false, unsupportedReason: 'Use winget/chocolatey on Windows' },
+      darwin: {
+        supported: true,
+        installCommand:
+          '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      },
+      linux: {
+        supported: true,
+        installCommand:
+          '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      },
+      win32: {
+        supported: false,
+        unsupportedReason: 'Use winget/chocolatey on Windows',
+      },
     }),
     tool('git', 'Git', 'system', true, ['homebrew']),
     // Languages
-    tool('python', 'Python', 'language', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install python@3.12' },
-      linux: { supported: true, installCommand: 'brew install python@3.12', alternativeCommands: { apt: 'sudo apt install python3.12 python3.12-venv python3-pip' } },
-      win32: { supported: true, installCommand: 'winget install Python.Python.3.12' },
-    }, '3.12'),
-    tool('node', 'Node.js', 'language', false, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install node@22' },
-      linux: { supported: true, installCommand: 'brew install node@22' },
-      win32: { supported: true, installCommand: 'winget install OpenJS.NodeJS.LTS' },
-    }, '22'),
+    tool(
+      'python',
+      'Python',
+      'language',
+      true,
+      ['homebrew'],
+      {
+        darwin: { supported: true, installCommand: 'brew install python@3.12' },
+        linux: {
+          supported: true,
+          installCommand: 'brew install python@3.12',
+          alternativeCommands: {
+            apt: 'sudo apt install python3.12 python3.12-venv python3-pip',
+          },
+        },
+        win32: {
+          supported: true,
+          installCommand: 'winget install Python.Python.3.12',
+        },
+      },
+      '3.12'
+    ),
+    tool(
+      'node',
+      'Node.js',
+      'language',
+      false,
+      ['homebrew'],
+      {
+        darwin: { supported: true, installCommand: 'brew install node@22' },
+        linux: { supported: true, installCommand: 'brew install node@22' },
+        win32: {
+          supported: true,
+          installCommand: 'winget install OpenJS.NodeJS.LTS',
+        },
+      },
+      '22'
+    ),
     // Data science tools
     tool('jupyter', 'Jupyter', 'data-science', true, ['python'], {
-      darwin: { supported: true, installCommand: 'pip3 install jupyterlab notebook' },
-      linux: { supported: true, installCommand: 'pip3 install jupyterlab notebook' },
-      win32: { supported: true, installCommand: 'pip install jupyterlab notebook' },
+      darwin: {
+        supported: true,
+        installCommand: 'pip3 install jupyterlab notebook',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'pip3 install jupyterlab notebook',
+      },
+      win32: {
+        supported: true,
+        installCommand: 'pip install jupyterlab notebook',
+      },
     }),
     tool('conda', 'Miniconda', 'data-science', false, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install --cask miniconda' },
-      linux: { supported: true, installCommand: 'mkdir -p ~/miniconda3 && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh && bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3' },
-      win32: { supported: true, installCommand: 'winget install Anaconda.Miniconda3' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install --cask miniconda',
+      },
+      linux: {
+        supported: true,
+        installCommand:
+          'mkdir -p ~/miniconda3 && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh && bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3',
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Anaconda.Miniconda3',
+      },
     }),
-    tool('dvc', 'DVC (Data Version Control)', 'data-science', false, ['python'], {
-      darwin: { supported: true, installCommand: 'pip3 install dvc' },
-      linux: { supported: true, installCommand: 'pip3 install dvc' },
-      win32: { supported: true, installCommand: 'pip install dvc' },
-    }),
+    tool(
+      'dvc',
+      'DVC (Data Version Control)',
+      'data-science',
+      false,
+      ['python'],
+      {
+        darwin: { supported: true, installCommand: 'pip3 install dvc' },
+        linux: { supported: true, installCommand: 'pip3 install dvc' },
+        win32: { supported: true, installCommand: 'pip install dvc' },
+      }
+    ),
     // Containers (for reproducible environments)
     tool('docker', 'Docker', 'container', true, ['homebrew'], {
       darwin: { supported: true, installCommand: 'brew install --cask docker' },
-      linux: { supported: true, installCommand: 'brew install docker', alternativeCommands: { apt: 'sudo apt install docker.io' } },
-      win32: { supported: true, installCommand: 'winget install Docker.DockerDesktop' },
+      linux: {
+        supported: true,
+        installCommand: 'brew install docker',
+        alternativeCommands: { apt: 'sudo apt install docker.io' },
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Docker.DockerDesktop',
+      },
     }),
     // Editors
     tool('vscode', 'Visual Studio Code', 'editor', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install --cask visual-studio-code' },
-      linux: { supported: true, installCommand: 'brew install --cask visual-studio-code', alternativeCommands: { apt: 'sudo snap install code --classic' } },
-      win32: { supported: true, installCommand: 'winget install Microsoft.VisualStudioCode' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install --cask visual-studio-code',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'brew install --cask visual-studio-code',
+        alternativeCommands: { apt: 'sudo snap install code --classic' },
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Microsoft.VisualStudioCode',
+      },
     }),
     // AI
     tool('claude', 'Claude Code', 'ai', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
-      linux: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
-      win32: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
+      darwin: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
+      win32: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
     }),
   ],
   extensions: [
@@ -449,18 +869,48 @@ const MOBILE_PROFILE: ProfileDefinition = {
   estimatedTimeMinutes: 40,
   tools: [
     tool('homebrew', 'Homebrew', 'system', true, [], {
-      darwin: { supported: true, installCommand: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' },
-      linux: { supported: true, installCommand: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' },
-      win32: { supported: false, unsupportedReason: 'Use winget/chocolatey on Windows' },
+      darwin: {
+        supported: true,
+        installCommand:
+          '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      },
+      linux: {
+        supported: true,
+        installCommand:
+          '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      },
+      win32: {
+        supported: false,
+        unsupportedReason: 'Use winget/chocolatey on Windows',
+      },
     }),
     tool('git', 'Git', 'system', true, ['homebrew']),
     // Languages
-    tool('node', 'Node.js', 'language', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install node@22' },
-      linux: { supported: true, installCommand: 'brew install node@22' },
-      win32: { supported: true, installCommand: 'winget install OpenJS.NodeJS.LTS' },
-    }, '22'),
-    tool('typescript', 'TypeScript', 'language', true, ['node'], undefined, 'latest'),
+    tool(
+      'node',
+      'Node.js',
+      'language',
+      true,
+      ['homebrew'],
+      {
+        darwin: { supported: true, installCommand: 'brew install node@22' },
+        linux: { supported: true, installCommand: 'brew install node@22' },
+        win32: {
+          supported: true,
+          installCommand: 'winget install OpenJS.NodeJS.LTS',
+        },
+      },
+      '22'
+    ),
+    tool(
+      'typescript',
+      'TypeScript',
+      'language',
+      true,
+      ['node'],
+      undefined,
+      'latest'
+    ),
     // Mobile SDKs
     tool('xcode-cli', 'Xcode Command Line Tools', 'mobile', true, [], {
       darwin: { supported: true, installCommand: 'xcode-select --install' },
@@ -473,33 +923,81 @@ const MOBILE_PROFILE: ProfileDefinition = {
       win32: { supported: false, unsupportedReason: 'CocoaPods is macOS-only' },
     }),
     tool('flutter', 'Flutter SDK', 'mobile', false, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install --cask flutter' },
-      linux: { supported: true, installCommand: 'sudo snap install flutter --classic' },
-      win32: { supported: true, installCommand: 'winget install Google.Flutter' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install --cask flutter',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'sudo snap install flutter --classic',
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Google.Flutter',
+      },
     }),
     tool('android-studio', 'Android Studio', 'mobile', false, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install --cask android-studio' },
-      linux: { supported: true, installCommand: 'sudo snap install android-studio --classic' },
-      win32: { supported: true, installCommand: 'winget install Google.AndroidStudio' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install --cask android-studio',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'sudo snap install android-studio --classic',
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Google.AndroidStudio',
+      },
     }),
     tool('fastlane', 'Fastlane', 'mobile', false, ['homebrew'], {
       darwin: { supported: true, installCommand: 'brew install fastlane' },
       linux: { supported: true, installCommand: 'sudo gem install fastlane' },
-      win32: { supported: false, unsupportedReason: 'Fastlane has limited Windows support' },
+      win32: {
+        supported: false,
+        unsupportedReason: 'Fastlane has limited Windows support',
+      },
     }),
     // Package managers
-    tool('pnpm', 'pnpm', 'package-manager', true, ['node'], undefined, 'latest'),
+    tool(
+      'pnpm',
+      'pnpm',
+      'package-manager',
+      true,
+      ['node'],
+      undefined,
+      'latest'
+    ),
     // Editors
     tool('vscode', 'Visual Studio Code', 'editor', true, ['homebrew'], {
-      darwin: { supported: true, installCommand: 'brew install --cask visual-studio-code' },
-      linux: { supported: true, installCommand: 'brew install --cask visual-studio-code', alternativeCommands: { apt: 'sudo snap install code --classic' } },
-      win32: { supported: true, installCommand: 'winget install Microsoft.VisualStudioCode' },
+      darwin: {
+        supported: true,
+        installCommand: 'brew install --cask visual-studio-code',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'brew install --cask visual-studio-code',
+        alternativeCommands: { apt: 'sudo snap install code --classic' },
+      },
+      win32: {
+        supported: true,
+        installCommand: 'winget install Microsoft.VisualStudioCode',
+      },
     }),
     // AI
     tool('claude', 'Claude Code', 'ai', true, ['node'], {
-      darwin: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
-      linux: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
-      win32: { supported: true, installCommand: 'npm install -g @anthropic-ai/claude-code' },
+      darwin: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
+      linux: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
+      win32: {
+        supported: true,
+        installCommand: 'npm install -g @anthropic-ai/claude-code',
+      },
     }),
   ],
   extensions: [
@@ -634,8 +1132,8 @@ export class ProfileLoader {
     try {
       const files = await fs.readdir(this.customProfilesDir);
       return files
-        .filter((f) => f.endsWith('.json'))
-        .map((f) => f.replace(/\.json$/, ''));
+        .filter(f => f.endsWith('.json'))
+        .map(f => f.replace(/\.json$/, ''));
     } catch {
       return [];
     }
@@ -646,10 +1144,7 @@ export class ProfileLoader {
    */
   async saveCustomProfile(profile: ProfileDefinition): Promise<void> {
     await fs.mkdir(this.customProfilesDir, { recursive: true });
-    const filePath = path.join(
-      this.customProfilesDir,
-      `${profile.type}.json`
-    );
+    const filePath = path.join(this.customProfilesDir, `${profile.type}.json`);
     await fs.writeFile(filePath, JSON.stringify(profile, null, 2));
     logger.info(`Saved custom profile: ${profile.type}`);
   }
@@ -679,12 +1174,12 @@ export class ProfileLoader {
     // Remove tools
     if (override.removeTools && override.removeTools.length > 0) {
       const removeSet = new Set(override.removeTools);
-      tools = tools.filter((t) => !removeSet.has(t.name));
+      tools = tools.filter(t => !removeSet.has(t.name));
     }
 
     // Add tools
     if (override.addTools && override.addTools.length > 0) {
-      const existingNames = new Set(tools.map((t) => t.name));
+      const existingNames = new Set(tools.map(t => t.name));
       for (const addTool of override.addTools) {
         if (!existingNames.has(addTool.name)) {
           tools.push(addTool);
@@ -694,10 +1189,8 @@ export class ProfileLoader {
 
     // Apply version pins
     if (override.versionPins) {
-      for (const [toolName, version] of Object.entries(
-        override.versionPins
-      )) {
-        const existing = tools.find((t) => t.name === toolName);
+      for (const [toolName, version] of Object.entries(override.versionPins)) {
+        const existing = tools.find(t => t.name === toolName);
         if (existing) {
           existing.version = version;
         }
@@ -708,7 +1201,7 @@ export class ProfileLoader {
     let extensions = [...base.extensions];
     if (override.removeExtensions && override.removeExtensions.length > 0) {
       const removeSet = new Set(override.removeExtensions);
-      extensions = extensions.filter((e) => !removeSet.has(e));
+      extensions = extensions.filter(e => !removeSet.has(e));
     }
     if (override.addExtensions && override.addExtensions.length > 0) {
       const existingSet = new Set(extensions);

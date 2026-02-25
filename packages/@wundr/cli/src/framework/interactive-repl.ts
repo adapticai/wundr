@@ -71,13 +71,13 @@ export interface HistoryEntry {
 // ---------------------------------------------------------------------------
 
 const DEFAULT_ALIASES: Record<string, string> = {
-  's': 'status',
-  'q': 'quit',
-  'h': 'help',
+  s: 'status',
+  q: 'quit',
+  h: 'help',
   '?': 'help',
-  'ls': 'list',
-  'll': 'list --verbose',
-  'cls': 'clear',
+  ls: 'list',
+  ll: 'list --verbose',
+  cls: 'clear',
 };
 
 // ---------------------------------------------------------------------------
@@ -97,10 +97,11 @@ export class InteractiveRepl {
 
   constructor(
     private registry: CommandRegistry,
-    options: ReplOptions = {},
+    options: ReplOptions = {}
   ) {
     this.prompt = options.prompt ?? chalk.cyan('wundr') + chalk.gray('> ');
-    this.historyFile = options.historyFile ?? path.join(os.homedir(), '.wundr_history');
+    this.historyFile =
+      options.historyFile ?? path.join(os.homedir(), '.wundr_history');
     this.maxHistory = options.maxHistory ?? 500;
     this.tabCompletion = options.tabCompletion ?? true;
     this.aliases = { ...DEFAULT_ALIASES, ...(options.aliases ?? {}) };
@@ -136,7 +137,11 @@ export class InteractiveRepl {
     if (welcomeMessage) {
       process.stderr.write(welcomeMessage + '\n\n');
     } else {
-      process.stderr.write(chalk.cyan('Interactive mode. Type "help" for commands, "quit" to exit.\n\n'));
+      process.stderr.write(
+        chalk.cyan(
+          'Interactive mode. Type "help" for commands, "quit" to exit.\n\n'
+        )
+      );
     }
 
     // Handle lines
@@ -166,7 +171,7 @@ export class InteractiveRepl {
     this.rl.prompt();
 
     // Keep the process alive
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
       this.rl?.on('close', () => {
         resolve();
       });
@@ -224,7 +229,9 @@ export class InteractiveRepl {
         process.stderr.write(chalk.red(`Unknown command: ${commandName}\n`));
         const suggestions = this.suggestCommands(commandName);
         if (suggestions.length > 0) {
-          process.stderr.write(chalk.yellow(`Did you mean: ${suggestions.join(', ')}?\n`));
+          process.stderr.write(
+            chalk.yellow(`Did you mean: ${suggestions.join(', ')}?\n`)
+          );
         }
         success = false;
         this.recordHistory(input, false, Date.now() - startTime);
@@ -283,7 +290,7 @@ export class InteractiveRepl {
    */
   private async executeCommand(
     command: CommandDefinition,
-    rawArgs: string[],
+    rawArgs: string[]
   ): Promise<void> {
     // Build args and options from raw input
     const args: Record<string, unknown> = {};
@@ -346,10 +353,14 @@ export class InteractiveRepl {
       }
 
       if (result.exitCode !== 0) {
-        process.stderr.write(chalk.red(`Command exited with code ${result.exitCode}\n`));
+        process.stderr.write(
+          chalk.red(`Command exited with code ${result.exitCode}\n`)
+        );
       }
     } else {
-      process.stderr.write(chalk.yellow('No context factory configured. Command not executed.\n'));
+      process.stderr.write(
+        chalk.yellow('No context factory configured. Command not executed.\n')
+      );
     }
   }
 
@@ -371,7 +382,12 @@ export class InteractiveRepl {
       const allNames = [
         ...this.registry.getCompletionWords(),
         ...Object.keys(this.aliases),
-        'help', 'quit', 'exit', 'clear', 'history', 'aliases',
+        'help',
+        'quit',
+        'exit',
+        'clear',
+        'history',
+        'aliases',
       ];
       completions = allNames.filter(name => name.startsWith(current));
     } else {
@@ -409,7 +425,11 @@ export class InteractiveRepl {
   /**
    * Record a command in history.
    */
-  private recordHistory(command: string, success: boolean, duration: number): void {
+  private recordHistory(
+    command: string,
+    success: boolean,
+    duration: number
+  ): void {
     this.history.push({
       command,
       timestamp: new Date(),
@@ -476,7 +496,9 @@ export class InteractiveRepl {
     for (let i = 0; i < recent.length; i++) {
       const entry = recent[i]!;
       const icon = entry.success ? chalk.green('+') : chalk.red('x');
-      const duration = entry.duration ? chalk.gray(` (${entry.duration}ms)`) : '';
+      const duration = entry.duration
+        ? chalk.gray(` (${entry.duration}ms)`)
+        : '';
       process.stderr.write(`  ${icon} ${entry.command}${duration}\n`);
     }
   }
@@ -520,7 +542,9 @@ export class InteractiveRepl {
   private showAliases(): void {
     process.stderr.write(chalk.white.bold('Aliases:\n'));
     for (const [alias, command] of Object.entries(this.aliases)) {
-      process.stderr.write(`  ${chalk.green(alias.padEnd(10))} -> ${command}\n`);
+      process.stderr.write(
+        `  ${chalk.green(alias.padEnd(10))} -> ${command}\n`
+      );
     }
   }
 
@@ -534,22 +558,38 @@ export class InteractiveRepl {
   private showHelp(): void {
     process.stderr.write('\n');
     process.stderr.write(chalk.white.bold('Built-in commands:\n'));
-    process.stderr.write(`  ${chalk.green('help')}        Show this help message\n`);
-    process.stderr.write(`  ${chalk.green('history')}     Show command history\n`);
-    process.stderr.write(`  ${chalk.green('aliases')}     Show command aliases\n`);
+    process.stderr.write(
+      `  ${chalk.green('help')}        Show this help message\n`
+    );
+    process.stderr.write(
+      `  ${chalk.green('history')}     Show command history\n`
+    );
+    process.stderr.write(
+      `  ${chalk.green('aliases')}     Show command aliases\n`
+    );
     process.stderr.write(`  ${chalk.green('clear')}       Clear the screen\n`);
-    process.stderr.write(`  ${chalk.green('quit')}        Exit interactive mode\n`);
+    process.stderr.write(
+      `  ${chalk.green('quit')}        Exit interactive mode\n`
+    );
     process.stderr.write('\n');
 
     process.stderr.write(chalk.white.bold('Available commands:\n'));
-    const commands = this.registry.list().filter(c => !c.hidden && !c.name.includes(':'));
+    const commands = this.registry
+      .list()
+      .filter(c => !c.hidden && !c.name.includes(':'));
     for (const cmd of commands.slice(0, 15)) {
-      const aliases = cmd.aliases ? chalk.gray(` (${cmd.aliases.join(', ')})`) : '';
-      process.stderr.write(`  ${chalk.green(cmd.name.padEnd(20))} ${cmd.description}${aliases}\n`);
+      const aliases = cmd.aliases
+        ? chalk.gray(` (${cmd.aliases.join(', ')})`)
+        : '';
+      process.stderr.write(
+        `  ${chalk.green(cmd.name.padEnd(20))} ${cmd.description}${aliases}\n`
+      );
     }
 
     if (commands.length > 15) {
-      process.stderr.write(chalk.gray(`  ... and ${commands.length - 15} more commands\n`));
+      process.stderr.write(
+        chalk.gray(`  ... and ${commands.length - 15} more commands\n`)
+      );
     }
     process.stderr.write('\n');
   }
@@ -653,7 +693,7 @@ export class InteractiveRepl {
         matrix[i]![j] = Math.min(
           matrix[i - 1]![j]! + 1,
           matrix[i]![j - 1]! + 1,
-          matrix[i - 1]![j - 1]! + cost,
+          matrix[i - 1]![j - 1]! + cost
         );
       }
     }

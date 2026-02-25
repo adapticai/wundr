@@ -65,10 +65,26 @@ export {
 } from './provider';
 
 // Re-export provider implementations
-export { OpenAIEmbeddingProvider, createOpenAIProvider, DEFAULT_OPENAI_EMBEDDING_MODEL } from './openai';
-export { VoyageEmbeddingProvider, createVoyageProvider, DEFAULT_VOYAGE_EMBEDDING_MODEL } from './voyage';
-export { GeminiEmbeddingProvider, createGeminiProvider, DEFAULT_GEMINI_EMBEDDING_MODEL } from './gemini';
-export { LocalEmbeddingProvider, createLocalProvider, DEFAULT_TRANSFORMERS_MODEL } from './local';
+export {
+  OpenAIEmbeddingProvider,
+  createOpenAIProvider,
+  DEFAULT_OPENAI_EMBEDDING_MODEL,
+} from './openai';
+export {
+  VoyageEmbeddingProvider,
+  createVoyageProvider,
+  DEFAULT_VOYAGE_EMBEDDING_MODEL,
+} from './voyage';
+export {
+  GeminiEmbeddingProvider,
+  createGeminiProvider,
+  DEFAULT_GEMINI_EMBEDDING_MODEL,
+} from './gemini';
+export {
+  LocalEmbeddingProvider,
+  createLocalProvider,
+  DEFAULT_TRANSFORMERS_MODEL,
+} from './local';
 
 // Re-export cache module
 export { InMemoryEmbeddingCache, type InMemoryCacheStats } from './cache';
@@ -125,8 +141,11 @@ const AUTO_DETECTION_ORDER: EmbeddingProviderId[] = [
  * Synchronous factory that creates a raw provider from config.
  * This is the function the orchestrator calls to create providers.
  */
-function rawProviderFactory(config: EmbeddingProviderConfig): EmbeddingProvider {
-  const id = config.provider === 'auto' ? detectBestProvider(config) : config.provider;
+function rawProviderFactory(
+  config: EmbeddingProviderConfig
+): EmbeddingProvider {
+  const id =
+    config.provider === 'auto' ? detectBestProvider(config) : config.provider;
   switch (id) {
     case 'openai':
       return createOpenAIProvider(config);
@@ -142,7 +161,9 @@ function rawProviderFactory(config: EmbeddingProviderConfig): EmbeddingProvider 
 /**
  * Detect the best available provider based on environment.
  */
-function detectBestProvider(config: EmbeddingProviderConfig): EmbeddingProviderId {
+function detectBestProvider(
+  config: EmbeddingProviderConfig
+): EmbeddingProviderId {
   // Local if explicitly configured
   if (config.local?.modelPath) {
     return 'local';
@@ -179,7 +200,7 @@ function detectBestProvider(config: EmbeddingProviderConfig): EmbeddingProviderI
  * @returns The resolved provider, metadata about fallback, and a cost tracker
  */
 export async function createEmbeddingProvider(
-  config: EmbeddingProviderConfig,
+  config: EmbeddingProviderConfig
 ): Promise<EmbeddingProviderResult> {
   const requestedProvider = config.provider;
   const fallback = config.fallback ?? 'none';
@@ -199,7 +220,10 @@ export async function createEmbeddingProvider(
   };
 
   const getCostTracker = (provider: EmbeddingProvider) => {
-    return (provider as { costTracker?: ReturnType<typeof createCostTracker> }).costTracker ?? createCostTracker();
+    return (
+      (provider as { costTracker?: ReturnType<typeof createCostTracker> })
+        .costTracker ?? createCostTracker()
+    );
   };
 
   // -- Auto-detection mode --------------------------------------------------
@@ -225,11 +249,11 @@ export async function createEmbeddingProvider(
     throw new Error(
       'No embedding provider available.\n\n' +
         'Tried the following providers:\n' +
-        errors.map((e) => `  - ${e}`).join('\n') +
+        errors.map(e => `  - ${e}`).join('\n') +
         '\n\nTo fix this, either:\n' +
         '  1. Set an API key (OPENAI_API_KEY, GOOGLE_API_KEY, or VOYAGE_API_KEY)\n' +
         '  2. Install @huggingface/transformers for local embeddings\n' +
-        '  3. Specify a provider explicitly in your config',
+        '  3. Specify a provider explicitly in your config'
     );
   }
 
@@ -243,7 +267,8 @@ export async function createEmbeddingProvider(
       costTracker: getCostTracker(provider),
     };
   } catch (primaryErr) {
-    const reason = primaryErr instanceof Error ? primaryErr.message : String(primaryErr);
+    const reason =
+      primaryErr instanceof Error ? primaryErr.message : String(primaryErr);
 
     // Try fallback if configured
     if (fallback !== 'none' && fallback !== requestedProvider) {
@@ -258,15 +283,19 @@ export async function createEmbeddingProvider(
         };
       } catch (fallbackErr) {
         const fallbackReason =
-          fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
+          fallbackErr instanceof Error
+            ? fallbackErr.message
+            : String(fallbackErr);
         throw new Error(
           `Primary provider "${requestedProvider}" failed: ${reason}\n\n` +
-            `Fallback to "${fallback}" also failed: ${fallbackReason}`,
+            `Fallback to "${fallback}" also failed: ${fallbackReason}`
         );
       }
     }
 
-    throw new Error(`Embedding provider "${requestedProvider}" failed: ${reason}`);
+    throw new Error(
+      `Embedding provider "${requestedProvider}" failed: ${reason}`
+    );
   }
 }
 
@@ -308,7 +337,7 @@ export async function createEmbeddingProvider(
  * ```
  */
 export function createEmbeddingOrchestrator(
-  config: OrchestratorConfig,
+  config: OrchestratorConfig
 ): EmbeddingOrchestrator {
   return new EmbeddingOrchestrator(config, rawProviderFactory);
 }

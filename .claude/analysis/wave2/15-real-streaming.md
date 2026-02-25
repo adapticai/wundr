@@ -60,7 +60,13 @@ type StreamEvent =
   | { type: 'thinking_delta'; text: string; blockIndex: number }
   | { type: 'tool_use_start'; toolName: string; toolId: string; blockIndex: number }
   | { type: 'tool_use_delta'; partialJson: string; toolId: string; blockIndex: number }
-  | { type: 'tool_use_end'; toolId: string; toolName: string; arguments: string; blockIndex: number }
+  | {
+      type: 'tool_use_end';
+      toolId: string;
+      toolName: string;
+      arguments: string;
+      blockIndex: number;
+    }
   | { type: 'content_block_stop'; blockIndex: number; blockType: string }
   | { type: 'usage'; inputTokens: number; outputTokens: number }
   | { type: 'error'; error: Error; recoverable: boolean }
@@ -70,6 +76,7 @@ type StreamEvent =
 ## Module Breakdown
 
 ### `stream-handler.ts`
+
 - `StreamHandler` class -- the orchestrator-facing API.
 - `startStream(client, params, options)` returns an `ActiveStream` handle.
 - `ActiveStream` exposes: `events: AsyncIterableIterator<StreamEvent>`, `abort()`, `usage`.
@@ -77,6 +84,7 @@ type StreamEvent =
 - Owns an `AbortController` threaded into the SDK call.
 
 ### `anthropic-stream.ts`
+
 - `AnthropicStreamAdapter` -- consumes `MessageStream` from `@anthropic-ai/sdk`.
 - Maps SSE events (`message_start`, `content_block_start`, `content_block_delta`,
   `content_block_stop`, `message_delta`, `message_stop`) into `StreamEvent`.
@@ -84,23 +92,26 @@ type StreamEvent =
 - Extracts `usage` from `message_delta` and `finalMessage()`.
 
 ### `openai-stream.ts`
+
 - `OpenAIStreamAdapter` -- consumes the async iterable from `openai`.
 - Maps `ChatCompletionChunk` choices/delta into `StreamEvent`.
-- Buffers tool call deltas by index, emitting `tool_use_start` on first delta and
-  `tool_use_end` when `finish_reason === 'tool_calls'`.
+- Buffers tool call deltas by index, emitting `tool_use_start` on first delta and `tool_use_end`
+  when `finish_reason === 'tool_calls'`.
 
 ### `block-parser.ts`
+
 - Stateful parser that tracks current block index and type.
-- Coalesces rapid micro-deltas into larger chunks (configurable min-chars threshold,
-  default 20 chars or 50ms idle flush).
+- Coalesces rapid micro-deltas into larger chunks (configurable min-chars threshold, default 20
+  chars or 50ms idle flush).
 - Detects block boundaries and emits `content_block_stop` when a block ends.
 
 ### `websocket-relay.ts`
-- `WebSocketStreamRelay` -- bridges `StreamEvent` to the existing
-  `OrchestratorWebSocketServer` APIs.
+
+- `WebSocketStreamRelay` -- bridges `StreamEvent` to the existing `OrchestratorWebSocketServer`
+  APIs.
 - Throttle: max one WS send per 16ms (60 fps) per session; coalesces text deltas in between.
-- Backpressure: checks `ws.bufferedAmount` before sending; if above high-water mark (64KB),
-  pauses consumption from the async iterator until drain.
+- Backpressure: checks `ws.bufferedAmount` before sending; if above high-water mark (64KB), pauses
+  consumption from the async iterator until drain.
 - Maps `StreamEvent` to `WSResponse` messages (`stream_start`, `stream_chunk`, `stream_end`,
   `tool_call_start`, `tool_call_result`).
 
@@ -110,8 +121,8 @@ type StreamEvent =
 2. `OrchestratorWebSocketServer` emits `'stop_session'` event.
 3. Session manager calls `activeStream.abort()`.
 4. `StreamHandler` calls `abortController.abort()`.
-5. Provider adapter catches the abort, emits `{ type: 'error', error, recoverable: false }`,
-   then `{ type: 'stream_end' }`.
+5. Provider adapter catches the abort, emits `{ type: 'error', error, recoverable: false }`, then
+   `{ type: 'stream_end' }`.
 6. `WebSocketRelay` sends `stream_end` to clients.
 
 ## Error Recovery
@@ -120,8 +131,8 @@ type StreamEvent =
   `StreamHandler` can optionally retry the stream from the beginning (configurable).
 - Rate limit errors: emit `error` with `retryAfter` metadata; `StreamHandler` waits then retries.
 - Invalid request errors: non-recoverable; emit error and close stream.
-- Broken WebSocket: relay detects closed socket and stops iterating events for that client
-  (other session subscribers continue receiving).
+- Broken WebSocket: relay detects closed socket and stops iterating events for that client (other
+  session subscribers continue receiving).
 
 ## Token Counting
 
@@ -135,8 +146,8 @@ type StreamEvent =
 ## Thinking Block Handling
 
 - Anthropic extended thinking returns `content_block_start` with `type: 'thinking'`.
-- The adapter emits `thinking_delta` events (distinct from `text_delta`) so the client can
-  render thinking content in a collapsible section.
+- The adapter emits `thinking_delta` events (distinct from `text_delta`) so the client can render
+  thinking content in a collapsible section.
 - When the thinking block ends, a `content_block_stop` with `blockType: 'thinking'` is emitted.
 
 ## Integration with SessionExecutor
@@ -145,20 +156,20 @@ The existing `executeSession` loop calls `llmClient.chat()` synchronously. With 
 
 1. When `options.streaming === true`, the executor calls `streamHandler.startStream()` instead.
 2. The executor iterates `activeStream.events`, forwarding to `WebSocketStreamRelay`.
-3. Tool use blocks are accumulated. When a `tool_use_end` event fires, the executor runs the
-   tool via `ToolExecutor` and feeds the result back as the next iteration's tool message.
+3. Tool use blocks are accumulated. When a `tool_use_end` event fires, the executor runs the tool
+   via `ToolExecutor` and feeds the result back as the next iteration's tool message.
 4. The agentic loop continues until no more tool calls or max iterations reached.
 
 ## File Manifest
 
-| File | Purpose |
-|------|---------|
-| `streaming/stream-handler.ts` | Entry point, `StreamHandler` + `ActiveStream` |
-| `streaming/anthropic-stream.ts` | Anthropic SDK streaming adapter |
-| `streaming/openai-stream.ts` | OpenAI SDK streaming adapter |
-| `streaming/block-parser.ts` | Block-aware delta coalescer |
-| `streaming/websocket-relay.ts` | WS delivery with throttle + backpressure |
-| `streaming/index.ts` | Barrel export |
+| File                            | Purpose                                       |
+| ------------------------------- | --------------------------------------------- |
+| `streaming/stream-handler.ts`   | Entry point, `StreamHandler` + `ActiveStream` |
+| `streaming/anthropic-stream.ts` | Anthropic SDK streaming adapter               |
+| `streaming/openai-stream.ts`    | OpenAI SDK streaming adapter                  |
+| `streaming/block-parser.ts`     | Block-aware delta coalescer                   |
+| `streaming/websocket-relay.ts`  | WS delivery with throttle + backpressure      |
+| `streaming/index.ts`            | Barrel export                                 |
 
 ## Testing Strategy
 

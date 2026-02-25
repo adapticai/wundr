@@ -1,8 +1,7 @@
 # Wave 2 Analysis: CLI Command Framework Design
 
-**Document**: 19-cli-framework.md
-**Status**: Design Complete
-**Priority**: High - Replaces 70%+ stub implementations
+**Document**: 19-cli-framework.md **Status**: Design Complete **Priority**: High - Replaces 70%+
+stub implementations
 
 ---
 
@@ -10,55 +9,65 @@
 
 ### 1.1 Command Inventory (28 command files)
 
-| Command File | Lines | Classification | Notes |
-|---|---|---|---|
-| `orchestrator.ts` | 790 | **Real** | Full start/stop/status/config/logs with daemon PID mgmt |
-| `batch.ts` | 938 | **Real** | Full YAML job runner with Listr2, variable substitution, import/export |
-| `setup.ts` | 509 | **Real** | Integrates with `@wundr.io/computer-setup`, progress tracking, profiles |
-| `computer-setup.ts` | ~900 | **Real** | Full provisioning with ComputerSetupManager, validation, profiles |
-| `claude-setup.ts` | ~1300 | **Real** | Full Claude integration, extensive config generation |
-| `claude-init.ts` | ~700 | **Real** | Claude project initialization with CLAUDE.md, permission patterns |
-| `session.ts` | 632 | **Real** | Session list/info/pause/resume/kill with JSON state persistence |
-| `worktree.ts` | ~900 | **Real** | Git worktree management with state tracking |
-| `guardian.ts` | ~800 | **Real** | Imports from `@wundr.io/guardian-dashboard`, drift reporting |
-| `rag.ts` | ~800 | **Real** | RAG store management with sync, prune, query |
-| `governance.ts` | ~900 | **Real** | IPRE governance with alignment verification |
-| `plugins.ts` | 851 | **Partial** | Commands defined, delegates to PluginManager (partially implemented) |
-| `ai.ts` | ~900 | **Partial** | Delegates to AIService; generate/review/refactor commands defined but AI calls may fail without keys |
-| `analyze.ts` | ~500 | **Stub** | Commands registered, action methods do basic logging but no real analysis engine |
-| `analyze-optimized.ts` | ~800 | **Stub** | Optimized analyzer skeleton, no real engine behind it |
-| `govern.ts` | ~500 | **Stub** | Compliance check/rules/policy commands defined, actions are placeholder-heavy |
-| `dashboard.ts` | 697 | **Stub** | Dashboard start/stop shell, helper methods return empty `{ data: [] }` |
-| `watch.ts` | ~600 | **Stub** | Uses chokidar setup but executeWatchCommand and scheduling are skeletons |
-| `chat.ts` | ~700 | **Stub** | Chat interface defined, relies on AIService which may not be functional |
-| `init.ts` | ~600 | **Partial** | RAG init works (uses `@wundr.io/core`), project/workspace init are templates |
-| `create.ts` | ~600 | **Stub** | Component/service/template generation with static templates only |
-| `create-command.ts` | ~150 | **Stub** | Thin wrapper |
-| `test.ts` | ~250 | **Stub** | Test runner scaffolding, no real runner |
-| `test-init.ts` | ~200 | **Stub** | Test initialization skeleton |
-| `alignment.ts` | ~1100 | **Partial** | Alignment scoring logic exists but many methods are TODO |
-| `computer-setup-commands.ts` | ~800 | **Partial** | Additional setup commands, some duplicated |
-| `performance-optimizer.ts` | ~800 | **Stub** | Optimization analysis skeleton |
-| `project-update.ts` | ~900 | **Stub** | Project update commands with no backend |
+| Command File                 | Lines | Classification | Notes                                                                                                |
+| ---------------------------- | ----- | -------------- | ---------------------------------------------------------------------------------------------------- |
+| `orchestrator.ts`            | 790   | **Real**       | Full start/stop/status/config/logs with daemon PID mgmt                                              |
+| `batch.ts`                   | 938   | **Real**       | Full YAML job runner with Listr2, variable substitution, import/export                               |
+| `setup.ts`                   | 509   | **Real**       | Integrates with `@wundr.io/computer-setup`, progress tracking, profiles                              |
+| `computer-setup.ts`          | ~900  | **Real**       | Full provisioning with ComputerSetupManager, validation, profiles                                    |
+| `claude-setup.ts`            | ~1300 | **Real**       | Full Claude integration, extensive config generation                                                 |
+| `claude-init.ts`             | ~700  | **Real**       | Claude project initialization with CLAUDE.md, permission patterns                                    |
+| `session.ts`                 | 632   | **Real**       | Session list/info/pause/resume/kill with JSON state persistence                                      |
+| `worktree.ts`                | ~900  | **Real**       | Git worktree management with state tracking                                                          |
+| `guardian.ts`                | ~800  | **Real**       | Imports from `@wundr.io/guardian-dashboard`, drift reporting                                         |
+| `rag.ts`                     | ~800  | **Real**       | RAG store management with sync, prune, query                                                         |
+| `governance.ts`              | ~900  | **Real**       | IPRE governance with alignment verification                                                          |
+| `plugins.ts`                 | 851   | **Partial**    | Commands defined, delegates to PluginManager (partially implemented)                                 |
+| `ai.ts`                      | ~900  | **Partial**    | Delegates to AIService; generate/review/refactor commands defined but AI calls may fail without keys |
+| `analyze.ts`                 | ~500  | **Stub**       | Commands registered, action methods do basic logging but no real analysis engine                     |
+| `analyze-optimized.ts`       | ~800  | **Stub**       | Optimized analyzer skeleton, no real engine behind it                                                |
+| `govern.ts`                  | ~500  | **Stub**       | Compliance check/rules/policy commands defined, actions are placeholder-heavy                        |
+| `dashboard.ts`               | 697   | **Stub**       | Dashboard start/stop shell, helper methods return empty `{ data: [] }`                               |
+| `watch.ts`                   | ~600  | **Stub**       | Uses chokidar setup but executeWatchCommand and scheduling are skeletons                             |
+| `chat.ts`                    | ~700  | **Stub**       | Chat interface defined, relies on AIService which may not be functional                              |
+| `init.ts`                    | ~600  | **Partial**    | RAG init works (uses `@wundr.io/core`), project/workspace init are templates                         |
+| `create.ts`                  | ~600  | **Stub**       | Component/service/template generation with static templates only                                     |
+| `create-command.ts`          | ~150  | **Stub**       | Thin wrapper                                                                                         |
+| `test.ts`                    | ~250  | **Stub**       | Test runner scaffolding, no real runner                                                              |
+| `test-init.ts`               | ~200  | **Stub**       | Test initialization skeleton                                                                         |
+| `alignment.ts`               | ~1100 | **Partial**    | Alignment scoring logic exists but many methods are TODO                                             |
+| `computer-setup-commands.ts` | ~800  | **Partial**    | Additional setup commands, some duplicated                                                           |
+| `performance-optimizer.ts`   | ~800  | **Stub**       | Optimization analysis skeleton                                                                       |
+| `project-update.ts`          | ~900  | **Stub**       | Project update commands with no backend                                                              |
 
 ### 1.2 Summary
 
-- **Real implementations** (10): orchestrator, batch, setup, computer-setup, claude-setup, claude-init, session, worktree, guardian, rag
+- **Real implementations** (10): orchestrator, batch, setup, computer-setup, claude-setup,
+  claude-init, session, worktree, guardian, rag
 - **Partial implementations** (5): plugins, ai, init, alignment, computer-setup-commands
-- **Stub implementations** (13): analyze, analyze-optimized, govern, dashboard, watch, chat, create, create-command, test, test-init, performance-optimizer, project-update
+- **Stub implementations** (13): analyze, analyze-optimized, govern, dashboard, watch, chat, create,
+  create-command, test, test-init, performance-optimizer, project-update
 
-**Conclusion**: ~46% stubs, ~18% partial, ~36% real. The stubs share a common pattern: Commander subcommands are registered with correct options, but action handlers either log and return, call helper methods that return empty data, or throw "not yet implemented" errors.
+**Conclusion**: ~46% stubs, ~18% partial, ~36% real. The stubs share a common pattern: Commander
+subcommands are registered with correct options, but action handlers either log and return, call
+helper methods that return empty data, or throw "not yet implemented" errors.
 
 ### 1.3 Architectural Problems
 
-1. **No command interface**: Each file uses ad-hoc patterns (class with `registerCommands()`, factory function, or default export)
+1. **No command interface**: Each file uses ad-hoc patterns (class with `registerCommands()`,
+   factory function, or default export)
 2. **No auto-discovery**: All 28+ imports are manually wired in `cli.ts` line 6-29
-3. **Inconsistent error handling**: Some use `errorHandler.createError()`, others use `try/catch` with `chalk.red()`, others use `spinner.fail()`
-4. **No output format consistency**: Some use `console.table()`, some manual padding, some JSON, some YAML
-5. **Duplicated utilities**: `formatUptime()`, `getTimestamp()`, `padRight()`, `truncate()` appear in multiple files
-6. **No validation layer**: Arguments are parsed by Commander but not validated beyond Commander's built-in type coercion
+3. **Inconsistent error handling**: Some use `errorHandler.createError()`, others use `try/catch`
+   with `chalk.red()`, others use `spinner.fail()`
+4. **No output format consistency**: Some use `console.table()`, some manual padding, some JSON,
+   some YAML
+5. **Duplicated utilities**: `formatUptime()`, `getTimestamp()`, `padRight()`, `truncate()` appear
+   in multiple files
+6. **No validation layer**: Arguments are parsed by Commander but not validated beyond Commander's
+   built-in type coercion
 7. **No lifecycle hooks**: No pre/post command hooks, no middleware pipeline
-8. **Mixed dependency injection**: Some commands get `ConfigManager`/`PluginManager` via constructor, others use closures, others import directly
+8. **Mixed dependency injection**: Some commands get `ConfigManager`/`PluginManager` via
+   constructor, others use closures, others import directly
 
 ---
 
@@ -66,9 +75,11 @@
 
 ### 2.1 Design Principles
 
-1. **Convention over configuration**: Commands follow a standard interface; the registry finds them automatically
+1. **Convention over configuration**: Commands follow a standard interface; the registry finds them
+   automatically
 2. **Composition over inheritance**: Use interfaces and mixins, not deep class hierarchies
-3. **Progressive disclosure**: Simple commands need minimal boilerplate; complex commands can opt into advanced features
+3. **Progressive disclosure**: Simple commands need minimal boilerplate; complex commands can opt
+   into advanced features
 4. **Type safety**: Full TypeScript generics for argument/option parsing
 5. **Testability**: Commands are pure functions of (args, options, context) -> result
 6. **Backward compatibility**: Existing working commands can be wrapped incrementally
@@ -195,35 +206,35 @@ class CliErrorHandler {
 
 ### Tier 1 - Core Operations (Week 1-2)
 
-| Command | Subcommands | Implementation Status | Priority Rationale |
-|---|---|---|---|
-| `wundr start` | `[--port] [--config] [--detach]` | Wrap existing orchestrator.ts | Gateway to using Wundr at all |
-| `wundr stop` | `[--force] [--timeout]` | Wrap existing orchestrator.ts | Companion to start |
-| `wundr status` | `[--json] [--watch]` | Wrap orchestrator.ts + session.ts | Most-run command after start |
-| `wundr agent` | `list, spawn, stop, info` | New - integrate session.ts | Core workflow for multi-agent |
+| Command        | Subcommands                      | Implementation Status             | Priority Rationale            |
+| -------------- | -------------------------------- | --------------------------------- | ----------------------------- |
+| `wundr start`  | `[--port] [--config] [--detach]` | Wrap existing orchestrator.ts     | Gateway to using Wundr at all |
+| `wundr stop`   | `[--force] [--timeout]`          | Wrap existing orchestrator.ts     | Companion to start            |
+| `wundr status` | `[--json] [--watch]`             | Wrap orchestrator.ts + session.ts | Most-run command after start  |
+| `wundr agent`  | `list, spawn, stop, info`        | New - integrate session.ts        | Core workflow for multi-agent |
 
 ### Tier 2 - Daily Workflow (Week 3-4)
 
-| Command | Subcommands | Implementation Status | Priority Rationale |
-|---|---|---|---|
+| Command        | Subcommands                     | Implementation Status          | Priority Rationale           |
+| -------------- | ------------------------------- | ------------------------------ | ---------------------------- |
 | `wundr memory` | `query, add, list, sync, prune` | Wrap rag.ts + new memory layer | Key differentiator for Wundr |
-| `wundr config` | `show, set, reset, validate` | Wrap config-manager.ts | Essential for customization |
-| `wundr batch` | `run, create, list, validate` | Already works (batch.ts) | Already functional |
+| `wundr config` | `show, set, reset, validate`    | Wrap config-manager.ts         | Essential for customization  |
+| `wundr batch`  | `run, create, list, validate`   | Already works (batch.ts)       | Already functional           |
 
 ### Tier 3 - Onboarding (Week 5-6)
 
-| Command | Subcommands | Implementation Status | Priority Rationale |
-|---|---|---|---|
-| `wundr setup` | `[profile] --interactive --dry-run` | Already works (setup.ts) | Already functional |
-| `wundr plugin` | `list, install, remove, enable` | Partial (plugins.ts) | Extensibility story |
+| Command        | Subcommands                         | Implementation Status    | Priority Rationale  |
+| -------------- | ----------------------------------- | ------------------------ | ------------------- |
+| `wundr setup`  | `[profile] --interactive --dry-run` | Already works (setup.ts) | Already functional  |
+| `wundr plugin` | `list, install, remove, enable`     | Partial (plugins.ts)     | Extensibility story |
 
 ### Tier 4 - Operational (Week 7-8)
 
-| Command | Subcommands | Implementation Status | Priority Rationale |
-|---|---|---|---|
-| `wundr audit` | `security, compliance, cost` | New | Trust and safety |
+| Command          | Subcommands                     | Implementation Status       | Priority Rationale |
+| ---------------- | ------------------------------- | --------------------------- | ------------------ |
+| `wundr audit`    | `security, compliance, cost`    | New                         | Trust and safety   |
 | `wundr guardian` | `report, review, interventions` | Already works (guardian.ts) | Already functional |
-| `wundr worktree` | `list, create, clean, sync` | Already works (worktree.ts) | Already functional |
+| `wundr worktree` | `list, create, clean, sync`     | Already works (worktree.ts) | Already functional |
 
 ---
 
@@ -265,6 +276,7 @@ Phase 5: Add completion     (export argument completions for bash/zsh)
 ### 5.1 Global Flags
 
 Every command inherits:
+
 - `--json` - Output raw JSON (for scripting/piping)
 - `--quiet` / `-q` - Suppress non-essential output
 - `--no-color` - Disable ANSI colors
@@ -272,10 +284,12 @@ Every command inherits:
 
 ### 5.2 Format Rules
 
-1. **Status displays** use colored status indicators: `[RUNNING]` green, `[STOPPED]` yellow, `[ERROR]` red
+1. **Status displays** use colored status indicators: `[RUNNING]` green, `[STOPPED]` yellow,
+   `[ERROR]` red
 2. **Lists** use `console.table()` for multi-column, `OutputFormatter.list()` for single-column
 3. **Errors** always show: error code, message, suggestion, and `--verbose` shows stack trace
-4. **Progress** uses `ora` spinners for indeterminate, `OutputFormatter.progressBar()` for determinate
+4. **Progress** uses `ora` spinners for indeterminate, `OutputFormatter.progressBar()` for
+   determinate
 5. **Success** outputs a single green line, not a wall of text
 6. **JSON mode** outputs valid JSON to stdout, all other messaging goes to stderr
 
@@ -349,7 +363,8 @@ wundr completion zsh >> ~/.zshrc
 wundr completion fish >> ~/.config/fish/completions/wundr.fish
 ```
 
-The `CommandRegistry` generates completions automatically from registered `CommandDefinition` metadata.
+The `CommandRegistry` generates completions automatically from registered `CommandDefinition`
+metadata.
 
 ---
 
@@ -384,6 +399,7 @@ expect(parsed.running).toBeDefined();
 ## 9. Dependencies
 
 The framework uses only dependencies already in `package.json`:
+
 - `commander` ^11.1.0 - Argument parsing (already used)
 - `chalk` ^5.3.0 - Color output (already used)
 - `ora` ^8.0.1 - Spinners (already used)

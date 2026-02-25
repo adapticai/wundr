@@ -2,20 +2,18 @@
 
 ## Executive Summary
 
-This document describes an auto-memories system for Wundr, inspired by Claude
-Code's persistent learning feature. The system automatically detects learnable
-moments during agent sessions (repeated corrections, error patterns, user
-preferences, project conventions, tool usage patterns) and persists them as
-structured markdown entries in scoped `MEMORY.md` files. Memories are injected
-into the system prompt on subsequent sessions, providing continuity across
-conversations without manual note-taking.
+This document describes an auto-memories system for Wundr, inspired by Claude Code's persistent
+learning feature. The system automatically detects learnable moments during agent sessions (repeated
+corrections, error patterns, user preferences, project conventions, tool usage patterns) and
+persists them as structured markdown entries in scoped `MEMORY.md` files. Memories are injected into
+the system prompt on subsequent sessions, providing continuity across conversations without manual
+note-taking.
 
-Unlike Wundr's existing `@wundr/agent-memory` package (which implements
-MemGPT-style tiered in-memory storage with forgetting curves) or the Wave 2
-Analysis 07 SQLite-backed persistence layer, this system operates at the
-**file level** -- reading and writing plain markdown files that users can
-inspect, edit, and version-control. This makes it transparent, auditable, and
-compatible with the OpenClaw memory model (MEMORY.md + memory/*.md).
+Unlike Wundr's existing `@wundr/agent-memory` package (which implements MemGPT-style tiered
+in-memory storage with forgetting curves) or the Wave 2 Analysis 07 SQLite-backed persistence layer,
+this system operates at the **file level** -- reading and writing plain markdown files that users
+can inspect, edit, and version-control. This makes it transparent, auditable, and compatible with
+the OpenClaw memory model (MEMORY.md + memory/\*.md).
 
 ---
 
@@ -23,13 +21,14 @@ compatible with the OpenClaw memory model (MEMORY.md + memory/*.md).
 
 Claude Code stores memories in plain `.md` files at three scope levels:
 
-| Scope    | Path                        | Visibility  |
-|----------|-----------------------------|-------------|
-| User     | `~/.claude/MEMORY.md`       | All projects for this user |
-| Project  | `.claude/MEMORY.md`         | All sessions in this project |
-| Local    | `.claude/local/MEMORY.md`   | Only this machine for this project |
+| Scope   | Path                      | Visibility                         |
+| ------- | ------------------------- | ---------------------------------- |
+| User    | `~/.claude/MEMORY.md`     | All projects for this user         |
+| Project | `.claude/MEMORY.md`       | All sessions in this project       |
+| Local   | `.claude/local/MEMORY.md` | Only this machine for this project |
 
 Key behaviors:
+
 - Memories are plain markdown, editable by the user
 - Injected into the system prompt at conversation start
 - Agent can write new memories when it learns something
@@ -39,17 +38,16 @@ Key behaviors:
 
 ### What OpenClaw Does Differently
 
-OpenClaw's `MemoryIndexManager` treats `MEMORY.md` and `memory/*.md` as
-searchable knowledge bases -- they are chunked, embedded, and indexed in
-SQLite. The agent searches them via `memory_search` tool calls. This is
-appropriate for large memory sets but is not the same as Claude Code's model
+OpenClaw's `MemoryIndexManager` treats `MEMORY.md` and `memory/*.md` as searchable knowledge bases
+-- they are chunked, embedded, and indexed in SQLite. The agent searches them via `memory_search`
+tool calls. This is appropriate for large memory sets but is not the same as Claude Code's model
 where the file content is injected directly into the system prompt.
 
 Wundr's auto-memories system combines both approaches:
-1. **Direct injection** of compact MEMORY.md files into the system prompt
-   (Claude Code model)
-2. **Searchable indexing** of overflow topic files via the existing
-   `@wundr/agent-memory` semantic store (OpenClaw model)
+
+1. **Direct injection** of compact MEMORY.md files into the system prompt (Claude Code model)
+2. **Searchable indexing** of overflow topic files via the existing `@wundr/agent-memory` semantic
+   store (OpenClaw model)
 
 ---
 
@@ -83,8 +81,8 @@ Local Scope (<project>/.wundr/local/MEMORY.md)
 
 ### 2.2 Resolution Order
 
-When building the system prompt memory context, scopes are merged in order
-(lower scopes override higher scopes for conflicting entries):
+When building the system prompt memory context, scopes are merged in order (lower scopes override
+higher scopes for conflicting entries):
 
 1. User scope (global baseline)
 2. Project scope (project-specific overrides)
@@ -94,9 +92,9 @@ When building the system prompt memory context, scopes are merged in order
 
 ```typescript
 interface MemoryScopes {
-  user:    string;  // ~/.wundr/MEMORY.md
-  project: string;  // <projectRoot>/.wundr/MEMORY.md
-  local:   string;  // <projectRoot>/.wundr/local/MEMORY.md
+  user: string; // ~/.wundr/MEMORY.md
+  project: string; // <projectRoot>/.wundr/MEMORY.md
+  local: string; // <projectRoot>/.wundr/local/MEMORY.md
 }
 ```
 
@@ -106,44 +104,49 @@ interface MemoryScopes {
 
 ### 3.1 Structure
 
-Each `MEMORY.md` file is organized into sections using markdown headers.
-Entries are bullet points under their section.
+Each `MEMORY.md` file is organized into sections using markdown headers. Entries are bullet points
+under their section.
 
 ```markdown
 # Auto-Memories
 
 ## User Preferences
+
 - Prefers concise responses without excessive explanation
 - Uses dark mode in all editors
 - Timezone: America/Los_Angeles
 
 ## Project Conventions
+
 - Use `pnpm` for package management
 - All exports from `src/index.ts` barrel files
 - Error messages follow: `[module] description (code)`
 
 ## Error Patterns
+
 - When TypeScript reports `Cannot find module`, check `tsconfig.json` paths first
 - `ECONNREFUSED` on port 5432 means local Postgres is not running
 
 ## Tool Usage
+
 - User prefers `git rebase` over `git merge`
 - Always run `pnpm lint` before committing
 
 ## Architecture Decisions
+
 - API follows REST conventions with `/api/v1/` prefix
 - Database migrations in `packages/db/migrations/`
 - All dates stored as UTC timestamps
 
 ## Corrections
+
 - Do NOT suggest `npm install` -- this project uses pnpm
 - The main branch is `main`, not `master`
 ```
 
 ### 3.2 Entry Format
 
-Each entry is a single bullet point. If more detail is needed, sub-bullets
-are allowed:
+Each entry is a single bullet point. If more detail is needed, sub-bullets are allowed:
 
 ```markdown
 - Entry summary
@@ -153,22 +156,22 @@ are allowed:
 
 ### 3.3 Sections
 
-| Section | Purpose |
-|---------|---------|
-| User Preferences | How the user likes to work |
-| Project Conventions | Naming, structure, tooling norms |
-| Error Patterns | Common errors and their fixes |
-| Tool Usage | CLI and tool preferences |
-| Architecture Decisions | Design choices and rationale |
-| Corrections | Things the agent got wrong and must not repeat |
-| Workflow | Build, test, deploy patterns |
-| People & Roles | Team members and responsibilities |
-| Links | Topic-specific overflow files (see 3.4) |
+| Section                | Purpose                                        |
+| ---------------------- | ---------------------------------------------- |
+| User Preferences       | How the user likes to work                     |
+| Project Conventions    | Naming, structure, tooling norms               |
+| Error Patterns         | Common errors and their fixes                  |
+| Tool Usage             | CLI and tool preferences                       |
+| Architecture Decisions | Design choices and rationale                   |
+| Corrections            | Things the agent got wrong and must not repeat |
+| Workflow               | Build, test, deploy patterns                   |
+| People & Roles         | Team members and responsibilities              |
+| Links                  | Topic-specific overflow files (see 3.4)        |
 
 ### 3.4 Topic Overflow
 
-When a MEMORY.md file approaches the line limit (200 lines), entries are
-consolidated and offloaded to topic-specific files:
+When a MEMORY.md file approaches the line limit (200 lines), entries are consolidated and offloaded
+to topic-specific files:
 
 ```
 .wundr/
@@ -183,14 +186,14 @@ The main MEMORY.md links to these:
 
 ```markdown
 ## Links
+
 - [TypeScript patterns](memory/typescript.md)
 - [API conventions](memory/api-conventions.md)
 - [Deployment procedures](memory/deployment.md)
 ```
 
-Topic files are indexed and searchable via the memory search system but are
-NOT injected into the system prompt directly. Only the main MEMORY.md
-(across all three scopes) is injected.
+Topic files are indexed and searchable via the memory search system but are NOT injected into the
+system prompt directly. Only the main MEMORY.md (across all three scopes) is injected.
 
 ---
 
@@ -198,8 +201,8 @@ NOT injected into the system prompt directly. Only the main MEMORY.md
 
 ### 4.1 Detection Categories
 
-The `LearningDetector` analyzes conversation turns to identify patterns
-that should be persisted as memories.
+The `LearningDetector` analyzes conversation turns to identify patterns that should be persisted as
+memories.
 
 #### 4.1.1 Repeated Corrections
 
@@ -211,16 +214,16 @@ Agent: (stores: "Do NOT suggest npm -- this project uses pnpm")
 ```
 
 Detection algorithm:
-1. Track correction-like utterances: "no", "not that", "I said", "wrong",
-   "actually", "use X instead", "don't do Y"
+
+1. Track correction-like utterances: "no", "not that", "I said", "wrong", "actually", "use X
+   instead", "don't do Y"
 2. Extract the correction target and replacement
-3. If the same correction appears twice in a session or across sessions,
-   promote to persistent memory
+3. If the same correction appears twice in a session or across sessions, promote to persistent
+   memory
 
 #### 4.1.2 Error Patterns and Fixes
 
-**Signal**: Agent encounters an error, user or agent fixes it, and the
-fix pattern is generalizable.
+**Signal**: Agent encounters an error, user or agent fixes it, and the fix pattern is generalizable.
 
 ```
 Error: ECONNREFUSED 127.0.0.1:5432
@@ -229,6 +232,7 @@ Memory: "ECONNREFUSED on 5432 -> run `docker compose up -d postgres`"
 ```
 
 Detection algorithm:
+
 1. Track tool execution errors (non-zero exit codes, exception messages)
 2. Track the resolution (successful follow-up command or user guidance)
 3. Pair error-resolution into a learnable pattern
@@ -236,8 +240,7 @@ Detection algorithm:
 
 #### 4.1.3 User Preferences
 
-**Signal**: User explicitly states a preference or consistently
-demonstrates one.
+**Signal**: User explicitly states a preference or consistently demonstrates one.
 
 ```
 User: "I prefer tabs over spaces"
@@ -246,16 +249,16 @@ User: "Keep responses short"
 ```
 
 Detection algorithm:
-1. Match explicit preference patterns: "I prefer", "always use",
-   "don't use", "I like", "please always"
-2. Match implicit preferences: consistent choices across turns
-   (e.g., user always reformats to a specific style)
+
+1. Match explicit preference patterns: "I prefer", "always use", "don't use", "I like", "please
+   always"
+2. Match implicit preferences: consistent choices across turns (e.g., user always reformats to a
+   specific style)
 3. Classify preference type (formatting, communication, tooling)
 
 #### 4.1.4 Project-Specific Patterns
 
-**Signal**: Information about the project that helps the agent work
-more effectively.
+**Signal**: Information about the project that helps the agent work more effectively.
 
 ```
 User: "The tests are in __tests__ directories, not test/"
@@ -264,6 +267,7 @@ Agent discovers: package.json has "vitest" not "jest"
 ```
 
 Detection algorithm:
+
 1. Track project structure corrections
 2. Detect tool/framework mentions with correction context
 3. Parse package.json, tsconfig.json, etc. for framework detection
@@ -279,6 +283,7 @@ User: "Deploy with `./scripts/deploy.sh staging`"
 ```
 
 Detection algorithm:
+
 1. Track explicit tool invocation instructions
 2. Track repeated tool usage patterns across turns
 3. Identify project-specific aliases and scripts
@@ -287,14 +292,15 @@ Detection algorithm:
 
 Each detected learning moment receives a confidence score:
 
-| Score | Meaning | Action |
-|-------|---------|--------|
-| 0.0-0.3 | Low confidence | Discard |
-| 0.3-0.6 | Medium confidence | Store as candidate, confirm on repetition |
-| 0.6-0.8 | High confidence | Store automatically |
+| Score   | Meaning              | Action                                     |
+| ------- | -------------------- | ------------------------------------------ |
+| 0.0-0.3 | Low confidence       | Discard                                    |
+| 0.3-0.6 | Medium confidence    | Store as candidate, confirm on repetition  |
+| 0.6-0.8 | High confidence      | Store automatically                        |
 | 0.8-1.0 | Very high confidence | Store immediately, explicit user statement |
 
 Thresholds:
+
 - Explicit user statements ("I prefer X"): 0.9
 - Repeated corrections (2+ times): 0.8
 - Error-fix patterns (resolved successfully): 0.7
@@ -304,9 +310,10 @@ Thresholds:
 ### 4.3 Deduplication
 
 Before storing a new memory, the detector checks for duplicates:
+
 1. Exact match: same entry text already exists
-2. Semantic overlap: new entry covers the same concept as an existing entry
-   (uses simple keyword overlap scoring, not embedding similarity)
+2. Semantic overlap: new entry covers the same concept as an existing entry (uses simple keyword
+   overlap scoring, not embedding similarity)
 3. Contradictions: new entry contradicts an existing entry (replace the old one)
 
 ---
@@ -395,8 +402,7 @@ MemoryFileManager.decayCheck(scope)
 
 ### 6.1 Memory Section Format
 
-The injected memory section appears in the system prompt after the
-standard sections:
+The injected memory section appears in the system prompt after the standard sections:
 
 ```
 ## Persistent Memories
@@ -423,6 +429,7 @@ If any memory seems outdated, update it.
 ### 6.2 Token Budget
 
 The memory injection respects a token budget:
+
 - Default: 2000 tokens for memories section
 - If combined memories exceed budget, prioritize:
   1. Corrections (highest priority -- avoid repeated mistakes)
@@ -435,8 +442,9 @@ The memory injection respects a token budget:
 
 ### 6.3 Relevance Filtering
 
-On each session, the auto-memories system can optionally filter entries
-based on the session context:
+On each session, the auto-memories system can optionally filter entries based on the session
+context:
+
 - If the session is about TypeScript, boost TypeScript-related entries
 - If the session involves deployment, boost deployment entries
 - Filtering uses simple keyword matching against the initial user message
@@ -449,20 +457,20 @@ based on the session context:
 
 These are injected directly into the system prompt. No search needed.
 
-### 7.2 Topic Overflow Files (memory/*.md)
+### 7.2 Topic Overflow Files (memory/\*.md)
 
-These are registered with the `@wundr/agent-memory` semantic store for
-search-based retrieval. The agent can use `memory_search` to find
-relevant entries from overflow files.
+These are registered with the `@wundr/agent-memory` semantic store for search-based retrieval. The
+agent can use `memory_search` to find relevant entries from overflow files.
 
 ### 7.3 Cross-Session Memory
 
 The auto-memories system bridges the gap between:
+
 - **@wundr/agent-memory** (in-memory tiered storage for single session)
 - **MEMORY.md files** (persistent cross-session knowledge)
 
-At session end, the `LearningDetector` promotes high-value episodic
-memories from the session to appropriate MEMORY.md files.
+At session end, the `LearningDetector` promotes high-value episodic memories from the session to
+appropriate MEMORY.md files.
 
 ---
 
@@ -470,8 +478,7 @@ memories from the session to appropriate MEMORY.md files.
 
 ### 8.1 AutoMemories (`auto-memories.ts`)
 
-Central coordinator. Manages the lifecycle of memory detection, storage,
-injection, and maintenance.
+Central coordinator. Manages the lifecycle of memory detection, storage, injection, and maintenance.
 
 ```typescript
 interface AutoMemoriesConfig {
@@ -482,17 +489,17 @@ interface AutoMemoriesConfig {
   /** Project root directory for project/local-scope memories */
   projectRoot: string;
   /** Maximum lines per MEMORY.md file */
-  maxLinesPerFile: number;        // Default: 200
+  maxLinesPerFile: number; // Default: 200
   /** Token budget for memory injection */
-  injectionTokenBudget: number;   // Default: 2000
+  injectionTokenBudget: number; // Default: 2000
   /** Minimum confidence to auto-store */
-  minConfidence: number;          // Default: 0.6
+  minConfidence: number; // Default: 0.6
   /** Enable memory decay checking */
-  decayEnabled: boolean;          // Default: true
+  decayEnabled: boolean; // Default: true
   /** Days before marking entry as stale */
-  decayDays: number;              // Default: 90
+  decayDays: number; // Default: 90
   /** Enable topic overflow to memory/*.md */
-  overflowEnabled: boolean;       // Default: true
+  overflowEnabled: boolean; // Default: true
 }
 
 class AutoMemories {
@@ -523,8 +530,8 @@ class AutoMemories {
 
 ### 8.2 MemoryFileManager (`memory-file-manager.ts`)
 
-Handles low-level MEMORY.md file operations: reading, writing, parsing,
-section management, line counting, and overflow management.
+Handles low-level MEMORY.md file operations: reading, writing, parsing, section management, line
+counting, and overflow management.
 
 ```typescript
 interface MemoryFileManagerConfig {
@@ -550,12 +557,7 @@ class MemoryFileManager {
   remove(filePath: string, section: string, entry: string): Promise<void>;
 
   /** Update an existing entry */
-  update(
-    filePath: string,
-    section: string,
-    oldEntry: string,
-    newEntry: string
-  ): Promise<void>;
+  update(filePath: string, section: string, oldEntry: string, newEntry: string): Promise<void>;
 
   /** Check if file exceeds line limit */
   needsConsolidation(filePath: string): Promise<boolean>;
@@ -613,9 +615,9 @@ interface LearningDetectorConfig {
   /** Minimum confidence to consider a detection */
   minConfidence: number;
   /** Maximum detections per turn */
-  maxDetectionsPerTurn: number;   // Default: 3
+  maxDetectionsPerTurn: number; // Default: 3
   /** Track correction history for repetition detection */
-  correctionHistorySize: number;  // Default: 50
+  correctionHistorySize: number; // Default: 50
 }
 
 class LearningDetector {
@@ -643,10 +645,7 @@ class LearningDetector {
   scoreConfidence(detection: RawDetection): number;
 
   /** Deduplicate against existing memories */
-  deduplicate(
-    detections: DetectedMemory[],
-    existing: ParsedMemoryFile
-  ): DetectedMemory[];
+  deduplicate(detections: DetectedMemory[], existing: ParsedMemoryFile): DetectedMemory[];
 
   /** Reset correction history (e.g., between sessions) */
   resetHistory(): void;
@@ -739,6 +738,7 @@ memory:
 ### 10.2 Sensitive Content
 
 The learning detector does NOT store:
+
 - API keys, tokens, or secrets
 - Passwords or credentials
 - Personal contact information (unless explicitly requested)
@@ -762,27 +762,27 @@ A redaction filter runs on all detected memories before storage.
 
 The auto-memories system is complementary, not a replacement:
 
-| Feature | agent-memory | auto-memories |
-|---------|-------------|---------------|
-| Storage | In-memory (volatile) | Markdown files (persistent) |
-| Scope | Single session | Cross-session |
-| Search | Embedding-based | Direct injection + keyword |
-| Content | Raw conversation data | Distilled learnings |
-| Decay | Forgetting curve | Time-based staleness |
-| User edit | Not possible | Edit markdown directly |
+| Feature   | agent-memory          | auto-memories               |
+| --------- | --------------------- | --------------------------- |
+| Storage   | In-memory (volatile)  | Markdown files (persistent) |
+| Scope     | Single session        | Cross-session               |
+| Search    | Embedding-based       | Direct injection + keyword  |
+| Content   | Raw conversation data | Distilled learnings         |
+| Decay     | Forgetting curve      | Time-based staleness        |
+| User edit | Not possible          | Edit markdown directly      |
 
 ### 11.2 Wave 2 Analysis 07 (SQLite Backend)
 
 The SQLite backend (from Analysis 07) can index MEMORY.md files:
+
 - Main MEMORY.md files are injected directly into the system prompt
 - Topic overflow files (`memory/*.md`) are indexed in SQLite
 - The existing `memory_search` tool works with both systems
 
 ### 11.3 OpenClaw Compatibility
 
-The file layout (MEMORY.md + memory/*.md) is intentionally compatible
-with OpenClaw's memory model. Projects that use both Wundr and OpenClaw
-can share the same memory files.
+The file layout (MEMORY.md + memory/\*.md) is intentionally compatible with OpenClaw's memory model.
+Projects that use both Wundr and OpenClaw can share the same memory files.
 
 ---
 
@@ -791,12 +791,14 @@ can share the same memory files.
 ### Phase 1: Core Infrastructure
 
 Files:
+
 - `memory-file-manager.ts` -- Parse, read, write, append MEMORY.md files
 - `auto-memories.ts` -- Scope resolution, merging, system prompt injection
 
 ### Phase 2: Learning Detection
 
 Files:
+
 - `learning-detector.ts` -- Analyze turns, detect patterns, score confidence
 
 ### Phase 3: Integration
@@ -807,7 +809,7 @@ Files:
 
 ### Phase 4: Consolidation and Decay
 
-- Topic overflow to memory/*.md
+- Topic overflow to memory/\*.md
 - Periodic staleness checking
 - Entry merging for duplicate reduction
 
@@ -815,8 +817,8 @@ Files:
 
 ## 13. Files Produced
 
-| File | Purpose |
-|------|---------|
-| `auto-memories.ts` | Central coordinator: scope management, injection, lifecycle |
-| `memory-file-manager.ts` | Low-level MEMORY.md file operations |
-| `learning-detector.ts` | Conversation analysis for learnable moment detection |
+| File                     | Purpose                                                     |
+| ------------------------ | ----------------------------------------------------------- |
+| `auto-memories.ts`       | Central coordinator: scope management, injection, lifecycle |
+| `memory-file-manager.ts` | Low-level MEMORY.md file operations                         |
+| `learning-detector.ts`   | Conversation analysis for learnable moment detection        |

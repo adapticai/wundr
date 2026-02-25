@@ -7,9 +7,9 @@ Ported from OpenClaw's multi-layer tool policy system (`src/agents/pi-tools.poli
 
 ## Problem
 
-Wundr's orchestrator-daemon currently has a flat `McpToolRegistry` that registers and executes
-tools without any access-control layer. Every registered tool is available to every agent, every
-provider, and every session. There is no mechanism to:
+Wundr's orchestrator-daemon currently has a flat `McpToolRegistry` that registers and executes tools
+without any access-control layer. Every registered tool is available to every agent, every provider,
+and every session. There is no mechanism to:
 
 - Restrict dangerous tools (e.g. `bash_execute`, `file_delete`) for specific agent types.
 - Apply provider-level restrictions (e.g. limit tools when using a less-trusted LLM provider).
@@ -29,18 +29,18 @@ provider, and every session. There is no mechanism to:
 5. Subagent Policy       - Inherited from parent + additional restrictions
 ```
 
-A tool must be allowed by ALL layers to be accessible. Any single layer denying a tool
-blocks it (conjunctive evaluation / AND semantics).
+A tool must be allowed by ALL layers to be accessible. Any single layer denying a tool blocks it
+(conjunctive evaluation / AND semantics).
 
 ### Pattern Matching
 
 Tool names support three pattern kinds:
 
-| Pattern     | Example       | Matches                          |
-|-------------|---------------|----------------------------------|
-| `*`         | `*`           | All tools                        |
-| Exact       | `file_read`   | Only `file_read`                 |
-| Wildcard    | `file_*`      | `file_read`, `file_write`, etc.  |
+| Pattern  | Example     | Matches                         |
+| -------- | ----------- | ------------------------------- |
+| `*`      | `*`         | All tools                       |
+| Exact    | `file_read` | Only `file_read`                |
+| Wildcard | `file_*`    | `file_read`, `file_write`, etc. |
 
 Patterns are compiled once and cached for efficient repeated evaluation.
 
@@ -70,20 +70,20 @@ For each policy layer:
 
 ### alsoAllow Semantics
 
-The `alsoAllow` field is additive. When a base policy has an allowlist, `alsoAllow` entries
-are merged into it. When no allowlist exists, `alsoAllow` creates an implicit `["*", ...alsoAllow]`
+The `alsoAllow` field is additive. When a base policy has an allowlist, `alsoAllow` entries are
+merged into it. When no allowlist exists, `alsoAllow` creates an implicit `["*", ...alsoAllow]`
 policy (everything plus the extras -- primarily used for profile-level additions).
 
 ### Profiles
 
 Named profiles provide preset tool configurations:
 
-| Profile     | Tools Allowed                                     |
-|-------------|---------------------------------------------------|
-| `minimal`   | `session_status` only                              |
-| `coding`    | `group:fs`, `group:runtime`, `group:sessions`, `group:memory` |
-| `analysis`  | `group:analysis`, `group:fs` (read-only subset)    |
-| `full`      | All tools (no restrictions)                         |
+| Profile    | Tools Allowed                                                 |
+| ---------- | ------------------------------------------------------------- |
+| `minimal`  | `session_status` only                                         |
+| `coding`   | `group:fs`, `group:runtime`, `group:sessions`, `group:memory` |
+| `analysis` | `group:analysis`, `group:fs` (read-only subset)               |
+| `full`     | All tools (no restrictions)                                   |
 
 ### Subagent Default Deny List
 
@@ -91,11 +91,14 @@ Subagents inherit their parent's policies plus additional restrictions:
 
 ```typescript
 DEFAULT_SUBAGENT_TOOL_DENY = [
-  "session_list", "session_status", "session_spawn",  // parent orchestrates
-  "bash_execute",                                      // dangerous in subagent
-  "file_delete",                                       // dangerous in subagent
-  "memory_search", "memory_get",                       // parent passes context
-]
+  'session_list',
+  'session_status',
+  'session_spawn', // parent orchestrates
+  'bash_execute', // dangerous in subagent
+  'file_delete', // dangerous in subagent
+  'memory_search',
+  'memory_get', // parent passes context
+];
 ```
 
 ## Data Flow
@@ -127,8 +130,8 @@ boolean (tool is accessible or blocked)
 
 ### McpToolRegistry Integration
 
-The `tool-policy.ts` module does NOT modify the registry. Instead, it provides a filtering
-layer that sits between the registry and tool execution:
+The `tool-policy.ts` module does NOT modify the registry. Instead, it provides a filtering layer
+that sits between the registry and tool execution:
 
 ```typescript
 // Before executing a tool:
@@ -150,30 +153,30 @@ const visibleTools = filterToolsByPolicy(allTools, effectivePolicy);
 
 ## Key Design Decisions
 
-1. **Conjunctive (AND) evaluation**: A tool must pass ALL policy layers. This ensures
-   that a restrictive global policy cannot be overridden by a permissive agent policy.
+1. **Conjunctive (AND) evaluation**: A tool must pass ALL policy layers. This ensures that a
+   restrictive global policy cannot be overridden by a permissive agent policy.
 
-2. **Deny takes precedence over allow within a layer**: If a tool matches both deny and
-   allow patterns in the same layer, it is denied.
+2. **Deny takes precedence over allow within a layer**: If a tool matches both deny and allow
+   patterns in the same layer, it is denied.
 
-3. **Empty allow = open**: A layer with no allow patterns permits everything (minus denies).
-   This avoids accidentally blocking all tools when only deny rules are configured.
+3. **Empty allow = open**: A layer with no allow patterns permits everything (minus denies). This
+   avoids accidentally blocking all tools when only deny rules are configured.
 
-4. **Compiled patterns**: Glob patterns are compiled to RegExp once and reused, avoiding
-   repeated string manipulation on every tool call.
+4. **Compiled patterns**: Glob patterns are compiled to RegExp once and reused, avoiding repeated
+   string manipulation on every tool call.
 
-5. **Normalized names**: All tool names are lowercased and trimmed before comparison,
-   with alias resolution (e.g. `bash` -> `bash_execute`).
+5. **Normalized names**: All tool names are lowercased and trimmed before comparison, with alias
+   resolution (e.g. `bash` -> `bash_execute`).
 
-6. **Policy source tracking**: Each resolved policy carries metadata about where it came
-   from (global, agent, provider, group) for debugging and audit logging.
+6. **Policy source tracking**: Each resolved policy carries metadata about where it came from
+   (global, agent, provider, group) for debugging and audit logging.
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `src/security/tool-policy.ts` | Core policy engine, pattern matching, evaluation |
-| `.claude/analysis/wave2/04-tool-policy.md` | This design document |
+| File                                       | Purpose                                          |
+| ------------------------------------------ | ------------------------------------------------ |
+| `src/security/tool-policy.ts`              | Core policy engine, pattern matching, evaluation |
+| `.claude/analysis/wave2/04-tool-policy.md` | This design document                             |
 
 ## Testing Strategy
 

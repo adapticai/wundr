@@ -28,57 +28,57 @@ import type { CommandContext, CommandDefinition } from './command-interface';
  */
 export type ErrorCode =
   // CLI errors
-  | 'WUNDR_CLI_001'      // Command not found
-  | 'WUNDR_CLI_002'      // Invalid arguments
-  | 'WUNDR_CLI_003'      // Missing required option
-  | 'WUNDR_CLI_004'      // Operation cancelled by user
-  | 'WUNDR_CLI_005'      // Not in a Wundr project directory
+  | 'WUNDR_CLI_001' // Command not found
+  | 'WUNDR_CLI_002' // Invalid arguments
+  | 'WUNDR_CLI_003' // Missing required option
+  | 'WUNDR_CLI_004' // Operation cancelled by user
+  | 'WUNDR_CLI_005' // Not in a Wundr project directory
   // Daemon errors
-  | 'WUNDR_DAEMON_001'   // Daemon not running
-  | 'WUNDR_DAEMON_002'   // Daemon already running
-  | 'WUNDR_DAEMON_003'   // Port already in use
-  | 'WUNDR_DAEMON_004'   // Failed to start daemon
-  | 'WUNDR_DAEMON_005'   // Failed to stop daemon
-  | 'WUNDR_DAEMON_006'   // Daemon health check failed
+  | 'WUNDR_DAEMON_001' // Daemon not running
+  | 'WUNDR_DAEMON_002' // Daemon already running
+  | 'WUNDR_DAEMON_003' // Port already in use
+  | 'WUNDR_DAEMON_004' // Failed to start daemon
+  | 'WUNDR_DAEMON_005' // Failed to stop daemon
+  | 'WUNDR_DAEMON_006' // Daemon health check failed
   // Config errors
-  | 'WUNDR_CONFIG_001'   // Config file not found
-  | 'WUNDR_CONFIG_002'   // Config validation failed
-  | 'WUNDR_CONFIG_003'   // Config write failed
-  | 'WUNDR_CONFIG_004'   // Invalid config key path
+  | 'WUNDR_CONFIG_001' // Config file not found
+  | 'WUNDR_CONFIG_002' // Config validation failed
+  | 'WUNDR_CONFIG_003' // Config write failed
+  | 'WUNDR_CONFIG_004' // Invalid config key path
   // Agent errors
-  | 'WUNDR_AGENT_001'    // Agent spawn failed
-  | 'WUNDR_AGENT_002'    // Agent not found
-  | 'WUNDR_AGENT_003'    // Agent already exists
-  | 'WUNDR_AGENT_004'    // Maximum agents exceeded
-  | 'WUNDR_AGENT_005'    // Agent communication failed
+  | 'WUNDR_AGENT_001' // Agent spawn failed
+  | 'WUNDR_AGENT_002' // Agent not found
+  | 'WUNDR_AGENT_003' // Agent already exists
+  | 'WUNDR_AGENT_004' // Maximum agents exceeded
+  | 'WUNDR_AGENT_005' // Agent communication failed
   // Memory errors
-  | 'WUNDR_MEMORY_001'   // Memory store not initialized
-  | 'WUNDR_MEMORY_002'   // Memory query failed
-  | 'WUNDR_MEMORY_003'   // Memory sync failed
-  | 'WUNDR_MEMORY_004'   // Embedding generation failed
+  | 'WUNDR_MEMORY_001' // Memory store not initialized
+  | 'WUNDR_MEMORY_002' // Memory query failed
+  | 'WUNDR_MEMORY_003' // Memory sync failed
+  | 'WUNDR_MEMORY_004' // Embedding generation failed
   // Plugin errors
-  | 'WUNDR_PLUGIN_001'   // Plugin not found
-  | 'WUNDR_PLUGIN_002'   // Plugin install failed
-  | 'WUNDR_PLUGIN_003'   // Plugin incompatible
-  | 'WUNDR_PLUGIN_004'   // Plugin activation failed
+  | 'WUNDR_PLUGIN_001' // Plugin not found
+  | 'WUNDR_PLUGIN_002' // Plugin install failed
+  | 'WUNDR_PLUGIN_003' // Plugin incompatible
+  | 'WUNDR_PLUGIN_004' // Plugin activation failed
   // Batch errors
-  | 'WUNDR_BATCH_001'    // Batch file not found
-  | 'WUNDR_BATCH_002'    // Batch validation failed
-  | 'WUNDR_BATCH_003'    // Batch execution failed
-  | 'WUNDR_BATCH_004'    // Batch timeout
+  | 'WUNDR_BATCH_001' // Batch file not found
+  | 'WUNDR_BATCH_002' // Batch validation failed
+  | 'WUNDR_BATCH_003' // Batch execution failed
+  | 'WUNDR_BATCH_004' // Batch timeout
   // Setup errors
-  | 'WUNDR_SETUP_001'    // Tool installation failed
-  | 'WUNDR_SETUP_002'    // Profile not found
-  | 'WUNDR_SETUP_003'    // Platform not supported
-  | 'WUNDR_SETUP_004'    // Insufficient permissions
+  | 'WUNDR_SETUP_001' // Tool installation failed
+  | 'WUNDR_SETUP_002' // Profile not found
+  | 'WUNDR_SETUP_003' // Platform not supported
+  | 'WUNDR_SETUP_004' // Insufficient permissions
   // Audit errors
-  | 'WUNDR_AUDIT_001'    // Audit scan failed
-  | 'WUNDR_AUDIT_002'    // Critical vulnerability found
+  | 'WUNDR_AUDIT_001' // Audit scan failed
+  | 'WUNDR_AUDIT_002' // Critical vulnerability found
   // System errors
-  | 'WUNDR_SYS_001'      // File not found
-  | 'WUNDR_SYS_002'      // Permission denied
-  | 'WUNDR_SYS_003'      // Network error
-  | 'WUNDR_SYS_004'      // Disk space insufficient
+  | 'WUNDR_SYS_001' // File not found
+  | 'WUNDR_SYS_002' // Permission denied
+  | 'WUNDR_SYS_003' // Network error
+  | 'WUNDR_SYS_004' // Disk space insufficient
   // Generic fallback
   | string;
 
@@ -152,7 +152,7 @@ export class CliError extends Error {
     message: string,
     details: ErrorDetails = {},
     suggestions: RecoverySuggestion[] = [],
-    recoverable: boolean = false,
+    recoverable: boolean = false
   ) {
     super(message);
     this.name = 'CliError';
@@ -176,7 +176,13 @@ export class CliError extends Error {
 /**
  * High-level error classification for routing error handling behavior.
  */
-export type ErrorClassification = 'user' | 'system' | 'network' | 'config' | 'plugin' | 'unknown';
+export type ErrorClassification =
+  | 'user'
+  | 'system'
+  | 'network'
+  | 'config'
+  | 'plugin'
+  | 'unknown';
 
 /**
  * Classified error with category and recommended action.
@@ -199,24 +205,64 @@ export interface ClassifiedError {
  */
 export function classifyError(code: ErrorCode): ClassifiedError {
   if (code.includes('_CLI_')) {
-    return { classification: 'user', retryable: false, userFacing: true, exitCode: 1 };
+    return {
+      classification: 'user',
+      retryable: false,
+      userFacing: true,
+      exitCode: 1,
+    };
   }
   if (code.includes('_CONFIG_')) {
-    return { classification: 'config', retryable: false, userFacing: true, exitCode: 1 };
+    return {
+      classification: 'config',
+      retryable: false,
+      userFacing: true,
+      exitCode: 1,
+    };
   }
   if (code.includes('_PLUGIN_')) {
-    return { classification: 'plugin', retryable: true, userFacing: true, exitCode: 1 };
+    return {
+      classification: 'plugin',
+      retryable: true,
+      userFacing: true,
+      exitCode: 1,
+    };
   }
-  if (code === 'WUNDR_SYS_003' || code.includes('ECONNREFUSED') || code.includes('ETIMEDOUT') || code.includes('ENOTFOUND')) {
-    return { classification: 'network', retryable: true, userFacing: true, exitCode: 2 };
+  if (
+    code === 'WUNDR_SYS_003' ||
+    code.includes('ECONNREFUSED') ||
+    code.includes('ETIMEDOUT') ||
+    code.includes('ENOTFOUND')
+  ) {
+    return {
+      classification: 'network',
+      retryable: true,
+      userFacing: true,
+      exitCode: 2,
+    };
   }
   if (code.startsWith('WUNDR_SYS_')) {
-    return { classification: 'system', retryable: false, userFacing: true, exitCode: 3 };
+    return {
+      classification: 'system',
+      retryable: false,
+      userFacing: true,
+      exitCode: 3,
+    };
   }
   if (code.includes('_DAEMON_003')) {
-    return { classification: 'system', retryable: false, userFacing: true, exitCode: 3 };
+    return {
+      classification: 'system',
+      retryable: false,
+      userFacing: true,
+      exitCode: 3,
+    };
   }
-  return { classification: 'unknown', retryable: false, userFacing: true, exitCode: 1 };
+  return {
+    classification: 'unknown',
+    retryable: false,
+    userFacing: true,
+    exitCode: 1,
+  };
 }
 
 /**
@@ -238,14 +284,33 @@ export function classifyAnyError(error: Error): ClassifiedError {
 
   // Check message heuristics
   const msg = error.message.toLowerCase();
-  if (msg.includes('network') || msg.includes('timeout') || msg.includes('connection')) {
-    return { classification: 'network', retryable: true, userFacing: true, exitCode: 2 };
+  if (
+    msg.includes('network') ||
+    msg.includes('timeout') ||
+    msg.includes('connection')
+  ) {
+    return {
+      classification: 'network',
+      retryable: true,
+      userFacing: true,
+      exitCode: 2,
+    };
   }
   if (msg.includes('permission') || msg.includes('access denied')) {
-    return { classification: 'system', retryable: false, userFacing: true, exitCode: 3 };
+    return {
+      classification: 'system',
+      retryable: false,
+      userFacing: true,
+      exitCode: 3,
+    };
   }
 
-  return { classification: 'unknown', retryable: false, userFacing: true, exitCode: 1 };
+  return {
+    classification: 'unknown',
+    retryable: false,
+    userFacing: true,
+    exitCode: 1,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -273,18 +338,27 @@ export interface ErrorRecoveryHandler {
 const BUILT_IN_SUGGESTIONS: Record<string, RecoverySuggestion[]> = {
   WUNDR_CLI_001: [
     { description: 'Check available commands', command: 'wundr --help' },
-    { description: 'Search for similar commands', command: 'wundr --help | grep <term>' },
+    {
+      description: 'Search for similar commands',
+      command: 'wundr --help | grep <term>',
+    },
   ],
   WUNDR_CLI_002: [
     { description: 'Check command syntax', command: 'wundr <command> --help' },
   ],
   WUNDR_CLI_005: [
-    { description: 'Initialize a Wundr project', command: 'wundr init project' },
+    {
+      description: 'Initialize a Wundr project',
+      command: 'wundr init project',
+    },
     { description: 'Navigate to your project directory first' },
   ],
   WUNDR_DAEMON_001: [
     { description: 'Start the orchestrator daemon', command: 'wundr start' },
-    { description: 'Check daemon logs for errors', command: 'wundr orchestrator logs' },
+    {
+      description: 'Check daemon logs for errors',
+      command: 'wundr orchestrator logs',
+    },
   ],
   WUNDR_DAEMON_002: [
     { description: 'Check current daemon status', command: 'wundr status' },
@@ -295,56 +369,104 @@ const BUILT_IN_SUGGESTIONS: Record<string, RecoverySuggestion[]> = {
     { description: 'Check what is using the port', command: 'lsof -i :<port>' },
   ],
   WUNDR_DAEMON_004: [
-    { description: 'Check if the orchestrator daemon module is installed', command: 'npm ls @wundr/orchestrator-daemon' },
+    {
+      description: 'Check if the orchestrator daemon module is installed',
+      command: 'npm ls @wundr/orchestrator-daemon',
+    },
     { description: 'View daemon logs', command: 'wundr orchestrator logs' },
   ],
   WUNDR_CONFIG_001: [
     { description: 'Create a default config', command: 'wundr config reset' },
-    { description: 'Initialize a project with config', command: 'wundr init config' },
+    {
+      description: 'Initialize a project with config',
+      command: 'wundr init config',
+    },
   ],
   WUNDR_CONFIG_002: [
-    { description: 'Validate your configuration', command: 'wundr config validate' },
-    { description: 'Reset to default configuration', command: 'wundr config reset --force' },
+    {
+      description: 'Validate your configuration',
+      command: 'wundr config validate',
+    },
+    {
+      description: 'Reset to default configuration',
+      command: 'wundr config reset --force',
+    },
   ],
   WUNDR_CONFIG_004: [
-    { description: 'View current config to find valid keys', command: 'wundr config show' },
+    {
+      description: 'View current config to find valid keys',
+      command: 'wundr config show',
+    },
   ],
   WUNDR_AGENT_001: [
-    { description: 'Check that the daemon is running', command: 'wundr status' },
-    { description: 'View agent limits in config', command: 'wundr config show' },
+    {
+      description: 'Check that the daemon is running',
+      command: 'wundr status',
+    },
+    {
+      description: 'View agent limits in config',
+      command: 'wundr config show',
+    },
   ],
   WUNDR_AGENT_002: [
     { description: 'List active agents', command: 'wundr agent list' },
   ],
   WUNDR_AGENT_004: [
-    { description: 'Stop idle agents to free slots', command: 'wundr agent list' },
-    { description: 'Increase maxSessions in config', command: 'wundr orchestrator config set daemon.maxSessions=200' },
+    {
+      description: 'Stop idle agents to free slots',
+      command: 'wundr agent list',
+    },
+    {
+      description: 'Increase maxSessions in config',
+      command: 'wundr orchestrator config set daemon.maxSessions=200',
+    },
   ],
   WUNDR_MEMORY_001: [
-    { description: 'Initialize the memory/RAG store', command: 'wundr init rag' },
+    {
+      description: 'Initialize the memory/RAG store',
+      command: 'wundr init rag',
+    },
     { description: 'Check RAG store status', command: 'wundr rag status' },
   ],
   WUNDR_MEMORY_003: [
     { description: 'Retry the sync operation', command: 'wundr rag sync' },
-    { description: 'Prune and rebuild the store', command: 'wundr rag prune && wundr rag sync' },
+    {
+      description: 'Prune and rebuild the store',
+      command: 'wundr rag prune && wundr rag sync',
+    },
   ],
   WUNDR_PLUGIN_001: [
-    { description: 'Search available plugins', command: 'wundr plugin search <name>' },
+    {
+      description: 'Search available plugins',
+      command: 'wundr plugin search <name>',
+    },
     { description: 'List installed plugins', command: 'wundr plugin list' },
   ],
   WUNDR_PLUGIN_002: [
     { description: 'Check your network connection' },
-    { description: 'Try installing with --force', command: 'wundr plugin install <name> --force' },
+    {
+      description: 'Try installing with --force',
+      command: 'wundr plugin install <name> --force',
+    },
   ],
   WUNDR_BATCH_001: [
     { description: 'List available batch jobs', command: 'wundr batch list' },
-    { description: 'Create a new batch job', command: 'wundr batch create <name>' },
+    {
+      description: 'Create a new batch job',
+      command: 'wundr batch create <name>',
+    },
   ],
   WUNDR_BATCH_002: [
-    { description: 'Validate the batch file', command: 'wundr batch validate <file>' },
+    {
+      description: 'Validate the batch file',
+      command: 'wundr batch validate <file>',
+    },
   ],
   WUNDR_SETUP_002: [
-    { description: 'List available profiles', command: 'wundr setup --interactive' },
+    {
+      description: 'List available profiles',
+      command: 'wundr setup --interactive',
+    },
   ],
   WUNDR_SETUP_004: [
     { description: 'Run with elevated permissions if needed' },
@@ -405,7 +527,7 @@ export class CliErrorHandler {
     code: ErrorCode,
     message: string,
     details: ErrorDetails = {},
-    recoverable: boolean = false,
+    recoverable: boolean = false
   ): CliError {
     const suggestions = this.getSuggestions(code);
     return new CliError(code, message, details, suggestions, recoverable);
@@ -418,7 +540,10 @@ export class CliErrorHandler {
    * @param context - Additional context about what operation was being performed
    * @returns A CliError with appropriate code and suggestions
    */
-  wrapSystemError(error: Error & { code?: string }, context: string = ''): CliError {
+  wrapSystemError(
+    error: Error & { code?: string },
+    context: string = ''
+  ): CliError {
     const systemCode = error.code ?? '';
     const mapping = SYSTEM_ERROR_MAP[systemCode];
 
@@ -427,7 +552,7 @@ export class CliErrorHandler {
         mapping.code,
         context ? `${context}: ${mapping.message}` : mapping.message,
         { cause: error },
-        true,
+        true
       );
     }
 
@@ -436,7 +561,7 @@ export class CliErrorHandler {
       'WUNDR_CLI_002',
       context ? `${context}: ${error.message}` : error.message,
       { cause: error },
-      false,
+      false
     );
   }
 
@@ -460,7 +585,7 @@ export class CliErrorHandler {
   handleCommandError(
     error: Error,
     command: CommandDefinition | undefined,
-    context: CommandContext,
+    context: CommandContext
   ): void {
     const verbose = context.globalOptions.verbose;
     const json = context.globalOptions.json;
@@ -493,7 +618,7 @@ export class CliErrorHandler {
   async withErrorHandling<T>(
     operation: () => Promise<T>,
     errorContext: string,
-    code: ErrorCode = 'WUNDR_CLI_002',
+    code: ErrorCode = 'WUNDR_CLI_002'
   ): Promise<T> {
     try {
       return await operation();
@@ -507,10 +632,20 @@ export class CliErrorHandler {
         if (systemError.code && SYSTEM_ERROR_MAP[systemError.code]) {
           throw this.wrapSystemError(systemError, errorContext);
         }
-        throw this.createError(code, `${errorContext}: ${error.message}`, { cause: error }, true);
+        throw this.createError(
+          code,
+          `${errorContext}: ${error.message}`,
+          { cause: error },
+          true
+        );
       }
 
-      throw this.createError(code, `${errorContext}: ${String(error)}`, {}, false);
+      throw this.createError(
+        code,
+        `${errorContext}: ${String(error)}`,
+        {},
+        false
+      );
     }
   }
 
@@ -544,7 +679,10 @@ export class CliErrorHandler {
    * @param context - Command context
    * @returns Whether recovery was successful
    */
-  async attemptRecovery(error: CliError, context: CommandContext): Promise<boolean> {
+  async attemptRecovery(
+    error: CliError,
+    context: CommandContext
+  ): Promise<boolean> {
     for (const handler of this.customHandlers) {
       if (handler.canHandle(error.code)) {
         try {
@@ -577,7 +715,11 @@ export class CliErrorHandler {
   /**
    * Format a CliError for terminal display.
    */
-  private formatCliError(error: CliError, verbose: boolean, commandName?: string): void {
+  private formatCliError(
+    error: CliError,
+    verbose: boolean,
+    commandName?: string
+  ): void {
     // Header
     console.error('');
     console.error(chalk.red.bold('Error'));
@@ -593,7 +735,9 @@ export class CliErrorHandler {
       console.error(chalk.gray('\n  Details:'));
       for (const [key, value] of Object.entries(error.details)) {
         if (key === 'cause') continue; // Show cause separately
-        console.error(chalk.gray(`    ${key}: ${this.formatDetailValue(value)}`));
+        console.error(
+          chalk.gray(`    ${key}: ${this.formatDetailValue(value)}`)
+        );
       }
     }
 
@@ -648,7 +792,11 @@ export class CliErrorHandler {
   /**
    * Format a plain Error for terminal display.
    */
-  private formatPlainError(error: Error, verbose: boolean, commandName?: string): void {
+  private formatPlainError(
+    error: Error,
+    verbose: boolean,
+    commandName?: string
+  ): void {
     console.error('');
     console.error(chalk.red.bold('Error'));
     console.error(chalk.red(`  ${error.message}`));
@@ -675,7 +823,7 @@ export class CliErrorHandler {
    */
   private toJson(
     error: Error,
-    command?: CommandDefinition,
+    command?: CommandDefinition
   ): Record<string, unknown> {
     const base: Record<string, unknown> = {
       error: true,

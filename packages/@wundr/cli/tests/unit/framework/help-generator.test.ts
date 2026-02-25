@@ -7,14 +7,17 @@
 
 import { HelpGenerator } from '../../../src/framework/help-generator';
 import { CommandRegistry } from '../../../src/framework/command-registry';
-import type { CommandDefinition, CommandCategory } from '../../../src/framework/command-interface';
+import type {
+  CommandDefinition,
+  CommandCategory,
+} from '../../../src/framework/command-interface';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function makeCommand(
-  overrides: Partial<CommandDefinition> = {},
+  overrides: Partial<CommandDefinition> = {}
 ): CommandDefinition {
   return {
     name: overrides.name ?? 'test-cmd',
@@ -25,7 +28,7 @@ function makeCommand(
 }
 
 function createRegistryWithCommands(
-  commands: Partial<CommandDefinition>[],
+  commands: Partial<CommandDefinition>[]
 ): CommandRegistry {
   const registry = new CommandRegistry({ strict: false });
   for (const cmd of commands) {
@@ -64,8 +67,16 @@ describe('HelpGenerator', () => {
 
     it('should list visible commands', () => {
       const registry = createRegistryWithCommands([
-        { name: 'deploy', description: 'Deploy the app', category: 'daemon' as CommandCategory },
-        { name: 'status', description: 'Show status', category: 'daemon' as CommandCategory },
+        {
+          name: 'deploy',
+          description: 'Deploy the app',
+          category: 'daemon' as CommandCategory,
+        },
+        {
+          name: 'status',
+          description: 'Show status',
+          category: 'daemon' as CommandCategory,
+        },
       ]);
       const gen = new HelpGenerator(registry, { color: false });
 
@@ -98,7 +109,7 @@ describe('HelpGenerator', () => {
           subcommands: [
             makeCommand({ name: 'list', description: 'List agents' }),
           ],
-        }),
+        })
       );
       const gen = new HelpGenerator(registry, { color: false });
 
@@ -191,7 +202,12 @@ describe('HelpGenerator', () => {
         name: 'deploy',
         description: 'Deploy',
         arguments: [
-          { name: 'targets', description: 'Targets', required: true, variadic: true },
+          {
+            name: 'targets',
+            description: 'Targets',
+            required: true,
+            variadic: true,
+          },
         ],
       });
       const registry = createRegistryWithCommands([cmd]);
@@ -206,7 +222,11 @@ describe('HelpGenerator', () => {
         name: 'deploy',
         description: 'Deploy',
         options: [
-          { flags: '-e, --env <name>', description: 'Target environment', choices: ['dev', 'prod'] },
+          {
+            flags: '-e, --env <name>',
+            description: 'Target environment',
+            choices: ['dev', 'prod'],
+          },
           { flags: '--force', description: 'Force deploy', required: true },
         ],
       });
@@ -261,9 +281,7 @@ describe('HelpGenerator', () => {
       const cmd = makeCommand({
         name: 'deploy',
         description: 'Deploy',
-        options: [
-          { flags: '--force', description: 'Force' },
-        ],
+        options: [{ flags: '--force', description: 'Force' }],
       });
       const registry = createRegistryWithCommands([cmd]);
       const gen = new HelpGenerator(registry, { color: false });
@@ -277,7 +295,12 @@ describe('HelpGenerator', () => {
         name: 'serve',
         description: 'Start server',
         options: [
-          { flags: '-p, --port <number>', description: 'Port', defaultValue: 3000, envVar: 'PORT' },
+          {
+            flags: '-p, --port <number>',
+            description: 'Port',
+            defaultValue: 3000,
+            envVar: 'PORT',
+          },
         ],
       });
       const registry = createRegistryWithCommands([cmd]);
@@ -294,7 +317,11 @@ describe('HelpGenerator', () => {
   describe('generateMainHelp (markdown)', () => {
     it('should produce markdown with headings and table', () => {
       const registry = createRegistryWithCommands([
-        { name: 'deploy', description: 'Deploy app', category: 'daemon' as CommandCategory },
+        {
+          name: 'deploy',
+          description: 'Deploy app',
+          category: 'daemon' as CommandCategory,
+        },
       ]);
       const gen = new HelpGenerator(registry, { format: 'markdown' });
 

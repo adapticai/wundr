@@ -49,7 +49,7 @@ const MODEL_MAX_TOKENS: Record<string, number> = {
 const MODEL_COST_PER_MILLION: Record<string, number> = {
   'text-embedding-3-small': 0.02,
   'text-embedding-3-large': 0.13,
-  'text-embedding-ada-002': 0.10,
+  'text-embedding-ada-002': 0.1,
 };
 
 const MAX_BATCH_SIZE = 2048;
@@ -95,7 +95,10 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
     this.requestedDimensions = config.dimensions;
     this.dimensions = config.dimensions ?? MODEL_DIMENSIONS[this.model] ?? 1536;
     this.maxInputTokens = MODEL_MAX_TOKENS[this.model] ?? 8191;
-    this.baseUrl = (config.baseUrl ?? DEFAULT_OPENAI_BASE_URL).replace(/\/+$/, '');
+    this.baseUrl = (config.baseUrl ?? DEFAULT_OPENAI_BASE_URL).replace(
+      /\/+$/,
+      ''
+    );
     this.headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${config.apiKey}`,
@@ -108,12 +111,18 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
     this.costTracker = createCostTracker();
   }
 
-  async embedText(text: string, _options?: EmbedOptions): Promise<EmbeddingResult> {
+  async embedText(
+    text: string,
+    _options?: EmbedOptions
+  ): Promise<EmbeddingResult> {
     const results = await this.callApi([text]);
     return results[0]!;
   }
 
-  async embedBatch(texts: string[], _options?: EmbedOptions): Promise<EmbeddingResult[]> {
+  async embedBatch(
+    texts: string[],
+    _options?: EmbedOptions
+  ): Promise<EmbeddingResult[]> {
     if (texts.length === 0) {
       return [];
     }
@@ -139,7 +148,10 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
   // ==========================================================================
 
   private async callApi(input: string[]): Promise<EmbeddingResult[]> {
-    const totalTokens = input.reduce((sum, text) => sum + estimateTokens(text), 0);
+    const totalTokens = input.reduce(
+      (sum, text) => sum + estimateTokens(text),
+      0
+    );
 
     // Rate limit check with retry
     const maxRetries = PROVIDER_RATE_LIMITS.openai.maxRetries;
@@ -178,13 +190,15 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
             const retryDelay = backoffDelay(
               attempt,
               PROVIDER_RATE_LIMITS.openai.baseRetryDelayMs,
-              PROVIDER_RATE_LIMITS.openai.maxRetryDelayMs,
+              PROVIDER_RATE_LIMITS.openai.maxRetryDelayMs
             );
             await sleep(retryDelay);
             continue;
           }
 
-          throw new Error(`OpenAI embeddings failed: ${res.status} ${errorText}`);
+          throw new Error(
+            `OpenAI embeddings failed: ${res.status} ${errorText}`
+          );
         }
 
         const payload = (await res.json()) as {
@@ -200,10 +214,13 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
         this.costTracker.totalTokens += usageTokens;
         this.costTracker.totalRequests += 1;
         const costPerMillion = MODEL_COST_PER_MILLION[this.model] ?? 0.02;
-        this.costTracker.estimatedCostUsd += (usageTokens / 1_000_000) * costPerMillion;
+        this.costTracker.estimatedCostUsd +=
+          (usageTokens / 1_000_000) * costPerMillion;
 
         // Map results back in input order (API may return out of order)
-        const sorted = [...data].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+        const sorted = [...data].sort(
+          (a, b) => (a.index ?? 0) - (b.index ?? 0)
+        );
 
         this.initialized = true;
         retrying = false;
@@ -218,7 +235,7 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
           const retryDelay = backoffDelay(
             attempt,
             PROVIDER_RATE_LIMITS.openai.baseRetryDelayMs,
-            PROVIDER_RATE_LIMITS.openai.maxRetryDelayMs,
+            PROVIDER_RATE_LIMITS.openai.maxRetryDelayMs
           );
           await sleep(retryDelay);
           continue;
@@ -244,13 +261,13 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
  * 2. `OPENAI_API_KEY` environment variable
  */
 export function createOpenAIProvider(
-  config: EmbeddingProviderConfig,
+  config: EmbeddingProviderConfig
 ): OpenAIEmbeddingProvider {
   const apiKey = config.apiKey ?? process.env['OPENAI_API_KEY'];
   if (!apiKey) {
     throw new Error(
       'No API key found for OpenAI embeddings. ' +
-        'Set the OPENAI_API_KEY environment variable or pass apiKey in config.',
+        'Set the OPENAI_API_KEY environment variable or pass apiKey in config.'
     );
   }
 
@@ -285,5 +302,7 @@ function isRateLimitError(status: number, body: string): boolean {
 
 function isRetryableError(err: unknown): boolean {
   const message = err instanceof Error ? err.message : String(err);
-  return /(rate.?limit|too many requests|429|5\d\d|cloudflare|timeout|econnreset)/i.test(message);
+  return /(rate.?limit|too many requests|429|5\d\d|cloudflare|timeout|econnreset)/i.test(
+    message
+  );
 }

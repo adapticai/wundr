@@ -1,27 +1,37 @@
 # Wave 2 Analysis: Enhanced Metrics & Monitoring System
 
 ## Document ID: 26
+
 ## Status: Implementation Ready
+
 ## Priority: P1 (Critical Infrastructure)
 
 ---
 
 ## 1. Executive Summary
 
-The orchestrator daemon has a foundational Prometheus metrics layer (`monitoring/metrics.ts`, `monitoring/collector.ts`, `monitoring/endpoint.ts`) that covers session counts, token usage, message latency, tool invocations, federation delegations, node load, errors, and budget utilization. However, the system lacks several critical observability capabilities:
+The orchestrator daemon has a foundational Prometheus metrics layer (`monitoring/metrics.ts`,
+`monitoring/collector.ts`, `monitoring/endpoint.ts`) that covers session counts, token usage,
+message latency, tool invocations, federation delegations, node load, errors, and budget
+utilization. However, the system lacks several critical observability capabilities:
 
-- **Structured logging** -- the existing `Logger` class writes unstructured console output with no correlation IDs
-- **Distributed tracing** -- no trace/span propagation across agent boundaries, sessions, or WebSocket messages
-- **Agent lifecycle metrics** -- spawned/running/completed/failed states are tracked in `DaemonMetrics` (the internal type) but not exposed to Prometheus
+- **Structured logging** -- the existing `Logger` class writes unstructured console output with no
+  correlation IDs
+- **Distributed tracing** -- no trace/span propagation across agent boundaries, sessions, or
+  WebSocket messages
+- **Agent lifecycle metrics** -- spawned/running/completed/failed states are tracked in
+  `DaemonMetrics` (the internal type) but not exposed to Prometheus
 - **Memory system metrics** -- no counters for entries, searches, cache hits, or compaction events
 - **WebSocket metrics** -- connections, messages, and errors are logged but not metered
 - **Model routing metrics** -- provider, model, latency, and cost are not observable
 - **Queue depth** -- the TODO in `getStatus()` (`queuedTasks: 0`) has no backing metric
 - **System resource metrics** -- process memory, CPU, and file descriptor counts are not collected
-- **Health checks** -- the endpoint exists but only checks redis/database/federation; subsystem health from `getStatus()` is not surfaced
+- **Health checks** -- the endpoint exists but only checks redis/database/federation; subsystem
+  health from `getStatus()` is not surfaced
 - **Alerting rules** -- no configurable threshold definitions beyond budget alerts
 
-This document designs an enhanced monitoring system that fills every gap above while maintaining backward compatibility with the existing `prom-client` integration.
+This document designs an enhanced monitoring system that fills every gap above while maintaining
+backward compatibility with the existing `prom-client` integration.
 
 ---
 
@@ -29,16 +39,16 @@ This document designs an enhanced monitoring system that fills every gap above w
 
 ### 2.1 Existing Prometheus Metrics (`monitoring/metrics.ts`)
 
-| Metric Name | Type | Labels | Status |
-|---|---|---|---|
-| `orchestrator_sessions_active` | Gauge | orchestrator_id, session_type | Working |
-| `orchestrator_tokens_used_total` | Counter | orchestrator_id, model | Working |
-| `orchestrator_message_latency_seconds` | Histogram | orchestrator_id | Working |
-| `orchestrator_tool_invocations_total` | Counter | orchestrator_id, tool_name, status | Working |
-| `orchestrator_federation_delegations_total` | Counter | from/to_orchestrator, status | Working |
-| `orchestrator_node_load` | Gauge | node_id | Working |
-| `orchestrator_errors_total` | Counter | orchestrator_id, error_type | Working |
-| `orchestrator_budget_utilization_percent` | Gauge | orchestrator_id, period | Working |
+| Metric Name                                 | Type      | Labels                             | Status  |
+| ------------------------------------------- | --------- | ---------------------------------- | ------- |
+| `orchestrator_sessions_active`              | Gauge     | orchestrator_id, session_type      | Working |
+| `orchestrator_tokens_used_total`            | Counter   | orchestrator_id, model             | Working |
+| `orchestrator_message_latency_seconds`      | Histogram | orchestrator_id                    | Working |
+| `orchestrator_tool_invocations_total`       | Counter   | orchestrator_id, tool_name, status | Working |
+| `orchestrator_federation_delegations_total` | Counter   | from/to_orchestrator, status       | Working |
+| `orchestrator_node_load`                    | Gauge     | node_id                            | Working |
+| `orchestrator_errors_total`                 | Counter   | orchestrator_id, error_type        | Working |
+| `orchestrator_budget_utilization_percent`   | Gauge     | orchestrator_id, period            | Working |
 
 ### 2.2 Existing Logger (`utils/logger.ts`)
 
@@ -55,7 +65,9 @@ This document designs an enhanced monitoring system that fills every gap above w
 
 ### 2.4 OpenClaw Patterns
 
-OpenClaw uses `pino`-style structured logging via `getChildLogger({ module, runId })` with fields like `connectionId`, `reconnectAttempts`, `messagesHandled`, `uptimeMs`. The Discord gateway attaches event-based metrics logging. These patterns inform our structured logging design.
+OpenClaw uses `pino`-style structured logging via `getChildLogger({ module, runId })` with fields
+like `connectionId`, `reconnectAttempts`, `messagesHandled`, `uptimeMs`. The Discord gateway
+attaches event-based metrics logging. These patterns inform our structured logging design.
 
 ---
 
@@ -63,7 +75,8 @@ OpenClaw uses `pino`-style structured logging via `getChildLogger({ module, runI
 
 ### 3.1 New Prometheus Metrics
 
-All new metrics use the `wundr_` prefix to distinguish from the existing `orchestrator_` metrics, which remain for backward compatibility.
+All new metrics use the `wundr_` prefix to distinguish from the existing `orchestrator_` metrics,
+which remain for backward compatibility.
 
 #### Agent Lifecycle Metrics
 
@@ -170,7 +183,8 @@ MetricsRegistry (existing, backward-compatible)
        +-- SystemMetrics
 ```
 
-The `EnhancedMetricsRegistry` creates all new metrics on a shared `prom-client` `Registry` instance, allowing the existing `/metrics` endpoint to serve everything.
+The `EnhancedMetricsRegistry` creates all new metrics on a shared `prom-client` `Registry` instance,
+allowing the existing `/metrics` endpoint to serve everything.
 
 ---
 
@@ -178,21 +192,22 @@ The `EnhancedMetricsRegistry` creates all new metrics on a shared `prom-client` 
 
 ### 4.1 Logger Architecture
 
-Replace the existing `Logger` class with `StructuredLogger` that outputs JSON logs with correlation IDs while maintaining the same call-site API.
+Replace the existing `Logger` class with `StructuredLogger` that outputs JSON logs with correlation
+IDs while maintaining the same call-site API.
 
 ```typescript
 interface LogEntry {
-  timestamp: string;          // ISO 8601
+  timestamp: string; // ISO 8601
   level: 'debug' | 'info' | 'warn' | 'error';
   message: string;
-  component: string;          // Logger name (e.g., 'SessionExecutor')
-  traceId?: string;           // Distributed trace ID
-  spanId?: string;            // Span within the trace
-  parentSpanId?: string;      // Parent span
-  sessionId?: string;         // Active session
-  orchestratorId?: string;    // Owning orchestrator
-  correlationId?: string;     // Request correlation
-  duration?: number;          // Operation duration in ms
+  component: string; // Logger name (e.g., 'SessionExecutor')
+  traceId?: string; // Distributed trace ID
+  spanId?: string; // Span within the trace
+  parentSpanId?: string; // Parent span
+  sessionId?: string; // Active session
+  orchestratorId?: string; // Owning orchestrator
+  correlationId?: string; // Request correlation
+  duration?: number; // Operation duration in ms
   error?: {
     message: string;
     stack?: string;
@@ -204,10 +219,10 @@ interface LogEntry {
 
 ### 4.2 Log Output Modes
 
-| Mode | Format | Use Case |
-|---|---|---|
-| `json` | One JSON object per line | Production (log aggregation) |
-| `text` | `[timestamp] [LEVEL] [component] message` | Development / TTY |
+| Mode   | Format                                    | Use Case                     |
+| ------ | ----------------------------------------- | ---------------------------- |
+| `json` | One JSON object per line                  | Production (log aggregation) |
+| `text` | `[timestamp] [LEVEL] [component] message` | Development / TTY            |
 
 Selected via `LOG_FORMAT` environment variable (already in config schema).
 
@@ -234,22 +249,22 @@ child.info('Session started');
 
 ```typescript
 interface TraceContext {
-  traceId: string;      // 32-char hex, propagated across boundaries
-  spanId: string;       // 16-char hex, unique per operation
+  traceId: string; // 32-char hex, propagated across boundaries
+  spanId: string; // 16-char hex, unique per operation
   parentSpanId?: string;
-  baggage: Map<string, string>;  // Propagated key-value pairs
+  baggage: Map<string, string>; // Propagated key-value pairs
 }
 ```
 
 ### 5.2 Propagation Points
 
-| Boundary | Mechanism |
-|---|---|
-| WebSocket message -> session | `x-trace-id` field in WSMessage payload |
-| Session -> tool execution | TraceContext passed through ToolExecutor |
-| Session -> LLM call | TraceContext in request metadata |
-| Orchestrator -> federation | `x-trace-id` header in delegation request |
-| HTTP metrics endpoint | `X-Trace-Id` response header |
+| Boundary                     | Mechanism                                 |
+| ---------------------------- | ----------------------------------------- |
+| WebSocket message -> session | `x-trace-id` field in WSMessage payload   |
+| Session -> tool execution    | TraceContext passed through ToolExecutor  |
+| Session -> LLM call          | TraceContext in request metadata          |
+| Orchestrator -> federation   | `x-trace-id` header in delegation request |
+| HTTP metrics endpoint        | `X-Trace-Id` response header              |
 
 ### 5.3 Span Lifecycle
 
@@ -271,7 +286,9 @@ interface TraceContext {
 
 ### 5.4 W3C Trace Context Compatibility
 
-The trace ID format follows W3C Trace Context (32 hex chars for trace ID, 16 hex chars for span ID) so traces can be exported to OpenTelemetry-compatible backends (Jaeger, Zipkin, Datadog) without conversion.
+The trace ID format follows W3C Trace Context (32 hex chars for trace ID, 16 hex chars for span ID)
+so traces can be exported to OpenTelemetry-compatible backends (Jaeger, Zipkin, Datadog) without
+conversion.
 
 ---
 
@@ -283,9 +300,9 @@ The trace ID format follows W3C Trace Context (32 hex chars for trace ID, 16 hex
 interface ComponentHealth {
   name: string;
   status: 'healthy' | 'degraded' | 'unhealthy';
-  latency?: number;          // Check duration in ms
+  latency?: number; // Check duration in ms
   message?: string;
-  lastCheck: string;         // ISO 8601
+  lastCheck: string; // ISO 8601
   metadata?: Record<string, unknown>;
 }
 
@@ -316,7 +333,8 @@ interface EnhancedHealthResponse {
 
 ### 6.2 Health Check Integration
 
-The enhanced health endpoint integrates with `OrchestratorDaemon.getStatus()` to surface the subsystem status already tracked there, plus adds latency-checked probes for external dependencies.
+The enhanced health endpoint integrates with `OrchestratorDaemon.getStatus()` to surface the
+subsystem status already tracked there, plus adds latency-checked probes for external dependencies.
 
 ---
 
@@ -328,10 +346,10 @@ The enhanced health endpoint integrates with `OrchestratorDaemon.getStatus()` to
 interface AlertRule {
   name: string;
   description: string;
-  metric: string;               // Prometheus metric name
+  metric: string; // Prometheus metric name
   condition: 'gt' | 'lt' | 'eq' | 'gte' | 'lte';
   threshold: number;
-  duration: number;             // Seconds the condition must hold
+  duration: number; // Seconds the condition must hold
   severity: 'info' | 'warning' | 'critical';
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
@@ -346,20 +364,21 @@ interface AlertAction {
 
 ### 7.2 Default Alert Rules
 
-| Rule | Metric | Condition | Threshold | Severity |
-|---|---|---|---|---|
-| High Error Rate | `wundr_agent_failed_total` / `wundr_agent_spawned_total` | > | 0.1 (10%) | warning |
-| Session Duration | `wundr_session_duration_seconds` p99 | > | 300s | warning |
-| Memory Pressure | `wundr_process_memory_heap_bytes` | > | 80% of max | critical |
-| WebSocket Errors | `wundr_ws_errors_total` rate | > | 10/min | warning |
-| Budget Exhaustion | `orchestrator_budget_utilization_percent` | > | 90 | critical |
-| LLM Latency | `wundr_model_request_duration_seconds` p95 | > | 30s | warning |
-| Queue Backlog | `wundr_queue_depth` | > | 100 | warning |
-| Tool Failures | `wundr_tool_errors_total` rate | > | 5/min | warning |
+| Rule              | Metric                                                   | Condition | Threshold  | Severity |
+| ----------------- | -------------------------------------------------------- | --------- | ---------- | -------- |
+| High Error Rate   | `wundr_agent_failed_total` / `wundr_agent_spawned_total` | >         | 0.1 (10%)  | warning  |
+| Session Duration  | `wundr_session_duration_seconds` p99                     | >         | 300s       | warning  |
+| Memory Pressure   | `wundr_process_memory_heap_bytes`                        | >         | 80% of max | critical |
+| WebSocket Errors  | `wundr_ws_errors_total` rate                             | >         | 10/min     | warning  |
+| Budget Exhaustion | `orchestrator_budget_utilization_percent`                | >         | 90         | critical |
+| LLM Latency       | `wundr_model_request_duration_seconds` p95               | >         | 30s        | warning  |
+| Queue Backlog     | `wundr_queue_depth`                                      | >         | 100        | warning  |
+| Tool Failures     | `wundr_tool_errors_total` rate                           | >         | 5/min      | warning  |
 
 ### 7.3 Prometheus Alertmanager Export
 
-Alert rules are exported as Prometheus recording/alerting rules in YAML format compatible with Alertmanager:
+Alert rules are exported as Prometheus recording/alerting rules in YAML format compatible with
+Alertmanager:
 
 ```yaml
 groups:
@@ -371,7 +390,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Agent failure rate exceeds 10%"
+          summary: 'Agent failure rate exceeds 10%'
 ```
 
 ---
@@ -425,22 +444,23 @@ A JSON dashboard model targeting Grafana 10+ is provided alongside the implement
 
 ## 10. Integration Points
 
-| Component | Integration | Mechanism |
-|---|---|---|
-| `OrchestratorDaemon` | Agent lifecycle metrics | Emit on spawn/complete/fail events |
-| `SessionExecutor` | Session metrics, tracing | Wrap `executeSession` with trace spans |
-| `SessionManager` | Session count gauge | Update on spawn/stop |
-| `MemoryManager` | Memory metrics | Instrument store/search/compact |
-| `ToolExecutor` | Tool metrics | Wrap `executeToolCalls` |
-| `WebSocketServer` | WS metrics | Instrument connection/message handlers |
-| `LLM Client` | Model routing metrics | Wrap `chat()` calls |
-| `TokenBudgetTracker` | Budget metrics | Forward threshold events |
+| Component            | Integration              | Mechanism                              |
+| -------------------- | ------------------------ | -------------------------------------- |
+| `OrchestratorDaemon` | Agent lifecycle metrics  | Emit on spawn/complete/fail events     |
+| `SessionExecutor`    | Session metrics, tracing | Wrap `executeSession` with trace spans |
+| `SessionManager`     | Session count gauge      | Update on spawn/stop                   |
+| `MemoryManager`      | Memory metrics           | Instrument store/search/compact        |
+| `ToolExecutor`       | Tool metrics             | Wrap `executeToolCalls`                |
+| `WebSocketServer`    | WS metrics               | Instrument connection/message handlers |
+| `LLM Client`         | Model routing metrics    | Wrap `chat()` calls                    |
+| `TokenBudgetTracker` | Budget metrics           | Forward threshold events               |
 
 ---
 
 ## 11. Configuration
 
-All new monitoring features are controlled via environment variables (matching existing config schema patterns):
+All new monitoring features are controlled via environment variables (matching existing config
+schema patterns):
 
 ```env
 # Structured Logging
@@ -469,10 +489,10 @@ ALERTING_EVALUATION_INTERVAL=30   # seconds
 
 ## 12. Risk Assessment
 
-| Risk | Likelihood | Impact | Mitigation |
-|---|---|---|---|
-| Metric cardinality explosion | Medium | High | Bound label values; document allowed label sets |
-| Logger performance overhead | Low | Medium | Async writes; configurable log level |
-| Trace context memory leak | Low | Medium | Auto-expire spans after configurable TTL |
-| Breaking existing metrics consumers | Low | High | All new metrics use `wundr_` prefix; existing `orchestrator_` metrics unchanged |
-| Health check false positives | Medium | Low | Configurable timeouts; degraded vs unhealthy distinction |
+| Risk                                | Likelihood | Impact | Mitigation                                                                      |
+| ----------------------------------- | ---------- | ------ | ------------------------------------------------------------------------------- |
+| Metric cardinality explosion        | Medium     | High   | Bound label values; document allowed label sets                                 |
+| Logger performance overhead         | Low        | Medium | Async writes; configurable log level                                            |
+| Trace context memory leak           | Low        | Medium | Auto-expire spans after configurable TTL                                        |
+| Breaking existing metrics consumers | Low        | High   | All new metrics use `wundr_` prefix; existing `orchestrator_` metrics unchanged |
+| Health check false positives        | Medium     | Low    | Configurable timeouts; degraded vs unhealthy distinction                        |

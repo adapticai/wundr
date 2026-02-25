@@ -68,7 +68,7 @@ export class ProfileValidator {
     const warnings: string[] = [];
     const errors: string[] = [];
 
-    const toolNames = new Set(profile.tools.map((t) => t.name));
+    const toolNames = new Set(profile.tools.map(t => t.name));
 
     for (const tool of profile.tools) {
       const resolved = this.adapter.resolveToolCommand(tool);
@@ -80,7 +80,9 @@ export class ProfileValidator {
           expectedVersion: tool.version,
           installed: false,
           versionMatch: false,
-          message: resolved.unsupportedReason || `${tool.displayName} is not supported on this platform`,
+          message:
+            resolved.unsupportedReason ||
+            `${tool.displayName} is not supported on this platform`,
         };
 
         if (tool.required) {
@@ -120,7 +122,8 @@ export class ProfileValidator {
         const versionMatch =
           !tool.version ||
           tool.version === 'latest' ||
-          (installedVersion !== null && installedVersion.includes(tool.version));
+          (installedVersion !== null &&
+            installedVersion.includes(tool.version));
 
         passed.push({
           toolName: tool.name,
@@ -231,9 +234,7 @@ export class ProfileValidator {
           );
         } else {
           passed.push(entry);
-          warnings.push(
-            `${tool.displayName}: optional tool version mismatch`
-          );
+          warnings.push(`${tool.displayName}: optional tool version mismatch`);
         }
       } else {
         if (tool.required) {
@@ -344,8 +345,8 @@ export class ProfileValidator {
       newVersion?: string;
     }>;
   } {
-    const toolsA = new Map(profileA.tools.map((t) => [t.name, t]));
-    const toolsB = new Map(profileB.tools.map((t) => [t.name, t]));
+    const toolsA = new Map(profileA.tools.map(t => [t.name, t]));
+    const toolsB = new Map(profileB.tools.map(t => [t.name, t]));
 
     const added: ToolSpec[] = [];
     const removed: ToolSpec[] = [];
@@ -391,9 +392,7 @@ export class ProfileValidator {
   /**
    * Take a snapshot of the current system state before applying a profile.
    */
-  async takeSnapshot(
-    profile: ComposedProfile
-  ): Promise<ProfileSnapshot> {
+  async takeSnapshot(profile: ComposedProfile): Promise<ProfileSnapshot> {
     logger.info('Taking system snapshot for rollback...');
 
     await fs.mkdir(this.snapshotsDir, { recursive: true });
@@ -430,10 +429,7 @@ export class ProfileValidator {
     };
 
     // Persist to disk
-    const snapshotPath = path.join(
-      this.snapshotsDir,
-      `${snapshot.id}.json`
-    );
+    const snapshotPath = path.join(this.snapshotsDir, `${snapshot.id}.json`);
     await fs.writeFile(snapshotPath, JSON.stringify(snapshot, null, 2));
 
     logger.info(
@@ -480,10 +476,7 @@ export class ProfileValidator {
    * Load a specific snapshot by ID.
    */
   async loadSnapshot(snapshotId: string): Promise<ProfileSnapshot | null> {
-    const snapshotPath = path.join(
-      this.snapshotsDir,
-      `${snapshotId}.json`
-    );
+    const snapshotPath = path.join(this.snapshotsDir, `${snapshotId}.json`);
     try {
       const content = await fs.readFile(snapshotPath, 'utf-8');
       return JSON.parse(content) as ProfileSnapshot;
@@ -496,10 +489,7 @@ export class ProfileValidator {
    * Delete a snapshot by ID.
    */
   async deleteSnapshot(snapshotId: string): Promise<boolean> {
-    const snapshotPath = path.join(
-      this.snapshotsDir,
-      `${snapshotId}.json`
-    );
+    const snapshotPath = path.join(this.snapshotsDir, `${snapshotId}.json`);
     try {
       await fs.unlink(snapshotPath);
       logger.info(`Deleted snapshot: ${snapshotId}`);
@@ -616,10 +606,7 @@ export class ProfileValidator {
   /**
    * Check if a version bump is a major version change.
    */
-  private isMajorVersionBump(
-    oldVersion: string,
-    newVersion: string
-  ): boolean {
+  private isMajorVersionBump(oldVersion: string, newVersion: string): boolean {
     const oldMajor = parseInt(oldVersion.split('.')[0], 10);
     const newMajor = parseInt(newVersion.split('.')[0], 10);
     return newMajor > oldMajor;

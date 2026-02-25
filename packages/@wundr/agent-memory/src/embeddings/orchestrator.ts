@@ -70,7 +70,9 @@ export interface OrchestratorConfig {
 /**
  * Factory function type for creating a provider from config.
  */
-export type ProviderFactory = (config: EmbeddingProviderConfig) => EmbeddingProvider;
+export type ProviderFactory = (
+  config: EmbeddingProviderConfig
+) => EmbeddingProvider;
 
 /**
  * Orchestrator status for observability.
@@ -98,7 +100,10 @@ export interface OrchestratorStatus {
 export class EmbeddingOrchestrator implements EmbeddingProvider {
   // Provider identity -- delegates to the active provider
   get id(): EmbeddingProviderId {
-    return this.activeProvider?.id ?? this.primaryConfig.provider as EmbeddingProviderId;
+    return (
+      this.activeProvider?.id ??
+      (this.primaryConfig.provider as EmbeddingProviderId)
+    );
   }
 
   get model(): string {
@@ -106,7 +111,9 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
   }
 
   get dimensions(): number {
-    return this.activeProvider?.dimensions ?? this.primaryConfig.dimensions ?? 0;
+    return (
+      this.activeProvider?.dimensions ?? this.primaryConfig.dimensions ?? 0
+    );
   }
 
   get maxBatchSize(): number {
@@ -122,7 +129,10 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
   private readonly primaryConfig: EmbeddingProviderConfig;
   private readonly providerFactory: ProviderFactory;
   private readonly failoverChain: EmbeddingProviderId[];
-  private readonly failoverProviders: Map<EmbeddingProviderId, EmbeddingProvider> = new Map();
+  private readonly failoverProviders: Map<
+    EmbeddingProviderId,
+    EmbeddingProvider
+  > = new Map();
 
   // Subsystems
   private readonly cache: InMemoryEmbeddingCache;
@@ -132,10 +142,7 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
   private readonly shouldValidateDimensions: boolean;
   readonly costTracker: CostTracker;
 
-  constructor(
-    config: OrchestratorConfig,
-    providerFactory: ProviderFactory,
-  ) {
+  constructor(config: OrchestratorConfig, providerFactory: ProviderFactory) {
     this.primaryConfig = config.primary;
     this.providerFactory = providerFactory;
     this.failoverChain = config.failoverChain ?? [];
@@ -151,7 +158,10 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
   // EmbeddingProvider Implementation
   // ==========================================================================
 
-  async embedText(text: string, options?: EmbedOptions): Promise<EmbeddingResult> {
+  async embedText(
+    text: string,
+    options?: EmbedOptions
+  ): Promise<EmbeddingResult> {
     const provider = await this.resolveProvider();
 
     // Check cache
@@ -163,14 +173,18 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
 
     // Check if text needs chunking
     const tokenCount = estimateTokens(text);
-    if (this.chunkingConfig && this.chunkingConfig.strategy !== 'none' && tokenCount > provider.maxInputTokens) {
+    if (
+      this.chunkingConfig &&
+      this.chunkingConfig.strategy !== 'none' &&
+      tokenCount > provider.maxInputTokens
+    ) {
       return this.embedWithChunking(text, provider, options);
     }
 
     // Direct embedding with failover
     const result = await this.callWithFailover(
-      async (p) => p.embedText(text, options),
-      provider,
+      async p => p.embedText(text, options),
+      provider
     );
 
     // Validate dimensions
@@ -183,7 +197,10 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
     return result;
   }
 
-  async embedBatch(texts: string[], options?: EmbedOptions): Promise<EmbeddingResult[]> {
+  async embedBatch(
+    texts: string[],
+    options?: EmbedOptions
+  ): Promise<EmbeddingResult[]> {
     if (texts.length === 0) {
       return [];
     }
@@ -193,7 +210,9 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
     let cacheHits = 0;
 
     // Resolve cache hits
-    const results: Array<EmbeddingResult | null> = new Array(texts.length).fill(null);
+    const results: Array<EmbeddingResult | null> = new Array(texts.length).fill(
+      null
+    );
     const uncachedIndices: number[] = [];
 
     for (let i = 0; i < texts.length; i++) {
@@ -207,14 +226,21 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
       }
     }
 
-    this.emitProgress(provider.id, texts.length, cacheHits, cacheHits, startTime);
+    this.emitProgress(
+      provider.id,
+      texts.length,
+      cacheHits,
+      cacheHits,
+      startTime
+    );
 
     // Embed uncached texts
     if (uncachedIndices.length > 0) {
-      const uncachedTexts = uncachedIndices.map((i) => texts[i]!);
+      const uncachedTexts = uncachedIndices.map(i => texts[i]!);
 
       // Check for texts that need chunking
-      const needsChunking = this.chunkingConfig && this.chunkingConfig.strategy !== 'none';
+      const needsChunking =
+        this.chunkingConfig && this.chunkingConfig.strategy !== 'none';
       const batchTexts: string[] = [];
       const chunkMap: Map<number, TextChunk[]> = new Map();
 
@@ -222,7 +248,11 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
         const txt = uncachedTexts[i]!;
         const tokenCount = estimateTokens(txt);
         if (needsChunking && tokenCount > provider.maxInputTokens) {
-          const chunks = chunkText(txt, this.chunkingConfig, provider.maxInputTokens);
+          const chunks = chunkText(
+            txt,
+            this.chunkingConfig,
+            provider.maxInputTokens
+          );
           chunkMap.set(i, chunks);
           for (const chunk of chunks) {
             batchTexts.push(chunk.text);
@@ -234,8 +264,8 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
 
       // Embed all texts in one batch via the provider
       const batchResults = await this.callWithFailover(
-        async (p) => p.embedBatch(batchTexts, options),
-        provider,
+        async p => p.embedBatch(batchTexts, options),
+        provider
       );
 
       // Map results back to original indices
@@ -256,19 +286,32 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
             }
             batchIdx++;
           }
-          const pooled = normalizeEmbedding(meanPoolEmbeddings(chunkEmbeddings, chunkWeights));
+          const pooled = normalizeEmbedding(
+            meanPoolEmbeddings(chunkEmbeddings, chunkWeights)
+          );
           const totalTokens = chunks.reduce((sum, c) => sum + c.tokenCount, 0);
-          const result: EmbeddingResult = { embedding: pooled, tokenCount: totalTokens };
+          const result: EmbeddingResult = {
+            embedding: pooled,
+            tokenCount: totalTokens,
+          };
           results[originalIndex] = result;
 
           // Cache pooled result
-          const cacheKey = computeCacheKey(uncachedTexts[i]!, provider.id, provider.model);
+          const cacheKey = computeCacheKey(
+            uncachedTexts[i]!,
+            provider.id,
+            provider.model
+          );
           this.cache.set(cacheKey, result);
         } else {
           const br = batchResults[batchIdx];
           if (br) {
             results[originalIndex] = br;
-            const cacheKey = computeCacheKey(uncachedTexts[i]!, provider.id, provider.model);
+            const cacheKey = computeCacheKey(
+              uncachedTexts[i]!,
+              provider.id,
+              provider.model
+            );
             this.cache.set(cacheKey, br);
           }
           batchIdx++;
@@ -280,24 +323,34 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
           texts.length,
           cacheHits + i + 1,
           cacheHits,
-          startTime,
+          startTime
         );
       }
     }
 
     // Validate dimensions on first non-null result
     if (this.shouldValidateDimensions) {
-      const firstResult = results.find((r) => r && r.embedding.length > 0);
+      const firstResult = results.find(r => r && r.embedding.length > 0);
       if (firstResult && provider.dimensions > 0) {
-        validateDimensions(firstResult.embedding, provider.dimensions, provider.id);
+        validateDimensions(
+          firstResult.embedding,
+          provider.dimensions,
+          provider.id
+        );
       }
     }
 
     // Final progress
-    this.emitProgress(provider.id, texts.length, texts.length, cacheHits, startTime);
+    this.emitProgress(
+      provider.id,
+      texts.length,
+      texts.length,
+      cacheHits,
+      startTime
+    );
 
     // Convert nulls to empty results (should not happen in practice)
-    return results.map((r) => r ?? { embedding: [], tokenCount: 0 });
+    return results.map(r => r ?? { embedding: [], tokenCount: 0 });
   }
 
   async dispose(): Promise<void> {
@@ -322,7 +375,9 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
    */
   getStatus(): OrchestratorStatus {
     return {
-      activeProvider: this.activeProvider?.id ?? (this.primaryConfig.provider as EmbeddingProviderId),
+      activeProvider:
+        this.activeProvider?.id ??
+        (this.primaryConfig.provider as EmbeddingProviderId),
       model: this.model,
       dimensions: this.dimensions,
       cache: this.cache.getStats(),
@@ -358,7 +413,7 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
    */
   async benchmark(
     testTexts?: string[],
-    iterations?: number,
+    iterations?: number
   ): Promise<BenchmarkResult[]> {
     const texts = testTexts ?? [
       'The quick brown fox jumps over the lazy dog.',
@@ -369,7 +424,7 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
     const providerIds: EmbeddingProviderId[] = [
       this.primaryConfig.provider === 'auto'
         ? 'openai'
-        : this.primaryConfig.provider as EmbeddingProviderId,
+        : (this.primaryConfig.provider as EmbeddingProviderId),
       ...this.failoverChain,
     ];
 
@@ -400,7 +455,9 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
           throughput: 0,
           costPerMillionTokens: 0,
           valid: false,
-          notes: [`Failed to create provider: ${err instanceof Error ? err.message : String(err)}`],
+          notes: [
+            `Failed to create provider: ${err instanceof Error ? err.message : String(err)}`,
+          ],
         });
         continue;
       }
@@ -419,12 +476,16 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
           if (i === 0) {
             firstDims = result.embedding.length;
             if (firstDims !== provider.dimensions && provider.dimensions > 0) {
-              notes.push(`Dimension mismatch: expected ${provider.dimensions}, got ${firstDims}`);
+              notes.push(
+                `Dimension mismatch: expected ${provider.dimensions}, got ${firstDims}`
+              );
               valid = false;
             }
           }
         } catch (err) {
-          notes.push(`Single embed error: ${err instanceof Error ? err.message : String(err)}`);
+          notes.push(
+            `Single embed error: ${err instanceof Error ? err.message : String(err)}`
+          );
           valid = false;
           break;
         }
@@ -438,7 +499,9 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
           await provider.embedBatch(texts);
           totalBatchMs += Date.now() - start;
         } catch (err) {
-          notes.push(`Batch embed error: ${err instanceof Error ? err.message : String(err)}`);
+          notes.push(
+            `Batch embed error: ${err instanceof Error ? err.message : String(err)}`
+          );
           valid = false;
           break;
         }
@@ -446,13 +509,16 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
 
       const avgSingleMs = iters > 0 ? totalSingleMs / iters : 0;
       const avgBatchMs = iters > 0 ? totalBatchMs / iters : 0;
-      const throughput = avgBatchMs > 0 ? (texts.length / avgBatchMs) * 1000 : 0;
+      const throughput =
+        avgBatchMs > 0 ? (texts.length / avgBatchMs) * 1000 : 0;
 
       // Estimate cost from the provider's cost tracker if available
-      const providerCost = (provider as { costTracker?: CostTracker }).costTracker;
+      const providerCost = (provider as { costTracker?: CostTracker })
+        .costTracker;
       const totalTokens = providerCost?.totalTokens ?? 0;
       const totalCost = providerCost?.estimatedCostUsd ?? 0;
-      const costPerMillion = totalTokens > 0 ? (totalCost / totalTokens) * 1_000_000 : 0;
+      const costPerMillion =
+        totalTokens > 0 ? (totalCost / totalTokens) * 1_000_000 : 0;
 
       results.push({
         providerId,
@@ -506,7 +572,9 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
   /**
    * Get or create a failover provider by ID.
    */
-  private getOrCreateFailoverProvider(providerId: EmbeddingProviderId): EmbeddingProvider {
+  private getOrCreateFailoverProvider(
+    providerId: EmbeddingProviderId
+  ): EmbeddingProvider {
     // Check if it's the active provider
     if (this.activeProvider && this.activeProvider.id === providerId) {
       return this.activeProvider;
@@ -535,7 +603,7 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
    */
   private async callWithFailover<T>(
     operation: (provider: EmbeddingProvider) => Promise<T>,
-    primaryProvider: EmbeddingProvider,
+    primaryProvider: EmbeddingProvider
   ): Promise<T> {
     // Try primary first (if healthy)
     if (this.healthMonitor.isHealthy(primaryProvider.id)) {
@@ -549,7 +617,11 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
       } catch (err) {
         const latencyMs = Date.now() - startMs;
         const message = err instanceof Error ? err.message : String(err);
-        this.healthMonitor.recordFailure(primaryProvider.id, latencyMs, message);
+        this.healthMonitor.recordFailure(
+          primaryProvider.id,
+          latencyMs,
+          message
+        );
 
         // If no failover chain, throw immediately
         if (this.failoverChain.length === 0) {
@@ -585,7 +657,7 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
 
     throw new Error(
       `All embedding providers failed.\n` +
-        errors.map((e) => `  - ${e}`).join('\n'),
+        errors.map(e => `  - ${e}`).join('\n')
     );
   }
 
@@ -600,29 +672,33 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
   private async embedWithChunking(
     text: string,
     provider: EmbeddingProvider,
-    options?: EmbedOptions,
+    options?: EmbedOptions
   ): Promise<EmbeddingResult> {
-    const chunks = chunkText(text, this.chunkingConfig, provider.maxInputTokens);
+    const chunks = chunkText(
+      text,
+      this.chunkingConfig,
+      provider.maxInputTokens
+    );
     if (chunks.length === 0) {
       return { embedding: [], tokenCount: 0 };
     }
     if (chunks.length === 1) {
       return this.callWithFailover(
-        async (p) => p.embedText(chunks[0]!.text, options),
-        provider,
+        async p => p.embedText(chunks[0]!.text, options),
+        provider
       );
     }
 
     // Embed all chunks as a batch
-    const chunkTexts = chunks.map((c) => c.text);
+    const chunkTexts = chunks.map(c => c.text);
     const results = await this.callWithFailover(
-      async (p) => p.embedBatch(chunkTexts, options),
-      provider,
+      async p => p.embedBatch(chunkTexts, options),
+      provider
     );
 
     // Mean-pool with token-count weighting
-    const embeddings = results.map((r) => r.embedding);
-    const weights = chunks.map((c) => c.tokenCount);
+    const embeddings = results.map(r => r.embedding);
+    const weights = chunks.map(c => c.tokenCount);
     const pooled = normalizeEmbedding(meanPoolEmbeddings(embeddings, weights));
     const totalTokens = results.reduce((sum, r) => sum + r.tokenCount, 0);
 
@@ -637,7 +713,8 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
    * Aggregate cost from a provider's cost tracker into the orchestrator's tracker.
    */
   private trackCost(provider: EmbeddingProvider): void {
-    const providerCost = (provider as { costTracker?: CostTracker }).costTracker;
+    const providerCost = (provider as { costTracker?: CostTracker })
+      .costTracker;
     if (providerCost) {
       this.costTracker.totalTokens = providerCost.totalTokens;
       this.costTracker.totalRequests = providerCost.totalRequests;
@@ -654,7 +731,7 @@ export class EmbeddingOrchestrator implements EmbeddingProvider {
     totalTexts: number,
     completedTexts: number,
     cacheHits: number,
-    startTime: number,
+    startTime: number
   ): void {
     if (!this.onProgress) {
       return;

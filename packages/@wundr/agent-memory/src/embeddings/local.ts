@@ -78,7 +78,12 @@ interface LocalBackend {
  * Create a transformers.js backend that lazy-loads the model on first use.
  */
 function createTransformersBackend(modelName: string): LocalBackend {
-  let pipeline: ((text: string, options?: Record<string, unknown>) => Promise<{ data: Float32Array }>) | null = null;
+  let pipeline:
+    | ((
+        text: string,
+        options?: Record<string, unknown>
+      ) => Promise<{ data: Float32Array }>)
+    | null = null;
   let resolvedDimensions = MODEL_DIMENSIONS[modelName] ?? DEFAULT_DIMENSIONS;
 
   const ensurePipeline = async () => {
@@ -90,16 +95,20 @@ function createTransformersBackend(modelName: string): LocalBackend {
       // Dynamic import to avoid bundling transformers.js when not used
       // @ts-expect-error -- optional peer dependency
       // eslint-disable-next-line import/no-unresolved
-      const { pipeline: createPipeline } = await import('@huggingface/transformers');
+      const { pipeline: createPipeline } =
+        await import('@huggingface/transformers');
       pipeline = (await createPipeline('feature-extraction', modelName, {
         quantized: true,
-      })) as (text: string, options?: Record<string, unknown>) => Promise<{ data: Float32Array }>;
+      })) as (
+        text: string,
+        options?: Record<string, unknown>
+      ) => Promise<{ data: Float32Array }>;
       return pipeline;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       throw new Error(
         `Failed to load transformers.js model "${modelName}": ${message}. ` +
-          'Install @huggingface/transformers: npm install @huggingface/transformers',
+          'Install @huggingface/transformers: npm install @huggingface/transformers'
       );
     }
   };
@@ -131,8 +140,13 @@ function createTransformersBackend(modelName: string): LocalBackend {
  * Create a node-llama-cpp backend for GGUF model files.
  * Lazy-loads the model on first use.
  */
-function createLlamaCppBackend(modelPath: string, modelCacheDir?: string): LocalBackend {
-  let context: { getEmbeddingFor: (text: string) => Promise<{ vector: Float32Array }> } | null = null;
+function createLlamaCppBackend(
+  modelPath: string,
+  modelCacheDir?: string
+): LocalBackend {
+  let context: {
+    getEmbeddingFor: (text: string) => Promise<{ vector: Float32Array }>;
+  } | null = null;
   let _model: { close?: () => void } | null = null;
   let _llamaInstance: { close?: () => void } | null = null;
   let resolvedDimensions = DEFAULT_DIMENSIONS;
@@ -145,10 +159,14 @@ function createLlamaCppBackend(modelPath: string, modelCacheDir?: string): Local
     try {
       // @ts-expect-error -- optional peer dependency
       // eslint-disable-next-line import/no-unresolved
-      const { getLlama, resolveModelFile, LlamaLogLevel } = await import('node-llama-cpp');
+      const { getLlama, resolveModelFile, LlamaLogLevel } =
+        await import('node-llama-cpp');
       const llama = await getLlama({ logLevel: LlamaLogLevel.error });
       _llamaInstance = llama as unknown as { close?: () => void };
-      const resolved = await resolveModelFile(modelPath, modelCacheDir || undefined);
+      const resolved = await resolveModelFile(
+        modelPath,
+        modelCacheDir || undefined
+      );
       const loadedModel = await llama.loadModel({ modelPath: resolved });
       _model = loadedModel as unknown as { close?: () => void };
       context = await loadedModel.createEmbeddingContext();
@@ -157,7 +175,7 @@ function createLlamaCppBackend(modelPath: string, modelCacheDir?: string): Local
       const message = err instanceof Error ? err.message : String(err);
       throw new Error(
         `Failed to load node-llama-cpp model "${modelPath}": ${message}. ` +
-          'Ensure node-llama-cpp is installed and the model file exists.',
+          'Ensure node-llama-cpp is installed and the model file exists.'
       );
     }
   };
@@ -208,10 +226,7 @@ export class LocalEmbeddingProvider implements EmbeddingProvider {
   private readonly backend: LocalBackend;
   readonly costTracker: CostTracker;
 
-  constructor(config: {
-    model: string;
-    backend: LocalBackend;
-  }) {
+  constructor(config: { model: string; backend: LocalBackend }) {
     this.model = config.model;
     this.backend = config.backend;
     this.costTracker = createCostTracker();
@@ -221,7 +236,10 @@ export class LocalEmbeddingProvider implements EmbeddingProvider {
     return this.backend.dimensions;
   }
 
-  async embedText(text: string, _options?: EmbedOptions): Promise<EmbeddingResult> {
+  async embedText(
+    text: string,
+    _options?: EmbedOptions
+  ): Promise<EmbeddingResult> {
     const vec = await this.backend.embed(text);
     return {
       embedding: normalizeEmbedding(vec),
@@ -229,7 +247,10 @@ export class LocalEmbeddingProvider implements EmbeddingProvider {
     };
   }
 
-  async embedBatch(texts: string[], _options?: EmbedOptions): Promise<EmbeddingResult[]> {
+  async embedBatch(
+    texts: string[],
+    _options?: EmbedOptions
+  ): Promise<EmbeddingResult[]> {
     if (texts.length === 0) {
       return [];
     }
@@ -277,7 +298,7 @@ function isGgufModel(modelPath: string): boolean {
  * The model itself is not loaded until the first embed call (lazy initialization).
  */
 export function createLocalProvider(
-  config: EmbeddingProviderConfig,
+  config: EmbeddingProviderConfig
 ): LocalEmbeddingProvider {
   const modelPath =
     config.model?.trim() ||

@@ -62,7 +62,8 @@ interface ProviderState {
  */
 export class HealthMonitor {
   private readonly config: HealthMonitorConfig;
-  private readonly providers: Map<EmbeddingProviderId, ProviderState> = new Map();
+  private readonly providers: Map<EmbeddingProviderId, ProviderState> =
+    new Map();
 
   constructor(config?: Partial<HealthMonitorConfig>) {
     this.config = { ...DEFAULT_HEALTH_MONITOR_CONFIG, ...config };
@@ -98,7 +99,7 @@ export class HealthMonitor {
       return true;
     }
 
-    const failures = windowRecords.filter((r) => !r.success).length;
+    const failures = windowRecords.filter(r => !r.success).length;
     const errorRate = failures / windowRecords.length;
     return errorRate < this.config.unhealthyThreshold;
   }
@@ -126,7 +127,7 @@ export class HealthMonitor {
   recordFailure(
     providerId: EmbeddingProviderId,
     latencyMs: number,
-    errorMessage?: string,
+    errorMessage?: string
   ): void {
     if (!this.config.enabled) {
       return;
@@ -146,7 +147,7 @@ export class HealthMonitor {
     // Check if cooldown should be applied
     const windowRecords = this.getWindowRecords(state);
     if (windowRecords.length >= this.config.minRequestsForEvaluation) {
-      const failures = windowRecords.filter((r) => !r.success).length;
+      const failures = windowRecords.filter(r => !r.success).length;
       const errorRate = failures / windowRecords.length;
       if (errorRate >= this.config.unhealthyThreshold) {
         state.cooldownUntil = now + this.config.cooldownMs;
@@ -171,11 +172,14 @@ export class HealthMonitor {
     }
 
     const windowRecords = this.getWindowRecords(state);
-    const failures = windowRecords.filter((r) => !r.success).length;
-    const errorRate = windowRecords.length > 0 ? failures / windowRecords.length : 0;
-    const avgLatencyMs = windowRecords.length > 0
-      ? windowRecords.reduce((sum, r) => sum + r.latencyMs, 0) / windowRecords.length
-      : 0;
+    const failures = windowRecords.filter(r => !r.success).length;
+    const errorRate =
+      windowRecords.length > 0 ? failures / windowRecords.length : 0;
+    const avgLatencyMs =
+      windowRecords.length > 0
+        ? windowRecords.reduce((sum, r) => sum + r.latencyMs, 0) /
+          windowRecords.length
+        : 0;
 
     return {
       providerId,
@@ -186,7 +190,8 @@ export class HealthMonitor {
       avgLatencyMs,
       lastErrorMessage: state.lastErrorMessage,
       lastErrorAt: state.lastErrorAt,
-      cooldownUntil: state.cooldownUntil > Date.now() ? state.cooldownUntil : undefined,
+      cooldownUntil:
+        state.cooldownUntil > Date.now() ? state.cooldownUntil : undefined,
     };
   }
 
@@ -230,11 +235,11 @@ export class HealthMonitor {
 
   private getWindowRecords(state: ProviderState): RequestRecord[] {
     const cutoff = Date.now() - this.config.windowMs;
-    return state.records.filter((r) => r.timestamp > cutoff);
+    return state.records.filter(r => r.timestamp > cutoff);
   }
 
   private pruneRecords(state: ProviderState): void {
     const cutoff = Date.now() - this.config.windowMs;
-    state.records = state.records.filter((r) => r.timestamp > cutoff);
+    state.records = state.records.filter(r => r.timestamp > cutoff);
   }
 }

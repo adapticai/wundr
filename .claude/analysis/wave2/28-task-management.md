@@ -1,26 +1,24 @@
 # Wave 2: Task Management System Design
 
-**Date**: 2026-02-09
-**Status**: Implementation Ready
-**Priority**: High
-**Based on**: Claude Code's TodoWrite/TodoRead pattern, crew-orchestrator TaskManager, federation TaskDelegator
+**Date**: 2026-02-09 **Status**: Implementation Ready **Priority**: High **Based on**: Claude Code's
+TodoWrite/TodoRead pattern, crew-orchestrator TaskManager, federation TaskDelegator
 
 ---
 
 ## 1. Overview
 
-The Task Management System provides a centralized, persistent, dependency-aware task tracking
-layer for Wundr's orchestrator daemon. It replaces the ad-hoc in-memory task tracking scattered
-across the crew-orchestrator TaskManager and federation TaskDelegator with a unified system
-backed by SQLite for durability, WebSocket notifications for real-time updates, and a scheduler
-for intelligent assignment.
+The Task Management System provides a centralized, persistent, dependency-aware task tracking layer
+for Wundr's orchestrator daemon. It replaces the ad-hoc in-memory task tracking scattered across the
+crew-orchestrator TaskManager and federation TaskDelegator with a unified system backed by SQLite
+for durability, WebSocket notifications for real-time updates, and a scheduler for intelligent
+assignment.
 
 ### Design Goals
 
-1. **Claude Code parity** - Supports the full `subject`/`status`/`activeForm` pattern from
-   Claude Code's task tools, enabling spinner displays and progress tracking
-2. **Dependency graph** - First-class `blocks`/`blockedBy` relationships with circular
-   dependency detection and automatic unblocking on completion
+1. **Claude Code parity** - Supports the full `subject`/`status`/`activeForm` pattern from Claude
+   Code's task tools, enabling spinner displays and progress tracking
+2. **Dependency graph** - First-class `blocks`/`blockedBy` relationships with circular dependency
+   detection and automatic unblocking on completion
 3. **Multi-agent coordination** - Owner tracking, capability-based auto-assignment, and load
    balancing across agents in a team
 4. **Persistence** - SQLite storage survives daemon restarts; in-memory mode for tests
@@ -74,20 +72,20 @@ packages/@wundr/orchestrator-daemon/src/tasks/
 
 ### 3.1 Task Fields
 
-| Field       | Type                          | Description                                   |
-|-------------|-------------------------------|-----------------------------------------------|
-| id          | string (UUID)                 | Auto-generated unique identifier              |
-| subject     | string                        | Brief title (for list views)                  |
-| description | string                        | Detailed description of the work              |
-| status      | TaskStatus                    | pending, in_progress, completed, deleted       |
-| owner       | string or null                | Agent name/ID that owns this task             |
-| activeForm  | string or null                | Present-continuous verb for spinner display    |
-| priority    | TaskPriority                  | low, medium, high, critical                   |
-| blocks      | string[]                      | Task IDs this task blocks (downstream)        |
-| blockedBy   | string[]                      | Task IDs blocking this task (upstream)        |
-| metadata    | Record<string, unknown>       | Arbitrary key-value store                     |
-| createdAt   | Date                          | Creation timestamp                            |
-| updatedAt   | Date                          | Last modification timestamp                   |
+| Field       | Type                    | Description                                 |
+| ----------- | ----------------------- | ------------------------------------------- |
+| id          | string (UUID)           | Auto-generated unique identifier            |
+| subject     | string                  | Brief title (for list views)                |
+| description | string                  | Detailed description of the work            |
+| status      | TaskStatus              | pending, in_progress, completed, deleted    |
+| owner       | string or null          | Agent name/ID that owns this task           |
+| activeForm  | string or null          | Present-continuous verb for spinner display |
+| priority    | TaskPriority            | low, medium, high, critical                 |
+| blocks      | string[]                | Task IDs this task blocks (downstream)      |
+| blockedBy   | string[]                | Task IDs blocking this task (upstream)      |
+| metadata    | Record<string, unknown> | Arbitrary key-value store                   |
+| createdAt   | Date                    | Creation timestamp                          |
+| updatedAt   | Date                    | Last modification timestamp                 |
 
 ### 3.2 Status Transitions
 
@@ -109,8 +107,8 @@ Tasks form a directed acyclic graph (DAG) via `blocks` and `blockedBy` arrays.
 - When taskA completes, the system automatically removes taskA from taskB's `blockedBy`
 - A task with non-empty `blockedBy` (all entries are active) cannot transition to `in_progress`
 
-**Circular dependency detection**: Before adding any dependency, a DFS traversal checks
-for cycles. If adding A -> B would create a cycle, the operation is rejected.
+**Circular dependency detection**: Before adding any dependency, a DFS traversal checks for cycles.
+If adding A -> B would create a cycle, the operation is rejected.
 
 ---
 
@@ -121,8 +119,8 @@ for cycles. If adding A -> B would create a cycle, the operation is rejected.
 Zod schemas for validation plus TypeScript interfaces:
 
 ```typescript
-TaskStatus = 'pending' | 'in_progress' | 'completed' | 'deleted'
-TaskPriority = 'low' | 'medium' | 'high' | 'critical'
+TaskStatus = 'pending' | 'in_progress' | 'completed' | 'deleted';
+TaskPriority = 'low' | 'medium' | 'high' | 'critical';
 
 interface ManagedTask {
   id: string;
@@ -223,8 +221,8 @@ CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);
 
 ### 4.3 TaskManager (`task-manager.ts`)
 
-Business logic layer that coordinates the store, enforces invariants, manages dependency
-graphs, and emits events.
+Business logic layer that coordinates the store, enforces invariants, manages dependency graphs, and
+emits events.
 
 **Key behaviors**:
 
@@ -241,16 +239,16 @@ graphs, and emits events.
 
 **Events emitted** (via EventEmitter):
 
-| Event            | Payload                                    |
-|------------------|--------------------------------------------|
-| `task:created`   | `{ task: ManagedTask }`                    |
-| `task:updated`   | `{ task: ManagedTask, changes: string[] }` |
-| `task:deleted`   | `{ taskId: string }`                       |
+| Event            | Payload                                      |
+| ---------------- | -------------------------------------------- |
+| `task:created`   | `{ task: ManagedTask }`                      |
+| `task:updated`   | `{ task: ManagedTask, changes: string[] }`   |
+| `task:deleted`   | `{ taskId: string }`                         |
 | `task:completed` | `{ task: ManagedTask, unblocked: string[] }` |
-| `task:claimed`   | `{ task: ManagedTask, owner: string }`     |
-| `task:released`  | `{ task: ManagedTask }`                    |
-| `task:blocked`   | `{ taskId: string, blockedBy: string[] }`  |
-| `task:unblocked` | `{ taskId: string }`                       |
+| `task:claimed`   | `{ task: ManagedTask, owner: string }`       |
+| `task:released`  | `{ task: ManagedTask }`                      |
+| `task:blocked`   | `{ taskId: string, blockedBy: string[] }`    |
+| `task:unblocked` | `{ taskId: string }`                         |
 
 ### 4.4 TaskScheduler (`task-scheduler.ts`)
 
@@ -269,8 +267,8 @@ interface AgentInfo {
 interface SchedulerConfig {
   maxTasksPerAgent?: number;
   assignmentStrategy?: 'round-robin' | 'least-loaded' | 'capability-match';
-  autoAssignInterval?: number;       // ms, 0 to disable
-  unblockCheckInterval?: number;     // ms, 0 to disable
+  autoAssignInterval?: number; // ms, 0 to disable
+  unblockCheckInterval?: number; // ms, 0 to disable
 }
 ```
 
@@ -285,19 +283,19 @@ interface SchedulerConfig {
 
 **Auto-assignment scoring** (0-100):
 
-| Factor              | Weight | Description                          |
-|---------------------|--------|--------------------------------------|
-| Capability match    | 40     | How well agent capabilities match    |
-| Load factor         | 30     | Inverse of current load percentage   |
-| Availability        | 20     | Whether agent is available           |
-| Priority bonus      | 10     | Higher-priority tasks get preference |
+| Factor           | Weight | Description                          |
+| ---------------- | ------ | ------------------------------------ |
+| Capability match | 40     | How well agent capabilities match    |
+| Load factor      | 30     | Inverse of current load percentage   |
+| Availability     | 20     | Whether agent is available           |
+| Priority bonus   | 10     | Higher-priority tasks get preference |
 
 ---
 
 ## 5. WebSocket Integration
 
-Task events are broadcast to connected clients through the existing
-`OrchestratorWebSocketServer`. New message types are added to `WSResponse`:
+Task events are broadcast to connected clients through the existing `OrchestratorWebSocketServer`.
+New message types are added to `WSResponse`:
 
 ```typescript
 | { type: 'task_created'; task: ManagedTask }
@@ -306,8 +304,8 @@ Task events are broadcast to connected clients through the existing
 | { type: 'task_list'; tasks: ManagedTask[] }
 ```
 
-The TaskManager wires its EventEmitter events to the WebSocket server's `broadcast` method,
-so all connected clients receive real-time task updates.
+The TaskManager wires its EventEmitter events to the WebSocket server's `broadcast` method, so all
+connected clients receive real-time task updates.
 
 ---
 
@@ -322,6 +320,7 @@ The TaskManager serves as the **shared task list** for agent teams:
 5. **Scheduler re-assigns** unblocked tasks to available agents
 
 The `activeForm` field is specifically designed for spinner/progress display:
+
 - "Analyzing codebase..."
 - "Writing implementation..."
 - "Running tests..."
@@ -332,18 +331,18 @@ The `activeForm` field is specifically designed for spinner/progress display:
 
 ### 7.1 Federation TaskDelegator
 
-The federation `TaskDelegator` handles *cross-orchestrator* delegation. The new TaskManager
-handles *intra-orchestrator* task tracking. They integrate as follows:
+The federation `TaskDelegator` handles _cross-orchestrator_ delegation. The new TaskManager handles
+_intra-orchestrator_ task tracking. They integrate as follows:
 
-- When a task is delegated to another orchestrator, the local TaskManager creates a
-  "proxy" task with metadata `{ delegationId: '...' }` to track it
+- When a task is delegated to another orchestrator, the local TaskManager creates a "proxy" task
+  with metadata `{ delegationId: '...' }` to track it
 - The TaskDelegator's completion callback updates the proxy task in the local TaskManager
 - This keeps the local task graph consistent even when work is remote
 
 ### 7.2 Crew-Orchestrator TaskManager
 
-The existing `@wundr/crew-orchestrator` TaskManager is an in-memory task queue with
-priority scheduling. The new system supersedes it with:
+The existing `@wundr/crew-orchestrator` TaskManager is an in-memory task queue with priority
+scheduling. The new system supersedes it with:
 
 - Persistent storage (SQLite)
 - Richer dependency model (blocks/blockedBy vs flat dependencies array)
@@ -353,32 +352,31 @@ priority scheduling. The new system supersedes it with:
 
 ### 7.3 Existing Task Type
 
-The existing `Task` interface in `types/index.ts` is preserved for backward compatibility.
-The new `ManagedTask` type is a superset. A utility function `toTask(managedTask)` converts
-between them for code that still expects the old interface.
+The existing `Task` interface in `types/index.ts` is preserved for backward compatibility. The new
+`ManagedTask` type is a superset. A utility function `toTask(managedTask)` converts between them for
+code that still expects the old interface.
 
 ---
 
 ## 8. Error Handling
 
-| Error Case                     | Behavior                                     |
-|--------------------------------|----------------------------------------------|
-| Task not found                 | Throws `TaskNotFoundError` with task ID      |
-| Circular dependency detected   | Throws `CircularDependencyError` with cycle  |
-| Invalid status transition      | Throws `InvalidTransitionError`              |
-| Blocked task claim attempt     | Throws `TaskBlockedError` with blocker IDs   |
-| SQLite write failure           | Wraps in `TaskStoreError`, logs, re-throws   |
-| Duplicate task ID              | Throws `DuplicateTaskError`                  |
+| Error Case                   | Behavior                                    |
+| ---------------------------- | ------------------------------------------- |
+| Task not found               | Throws `TaskNotFoundError` with task ID     |
+| Circular dependency detected | Throws `CircularDependencyError` with cycle |
+| Invalid status transition    | Throws `InvalidTransitionError`             |
+| Blocked task claim attempt   | Throws `TaskBlockedError` with blocker IDs  |
+| SQLite write failure         | Wraps in `TaskStoreError`, logs, re-throws  |
+| Duplicate task ID            | Throws `DuplicateTaskError`                 |
 
-All errors extend a base `TaskError` class with a `code` discriminator for programmatic
-handling.
+All errors extend a base `TaskError` class with a `code` discriminator for programmatic handling.
 
 ---
 
 ## 9. Testing Strategy
 
-- **Unit tests**: TaskStore (both InMemory and SQLite), TaskManager business logic,
-  TaskScheduler scoring algorithms
+- **Unit tests**: TaskStore (both InMemory and SQLite), TaskManager business logic, TaskScheduler
+  scoring algorithms
 - **Integration tests**: Full lifecycle (create -> claim -> progress -> complete -> unblock),
   circular dependency detection, concurrent access
 - **Performance tests**: 10K tasks in SQLite, bulk dependency resolution

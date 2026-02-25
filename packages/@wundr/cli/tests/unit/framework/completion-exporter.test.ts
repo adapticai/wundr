@@ -8,14 +8,17 @@
 
 import { CompletionExporter } from '../../../src/framework/completion-exporter';
 import { CommandRegistry } from '../../../src/framework/command-registry';
-import type { CommandDefinition, CommandCategory } from '../../../src/framework/command-interface';
+import type {
+  CommandDefinition,
+  CommandCategory,
+} from '../../../src/framework/command-interface';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function makeCommand(
-  overrides: Partial<CommandDefinition> = {},
+  overrides: Partial<CommandDefinition> = {}
 ): CommandDefinition {
   return {
     name: overrides.name ?? 'test-cmd',
@@ -27,7 +30,7 @@ function makeCommand(
 
 function createExporter(
   commands: Partial<CommandDefinition>[],
-  programName = 'wundr',
+  programName = 'wundr'
 ): { exporter: CompletionExporter; registry: CommandRegistry } {
   const registry = new CommandRegistry({ strict: false });
   for (const cmd of commands) {
@@ -137,15 +140,13 @@ describe('CompletionExporter', () => {
         {
           name: 'deploy',
           description: 'Deploy',
-          options: [
-            { flags: '-e, --env <name>', description: 'Target env' },
-          ],
+          options: [{ flags: '-e, --env <name>', description: 'Target env' }],
         },
       ]);
 
       const script = exporter.generate('fish');
 
-      expect(script).toContain("__fish_seen_subcommand_from deploy");
+      expect(script).toContain('__fish_seen_subcommand_from deploy');
       expect(script).toContain("-l 'env'");
     });
 
@@ -173,7 +174,7 @@ describe('CompletionExporter', () => {
 
       const script = exporter.generate('fish');
 
-      expect(script).toContain("__fish_seen_subcommand_from agent");
+      expect(script).toContain('__fish_seen_subcommand_from agent');
       expect(script).toContain("'list'");
       expect(script).toContain("'spawn'");
     });
@@ -196,7 +197,11 @@ describe('CompletionExporter', () => {
           name: 'deploy',
           description: 'Deploy',
           options: [
-            { flags: '--env <name>', description: 'Env', choices: ['dev', 'staging', 'prod'] },
+            {
+              flags: '--env <name>',
+              description: 'Env',
+              choices: ['dev', 'staging', 'prod'],
+            },
           ],
         },
       ]);
@@ -227,7 +232,9 @@ describe('CompletionExporter', () => {
 
       const script = exporter.generate('powershell');
 
-      expect(script).toContain("Register-ArgumentCompleter -CommandName 'wundr'");
+      expect(script).toContain(
+        "Register-ArgumentCompleter -CommandName 'wundr'"
+      );
       expect(script).toContain("Name = 'deploy'");
     });
 
@@ -287,12 +294,8 @@ describe('CompletionExporter', () => {
           description: 'Deploy the app',
           category: 'daemon' as CommandCategory,
           aliases: ['d'],
-          arguments: [
-            { name: 'env', description: 'Target', required: true },
-          ],
-          options: [
-            { flags: '--force', description: 'Force deploy' },
-          ],
+          arguments: [{ name: 'env', description: 'Target', required: true }],
+          options: [{ flags: '--force', description: 'Force deploy' }],
         },
       ]);
 

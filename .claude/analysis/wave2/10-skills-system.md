@@ -1,23 +1,22 @@
 # Wave 2: Skills System Design
 
-**Date**: 2026-02-09
-**Status**: Implementation Ready
-**Priority**: High
-**Based on**: OpenClaw skills system analysis (52 bundled skills, SKILL.md metadata, auto-discovery)
+**Date**: 2026-02-09 **Status**: Implementation Ready **Priority**: High **Based on**: OpenClaw
+skills system analysis (52 bundled skills, SKILL.md metadata, auto-discovery)
 
 ---
 
 ## 1. Overview
 
-The Skills System provides a modular, extensible mechanism for packaging domain-specific
-knowledge, workflows, and tool instructions into discoverable units. Skills are defined as
-SKILL.md files with YAML frontmatter and Markdown instruction bodies, following a progressive
-disclosure model that minimizes context window consumption.
+The Skills System provides a modular, extensible mechanism for packaging domain-specific knowledge,
+workflows, and tool instructions into discoverable units. Skills are defined as SKILL.md files with
+YAML frontmatter and Markdown instruction bodies, following a progressive disclosure model that
+minimizes context window consumption.
 
 ### Design Goals
 
 1. **OpenClaw compatibility** - SKILL.md format compatible with OpenClaw's established convention
-2. **Progressive disclosure** - Three-level loading: metadata (always) -> body (on trigger) -> resources (on demand)
+2. **Progressive disclosure** - Three-level loading: metadata (always) -> body (on trigger) ->
+   resources (on demand)
 3. **Security first** - All skills scanned for malicious patterns before loading
 4. **Auto-discovery** - Skills loaded from multiple directories with configurable precedence
 5. **Subagent execution** - Skills with `context: fork` run in isolated subagent sessions
@@ -33,28 +32,27 @@ disclosure model that minimizes context window consumption.
 ```yaml
 ---
 # Required fields
-name: review-pr                    # Unique skill identifier (lowercase, hyphens)
-description: >-                    # Triggering description - determines when skill activates
-  Review GitHub pull requests with structured feedback.
-  Use when asked to review a PR, assess readiness to land,
-  or provide code review.
+name: review-pr # Unique skill identifier (lowercase, hyphens)
+description: >- # Triggering description - determines when skill activates
+  Review GitHub pull requests with structured feedback. Use when asked to review a PR, assess
+  readiness to land, or provide code review.
 
 # Optional fields
-context: fork                      # Execution context: 'inline' (default) or 'fork' (subagent)
-model: claude-sonnet-4-20250514          # Override model for this skill
-tools:                             # Required tools (eligibility check)
+context: fork # Execution context: 'inline' (default) or 'fork' (subagent)
+model: claude-sonnet-4-20250514 # Override model for this skill
+tools: # Required tools (eligibility check)
   - Bash
   - Read
   - Grep
-allowed_tools:                     # Restrict available tools when skill runs
+allowed_tools: # Restrict available tools when skill runs
   - Bash
   - Read
   - Grep
   - Write
 
 # Invocation control
-user-invocable: true               # Whether users can invoke via /skill-name (default: true)
-disable-model-invocation: false    # Prevent auto-triggering by model (default: false)
+user-invocable: true # Whether users can invoke via /skill-name (default: true)
+disable-model-invocation: false # Prevent auto-triggering by model (default: false)
 
 # Wundr metadata
 metadata:
@@ -62,31 +60,31 @@ metadata:
     emoji: "\U0001F41B"
     category: development
     requires:
-      bins:                        # All must be present
+      bins: # All must be present
         - gh
-      anyBins:                     # At least one must be present
+      anyBins: # At least one must be present
         - claude
         - codex
-      env:                         # Required env vars
+      env: # Required env vars
         - GITHUB_TOKEN
-      config:                      # Required config paths
+      config: # Required config paths
         - github.enabled
-    install:                       # Installation instructions
+    install: # Installation instructions
       - id: brew
         kind: brew
         formula: gh
         bins: [gh]
-        label: "Install GitHub CLI (brew)"
+        label: 'Install GitHub CLI (brew)'
       - id: apt
         kind: apt
         package: gh
         bins: [gh]
-        label: "Install GitHub CLI (apt)"
-    os:                            # OS restrictions
+        label: 'Install GitHub CLI (apt)'
+    os: # OS restrictions
       - darwin
       - linux
-    always: false                  # Always include regardless of requirements
-    primaryEnv: GITHUB_TOKEN       # Primary env var for API key mapping
+    always: false # Always include regardless of requirements
+    primaryEnv: GITHUB_TOKEN # Primary env var for API key mapping
 ---
 ```
 
@@ -98,33 +96,37 @@ The Markdown body contains instructions loaded only after the skill triggers.
 # Review PR
 
 ## Overview
+
 Perform a thorough review-only PR assessment.
 
 ## Inputs
+
 - Ask for PR number or URL.
 - If missing, always ask. Never auto-detect from conversation.
 
 ## Dynamic Context
+
 !gh pr view $ARGUMENTS --json number,title,state,body
 
 ## Steps
+
 1. Identify PR meta and context
 2. Read the diff thoroughly
-3. Evaluate implementation quality
-...
+3. Evaluate implementation quality ...
 
 ## Guardrails
+
 - Do not push. Review only.
 - Do not delete the worktree after review.
 ```
 
 ### 2.3 Special Syntax
 
-| Syntax | Description | Example |
-|--------|-------------|---------|
+| Syntax       | Description                                         | Example                                  |
+| ------------ | --------------------------------------------------- | ---------------------------------------- |
 | `$ARGUMENTS` | Replaced with user-provided arguments at invocation | `/review-pr 123` -> `$ARGUMENTS` = `123` |
-| `!command` | Execute shell command and inject output as context | `!gh pr view 123 --json title` |
-| `!read path` | Read file contents into context | `!read ./references/schema.md` |
+| `!command`   | Execute shell command and inject output as context  | `!gh pr view 123 --json title`           |
+| `!read path` | Read file contents into context                     | `!read ./references/schema.md`           |
 
 ---
 
@@ -163,8 +165,8 @@ Discovery                 Registration              Invocation
 3. **Managed** - User's global skills (`~/.wundr/skills/`)
 4. **Workspace** - Project-local skills (`./skills/` or `./.claude/skills/`)
 
-Higher precedence overwrites lower by skill name. This allows workspace skills
-to override bundled defaults.
+Higher precedence overwrites lower by skill name. This allows workspace skills to override bundled
+defaults.
 
 ### 3.4 Eligibility Resolution
 
@@ -185,16 +187,18 @@ A skill is eligible for loading when ALL of the following are satisfied:
 
 ### 4.1 Scan Rules
 
-The scanner checks all `.js`, `.ts`, `.mjs`, `.cjs`, `.mts`, `.cts`, `.jsx`, `.tsx` files
-within a skill directory for malicious patterns.
+The scanner checks all `.js`, `.ts`, `.mjs`, `.cjs`, `.mts`, `.cts`, `.jsx`, `.tsx` files within a
+skill directory for malicious patterns.
 
 **Critical (blocks loading):**
+
 - Shell command execution via child_process (exec, spawn, execFile)
 - Dynamic code execution (eval, Function constructor)
 - Crypto-mining references (stratum, coinhive, cryptonight, xmrig)
 - Environment variable access combined with network requests (credential harvesting)
 
 **Warning (logged but allowed):**
+
 - File read combined with network send (potential exfiltration)
 - Obfuscated code (hex sequences, large base64 payloads)
 - WebSocket connections to non-standard ports
@@ -208,6 +212,7 @@ within a skill directory for malicious patterns.
 ### 4.3 SKILL.md Body Scanner
 
 Additionally, the Markdown body is scanned for:
+
 - Prompt injection attempts (system prompt overrides)
 - Instructions to ignore previous context
 - Attempts to access files outside the skill directory
@@ -219,9 +224,8 @@ Additionally, the Markdown body is scanned for:
 
 ### 5.1 Inline Execution (default)
 
-The skill's instructions are injected into the current conversation context.
-The model receives the skill body as additional system context and proceeds
-within the existing session.
+The skill's instructions are injected into the current conversation context. The model receives the
+skill body as additional system context and proceeds within the existing session.
 
 ```
 User: /review-pr 123
@@ -237,8 +241,8 @@ Skill Executor:
 
 ### 5.2 Fork Execution (context: fork)
 
-The skill runs in an isolated subagent session with its own context window.
-Results are returned to the parent session upon completion.
+The skill runs in an isolated subagent session with its own context window. Results are returned to
+the parent session upon completion.
 
 ```
 User: /coding-agent "build a snake game"
@@ -254,17 +258,17 @@ Skill Executor:
 
 ### 5.3 Argument Substitution
 
-All occurrences of `$ARGUMENTS` in the skill body are replaced with the
-user-provided string. If no arguments are provided, `$ARGUMENTS` is
-replaced with an empty string.
+All occurrences of `$ARGUMENTS` in the skill body are replaced with the user-provided string. If no
+arguments are provided, `$ARGUMENTS` is replaced with an empty string.
 
 ### 5.4 Dynamic Context (!command)
 
-Lines starting with `!` are executed as shell commands, and their stdout
-replaces the line in the rendered prompt.
+Lines starting with `!` are executed as shell commands, and their stdout replaces the line in the
+rendered prompt.
 
 ```markdown
 ## Current PR Status
+
 !gh pr view $ARGUMENTS --json title,state,body --jq '.title + " (" + .state + ")"'
 ```
 
@@ -272,10 +276,12 @@ Becomes:
 
 ```markdown
 ## Current PR Status
+
 Fix authentication bug (OPEN)
 ```
 
 Security constraints for !commands:
+
 - Max execution time: 30 seconds
 - Max output size: 64KB
 - Runs in skill's base directory
@@ -312,9 +318,8 @@ skills: {
 
 ### 6.2 Environment Variable Overrides
 
-Skills can specify environment variables that are set before execution and
-restored afterward. This supports API key injection without polluting the
-global process environment.
+Skills can specify environment variables that are set before execution and restored afterward. This
+supports API key injection without polluting the global process environment.
 
 ---
 
@@ -322,33 +327,33 @@ global process environment.
 
 ### 7.1 Orchestrator Daemon
 
-The SkillRegistry is initialized during daemon startup and registered as a
-subsystem. Skills are loaded from all configured directories and made
-available to session executors.
+The SkillRegistry is initialized during daemon startup and registered as a subsystem. Skills are
+loaded from all configured directories and made available to session executors.
 
 ### 7.2 MCP Server
 
-A `skill-execute` MCP tool is exposed that allows Claude Code or other
-MCP clients to invoke skills programmatically.
+A `skill-execute` MCP tool is exposed that allows Claude Code or other MCP clients to invoke skills
+programmatically.
 
 ### 7.3 WebSocket API
 
 New message types:
+
 - `list_skills` -> `skills_list` (returns registered skills with metadata)
 - `execute_skill` -> `skill_result` (invokes a skill by name)
 - `scan_skill` -> `scan_result` (security scan a skill directory)
 
 ### 7.4 Session Executor
 
-The SessionExecutor receives the skills prompt (formatted skill metadata)
-as part of the system context. When a skill triggers, the full body is
-loaded and injected.
+The SessionExecutor receives the skills prompt (formatted skill metadata) as part of the system
+context. When a skill triggers, the full body is loaded and injected.
 
 ---
 
 ## 8. Implementation Phases
 
 ### Phase 1: Core (This Wave)
+
 - [x] Type definitions
 - [x] SKILL.md parser with YAML frontmatter
 - [x] Skill loader with multi-directory discovery
@@ -357,6 +362,7 @@ loaded and injected.
 - [x] Skill executor with argument substitution
 
 ### Phase 2: Advanced Features
+
 - [ ] File watcher for hot-reload
 - [ ] !command dynamic context execution
 - [ ] Fork execution via subagent sessions
@@ -365,6 +371,7 @@ loaded and injected.
 - [ ] Skill installation/uninstallation CLI
 
 ### Phase 3: Ecosystem
+
 - [ ] Skill marketplace/registry (remote)
 - [ ] Skill packaging (.skill files)
 - [ ] Skill validation CLI

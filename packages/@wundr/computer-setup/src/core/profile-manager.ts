@@ -28,12 +28,7 @@ export interface ProfileToolEntry {
   /** Whether this tool is required (true) or optional (false) */
   required: boolean;
   /** Category for phase grouping */
-  category:
-    | 'system'
-    | 'development'
-    | 'ai'
-    | 'configuration'
-    | 'communication';
+  category: 'system' | 'development' | 'ai' | 'configuration' | 'communication';
   /** IDs of tools that must be installed first */
   dependencies: string[];
 }
@@ -127,8 +122,7 @@ function createBuiltInProfiles(): Map<string, ProfileDefinition> {
   profiles.set('frontend', {
     id: 'frontend',
     name: 'Frontend Developer',
-    description:
-      'Modern web frontend development with React, Vue, and tooling',
+    description: 'Modern web frontend development with React, Vue, and tooling',
     tools: [
       ...baseTools,
       {
@@ -155,8 +149,7 @@ function createBuiltInProfiles(): Map<string, ProfileDefinition> {
   profiles.set('backend', {
     id: 'backend',
     name: 'Backend Developer',
-    description:
-      'Server-side development with Node.js, Python, and databases',
+    description: 'Server-side development with Node.js, Python, and databases',
     tools: [
       ...baseTools,
       {
@@ -407,10 +400,7 @@ export class ProfileManager {
     profile: ProfileDefinition,
     options: { overrideBuiltIn?: boolean } = {}
   ): void {
-    if (
-      this.builtInProfiles.has(profile.id) &&
-      !options.overrideBuiltIn
-    ) {
+    if (this.builtInProfiles.has(profile.id) && !options.overrideBuiltIn) {
       throw new Error(
         `Cannot overwrite built-in profile "${profile.id}" without overrideBuiltIn flag`
       );

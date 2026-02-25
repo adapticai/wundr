@@ -19,11 +19,13 @@ import { estimateTokens, type ChunkingConfig } from '../../embeddings/provider';
 // Helpers
 // ---------------------------------------------------------------------------
 
-function slidingWindowConfig(overrides?: Partial<ChunkingConfig>): ChunkingConfig {
+function slidingWindowConfig(
+  overrides?: Partial<ChunkingConfig>
+): ChunkingConfig {
   return {
     strategy: 'sliding-window',
     chunkSize: 128, // ~512 chars per chunk
-    overlap: 32,    // ~128 chars overlap
+    overlap: 32, // ~128 chars overlap
     ...overrides,
   };
 }
@@ -54,7 +56,9 @@ function generateText(charLength: number): string {
 function generateSentences(count: number): string {
   const sentences: string[] = [];
   for (let i = 0; i < count; i++) {
-    sentences.push(`Sentence number ${i + 1} about topic ${String.fromCharCode(65 + (i % 26))}.`);
+    sentences.push(
+      `Sentence number ${i + 1} about topic ${String.fromCharCode(65 + (i % 26))}.`
+    );
   }
   return sentences.join(' ');
 }
@@ -86,7 +90,10 @@ describe('chunkText', () => {
     });
 
     it('should handle text shorter than chunk size', () => {
-      const chunks = chunkText('Short text.', slidingWindowConfig({ chunkSize: 1000 }));
+      const chunks = chunkText(
+        'Short text.',
+        slidingWindowConfig({ chunkSize: 1000 })
+      );
       expect(chunks).toHaveLength(1);
       expect(chunks[0].text).toBe('Short text.');
     });
@@ -261,14 +268,16 @@ describe('chunkText', () => {
     });
 
     it('should handle text with no sentence boundaries', () => {
-      const text = 'no sentence boundaries here just some words without periods';
+      const text =
+        'no sentence boundaries here just some words without periods';
       const chunks = chunkText(text, sentenceConfig());
 
       expect(chunks.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should split on newlines when no sentence boundaries found', () => {
-      const text = 'first line\nsecond line\nthird line\nfourth line\nfifth line\nsixth line\nseventh line';
+      const text =
+        'first line\nsecond line\nthird line\nfourth line\nfifth line\nsixth line\nseventh line';
       const chunks = chunkText(text, sentenceConfig({ maxSentences: 2 }));
 
       expect(chunks.length).toBeGreaterThan(1);
@@ -310,7 +319,9 @@ describe('chunkText', () => {
   describe('unknown strategy', () => {
     it('should fall back to no chunking for unknown strategy', () => {
       const text = 'Fallback text.';
-      const config = { strategy: 'unknown-strategy' } as unknown as ChunkingConfig;
+      const config = {
+        strategy: 'unknown-strategy',
+      } as unknown as ChunkingConfig;
       const chunks = chunkText(text, config);
 
       expect(chunks).toHaveLength(1);

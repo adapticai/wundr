@@ -91,8 +91,19 @@ export class ProgressBar {
   private current: number = 0;
   private startTime: number;
   private options: Required<
-    Pick<ProgressBarOptions, 'total' | 'width' | 'label' | 'filledChar' | 'emptyChar' | 'showPercentage' | 'showETA' | 'showCount'>
-  > & Pick<ProgressBarOptions, 'format'>;
+    Pick<
+      ProgressBarOptions,
+      | 'total'
+      | 'width'
+      | 'label'
+      | 'filledChar'
+      | 'emptyChar'
+      | 'showPercentage'
+      | 'showETA'
+      | 'showCount'
+    >
+  > &
+    Pick<ProgressBarOptions, 'format'>;
   private isTTY: boolean;
   private lastRender: string = '';
 
@@ -132,9 +143,8 @@ export class ProgressBar {
    */
   getState(): ProgressState {
     const elapsed = Date.now() - this.startTime;
-    const percentage = this.options.total > 0
-      ? this.current / this.options.total
-      : 0;
+    const percentage =
+      this.options.total > 0 ? this.current / this.options.total : 0;
     const rate = elapsed > 0 ? (this.current / elapsed) * 1000 : 0;
     const remaining = this.options.total - this.current;
     const eta = rate > 0 ? (remaining / rate) * 1000 : 0;
@@ -233,7 +243,11 @@ export class ProgressBar {
     }
 
     // ETA
-    if (this.options.showETA && state.current > 0 && state.current < state.total) {
+    if (
+      this.options.showETA &&
+      state.current > 0 &&
+      state.current < state.total
+    ) {
       parts.push(chalk.gray(`ETA: ${this.formatTime(state.eta)}`));
     }
 
@@ -332,10 +346,7 @@ export class StepTracker {
   private options: Required<StepTrackerOptions>;
   private isTTY: boolean;
 
-  constructor(
-    stepNames: string[],
-    options: StepTrackerOptions = {},
-  ) {
+  constructor(stepNames: string[], options: StepTrackerOptions = {}) {
     this.steps = stepNames.map(name => ({
       name,
       status: 'pending',
@@ -409,7 +420,7 @@ export class StepTracker {
    */
   getProgress(): { completed: number; total: number; percentage: number } {
     const completed = this.steps.filter(
-      s => s.status === 'done' || s.status === 'skipped',
+      s => s.status === 'done' || s.status === 'skipped'
     ).length;
     return {
       completed,
@@ -453,9 +464,7 @@ export class StepTracker {
     const failed = this.steps.filter(s => s.status === 'failed').length;
     const skipped = this.steps.filter(s => s.status === 'skipped').length;
 
-    const parts: string[] = [
-      `${completed}/${total} steps completed`,
-    ];
+    const parts: string[] = [`${completed}/${total} steps completed`];
 
     if (failed > 0) parts.push(chalk.red(`${failed} failed`));
     if (skipped > 0) parts.push(chalk.yellow(`${skipped} skipped`));
@@ -480,21 +489,31 @@ export class StepTracker {
 
   private statusIcon(status: ProgressStep['status']): string {
     switch (status) {
-      case 'pending': return chalk.gray('[ ]');
-      case 'running': return chalk.cyan('[~]');
-      case 'done': return chalk.green('[+]');
-      case 'failed': return chalk.red('[x]');
-      case 'skipped': return chalk.yellow('[-]');
+      case 'pending':
+        return chalk.gray('[ ]');
+      case 'running':
+        return chalk.cyan('[~]');
+      case 'done':
+        return chalk.green('[+]');
+      case 'failed':
+        return chalk.red('[x]');
+      case 'skipped':
+        return chalk.yellow('[-]');
     }
   }
 
   private statusColor(status: ProgressStep['status'], text: string): string {
     switch (status) {
-      case 'pending': return chalk.gray(text);
-      case 'running': return chalk.cyan(text);
-      case 'done': return chalk.green(text);
-      case 'failed': return chalk.red(text);
-      case 'skipped': return chalk.yellow(text);
+      case 'pending':
+        return chalk.gray(text);
+      case 'running':
+        return chalk.cyan(text);
+      case 'done':
+        return chalk.green(text);
+      case 'failed':
+        return chalk.red(text);
+      case 'skipped':
+        return chalk.yellow(text);
     }
   }
 

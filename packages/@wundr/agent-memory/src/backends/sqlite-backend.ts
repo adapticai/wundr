@@ -335,9 +335,9 @@ export class SQLiteBackend {
    */
   readMeta(): IndexMeta | null {
     const db = this.requireDb();
-    const row = db.prepare('SELECT value FROM meta WHERE key = ?').get(META_KEY) as
-      | { value: string }
-      | undefined;
+    const row = db
+      .prepare('SELECT value FROM meta WHERE key = ?')
+      .get(META_KEY) as { value: string } | undefined;
     if (!row?.value) {
       return null;
     }
@@ -480,10 +480,9 @@ export class SQLiteBackend {
     );
     if (this.ftsAvailable) {
       try {
-        db.prepare(`DELETE FROM ${FTS_TABLE} WHERE path = ? AND source = ?`).run(
-          filePath,
-          source
-        );
+        db.prepare(
+          `DELETE FROM ${FTS_TABLE} WHERE path = ? AND source = ?`
+        ).run(filePath, source);
       } catch {
         // Non-fatal
       }
@@ -519,7 +518,7 @@ export class SQLiteBackend {
       updated_at: number;
     }>;
 
-    return rows.map((row) => ({
+    return rows.map(row => ({
       id: row.id,
       path: row.path,
       source: row.source,
@@ -543,9 +542,17 @@ export class SQLiteBackend {
   getFileRecord(filePath: string): FileRecord | null {
     const db = this.requireDb();
     const row = db
-      .prepare('SELECT path, source, hash, mtime, size FROM files WHERE path = ?')
+      .prepare(
+        'SELECT path, source, hash, mtime, size FROM files WHERE path = ?'
+      )
       .get(filePath) as
-      | { path: string; source: MemorySource; hash: string; mtime: number; size: number }
+      | {
+          path: string;
+          source: MemorySource;
+          hash: string;
+          mtime: number;
+          size: number;
+        }
       | undefined;
     if (!row) {
       return null;
@@ -924,7 +931,7 @@ async function moveIndexFiles(
 async function removeIndexFiles(basePath: string): Promise<void> {
   const suffixes = ['', '-wal', '-shm'];
   await Promise.all(
-    suffixes.map((suffix) => fs.rm(`${basePath}${suffix}`, { force: true }))
+    suffixes.map(suffix => fs.rm(`${basePath}${suffix}`, { force: true }))
   );
 }
 
@@ -932,7 +939,9 @@ async function removeIndexFiles(basePath: string): Promise<void> {
 // node:sqlite dynamic import
 // ---------------------------------------------------------------------------
 
-function requireNodeSqlite(): { DatabaseSync: new (...args: unknown[]) => unknown } {
+function requireNodeSqlite(): {
+  DatabaseSync: new (...args: unknown[]) => unknown;
+} {
   // node:sqlite is available in Node.js 22+ as a built-in module.
   // We use a dynamic require so this module can be imported in environments
   // where node:sqlite is not available (the open() call will fail at runtime).

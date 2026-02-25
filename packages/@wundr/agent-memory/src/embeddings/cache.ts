@@ -89,8 +89,20 @@ export class InMemoryEmbeddingCache {
     this.config = { ...DEFAULT_EMBEDDING_CACHE_CONFIG, ...config };
 
     // Initialize sentinel nodes
-    this.head = { key: '', result: { embedding: [], tokenCount: 0 }, createdAt: 0, prev: null, next: null };
-    this.tail = { key: '', result: { embedding: [], tokenCount: 0 }, createdAt: 0, prev: null, next: null };
+    this.head = {
+      key: '',
+      result: { embedding: [], tokenCount: 0 },
+      createdAt: 0,
+      prev: null,
+      next: null,
+    };
+    this.tail = {
+      key: '',
+      result: { embedding: [], tokenCount: 0 },
+      createdAt: 0,
+      prev: null,
+      next: null,
+    };
     this.head.next = this.tail;
     this.tail.prev = this.head;
   }
@@ -265,8 +277,16 @@ export class InMemoryEmbeddingCache {
    * Export all cache entries as a flat array (for persistence).
    * Entries are ordered from most-recently-used to least-recently-used.
    */
-  exportEntries(): Array<{ key: string; result: EmbeddingResult; createdAt: number }> {
-    const entries: Array<{ key: string; result: EmbeddingResult; createdAt: number }> = [];
+  exportEntries(): Array<{
+    key: string;
+    result: EmbeddingResult;
+    createdAt: number;
+  }> {
+    const entries: Array<{
+      key: string;
+      result: EmbeddingResult;
+      createdAt: number;
+    }> = [];
     let current = this.head.next;
     while (current && current !== this.tail) {
       entries.push({
@@ -285,7 +305,7 @@ export class InMemoryEmbeddingCache {
    * so that ordering is preserved.
    */
   importEntries(
-    entries: Array<{ key: string; result: EmbeddingResult; createdAt: number }>,
+    entries: Array<{ key: string; result: EmbeddingResult; createdAt: number }>
   ): void {
     // Insert in reverse so that the first entry ends up as most-recent
     for (let i = entries.length - 1; i >= 0; i--) {

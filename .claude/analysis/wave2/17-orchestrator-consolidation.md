@@ -2,7 +2,8 @@
 
 ## Problem Statement
 
-The `@wundr/computer-setup` package currently has **three** overlapping orchestrator implementations:
+The `@wundr/computer-setup` package currently has **three** overlapping orchestrator
+implementations:
 
 1. **`RealSetupOrchestrator`** (`installers/real-setup-orchestrator.ts`, 1,412 lines)
    - Hardcoded installer initialization
@@ -15,16 +16,19 @@ The `@wundr/computer-setup` package currently has **three** overlapping orchestr
    - Topological sort for step dependencies
 
 2. **`SetupOrchestrator`** (`orchestrator/index.ts`, 682 lines)
-   - Dependency-injected architecture (ProfileManager, InstallerRegistry, ConfiguratorService, SetupValidator)
+   - Dependency-injected architecture (ProfileManager, InstallerRegistry, ConfiguratorService,
+     SetupValidator)
    - Singleton EventBus pattern
-   - 6-phase orchestration (Validation, Preparation, Installation, Configuration, Verification, Finalization)
+   - 6-phase orchestration (Validation, Preparation, Installation, Configuration, Verification,
+     Finalization)
    - Parallel execution via dependency grouping
    - Step rollback support
    - Report generation
    - Cancel support
 
 3. **`ComputerSetupManager`** (`manager/index.ts`, 654 lines)
-   - Also dependency-injected (ProfileManager, InstallerRegistry, ConfiguratorService, SetupValidator)
+   - Also dependency-injected (ProfileManager, InstallerRegistry, ConfiguratorService,
+     SetupValidator)
    - WundrConfigManager integration
    - 6 developer profiles (frontend, backend, fullstack, devops, ml, mobile)
    - Dry-run mode
@@ -33,39 +37,44 @@ The `@wundr/computer-setup` package currently has **three** overlapping orchestr
 
 ## Overlap Analysis
 
-| Feature | RealSetupOrchestrator | SetupOrchestrator | ComputerSetupManager |
-|---------|----------------------|-------------------|---------------------|
-| Profile system | 4 hardcoded | Via ProfileManager | 6 via ProfileManager |
-| Dependency sort | Topological sort | Topological sort | Topological sort |
-| Idempotent ops | `isInstalled` checks | `skipExisting` flag | `skipExisting` flag |
-| Progress | Callbacks + EventEmitter | EventEmitter + EventBus | EventEmitter |
-| Dry-run | No | Yes | Yes |
-| State persistence | JSON file | No | No |
-| Resume | Yes | No | No |
-| Rollback | No | Yes | Yes |
-| Parallel exec | No | Yes (dependency groups) | No |
-| Cancel | No | Yes | No |
-| Report generation | No | Yes | Yes |
-| Platform detection | Constructor param | Via validator | Auto-detected |
-| Security phases | Yes | No | No |
-| Context engineering | Yes | No | No |
-| Shell aliases | Yes | Via ConfiguratorService | Via ConfiguratorService |
-| Team repos | No | Via profile.team | Via profile.team |
+| Feature             | RealSetupOrchestrator    | SetupOrchestrator       | ComputerSetupManager    |
+| ------------------- | ------------------------ | ----------------------- | ----------------------- |
+| Profile system      | 4 hardcoded              | Via ProfileManager      | 6 via ProfileManager    |
+| Dependency sort     | Topological sort         | Topological sort        | Topological sort        |
+| Idempotent ops      | `isInstalled` checks     | `skipExisting` flag     | `skipExisting` flag     |
+| Progress            | Callbacks + EventEmitter | EventEmitter + EventBus | EventEmitter            |
+| Dry-run             | No                       | Yes                     | Yes                     |
+| State persistence   | JSON file                | No                      | No                      |
+| Resume              | Yes                      | No                      | No                      |
+| Rollback            | No                       | Yes                     | Yes                     |
+| Parallel exec       | No                       | Yes (dependency groups) | No                      |
+| Cancel              | No                       | Yes                     | No                      |
+| Report generation   | No                       | Yes                     | Yes                     |
+| Platform detection  | Constructor param        | Via validator           | Auto-detected           |
+| Security phases     | Yes                      | No                      | No                      |
+| Context engineering | Yes                      | No                      | No                      |
+| Shell aliases       | Yes                      | Via ConfiguratorService | Via ConfiguratorService |
+| Team repos          | No                       | Via profile.team        | Via profile.team        |
 
 ### Duplicated Code
 
 - **Topological sort** is implemented 3 times identically
 - **Step execution** logic is nearly identical across all three
 - **Progress reporting** has 3 different patterns for the same concept
-- **Profile creation** is hardcoded in RealSetupOrchestrator but uses ProfileManager in the other two
+- **Profile creation** is hardcoded in RealSetupOrchestrator but uses ProfileManager in the other
+  two
 - **System validation** (disk space, network) is implemented differently in each
 
 ### Security Vulnerabilities
 
-1. **`RealSetupOrchestrator.getAvailableDiskSpace()`** - Parses `df` output with string splitting; fragile and platform-specific
-2. **`RealSetupOrchestrator.verifyNetworkConnectivity()`** - Calls `ping` directly; could be a vector for command injection if `google.com` were ever parameterized
-3. **`RealSetupOrchestrator.createShellAliases()`** - Appends unsanitized content to `~/.zshrc`; no atomicity guarantee
-4. **`RealSetupOrchestrator.createCoreToolInstaller()`** - Uses `execa('which', [toolName])` which is safe, but the pattern allows arbitrary tool names
+1. **`RealSetupOrchestrator.getAvailableDiskSpace()`** - Parses `df` output with string splitting;
+   fragile and platform-specific
+2. **`RealSetupOrchestrator.verifyNetworkConnectivity()`** - Calls `ping` directly; could be a
+   vector for command injection if `google.com` were ever parameterized
+3. **`RealSetupOrchestrator.createShellAliases()`** - Appends unsanitized content to `~/.zshrc`; no
+   atomicity guarantee
+4. **`RealSetupOrchestrator.createCoreToolInstaller()`** - Uses `execa('which', [toolName])` which
+   is safe, but the pattern allows arbitrary tool names
 5. No input validation on profile names (could be used to traverse paths in state file)
 
 ## Consolidated Design
@@ -136,6 +145,7 @@ Phase 8: Verification & Finalization (validate, report, cleanup)
 ### Incremental Update Support
 
 The `computer-update` command works by:
+
 1. Loading the previous setup state
 2. Resolving the current profile
 3. Diffing the plan against completed operations
@@ -145,12 +155,14 @@ The `computer-update` command works by:
 ### Claude Code Conventions Integration
 
 Phase 7 calls `generateClaudeCodeStructure()` from `project-init/claude-code-conventions.ts` to:
+
 - Create `.claude/` directory with agents, skills, commands
 - Generate `settings.json` based on profile
 - Set up memory architecture based on orchestration options
 - Configure hooks if enabled
 
-This replaces the ad-hoc shell alias and directory creation in `RealSetupOrchestrator.finalizeSetup()`.
+This replaces the ad-hoc shell alias and directory creation in
+`RealSetupOrchestrator.finalizeSetup()`.
 
 ## Migration Path
 
@@ -162,9 +174,9 @@ This replaces the ad-hoc shell alias and directory creation in `RealSetupOrchest
 
 ## File Inventory
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `core/unified-orchestrator.ts` | ~450 | Main orchestration engine |
-| `core/operation-runner.ts` | ~200 | Safe command execution |
-| `core/platform-detector.ts` | ~180 | Platform detection and system checks |
-| `core/profile-manager.ts` | ~250 | Profile management and diffing |
+| File                           | Lines | Purpose                              |
+| ------------------------------ | ----- | ------------------------------------ |
+| `core/unified-orchestrator.ts` | ~450  | Main orchestration engine            |
+| `core/operation-runner.ts`     | ~200  | Safe command execution               |
+| `core/platform-detector.ts`    | ~180  | Platform detection and system checks |
+| `core/profile-manager.ts`      | ~250  | Profile management and diffing       |

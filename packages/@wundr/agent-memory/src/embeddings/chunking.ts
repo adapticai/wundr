@@ -51,16 +51,25 @@ export interface TextChunk {
 export function chunkText(
   text: string,
   config?: ChunkingConfig,
-  maxInputTokens?: number,
+  maxInputTokens?: number
 ): TextChunk[] {
-  const resolved = config ? { ...DEFAULT_CHUNKING_CONFIG, ...config } : DEFAULT_CHUNKING_CONFIG;
+  const resolved = config
+    ? { ...DEFAULT_CHUNKING_CONFIG, ...config }
+    : DEFAULT_CHUNKING_CONFIG;
 
   if (!text || text.length === 0) {
     return [];
   }
 
   if (resolved.strategy === 'none') {
-    return [{ text, startOffset: 0, endOffset: text.length, tokenCount: estimateTokens(text) }];
+    return [
+      {
+        text,
+        startOffset: 0,
+        endOffset: text.length,
+        tokenCount: estimateTokens(text),
+      },
+    ];
   }
 
   if (resolved.strategy === 'sliding-window') {
@@ -72,7 +81,14 @@ export function chunkText(
   }
 
   // Unknown strategy -- treat as no chunking
-  return [{ text, startOffset: 0, endOffset: text.length, tokenCount: estimateTokens(text) }];
+  return [
+    {
+      text,
+      startOffset: 0,
+      endOffset: text.length,
+      tokenCount: estimateTokens(text),
+    },
+  ];
 }
 
 /**
@@ -85,7 +101,7 @@ export function chunkText(
  */
 export function meanPoolEmbeddings(
   embeddings: number[][],
-  weights?: number[],
+  weights?: number[]
 ): number[] {
   if (embeddings.length === 0) {
     return [];
@@ -130,7 +146,7 @@ export function meanPoolEmbeddings(
 function slidingWindowChunk(
   text: string,
   config: ChunkingConfig,
-  maxInputTokens?: number,
+  maxInputTokens?: number
 ): TextChunk[] {
   const chunkTokens = config.chunkSize ?? maxInputTokens ?? 512;
   const overlapTokens = config.overlap ?? 64;
@@ -182,7 +198,7 @@ const SENTENCE_BOUNDARY = /(?<=[.!?])\s+(?=[A-Z"'])/;
 function sentenceChunk(
   text: string,
   config: ChunkingConfig,
-  maxInputTokens?: number,
+  maxInputTokens?: number
 ): TextChunk[] {
   const maxSentences = config.maxSentences ?? 5;
   const maxTokens = maxInputTokens ?? 512;
@@ -199,9 +215,10 @@ function sentenceChunk(
   let currentOffset = 0;
 
   for (const sentence of sentences) {
-    const candidateText = currentSentences.length > 0
-      ? currentSentences.join(' ') + ' ' + sentence
-      : sentence;
+    const candidateText =
+      currentSentences.length > 0
+        ? currentSentences.join(' ') + ' ' + sentence
+        : sentence;
     const candidateTokens = estimateTokens(candidateText);
 
     // Flush current group if adding this sentence would exceed limits
@@ -247,13 +264,19 @@ function sentenceChunk(
  * Falls back to splitting on newlines if no sentence boundaries are found.
  */
 function splitSentences(text: string): string[] {
-  const parts = text.split(SENTENCE_BOUNDARY).map((s) => s.trim()).filter(Boolean);
+  const parts = text
+    .split(SENTENCE_BOUNDARY)
+    .map(s => s.trim())
+    .filter(Boolean);
   if (parts.length > 1) {
     return parts;
   }
 
   // Fallback: split on newlines
-  const lines = text.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+  const lines = text
+    .split(/\n+/)
+    .map(s => s.trim())
+    .filter(Boolean);
   if (lines.length > 1) {
     return lines;
   }

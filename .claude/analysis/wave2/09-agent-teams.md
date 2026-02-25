@@ -1,17 +1,15 @@
 # Wave 2 Analysis: Agent Teams Integration
 
-**Date**: 2026-02-09
-**Module**: `@wundr/orchestrator-daemon/src/teams/`
-**Reference**: Claude Code Agent Teams (experimental feature)
-**Status**: Design + Implementation
+**Date**: 2026-02-09 **Module**: `@wundr/orchestrator-daemon/src/teams/` **Reference**: Claude Code
+Agent Teams (experimental feature) **Status**: Design + Implementation
 
 ---
 
 ## 1. Executive Summary
 
-This document designs Wundr's Agent Teams subsystem, modeled after Claude Code's experimental
-Agent Teams feature. Agent Teams enable multiple Claude Code sessions to coordinate as a team
-with a shared task list, inter-agent messaging (mailbox), and centralized lifecycle management.
+This document designs Wundr's Agent Teams subsystem, modeled after Claude Code's experimental Agent
+Teams feature. Agent Teams enable multiple Claude Code sessions to coordinate as a team with a
+shared task list, inter-agent messaging (mailbox), and centralized lifecycle management.
 
 Claude Code Agent Teams differ from subagents in a critical way: each teammate is a fully
 independent session with its own context window, capable of direct peer-to-peer communication,
@@ -19,12 +17,12 @@ rather than a child process that only reports back to a parent.
 
 ### Key Components
 
-| Component | File | Purpose |
-|---|---|---|
-| Team Coordinator | `team-coordinator.ts` | Team lifecycle, teammate spawning, display mode management |
+| Component        | File                  | Purpose                                                                     |
+| ---------------- | --------------------- | --------------------------------------------------------------------------- |
+| Team Coordinator | `team-coordinator.ts` | Team lifecycle, teammate spawning, display mode management                  |
 | Shared Task List | `shared-task-list.ts` | Cross-session task CRUD with dependency resolution and file-locked claiming |
-| Mailbox | `mailbox.ts` | Point-to-point and broadcast messaging between teammates |
-| Team Hooks | `team-hooks.ts` | `TeammateIdle` and `TaskCompleted` hook handlers with quality gates |
+| Mailbox          | `mailbox.ts`          | Point-to-point and broadcast messaging between teammates                    |
+| Team Hooks       | `team-hooks.ts`       | `TeammateIdle` and `TaskCompleted` hook handlers with quality gates         |
 
 ---
 
@@ -34,12 +32,15 @@ rather than a child process that only reports back to a parent.
 
 Claude Code Agent Teams (enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) provides:
 
-- **Team Lead**: The main Claude Code session that creates the team, spawns teammates, coordinates work
+- **Team Lead**: The main Claude Code session that creates the team, spawns teammates, coordinates
+  work
 - **Teammates**: Separate Claude Code instances, each with their own context window
-- **Shared Task List**: Work items with states (pending/in-progress/completed), dependency tracking, and file-locked claiming
+- **Shared Task List**: Work items with states (pending/in-progress/completed), dependency tracking,
+  and file-locked claiming
 - **Mailbox**: Direct messaging between teammates, automatic idle notifications
 - **Display Modes**: In-process (all in one terminal) or split-pane (tmux/iTerm2)
-- **Hooks**: `TeammateIdle` (exit code 2 = send feedback, keep working) and `TaskCompleted` (exit code 2 = reject completion)
+- **Hooks**: `TeammateIdle` (exit code 2 = send feedback, keep working) and `TaskCompleted` (exit
+  code 2 = reject completion)
 
 ### 2.2 Storage Layout
 
@@ -63,8 +64,9 @@ Claude Code Agent Teams (enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) p
 
 ### 3.1 Orchestrator Daemon (`orchestrator-daemon.ts`)
 
-The daemon manages sessions through `SessionManager`, communicates via `OrchestratorWebSocketServer`,
-and tracks metrics. Agent Teams will extend this with team-aware session coordination.
+The daemon manages sessions through `SessionManager`, communicates via
+`OrchestratorWebSocketServer`, and tracks metrics. Agent Teams will extend this with team-aware
+session coordination.
 
 **Integration point**: Teams become a first-class concept alongside sessions. The daemon gains
 `team_*` WebSocket message types and team-level metrics.
@@ -73,8 +75,8 @@ and tracks metrics. Agent Teams will extend this with team-aware session coordin
 
 Currently manages individual sessions with spawn, execute, stop, and cleanup operations.
 
-**Integration point**: Sessions gain an optional `teamId` field. The session manager learns to
-query sessions by team and enforce team-level session limits.
+**Integration point**: Sessions gain an optional `teamId` field. The session manager learns to query
+sessions by team and enforce team-level session limits.
 
 ### 3.3 Agent Delegation (`@wundr/agent-delegation`)
 
@@ -96,8 +98,8 @@ Cross-orchestrator teams are out of scope for the initial implementation.
 
 Provides topology selection, consensus, and collective learning.
 
-**Integration point**: Swarm topology algorithms can inform team composition decisions,
-but Agent Teams use a simpler flat coordinator model rather than full swarm topologies.
+**Integration point**: Swarm topology algorithms can inform team composition decisions, but Agent
+Teams use a simpler flat coordinator model rather than full swarm topologies.
 
 ---
 
@@ -209,8 +211,8 @@ detectBackend(mode: TeammateMode) -> BackendType
 
 ### 4.2 Shared Task List (`shared-task-list.ts`)
 
-The shared task list is the central coordination mechanism for teams. All teammates can
-read the list, claim tasks, and mark them complete. File locking prevents race conditions.
+The shared task list is the central coordination mechanism for teams. All teammates can read the
+list, claim tasks, and mark them complete. File locking prevents race conditions.
 
 #### Type Definitions
 
@@ -226,9 +228,9 @@ interface SharedTask {
   description: string;
   status: SharedTaskStatus;
   priority: SharedTaskPriority;
-  assigneeId?: string;       // teammate member ID
-  dependencies: string[];    // task IDs that must complete first
-  createdBy: string;         // member ID (usually lead)
+  assigneeId?: string; // teammate member ID
+  dependencies: string[]; // task IDs that must complete first
+  createdBy: string; // member ID (usually lead)
   createdAt: Date;
   updatedAt: Date;
   completedAt?: Date;
@@ -306,6 +308,7 @@ getClaimableTasksForTeammate(teamId, teammateId) -> SharedTask[]
 #### Dependency Resolution
 
 When a task is completed, the system checks all other tasks:
+
 - For each task with `dependencies` containing the completed task ID
 - If all dependencies are now completed, change status from `blocked` to `pending`
 - Emit `task:unblocked` for each newly unblocked task
@@ -313,6 +316,7 @@ When a task is completed, the system checks all other tasks:
 #### File Locking Strategy
 
 Uses `proper-lockfile` (or equivalent) for atomic claim operations:
+
 ```
 /tmp/wundr-teams/{teamId}/tasks.lock
 ```
@@ -328,17 +332,17 @@ The mailbox provides async messaging between teammates. Messages are delivered a
 type MessagePriority = 'normal' | 'urgent';
 
 type MessageType =
-  | 'direct'          // point-to-point message
-  | 'broadcast'       // from one to all
-  | 'system'          // system notifications (idle, shutdown, etc.)
-  | 'plan_approval'   // plan approval request/response
-  | 'task_update';    // task status change notification
+  | 'direct' // point-to-point message
+  | 'broadcast' // from one to all
+  | 'system' // system notifications (idle, shutdown, etc.)
+  | 'plan_approval' // plan approval request/response
+  | 'task_update'; // task status change notification
 
 interface TeamMessage {
   id: string;
   teamId: string;
-  fromId: string;        // sender member ID
-  toId: string | null;   // null for broadcasts
+  fromId: string; // sender member ID
+  toId: string | null; // null for broadcasts
   type: MessageType;
   content: string;
   priority: MessagePriority;
@@ -396,8 +400,8 @@ notifyShutdown(teamId, memberId, reason) -> void
 
 ### 4.4 Team Hooks (`team-hooks.ts`)
 
-Quality gate hooks that fire on teammate lifecycle events, matching Claude Code's
-`TeammateIdle` and `TaskCompleted` hooks.
+Quality gate hooks that fire on teammate lifecycle events, matching Claude Code's `TeammateIdle` and
+`TaskCompleted` hooks.
 
 #### Type Definitions
 
@@ -411,14 +415,14 @@ type HookExitCode = 0 | 1 | 2;
 
 interface HookConfig {
   type: HookType;
-  command: string;      // shell command or script path
-  timeout: number;      // ms before hook is killed
+  command: string; // shell command or script path
+  timeout: number; // ms before hook is killed
   enabled: boolean;
 }
 
 interface HookResult {
   exitCode: HookExitCode;
-  stdout: string;       // feedback message when exitCode === 2
+  stdout: string; // feedback message when exitCode === 2
   stderr: string;
   duration: number;
   timedOut: boolean;
@@ -476,6 +480,7 @@ removeHook(teamId, hookType) -> boolean
 When executing hooks, the following environment variables are set:
 
 **TeammateIdle**:
+
 - `WUNDR_TEAM_ID`
 - `WUNDR_MEMBER_ID`
 - `WUNDR_MEMBER_NAME`
@@ -483,6 +488,7 @@ When executing hooks, the following environment variables are set:
 - `WUNDR_REMAINING_TASKS` (count)
 
 **TaskCompleted**:
+
 - `WUNDR_TEAM_ID`
 - `WUNDR_TASK_ID`
 - `WUNDR_TASK_TITLE`
@@ -542,6 +548,7 @@ interface Session {
 ### 6.2 Memory Manager Integration
 
 Team-level shared memory:
+
 - Scratchpad entries can be tagged with `teamId` for cross-session visibility
 - Episodic memory gains `teamId` filter for team-scoped retrieval
 - Task completion summaries auto-added to lead's semantic memory
@@ -605,14 +612,14 @@ Teammate-2 -> Mailbox: notifyIdle()
 
 ## 8. Differences from Claude Code
 
-| Aspect | Claude Code | Wundr |
-|---|---|---|
-| Storage | File-based (`~/.claude/teams/`) | In-memory + optional persistence via MemoryManager |
-| Communication | tmux `send-keys` / in-process | EventEmitter + WebSocket + optional tmux |
-| Task Locking | File locks | In-memory mutex with optional file lock fallback |
-| Hooks | Bash scripts via child_process | Configurable executors (bash, node, or in-process functions) |
-| Display | Terminal UI (Shift+Up/Down) | WebSocket events for any frontend (CLI, web dashboard) |
-| Permissions | Inherits from lead session | Configurable per-teammate via session config |
+| Aspect        | Claude Code                     | Wundr                                                        |
+| ------------- | ------------------------------- | ------------------------------------------------------------ |
+| Storage       | File-based (`~/.claude/teams/`) | In-memory + optional persistence via MemoryManager           |
+| Communication | tmux `send-keys` / in-process   | EventEmitter + WebSocket + optional tmux                     |
+| Task Locking  | File locks                      | In-memory mutex with optional file lock fallback             |
+| Hooks         | Bash scripts via child_process  | Configurable executors (bash, node, or in-process functions) |
+| Display       | Terminal UI (Shift+Up/Down)     | WebSocket events for any frontend (CLI, web dashboard)       |
+| Permissions   | Inherits from lead session      | Configurable per-teammate via session config                 |
 
 ---
 
@@ -621,6 +628,7 @@ Teammate-2 -> Mailbox: notifyIdle()
 ### 9.1 Teammate Crash Recovery
 
 If a teammate session crashes:
+
 1. `SessionManager` emits `session:failed` with the team session
 2. `TeamCoordinator` receives the event, marks member as `stopped`
 3. Any tasks `in_progress` by that teammate are set back to `pending`
@@ -629,26 +637,26 @@ If a teammate session crashes:
 
 ### 9.2 Task Claim Conflicts
 
-File locking (or in-memory mutex) ensures only one teammate claims a task.
-If a lock acquisition fails (timeout), the claiming teammate gets a `ClaimConflictError`
-and should retry with a different task.
+File locking (or in-memory mutex) ensures only one teammate claims a task. If a lock acquisition
+fails (timeout), the claiming teammate gets a `ClaimConflictError` and should retry with a different
+task.
 
 ### 9.3 Hook Failures
 
-Hook failures (exit code 1 or timeout) are logged but do not block the operation.
-Only exit code 2 has semantic meaning (reject and provide feedback).
+Hook failures (exit code 1 or timeout) are logged but do not block the operation. Only exit code 2
+has semantic meaning (reject and provide feedback).
 
 ---
 
 ## 10. Testing Strategy
 
-| Layer | Approach |
-|---|---|
-| Unit | Each module tested in isolation with mocked dependencies |
+| Layer       | Approach                                                             |
+| ----------- | -------------------------------------------------------------------- |
+| Unit        | Each module tested in isolation with mocked dependencies             |
 | Integration | Team lifecycle test: create -> spawn -> tasks -> messages -> cleanup |
-| Concurrency | Race condition test: multiple teammates claiming the same task |
-| Hooks | Hook execution with various exit codes and timeout scenarios |
-| Error | Teammate crash recovery, orphan cleanup, lock timeout |
+| Concurrency | Race condition test: multiple teammates claiming the same task       |
+| Hooks       | Hook execution with various exit codes and timeout scenarios         |
+| Error       | Teammate crash recovery, orphan cleanup, lock timeout                |
 
 ---
 

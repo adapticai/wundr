@@ -292,14 +292,20 @@ export interface CommandResult<T = unknown> {
 /**
  * Helper to create a success result.
  */
-export function commandSuccess<T>(data?: T, message?: string): CommandResult<T> {
+export function commandSuccess<T>(
+  data?: T,
+  message?: string
+): CommandResult<T> {
   return { exitCode: 0, data, message };
 }
 
 /**
  * Helper to create a failure result.
  */
-export function commandFailure(message: string, exitCode: number = 1): CommandResult {
+export function commandFailure(
+  message: string,
+  exitCode: number = 1
+): CommandResult {
   return { exitCode, message };
 }
 
@@ -382,7 +388,11 @@ export interface CommandDefinition<
    * @param options - Parsed options
    * @param context - Command execution context
    */
-  validate?(args: TArgs, options: TOpts, context: CommandContext): ValidationResult | Promise<ValidationResult>;
+  validate?(
+    args: TArgs,
+    options: TOpts,
+    context: CommandContext
+  ): ValidationResult | Promise<ValidationResult>;
 
   /**
    * Execute the command.
@@ -392,7 +402,11 @@ export interface CommandDefinition<
    * @param context - Command execution context
    * @returns Structured result with exit code and optional data
    */
-  execute(args: TArgs, options: TOpts, context: CommandContext): Promise<CommandResult<TResult>>;
+  execute(
+    args: TArgs,
+    options: TOpts,
+    context: CommandContext
+  ): Promise<CommandResult<TResult>>;
 
   /**
    * Optional cleanup when execute() throws or returns a non-zero exit code.
@@ -427,7 +441,7 @@ export interface CommandHook {
   handler(
     command: CommandDefinition,
     context: CommandContext,
-    result?: CommandResult,
+    result?: CommandResult
   ): Promise<void | boolean>;
 }
 
@@ -486,7 +500,7 @@ export function wrapLegacyCommand(
   name: string,
   description: string,
   factory: () => CommanderCommand,
-  category?: CommandCategory,
+  category?: CommandCategory
 ): CommandDefinition {
   return {
     name,

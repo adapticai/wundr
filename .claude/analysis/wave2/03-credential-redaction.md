@@ -4,31 +4,36 @@
 
 OpenClaw implements credential redaction across four files:
 
-| File | Responsibility |
-|------|---------------|
-| `src/logging/redact.ts` | Regex-based text scrubbing for logs and tool output |
+| File                               | Responsibility                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------ |
+| `src/logging/redact.ts`            | Regex-based text scrubbing for logs and tool output                            |
 | `src/logging/redact-identifier.ts` | One-way SHA-256 hashing for identifiers that need correlation without exposure |
-| `src/config/redact-snapshot.ts` | Config object/raw-text redaction with sentinel round-trip support |
-| `src/gateway/ws-log.ts` | WebSocket log formatting that runs text through `redactSensitiveText` |
+| `src/config/redact-snapshot.ts`    | Config object/raw-text redaction with sentinel round-trip support              |
+| `src/gateway/ws-log.ts`            | WebSocket log formatting that runs text through `redactSensitiveText`          |
 
 Key design decisions carried forward:
 
-- **Partial masking**: Tokens >= 18 chars keep first 6 and last 4 characters (`sk-proj…cdef`), shorter tokens become `***`. This preserves debuggability while hiding secrets.
-- **Sentinel round-trip**: Config display replaces secrets with `__REDACTED__`. On write-back, the sentinel is detected and the original value is restored from disk, preventing UI-originated credential corruption.
-- **Mode toggle**: Redaction can be disabled (`"off"`) for debugging. Default is `"tools"` (redact tool output).
-- **Custom patterns**: Users can supply regex overrides; defaults cover env assignments, JSON fields, CLI flags, Authorization headers, PEM blocks, and provider-specific token prefixes.
+- **Partial masking**: Tokens >= 18 chars keep first 6 and last 4 characters (`sk-proj…cdef`),
+  shorter tokens become `***`. This preserves debuggability while hiding secrets.
+- **Sentinel round-trip**: Config display replaces secrets with `__REDACTED__`. On write-back, the
+  sentinel is detected and the original value is restored from disk, preventing UI-originated
+  credential corruption.
+- **Mode toggle**: Redaction can be disabled (`"off"`) for debugging. Default is `"tools"` (redact
+  tool output).
+- **Custom patterns**: Users can supply regex overrides; defaults cover env assignments, JSON
+  fields, CLI flags, Authorization headers, PEM blocks, and provider-specific token prefixes.
 
 ## 2. Wundr Integration Points
 
 The Wundr orchestrator-daemon surfaces credentials in several places:
 
-| Surface | Risk | Integration Approach |
-|---------|------|---------------------|
-| `Logger` class (`utils/logger.ts`) | API keys logged in debug/error output | Wrap message + args through `redactText` before console output |
-| `OrchestratorWebSocketServer` (`core/websocket-server.ts`) | Tool results, task context, error messages sent over WS contain credentials | Redact JSON payloads in `send()`, `broadcast()`, and `broadcastToSession()` |
-| `Config` module (`config/index.ts`) | `loadConfig()` reads `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `DATABASE_URL`, `REDIS_PASSWORD`, `JWT_SECRET`, `NEOLITH_API_SECRET` from env | `redactConfigObject` for display; `restoreRedactedValues` for write-back |
-| `SessionExecutor` / `ToolExecutor` | Tool inputs/outputs may echo credentials | Redact `ToolCallInfo.toolInput` and `ToolCallInfo.result` before WS broadcast |
-| Environment variable logging | Startup prints accepted env vars | `formatEnvValue` with `redact: true` for sensitive keys |
+| Surface                                                    | Risk                                                                                                                                      | Integration Approach                                                          |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `Logger` class (`utils/logger.ts`)                         | API keys logged in debug/error output                                                                                                     | Wrap message + args through `redactText` before console output                |
+| `OrchestratorWebSocketServer` (`core/websocket-server.ts`) | Tool results, task context, error messages sent over WS contain credentials                                                               | Redact JSON payloads in `send()`, `broadcast()`, and `broadcastToSession()`   |
+| `Config` module (`config/index.ts`)                        | `loadConfig()` reads `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `DATABASE_URL`, `REDIS_PASSWORD`, `JWT_SECRET`, `NEOLITH_API_SECRET` from env | `redactConfigObject` for display; `restoreRedactedValues` for write-back      |
+| `SessionExecutor` / `ToolExecutor`                         | Tool inputs/outputs may echo credentials                                                                                                  | Redact `ToolCallInfo.toolInput` and `ToolCallInfo.result` before WS broadcast |
+| Environment variable logging                               | Startup prints accepted env vars                                                                                                          | `formatEnvValue` with `redact: true` for sensitive keys                       |
 
 ## 3. Architecture
 
@@ -76,33 +81,33 @@ redact.ts
 
 **Carried from OpenClaw** (proven in production):
 
-| Pattern | Example |
-|---------|---------|
-| ENV assignments | `OPENAI_API_KEY=sk-1234...` |
-| JSON secret fields | `{"apiKey":"sk-..."}` |
-| CLI flags | `--api-key sk-...` |
-| Bearer tokens | `Authorization: Bearer eyJ...` |
-| PEM private keys | `-----BEGIN RSA PRIVATE KEY-----` |
-| OpenAI `sk-` prefix | `sk-proj-abc123...` |
-| GitHub PAT `ghp_` | `ghp_xxxxxxxxxxxx` |
-| GitHub fine-grained `github_pat_` | `github_pat_xxxxxxxxxxxx` |
-| Slack tokens `xox[baprs]-` | `xoxb-123-456-abc` |
-| Slack app tokens `xapp-` | `xapp-1-A01...` |
-| Groq `gsk_` | `gsk_xxxxxxxxxxxx` |
-| Google AI `AIza` | `AIzaSyxxxxxxxxxx` |
-| Perplexity `pplx-` | `pplx-xxxxxxxxxxxx` |
-| npm tokens `npm_` | `npm_xxxxxxxxxxxx` |
-| Telegram bot tokens | `123456:ABCDEF...` |
+| Pattern                           | Example                           |
+| --------------------------------- | --------------------------------- |
+| ENV assignments                   | `OPENAI_API_KEY=sk-1234...`       |
+| JSON secret fields                | `{"apiKey":"sk-..."}`             |
+| CLI flags                         | `--api-key sk-...`                |
+| Bearer tokens                     | `Authorization: Bearer eyJ...`    |
+| PEM private keys                  | `-----BEGIN RSA PRIVATE KEY-----` |
+| OpenAI `sk-` prefix               | `sk-proj-abc123...`               |
+| GitHub PAT `ghp_`                 | `ghp_xxxxxxxxxxxx`                |
+| GitHub fine-grained `github_pat_` | `github_pat_xxxxxxxxxxxx`         |
+| Slack tokens `xox[baprs]-`        | `xoxb-123-456-abc`                |
+| Slack app tokens `xapp-`          | `xapp-1-A01...`                   |
+| Groq `gsk_`                       | `gsk_xxxxxxxxxxxx`                |
+| Google AI `AIza`                  | `AIzaSyxxxxxxxxxx`                |
+| Perplexity `pplx-`                | `pplx-xxxxxxxxxxxx`               |
+| npm tokens `npm_`                 | `npm_xxxxxxxxxxxx`                |
+| Telegram bot tokens               | `123456:ABCDEF...`                |
 
 **New patterns for Wundr**:
 
-| Pattern | Example | Rationale |
-|---------|---------|-----------|
-| AWS access keys `AKIA` | `AKIAIOSFODNN7EXAMPLE` | Wundr may integrate with AWS services |
-| Anthropic `sk-ant-` | `sk-ant-api03-xxxx` | Wundr has Anthropic config section |
-| Database URLs with credentials | `postgres://user:pass@host/db` | Wundr has `DATABASE_URL` config |
-| Redis URLs with passwords | `redis://:password@host:6379` | Wundr has `REDIS_URL` config |
-| Generic JWT-shaped tokens | `eyJ...` (3 base64 segments) | JWT secret and tokens flow through WS |
+| Pattern                        | Example                        | Rationale                             |
+| ------------------------------ | ------------------------------ | ------------------------------------- |
+| AWS access keys `AKIA`         | `AKIAIOSFODNN7EXAMPLE`         | Wundr may integrate with AWS services |
+| Anthropic `sk-ant-`            | `sk-ant-api03-xxxx`            | Wundr has Anthropic config section    |
+| Database URLs with credentials | `postgres://user:pass@host/db` | Wundr has `DATABASE_URL` config       |
+| Redis URLs with passwords      | `redis://:password@host:6379`  | Wundr has `REDIS_URL` config          |
+| Generic JWT-shaped tokens      | `eyJ...` (3 base64 segments)   | JWT secret and tokens flow through WS |
 
 ### 3.3 Sensitive Environment Variable Names
 
@@ -132,7 +137,8 @@ AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN, GITHUB_TOKEN
   [Config written to disk with originals restored]
 ```
 
-The sentinel value is `__WUNDR_REDACTED__` (distinct from OpenClaw's to avoid cross-contamination in shared tooling).
+The sentinel value is `__WUNDR_REDACTED__` (distinct from OpenClaw's to avoid cross-contamination in
+shared tooling).
 
 ## 4. Public API
 
@@ -163,18 +169,22 @@ createRedactingLogger(name: string, level?: LogLevel): Logger
 ## 5. Integration Plan
 
 ### Phase 1 (this wave): Core implementation
+
 - `security/redact.ts` with all patterns and functions
 - Self-contained, zero new dependencies
 
 ### Phase 2 (next wave): Logger integration
+
 - Modify `Logger` class to accept a redaction function
 - Wire `createRedactingLogger` into existing subsystems
 
 ### Phase 3 (next wave): WebSocket integration
+
 - Add redaction middleware to `OrchestratorWebSocketServer.send()`
 - Ensure `notifyToolExecution` redacts tool inputs/outputs
 
 ### Phase 4 (next wave): Config display integration
+
 - Wire `redactConfigObject` into any config-display API endpoint
 - Wire `restoreRedactedValues` into any config-write handler
 
@@ -204,8 +214,13 @@ Key test cases (mirrored from OpenClaw's `redact.test.ts` and `redact-snapshot.t
 
 ## 7. Security Considerations
 
-- **No secrets in error messages**: If restoration fails, the error says "field is redacted" without echoing the value.
-- **Longest-first replacement**: When redacting raw text, sensitive values are sorted by length descending to prevent partial matches creating a shorter leaked substring.
-- **Regex safety**: Custom patterns are wrapped in try/catch; malformed patterns are silently dropped rather than crashing the daemon.
-- **No persistent caching of secrets**: Patterns are compiled once, but actual secret values are never stored in the redaction module itself.
-- **Defense in depth**: Text-based pattern matching catches secrets even when structural (key-name) detection misses them, and vice versa.
+- **No secrets in error messages**: If restoration fails, the error says "field is redacted" without
+  echoing the value.
+- **Longest-first replacement**: When redacting raw text, sensitive values are sorted by length
+  descending to prevent partial matches creating a shorter leaked substring.
+- **Regex safety**: Custom patterns are wrapped in try/catch; malformed patterns are silently
+  dropped rather than crashing the daemon.
+- **No persistent caching of secrets**: Patterns are compiled once, but actual secret values are
+  never stored in the redaction module itself.
+- **Defense in depth**: Text-based pattern matching catches secrets even when structural (key-name)
+  detection misses them, and vice versa.

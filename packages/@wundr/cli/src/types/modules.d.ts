@@ -101,10 +101,12 @@ declare module '@wundr.io/computer-setup' {
     orchestrate(
       profileName: string,
       options?: any,
-      progressCallback?: (progress: SetupProgress) => void,
+      progressCallback?: (progress: SetupProgress) => void
     ): Promise<SetupResult>;
     canResume(): Promise<boolean>;
-    resume(progressCallback?: (progress: SetupProgress) => void): Promise<SetupResult>;
+    resume(
+      progressCallback?: (progress: SetupProgress) => void
+    ): Promise<SetupResult>;
     getAvailableProfiles(): SetupProfile[];
     getProgress(): SetupProgress;
     cancel(): void;
@@ -212,7 +214,7 @@ declare module '@wundr.io/core' {
 
   export function initProjectRag(
     projectPathOrOptions: string | RagInitOptions,
-    options?: RagInitOptions,
+    options?: RagInitOptions
   ): Promise<RagInitResult>;
   export function isRagInitialized(projectPath: string): Promise<boolean>;
   export function removeRag(projectPath: string): Promise<void>;
@@ -304,7 +306,9 @@ declare module '@wundr.io/governance' {
 
   export interface EvaluatorSuite {
     policyCompliance: EvaluatorAgent & {
-      checkPolicyCompliance(context: EvaluationContext): Promise<ComplianceResult>;
+      checkPolicyCompliance(
+        context: EvaluationContext
+      ): Promise<ComplianceResult>;
     };
     rewardAlignment: EvaluatorAgent;
     driftDetection: EvaluatorAgent;
@@ -320,7 +324,7 @@ declare module '@wundr.io/governance' {
   export function createEvaluatorSuite(configs?: any): EvaluatorSuite;
   export function runEvaluatorSuite(
     suite: EvaluatorAgent[] | EvaluatorSuite,
-    context: EvaluationContext,
+    context: EvaluationContext
   ): Promise<EvaluationResult>;
 
   export class PolicyEngine {
@@ -345,8 +349,16 @@ declare module '@wundr.io/governance' {
 
 declare module '@wundr.io/guardian-dashboard' {
   export type HealthStatus =
-    | 'healthy' | 'degraded' | 'unhealthy' | 'unknown'
-    | 'HEALTHY' | 'CONCERNING' | 'CRITICAL' | 'DEGRADED' | 'UNHEALTHY' | 'UNKNOWN';
+    | 'healthy'
+    | 'degraded'
+    | 'unhealthy'
+    | 'unknown'
+    | 'HEALTHY'
+    | 'CONCERNING'
+    | 'CRITICAL'
+    | 'DEGRADED'
+    | 'UNHEALTHY'
+    | 'UNKNOWN';
   export type InterventionSeverity = 'critical' | 'high' | 'medium' | 'low';
 
   export interface SessionDriftData {
@@ -411,7 +423,7 @@ declare module '@wundr.io/guardian-dashboard' {
     recommend(report: AggregatedDriftReport): InterventionRecommendation[];
     recommendInterventions(data: any): InterventionRecommendation[];
     prioritize(
-      recommendations: InterventionRecommendation[],
+      recommendations: InterventionRecommendation[]
     ): InterventionRecommendation[];
   }
 }
@@ -483,7 +495,7 @@ declare module 'open' {
   }
   function open(
     target: string,
-    options?: Options,
+    options?: Options
   ): Promise<import('child_process').ChildProcess>;
   export = open;
 }

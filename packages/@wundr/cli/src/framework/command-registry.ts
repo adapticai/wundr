@@ -79,7 +79,8 @@ export class CommandRegistry {
   constructor(options: RegistryOptions = {}) {
     this.options = {
       strict: options.strict ?? false,
-      commandsDir: options.commandsDir ?? path.join(__dirname, '..', 'commands'),
+      commandsDir:
+        options.commandsDir ?? path.join(__dirname, '..', 'commands'),
       filePattern: options.filePattern ?? /\.(command)\.(ts|js)$/,
     };
   }
@@ -102,7 +103,7 @@ export class CommandRegistry {
       if (this.options.strict) {
         throw new Error(
           `Command "${name}" is already registered. ` +
-          `Disable strict mode or use a different name.`
+            `Disable strict mode or use a different name.`
         );
       }
       // Non-strict: warn and overwrite
@@ -199,7 +200,11 @@ export class CommandRegistry {
         if (exported.module && typeof exported.module === 'object') {
           // CommandModule export
           const mod = exported.module as CommandModule;
-          if (mod.command && mod.command.name && typeof mod.command.execute === 'function') {
+          if (
+            mod.command &&
+            mod.command.name &&
+            typeof mod.command.execute === 'function'
+          ) {
             this.registerModule(mod);
             count++;
           }
@@ -222,7 +227,7 @@ export class CommandRegistry {
         console.warn(
           chalk.yellow(
             `[registry] Failed to load command from ${entry.name}: ` +
-            `${error instanceof Error ? error.message : String(error)}`
+              `${error instanceof Error ? error.message : String(error)}`
           )
         );
       }
@@ -311,7 +316,10 @@ export class CommandRegistry {
    * Get commands grouped by category.
    */
   grouped(): Map<CommandCategory | 'uncategorized', CommandDefinition[]> {
-    const groups = new Map<CommandCategory | 'uncategorized', CommandDefinition[]>();
+    const groups = new Map<
+      CommandCategory | 'uncategorized',
+      CommandDefinition[]
+    >();
 
     for (const registered of Array.from(this.commands.values())) {
       const cat = registered.definition.category ?? 'uncategorized';
@@ -360,7 +368,7 @@ export class CommandRegistry {
    */
   buildProgram(
     program: Command,
-    contextFactory: (globalOpts: GlobalOptions) => CommandContext,
+    contextFactory: (globalOpts: GlobalOptions) => CommandContext
   ): void {
     for (const registered of Array.from(this.commands.values())) {
       const { definition, hooks } = registered;
@@ -371,7 +379,9 @@ export class CommandRegistry {
       }
 
       // Check for legacy factory
-      const legacyFactory = (definition as CommandDefinition & { _legacyFactory?: () => Command })._legacyFactory;
+      const legacyFactory = (
+        definition as CommandDefinition & { _legacyFactory?: () => Command }
+      )._legacyFactory;
 
       if (legacyFactory) {
         // Legacy command: add the pre-built Commander.Command directly
@@ -391,7 +401,7 @@ export class CommandRegistry {
   private buildCommand(
     definition: CommandDefinition,
     hooks: CommandHook[],
-    contextFactory: (globalOpts: GlobalOptions) => CommandContext,
+    contextFactory: (globalOpts: GlobalOptions) => CommandContext
   ): Command {
     const cmd = new Command(definition.name);
     cmd.description(definition.description);
@@ -412,8 +422,12 @@ export class CommandRegistry {
     if (definition.arguments) {
       for (const arg of definition.arguments) {
         const spec = arg.required
-          ? arg.variadic ? `<${arg.name}...>` : `<${arg.name}>`
-          : arg.variadic ? `[${arg.name}...]` : `[${arg.name}]`;
+          ? arg.variadic
+            ? `<${arg.name}...>`
+            : `<${arg.name}>`
+          : arg.variadic
+            ? `[${arg.name}...]`
+            : `[${arg.name}]`;
         cmd.argument(spec, arg.description, arg.defaultValue);
       }
     }
@@ -422,9 +436,17 @@ export class CommandRegistry {
     if (definition.options) {
       for (const opt of definition.options) {
         if (opt.required) {
-          cmd.requiredOption(opt.flags, opt.description, opt.defaultValue as string | boolean | undefined);
+          cmd.requiredOption(
+            opt.flags,
+            opt.description,
+            opt.defaultValue as string | boolean | undefined
+          );
         } else {
-          cmd.option(opt.flags, opt.description, opt.defaultValue as string | boolean | undefined);
+          cmd.option(
+            opt.flags,
+            opt.description,
+            opt.defaultValue as string | boolean | undefined
+          );
         }
 
         if (opt.choices) {
@@ -437,10 +459,15 @@ export class CommandRegistry {
     // Examples in help text
     if (definition.examples && definition.examples.length > 0) {
       const examplesText = definition.examples
-        .map(ex => `  ${chalk.green(ex.command)}  ${chalk.gray(ex.description)}`)
+        .map(
+          ex => `  ${chalk.green(ex.command)}  ${chalk.gray(ex.description)}`
+        )
         .join('\n');
 
-      cmd.addHelpText('after', `\n${chalk.gray('Examples:')}\n${examplesText}\n`);
+      cmd.addHelpText(
+        'after',
+        `\n${chalk.gray('Examples:')}\n${examplesText}\n`
+      );
     }
 
     // Subcommands
@@ -455,7 +482,10 @@ export class CommandRegistry {
     cmd.action(async (...actionArgs: unknown[]) => {
       // Commander passes positional args first, then options object, then the Command
       const commanderCmd = actionArgs[actionArgs.length - 1] as Command;
-      const options = actionArgs[actionArgs.length - 2] as Record<string, unknown>;
+      const options = actionArgs[actionArgs.length - 2] as Record<
+        string,
+        unknown
+      >;
 
       // Build positional args map
       const args: Record<string, unknown> = {};
@@ -558,7 +588,9 @@ export class CommandRegistry {
 
         if (!validation.valid) {
           for (const err of validation.errors) {
-            console.error(chalk.red(`Validation error [${err.field}]: ${err.message}`));
+            console.error(
+              chalk.red(`Validation error [${err.field}]: ${err.message}`)
+            );
             if (err.suggestion) {
               console.error(chalk.yellow(`  Suggestion: ${err.suggestion}`));
             }
@@ -574,7 +606,13 @@ export class CommandRegistry {
         const result = await definition.execute(args, options, context);
 
         // Run post-execute hooks
-        await this.runHooks('postExecute', allHooks, definition, context, result);
+        await this.runHooks(
+          'postExecute',
+          allHooks,
+          definition,
+          context,
+          result
+        );
 
         // Handle result
         this.handleResult(result, context);
@@ -655,7 +693,7 @@ complete -F _${programName}_completions ${programName}
   generateZshCompletion(programName: string = 'wundr'): string {
     const commands = this.list()
       .filter(cmd => !cmd.hidden && !cmd.name.includes(':'))
-      .map(cmd => `'${cmd.name}:${cmd.description.replace(/'/g, "")}'`)
+      .map(cmd => `'${cmd.name}:${cmd.description.replace(/'/g, '')}'`)
       .join('\n    ');
 
     return `
@@ -727,7 +765,9 @@ _${programName}
     }
 
     if (typeof definition.execute !== 'function') {
-      throw new Error(`Command "${definition.name}" must have an execute function`);
+      throw new Error(
+        `Command "${definition.name}" must have an execute function`
+      );
     }
 
     // Validate arguments don't have duplicates
@@ -752,7 +792,7 @@ _${programName}
     hooks: CommandHook[],
     command: CommandDefinition,
     context: CommandContext,
-    result?: CommandResult,
+    result?: CommandResult
   ): Promise<void> {
     const matching = hooks.filter(h => {
       if (h.phase !== phase) return false;
@@ -762,7 +802,10 @@ _${programName}
 
     for (const hook of matching) {
       const shouldContinue = await hook.handler(command, context, result);
-      if (shouldContinue === false && (phase === 'preValidate' || phase === 'preExecute')) {
+      if (
+        shouldContinue === false &&
+        (phase === 'preValidate' || phase === 'preExecute')
+      ) {
         throw new Error(`Command "${command.name}" aborted by ${phase} hook`);
       }
     }
@@ -789,9 +832,10 @@ _${programName}
 
     // JSON mode: output data directly
     if (context.globalOptions.json && result.data !== undefined) {
-      const output = typeof result.data === 'string'
-        ? result.data
-        : JSON.stringify(result.data, null, 2);
+      const output =
+        typeof result.data === 'string'
+          ? result.data
+          : JSON.stringify(result.data, null, 2);
       console.log(output);
       return;
     }
@@ -847,7 +891,9 @@ _${programName}
 
       const words = [...subNames, ...optFlags].join(' ');
       if (words) {
-        clauses.push(`      ${definition.name})\n        COMPREPLY=( $(compgen -W "${words}" -- "\${cur}") )\n        ;;`);
+        clauses.push(
+          `      ${definition.name})\n        COMPREPLY=( $(compgen -W "${words}" -- "\${cur}") )\n        ;;`
+        );
       }
     }
 
@@ -868,7 +914,7 @@ _${programName}
 
       if (definition.subcommands) {
         const subs = definition.subcommands
-          .map(s => `'${s.name}:${s.description.replace(/'/g, "")}'`)
+          .map(s => `'${s.name}:${s.description.replace(/'/g, '')}'`)
           .join(' ');
         args.push(`_values 'subcommand' ${subs}`);
       }
@@ -877,13 +923,17 @@ _${programName}
         for (const opt of definition.options) {
           const longMatch = opt.flags.match(/--([a-z-]+)/);
           if (longMatch) {
-            args.push(`'--${longMatch[1]}[${opt.description.replace(/'/g, "")}]'`);
+            args.push(
+              `'--${longMatch[1]}[${opt.description.replace(/'/g, '')}]'`
+            );
           }
         }
       }
 
       if (args.length > 0) {
-        clauses.push(`        ${definition.name})\n          _arguments ${args.join(' \\\n            ')}\n          ;;`);
+        clauses.push(
+          `        ${definition.name})\n          _arguments ${args.join(' \\\n            ')}\n          ;;`
+        );
       }
     }
 

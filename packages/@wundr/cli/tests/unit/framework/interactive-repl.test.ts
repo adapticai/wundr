@@ -11,14 +11,17 @@
 
 import { InteractiveRepl } from '../../../src/framework/interactive-repl';
 import { CommandRegistry } from '../../../src/framework/command-registry';
-import type { CommandDefinition, CommandCategory } from '../../../src/framework/command-interface';
+import type {
+  CommandDefinition,
+  CommandCategory,
+} from '../../../src/framework/command-interface';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function makeCommand(
-  overrides: Partial<CommandDefinition> = {},
+  overrides: Partial<CommandDefinition> = {}
 ): CommandDefinition {
   return {
     name: overrides.name ?? 'test-cmd',
@@ -30,7 +33,7 @@ function makeCommand(
 
 function createRepl(
   commands: Partial<CommandDefinition>[] = [],
-  replOptions: ConstructorParameters<typeof InteractiveRepl>[1] = {},
+  replOptions: ConstructorParameters<typeof InteractiveRepl>[1] = {}
 ): { repl: InteractiveRepl; registry: CommandRegistry } {
   const registry = new CommandRegistry({ strict: false });
   for (const cmd of commands) {
@@ -55,7 +58,7 @@ describe('InteractiveRepl', () => {
 
     it('should merge custom aliases with defaults', () => {
       const { repl } = createRepl([], {
-        aliases: { 'd': 'deploy' },
+        aliases: { d: 'deploy' },
       });
 
       const aliases = repl.getAliases();
@@ -101,7 +104,7 @@ describe('InteractiveRepl', () => {
 
     it('should override default aliases via constructor options', () => {
       const { repl } = createRepl([], {
-        aliases: { 's': 'serve' },
+        aliases: { s: 'serve' },
       });
 
       expect(repl.getAliases()['s']).toBe('serve');
@@ -145,14 +148,22 @@ describe('InteractiveRepl', () => {
       const { repl } = createRepl();
       const parse = (repl as any).parseInput.bind(repl);
 
-      expect(parse('deploy "my app" prod')).toEqual(['deploy', 'my app', 'prod']);
+      expect(parse('deploy "my app" prod')).toEqual([
+        'deploy',
+        'my app',
+        'prod',
+      ]);
     });
 
     it('should handle single-quoted strings', () => {
       const { repl } = createRepl();
       const parse = (repl as any).parseInput.bind(repl);
 
-      expect(parse("deploy 'my app' prod")).toEqual(['deploy', 'my app', 'prod']);
+      expect(parse("deploy 'my app' prod")).toEqual([
+        'deploy',
+        'my app',
+        'prod',
+      ]);
     });
 
     it('should return empty array for empty input', () => {
@@ -191,7 +202,7 @@ describe('InteractiveRepl', () => {
 
   describe('resolveAlias (private)', () => {
     it('should expand a known alias', () => {
-      const { repl } = createRepl([], { aliases: { 'd': 'deploy' } });
+      const { repl } = createRepl([], { aliases: { d: 'deploy' } });
       const resolve = (repl as any).resolveAlias.bind(repl);
 
       expect(resolve('d --force')).toBe('deploy --force');
@@ -256,9 +267,7 @@ describe('InteractiveRepl', () => {
     });
 
     it('should return true for "help"', () => {
-      const { repl } = createRepl([
-        { name: 'deploy', description: 'Deploy' },
-      ]);
+      const { repl } = createRepl([{ name: 'deploy', description: 'Deploy' }]);
       const handle = (repl as any).handleBuiltinCommand.bind(repl);
 
       expect(handle('help')).toBe(true);
@@ -323,9 +332,7 @@ describe('InteractiveRepl', () => {
 
   describe('findCommand (private)', () => {
     it('should find a command by direct name', () => {
-      const { repl } = createRepl([
-        { name: 'deploy', description: 'Deploy' },
-      ]);
+      const { repl } = createRepl([{ name: 'deploy', description: 'Deploy' }]);
       const find = (repl as any).findCommand.bind(repl);
 
       const cmd = find('deploy');
@@ -345,9 +352,7 @@ describe('InteractiveRepl', () => {
     });
 
     it('should return undefined for unknown names', () => {
-      const { repl } = createRepl([
-        { name: 'deploy', description: 'Deploy' },
-      ]);
+      const { repl } = createRepl([{ name: 'deploy', description: 'Deploy' }]);
       const find = (repl as any).findCommand.bind(repl);
 
       expect(find('nonexistent')).toBeUndefined();
@@ -408,7 +413,7 @@ describe('InteractiveRepl', () => {
 
     it('should include alias names in completions', () => {
       const { repl } = createRepl([], {
-        aliases: { 'dp': 'deploy' },
+        aliases: { dp: 'deploy' },
       });
       const completer = (repl as any).completer.bind(repl);
 
@@ -455,9 +460,7 @@ describe('InteractiveRepl', () => {
     });
 
     it('should return empty when no matches for option prefix', () => {
-      const { repl } = createRepl([
-        { name: 'deploy', description: 'Deploy' },
-      ]);
+      const { repl } = createRepl([{ name: 'deploy', description: 'Deploy' }]);
       const completer = (repl as any).completer.bind(repl);
 
       // no options defined for deploy, but current starts with --

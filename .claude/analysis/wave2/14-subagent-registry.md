@@ -4,9 +4,14 @@
 
 ## Overview
 
-The Subagent Registry is the central nervous system for Wundr's multi-agent orchestration. It manages agent definitions loaded from `.claude/agents/` markdown files with YAML frontmatter, tracks running agent instances with full lifecycle persistence, handles output collection and synthesis, and provides agent-to-agent communication via a mailbox system.
+The Subagent Registry is the central nervous system for Wundr's multi-agent orchestration. It
+manages agent definitions loaded from `.claude/agents/` markdown files with YAML frontmatter, tracks
+running agent instances with full lifecycle persistence, handles output collection and synthesis,
+and provides agent-to-agent communication via a mailbox system.
 
-This design draws heavily from OpenClaw's battle-tested `subagent-registry.ts` persistence model while extending it with Wundr's 54-agent-type taxonomy, tier hierarchy (Tier 0-3), team composition, and the hub-and-spoke delegation pattern from `@wundr/agent-delegation`.
+This design draws heavily from OpenClaw's battle-tested `subagent-registry.ts` persistence model
+while extending it with Wundr's 54-agent-type taxonomy, tier hierarchy (Tier 0-3), team composition,
+and the hub-and-spoke delegation pattern from `@wundr/agent-delegation`.
 
 ## Architecture
 
@@ -52,17 +57,21 @@ This design draws heavily from OpenClaw's battle-tested `subagent-registry.ts` p
 **File**: `openclaw/src/agents/subagent-registry.ts`
 
 Key patterns we adopt:
-- **SubagentRunRecord**: Tracks `runId`, `childSessionKey`, `requesterSessionKey`, `task`, `cleanup` mode, `outcome`, lifecycle timestamps
+
+- **SubagentRunRecord**: Tracks `runId`, `childSessionKey`, `requesterSessionKey`, `task`, `cleanup`
+  mode, `outcome`, lifecycle timestamps
 - **Persistence**: JSON file at `STATE_DIR/subagents/runs.json` with versioned schema (currently v2)
 - **Lifecycle listener**: `onAgentEvent` hooks for `start`, `end`, `error` phases
 - **Sweeper**: Periodic cleanup of archived runs via `setInterval` with `unref()`
-- **Resume on restart**: `restoreSubagentRunsOnce()` re-hydrates in-memory state and resumes pending work
+- **Resume on restart**: `restoreSubagentRunsOnce()` re-hydrates in-memory state and resumes pending
+  work
 - **Announce flow**: After completion, results are announced back to the requester agent
 - **Cleanup modes**: `"delete"` (remove session) or `"keep"` (preserve transcript)
 
 **File**: `openclaw/src/agents/subagent-registry.store.ts`
 
 Key patterns:
+
 - Versioned persistence schema with migration support (v1 -> v2)
 - `loadSubagentRegistryFromDisk()` / `saveSubagentRegistryToDisk()` pair
 - Legacy field migration (`announceCompletedAt` -> `cleanupCompletedAt`)
@@ -70,6 +79,7 @@ Key patterns:
 **File**: `openclaw/src/auto-reply/reply/commands-subagents.ts`
 
 User-facing subagent commands:
+
 - `/subagents list` - Show all subagents with status, runtime, labels
 - `/subagents stop <id|#|all>` - Abort running subagents
 - `/subagents log <id|#>` - View transcript
@@ -83,28 +93,28 @@ User-facing subagent commands:
 ```yaml
 ---
 # Identity
-name: eng-code-surgeon          # Unique identifier
+name: eng-code-surgeon # Unique identifier
 type: developer | coordinator | evaluator | session-manager
-description: "..."              # When/how to use this agent
-color: '#FF6B35'                # UI color hint
+description: '...' # When/how to use this agent
+color: '#FF6B35' # UI color hint
 
 # Hierarchy
-tier: 0 | 1 | 2 | 3            # 0=Evaluator, 1=Orchestrator, 2=SessionManager, 3=Specialist
+tier: 0 | 1 | 2 | 3 # 0=Evaluator, 1=Orchestrator, 2=SessionManager, 3=Specialist
 scope: engineering | marketing | legal | hr | universal
-archetype: engineering          # For session managers
+archetype: engineering # For session managers
 
 # Capabilities
-capabilities:                   # String array of skills
+capabilities: # String array of skills
   - code_generation
   - refactoring
 priority: high | medium | low | critical
 
 # Tools & Model
-tools:                          # Allowed tool names
+tools: # Allowed tool names
   - Edit
   - Bash
   - Read
-model: sonnet | opus | haiku    # Model preference
+model: sonnet | opus | haiku # Model preference
 permissionMode: acceptEdits | ask | deny
 
 # Lifecycle Hooks
@@ -121,21 +131,21 @@ rewardWeights:
 
 # Constraints
 hardConstraints:
-  - "Atomic commits only"
-  - "Never break existing tests"
+  - 'Atomic commits only'
+  - 'Never break existing tests'
 
 # Autonomy
 autonomousAuthority:
-  - "Refactor methods under 100 lines"
+  - 'Refactor methods under 100 lines'
 escalationTriggers:
   confidence: 0.70
   risk_level: medium
 
 # Team Composition
-keySubAgents:                   # For session managers
+keySubAgents: # For session managers
   - backend-dev
   - frontend-dev
-specializedMCPs:                # MCP servers this agent needs
+specializedMCPs: # MCP servers this agent needs
   - git
   - github
 
@@ -148,7 +158,7 @@ thresholds:
   violation_rate_threshold: 0.005
 escalationProtocol:
   automatic:
-    - "Critical security violations"
+    - 'Critical security violations'
 
 # Memory
 memoryBankPath: '.claude/memory/sessions/${SESSION_ID}/'
@@ -166,26 +176,30 @@ measurableObjectives:
 
 **File**: `@wundr/ai-integration/src/core/ClaudeFlowOrchestrator.ts`
 
-Categories and counts:
-| Category | Count | Agent Types |
-|----------|-------|-------------|
-| Core Development | 5 | coder, reviewer, tester, planner, researcher |
-| Swarm Coordination | 5 | hierarchical-coordinator, mesh-coordinator, adaptive-coordinator, collective-intelligence-coordinator, swarm-memory-manager |
-| Consensus & Distributed | 7 | byzantine-coordinator, raft-manager, gossip-coordinator, consensus-builder, crdt-synchronizer, quorum-manager, security-manager |
-| Performance & Optimization | 5 | perf-analyzer, performance-benchmarker, task-orchestrator, memory-coordinator, smart-agent |
-| GitHub & Repository | 9 | github-modes, pr-manager, code-review-swarm, issue-tracker, release-manager, workflow-automation, project-board-sync, repo-architect, multi-repo-swarm |
-| SPARC Methodology | 6 | sparc-coord, sparc-coder, specification, pseudocode, architecture, refinement |
-| Specialized Development | 8 | backend-dev, mobile-dev, ml-developer, cicd-engineer, api-docs, system-architect, code-analyzer, base-template-generator |
-| Testing & Validation | 2 | tdd-london-swarm, production-validator |
-| Migration & Planning | 2 | migration-planner, swarm-init |
+Categories and counts: | Category | Count | Agent Types | |----------|-------|-------------| | Core
+Development | 5 | coder, reviewer, tester, planner, researcher | | Swarm Coordination | 5 |
+hierarchical-coordinator, mesh-coordinator, adaptive-coordinator,
+collective-intelligence-coordinator, swarm-memory-manager | | Consensus & Distributed | 7 |
+byzantine-coordinator, raft-manager, gossip-coordinator, consensus-builder, crdt-synchronizer,
+quorum-manager, security-manager | | Performance & Optimization | 5 | perf-analyzer,
+performance-benchmarker, task-orchestrator, memory-coordinator, smart-agent | | GitHub & Repository
+| 9 | github-modes, pr-manager, code-review-swarm, issue-tracker, release-manager,
+workflow-automation, project-board-sync, repo-architect, multi-repo-swarm | | SPARC Methodology | 6
+| sparc-coord, sparc-coder, specification, pseudocode, architecture, refinement | | Specialized
+Development | 8 | backend-dev, mobile-dev, ml-developer, cicd-engineer, api-docs, system-architect,
+code-analyzer, base-template-generator | | Testing & Validation | 2 | tdd-london-swarm,
+production-validator | | Migration & Planning | 2 | migration-planner, swarm-init |
 
 ### Wundr Agent Delegation
 
 **File**: `@wundr/agent-delegation/src/types.ts`
 
 Key types we integrate with:
-- `AgentDefinition`: id, name, role, capabilities, capabilityLevels, modelPreference, maxConcurrentTasks, timeout, retryPolicy
-- `DelegationTask`: id, description, context, requiredCapabilities, preferredAgentId, priority, timeout
+
+- `AgentDefinition`: id, name, role, capabilities, capabilityLevels, modelPreference,
+  maxConcurrentTasks, timeout, retryPolicy
+- `DelegationTask`: id, description, context, requiredCapabilities, preferredAgentId, priority,
+  timeout
 - `DelegationResult`: taskId, agentId, status, output, error, tokensUsed, duration
 - `DelegationStatus`: pending, assigned, executing, completed, failed, cancelled, timeout
 - `SynthesisStrategy`: merge, vote, consensus, best_pick, weighted_average, chain
@@ -205,7 +219,7 @@ interface AgentMetadata {
   color?: string;
 
   // Hierarchy
-  tier?: AgentTier;  // 0-3
+  tier?: AgentTier; // 0-3
   scope?: string;
   archetype?: string;
 
@@ -254,16 +268,24 @@ interface AgentMetadata {
   measurableObjectives?: Record<string, string>;
 
   // Inheritance
-  extends?: string;  // Base agent to inherit from
+  extends?: string; // Base agent to inherit from
 }
 ```
 
 Type restrictions via `Task(agent_type)` syntax:
+
 ```typescript
 type AgentType =
-  | 'developer' | 'coordinator' | 'evaluator' | 'session-manager'
-  | 'researcher' | 'reviewer' | 'tester' | 'planner'
-  | 'specialist' | 'swarm-coordinator';
+  | 'developer'
+  | 'coordinator'
+  | 'evaluator'
+  | 'session-manager'
+  | 'researcher'
+  | 'reviewer'
+  | 'tester'
+  | 'planner'
+  | 'specialist'
+  | 'swarm-coordinator';
 
 type AgentTier = 0 | 1 | 2 | 3;
 type AgentPriority = 'critical' | 'high' | 'medium' | 'low';
@@ -284,6 +306,7 @@ Responsible for discovering and parsing `.claude/agents/**/*.md` files:
 7. **Hot Reload**: Watch for file changes and re-parse on modification
 
 Path-based categorization:
+
 ```
 .claude/agents/core/coder.md       -> category: "core"
 .claude/agents/swarm/mesh.md       -> category: "swarm"
@@ -330,9 +353,7 @@ Groups are defined either declaratively in config or derived from session manage
 
 ```typescript
 // Explicit group definition
-registry.defineGroup('code-review-team', [
-  'reviewer', 'code-analyzer', 'security-manager'
-]);
+registry.defineGroup('code-review-team', ['reviewer', 'code-analyzer', 'security-manager']);
 
 // Derived from session manager
 const engManager = registry.get('session-engineering-manager');
@@ -346,7 +367,7 @@ const team = registry.getTeamForManager('session-engineering-manager');
 # .claude/agents/sub-agents/engineering/code-surgeon.md
 ---
 name: eng-code-surgeon
-extends: core/coder          # Inherits from coder agent
+extends: core/coder # Inherits from coder agent
 scope: engineering
 tier: 3
 tools:
@@ -355,7 +376,8 @@ tools:
 ---
 ```
 
-Resolution: Load parent definition first, deep-merge child metadata over parent, concatenate capabilities arrays.
+Resolution: Load parent definition first, deep-merge child metadata over parent, concatenate
+capabilities arrays.
 
 ### 4. Agent Lifecycle Manager (agent-lifecycle.ts)
 
@@ -401,7 +423,7 @@ interface AgentLifecycleManager {
 interface AgentRunRecord {
   // Core identity (from OpenClaw)
   runId: string;
-  agentId: string;              // Which agent definition is running
+  agentId: string; // Which agent definition is running
   childSessionKey: string;
   requesterSessionKey: string;
   requesterDisplayKey: string;
@@ -462,12 +484,12 @@ interface AgentRunRecord {
 
 ```typescript
 interface ResourceLimits {
-  maxConcurrentAgents: number;          // Default: 10
-  maxConcurrentPerType: number;         // Default: 5
+  maxConcurrentAgents: number; // Default: 10
+  maxConcurrentPerType: number; // Default: 5
   maxConcurrentPerTier: Record<AgentTier, number>;
-  defaultTimeoutMs: number;             // Default: 300_000 (5 min)
-  maxTimeoutMs: number;                 // Default: 3_600_000 (1 hour)
-  archiveAfterMinutes: number;          // Default: 60
+  defaultTimeoutMs: number; // Default: 300_000 (5 min)
+  maxTimeoutMs: number; // Default: 3_600_000 (1 hour)
+  archiveAfterMinutes: number; // Default: 60
 }
 ```
 
@@ -484,11 +506,12 @@ interface MailboxMessage {
   content: string;
   timestamp: number;
   read: boolean;
-  replyTo?: string;     // For threaded conversations
+  replyTo?: string; // For threaded conversations
 }
 ```
 
 Messages are delivered via the lifecycle manager. A running agent can:
+
 1. Send a message to another agent's mailbox
 2. Read messages from its own mailbox
 3. Reply to a specific message
@@ -510,6 +533,7 @@ interface SynthesizedResult {
 ```
 
 Synthesis strategies (from `@wundr/agent-delegation`):
+
 - **merge**: Deep-merge object outputs, concatenate arrays
 - **vote**: Most common output wins
 - **consensus**: Field-by-field agreement above threshold
@@ -520,6 +544,7 @@ Synthesis strategies (from `@wundr/agent-delegation`):
 ### 6. Integration Points
 
 **With OrchestratorDaemon**:
+
 ```typescript
 // In orchestrator-daemon startup
 const loader = new AgentLoader({ agentsDir: '.claude/agents' });
@@ -535,6 +560,7 @@ lifecycle.restore(); // Resume from disk
 ```
 
 **With HubCoordinator** (`@wundr/agent-delegation`):
+
 ```typescript
 // Bridge registry definitions to delegation system
 for (const def of registry.listAll()) {
@@ -549,6 +575,7 @@ for (const def of registry.listAll()) {
 ```
 
 **With Agent Teams (mailbox)**:
+
 ```typescript
 // Route Task(agent_type) to appropriate agent
 function resolveTaskAgent(taskType: string): AgentDefinition[] {
@@ -558,12 +585,12 @@ function resolveTaskAgent(taskType: string): AgentDefinition[] {
 
 ## File Manifest
 
-| File | Purpose |
-|------|---------|
-| `agent-types.ts` | Type definitions, Zod schemas, enums |
-| `agent-loader.ts` | Parse .md files, resolve inheritance, validate |
-| `agent-registry.ts` | Central registry with lookup, groups, teams |
-| `agent-lifecycle.ts` | Spawn, monitor, cleanup, persistence, mailbox |
+| File                 | Purpose                                        |
+| -------------------- | ---------------------------------------------- |
+| `agent-types.ts`     | Type definitions, Zod schemas, enums           |
+| `agent-loader.ts`    | Parse .md files, resolve inheritance, validate |
+| `agent-registry.ts`  | Central registry with lookup, groups, teams    |
+| `agent-lifecycle.ts` | Spawn, monitor, cleanup, persistence, mailbox  |
 
 ## Migration Path
 

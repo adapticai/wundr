@@ -179,7 +179,7 @@ describe('ProgressBar', () => {
     it('should use a custom format function when provided', () => {
       const bar = new ProgressBar({
         total: 100,
-        format: (state) => `custom: ${state.current}/${state.total}`,
+        format: state => `custom: ${state.current}/${state.total}`,
       });
       bar.update(42);
 
@@ -419,10 +419,10 @@ describe('StepTracker', () => {
       const tracker = new StepTracker(['A', 'B', 'C', 'D']);
 
       tracker.start(0);
-      tracker.complete(0);   // done
-      tracker.skip(1);       // skipped
+      tracker.complete(0); // done
+      tracker.skip(1); // skipped
       tracker.start(2);
-      tracker.fail(2);       // failed - not completed
+      tracker.fail(2); // failed - not completed
       // D is still pending
 
       const progress = tracker.getProgress();

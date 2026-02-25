@@ -14,7 +14,10 @@
  */
 
 import { InMemoryEmbeddingCache } from '../../embeddings/cache';
-import { computeCacheKey, type EmbeddingResult } from '../../embeddings/provider';
+import {
+  computeCacheKey,
+  type EmbeddingResult,
+} from '../../embeddings/provider';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -236,7 +239,10 @@ describe('InMemoryEmbeddingCache', () => {
     it('should expire entries after TTL', () => {
       jest.useFakeTimers();
 
-      const ttlCache = new InMemoryEmbeddingCache({ maxEntries: 100, ttlMs: 1000 });
+      const ttlCache = new InMemoryEmbeddingCache({
+        maxEntries: 100,
+        ttlMs: 1000,
+      });
       const key = makeKey('ttl-test');
       ttlCache.set(key, makeResult());
 
@@ -252,7 +258,10 @@ describe('InMemoryEmbeddingCache', () => {
     it('should count TTL expiration as a miss', () => {
       jest.useFakeTimers();
 
-      const ttlCache = new InMemoryEmbeddingCache({ maxEntries: 100, ttlMs: 500 });
+      const ttlCache = new InMemoryEmbeddingCache({
+        maxEntries: 100,
+        ttlMs: 500,
+      });
       const key = makeKey('ttl-miss');
       ttlCache.set(key, makeResult());
 
@@ -267,7 +276,10 @@ describe('InMemoryEmbeddingCache', () => {
     it('should remove expired entries from the map on get', () => {
       jest.useFakeTimers();
 
-      const ttlCache = new InMemoryEmbeddingCache({ maxEntries: 100, ttlMs: 500 });
+      const ttlCache = new InMemoryEmbeddingCache({
+        maxEntries: 100,
+        ttlMs: 500,
+      });
       const key = makeKey('ttl-remove');
       ttlCache.set(key, makeResult());
 
@@ -280,7 +292,10 @@ describe('InMemoryEmbeddingCache', () => {
     it('should expire entries on has() check', () => {
       jest.useFakeTimers();
 
-      const ttlCache = new InMemoryEmbeddingCache({ maxEntries: 100, ttlMs: 500 });
+      const ttlCache = new InMemoryEmbeddingCache({
+        maxEntries: 100,
+        ttlMs: 500,
+      });
       const key = makeKey('ttl-has');
       ttlCache.set(key, makeResult());
 
@@ -293,7 +308,10 @@ describe('InMemoryEmbeddingCache', () => {
     it('should not expire entries when TTL is 0 (disabled)', () => {
       jest.useFakeTimers();
 
-      const noTtlCache = new InMemoryEmbeddingCache({ maxEntries: 100, ttlMs: 0 });
+      const noTtlCache = new InMemoryEmbeddingCache({
+        maxEntries: 100,
+        ttlMs: 0,
+      });
       const key = makeKey('no-ttl');
       noTtlCache.set(key, makeResult());
 
@@ -471,7 +489,11 @@ describe('InMemoryEmbeddingCache', () => {
       cache.set(makeKey('existing'), makeResult(3, 0.1));
 
       const entries = [
-        { key: makeKey('existing'), result: makeResult(3, 0.9), createdAt: Date.now() },
+        {
+          key: makeKey('existing'),
+          result: makeResult(3, 0.9),
+          createdAt: Date.now(),
+        },
         { key: makeKey('new'), result: makeResult(), createdAt: Date.now() },
       ];
 

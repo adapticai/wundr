@@ -1,24 +1,21 @@
 # Wave 2 Analysis: Lifecycle Hooks System
 
-**Document**: 11-lifecycle-hooks.md
-**Status**: Implementation Complete
-**Priority**: P1 -- Core infrastructure for extensibility
-**Depends on**: orchestrator-daemon core, session management, tool execution
+**Document**: 11-lifecycle-hooks.md **Status**: Implementation Complete **Priority**: P1 -- Core
+infrastructure for extensibility **Depends on**: orchestrator-daemon core, session management, tool
+execution
 
 ---
 
 ## 1. Executive Summary
 
-This document describes the design and implementation of Wundr's lifecycle hooks
-system for the orchestrator daemon. The system is modeled after Claude Code's
-(OpenClaw) hooks architecture, adapted for Wundr's multi-session, multi-agent
-orchestration model.
+This document describes the design and implementation of Wundr's lifecycle hooks system for the
+orchestrator daemon. The system is modeled after Claude Code's (OpenClaw) hooks architecture,
+adapted for Wundr's multi-session, multi-agent orchestration model.
 
-The hooks system provides 14 lifecycle events spanning session management, tool
-execution, subagent coordination, permission handling, context compaction, and
-notifications. Hooks can be registered via configuration files or programmatically
-and executed via three mechanisms: shell commands, LLM prompts, or sub-agent
-invocations.
+The hooks system provides 14 lifecycle events spanning session management, tool execution, subagent
+coordination, permission handling, context compaction, and notifications. Hooks can be registered
+via configuration files or programmatically and executed via three mechanisms: shell commands, LLM
+prompts, or sub-agent invocations.
 
 ## 2. Reference Architecture Analysis
 
@@ -27,6 +24,7 @@ invocations.
 OpenClaw implements hooks at two levels:
 
 **Internal Hooks** (`src/hooks/`):
+
 - Event-driven system with `type:action` event keys (e.g., `command:new`, `session:start`)
 - In-memory handler registry (`Map<string, InternalHookHandler[]>`)
 - Sequential execution with error catching
@@ -35,6 +33,7 @@ OpenClaw implements hooks at two levels:
 - Eligibility filtering (OS, binaries, env vars, config paths)
 
 **Plugin Hooks** (`src/plugins/hooks.ts`):
+
 - Typed hook system with explicit hook names (14 hook types)
 - Priority-ordered execution
 - Two execution strategies: void (parallel) and modifying (sequential with merge)
@@ -42,6 +41,7 @@ OpenClaw implements hooks at two levels:
 - Global singleton pattern via `hook-runner-global.ts`
 
 **Key Design Patterns Adopted**:
+
 1. **Dual execution strategy**: Void hooks run in parallel; modifying hooks run sequentially
 2. **Priority ordering**: Higher priority runs first
 3. **Error isolation**: Errors in one hook do not prevent others from running
@@ -51,6 +51,7 @@ OpenClaw implements hooks at two levels:
 ### 2.2 Existing Wundr Hooks
 
 Wundr already has informal hook touchpoints:
+
 - `.claude/commands/hooks/` -- CLI-level hook commands (pre-edit, post-edit, etc.)
 - `.claude/helpers/standard-checkpoint-hooks.sh` -- Shell-based checkpoint hooks
 - `templates/consumer-integration/advanced-setup/hooks.config.js` -- Config-driven hooks
@@ -62,35 +63,35 @@ The new system formalizes and unifies these into a single typed architecture.
 
 ### 3.1 All 14 Lifecycle Events
 
-| # | Event | Phase | Strategy | Can Modify? | Description |
-|---|-------|-------|----------|-------------|-------------|
-| 1 | `SessionStart` | Session | Parallel | No | Fired when a new session begins |
-| 2 | `UserPromptSubmit` | Prompt | Sequential | Yes | Before user prompt is processed; can rewrite or block |
-| 3 | `PreToolUse` | Tool | Sequential | Yes | Before any tool is executed; can modify input or block |
-| 4 | `PermissionRequest` | Permission | Sequential | Yes | When permission is needed; can auto-approve/deny |
-| 5 | `PostToolUse` | Tool | Parallel | No | After tool execution succeeds |
-| 6 | `PostToolUseFailure` | Tool | Parallel | No | After tool execution fails |
-| 7 | `Notification` | Notification | Parallel | No | For user notifications (routable to external systems) |
-| 8 | `SubagentStart` | Subagent | Parallel | No | When a subagent is spawned |
-| 9 | `SubagentStop` | Subagent | Parallel | No | When a subagent completes |
-| 10 | `Stop` | Session | Parallel | No | When session is stopping (before cleanup) |
-| 11 | `TeammateIdle` | Subagent | Parallel | No | When a teammate in Agent Teams finishes |
-| 12 | `TaskCompleted` | Task | Parallel | No | When a task is marked complete |
-| 13 | `PreCompact` | Context | Sequential | Yes | Before context compaction; can skip or customize |
-| 14 | `SessionEnd` | Session | Parallel | No | When session ends (after cleanup) |
+| #   | Event                | Phase        | Strategy   | Can Modify? | Description                                            |
+| --- | -------------------- | ------------ | ---------- | ----------- | ------------------------------------------------------ |
+| 1   | `SessionStart`       | Session      | Parallel   | No          | Fired when a new session begins                        |
+| 2   | `UserPromptSubmit`   | Prompt       | Sequential | Yes         | Before user prompt is processed; can rewrite or block  |
+| 3   | `PreToolUse`         | Tool         | Sequential | Yes         | Before any tool is executed; can modify input or block |
+| 4   | `PermissionRequest`  | Permission   | Sequential | Yes         | When permission is needed; can auto-approve/deny       |
+| 5   | `PostToolUse`        | Tool         | Parallel   | No          | After tool execution succeeds                          |
+| 6   | `PostToolUseFailure` | Tool         | Parallel   | No          | After tool execution fails                             |
+| 7   | `Notification`       | Notification | Parallel   | No          | For user notifications (routable to external systems)  |
+| 8   | `SubagentStart`      | Subagent     | Parallel   | No          | When a subagent is spawned                             |
+| 9   | `SubagentStop`       | Subagent     | Parallel   | No          | When a subagent completes                              |
+| 10  | `Stop`               | Session      | Parallel   | No          | When session is stopping (before cleanup)              |
+| 11  | `TeammateIdle`       | Subagent     | Parallel   | No          | When a teammate in Agent Teams finishes                |
+| 12  | `TaskCompleted`      | Task         | Parallel   | No          | When a task is marked complete                         |
+| 13  | `PreCompact`         | Context      | Sequential | Yes         | Before context compaction; can skip or customize       |
+| 14  | `SessionEnd`         | Session      | Parallel   | No          | When session ends (after cleanup)                      |
 
 ### 3.2 Modifying vs. Void Hooks
 
-**Modifying hooks** (4 events) run sequentially in priority order. Each handler
-can return a result that is merged into the accumulated result:
+**Modifying hooks** (4 events) run sequentially in priority order. Each handler can return a result
+that is merged into the accumulated result:
 
 - `UserPromptSubmit` -> `{ prompt?, block?, blockReason? }`
 - `PreToolUse` -> `{ toolInput?, block?, blockReason? }`
 - `PermissionRequest` -> `{ decision?, reason? }`
 - `PreCompact` -> `{ skipCompaction?, strategy?, preserveMessageIndices? }`
 
-**Void hooks** (10 events) run in parallel (bounded by `maxConcurrency`).
-They cannot modify behavior, only observe and react.
+**Void hooks** (10 events) run in parallel (bounded by `maxConcurrency`). They cannot modify
+behavior, only observe and react.
 
 ## 4. Architecture
 
@@ -137,6 +138,7 @@ packages/@wundr/orchestrator-daemon/src/hooks/
 Hooks can be registered two ways:
 
 **Config file** (`wundr.config.ts` or `hooks.config.ts`):
+
 ```ts
 const hooksConfig: HooksConfig = {
   enabled: true,
@@ -146,7 +148,8 @@ const hooksConfig: HooksConfig = {
       id: 'log-all-tools',
       event: 'PostToolUse',
       type: 'command',
-      command: 'echo "{{metadata.toolName}} completed in {{metadata.durationMs}}ms" >> /tmp/tools.log',
+      command:
+        'echo "{{metadata.toolName}} completed in {{metadata.durationMs}}ms" >> /tmp/tools.log',
     },
     {
       id: 'block-dangerous-writes',
@@ -160,6 +163,7 @@ const hooksConfig: HooksConfig = {
 ```
 
 **Programmatic API**:
+
 ```ts
 registry.register({
   id: 'my-plugin-hook',
@@ -167,7 +171,7 @@ registry.register({
   type: 'command',
   priority: 100,
   source: 'plugin',
-  handler: async (metadata) => {
+  handler: async metadata => {
     if (metadata.toolName === 'dangerous_tool') {
       return { block: true, blockReason: 'Blocked by plugin policy' };
     }
@@ -178,17 +182,18 @@ registry.register({
 ### 5.2 Hook Execution Types
 
 **Command hooks**: Spawn a child process. Metadata is passed via:
+
 1. `WUNDR_HOOK_EVENT`, `WUNDR_HOOK_ID`, `WUNDR_HOOK_METADATA` env vars
 2. Flattened top-level metadata fields as `WUNDR_HOOK_*` env vars
 3. `{{metadata.fieldName}}` template interpolation in the command string
 
 If the command writes JSON to stdout, it is parsed as the hook result.
 
-**Prompt hooks**: Interpolate a template with metadata and send to the LLM.
-The response is parsed as the hook result. Useful for AI-powered guardrails.
+**Prompt hooks**: Interpolate a template with metadata and send to the LLM. The response is parsed
+as the hook result. Useful for AI-powered guardrails.
 
-**Agent hooks**: Spawn a sub-session with a specific agent configuration.
-The agent's output is the hook result. Useful for complex multi-step hooks.
+**Agent hooks**: Spawn a sub-session with a specific agent configuration. The agent's output is the
+hook result. Useful for complex multi-step hooks.
 
 ### 5.3 Timeout and Error Handling
 
@@ -211,8 +216,8 @@ matcher: {
 }
 ```
 
-Matchers are evaluated before the hook handler runs. If a matcher does not match,
-the hook is skipped (with `skipReason` in the result).
+Matchers are evaluated before the hook handler runs. If a matcher does not match, the hook is
+skipped (with `skipReason` in the result).
 
 ### 5.5 Priority Ordering
 
@@ -225,30 +230,31 @@ the hook is skipped (with `skipReason` in the result).
 ### 5.6 Result Merging (Modifying Hooks)
 
 For sequential modifying hooks, results are merged field-by-field:
+
 - Non-undefined fields from later hooks override earlier ones
 - This allows hooks to progressively refine the result
-- Example: Hook A returns `{ prompt: "modified" }`, Hook B returns `{ block: true }`
-  -> merged result: `{ prompt: "modified", block: true }`
+- Example: Hook A returns `{ prompt: "modified" }`, Hook B returns `{ block: true }` -> merged
+  result: `{ prompt: "modified", block: true }`
 
 ## 6. Built-in Hooks
 
-| ID | Event | Priority | Description |
-|----|-------|----------|-------------|
-| `builtin:session-lifecycle-logger-start` | SessionStart | -100 | Logs session start events |
-| `builtin:session-lifecycle-logger-end` | SessionEnd | -100 | Logs session end events with metrics |
-| `builtin:tool-execution-logger-success` | PostToolUse | -100 | Logs successful tool calls |
-| `builtin:tool-execution-logger-failure` | PostToolUseFailure | -100 | Logs failed tool calls |
-| `builtin:dangerous-tool-blocker` | PreToolUse | 1000 | Blocks known-destructive tool patterns |
-| `builtin:permission-auto-approver` | PermissionRequest | -50 | Auto-approves low-risk read operations |
-| `builtin:subagent-tracker-start` | SubagentStart | -100 | Tracks subagent spawning |
-| `builtin:subagent-tracker-stop` | SubagentStop | -100 | Tracks subagent completion |
-| `builtin:task-completion-logger` | TaskCompleted | -100 | Logs task completions with metrics |
-| `builtin:compaction-guardrail` | PreCompact | 500 | Prevents premature context compaction |
-| `builtin:notification-router` | Notification | -100 | Routes notifications to logger |
-| `builtin:prompt-length-guardrail` | UserPromptSubmit | 500 | Blocks excessively long prompts |
+| ID                                       | Event              | Priority | Description                            |
+| ---------------------------------------- | ------------------ | -------- | -------------------------------------- |
+| `builtin:session-lifecycle-logger-start` | SessionStart       | -100     | Logs session start events              |
+| `builtin:session-lifecycle-logger-end`   | SessionEnd         | -100     | Logs session end events with metrics   |
+| `builtin:tool-execution-logger-success`  | PostToolUse        | -100     | Logs successful tool calls             |
+| `builtin:tool-execution-logger-failure`  | PostToolUseFailure | -100     | Logs failed tool calls                 |
+| `builtin:dangerous-tool-blocker`         | PreToolUse         | 1000     | Blocks known-destructive tool patterns |
+| `builtin:permission-auto-approver`       | PermissionRequest  | -50      | Auto-approves low-risk read operations |
+| `builtin:subagent-tracker-start`         | SubagentStart      | -100     | Tracks subagent spawning               |
+| `builtin:subagent-tracker-stop`          | SubagentStop       | -100     | Tracks subagent completion             |
+| `builtin:task-completion-logger`         | TaskCompleted      | -100     | Logs task completions with metrics     |
+| `builtin:compaction-guardrail`           | PreCompact         | 500      | Prevents premature context compaction  |
+| `builtin:notification-router`            | Notification       | -100     | Routes notifications to logger         |
+| `builtin:prompt-length-guardrail`        | UserPromptSubmit   | 500      | Blocks excessively long prompts        |
 
-All built-in hooks can be disabled individually or collectively via the
-`registerBuiltInHooks` options.
+All built-in hooks can be disabled individually or collectively via the `registerBuiltInHooks`
+options.
 
 ## 7. Integration Points
 
@@ -302,19 +308,19 @@ try {
 
 ## 8. Comparison with OpenClaw
 
-| Aspect | OpenClaw | Wundr |
-|--------|----------|-------|
-| Event system | `type:action` strings | Typed enum (14 events) |
-| Handler loading | Directory-based (HOOK.md) | Config file + programmatic |
-| Execution types | JS module handlers | Command, Prompt, Agent |
-| Priority | Number (plugin hooks) | Number (all hooks) |
-| Void strategy | Parallel (Promise.all) | Parallel (batched by concurrency) |
-| Modifying strategy | Sequential with merge | Sequential with field-level merge |
-| Error handling | Catch and log | Configurable per-hook |
-| Matchers | N/A | Glob patterns on metadata fields |
-| Metadata passing | Event object | Typed per-event metadata + env vars |
-| Built-in hooks | 4 bundled handlers | 12 built-in hooks |
-| Plugin system | Full plugin API | Source tagging (built-in/config/plugin) |
+| Aspect             | OpenClaw                  | Wundr                                   |
+| ------------------ | ------------------------- | --------------------------------------- |
+| Event system       | `type:action` strings     | Typed enum (14 events)                  |
+| Handler loading    | Directory-based (HOOK.md) | Config file + programmatic              |
+| Execution types    | JS module handlers        | Command, Prompt, Agent                  |
+| Priority           | Number (plugin hooks)     | Number (all hooks)                      |
+| Void strategy      | Parallel (Promise.all)    | Parallel (batched by concurrency)       |
+| Modifying strategy | Sequential with merge     | Sequential with field-level merge       |
+| Error handling     | Catch and log             | Configurable per-hook                   |
+| Matchers           | N/A                       | Glob patterns on metadata fields        |
+| Metadata passing   | Event object              | Typed per-event metadata + env vars     |
+| Built-in hooks     | 4 bundled handlers        | 12 built-in hooks                       |
+| Plugin system      | Full plugin API           | Source tagging (built-in/config/plugin) |
 
 ## 9. Future Work
 
@@ -330,7 +336,9 @@ try {
 ## 10. Testing Strategy
 
 1. **Unit tests for HookRegistry**: Register, unregister, query, config loading, priority ordering
-2. **Unit tests for HookEngine**: Fire void/modifying events, timeout handling, matcher filtering, result merging
-3. **Unit tests for built-in hooks**: Each built-in hook's behavior (blocking, logging, auto-approval)
+2. **Unit tests for HookEngine**: Fire void/modifying events, timeout handling, matcher filtering,
+   result merging
+3. **Unit tests for built-in hooks**: Each built-in hook's behavior (blocking, logging,
+   auto-approval)
 4. **Integration tests**: End-to-end hook firing from OrchestratorDaemon through SessionExecutor
 5. **Command hook tests**: Verify child process spawning, env var passing, JSON stdout parsing

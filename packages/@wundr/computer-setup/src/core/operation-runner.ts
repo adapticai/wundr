@@ -10,7 +10,11 @@
  * a shell string.
  */
 
-import { execa, type ExecaReturnValue, type Options as ExecaOptions } from 'execa';
+import {
+  execa,
+  type ExecaReturnValue,
+  type Options as ExecaOptions,
+} from 'execa';
 
 import { Logger } from '../utils/logger';
 
@@ -90,16 +94,12 @@ function validateCommand(command: string): void {
     throw new Error('Command name must not be empty');
   }
   if (SHELL_METACHARACTERS.test(command)) {
-    throw new Error(
-      `Command name contains unsafe characters: ${command}`
-    );
+    throw new Error(`Command name contains unsafe characters: ${command}`);
   }
   if (command.includes('/') && !command.startsWith('/')) {
     // Allow absolute paths like /usr/bin/git but reject relative traversal
     if (command.includes('..')) {
-      throw new Error(
-        `Command path contains directory traversal: ${command}`
-      );
+      throw new Error(`Command path contains directory traversal: ${command}`);
     }
   }
 }
@@ -192,11 +192,7 @@ export class OperationRunner {
           env: options.env ? { ...process.env, ...options.env } : undefined,
         };
 
-        const result: ExecaReturnValue = await execa(
-          command,
-          args,
-          execaOpts
-        );
+        const result: ExecaReturnValue = await execa(command, args, execaOpts);
 
         const durationMs = Date.now() - start;
         const stdout = (result.stdout ?? '').toString().trim();

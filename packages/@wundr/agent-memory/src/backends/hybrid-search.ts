@@ -156,11 +156,15 @@ export class HybridSearch {
   search(params: HybridSearchParams): HybridSearchResult[] {
     const candidates = Math.min(
       200,
-      Math.max(1, Math.floor(params.maxResults * this.config.candidateMultiplier))
+      Math.max(
+        1,
+        Math.floor(params.maxResults * this.config.candidateMultiplier)
+      )
     );
 
     // Vector search
-    const hasVector = params.queryVec.length > 0 && params.queryVec.some((v) => v !== 0);
+    const hasVector =
+      params.queryVec.length > 0 && params.queryVec.some(v => v !== 0);
     const vectorResults: VectorSearchResult[] = hasVector
       ? this.vectorSearch.search({
           db: params.db,
@@ -175,7 +179,7 @@ export class HybridSearch {
     // If hybrid is disabled, return vector-only results
     if (!this.config.enabled || !this.ftsAvailable) {
       return vectorResults
-        .filter((entry) => entry.score >= params.minScore)
+        .filter(entry => entry.score >= params.minScore)
         .slice(0, params.maxResults);
     }
 
@@ -198,7 +202,7 @@ export class HybridSearch {
     });
 
     return merged
-      .filter((entry) => entry.score >= params.minScore)
+      .filter(entry => entry.score >= params.minScore)
       .slice(0, params.maxResults);
   }
 
@@ -236,7 +240,12 @@ export class HybridSearch {
             ` ORDER BY rank ASC\n` +
             ` LIMIT ?`
         )
-        .all(ftsQuery, params.model, ...sourceFilter.params, params.limit) as Array<{
+        .all(
+          ftsQuery,
+          params.model,
+          ...sourceFilter.params,
+          params.limit
+        ) as Array<{
         id: string;
         path: string;
         source: string;
@@ -246,7 +255,7 @@ export class HybridSearch {
         rank: number;
       }>;
 
-      return rows.map((row) => {
+      return rows.map(row => {
         const textScore = bm25RankToScore(row.rank);
         return {
           id: row.id,
@@ -284,12 +293,12 @@ export function buildFtsQuery(raw: string): string | null {
   const tokens =
     raw
       .match(/[A-Za-z0-9_]+/g)
-      ?.map((t) => t.trim())
+      ?.map(t => t.trim())
       .filter(Boolean) ?? [];
   if (tokens.length === 0) {
     return null;
   }
-  const quoted = tokens.map((t) => `"${t.replaceAll('"', '')}"`);
+  const quoted = tokens.map(t => `"${t.replaceAll('"', '')}"`);
   return quoted.join(' AND ');
 }
 
@@ -380,7 +389,7 @@ export function mergeHybridResults(params: {
   }
 
   // Compute weighted scores and sort
-  const merged = Array.from(byId.values()).map((entry) => {
+  const merged = Array.from(byId.values()).map(entry => {
     const score =
       params.vectorWeight * entry.vectorScore +
       params.textWeight * entry.textScore;
@@ -408,7 +417,11 @@ function truncateSnippet(text: string, maxChars: number): string {
     return text;
   }
   let end = maxChars;
-  if (end > 0 && text.charCodeAt(end - 1) >= 0xd800 && text.charCodeAt(end - 1) <= 0xdbff) {
+  if (
+    end > 0 &&
+    text.charCodeAt(end - 1) >= 0xd800 &&
+    text.charCodeAt(end - 1) <= 0xdbff
+  ) {
     end -= 1;
   }
   return text.slice(0, end);

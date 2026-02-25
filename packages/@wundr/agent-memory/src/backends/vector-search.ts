@@ -242,7 +242,11 @@ export class VectorSearch {
   /**
    * Delete all vector entries for chunks matching a path and source.
    */
-  deleteVectorsForPath(db: DatabaseHandle, filePath: string, source: string): void {
+  deleteVectorsForPath(
+    db: DatabaseHandle,
+    filePath: string,
+    source: string
+  ): void {
     try {
       db.prepare(
         `DELETE FROM ${VECTOR_TABLE} WHERE id IN (SELECT id FROM chunks WHERE path = ? AND source = ?)`
@@ -302,7 +306,7 @@ export class VectorSearch {
         dist: number;
       }>;
 
-      return rows.map((row) => ({
+      return rows.map(row => ({
         id: row.id,
         path: row.path,
         startLine: row.start_line,
@@ -349,16 +353,16 @@ export class VectorSearch {
     }>;
 
     const scored = rows
-      .map((row) => {
+      .map(row => {
         const embedding = parseEmbedding(row.embedding);
         const score = cosineSimilarity(params.queryVec, embedding);
         return { row, score };
       })
-      .filter((entry) => Number.isFinite(entry.score));
+      .filter(entry => Number.isFinite(entry.score));
 
     scored.sort((a, b) => b.score - a.score);
 
-    return scored.slice(0, params.limit).map((entry) => ({
+    return scored.slice(0, params.limit).map(entry => ({
       id: entry.row.id,
       path: entry.row.path,
       startLine: entry.row.start_line,
@@ -451,7 +455,11 @@ function truncateSnippet(text: string, maxChars: number): string {
   }
   // Avoid splitting a surrogate pair
   let end = maxChars;
-  if (end > 0 && text.charCodeAt(end - 1) >= 0xd800 && text.charCodeAt(end - 1) <= 0xdbff) {
+  if (
+    end > 0 &&
+    text.charCodeAt(end - 1) >= 0xd800 &&
+    text.charCodeAt(end - 1) <= 0xdbff
+  ) {
     end -= 1;
   }
   return text.slice(0, end);

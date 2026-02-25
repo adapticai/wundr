@@ -98,7 +98,10 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
     this.model = normalizeModel(config.model);
     this.dimensions = MODEL_DIMENSIONS[this.model] ?? 1024;
     this.maxInputTokens = MODEL_MAX_TOKENS[this.model] ?? 32000;
-    this.baseUrl = (config.baseUrl ?? DEFAULT_VOYAGE_BASE_URL).replace(/\/+$/, '');
+    this.baseUrl = (config.baseUrl ?? DEFAULT_VOYAGE_BASE_URL).replace(
+      /\/+$/,
+      ''
+    );
     this.headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${config.apiKey}`,
@@ -111,13 +114,19 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
     this.costTracker = createCostTracker();
   }
 
-  async embedText(text: string, options?: EmbedOptions): Promise<EmbeddingResult> {
+  async embedText(
+    text: string,
+    options?: EmbedOptions
+  ): Promise<EmbeddingResult> {
     const inputType = options?.taskType === 'document' ? 'document' : 'query';
     const results = await this.callApi([text], inputType);
     return results[0]!;
   }
 
-  async embedBatch(texts: string[], options?: EmbedOptions): Promise<EmbeddingResult[]> {
+  async embedBatch(
+    texts: string[],
+    options?: EmbedOptions
+  ): Promise<EmbeddingResult[]> {
     if (texts.length === 0) {
       return [];
     }
@@ -145,9 +154,12 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
 
   private async callApi(
     input: string[],
-    inputType: 'query' | 'document',
+    inputType: 'query' | 'document'
   ): Promise<EmbeddingResult[]> {
-    const totalTokens = input.reduce((sum, text) => sum + estimateTokens(text), 0);
+    const totalTokens = input.reduce(
+      (sum, text) => sum + estimateTokens(text),
+      0
+    );
     const maxRetries = PROVIDER_RATE_LIMITS.voyage.maxRetries;
     let attempt = 0;
     let retrying = true;
@@ -180,13 +192,15 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
             const retryDelay = backoffDelay(
               attempt,
               PROVIDER_RATE_LIMITS.voyage.baseRetryDelayMs,
-              PROVIDER_RATE_LIMITS.voyage.maxRetryDelayMs,
+              PROVIDER_RATE_LIMITS.voyage.maxRetryDelayMs
             );
             await sleep(retryDelay);
             continue;
           }
 
-          throw new Error(`Voyage embeddings failed: ${res.status} ${errorText}`);
+          throw new Error(
+            `Voyage embeddings failed: ${res.status} ${errorText}`
+          );
         }
 
         const payload = (await res.json()) as {
@@ -202,10 +216,13 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
         this.costTracker.totalTokens += usageTokens;
         this.costTracker.totalRequests += 1;
         const costPerMillion = MODEL_COST_PER_MILLION[this.model] ?? 0.06;
-        this.costTracker.estimatedCostUsd += (usageTokens / 1_000_000) * costPerMillion;
+        this.costTracker.estimatedCostUsd +=
+          (usageTokens / 1_000_000) * costPerMillion;
 
         // Sort by index to ensure correct order
-        const sorted = [...data].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+        const sorted = [...data].sort(
+          (a, b) => (a.index ?? 0) - (b.index ?? 0)
+        );
 
         this.initialized = true;
         retrying = false;
@@ -220,7 +237,7 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
           const retryDelay = backoffDelay(
             attempt,
             PROVIDER_RATE_LIMITS.voyage.baseRetryDelayMs,
-            PROVIDER_RATE_LIMITS.voyage.maxRetryDelayMs,
+            PROVIDER_RATE_LIMITS.voyage.maxRetryDelayMs
           );
           await sleep(retryDelay);
           continue;
@@ -246,13 +263,13 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
  * 2. `VOYAGE_API_KEY` environment variable
  */
 export function createVoyageProvider(
-  config: EmbeddingProviderConfig,
+  config: EmbeddingProviderConfig
 ): VoyageEmbeddingProvider {
   const apiKey = config.apiKey ?? process.env['VOYAGE_API_KEY'];
   if (!apiKey) {
     throw new Error(
       'No API key found for Voyage embeddings. ' +
-        'Set the VOYAGE_API_KEY environment variable or pass apiKey in config.',
+        'Set the VOYAGE_API_KEY environment variable or pass apiKey in config.'
     );
   }
 
@@ -286,5 +303,7 @@ function isRateLimitError(status: number, body: string): boolean {
 
 function isRetryableError(err: unknown): boolean {
   const message = err instanceof Error ? err.message : String(err);
-  return /(rate.?limit|too many requests|429|5\d\d|cloudflare|timeout|econnreset)/i.test(message);
+  return /(rate.?limit|too many requests|429|5\d\d|cloudflare|timeout|econnreset)/i.test(
+    message
+  );
 }

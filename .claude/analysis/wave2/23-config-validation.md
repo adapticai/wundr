@@ -10,8 +10,8 @@ reload support. This system draws heavily from OpenClaw's battle-tested config a
 
 ## Problem Statement
 
-The current orchestrator-daemon config system (`src/config/index.ts`) is a basic env-var-only
-loader with a flat Zod schema. It lacks:
+The current orchestrator-daemon config system (`src/config/index.ts`) is a basic env-var-only loader
+with a flat Zod schema. It lacks:
 
 1. **File-based configuration** -- no JSON/JSON5 config file support
 2. **Live reload** -- daemon must restart for any config change
@@ -66,8 +66,8 @@ src/config/
 
 ### 1. Dual-Source Configuration (File + Env)
 
-Like OpenClaw, the system supports both JSON5 file config AND environment variables. Env vars
-always win (highest precedence), matching the existing behavior. The precedence order is:
+Like OpenClaw, the system supports both JSON5 file config AND environment variables. Env vars always
+win (highest precedence), matching the existing behavior. The precedence order is:
 
 1. Runtime overrides (in-memory, via API or CLI)
 2. Environment variables
@@ -76,8 +76,8 @@ always win (highest precedence), matching the existing behavior. The precedence 
 
 ### 2. Config File Format: JSON5
 
-JSON5 is used (like OpenClaw) because it supports comments, trailing commas, and unquoted keys.
-This makes the config file human-friendly. The file is located at:
+JSON5 is used (like OpenClaw) because it supports comments, trailing commas, and unquoted keys. This
+makes the config file human-friendly. The file is located at:
 
 - `$WUNDR_CONFIG_PATH` (env var override)
 - `~/.wundr/config.json5` (default)
@@ -94,23 +94,23 @@ OpenClaw's `config-reload.ts` implements a sophisticated hybrid reload strategy:
 
 The daemon classifies each config path change into a reload action:
 
-| Config Path Prefix | Action |
-|---|---|
-| `daemon.port`, `daemon.host` | Restart |
-| `security.jwtSecret` | Restart |
-| `hooks.*` | Hot reload (re-register hooks) |
-| `agents.*` | Hot reload (re-index agents) |
-| `memory.*` | Hot reload |
-| `channels.*` | Hot reload (per-channel restart) |
-| `plugins.*` | Restart |
-| `monitoring.*` | No-op (read at use site) |
-| `logging.*` | No-op |
+| Config Path Prefix           | Action                           |
+| ---------------------------- | -------------------------------- |
+| `daemon.port`, `daemon.host` | Restart                          |
+| `security.jwtSecret`         | Restart                          |
+| `hooks.*`                    | Hot reload (re-register hooks)   |
+| `agents.*`                   | Hot reload (re-index agents)     |
+| `memory.*`                   | Hot reload                       |
+| `channels.*`                 | Hot reload (per-channel restart) |
+| `plugins.*`                  | Restart                          |
+| `monitoring.*`               | No-op (read at use site)         |
+| `logging.*`                  | No-op                            |
 
 ### 4. Redaction: Sentinel-Based (from OpenClaw)
 
-OpenClaw's `redact-snapshot.ts` uses a `__OPENCLAW_REDACTED__` sentinel value to mask secrets
-in UI responses. On write-back, the sentinel is detected and the original value is restored
-from disk. This prevents credential corruption during round-trips.
+OpenClaw's `redact-snapshot.ts` uses a `__OPENCLAW_REDACTED__` sentinel value to mask secrets in UI
+responses. On write-back, the sentinel is detected and the original value is restored from disk.
+This prevents credential corruption during round-trips.
 
 Wundr uses `__WUNDR_REDACTED__` as its sentinel. Sensitive keys are detected by regex patterns:
 `/token/i`, `/password/i`, `/secret/i`, `/api.?key/i`.
@@ -121,12 +121,13 @@ OpenClaw's `includes.ts` implements `$include` directives for composable configs
 
 ```json5
 {
-  "$include": "./base-config.json5",
-  "daemon": { "port": 9000 }
+  $include: './base-config.json5',
+  daemon: { port: 9000 },
 }
 ```
 
 Features:
+
 - Single file or array of files
 - Circular include detection
 - Max depth limit (10)
@@ -134,9 +135,8 @@ Features:
 
 ### 6. Env Var Substitution (from OpenClaw)
 
-Config values can reference env vars: `${OPENAI_API_KEY}`. Only uppercase env var names
-are matched. Escape with `$${}` for literal output. Missing vars throw
-`MissingEnvVarError`.
+Config values can reference env vars: `${OPENAI_API_KEY}`. Only uppercase env var names are matched.
+Escape with `$${}` for literal output. Missing vars throw `MissingEnvVarError`.
 
 ### 7. Config Migration System
 
@@ -149,8 +149,8 @@ Versioned config with automatic migration:
 }
 ```
 
-Each migration is a pure function `(config: unknown) => unknown` with a description.
-The loader runs migrations in sequence from the file version to the current version.
+Each migration is a pure function `(config: unknown) => unknown` with a description. The loader runs
+migrations in sequence from the file version to the current version.
 
 ## Schema Design
 
@@ -255,34 +255,34 @@ applyOverrides(config: WundrConfig, overrides: Record<string, unknown>): WundrCo
 
 ## Reload Plan System
 
-The reload plan (from OpenClaw's `buildGatewayReloadPlan`) classifies each changed config
-path into an action:
+The reload plan (from OpenClaw's `buildGatewayReloadPlan`) classifies each changed config path into
+an action:
 
 ```typescript
 interface ReloadPlan {
-  changedPaths: string[]
-  restartDaemon: boolean
-  restartReasons: string[]
-  hotReasons: string[]
-  noopPaths: string[]
-  reloadHooks: boolean
-  reloadAgents: boolean
-  reloadChannels: Set<string>
-  reloadMemory: boolean
-  reloadSecurity: boolean
+  changedPaths: string[];
+  restartDaemon: boolean;
+  restartReasons: string[];
+  hotReasons: string[];
+  noopPaths: string[];
+  reloadHooks: boolean;
+  reloadAgents: boolean;
+  reloadChannels: Set<string>;
+  reloadMemory: boolean;
+  reloadSecurity: boolean;
 }
 ```
 
 ## File Locations
 
-| File | Purpose |
-|---|---|
-| `src/config/schemas.ts` | All Zod schemas and types |
-| `src/config/config-loader.ts` | File + env loading, validation, caching |
-| `src/config/config-watcher.ts` | chokidar watcher, debounce, reload plan |
-| `src/config/config-merger.ts` | Deep merge, $include, env substitution |
-| `src/config/config-redactor.ts` | Secret masking and restoration |
-| `src/config/index.ts` | Public API re-exports |
+| File                            | Purpose                                 |
+| ------------------------------- | --------------------------------------- |
+| `src/config/schemas.ts`         | All Zod schemas and types               |
+| `src/config/config-loader.ts`   | File + env loading, validation, caching |
+| `src/config/config-watcher.ts`  | chokidar watcher, debounce, reload plan |
+| `src/config/config-merger.ts`   | Deep merge, $include, env substitution  |
+| `src/config/config-redactor.ts` | Secret masking and restoration          |
+| `src/config/index.ts`           | Public API re-exports                   |
 
 ## Testing Strategy
 

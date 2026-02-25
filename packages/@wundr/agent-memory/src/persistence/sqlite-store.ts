@@ -445,7 +445,9 @@ export class SQLiteStore {
    */
   getAllScratchpad(): Memory[] {
     const db = this.requireDb();
-    const rows = db.prepare('SELECT * FROM scratchpad ORDER BY updated_at DESC').all() as ScratchpadRow[];
+    const rows = db
+      .prepare('SELECT * FROM scratchpad ORDER BY updated_at DESC')
+      .all() as ScratchpadRow[];
     return rows.map(row => this.parseScratchpadRow(row));
   }
 
@@ -801,7 +803,9 @@ export class SQLiteStore {
   deleteSession(sessionId: string): void {
     const db = this.requireDb();
     this.transaction(() => {
-      db.prepare('DELETE FROM session_transcripts WHERE session_id = ?').run(sessionId);
+      db.prepare('DELETE FROM session_transcripts WHERE session_id = ?').run(
+        sessionId
+      );
       db.prepare('DELETE FROM sessions WHERE session_id = ?').run(sessionId);
     });
 
@@ -818,7 +822,9 @@ export class SQLiteStore {
   getActiveSessions(): SessionState[] {
     const db = this.requireDb();
     const rows = db
-      .prepare('SELECT * FROM sessions WHERE is_active = 1 ORDER BY last_active_at DESC')
+      .prepare(
+        'SELECT * FROM sessions WHERE is_active = 1 ORDER BY last_active_at DESC'
+      )
       .all() as SessionRow[];
     return rows.map(row => this.parseSessionRow(row));
   }
@@ -970,7 +976,9 @@ export class SQLiteStore {
    */
   deleteRepetitionSchedule(memoryId: string): void {
     const db = this.requireDb();
-    db.prepare('DELETE FROM repetition_schedules WHERE memory_id = ?').run(memoryId);
+    db.prepare('DELETE FROM repetition_schedules WHERE memory_id = ?').run(
+      memoryId
+    );
   }
 
   // ==========================================================================
@@ -986,7 +994,9 @@ export class SQLiteStore {
     const db = this.requireDb();
 
     const countQuery = (table: string): number => {
-      const row = db.prepare(`SELECT COUNT(*) as c FROM ${table}`).get() as CountRow | undefined;
+      const row = db.prepare(`SELECT COUNT(*) as c FROM ${table}`).get() as
+        | CountRow
+        | undefined;
       return row?.c ?? 0;
     };
 
@@ -1121,7 +1131,9 @@ export class SQLiteStore {
    */
   integrityCheck(): string {
     const db = this.requireDb();
-    const row = db.prepare('PRAGMA integrity_check').get() as { integrity_check: string } | undefined;
+    const row = db.prepare('PRAGMA integrity_check').get() as
+      | { integrity_check: string }
+      | undefined;
     return row?.integrity_check ?? 'unknown';
   }
 
@@ -1153,7 +1165,9 @@ export class SQLiteStore {
 
   private getAllRepetitionSchedules(): RepetitionSchedule[] {
     const db = this.requireDb();
-    const rows = db.prepare('SELECT * FROM repetition_schedules').all() as RepetitionRow[];
+    const rows = db
+      .prepare('SELECT * FROM repetition_schedules')
+      .all() as RepetitionRow[];
     return rows.map(row => ({
       memoryId: row.memory_id,
       nextReviewAt: new Date(row.next_review_at),
@@ -1165,9 +1179,9 @@ export class SQLiteStore {
 
   private loadScratchpadFromDb(key: string): Memory | null {
     const db = this.requireDb();
-    const row = db.prepare('SELECT * FROM scratchpad WHERE key = ?').get(key) as
-      | ScratchpadRow
-      | undefined;
+    const row = db
+      .prepare('SELECT * FROM scratchpad WHERE key = ?')
+      .get(key) as ScratchpadRow | undefined;
 
     if (!row) {
       return null;
@@ -1201,9 +1215,9 @@ export class SQLiteStore {
 
   private loadSessionFromDb(sessionId: string): SessionState | null {
     const db = this.requireDb();
-    const row = db.prepare('SELECT * FROM sessions WHERE session_id = ?').get(sessionId) as
-      | SessionRow
-      | undefined;
+    const row = db
+      .prepare('SELECT * FROM sessions WHERE session_id = ?')
+      .get(sessionId) as SessionRow | undefined;
 
     if (!row) {
       return null;
@@ -1311,7 +1325,8 @@ export class SQLiteStore {
       params.push(options.updatedAfter);
     }
 
-    const where = conditions.length > 0 ? ` WHERE ${conditions.join(' AND ')}` : '';
+    const where =
+      conditions.length > 0 ? ` WHERE ${conditions.join(' AND ')}` : '';
     const sortColumn = options.sortBy ?? 'updated_at';
     const sortDir = options.sortDirection ?? 'desc';
     const limit = options.limit ?? 100;

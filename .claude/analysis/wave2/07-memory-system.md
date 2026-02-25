@@ -2,18 +2,16 @@
 
 ## Executive Summary
 
-Wundr's `@wundr/agent-memory` package currently implements a MemGPT-inspired
-three-tier memory system (scratchpad / episodic / semantic) that operates
-entirely in-memory. All state is lost between process restarts unless manually
-serialized. Meanwhile, OpenClaw's `MemoryIndexManager` demonstrates a
-production-grade approach: SQLite-backed storage with FTS5 full-text search,
-sqlite-vec vector similarity, hybrid result merging, embedding caches with LRU
-eviction, session transcript delta tracking, and atomic reindexing via temp-DB
-swap.
+Wundr's `@wundr/agent-memory` package currently implements a MemGPT-inspired three-tier memory
+system (scratchpad / episodic / semantic) that operates entirely in-memory. All state is lost
+between process restarts unless manually serialized. Meanwhile, OpenClaw's `MemoryIndexManager`
+demonstrates a production-grade approach: SQLite-backed storage with FTS5 full-text search,
+sqlite-vec vector similarity, hybrid result merging, embedding caches with LRU eviction, session
+transcript delta tracking, and atomic reindexing via temp-DB swap.
 
-This document describes a dual-backend persistent memory system for Wundr that
-bridges these two architectures -- preserving the MemGPT tier semantics while
-adding the durability and search quality of OpenClaw's approach.
+This document describes a dual-backend persistent memory system for Wundr that bridges these two
+architectures -- preserving the MemGPT tier semantics while adding the durability and search quality
+of OpenClaw's approach.
 
 ---
 
@@ -21,35 +19,37 @@ adding the durability and search quality of OpenClaw's approach.
 
 ### 1.1 Wundr Current State
 
-| Component | Implementation | Persistence |
-|-----------|---------------|-------------|
-| Scratchpad | `Map<string, unknown>` | None (in-process) |
-| Episodic Store | `MemoryEntry[]` array | None |
-| Semantic Store | `MemoryEntry[]` array | None |
-| Search | `Array.filter` on `content.includes(query)` | N/A |
-| Session Manager | In-memory maps | JSON serialize/restore |
-| Forgetting Curve | In-memory decay calculations | JSON serialize/restore |
+| Component        | Implementation                              | Persistence            |
+| ---------------- | ------------------------------------------- | ---------------------- |
+| Scratchpad       | `Map<string, unknown>`                      | None (in-process)      |
+| Episodic Store   | `MemoryEntry[]` array                       | None                   |
+| Semantic Store   | `MemoryEntry[]` array                       | None                   |
+| Search           | `Array.filter` on `content.includes(query)` | N/A                    |
+| Session Manager  | In-memory maps                              | JSON serialize/restore |
+| Forgetting Curve | In-memory decay calculations                | JSON serialize/restore |
 
 Key gaps:
+
 - **No full-text search** -- substring match only
 - **No vector search** -- embedding fields exist but are never queried
 - **No persistence** -- everything is volatile
 - **No indexing** -- linear scans on every retrieval
-- **No session transcript ingestion** -- sessions store scratchpad snapshots, not indexed transcripts
+- **No session transcript ingestion** -- sessions store scratchpad snapshots, not indexed
+  transcripts
 
 ### 1.2 OpenClaw Reference Architecture
 
-| Component | Implementation |
-|-----------|---------------|
-| Storage | SQLite via `node:sqlite` (`DatabaseSync`) |
-| FTS | FTS5 virtual table (`chunks_fts`) with BM25 ranking |
-| Vector | sqlite-vec extension (`chunks_vec`) with cosine distance |
-| Hybrid Search | Weighted merge of vector + FTS results by chunk ID |
-| Embedding Cache | SQLite table with LRU eviction by `updated_at` |
-| Session Indexing | Delta tracking (byte offset + newline counting) |
-| Reindexing | Temp DB build -> swap files atomically -> reopen |
+| Component        | Implementation                                           |
+| ---------------- | -------------------------------------------------------- |
+| Storage          | SQLite via `node:sqlite` (`DatabaseSync`)                |
+| FTS              | FTS5 virtual table (`chunks_fts`) with BM25 ranking      |
+| Vector           | sqlite-vec extension (`chunks_vec`) with cosine distance |
+| Hybrid Search    | Weighted merge of vector + FTS results by chunk ID       |
+| Embedding Cache  | SQLite table with LRU eviction by `updated_at`           |
+| Session Indexing | Delta tracking (byte offset + newline counting)          |
+| Reindexing       | Temp DB build -> swap files atomically -> reopen         |
 | Batch Embeddings | OpenAI / Gemini / Voyage batch API with retry + fallback |
-| File Watching | chokidar with debounced sync triggers |
+| File Watching    | chokidar with debounced sync triggers                    |
 
 ---
 
@@ -92,36 +92,30 @@ AgentMemoryManager (existing - orchestrator)
 
 ### 2.2 Key Design Decisions
 
-**D1: SQLite as single persistence layer.**
-We follow OpenClaw's approach of using `node:sqlite` (the built-in Node.js
-SQLite module available in Node 22+). A single `.sqlite` file stores chunks,
-file metadata, embedding cache, FTS index, and vector index. This avoids
-external database dependencies.
+**D1: SQLite as single persistence layer.** We follow OpenClaw's approach of using `node:sqlite`
+(the built-in Node.js SQLite module available in Node 22+). A single `.sqlite` file stores chunks,
+file metadata, embedding cache, FTS index, and vector index. This avoids external database
+dependencies.
 
-**D2: Scratchpad stays in-memory.**
-The scratchpad is working memory for the current turn. It is volatile by
-design in MemGPT. We persist a snapshot to SQLite on session end and restore
-on session start, but the scratchpad is not searched via FTS/vector.
+**D2: Scratchpad stays in-memory.** The scratchpad is working memory for the current turn. It is
+volatile by design in MemGPT. We persist a snapshot to SQLite on session end and restore on session
+start, but the scratchpad is not searched via FTS/vector.
 
-**D3: Episodic and semantic tiers persist to SQLite.**
-When a memory is stored in episodic or semantic tiers, it is written to the
-`memories` table and optionally chunked/embedded for search. Promotion and
-demotion operations are atomic SQLite transactions.
+**D3: Episodic and semantic tiers persist to SQLite.** When a memory is stored in episodic or
+semantic tiers, it is written to the `memories` table and optionally chunked/embedded for search.
+Promotion and demotion operations are atomic SQLite transactions.
 
-**D4: Hybrid search is opt-in but default-on.**
-Vector search requires sqlite-vec. If the extension is unavailable, we fall
-back to cosine similarity on JSON-stored embeddings (like OpenClaw's fallback
-path). FTS5 is available in all SQLite builds.
+**D4: Hybrid search is opt-in but default-on.** Vector search requires sqlite-vec. If the extension
+is unavailable, we fall back to cosine similarity on JSON-stored embeddings (like OpenClaw's
+fallback path). FTS5 is available in all SQLite builds.
 
-**D5: Session transcripts are indexed as memory source.**
-Following OpenClaw's model, session transcript files (.jsonl) are parsed,
-chunked, embedded, and indexed. Delta tracking avoids re-indexing unchanged
-content.
+**D5: Session transcripts are indexed as memory source.** Following OpenClaw's model, session
+transcript files (.jsonl) are parsed, chunked, embedded, and indexed. Delta tracking avoids
+re-indexing unchanged content.
 
-**D6: Atomic reindexing via temp DB swap.**
-When the embedding model changes or a force reindex is triggered, a new
-temp database is built, the embedding cache is seeded from the old DB, and
-after successful completion the files are atomically swapped.
+**D6: Atomic reindexing via temp DB swap.** When the embedding model changes or a force reindex is
+triggered, a new temp database is built, the embedding cache is seeded from the old DB, and after
+successful completion the files are atomically swapped.
 
 ### 2.3 Schema Design
 
@@ -210,6 +204,7 @@ CREATE INDEX IF NOT EXISTS idx_embedding_cache_updated_at
 ### 3.1 SQLiteBackend (`sqlite-backend.ts`)
 
 Primary responsibilities:
+
 - Open/create SQLite database with WAL mode
 - Schema creation and migrations
 - CRUD operations for chunks, files, memories
@@ -217,6 +212,7 @@ Primary responsibilities:
 - Session transcript parsing and delta tracking
 
 Key methods:
+
 ```typescript
 interface SQLiteBackend {
   // Lifecycle
@@ -259,12 +255,14 @@ interface SQLiteBackend {
 ### 3.2 VectorSearch (`vector-search.ts`)
 
 Primary responsibilities:
+
 - Load sqlite-vec extension with fallback
 - Create/manage vec0 virtual table
 - Vector similarity queries via `vec_distance_cosine`
 - Fallback cosine similarity on JSON embeddings
 
 Key methods:
+
 ```typescript
 interface VectorSearch {
   // Extension management
@@ -284,12 +282,14 @@ interface VectorSearch {
 ### 3.3 HybridSearch (`hybrid-search.ts`)
 
 Primary responsibilities:
+
 - Build FTS5 query from natural language
 - Execute BM25-ranked keyword search
 - Merge vector + keyword results with configurable weights
 - Score normalization
 
 Key methods:
+
 ```typescript
 interface HybridSearch {
   // FTS operations
@@ -305,6 +305,7 @@ interface HybridSearch {
 ### 3.4 EmbeddingCache (`embedding-cache.ts`)
 
 Primary responsibilities:
+
 - Hash-based embedding cache in SQLite
 - Batch loading of cached embeddings
 - Upsert new embeddings
@@ -312,6 +313,7 @@ Primary responsibilities:
 - Cache seeding during reindex
 
 Key methods:
+
 ```typescript
 interface EmbeddingCache {
   // Cache operations
@@ -408,8 +410,8 @@ SQLiteBackend.beginReindex()
 
 ## 5. Session Transcript Delta Tracking
 
-Following OpenClaw's approach, session transcripts (.jsonl files) are
-incrementally indexed based on byte-offset deltas:
+Following OpenClaw's approach, session transcripts (.jsonl files) are incrementally indexed based on
+byte-offset deltas:
 
 1. **Track last known size** per session file
 2. **On transcript update event**, compute `deltaBytes = currentSize - lastSize`
@@ -418,8 +420,8 @@ incrementally indexed based on byte-offset deltas:
 5. **During sync**, re-read and re-chunk only dirty session files
 6. **After sync**, reset delta counters
 
-This avoids re-embedding entire transcripts on every message, which is
-critical for long-running sessions.
+This avoids re-embedding entire transcripts on every message, which is critical for long-running
+sessions.
 
 ---
 
@@ -472,35 +474,35 @@ interface PersistenceConfig {
   /** Vector search configuration */
   vector: {
     enabled: boolean;
-    extensionPath?: string;  // Path to sqlite-vec extension
+    extensionPath?: string; // Path to sqlite-vec extension
   };
 
   /** FTS / hybrid search configuration */
   hybrid: {
     enabled: boolean;
-    vectorWeight: number;    // Default: 0.7
-    textWeight: number;      // Default: 0.3
-    candidateMultiplier: number;  // Default: 3
+    vectorWeight: number; // Default: 0.7
+    textWeight: number; // Default: 0.3
+    candidateMultiplier: number; // Default: 3
   };
 
   /** Chunking configuration */
   chunking: {
-    maxTokens: number;       // Default: 512
-    overlap: number;         // Default: 50
+    maxTokens: number; // Default: 512
+    overlap: number; // Default: 50
   };
 
   /** Embedding cache configuration */
   cache: {
     enabled: boolean;
-    maxEntries: number;      // Default: 10000
+    maxEntries: number; // Default: 10000
   };
 
   /** Session indexing configuration */
   sessions: {
     enabled: boolean;
     transcriptDir?: string;
-    deltaBytes: number;      // Default: 4096
-    deltaMessages: number;   // Default: 10
+    deltaBytes: number; // Default: 4096
+    deltaMessages: number; // Default: 10
   };
 
   /** Sync configuration */
@@ -518,14 +520,14 @@ interface PersistenceConfig {
 
 ## 8. Error Handling
 
-| Scenario | Behavior |
-|----------|----------|
-| sqlite-vec unavailable | Fall back to JSON cosine similarity |
-| FTS5 unavailable | Disable keyword search, vector-only results |
-| Embedding provider fails | Retry with exponential backoff (3 attempts) |
-| Reindex fails mid-way | Rollback to original DB, log warning |
-| Database corruption | Rebuild from scratch on next sync |
-| Concurrent access | WAL mode + busy_timeout for read concurrency |
+| Scenario                 | Behavior                                     |
+| ------------------------ | -------------------------------------------- |
+| sqlite-vec unavailable   | Fall back to JSON cosine similarity          |
+| FTS5 unavailable         | Disable keyword search, vector-only results  |
+| Embedding provider fails | Retry with exponential backoff (3 attempts)  |
+| Reindex fails mid-way    | Rollback to original DB, log warning         |
+| Database corruption      | Rebuild from scratch on next sync            |
+| Concurrent access        | WAL mode + busy_timeout for read concurrency |
 
 ---
 
@@ -543,9 +545,9 @@ interface PersistenceConfig {
 
 ## 10. Files Produced
 
-| File | Purpose |
-|------|---------|
-| `backends/sqlite-backend.ts` | SQLite storage, schema, reindex, session deltas |
-| `backends/vector-search.ts` | sqlite-vec loading, vector queries, fallback cosine |
-| `backends/hybrid-search.ts` | FTS5 queries, BM25 scoring, weighted merge |
-| `backends/embedding-cache.ts` | Hash-keyed cache, LRU eviction, batch loading |
+| File                          | Purpose                                             |
+| ----------------------------- | --------------------------------------------------- |
+| `backends/sqlite-backend.ts`  | SQLite storage, schema, reindex, session deltas     |
+| `backends/vector-search.ts`   | sqlite-vec loading, vector queries, fallback cosine |
+| `backends/hybrid-search.ts`   | FTS5 queries, BM25 scoring, weighted merge          |
+| `backends/embedding-cache.ts` | Hash-keyed cache, LRU eviction, batch loading       |

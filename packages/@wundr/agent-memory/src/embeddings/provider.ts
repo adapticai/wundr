@@ -53,7 +53,10 @@ export interface EmbeddingProvider {
    * Implementations should handle chunking into sub-batches if `texts.length`
    * exceeds `maxBatchSize`.
    */
-  embedBatch(texts: string[], options?: EmbedOptions): Promise<EmbeddingResult[]>;
+  embedBatch(
+    texts: string[],
+    options?: EmbedOptions
+  ): Promise<EmbeddingResult[]>;
 
   /**
    * Release any resources held by this provider (model files, connections, etc.).
@@ -313,7 +316,10 @@ export const DEFAULT_RATE_LIMIT: RateLimitConfig = {
 /**
  * Provider-specific default rate limits.
  */
-export const PROVIDER_RATE_LIMITS: Record<EmbeddingProviderId, RateLimitConfig> = {
+export const PROVIDER_RATE_LIMITS: Record<
+  EmbeddingProviderId,
+  RateLimitConfig
+> = {
   openai: {
     ...DEFAULT_RATE_LIMIT,
     maxRequestsPerMinute: 3000,
@@ -380,23 +386,27 @@ export const DEFAULT_CHUNKING_CONFIG: ChunkingConfig = {
  * Replaces non-finite values with 0 before normalizing.
  */
 export function normalizeEmbedding(vec: number[]): number[] {
-  const sanitized = vec.map((v) => (Number.isFinite(v) ? v : 0));
+  const sanitized = vec.map(v => (Number.isFinite(v) ? v : 0));
   const magnitude = Math.sqrt(sanitized.reduce((sum, v) => sum + v * v, 0));
   if (magnitude < 1e-10) {
     return sanitized;
   }
-  return sanitized.map((v) => v / magnitude);
+  return sanitized.map(v => v / magnitude);
 }
 
 /**
  * Validate that an embedding vector has the expected dimensionality.
  * Throws if the dimensions do not match.
  */
-export function validateDimensions(vec: number[], expected: number, label?: string): void {
+export function validateDimensions(
+  vec: number[],
+  expected: number,
+  label?: string
+): void {
   if (vec.length !== expected) {
     const prefix = label ? `[${label}] ` : '';
     throw new Error(
-      `${prefix}Embedding dimension mismatch: expected ${expected}, got ${vec.length}`,
+      `${prefix}Embedding dimension mismatch: expected ${expected}, got ${vec.length}`
     );
   }
 }
@@ -453,7 +463,10 @@ export class RateLimiter {
    * Returns the number of milliseconds to wait (0 means go ahead).
    */
   check(tokenCount: number): number {
-    if (this.config.maxRequestsPerMinute <= 0 && this.config.maxTokensPerMinute <= 0) {
+    if (
+      this.config.maxRequestsPerMinute <= 0 &&
+      this.config.maxTokensPerMinute <= 0
+    ) {
       return 0;
     }
 
@@ -461,8 +474,12 @@ export class RateLimiter {
     const windowStart = now - 60_000;
 
     // Prune old entries
-    this.requestTimestamps = this.requestTimestamps.filter((ts) => ts > windowStart);
-    this.tokenTimestamps = this.tokenTimestamps.filter((entry) => entry.ts > windowStart);
+    this.requestTimestamps = this.requestTimestamps.filter(
+      ts => ts > windowStart
+    );
+    this.tokenTimestamps = this.tokenTimestamps.filter(
+      entry => entry.ts > windowStart
+    );
 
     let delay = 0;
 
@@ -476,7 +493,10 @@ export class RateLimiter {
 
     // Token rate check
     if (this.config.maxTokensPerMinute > 0) {
-      const tokensInWindow = this.tokenTimestamps.reduce((sum, entry) => sum + entry.tokens, 0);
+      const tokensInWindow = this.tokenTimestamps.reduce(
+        (sum, entry) => sum + entry.tokens,
+        0
+      );
       if (tokensInWindow + tokenCount > this.config.maxTokensPerMinute) {
         const oldest = this.tokenTimestamps[0];
         if (oldest) {
@@ -502,13 +522,17 @@ export class RateLimiter {
  * Wait for the specified number of milliseconds.
  */
 export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
  * Compute exponential backoff delay with jitter.
  */
-export function backoffDelay(attempt: number, baseMs: number, maxMs: number): number {
+export function backoffDelay(
+  attempt: number,
+  baseMs: number,
+  maxMs: number
+): number {
   const exponential = baseMs * Math.pow(2, attempt);
   const jitter = 1 + Math.random() * 0.2;
   return Math.min(maxMs, Math.round(exponential * jitter));
@@ -517,7 +541,11 @@ export function backoffDelay(attempt: number, baseMs: number, maxMs: number): nu
 /**
  * Compute a hash key for cache lookups given a text, provider, and model.
  */
-export function computeCacheKey(text: string, providerId: string, model: string): string {
+export function computeCacheKey(
+  text: string,
+  providerId: string,
+  model: string
+): string {
   // Simple FNV-1a-like hash for speed
   let hash = 0x811c9dc5;
   const combined = `${providerId}:${model}:${text}`;

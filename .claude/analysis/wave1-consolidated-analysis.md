@@ -47,7 +47,7 @@ analysis agents
 - Static code scanner for malicious patterns in plugins/skills
 - Multi-layer tool access control (global -> provider -> agent -> group -> subagent)
 - Security audit CLI with 60+ automated checks
-- Environment variable sanitization (blocks NODE*OPTIONS, DYLD*_, LD\__)
+- Environment variable sanitization (blocks NODE*OPTIONS, DYLD*\_, LD\_\_)
 - Sandbox support with Docker isolation
 
 **Wundr's gaps:**

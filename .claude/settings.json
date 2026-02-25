@@ -1,5 +1,6 @@
 {
   "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_FLOW_AUTO_COMMIT": "false",
     "CLAUDE_FLOW_AUTO_PUSH": "false",
     "CLAUDE_FLOW_HOOKS_ENABLED": "true",
@@ -28,7 +29,21 @@
       "Bash(node :*)",
       "Bash(which :*)",
       "Bash(pwd)",
-      "Bash(ls :*)"
+      "Bash(ls :*)",
+      "Bash(npm run build)",
+      "Bash(npm run typecheck)",
+      "Bash(npx prettier *)",
+      "Bash(cat *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(chmod *)",
+      "Bash(echo *)",
+      "Bash(tmux *)",
+      "Read",
+      "Glob",
+      "Grep",
+      "Task"
     ],
     "deny": [
       "Bash(rm -rf /)",
@@ -104,6 +119,30 @@
           {
             "type": "command",
             "command": "npx claude-flow@alpha hooks session-end --generate-summary true --persist-state true --export-metrics true"
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/teammate-idle-gate.sh",
+            "timeout": 30,
+            "statusMessage": "Checking teammate quality gate..."
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/task-completed-gate.sh",
+            "timeout": 60,
+            "statusMessage": "Validating task completion..."
           }
         ]
       }

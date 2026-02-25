@@ -96,9 +96,7 @@ export interface ToolSpec {
    * Per-platform install command overrides.
    * Keys are SetupPlatform.os values.
    */
-  platformOverrides?: Partial<
-    Record<SetupPlatform['os'], PlatformInstallSpec>
-  >;
+  platformOverrides?: Partial<Record<SetupPlatform['os'], PlatformInstallSpec>>;
 }
 
 /**

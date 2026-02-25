@@ -625,9 +625,7 @@ export class BatchCommands {
       ...cmd,
       command: replaceVarsInString(cmd.command),
       args: cmd.args?.map(arg => replaceVarsInString(arg)),
-      condition: cmd.condition
-        ? replaceVarsInString(cmd.condition)
-        : undefined,
+      condition: cmd.condition ? replaceVarsInString(cmd.condition) : undefined,
     }));
 
     if (processedJob.description) {

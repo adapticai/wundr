@@ -1,14 +1,14 @@
 # 21 - Test Architecture: Comprehensive Testing Framework
 
-**Status**: Implementing
-**Priority**: P0 (blocks all Wave 2 quality gates)
-**Target**: 80%+ coverage (from current ~16%)
+**Status**: Implementing **Priority**: P0 (blocks all Wave 2 quality gates) **Target**: 80%+
+coverage (from current ~16%)
 
 ---
 
 ## 1. Current State Assessment
 
 ### Existing Test Infrastructure
+
 - **Root**: Jest (`jest.config.json`) with `ts-jest` preset, `node` environment
 - **orchestrator-daemon**: Jest (`jest.config.js`), roots in `tests/`
 - **security package**: Jest (`jest.config.js`) with `__tests__` + `*.test.ts` patterns
@@ -16,7 +16,9 @@
 - **web-client**: Jest with React Testing Library
 
 ### Existing Test Coverage (orchestrator-daemon)
+
 Existing `__tests__/` directories contain tests for:
+
 - `config/__tests__/config.test.ts` -- 300 lines, comprehensive env-based config tests
 - `mcp/__tests__/tool-registry.test.ts` -- 265 lines, file/bash/web tools + safety checks
 - `federation/__tests__/connection.test.ts` -- 351 lines, WebSocket mock + delegation
@@ -25,6 +27,7 @@ Existing `__tests__/` directories contain tests for:
 - `monitoring/__tests__/endpoint.test.ts` -- 289 lines, HTTP metrics + health endpoints
 
 ### Gaps
+
 - **auth/** -- No tests for JWT, authenticator, rate-limiter, or middleware (0% coverage)
 - **memory/** -- No tests for MemoryManager (0% coverage)
 - **session/** -- No tests for session-manager, session-executor, tool-executor (0% coverage)
@@ -35,7 +38,10 @@ Existing `__tests__/` directories contain tests for:
 - **security/** -- New module, needs full test suite
 
 ### Test Runner Fragmentation
-The monorepo uses both Jest and Vitest. The decision here is to **migrate orchestrator-daemon to Vitest** for:
+
+The monorepo uses both Jest and Vitest. The decision here is to **migrate orchestrator-daemon to
+Vitest** for:
+
 - Native ESM support
 - Faster execution (no ts-jest compilation overhead)
 - Consistent with neolith sub-packages
@@ -49,6 +55,7 @@ The monorepo uses both Jest and Vitest. The decision here is to **migrate orches
 ### 2.1 Test Runner: Vitest
 
 **Configuration approach** (aligned with OpenClaw's `vitest.config.ts`):
+
 - `pool: "forks"` for process isolation (auth/crypto tests need it)
 - V8 coverage provider
 - CI-aware worker count
@@ -106,12 +113,12 @@ packages/@wundr/orchestrator-daemon/
 
 ### 2.3 Test Categories
 
-| Category | Purpose | Timeout | Isolation |
-|----------|---------|---------|-----------|
-| **Unit** | Single module, mocked deps | 30s | Thread |
-| **Integration** | Cross-module interactions | 120s | Fork |
-| **Security** | Vulnerability regression | 60s | Fork |
-| **Protocol** | WebSocket message format | 30s | Thread |
+| Category        | Purpose                    | Timeout | Isolation |
+| --------------- | -------------------------- | ------- | --------- |
+| **Unit**        | Single module, mocked deps | 30s     | Thread    |
+| **Integration** | Cross-module interactions  | 120s    | Fork      |
+| **Security**    | Vulnerability regression   | 60s     | Fork      |
+| **Protocol**    | WebSocket message format   | 30s     | Thread    |
 
 ### 2.4 Coverage Configuration
 
@@ -156,6 +163,7 @@ createMockWebSocket()              -> MockWebSocket (EventEmitter-based)
 ```
 
 Design principles:
+
 - Every factory returns valid defaults that pass Zod validation
 - Overrides are deep-merged with spread to avoid mutation
 - Unique IDs generated via incrementing counter (deterministic in tests)
@@ -192,6 +200,7 @@ class WsTestClient {
 ```
 
 Features:
+
 - Promise-based message waiting with timeout
 - Message type filtering
 - Auto-cleanup on test teardown
@@ -236,6 +245,7 @@ steps:
 ## 5. Migration Path (Jest -> Vitest)
 
 ### Phase 1 (This Wave)
+
 1. Add `vitest` + `@vitest/coverage-v8` as dev dependencies
 2. Create `vitest.config.ts` with full config
 3. Create test helpers infrastructure
@@ -243,12 +253,14 @@ steps:
 5. Keep existing Jest tests functional (they still work via `jest` command)
 
 ### Phase 2 (Wave 3)
+
 1. Migrate existing `__tests__/` from Jest to Vitest syntax
 2. Replace `jest.fn()` with `vi.fn()`, etc.
 3. Remove Jest config and dependencies
 4. Unify all packages on Vitest
 
 ### Compatibility Notes
+
 - Vitest's API is intentionally Jest-compatible
 - Most existing tests need only import changes: `jest.fn()` -> `vi.fn()`
 - `jest.useFakeTimers()` -> `vi.useFakeTimers()`
@@ -259,27 +271,30 @@ steps:
 ## 6. Coverage Roadmap
 
 ### Wave 2 Priority (security modules)
-| Module | Target | Tests |
-|--------|--------|-------|
-| `auth/jwt.ts` | 95% | sign, verify, tamper, expiry, algorithm |
-| `auth/authenticator.ts` | 90% | JWT, API-key, loopback, missing creds |
-| `auth/rate-limiter.ts` | 90% | message rate, connections, cleanup |
-| `auth/middleware.ts` | 85% | upgrade hook, message validation |
-| `memory/memory-manager.ts` | 85% | CRUD, compaction, retrieval, export |
+
+| Module                     | Target | Tests                                   |
+| -------------------------- | ------ | --------------------------------------- |
+| `auth/jwt.ts`              | 95%    | sign, verify, tamper, expiry, algorithm |
+| `auth/authenticator.ts`    | 90%    | JWT, API-key, loopback, missing creds   |
+| `auth/rate-limiter.ts`     | 90%    | message rate, connections, cleanup      |
+| `auth/middleware.ts`       | 85%    | upgrade hook, message validation        |
+| `memory/memory-manager.ts` | 85%    | CRUD, compaction, retrieval, export     |
 
 ### Wave 3 Priority (core modules)
-| Module | Target | Tests |
-|--------|--------|-------|
-| `session/session-manager.ts` | 80% | lifecycle, limits, cleanup |
-| `session/session-executor.ts` | 80% | execution, streaming, errors |
-| `core/websocket-server.ts` | 75% | start/stop, messages, broadcast |
-| `distributed/*` | 70% | load balancing, serialization |
-| `budget/*` | 80% | cost calculation, budget tracking |
-| `charter/*` | 80% | YAML loading, validation |
+
+| Module                        | Target | Tests                             |
+| ----------------------------- | ------ | --------------------------------- |
+| `session/session-manager.ts`  | 80%    | lifecycle, limits, cleanup        |
+| `session/session-executor.ts` | 80%    | execution, streaming, errors      |
+| `core/websocket-server.ts`    | 75%    | start/stop, messages, broadcast   |
+| `distributed/*`               | 70%    | load balancing, serialization     |
+| `budget/*`                    | 80%    | cost calculation, budget tracking |
+| `charter/*`                   | 80%    | YAML loading, validation          |
 
 ---
 
 ## 7. Related Documents
+
 - `05-security-audit.md` -- Security findings that tests must regress
 - `06-input-validation.md` -- Input validation rules to test
 - `07-memory-system.md` -- Memory tier specs to validate

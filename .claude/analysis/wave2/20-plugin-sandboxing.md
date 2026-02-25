@@ -3,24 +3,25 @@
 ## Origin
 
 Informed by OpenClaw's multi-layered sandbox architecture (`src/agents/sandbox/`,
-`src/security/skill-scanner.ts`, `src/config/types.sandbox.ts`) and Wundr's existing
-plugin system (`packages/@wundr/cli/src/plugins/plugin-manager.ts`).
+`src/security/skill-scanner.ts`, `src/config/types.sandbox.ts`) and Wundr's existing plugin system
+(`packages/@wundr/cli/src/plugins/plugin-manager.ts`).
 
 ## Problem
 
-Wundr's current plugin system has **zero security boundaries**. When a plugin is
-loaded via `PluginManager.loadPlugin()`, it:
+Wundr's current plugin system has **zero security boundaries**. When a plugin is loaded via
+`PluginManager.loadPlugin()`, it:
 
 1. Runs `require()` on arbitrary code with full Node.js privileges.
 2. Receives the entire `ConfigManager` (which may contain API keys, tokens).
 3. Can register commands and hooks that execute with the same permissions as the CLI.
-4. Can spawn child processes, access the filesystem, make network requests, and read
-   all environment variables without restriction.
+4. Can spawn child processes, access the filesystem, make network requests, and read all environment
+   variables without restriction.
 5. Has no manifest validation -- any directory with a `package.json` is loadable.
-6. Performs no static analysis before loading -- malicious patterns like `eval()`,
-   crypto-mining, and data exfiltration are not detected.
+6. Performs no static analysis before loading -- malicious patterns like `eval()`, crypto-mining,
+   and data exfiltration are not detected.
 
 This means a single malicious or compromised plugin can:
+
 - Steal credentials from `process.env` or config files.
 - Exfiltrate source code or proprietary data.
 - Install backdoors or cryptocurrency miners.
@@ -94,21 +95,21 @@ Every plugin must include a `wundr-plugin.json` manifest declaring:
 
 Extends OpenClaw's `skill-scanner.ts` rule engine with plugin-specific patterns:
 
-| Rule ID                    | Severity | Pattern                                          |
-|----------------------------|----------|--------------------------------------------------|
-| `dangerous-exec`           | critical | `exec/spawn` with `child_process` context        |
-| `dynamic-code-execution`   | critical | `eval()`, `new Function` constructor             |
-| `crypto-mining`            | critical | stratum, coinhive, xmrig references              |
-| `dynamic-require`          | warn     | `require(variable)` (non-literal)                |
-| `global-process-access`    | warn     | `process.exit`, `process.kill`                   |
-| `native-addon`             | critical | `.node` bindings, `node-gyp`                     |
-| `env-harvesting`           | critical | `process.env` + network send in same file        |
-| `potential-exfiltration`   | warn     | `readFile` + `fetch/http.request` in same file   |
-| `obfuscated-code`          | warn     | hex-encoded sequences, large base64 payloads     |
-| `suspicious-network`       | warn     | WebSocket to non-standard port                   |
-| `prototype-pollution`      | warn     | `__proto__`, `constructor.prototype` assignments  |
-| `fs-outside-sandbox`       | critical | Absolute paths outside declared permissions      |
-| `undeclared-network`       | warn     | Network calls to hosts not in manifest           |
+| Rule ID                  | Severity | Pattern                                          |
+| ------------------------ | -------- | ------------------------------------------------ |
+| `dangerous-exec`         | critical | `exec/spawn` with `child_process` context        |
+| `dynamic-code-execution` | critical | `eval()`, `new Function` constructor             |
+| `crypto-mining`          | critical | stratum, coinhive, xmrig references              |
+| `dynamic-require`        | warn     | `require(variable)` (non-literal)                |
+| `global-process-access`  | warn     | `process.exit`, `process.kill`                   |
+| `native-addon`           | critical | `.node` bindings, `node-gyp`                     |
+| `env-harvesting`         | critical | `process.env` + network send in same file        |
+| `potential-exfiltration` | warn     | `readFile` + `fetch/http.request` in same file   |
+| `obfuscated-code`        | warn     | hex-encoded sequences, large base64 payloads     |
+| `suspicious-network`     | warn     | WebSocket to non-standard port                   |
+| `prototype-pollution`    | warn     | `__proto__`, `constructor.prototype` assignments |
+| `fs-outside-sandbox`     | critical | Absolute paths outside declared permissions      |
+| `undeclared-network`     | warn     | Network calls to hosts not in manifest           |
 
 ### Runtime Sandbox Tiers
 
@@ -129,6 +130,7 @@ The VM context receives a sandboxed API object instead of raw Node.js APIs.
 #### Tier 2: Worker Thread (community plugins)
 
 Runs in a separate `worker_threads.Worker` with:
+
 - `execArgv: ['--no-addons']` to block native modules.
 - Communication only through `MessagePort` (structured-clone boundary).
 - Resource limits via `resourceLimits` (max memory, max stack size).
@@ -138,6 +140,7 @@ Runs in a separate `worker_threads.Worker` with:
 #### Tier 3: Docker Container (untrusted plugins)
 
 Based on OpenClaw's container sandbox pattern:
+
 - Read-only root filesystem.
 - Network mode `none` by default (explicit allowlist via manifest).
 - All Linux capabilities dropped.
@@ -150,14 +153,14 @@ Based on OpenClaw's container sandbox pattern:
 
 Permissions are checked at three points:
 
-1. **Load time** -- Manifest permissions are validated against system policy.
-   Plugins cannot request permissions beyond what the system administrator allows.
+1. **Load time** -- Manifest permissions are validated against system policy. Plugins cannot request
+   permissions beyond what the system administrator allows.
 
-2. **Call time** -- Every API call from a plugin passes through a permission
-   proxy that checks the declared permissions against the actual operation.
+2. **Call time** -- Every API call from a plugin passes through a permission proxy that checks the
+   declared permissions against the actual operation.
 
-3. **Audit time** -- All permission-gated operations are logged with plugin ID,
-   operation, target, and allow/deny decision for post-incident analysis.
+3. **Audit time** -- All permission-gated operations are logged with plugin ID, operation, target,
+   and allow/deny decision for post-incident analysis.
 
 ### Lifecycle State Machine
 
@@ -224,32 +227,32 @@ packages/@wundr/orchestrator-daemon/src/plugins/
 
 ## Integration Points
 
-- **McpToolRegistry** -- Plugin-registered tools pass through the tool policy
-  system (wave2/04-tool-policy.md). Plugins can only register tools within
-  their declared `mcpTools.allow` set.
+- **McpToolRegistry** -- Plugin-registered tools pass through the tool policy system
+  (wave2/04-tool-policy.md). Plugins can only register tools within their declared `mcpTools.allow`
+  set.
 
-- **Charter System** -- Plugin permissions can be further restricted by charter
-  alignment checks at the orchestrator level.
+- **Charter System** -- Plugin permissions can be further restricted by charter alignment checks at
+  the orchestrator level.
 
-- **Monitoring** -- Plugin sandbox events (load, scan, permission check, violation)
-  are emitted as metrics to the monitoring collector.
+- **Monitoring** -- Plugin sandbox events (load, scan, permission check, violation) are emitted as
+  metrics to the monitoring collector.
 
-- **Budget System** -- Plugin resource usage (CPU, memory, network) is tracked
-  against per-plugin budgets.
+- **Budget System** -- Plugin resource usage (CPU, memory, network) is tracked against per-plugin
+  budgets.
 
 ## Security Considerations
 
-1. **No eval in scan rules** -- The scanner itself never evaluates plugin code.
-   All pattern matching is regex-based against source text.
+1. **No eval in scan rules** -- The scanner itself never evaluates plugin code. All pattern matching
+   is regex-based against source text.
 
-2. **Time-of-check vs time-of-use** -- After scan, the plugin directory is made
-   read-only (or integrity-checked via hash) before loading.
+2. **Time-of-check vs time-of-use** -- After scan, the plugin directory is made read-only (or
+   integrity-checked via hash) before loading.
 
-3. **Sandbox escape** -- VM sandboxes have known escape vectors. The permission
-   proxy serves as a second line of defense even if the VM is compromised.
+3. **Sandbox escape** -- VM sandboxes have known escape vectors. The permission proxy serves as a
+   second line of defense even if the VM is compromised.
 
-4. **Supply chain** -- Manifest integrity hashes and optional signature
-   verification prevent tampering between install and load.
+4. **Supply chain** -- Manifest integrity hashes and optional signature verification prevent
+   tampering between install and load.
 
-5. **Denial of service** -- Resource limits (memory, CPU, PID, timeout) prevent
-   plugins from starving the host process.
+5. **Denial of service** -- Resource limits (memory, CPU, PID, timeout) prevent plugins from
+   starving the host process.

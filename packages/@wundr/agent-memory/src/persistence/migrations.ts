@@ -38,7 +38,8 @@ export interface Migration {
 const migrations: Migration[] = [
   {
     version: 1,
-    description: 'Create three-tier memory tables, sessions, and supporting tables',
+    description:
+      'Create three-tier memory tables, sessions, and supporting tables',
     up: (db: MigrationDatabase) => {
       // Scratchpad: active working memory
       db.exec(`
@@ -143,22 +144,42 @@ const migrations: Migration[] = [
     description: 'Create indexes for query performance',
     up: (db: MigrationDatabase) => {
       // Scratchpad indexes
-      db.exec(`CREATE INDEX IF NOT EXISTS idx_scratchpad_key ON scratchpad(key);`);
-      db.exec(`CREATE INDEX IF NOT EXISTS idx_scratchpad_updated ON scratchpad(updated_at);`);
+      db.exec(
+        `CREATE INDEX IF NOT EXISTS idx_scratchpad_key ON scratchpad(key);`
+      );
+      db.exec(
+        `CREATE INDEX IF NOT EXISTS idx_scratchpad_updated ON scratchpad(updated_at);`
+      );
 
       // Episodic indexes
-      db.exec(`CREATE INDEX IF NOT EXISTS idx_episodic_session ON episodic(session_id);`);
-      db.exec(`CREATE INDEX IF NOT EXISTS idx_episodic_created ON episodic(created_at);`);
-      db.exec(`CREATE INDEX IF NOT EXISTS idx_episodic_updated ON episodic(updated_at);`);
+      db.exec(
+        `CREATE INDEX IF NOT EXISTS idx_episodic_session ON episodic(session_id);`
+      );
+      db.exec(
+        `CREATE INDEX IF NOT EXISTS idx_episodic_created ON episodic(created_at);`
+      );
+      db.exec(
+        `CREATE INDEX IF NOT EXISTS idx_episodic_updated ON episodic(updated_at);`
+      );
 
       // Semantic indexes
-      db.exec(`CREATE INDEX IF NOT EXISTS idx_semantic_category ON semantic(category);`);
-      db.exec(`CREATE INDEX IF NOT EXISTS idx_semantic_created ON semantic(created_at);`);
-      db.exec(`CREATE INDEX IF NOT EXISTS idx_semantic_updated ON semantic(updated_at);`);
+      db.exec(
+        `CREATE INDEX IF NOT EXISTS idx_semantic_category ON semantic(category);`
+      );
+      db.exec(
+        `CREATE INDEX IF NOT EXISTS idx_semantic_created ON semantic(created_at);`
+      );
+      db.exec(
+        `CREATE INDEX IF NOT EXISTS idx_semantic_updated ON semantic(updated_at);`
+      );
 
       // Session indexes
-      db.exec(`CREATE INDEX IF NOT EXISTS idx_sessions_active ON sessions(is_active);`);
-      db.exec(`CREATE INDEX IF NOT EXISTS idx_sessions_last_active ON sessions(last_active_at);`);
+      db.exec(
+        `CREATE INDEX IF NOT EXISTS idx_sessions_active ON sessions(is_active);`
+      );
+      db.exec(
+        `CREATE INDEX IF NOT EXISTS idx_sessions_last_active ON sessions(last_active_at);`
+      );
 
       // Transcript indexes
       db.exec(
@@ -169,8 +190,12 @@ const migrations: Migration[] = [
       );
 
       // Promotion log indexes
-      db.exec(`CREATE INDEX IF NOT EXISTS idx_promotion_memory ON promotion_log(memory_id);`);
-      db.exec(`CREATE INDEX IF NOT EXISTS idx_promotion_time ON promotion_log(promoted_at);`);
+      db.exec(
+        `CREATE INDEX IF NOT EXISTS idx_promotion_memory ON promotion_log(memory_id);`
+      );
+      db.exec(
+        `CREATE INDEX IF NOT EXISTS idx_promotion_time ON promotion_log(promoted_at);`
+      );
 
       // Repetition schedule index
       db.exec(
@@ -279,7 +304,10 @@ export function runMigrations(db: MigrationDatabase): MigrationResult {
 
   return {
     previousVersion,
-    currentVersion: pending.length > 0 ? pending[pending.length - 1].version : previousVersion,
+    currentVersion:
+      pending.length > 0
+        ? pending[pending.length - 1].version
+        : previousVersion,
     migrationsApplied: applied.length,
     applied,
   };

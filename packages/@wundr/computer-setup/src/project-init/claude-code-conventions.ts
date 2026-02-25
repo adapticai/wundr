@@ -394,8 +394,7 @@ function generateDefaultHooks(
       hooks: [
         {
           type: 'command',
-          command:
-            '"$CLAUDE_PROJECT_DIR"/.claude/hooks/validate-bash.sh',
+          command: '"$CLAUDE_PROJECT_DIR"/.claude/hooks/validate-bash.sh',
           timeout: 10,
           statusMessage: 'Validating command safety...',
         },
@@ -410,8 +409,7 @@ function generateDefaultHooks(
       hooks: [
         {
           type: 'command',
-          command:
-            '"$CLAUDE_PROJECT_DIR"/.claude/hooks/post-edit.sh',
+          command: '"$CLAUDE_PROJECT_DIR"/.claude/hooks/post-edit.sh',
           timeout: 30,
           statusMessage: 'Running post-edit checks...',
         },
@@ -932,9 +930,10 @@ async function generateAgentsV2(
   structure: ClaudeCodeStructure,
   options: EnhancedProjectOptionsV2
 ): Promise<void> {
-  const agents = options.agentsV2 && options.agentsV2.length > 0
-    ? options.agentsV2
-    : DEFAULT_AGENTS_V2;
+  const agents =
+    options.agentsV2 && options.agentsV2.length > 0
+      ? options.agentsV2
+      : DEFAULT_AGENTS_V2;
 
   for (const agent of agents) {
     const content = generateAgentMarkdownV2(agent);
@@ -1196,9 +1195,10 @@ async function generateSkillsV2(
   structure: ClaudeCodeStructure,
   options: EnhancedProjectOptionsV2
 ): Promise<void> {
-  const skills = options.skillsV2 && options.skillsV2.length > 0
-    ? options.skillsV2
-    : DEFAULT_SKILLS_V2;
+  const skills =
+    options.skillsV2 && options.skillsV2.length > 0
+      ? options.skillsV2
+      : DEFAULT_SKILLS_V2;
 
   for (const skill of skills) {
     await generateSkillDirectoryV2(structure.directories.skills, skill);
@@ -1463,19 +1463,11 @@ function generateDefaultPermissions(
       );
       break;
     case 'java':
-      permissions.push(
-        'Bash(mvn *)',
-        'Bash(gradle *)',
-        'Bash(java *)'
-      );
+      permissions.push('Bash(mvn *)', 'Bash(gradle *)', 'Bash(java *)');
       break;
     default:
       // node/react/vue/monorepo
-      permissions.push(
-        'Bash(npx *)',
-        'Bash(npm run build *)',
-        'Bash(tsc *)'
-      );
+      permissions.push('Bash(npx *)', 'Bash(npm run build *)', 'Bash(tsc *)');
       break;
   }
 
@@ -1493,9 +1485,10 @@ async function generateRulesDirectory(
   structure: ClaudeCodeStructure,
   options: EnhancedProjectOptionsV2
 ): Promise<void> {
-  const rules = options.rules && options.rules.length > 0
-    ? options.rules
-    : generateDefaultRules(options);
+  const rules =
+    options.rules && options.rules.length > 0
+      ? options.rules
+      : generateDefaultRules(options);
 
   for (const rule of rules) {
     const ruleDir = rule.subdirectory
@@ -1719,7 +1712,7 @@ async function generateAgents(
   }
 
   // Create category directories
-  const categories = new Set(agentsToGenerate.map((a) => a.category));
+  const categories = new Set(agentsToGenerate.map(a => a.category));
   for (const category of categories) {
     await fs.ensureDir(path.join(structure.directories.agents, category));
   }
@@ -1768,7 +1761,7 @@ This agent specializes in ${agent.description.toLowerCase()}.
 
   if (agent.requiredTools) {
     content += `### Required Tools
-${agent.requiredTools.map((tool) => `- ${tool}`).join('\n')}
+${agent.requiredTools.map(tool => `- ${tool}`).join('\n')}
 
 `;
   }
@@ -1846,7 +1839,7 @@ Type: ${options.projectType}
 
 | Agent | Description |
 |-------|-------------|
-${categoryAgents.map((a) => `| \`${a.id}\` | ${a.description} |`).join('\n')}
+${categoryAgents.map(a => `| \`${a.id}\` | ${a.description} |`).join('\n')}
 
 `;
   }
@@ -1913,7 +1906,7 @@ category: ${skill.category}
 `;
 
   if (skill.fileTypes) {
-    content += `fileTypes: [${skill.fileTypes.map((t) => `"${t}"`).join(', ')}]
+    content += `fileTypes: [${skill.fileTypes.map(t => `"${t}"`).join(', ')}]
 `;
   }
 
@@ -1962,7 +1955,7 @@ function generateSkillsIndex(skills: SkillConfig[]): string {
 
 | Skill | Description |
 |-------|-------------|
-${categorySkills.map((s) => `| \`${s.id}\` | ${s.description} |`).join('\n')}
+${categorySkills.map(s => `| \`${s.id}\` | ${s.description} |`).join('\n')}
 
 `;
   }
@@ -1989,7 +1982,7 @@ async function generateDefaultCommands(
   structure: ClaudeCodeStructure
 ): Promise<void> {
   // Create command category directories
-  const categories = new Set(DEFAULT_COMMANDS.map((c) => c.category));
+  const categories = new Set(DEFAULT_COMMANDS.map(c => c.category));
   for (const category of categories) {
     await fs.ensureDir(path.join(structure.directories.commands, category));
   }
@@ -2053,7 +2046,7 @@ function generateCommandsIndex(commands: CommandConfig[]): string {
 
 | Command | Description |
 |---------|-------------|
-${categoryCommands.map((c) => `| \`/${c.name}\` | ${c.description} |`).join('\n')}
+${categoryCommands.map(c => `| \`/${c.name}\` | ${c.description} |`).join('\n')}
 
 `;
   }
@@ -2127,8 +2120,8 @@ async function generateSettings(
     };
   }
 
-  const defaultAgentIds = DEFAULT_AGENTS.core.map((a) => a.id);
-  const customAgentIds = options.agents?.map((a) => a.id) || [];
+  const defaultAgentIds = DEFAULT_AGENTS.core.map(a => a.id);
+  const customAgentIds = options.agents?.map(a => a.id) || [];
   settings.agents = {
     defaultAgents: defaultAgentIds,
     customAgents: customAgentIds,
