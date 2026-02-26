@@ -95,7 +95,7 @@ describe('DaemonNode', () => {
       };
 
       await expect(restrictedNode.spawnSession(request)).rejects.toThrow(
-        'does not support session spawning',
+        'does not support session spawning'
       );
 
       await restrictedNode.cleanup();
@@ -123,7 +123,7 @@ describe('DaemonNode', () => {
       };
 
       await expect(restrictedNode.spawnSession(request)).rejects.toThrow(
-        'does not support session type',
+        'does not support session type'
       );
 
       await restrictedNode.cleanup();
@@ -131,7 +131,7 @@ describe('DaemonNode', () => {
   });
 
   describe('Event Handling', () => {
-    it('should emit events through EventEmitter', (done) => {
+    it('should emit events through EventEmitter', done => {
       node.on('test-event', (data: any) => {
         expect(data).toBe('test-data');
         done();

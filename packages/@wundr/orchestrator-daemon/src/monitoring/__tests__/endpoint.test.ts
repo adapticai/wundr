@@ -13,7 +13,7 @@ import { Registry, Gauge } from 'prom-client';
 import { createMetricsServer } from '../endpoint';
 import { MetricsRegistry } from '../metrics';
 
-import type { MetricsServer} from '../endpoint';
+import type { MetricsServer } from '../endpoint';
 
 /**
  * Find an available TCP port by binding to port 0 and immediately closing.
@@ -213,8 +213,8 @@ describe('MetricsServer', () => {
         port: newPort,
         healthChecks: {
           redis: async () => {
- throw new Error('Redis connection failed'); 
-},
+            throw new Error('Redis connection failed');
+          },
           database: async () => true,
         },
       });
@@ -312,7 +312,7 @@ describe('MetricsServer', () => {
     method: string,
     path: string,
     port: number,
-    retries: number = 2,
+    retries: number = 2
   ): Promise<{
     statusCode: number;
     headers: http.IncomingHttpHeaders;
@@ -327,9 +327,9 @@ describe('MetricsServer', () => {
             path,
             method,
           },
-          (res) => {
+          res => {
             let body = '';
-            res.on('data', (chunk) => (body += chunk));
+            res.on('data', chunk => (body += chunk));
             res.on('end', () => {
               resolve({
                 statusCode: res.statusCode || 0,
@@ -337,11 +337,14 @@ describe('MetricsServer', () => {
                 body,
               });
             });
-          },
+          }
         );
 
-        req.on('error', (err) => {
-          if (retriesLeft > 0 && (err as NodeJS.ErrnoException).code === 'ECONNRESET') {
+        req.on('error', err => {
+          if (
+            retriesLeft > 0 &&
+            (err as NodeJS.ErrnoException).code === 'ECONNRESET'
+          ) {
             setTimeout(() => attempt(retriesLeft - 1), 50);
           } else {
             reject(err);

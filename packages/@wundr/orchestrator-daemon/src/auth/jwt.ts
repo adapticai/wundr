@@ -49,9 +49,7 @@ export function signJwt(payload: JwtPayload, secret: string): string {
   const payloadEncoded = jsonBase64UrlEncode(payload);
   const signingInput = `${headerEncoded}.${payloadEncoded}`;
 
-  const signature = createHmac('sha256', secret)
-    .update(signingInput)
-    .digest();
+  const signature = createHmac('sha256', secret).update(signingInput).digest();
 
   return `${signingInput}.${base64UrlEncode(signature)}`;
 }
@@ -84,7 +82,7 @@ export function verifyJwt(
   token: string,
   secret: string,
   issuer: string,
-  audience: string,
+  audience: string
 ): JwtVerifyResult {
   // 1. Structural check
   const parts = token.split('.');
@@ -92,7 +90,11 @@ export function verifyJwt(
     return { ok: false, reason: 'jwt_malformed' };
   }
 
-  const [headerEncoded, payloadEncoded, signatureEncoded] = parts as [string, string, string];
+  const [headerEncoded, payloadEncoded, signatureEncoded] = parts as [
+    string,
+    string,
+    string,
+  ];
 
   // 2. Header algorithm check
   let header: { alg?: string; typ?: string };

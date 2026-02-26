@@ -213,7 +213,7 @@ class EmailRateLimiter {
   constructor(
     maxRequestsPerSecond: number,
     maxRetries: number,
-    logger: ChannelLogger,
+    logger: ChannelLogger
   ) {
     this.maxTokens = maxRequestsPerSecond;
     this.tokens = maxRequestsPerSecond;
@@ -235,7 +235,7 @@ class EmailRateLimiter {
       const globalWait = Math.max(0, this.globalBackoffUntil - Date.now());
       if (globalWait > 0) {
         this.logger.debug(
-          `[email] Rate limiter: global backoff ${globalWait}ms (${operation}, attempt ${attempt + 1}).`,
+          `[email] Rate limiter: global backoff ${globalWait}ms (${operation}, attempt ${attempt + 1}).`
         );
         await sleep(globalWait);
       }
@@ -252,7 +252,7 @@ class EmailRateLimiter {
         const retryAfterSec = extractRetryAfterSec(err);
         if (retryAfterSec > 0 && attempt < this.maxRetries) {
           this.logger.warn(
-            `[email] Rate limited on ${operation}: retry after ${retryAfterSec}s (attempt ${attempt + 1}/${this.maxRetries}).`,
+            `[email] Rate limited on ${operation}: retry after ${retryAfterSec}s (attempt ${attempt + 1}/${this.maxRetries}).`
           );
           this.recordLimit(operation, retryAfterSec);
           continue;
@@ -296,7 +296,7 @@ class EmailRateLimiter {
     });
     this.globalBackoffUntil = Math.max(
       this.globalBackoffUntil,
-      Date.now() + retryAfterSec * 1000,
+      Date.now() + retryAfterSec * 1000
     );
   }
 }
@@ -318,7 +318,7 @@ class EmailThreadTracker {
     threadId: string,
     messageId: string,
     references: string[],
-    subject: string,
+    subject: string
   ): void {
     const existing = this.threads.get(threadId);
     const allRefs = existing
@@ -341,7 +341,7 @@ class EmailThreadTracker {
   buildReplyHeaders(
     threadId: string,
     currentMessageId: string,
-    customHeader: string,
+    customHeader: string
   ): Record<string, string> {
     const state = this.threads.get(threadId);
     const headers: Record<string, string> = {
@@ -378,7 +378,7 @@ interface ThreadState {
 class SendGridProvider {
   constructor(
     private readonly apiKey: string,
-    private readonly logger: ChannelLogger,
+    private readonly logger: ChannelLogger
   ) {}
 
   async send(payload: SendGridPayload): Promise<{ messageId: string }> {
@@ -397,13 +397,11 @@ class SendGridProvider {
         const retryAfter = response.headers.get('retry-after') ?? '5';
         const error = new RateLimitError(
           `SendGrid rate limit: ${response.status}`,
-          parseInt(retryAfter, 10) || 5,
+          parseInt(retryAfter, 10) || 5
         );
         throw error;
       }
-      throw new Error(
-        `SendGrid API error ${response.status}: ${body}`,
-      );
+      throw new Error(`SendGrid API error ${response.status}: ${body}`);
     }
 
     // SendGrid returns 202 Accepted with no body; the Message-ID is in the header.
@@ -419,7 +417,7 @@ class SendGridProvider {
     payload: string,
     signature: string,
     timestamp: string,
-    secret: string,
+    secret: string
   ): Promise<boolean> {
     try {
       const crypto = await import('node:crypto');
@@ -430,7 +428,7 @@ class SendGridProvider {
         .digest('hex');
       return crypto.timingSafeEqual(
         Buffer.from(signature, 'hex'),
-        Buffer.from(expectedSig, 'hex'),
+        Buffer.from(expectedSig, 'hex')
       );
     } catch {
       return false;
@@ -473,7 +471,7 @@ class SesProvider {
     private readonly accessKeyId: string,
     private readonly secretAccessKey: string,
     private readonly sessionToken: string | undefined,
-    private readonly logger: ChannelLogger,
+    private readonly logger: ChannelLogger
   ) {}
 
   async send(params: SesEmailParams): Promise<{ messageId: string }> {
@@ -496,7 +494,7 @@ class SesProvider {
         const retryAfter = response.headers.get('retry-after') ?? '5';
         throw new RateLimitError(
           `SES rate limit: ${response.status}`,
-          parseInt(retryAfter, 10) || 5,
+          parseInt(retryAfter, 10) || 5
         );
       }
       throw new Error(`AWS SES error ${response.status}: ${responseBody}`);
@@ -515,7 +513,7 @@ class SesProvider {
   private async buildAuthHeaders(
     method: string,
     url: string,
-    body: string,
+    body: string
   ): Promise<Record<string, string>> {
     const crypto = await import('node:crypto');
     const parsed = new URL(url);
@@ -526,17 +524,13 @@ class SesProvider {
     const credentialScope = `${dateStamp}/${this.region}/${service}/aws4_request`;
 
     // 1. Canonical Request
-    const payloadHash = crypto
-      .createHash('sha256')
-      .update(body)
-      .digest('hex');
+    const payloadHash = crypto.createHash('sha256').update(body).digest('hex');
     const canonicalHeaders =
       `host:${parsed.host}\n` +
       `x-amz-date:${amzDate}\n` +
       (this.sessionToken ? `x-amz-security-token:${this.sessionToken}\n` : '');
     const signedHeaders =
-      'host;x-amz-date' +
-      (this.sessionToken ? ';x-amz-security-token' : '');
+      'host;x-amz-date' + (this.sessionToken ? ';x-amz-security-token' : '');
     const canonicalRequest = [
       method,
       parsed.pathname,
@@ -566,11 +560,11 @@ class SesProvider {
       sign(
         sign(
           sign(Buffer.from(`AWS4${this.secretAccessKey}`), dateStamp),
-          this.region,
+          this.region
         ),
-        service,
+        service
       ),
-      'aws4_request',
+      'aws4_request'
     );
 
     // 4. Signature
@@ -632,7 +626,7 @@ class SmtpProvider {
     private readonly user: string | undefined,
     private readonly pass: string | undefined,
     private readonly secure: boolean,
-    private readonly logger: ChannelLogger,
+    private readonly logger: ChannelLogger
   ) {}
 
   async initialize(): Promise<void> {
@@ -651,21 +645,24 @@ class SmtpProvider {
 
       await this.transporter.verify();
       this.logger.info(
-        `[email] SMTP transporter connected to ${this.host}:${this.port}.`,
+        `[email] SMTP transporter connected to ${this.host}:${this.port}.`
       );
     } catch (err) {
       throw new Error(
-        `SMTP initialization failed: ${err instanceof Error ? err.message : String(err)}`,
+        `SMTP initialization failed: ${err instanceof Error ? err.message : String(err)}`
       );
     }
   }
 
   async send(options: SmtpSendOptions): Promise<{ messageId: string }> {
     if (!this.transporter) {
-      throw new Error('SMTP transporter not initialized. Call initialize() first.');
+      throw new Error(
+        'SMTP transporter not initialized. Call initialize() first.'
+      );
     }
     const info = await this.transporter.sendMail(options);
-    const messageId = (info as { messageId?: string }).messageId ?? `smtp-${Date.now()}`;
+    const messageId =
+      (info as { messageId?: string }).messageId ?? `smtp-${Date.now()}`;
     this.logger.debug(`[email] SMTP sent message: ${messageId}`);
     return { messageId };
   }
@@ -796,7 +793,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     this.rateLimiter = new EmailRateLimiter(
       emailConfig.maxRequestsPerSecond ?? DEFAULT_MAX_REQUESTS_PER_SECOND,
       emailConfig.maxRetries ?? DEFAULT_MAX_RETRIES,
-      this.logger,
+      this.logger
     );
 
     try {
@@ -806,7 +803,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
 
       this.logger.info(
         `[email] Adapter connected (provider: ${emailConfig.provider}, ` +
-        `from: ${emailConfig.fromAddress}).`,
+          `from: ${emailConfig.fromAddress}).`
       );
 
       this.emit('connected', {
@@ -833,7 +830,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
       }
     } catch (err) {
       this.logger.error(
-        `[email] Error during disconnect: ${err instanceof Error ? err.message : String(err)}`,
+        `[email] Error during disconnect: ${err instanceof Error ? err.message : String(err)}`
       );
     }
 
@@ -897,7 +894,9 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     // Build custom headers for thread tracking.
     const threadHeader =
       this.emailConfig?.threadIdHeader ?? DEFAULT_THREAD_ID_HEADER;
-    const messageId = generateMessageId(this.emailConfig?.fromAddress ?? 'orchestrator');
+    const messageId = generateMessageId(
+      this.emailConfig?.fromAddress ?? 'orchestrator'
+    );
     const threadHeaders = threadId
       ? this.threadTracker.buildReplyHeaders(threadId, messageId, threadHeader)
       : { [threadHeader]: messageId };
@@ -911,8 +910,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     const textBody = message.text;
     const htmlBody = emailMessage.htmlBody ?? convertTextToHtml(textBody);
 
-    const replyTo =
-      emailMessage.replyTo ?? this.emailConfig?.replyToAddress;
+    const replyTo = emailMessage.replyTo ?? this.emailConfig?.replyToAddress;
 
     try {
       const result = await this.withRateLimit('send', () =>
@@ -928,8 +926,10 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
           replyTo,
           messageId,
           headers: customHeaders,
-          attachments: message.attachments ? [...message.attachments] : undefined,
-        }),
+          attachments: message.attachments
+            ? [...message.attachments]
+            : undefined,
+        })
       );
 
       // Record the thread state so future replies can chain correctly.
@@ -938,12 +938,12 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
         effectiveThreadId,
         messageId,
         customHeaders['References']?.split(' ') ?? [],
-        subject,
+        subject
       );
 
       this.messageCount++;
       this.logger.debug(
-        `[email] Sent to ${message.to} (messageId: ${result.messageId}).`,
+        `[email] Sent to ${message.to} (messageId: ${result.messageId}).`
       );
 
       return {
@@ -984,7 +984,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
   async sendMedia(
     conversationId: string,
     attachment: OutboundAttachment,
-    options?: { text?: string; threadId?: string },
+    options?: { text?: string; threadId?: string }
   ): Promise<DeliveryResult> {
     return this.sendMessage({
       to: conversationId,
@@ -1015,10 +1015,12 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
    */
   async handleIncoming(
     webhookPayload: string | Record<string, unknown>,
-    headers?: Record<string, string>,
+    headers?: Record<string, string>
   ): Promise<ParsedEmail | null> {
     if (!this.connected) {
-      this.logger.warn('[email] handleIncoming called on disconnected adapter.');
+      this.logger.warn(
+        '[email] handleIncoming called on disconnected adapter.'
+      );
       return null;
     }
 
@@ -1027,10 +1029,12 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
       if (this.emailConfig?.webhookSecret && headers) {
         const isValid = await this.validateWebhookSignature(
           webhookPayload,
-          headers,
+          headers
         );
         if (!isValid) {
-          this.logger.warn('[email] Webhook signature validation failed. Rejecting payload.');
+          this.logger.warn(
+            '[email] Webhook signature validation failed. Rejecting payload.'
+          );
           return null;
         }
       }
@@ -1045,19 +1049,20 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
       const validation = await this.validateSender(parsed.from, 'direct');
       if (!validation.allowed) {
         this.logger.debug(
-          `[email] Rejected inbound email from ${parsed.from}: ${validation.reason}`,
+          `[email] Rejected inbound email from ${parsed.from}: ${validation.reason}`
         );
         return null;
       }
 
       // Track thread state from inbound message.
       if (parsed.threadId || parsed.inReplyTo) {
-        const effectiveThreadId = parsed.threadId ?? parsed.inReplyTo ?? parsed.messageId;
+        const effectiveThreadId =
+          parsed.threadId ?? parsed.inReplyTo ?? parsed.messageId;
         this.threadTracker.record(
           effectiveThreadId,
           parsed.messageId,
           parsed.references ?? [],
-          parsed.subject,
+          parsed.subject
         );
       }
 
@@ -1074,7 +1079,9 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
       this.errorCount++;
       this.lastError = err instanceof Error ? err.message : String(err);
       this.lastErrorAt = new Date();
-      this.logger.error(`[email] Error handling inbound webhook: ${this.lastError}`);
+      this.logger.error(
+        `[email] Error handling inbound webhook: ${this.lastError}`
+      );
 
       this.emit('error', {
         channelId: this.id,
@@ -1121,7 +1128,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
 
   async validateSender(
     senderId: string,
-    _chatType: ChatType,
+    _chatType: ChatType
   ): Promise<SenderValidation> {
     const config = this.emailConfig;
     if (!config) {
@@ -1133,7 +1140,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     // Check allow-list (exact email match).
     if (config.fromAllowList && config.fromAllowList.length > 0) {
       const inAllowList = config.fromAllowList.some(
-        (entry) => entry.trim().toLowerCase() === email,
+        entry => entry.trim().toLowerCase() === email
       );
       if (inAllowList) {
         return { allowed: true };
@@ -1144,7 +1151,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     if (config.fromAllowDomains && config.fromAllowDomains.length > 0) {
       const domain = email.split('@')[1] ?? '';
       const inAllowDomain = config.fromAllowDomains.some(
-        (d) => d.trim().toLowerCase() === domain,
+        d => d.trim().toLowerCase() === domain
       );
       if (inAllowDomain) {
         return { allowed: true };
@@ -1175,7 +1182,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
 
     const allowList = [
       ...(config.fromAllowList ?? []),
-      ...(config.fromAllowDomains ?? []).map((d) => `@${d}`),
+      ...(config.fromAllowDomains ?? []).map(d => `@${d}`),
     ];
 
     if (allowList.length === 0) {
@@ -1208,7 +1215,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     threadId: string,
     lastMessageId: string,
     references: string[],
-    subject: string,
+    subject: string
   ): void {
     this.threadTracker.record(threadId, lastMessageId, references, subject);
   }
@@ -1223,7 +1230,10 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
         if (!config.apiKey) {
           throw new Error('SendGrid provider requires apiKey.');
         }
-        this.sendgridProvider = new SendGridProvider(config.apiKey, this.logger);
+        this.sendgridProvider = new SendGridProvider(
+          config.apiKey,
+          this.logger
+        );
         this.logger.info('[email] SendGrid provider initialized.');
         break;
       }
@@ -1233,16 +1243,20 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
           throw new Error('SES provider requires region.');
         }
         if (!config.awsAccessKeyId || !config.awsSecretAccessKey) {
-          throw new Error('SES provider requires awsAccessKeyId and awsSecretAccessKey.');
+          throw new Error(
+            'SES provider requires awsAccessKeyId and awsSecretAccessKey.'
+          );
         }
         this.sesProvider = new SesProvider(
           config.region,
           config.awsAccessKeyId,
           config.awsSecretAccessKey,
           config.awsSessionToken,
-          this.logger,
+          this.logger
         );
-        this.logger.info(`[email] AWS SES provider initialized (region: ${config.region}).`);
+        this.logger.info(
+          `[email] AWS SES provider initialized (region: ${config.region}).`
+        );
         break;
       }
 
@@ -1258,7 +1272,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
           config.smtpUser,
           config.smtpPass,
           secure,
-          this.logger,
+          this.logger
         );
         await this.smtpProvider.initialize();
         break;
@@ -1267,7 +1281,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
       default: {
         throw new Error(
           `Unknown email provider: "${(config as EmailConfig).provider}". ` +
-          'Valid values: "sendgrid", "ses", "smtp".',
+            'Valid values: "sendgrid", "ses", "smtp".'
         );
       }
     }
@@ -1277,7 +1291,9 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
   // Internal: Provider Dispatch
   // =========================================================================
 
-  private async sendViaProvider(params: ProviderSendParams): Promise<{ messageId: string }> {
+  private async sendViaProvider(
+    params: ProviderSendParams
+  ): Promise<{ messageId: string }> {
     const config = this.emailConfig!;
 
     switch (config.provider) {
@@ -1295,7 +1311,9 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     }
   }
 
-  private async sendViaSendGrid(params: ProviderSendParams): Promise<{ messageId: string }> {
+  private async sendViaSendGrid(
+    params: ProviderSendParams
+  ): Promise<{ messageId: string }> {
     if (!this.sendgridProvider) {
       throw new Error('SendGrid provider not initialized.');
     }
@@ -1303,9 +1321,13 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     const payload: SendGridPayload = {
       personalizations: [
         {
-          to: params.to.map((email) => parseEmailAddress(email)),
-          ...(params.cc?.length ? { cc: params.cc.map((e) => parseEmailAddress(e)) } : {}),
-          ...(params.bcc?.length ? { bcc: params.bcc.map((e) => parseEmailAddress(e)) } : {}),
+          to: params.to.map(email => parseEmailAddress(email)),
+          ...(params.cc?.length
+            ? { cc: params.cc.map(e => parseEmailAddress(e)) }
+            : {}),
+          ...(params.bcc?.length
+            ? { bcc: params.bcc.map(e => parseEmailAddress(e)) }
+            : {}),
           headers: params.headers,
         },
       ],
@@ -1313,9 +1335,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
         email: params.from,
         name: params.fromName,
       },
-      ...(params.replyTo
-        ? { reply_to: { email: params.replyTo } }
-        : {}),
+      ...(params.replyTo ? { reply_to: { email: params.replyTo } } : {}),
       subject: params.subject,
       content: [
         { type: 'text/plain', value: params.textBody || '' },
@@ -1331,7 +1351,9 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     return this.sendgridProvider.send(payload);
   }
 
-  private async sendViaSes(params: ProviderSendParams): Promise<{ messageId: string }> {
+  private async sendViaSes(
+    params: ProviderSendParams
+  ): Promise<{ messageId: string }> {
     if (!this.sesProvider) {
       throw new Error('SES provider not initialized.');
     }
@@ -1364,7 +1386,9 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     return this.sesProvider.send(sesParams);
   }
 
-  private async sendViaSmtp(params: ProviderSendParams): Promise<{ messageId: string }> {
+  private async sendViaSmtp(
+    params: ProviderSendParams
+  ): Promise<{ messageId: string }> {
     if (!this.smtpProvider) {
       throw new Error('SMTP provider not initialized.');
     }
@@ -1396,7 +1420,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
   // =========================================================================
 
   private parseWebhookPayload(
-    payload: string | Record<string, unknown>,
+    payload: string | Record<string, unknown>
   ): ParsedEmail | null {
     try {
       const data: Record<string, unknown> =
@@ -1428,16 +1452,17 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
       return null;
     } catch (err) {
       this.logger.error(
-        `[email] Failed to parse webhook payload: ${err instanceof Error ? err.message : String(err)}`,
+        `[email] Failed to parse webhook payload: ${err instanceof Error ? err.message : String(err)}`
       );
       return null;
     }
   }
 
   private parseSendGridWebhook(data: Record<string, unknown>): ParsedEmail {
-    const threadHeader = this.emailConfig?.threadIdHeader ?? DEFAULT_THREAD_ID_HEADER;
+    const threadHeader =
+      this.emailConfig?.threadIdHeader ?? DEFAULT_THREAD_ID_HEADER;
     const headers = normalizeHeaders(
-      (data['headers'] as Record<string, string> | string | undefined) ?? {},
+      (data['headers'] as Record<string, string> | string | undefined) ?? {}
     );
 
     const from = String(data['from'] ?? '');
@@ -1445,7 +1470,9 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     const to = splitEmailList(String(data['to'] ?? ''));
     const cc = data['cc'] ? splitEmailList(String(data['cc'])) : undefined;
     const subject = String(data['subject'] ?? '');
-    const headersParsed = data['headers_parsed'] as Record<string, string> | undefined;
+    const headersParsed = data['headers_parsed'] as
+      | Record<string, string>
+      | undefined;
     const messageId =
       String(headersParsed?.['Message-ID'] ?? headers['message-id'] ?? '') ||
       `inbound-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -1456,7 +1483,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     const inReplyTo = headers['in-reply-to']?.replace(/^<|>$/g, '');
     const references = headers['references']
       ?.split(/\s+/)
-      .map((r) => r.replace(/^<|>$/g, ''))
+      .map(r => r.replace(/^<|>$/g, ''))
       .filter(Boolean);
     const threadId =
       headers[threadHeader.toLowerCase()] ?? inReplyTo ?? undefined;
@@ -1482,7 +1509,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
   }
 
   private parseSendGridAttachments(
-    data: Record<string, unknown>,
+    data: Record<string, unknown>
   ): InboundEmailAttachment[] {
     const attachmentCount = parseInt(String(data['attachments'] ?? '0'), 10);
     if (!attachmentCount || attachmentCount <= 0) {
@@ -1492,7 +1519,9 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     const result: InboundEmailAttachment[] = [];
     for (let i = 1; i <= attachmentCount; i++) {
       const name = String(data[`attachment-info`] ?? '');
-      const contentType = String(data[`attachment${i}`] ?? 'application/octet-stream');
+      const contentType = String(
+        data[`attachment${i}`] ?? 'application/octet-stream'
+      );
       result.push({
         filename: name || `attachment-${i}`,
         mimeType: contentType,
@@ -1501,21 +1530,30 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     return result;
   }
 
-  private parseSesNotification(data: Record<string, unknown>): ParsedEmail | null {
+  private parseSesNotification(
+    data: Record<string, unknown>
+  ): ParsedEmail | null {
     try {
-      const message = JSON.parse(String(data['Message'])) as Record<string, unknown>;
+      const message = JSON.parse(String(data['Message'])) as Record<
+        string,
+        unknown
+      >;
       const mail = message['mail'] as Record<string, unknown> | undefined;
       if (!mail) {
         return null;
       }
 
-      const headers = (mail['headers'] as Array<{ name: string; value: string }> | undefined) ?? [];
+      const headers =
+        (mail['headers'] as
+          | Array<{ name: string; value: string }>
+          | undefined) ?? [];
       const headerMap: Record<string, string> = {};
       for (const h of headers) {
         headerMap[h.name.toLowerCase()] = h.value;
       }
 
-      const threadHeader = this.emailConfig?.threadIdHeader ?? DEFAULT_THREAD_ID_HEADER;
+      const threadHeader =
+        this.emailConfig?.threadIdHeader ?? DEFAULT_THREAD_ID_HEADER;
       const messageId = String(mail['messageId'] ?? `ses-${Date.now()}`);
       const from = String(mail['source'] ?? headerMap['from'] ?? '');
       const { email: fromEmail, name: fromName } = parseEmailAddress(from);
@@ -1524,7 +1562,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
       const inReplyTo = headerMap['in-reply-to']?.replace(/^<|>$/g, '');
       const references = headerMap['references']
         ?.split(/\s+/)
-        .map((r) => r.replace(/^<|>$/g, ''))
+        .map(r => r.replace(/^<|>$/g, ''))
         .filter(Boolean);
       const threadId =
         headerMap[threadHeader.toLowerCase()] ?? inReplyTo ?? undefined;
@@ -1553,22 +1591,28 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
   }
 
   private parseMailgunWebhook(data: Record<string, unknown>): ParsedEmail {
-    const threadHeader = this.emailConfig?.threadIdHeader ?? DEFAULT_THREAD_ID_HEADER;
+    const threadHeader =
+      this.emailConfig?.threadIdHeader ?? DEFAULT_THREAD_ID_HEADER;
     const headers = normalizeHeaders(
-      (data['message-headers'] as Array<[string, string]> | undefined) ?? [],
+      (data['message-headers'] as Array<[string, string]> | undefined) ?? []
     );
 
     const from = String(data['sender'] ?? data['from'] ?? '');
     const { email: fromEmail, name: fromName } = parseEmailAddress(from);
     const to = splitEmailList(String(data['recipient'] ?? data['to'] ?? ''));
     const subject = String(data['subject'] ?? '');
-    const messageId = String(data['Message-Id'] ?? data['message-id'] ?? headers['message-id'] ?? `mg-${Date.now()}`);
+    const messageId = String(
+      data['Message-Id'] ??
+        data['message-id'] ??
+        headers['message-id'] ??
+        `mg-${Date.now()}`
+    );
     const cleanMessageId = messageId.replace(/^<|>$/g, '');
 
     const inReplyTo = headers['in-reply-to']?.replace(/^<|>$/g, '');
     const references = headers['references']
       ?.split(/\s+/)
-      .map((r) => r.replace(/^<|>$/g, ''))
+      .map(r => r.replace(/^<|>$/g, ''))
       .filter(Boolean);
     const threadId =
       headers[threadHeader.toLowerCase()] ?? inReplyTo ?? undefined;
@@ -1591,18 +1635,21 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
 
   private parseGenericWebhook(data: Record<string, unknown>): ParsedEmail {
     const headers = normalizeHeaders(
-      (data['headers'] as Record<string, string> | undefined) ?? {},
+      (data['headers'] as Record<string, string> | undefined) ?? {}
     );
-    const threadHeader = this.emailConfig?.threadIdHeader ?? DEFAULT_THREAD_ID_HEADER;
+    const threadHeader =
+      this.emailConfig?.threadIdHeader ?? DEFAULT_THREAD_ID_HEADER;
     const from = String(data['from'] ?? headers['from'] ?? '');
     const { email: fromEmail, name: fromName } = parseEmailAddress(from);
     const to = splitEmailList(String(data['to'] ?? headers['to'] ?? ''));
     const subject = String(data['subject'] ?? headers['subject'] ?? '');
-    const messageId = String(data['messageId'] ?? headers['message-id'] ?? `generic-${Date.now()}`).replace(/^<|>$/g, '');
+    const messageId = String(
+      data['messageId'] ?? headers['message-id'] ?? `generic-${Date.now()}`
+    ).replace(/^<|>$/g, '');
     const inReplyTo = headers['in-reply-to']?.replace(/^<|>$/g, '');
     const references = headers['references']
       ?.split(/\s+/)
-      .map((r) => r.replace(/^<|>$/g, ''))
+      .map(r => r.replace(/^<|>$/g, ''))
       .filter(Boolean);
     const threadId =
       headers[threadHeader.toLowerCase()] ?? inReplyTo ?? undefined;
@@ -1667,7 +1714,9 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
 
   private normalizeEmailContent(parsed: ParsedEmail): MessageContent {
     const text = parsed.textBody ?? stripHtmlTags(parsed.htmlBody ?? '');
-    const attachments = this.normalizeEmailAttachments(parsed.attachments ?? []);
+    const attachments = this.normalizeEmailAttachments(
+      parsed.attachments ?? []
+    );
     const isSelf =
       this.emailConfig !== null &&
       parsed.from.toLowerCase() === this.emailConfig.fromAddress.toLowerCase();
@@ -1682,9 +1731,9 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
   }
 
   private normalizeEmailAttachments(
-    inbound: InboundEmailAttachment[],
+    inbound: InboundEmailAttachment[]
   ): NormalizedAttachment[] {
-    return inbound.map((att) => ({
+    return inbound.map(att => ({
       type: resolveAttachmentType(att.mimeType),
       filename: att.filename,
       mimeType: att.mimeType,
@@ -1699,7 +1748,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
 
   private async validateWebhookSignature(
     payload: string | Record<string, unknown>,
-    headers: Record<string, string>,
+    headers: Record<string, string>
   ): Promise<boolean> {
     const secret = this.emailConfig?.webhookSecret;
     if (!secret) {
@@ -1713,7 +1762,12 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     const sgSig = headers['x-twilio-email-event-webhook-signature'];
     const sgTs = headers['x-twilio-email-event-webhook-timestamp'];
     if (sgSig && sgTs && this.sendgridProvider) {
-      return this.sendgridProvider.verifyWebhookSignature(payloadStr, sgSig, sgTs, secret);
+      return this.sendgridProvider.verifyWebhookSignature(
+        payloadStr,
+        sgSig,
+        sgTs,
+        secret
+      );
     }
 
     // Generic HMAC-SHA256: X-Webhook-Signature
@@ -1739,7 +1793,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
     }
     if (!['sendgrid', 'ses', 'smtp'].includes(config.provider)) {
       throw new Error(
-        `Invalid email provider "${config.provider}". Must be "sendgrid", "ses", or "smtp".`,
+        `Invalid email provider "${config.provider}". Must be "sendgrid", "ses", or "smtp".`
       );
     }
   }
@@ -1750,7 +1804,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
 
   private async withRateLimit<T>(
     operation: string,
-    fn: () => Promise<T>,
+    fn: () => Promise<T>
   ): Promise<T> {
     if (!this.rateLimiter) {
       return fn();
@@ -1764,9 +1818,7 @@ export class EmailChannelAdapter extends BaseChannelAdapter {
 
   private requireConnected(): void {
     if (!this.connected) {
-      throw new Error(
-        'Email adapter is not connected. Call connect() first.',
-      );
+      throw new Error('Email adapter is not connected. Call connect() first.');
     }
   }
 }
@@ -1809,7 +1861,7 @@ class RateLimitError extends Error {
 // ---------------------------------------------------------------------------
 
 async function buildSendGridAttachments(
-  attachments: readonly OutboundAttachment[],
+  attachments: readonly OutboundAttachment[]
 ): Promise<SendGridPayload['attachments']> {
   const result: NonNullable<SendGridPayload['attachments']> = [];
 
@@ -1825,7 +1877,9 @@ async function buildSendGridAttachments(
     } else if (att.source === 'url' && att.location) {
       const resp = await fetch(att.location);
       if (!resp.ok) {
-        throw new Error(`Failed to download attachment from ${att.location}: ${resp.status}`);
+        throw new Error(
+          `Failed to download attachment from ${att.location}: ${resp.status}`
+        );
       }
       const buf = Buffer.from(await resp.arrayBuffer());
       content = buf.toString('base64');
@@ -1845,7 +1899,7 @@ async function buildSendGridAttachments(
 }
 
 async function buildSmtpAttachments(
-  attachments: readonly OutboundAttachment[],
+  attachments: readonly OutboundAttachment[]
 ): Promise<SmtpSendOptions['attachments']> {
   const result: NonNullable<SmtpSendOptions['attachments']> = [];
 
@@ -1865,7 +1919,9 @@ async function buildSmtpAttachments(
     } else if (att.source === 'url' && att.location) {
       const resp = await fetch(att.location);
       if (!resp.ok) {
-        throw new Error(`Failed to download attachment from ${att.location}: ${resp.status}`);
+        throw new Error(
+          `Failed to download attachment from ${att.location}: ${resp.status}`
+        );
       }
       const buf = Buffer.from(await resp.arrayBuffer());
       result.push({
@@ -1944,7 +2000,7 @@ function splitEmailList(raw: string): string[] {
   }
   return raw
     .split(',')
-    .map((s) => parseEmailAddress(s.trim()).email)
+    .map(s => parseEmailAddress(s.trim()).email)
     .filter(Boolean);
 }
 
@@ -1952,7 +2008,7 @@ function splitEmailList(raw: string): string[] {
  * Normalize a headers object or array to a lowercase key map.
  */
 function normalizeHeaders(
-  input: Record<string, string> | Array<[string, string]> | string,
+  input: Record<string, string> | Array<[string, string]> | string
 ): Record<string, string> {
   if (Array.isArray(input)) {
     const result: Record<string, string> = {};
@@ -2036,7 +2092,7 @@ function stripHtmlTags(html: string): string {
  * Resolve attachment type from MIME type.
  */
 function resolveAttachmentType(
-  mimeType?: string,
+  mimeType?: string
 ): 'image' | 'video' | 'audio' | 'file' {
   if (!mimeType) {
     return 'file';
@@ -2059,7 +2115,7 @@ function resolveAttachmentType(
 async function verifyHmac(
   payload: string,
   signature: string,
-  secret: string,
+  secret: string
 ): Promise<boolean> {
   try {
     const crypto = await import('node:crypto');
@@ -2069,7 +2125,7 @@ async function verifyHmac(
       .digest('hex');
     return crypto.timingSafeEqual(
       Buffer.from(signature, 'hex'),
-      Buffer.from(expected, 'hex'),
+      Buffer.from(expected, 'hex')
     );
   } catch {
     return false;
@@ -2080,7 +2136,7 @@ async function verifyHmac(
  * Sleep for a given number of milliseconds.
  */
 function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
@@ -2099,7 +2155,7 @@ async function importNodemailer(): Promise<{
     return nm as { createTransport(options: Record<string, unknown>): unknown };
   } catch {
     throw new Error(
-      'nodemailer is not installed. Run `npm install nodemailer` to use the SMTP provider.',
+      'nodemailer is not installed. Run `npm install nodemailer` to use the SMTP provider.'
     );
   }
 }

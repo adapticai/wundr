@@ -39,7 +39,7 @@ function basicRoundRobin() {
     },
   ];
 
-  nodes.forEach((node) => lb.addNode(node));
+  nodes.forEach(node => lb.addNode(node));
 
   // Select nodes in round-robin fashion
   console.log('Selecting nodes in round-robin:');
@@ -148,11 +148,11 @@ function weightedWithHealth() {
   const selected = lb.selectNode();
   console.log(`Selected node: ${selected?.id}`);
   console.log(
-    `  Load: ${(lb.getNodeLoad(selected!.id)?.currentLoad ?? 0) * 100}%`,
+    `  Load: ${(lb.getNodeLoad(selected!.id)?.currentLoad ?? 0) * 100}%`
   );
   console.log(`  Weight: ${selected?.weight}`);
   console.log(
-    `  Error rate: ${(lb.getNodeHealth(selected!.id)?.errorRate ?? 0) * 100}%`,
+    `  Error rate: ${(lb.getNodeHealth(selected!.id)?.errorRate ?? 0) * 100}%`
   );
 
   // Output:
@@ -235,7 +235,7 @@ function sessionAffinity() {
   const lb = new LoadBalancer('round-robin');
 
   // Add nodes
-  ['node-1', 'node-2', 'node-3'].forEach((id) => {
+  ['node-1', 'node-2', 'node-3'].forEach(id => {
     lb.addNode({
       id,
       endpoint: `http://10.0.1.${id.split('-')[1]}0:8787`,
@@ -334,18 +334,20 @@ function loadMonitoring() {
   const lb = new LoadBalancer('round-robin');
 
   // Set up event listeners
-  lb.on('node:added', (node) => {
+  lb.on('node:added', node => {
     console.log(`[EVENT] Node added: ${node.id}`);
   });
 
-  lb.on('node:load_updated', (load) => {
+  lb.on('node:load_updated', load => {
     console.log(
-      `[EVENT] Load updated: ${load.nodeId} -> ${(load.currentLoad * 100).toFixed(1)}%`,
+      `[EVENT] Load updated: ${load.nodeId} -> ${(load.currentLoad * 100).toFixed(1)}%`
     );
   });
 
   lb.on('node:overloaded', (nodeId, load) => {
-    console.log(`[EVENT] Node overloaded: ${nodeId} (${(load * 100).toFixed(1)}%)`);
+    console.log(
+      `[EVENT] Node overloaded: ${nodeId} (${(load * 100).toFixed(1)}%)`
+    );
   });
 
   lb.on('strategy:changed', (oldStrategy, newStrategy) => {

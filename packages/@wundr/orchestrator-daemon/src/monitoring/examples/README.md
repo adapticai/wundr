@@ -1,6 +1,7 @@
 # Metrics Server Examples
 
-This directory contains examples demonstrating how to use the Prometheus metrics HTTP endpoint in various scenarios.
+This directory contains examples demonstrating how to use the Prometheus metrics HTTP endpoint in
+various scenarios.
 
 ## Examples Overview
 
@@ -9,17 +10,20 @@ This directory contains examples demonstrating how to use the Prometheus metrics
 Demonstrates the simplest setup for a metrics server with automatic metric updates.
 
 **Features:**
+
 - Basic server setup on port 9090
 - Simulated metrics updates every 5 seconds
 - All three endpoints: `/metrics`, `/health`, `/ready`
 - Graceful shutdown handling
 
 **Run:**
+
 ```bash
 ts-node basic-server.ts
 ```
 
 **Test:**
+
 ```bash
 # View metrics
 curl http://localhost:9090/metrics
@@ -36,17 +40,20 @@ curl http://localhost:9090/ready | jq
 Shows how to implement custom health checks for external dependencies.
 
 **Features:**
+
 - Custom health check functions for Redis, database, and federation registry
 - Readiness state management
 - CORS and logging enabled
 - Detailed health status in responses
 
 **Run:**
+
 ```bash
 ts-node with-health-checks.ts
 ```
 
 **Health Response:**
+
 ```json
 {
   "status": "healthy",
@@ -66,6 +73,7 @@ ts-node with-health-checks.ts
 Production-ready example with Kubernetes deployment configuration.
 
 **Features:**
+
 - Application lifecycle management
 - Liveness and readiness probe support
 - Graceful shutdown with connection draining
@@ -73,12 +81,13 @@ Production-ready example with Kubernetes deployment configuration.
 - Complete Kubernetes manifests included
 
 **Run:**
+
 ```bash
 METRICS_PORT=9090 APP_VERSION=1.0.0 ts-node kubernetes-integration.ts
 ```
 
-**Kubernetes Manifests:**
-The example includes complete YAML for:
+**Kubernetes Manifests:** The example includes complete YAML for:
+
 - Deployment with probes
 - Service for metrics exposure
 - ServiceMonitor for Prometheus Operator
@@ -88,9 +97,11 @@ The example includes complete YAML for:
 ### Endpoints
 
 #### GET /metrics
+
 Returns Prometheus-formatted metrics for scraping.
 
 **Response:**
+
 ```
 Content-Type: text/plain; version=0.0.4; charset=utf-8
 
@@ -105,9 +116,11 @@ orchestrator_tokens_used_total{orchestrator_id="orch-1",model="claude-sonnet-4"}
 ```
 
 #### GET /health
+
 Returns detailed health status with dependency checks.
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -123,18 +136,22 @@ Returns detailed health status with dependency checks.
 ```
 
 **Status Codes:**
+
 - `200` - Healthy or degraded
 - `503` - Unhealthy
 
 **Health Status:**
+
 - `healthy` - All checks passed
 - `degraded` - Some checks failed
 - `unhealthy` - All checks failed
 
 #### GET /ready
+
 Returns readiness status for load balancer configuration.
 
 **Response:**
+
 ```json
 {
   "ready": true,
@@ -144,6 +161,7 @@ Returns readiness status for load balancer configuration.
 ```
 
 **Status Codes:**
+
 - `200` - Ready
 - `503` - Not ready
 
@@ -153,12 +171,12 @@ Returns readiness status for load balancer configuration.
 
 ```typescript
 interface MetricsServerConfig {
-  port?: number;                    // Default: 9090
-  host?: string;                    // Default: '0.0.0.0'
-  enableCors?: boolean;             // Default: true
-  enableLogging?: boolean;          // Default: true
-  version?: string;                 // Default: package.json version
-  healthChecks?: HealthChecks;      // Optional health check functions
+  port?: number; // Default: 9090
+  host?: string; // Default: '0.0.0.0'
+  enableCors?: boolean; // Default: true
+  enableLogging?: boolean; // Default: true
+  version?: string; // Default: package.json version
+  healthChecks?: HealthChecks; // Optional health check functions
 }
 ```
 
@@ -220,9 +238,9 @@ const server = createMetricsServer(metricsRegistry, {
 ```typescript
 process.on('SIGTERM', async () => {
   console.log('Shutting down...');
-  server.setReady(false);                    // Stop accepting traffic
+  server.setReady(false); // Stop accepting traffic
   await new Promise(r => setTimeout(r, 5000)); // Drain connections
-  await server.stop();                        // Stop server
+  await server.stop(); // Stop server
   process.exit(0);
 });
 ```
@@ -278,16 +296,19 @@ groups:
 ## Troubleshooting
 
 ### Server won't start
+
 - Check if port is already in use: `lsof -i :9090`
 - Verify permissions for binding to port
 - Check firewall settings
 
 ### Health checks always fail
+
 - Verify health check functions don't throw exceptions
 - Check timeout settings
 - Test dependencies separately
 
 ### Metrics not updating
+
 - Ensure metrics are registered before recording
 - Check if collector is properly configured
 - Verify batch flush interval

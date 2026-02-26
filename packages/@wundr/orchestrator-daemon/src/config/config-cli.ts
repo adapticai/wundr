@@ -11,13 +11,21 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { exportConfig, generateDefaultConfigFile, type ConfigExportFormat } from './config-export';
+import {
+  exportConfig,
+  generateDefaultConfigFile,
+  type ConfigExportFormat,
+} from './config-export';
 import { createConfigIO } from './config-loader';
 import { diffConfigPaths } from './config-merger';
 import { redactConfig } from './config-redactor';
 import { buildReloadPlan, describeReloadPlan } from './config-watcher';
 import { getStaticMappings } from './env-overrides';
-import { type WundrConfig, validateConfig, generateDefaultConfig } from './schemas';
+import {
+  type WundrConfig,
+  validateConfig,
+  generateDefaultConfig,
+} from './schemas';
 
 // =============================================================================
 // Types
@@ -121,7 +129,7 @@ export function validateCommand(options: ValidateOptions = {}): CliResult {
           warnings: result.warnings,
         },
         null,
-        2,
+        2
       );
       return { exitCode: result.ok ? 0 : 1, output };
     }
@@ -263,7 +271,7 @@ export function diffCommand(options: DiffOptions): CliResult {
           },
         },
         null,
-        2,
+        2
       );
       return { exitCode: 0, output };
     }
@@ -347,20 +355,18 @@ export function initCommand(options: InitOptions): CliResult {
 /**
  * List all supported WUNDR_* environment variable overrides.
  */
-export function envListCommand(
-  format: 'text' | 'json' = 'text',
-): CliResult {
+export function envListCommand(format: 'text' | 'json' = 'text'): CliResult {
   const mappings = getStaticMappings();
 
   if (format === 'json') {
     const output = JSON.stringify(
-      mappings.map((m) => ({
+      mappings.map(m => ({
         envKey: m.envKey,
         configPath: m.configPath,
         type: m.type,
       })),
       null,
-      2,
+      2
     );
     return { exitCode: 0, output };
   }
@@ -368,24 +374,18 @@ export function envListCommand(
   const lines: string[] = [];
   lines.push('WUNDR_* Environment Variable Overrides:');
   lines.push('');
-  lines.push(
-    'Variable'.padEnd(48) +
-      'Config Path'.padEnd(36) +
-      'Type',
-  );
+  lines.push('Variable'.padEnd(48) + 'Config Path'.padEnd(36) + 'Type');
   lines.push('-'.repeat(48 + 36 + 10));
 
   for (const mapping of mappings) {
     lines.push(
-      mapping.envKey.padEnd(48) +
-        mapping.configPath.padEnd(36) +
-        mapping.type,
+      mapping.envKey.padEnd(48) + mapping.configPath.padEnd(36) + mapping.type
     );
   }
 
   lines.push('');
   lines.push(
-    `Total: ${mappings.length} mappings. Additional WUNDR_* variables are mapped dynamically.`,
+    `Total: ${mappings.length} mappings. Additional WUNDR_* variables are mapped dynamically.`
   );
 
   return { exitCode: 0, output: lines.join('\n') };
@@ -398,16 +398,30 @@ export function envListCommand(
 /**
  * List all config sections with their reload behavior.
  */
-export function sectionsCommand(
-  format: 'text' | 'json' = 'text',
-): CliResult {
+export function sectionsCommand(format: 'text' | 'json' = 'text'): CliResult {
   const sections = [
     { id: 'daemon', reload: 'restart', description: 'Daemon server settings' },
     { id: 'openai', reload: 'restart', description: 'OpenAI API credentials' },
-    { id: 'anthropic', reload: 'restart', description: 'Anthropic API credentials' },
-    { id: 'agents', reload: 'hot', description: 'Agent definitions and defaults' },
-    { id: 'memory', reload: 'hot', description: 'Memory backend and compaction' },
-    { id: 'security.jwt', reload: 'restart', description: 'JWT authentication' },
+    {
+      id: 'anthropic',
+      reload: 'restart',
+      description: 'Anthropic API credentials',
+    },
+    {
+      id: 'agents',
+      reload: 'hot',
+      description: 'Agent definitions and defaults',
+    },
+    {
+      id: 'memory',
+      reload: 'hot',
+      description: 'Memory backend and compaction',
+    },
+    {
+      id: 'security.jwt',
+      reload: 'restart',
+      description: 'JWT authentication',
+    },
     { id: 'security.cors', reload: 'hot', description: 'CORS configuration' },
     { id: 'security.rateLimit', reload: 'hot', description: 'Rate limiting' },
     { id: 'security.audit', reload: 'hot', description: 'Audit logging' },
@@ -416,15 +430,27 @@ export function sectionsCommand(
     { id: 'channels.discord', reload: 'hot', description: 'Discord channel' },
     { id: 'channels.telegram', reload: 'hot', description: 'Telegram channel' },
     { id: 'channels.webhook', reload: 'hot', description: 'Webhook channel' },
-    { id: 'models', reload: 'noop', description: 'Model routing (read at use-site)' },
+    {
+      id: 'models',
+      reload: 'noop',
+      description: 'Model routing (read at use-site)',
+    },
     { id: 'plugins', reload: 'restart', description: 'Plugin system' },
     { id: 'hooks', reload: 'hot', description: 'Lifecycle hooks' },
-    { id: 'monitoring', reload: 'noop', description: 'Metrics and health checks' },
+    {
+      id: 'monitoring',
+      reload: 'noop',
+      description: 'Metrics and health checks',
+    },
     { id: 'logging', reload: 'noop', description: 'Logging configuration' },
     { id: 'distributed', reload: 'restart', description: 'Cluster settings' },
     { id: 'redis', reload: 'restart', description: 'Redis connection' },
     { id: 'database', reload: 'restart', description: 'Database connection' },
-    { id: 'tokenBudget', reload: 'hot', description: 'Token budget and alerts' },
+    {
+      id: 'tokenBudget',
+      reload: 'hot',
+      description: 'Token budget and alerts',
+    },
     { id: 'neolith', reload: 'restart', description: 'Neolith integration' },
   ];
 
@@ -435,23 +461,19 @@ export function sectionsCommand(
   const lines: string[] = [];
   lines.push('Config Sections and Reload Behavior:');
   lines.push('');
-  lines.push(
-    'Section'.padEnd(28) +
-      'Reload'.padEnd(12) +
-      'Description',
-  );
+  lines.push('Section'.padEnd(28) + 'Reload'.padEnd(12) + 'Description');
   lines.push('-'.repeat(28 + 12 + 40));
 
   for (const section of sections) {
     lines.push(
-      section.id.padEnd(28) +
-        section.reload.padEnd(12) +
-        section.description,
+      section.id.padEnd(28) + section.reload.padEnd(12) + section.description
     );
   }
 
   lines.push('');
-  lines.push('Reload modes: hot = live reload, restart = daemon restart required, noop = read at use-site');
+  lines.push(
+    'Reload modes: hot = live reload, restart = daemon restart required, noop = read at use-site'
+  );
 
   return { exitCode: 0, output: lines.join('\n') };
 }

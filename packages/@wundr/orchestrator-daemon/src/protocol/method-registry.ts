@@ -86,7 +86,10 @@ function zodToJsonSchema(schema: z.ZodType): Record<string, unknown> {
 
     for (const [key, value] of Object.entries(shape)) {
       properties[key] = zodToJsonSchema(value);
-      if (!(value instanceof z.ZodOptional) && !(value instanceof z.ZodDefault)) {
+      if (
+        !(value instanceof z.ZodOptional) &&
+        !(value instanceof z.ZodDefault)
+      ) {
         required.push(key);
       }
     }
@@ -133,7 +136,9 @@ function zodToJsonSchema(schema: z.ZodType): Record<string, unknown> {
   }
 
   if (schema instanceof z.ZodDefault) {
-    const inner = zodToJsonSchema((schema as z.ZodDefault<z.ZodType>).removeDefault());
+    const inner = zodToJsonSchema(
+      (schema as z.ZodDefault<z.ZodType>).removeDefault()
+    );
     return { ...inner, default: (schema as any)._def.defaultValue() };
   }
 
@@ -144,7 +149,10 @@ function zodToJsonSchema(schema: z.ZodType): Record<string, unknown> {
     };
   }
 
-  if (schema instanceof z.ZodUnion || schema instanceof z.ZodDiscriminatedUnion) {
+  if (
+    schema instanceof z.ZodUnion ||
+    schema instanceof z.ZodDiscriminatedUnion
+  ) {
     const options = (schema as any)._def.options as z.ZodType[];
     return {
       oneOf: options.map(zodToJsonSchema),
@@ -152,7 +160,9 @@ function zodToJsonSchema(schema: z.ZodType): Record<string, unknown> {
   }
 
   if (schema instanceof z.ZodNullable) {
-    const inner = zodToJsonSchema((schema as z.ZodNullable<z.ZodType>).unwrap());
+    const inner = zodToJsonSchema(
+      (schema as z.ZodNullable<z.ZodType>).unwrap()
+    );
     return { ...inner, nullable: true };
   }
 
@@ -165,19 +175,26 @@ function zodToJsonSchema(schema: z.ZodType): Record<string, unknown> {
 // ---------------------------------------------------------------------------
 
 const METHOD_DESCRIPTIONS: Record<string, string> = {
-  'auth.connect': 'Authenticate and establish a protocol session. Must be the first request on a new connection.',
-  'auth.refresh': 'Refresh an expiring authentication token without reconnecting.',
+  'auth.connect':
+    'Authenticate and establish a protocol session. Must be the first request on a new connection.',
+  'auth.refresh':
+    'Refresh an expiring authentication token without reconnecting.',
   'auth.logout': 'Gracefully log out and close the connection.',
-  'session.create': 'Create a new orchestrator session for agent task execution.',
+  'session.create':
+    'Create a new orchestrator session for agent task execution.',
   'session.resume': 'Resume an existing paused or disconnected session.',
-  'session.stop': 'Stop a running session. Use force=true to terminate immediately.',
-  'session.list': 'List sessions with optional status filtering and pagination.',
+  'session.stop':
+    'Stop a running session. Use force=true to terminate immediately.',
+  'session.list':
+    'List sessions with optional status filtering and pagination.',
   'session.status': 'Get the current status of a specific session.',
-  'prompt.submit': 'Submit a prompt to a session. Supports streaming responses when stream=true.',
+  'prompt.submit':
+    'Submit a prompt to a session. Supports streaming responses when stream=true.',
   'prompt.cancel': 'Cancel an in-flight prompt in a session.',
   'tool.approve': 'Approve a pending tool execution request.',
   'tool.deny': 'Deny a pending tool execution request.',
-  'agent.spawn': 'Spawn a new agent, optionally as a child of an existing session.',
+  'agent.spawn':
+    'Spawn a new agent, optionally as a child of an existing session.',
   'agent.status': 'Get the current status and metrics for an agent.',
   'agent.stop': 'Stop a running agent.',
   'team.create': 'Create a new agent team with a coordination strategy.',
@@ -191,15 +208,13 @@ const METHOD_DESCRIPTIONS: Record<string, string> = {
   'config.set': 'Update configuration values (requires admin scope).',
   'health.ping': 'Ping the server to measure round-trip latency.',
   'health.status': 'Get detailed server health status and metrics.',
-  'subscribe': 'Subscribe to server events by name pattern.',
-  'unsubscribe': 'Remove an active subscription.',
+  subscribe: 'Subscribe to server events by name pattern.',
+  unsubscribe: 'Remove an active subscription.',
   'rpc.discover': 'List all available methods and events with their metadata.',
   'rpc.describe': 'Get detailed information about a specific method.',
 };
 
-const METHOD_STREAMING: Set<string> = new Set([
-  'prompt.submit',
-]);
+const METHOD_STREAMING: Set<string> = new Set(['prompt.submit']);
 
 const METHOD_IDEMPOTENT: Set<string> = new Set([
   'session.list',
@@ -239,9 +254,7 @@ const EVENT_DESCRIPTIONS: Record<string, string> = {
   'session.stopped': 'A session has been stopped.',
 };
 
-const BROADCAST_EVENTS: Set<string> = new Set([
-  'health.heartbeat',
-]);
+const BROADCAST_EVENTS: Set<string> = new Set(['health.heartbeat']);
 
 // ---------------------------------------------------------------------------
 // MethodRegistry
@@ -262,7 +275,11 @@ export class MethodRegistry {
     }
 
     // Check built-in methods
-    if (!(PROTOCOL_V2_METHODS as readonly string[]).includes(method) && method !== 'rpc.discover' && method !== 'rpc.describe') {
+    if (
+      !(PROTOCOL_V2_METHODS as readonly string[]).includes(method) &&
+      method !== 'rpc.discover' &&
+      method !== 'rpc.describe'
+    ) {
       return null;
     }
 
@@ -348,7 +365,8 @@ export class MethodRegistry {
 
     return {
       name: method,
-      description: METHOD_DESCRIPTIONS[method] ?? `Invoke the ${method} RPC method.`,
+      description:
+        METHOD_DESCRIPTIONS[method] ?? `Invoke the ${method} RPC method.`,
       domain,
       requiredScopes: scopes,
       streaming: METHOD_STREAMING.has(method),
@@ -373,10 +391,12 @@ export class MethodRegistry {
 // Zod schemas for the discovery RPC params/results
 // ---------------------------------------------------------------------------
 
-export const RpcDiscoverParamsSchema = z.object({
-  /** If true, include JSON Schema for each method's params. Default: true. */
-  includeSchemas: z.boolean().default(true),
-}).optional();
+export const RpcDiscoverParamsSchema = z
+  .object({
+    /** If true, include JSON Schema for each method's params. Default: true. */
+    includeSchemas: z.boolean().default(true),
+  })
+  .optional();
 
 export type RpcDiscoverParams = z.infer<typeof RpcDiscoverParamsSchema>;
 

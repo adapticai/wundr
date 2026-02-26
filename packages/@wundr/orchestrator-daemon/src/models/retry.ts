@@ -58,7 +58,7 @@ export const DEFAULT_RETRY_CONFIG: RetryConfig = {
  */
 export function calculateBackoffMs(
   attempt: number,
-  config: Pick<RetryConfig, 'baseDelayMs' | 'maxDelayMs' | 'jitterFraction'>,
+  config: Pick<RetryConfig, 'baseDelayMs' | 'maxDelayMs' | 'jitterFraction'>
 ): number {
   const exponentialDelay = config.baseDelayMs * Math.pow(2, attempt);
   const cappedDelay = Math.min(exponentialDelay, config.maxDelayMs);
@@ -80,7 +80,7 @@ export function calculateBackoffMs(
  */
 export async function withRetry<T>(
   fn: (attempt: number) => Promise<T>,
-  config: Partial<RetryConfig> = {},
+  config: Partial<RetryConfig> = {}
 ): Promise<RetryResult<T>> {
   const resolved: RetryConfig = {
     ...DEFAULT_RETRY_CONFIG,
@@ -171,7 +171,8 @@ export function isTransientError(error: unknown): boolean {
   }
 
   // Check status codes
-  const status = (error as { status?: number }).status ??
+  const status =
+    (error as { status?: number }).status ??
     (error as { statusCode?: number }).statusCode;
   if (typeof status === 'number') {
     // 429 Too Many Requests, 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout
@@ -211,7 +212,11 @@ export function isTransientError(error: unknown): boolean {
 
   // Check message patterns
   const message = error instanceof Error ? error.message : '';
-  if (/timeout|timed out|reset|ECONNRESET|rate.?limit|too many requests|overloaded|capacity/i.test(message)) {
+  if (
+    /timeout|timed out|reset|ECONNRESET|rate.?limit|too many requests|overloaded|capacity/i.test(
+      message
+    )
+  ) {
     return true;
   }
 

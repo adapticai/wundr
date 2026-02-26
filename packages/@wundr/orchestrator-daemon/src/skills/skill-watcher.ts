@@ -14,11 +14,7 @@ import * as path from 'path';
 
 import { resolveDiscoveryDirs, clearParseCache } from './skill-loader';
 
-import type {
-  SkillFileEvent,
-  SkillSource,
-  SkillsConfig,
-} from './types';
+import type { SkillFileEvent, SkillSource, SkillsConfig } from './types';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -91,8 +87,8 @@ export class SkillWatcher {
     return () => {
       const idx = this.callbacks.indexOf(callback);
       if (idx >= 0) {
-this.callbacks.splice(idx, 1);
-}
+        this.callbacks.splice(idx, 1);
+      }
     };
   }
 
@@ -101,15 +97,15 @@ this.callbacks.splice(idx, 1);
    */
   start(): void {
     if (this.running) {
-return;
-}
+      return;
+    }
     this.running = true;
 
     const dirs = resolveDiscoveryDirs(
       this.workspaceDir,
       this.config,
       this.managedSkillsDir,
-      this.bundledSkillsDir,
+      this.bundledSkillsDir
     );
 
     for (const { dir, source } of dirs) {
@@ -151,12 +147,12 @@ return;
   setWorkspaceDir(workspaceDir: string): void {
     const wasRunning = this.running;
     if (wasRunning) {
-this.stop();
-}
+      this.stop();
+    }
     this.workspaceDir = workspaceDir;
     if (wasRunning) {
-this.start();
-}
+      this.start();
+    }
   }
 
   /**
@@ -165,13 +161,13 @@ this.start();
   updateConfig(config: SkillsConfig): void {
     const wasRunning = this.running;
     if (wasRunning) {
-this.stop();
-}
+      this.stop();
+    }
     this.config = config;
     this.debounceMs = config.load?.watchDebounceMs ?? DEFAULT_DEBOUNCE_MS;
     if (wasRunning) {
-this.start();
-}
+      this.start();
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -180,23 +176,27 @@ this.start();
 
   private watchDirectory(dir: string, _source: SkillSource): void {
     if (!fs.existsSync(dir)) {
-return;
-}
+      return;
+    }
 
     try {
-      const watcher = fs.watch(dir, { recursive: true }, (eventType, filename) => {
-        if (!filename) {
-return;
-}
-        if (!this.isSkillFile(filename)) {
-return;
-}
+      const watcher = fs.watch(
+        dir,
+        { recursive: true },
+        (eventType, filename) => {
+          if (!filename) {
+            return;
+          }
+          if (!this.isSkillFile(filename)) {
+            return;
+          }
 
-        const fullPath = path.join(dir, filename);
-        this.handleChange(fullPath, eventType);
-      });
+          const fullPath = path.join(dir, filename);
+          this.handleChange(fullPath, eventType);
+        }
+      );
 
-      watcher.on('error', (err) => {
+      watcher.on('error', err => {
         console.warn(`[SkillWatcher] Error watching ${dir}:`, err);
       });
 
@@ -209,7 +209,10 @@ return;
 
   private isSkillFile(filename: string): boolean {
     const base = path.basename(filename);
-    return base === SKILL_FILENAME || (base.endsWith(SKILL_EXTENSION) && base !== 'README.md');
+    return (
+      base === SKILL_FILENAME ||
+      (base.endsWith(SKILL_EXTENSION) && base !== 'README.md')
+    );
   }
 
   private handleChange(filePath: string, eventType: string): void {

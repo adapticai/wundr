@@ -29,7 +29,11 @@ import {
   loadManifest,
   verifyPluginIntegrity,
 } from './plugin-manifest';
-import { type ScanSummary, scanPluginDirectory, formatScanReport } from './plugin-scanner';
+import {
+  type ScanSummary,
+  scanPluginDirectory,
+  formatScanReport,
+} from './plugin-scanner';
 import {
   type SignatureVerificationResult,
   TrustedKeyStore,
@@ -150,8 +154,8 @@ function detectCycle(graph: DepGraph): string[] | null {
 
   for (const node of graph.keys()) {
     if (visited.has(node)) {
-continue;
-}
+      continue;
+    }
 
     const stack = [node];
     while (stack.length > 0) {
@@ -208,8 +212,8 @@ function topologicalSort(graph: DepGraph): string[] {
     let effectiveDeps = 0;
     for (const dep of deps) {
       if (graph.has(dep)) {
-effectiveDeps++;
-}
+        effectiveDeps++;
+      }
     }
     if (effectiveDeps === 0) {
       queue.push(name);
@@ -222,19 +226,19 @@ effectiveDeps++;
   while (queue.length > 0) {
     const current = queue.shift()!;
     if (visited.has(current)) {
-continue;
-}
+      continue;
+    }
     visited.add(current);
     sorted.push(current);
 
     // Find dependants of current (plugins that depend ON current)
     for (const [name, deps] of graph) {
       if (visited.has(name)) {
-continue;
-}
+        continue;
+      }
       if (!deps.has(current)) {
-continue;
-}
+        continue;
+      }
 
       // Check if all deps of `name` are now visited
       let allDepsReady = true;
@@ -355,7 +359,9 @@ export class PluginLifecycleManager {
     // Validate manifest
     const result = await loadManifest(absoluteDir, this.config.systemPolicy);
     if (!result.valid || !result.manifest) {
-      const errorMsg = result.errors.map(e => `${e.path}: ${e.message}`).join('; ');
+      const errorMsg = result.errors
+        .map(e => `${e.path}: ${e.message}`)
+        .join('; ');
       const entry: PluginEntry = {
         name: path.basename(absoluteDir),
         state: 'uninstalled',
@@ -394,17 +400,22 @@ export class PluginLifecycleManager {
   async validate(pluginName: string): Promise<ScanSummary> {
     const entry = this.plugins.get(pluginName);
     if (!entry) {
-throw new Error(`Plugin "${pluginName}" is not installed`);
-}
+      throw new Error(`Plugin "${pluginName}" is not installed`);
+    }
     if (entry.state !== 'installed') {
-      throw new Error(`Plugin "${pluginName}" must be in "installed" state to validate (current: ${entry.state})`);
+      throw new Error(
+        `Plugin "${pluginName}" must be in "installed" state to validate (current: ${entry.state})`
+      );
     }
     if (!entry.manifest) {
       throw new Error(`Plugin "${pluginName}" has no manifest`);
     }
 
     // Integrity check
-    const integrityResult = await verifyPluginIntegrity(entry.pluginDir, entry.manifest);
+    const integrityResult = await verifyPluginIntegrity(
+      entry.pluginDir,
+      entry.manifest
+    );
     if (!integrityResult.valid) {
       const errorMsg = `Integrity check failed: expected ${integrityResult.expected}, got ${integrityResult.actual}`;
       entry.error = errorMsg;
@@ -414,21 +425,26 @@ throw new Error(`Plugin "${pluginName}" is not installed`);
         critical: 1,
         warn: 0,
         info: 0,
-        findings: [{
-          ruleId: 'integrity-mismatch',
-          severity: 'critical',
-          file: entry.manifest.entryPoint,
-          line: 0,
-          message: errorMsg,
-          evidence: `Expected: ${integrityResult.expected ?? 'none'}`,
-        }],
+        findings: [
+          {
+            ruleId: 'integrity-mismatch',
+            severity: 'critical',
+            file: entry.manifest.entryPoint,
+            line: 0,
+            message: errorMsg,
+            evidence: `Expected: ${integrityResult.expected ?? 'none'}`,
+          },
+        ],
         passed: false,
       };
     }
 
     // Signature verification (if enabled)
     if (this.config.verifySignatures) {
-      const sigResult = await this.keyStore.verifyPlugin(entry.pluginDir, this.logger);
+      const sigResult = await this.keyStore.verifyPlugin(
+        entry.pluginDir,
+        this.logger
+      );
       entry.signatureResult = sigResult;
 
       this.emit({
@@ -444,7 +460,7 @@ throw new Error(`Plugin "${pluginName}" is not installed`);
       if (!sigResult.valid && entry.manifest.trustLevel === 'verified') {
         // Downgrade trust level if signature is invalid for a "verified" plugin
         this.logger.warn(
-          `Plugin "${pluginName}" claims verified trust but signature check failed: ${sigResult.reason}. Downgrading to community.`,
+          `Plugin "${pluginName}" claims verified trust but signature check failed: ${sigResult.reason}. Downgrading to community.`
         );
         entry.manifest.trustLevel = 'community';
       }
@@ -472,7 +488,9 @@ throw new Error(`Plugin "${pluginName}" is not installed`);
     } else {
       entry.error = `Scan failed: ${summary.critical} critical, ${summary.warn} warnings`;
       this.setState(entry, 'quarantined');
-      this.logger.error(`Plugin "${pluginName}" quarantined:\n${formatScanReport(summary)}`);
+      this.logger.error(
+        `Plugin "${pluginName}" quarantined:\n${formatScanReport(summary)}`
+      );
     }
 
     return summary;
@@ -488,16 +506,16 @@ throw new Error(`Plugin "${pluginName}" is not installed`);
   async load(pluginName: string): Promise<PluginHandle> {
     const entry = this.plugins.get(pluginName);
     if (!entry) {
-throw new Error(`Plugin "${pluginName}" is not installed`);
-}
+      throw new Error(`Plugin "${pluginName}" is not installed`);
+    }
     if (entry.state !== 'validated' && entry.state !== 'disabled') {
       throw new Error(
-        `Plugin "${pluginName}" must be in "validated" or "disabled" state to load (current: ${entry.state})`,
+        `Plugin "${pluginName}" must be in "validated" or "disabled" state to load (current: ${entry.state})`
       );
     }
     if (!entry.manifest) {
-throw new Error(`Plugin "${pluginName}" has no manifest`);
-}
+      throw new Error(`Plugin "${pluginName}" has no manifest`);
+    }
 
     // Check dependencies are active
     const depGraph = buildDependencyGraph(this.plugins);
@@ -506,7 +524,7 @@ throw new Error(`Plugin "${pluginName}" has no manifest`);
       const depEntry = this.plugins.get(dep);
       if (!depEntry || depEntry.state !== 'active') {
         throw new Error(
-          `Plugin "${pluginName}" depends on "${dep}" which is not active (state: ${depEntry?.state ?? 'not installed'})`,
+          `Plugin "${pluginName}" depends on "${dep}" which is not active (state: ${depEntry?.state ?? 'not installed'})`
         );
       }
     }
@@ -543,14 +561,16 @@ throw new Error(`Plugin "${pluginName}" has no manifest`);
   async activate(pluginName: string): Promise<void> {
     const entry = this.plugins.get(pluginName);
     if (!entry) {
-throw new Error(`Plugin "${pluginName}" is not installed`);
-}
+      throw new Error(`Plugin "${pluginName}" is not installed`);
+    }
     if (entry.state !== 'loaded') {
-      throw new Error(`Plugin "${pluginName}" must be in "loaded" state to activate (current: ${entry.state})`);
+      throw new Error(
+        `Plugin "${pluginName}" must be in "loaded" state to activate (current: ${entry.state})`
+      );
     }
     if (!entry.handle) {
-throw new Error(`Plugin "${pluginName}" has no handle`);
-}
+      throw new Error(`Plugin "${pluginName}" has no handle`);
+    }
 
     try {
       await entry.handle.call('activate', {
@@ -561,7 +581,7 @@ throw new Error(`Plugin "${pluginName}" has no handle`);
       // Activation failure: Plugin provided an activate method that threw.
       // We still consider the plugin "loaded" (not active).
       this.logger.warn(
-        `Plugin "${pluginName}" activation failed: ${err instanceof Error ? err.message : String(err)}`,
+        `Plugin "${pluginName}" activation failed: ${err instanceof Error ? err.message : String(err)}`
       );
       throw err;
     }
@@ -579,10 +599,12 @@ throw new Error(`Plugin "${pluginName}" has no handle`);
   async disable(pluginName: string): Promise<string[]> {
     const entry = this.plugins.get(pluginName);
     if (!entry) {
-throw new Error(`Plugin "${pluginName}" is not installed`);
-}
+      throw new Error(`Plugin "${pluginName}" is not installed`);
+    }
     if (entry.state !== 'active' && entry.state !== 'loaded') {
-      throw new Error(`Plugin "${pluginName}" must be "active" or "loaded" to disable (current: ${entry.state})`);
+      throw new Error(
+        `Plugin "${pluginName}" must be "active" or "loaded" to disable (current: ${entry.state})`
+      );
     }
 
     // Cascade disable to dependants
@@ -593,7 +615,10 @@ throw new Error(`Plugin "${pluginName}" is not installed`);
     // Disable dependants first (reverse dependency order)
     for (const depName of dependants) {
       const depEntry = this.plugins.get(depName);
-      if (depEntry && (depEntry.state === 'active' || depEntry.state === 'loaded')) {
+      if (
+        depEntry &&
+        (depEntry.state === 'active' || depEntry.state === 'loaded')
+      ) {
         await this.disableSingle(depName);
         cascaded.push(depName);
       }
@@ -607,8 +632,8 @@ throw new Error(`Plugin "${pluginName}" is not installed`);
   private async disableSingle(pluginName: string): Promise<void> {
     const entry = this.plugins.get(pluginName);
     if (!entry) {
-return;
-}
+      return;
+    }
 
     if (entry.handle) {
       try {
@@ -634,10 +659,12 @@ return;
   async unload(pluginName: string): Promise<void> {
     const entry = this.plugins.get(pluginName);
     if (!entry) {
-throw new Error(`Plugin "${pluginName}" is not installed`);
-}
+      throw new Error(`Plugin "${pluginName}" is not installed`);
+    }
     if (entry.state !== 'disabled') {
-      throw new Error(`Plugin "${pluginName}" must be "disabled" to unload (current: ${entry.state})`);
+      throw new Error(
+        `Plugin "${pluginName}" must be "disabled" to unload (current: ${entry.state})`
+      );
     }
 
     if (entry.handle) {
@@ -658,8 +685,8 @@ throw new Error(`Plugin "${pluginName}" is not installed`);
   async uninstall(pluginName: string): Promise<void> {
     const entry = this.plugins.get(pluginName);
     if (!entry) {
-return;
-}
+      return;
+    }
 
     // Must be unloaded or never loaded
     if (entry.state === 'active' || entry.state === 'loaded') {
@@ -696,7 +723,11 @@ return;
   }> {
     const entry = this.plugins.get(pluginName);
     if (!entry) {
-      return { success: false, previousState: 'uninstalled', error: 'Plugin not installed' };
+      return {
+        success: false,
+        previousState: 'uninstalled',
+        error: 'Plugin not installed',
+      };
     }
 
     const previousState = entry.state;
@@ -797,13 +828,18 @@ return;
   /**
    * Load and activate all installed+validated plugins in dependency order.
    */
-  async loadAll(): Promise<{ loaded: string[]; failed: Array<{ name: string; error: string }> }> {
+  async loadAll(): Promise<{
+    loaded: string[];
+    failed: Array<{ name: string; error: string }>;
+  }> {
     const depGraph = buildDependencyGraph(this.plugins);
 
     // Check for cycles
     const cycle = detectCycle(depGraph);
     if (cycle) {
-      throw new Error(`Circular plugin dependency detected: ${cycle.join(' -> ')}`);
+      throw new Error(
+        `Circular plugin dependency detected: ${cycle.join(' -> ')}`
+      );
     }
 
     const loadOrder = topologicalSort(depGraph);
@@ -813,11 +849,11 @@ return;
     for (const name of loadOrder) {
       const entry = this.plugins.get(name);
       if (!entry) {
-continue;
-}
+        continue;
+      }
       if (entry.state !== 'validated' && entry.state !== 'disabled') {
-continue;
-}
+        continue;
+      }
 
       try {
         await this.load(name);
@@ -851,15 +887,19 @@ continue;
    */
   async update(
     pluginName: string,
-    newPluginDir: string,
-  ): Promise<{ success: boolean; permissionChanges: string[]; error?: string }> {
+    newPluginDir: string
+  ): Promise<{
+    success: boolean;
+    permissionChanges: string[];
+    error?: string;
+  }> {
     const entry = this.plugins.get(pluginName);
     if (!entry) {
-throw new Error(`Plugin "${pluginName}" is not installed`);
-}
+      throw new Error(`Plugin "${pluginName}" is not installed`);
+    }
     if (!entry.manifest) {
-throw new Error(`Plugin "${pluginName}" has no manifest`);
-}
+      throw new Error(`Plugin "${pluginName}" has no manifest`);
+    }
 
     this.emit({
       type: 'update_started',
@@ -870,7 +910,7 @@ throw new Error(`Plugin "${pluginName}" has no manifest`);
     // Step 1: Validate new version
     const newManifestResult = await loadManifest(
       path.resolve(newPluginDir),
-      this.config.systemPolicy,
+      this.config.systemPolicy
     );
     if (!newManifestResult.valid || !newManifestResult.manifest) {
       return {
@@ -894,7 +934,7 @@ throw new Error(`Plugin "${pluginName}" has no manifest`);
     // Step 2: Detect permission escalations
     const permissionChanges = detectPermissionChanges(
       entry.manifest.permissions,
-      newManifestResult.manifest.permissions,
+      newManifestResult.manifest.permissions
     );
 
     // Step 3: Snapshot current directory name for rollback
@@ -923,7 +963,9 @@ throw new Error(`Plugin "${pluginName}" has no manifest`);
     // Step 5: Replace plugin directory
     try {
       await fs.rm(entry.pluginDir, { recursive: true, force: true });
-      await fs.cp(path.resolve(newPluginDir), entry.pluginDir, { recursive: true });
+      await fs.cp(path.resolve(newPluginDir), entry.pluginDir, {
+        recursive: true,
+      });
     } catch (err) {
       // Rollback
       await this.rollback(entry, snapshotDir);
@@ -951,10 +993,15 @@ throw new Error(`Plugin "${pluginName}" has no manifest`);
             const healthResult = await Promise.race([
               entry.handle.call('healthCheck'),
               new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Health check timeout')), this.config.healthCheckTimeoutMs),
+                setTimeout(
+                  () => reject(new Error('Health check timeout')),
+                  this.config.healthCheckTimeoutMs
+                )
               ),
             ]);
-            this.logger.info(`Plugin "${pluginName}" health check passed: ${JSON.stringify(healthResult)}`);
+            this.logger.info(
+              `Plugin "${pluginName}" health check passed: ${JSON.stringify(healthResult)}`
+            );
           } catch {
             // healthCheck is optional
           }
@@ -985,7 +1032,10 @@ throw new Error(`Plugin "${pluginName}" has no manifest`);
     return { success: true, permissionChanges };
   }
 
-  private async rollback(entry: PluginEntry, snapshotDir: string): Promise<void> {
+  private async rollback(
+    entry: PluginEntry,
+    snapshotDir: string
+  ): Promise<void> {
     this.logger.warn(`Rolling back plugin "${entry.name}" to previous version`);
 
     this.emit({
@@ -995,11 +1045,16 @@ throw new Error(`Plugin "${pluginName}" has no manifest`);
     });
 
     try {
-      await fs.rm(entry.pluginDir, { recursive: true, force: true }).catch(() => {});
+      await fs
+        .rm(entry.pluginDir, { recursive: true, force: true })
+        .catch(() => {});
       await fs.rename(snapshotDir, entry.pluginDir);
 
       // Attempt to re-load the old version
-      const oldManifest = await loadManifest(entry.pluginDir, this.config.systemPolicy);
+      const oldManifest = await loadManifest(
+        entry.pluginDir,
+        this.config.systemPolicy
+      );
       if (oldManifest.valid && oldManifest.manifest) {
         entry.manifest = oldManifest.manifest;
         this.setState(entry, 'validated');
@@ -1008,7 +1063,7 @@ throw new Error(`Plugin "${pluginName}" has no manifest`);
       }
     } catch (rollbackErr) {
       this.logger.error(
-        `Rollback failed for plugin "${entry.name}": ${rollbackErr instanceof Error ? rollbackErr.message : String(rollbackErr)}`,
+        `Rollback failed for plugin "${entry.name}": ${rollbackErr instanceof Error ? rollbackErr.message : String(rollbackErr)}`
       );
       this.setState(entry, 'quarantined');
       entry.error = 'Update and rollback both failed';
@@ -1110,7 +1165,7 @@ throw new Error(`Plugin "${pluginName}" has no manifest`);
                 this.logger.warn(
                   `Error shutting down plugin "${name}": ${
                     err instanceof Error ? err.message : String(err)
-                  }`,
+                  }`
                 );
               }
               entry.handle = undefined;
@@ -1136,10 +1191,10 @@ throw new Error(`Plugin "${pluginName}" has no manifest`);
     // Race shutdown against timeout
     await Promise.race([
       shutdownPromise,
-      new Promise<void>((resolve) => {
+      new Promise<void>(resolve => {
         setTimeout(() => {
           this.logger.warn(
-            `Shutdown timeout (${this.config.shutdownTimeoutMs}ms) reached. Force-killing remaining plugins.`,
+            `Shutdown timeout (${this.config.shutdownTimeoutMs}ms) reached. Force-killing remaining plugins.`
           );
           resolve();
         }, this.config.shutdownTimeoutMs);
@@ -1181,7 +1236,7 @@ type PermissionSet = PluginManifest['permissions'];
 
 function detectPermissionChanges(
   oldPerms: PermissionSet,
-  newPerms: PermissionSet,
+  newPerms: PermissionSet
 ): string[] {
   const changes: string[] = [];
 
@@ -1236,7 +1291,9 @@ function detectPermissionChanges(
   // MCP tool deny removals (escalation: previously denied, now allowed)
   for (const t of oldPerms.mcpTools.deny) {
     if (!newPerms.mcpTools.deny.includes(t)) {
-      changes.push(`-mcpTools.deny: ${t} (escalation: previously denied tool is now allowed)`);
+      changes.push(
+        `-mcpTools.deny: ${t} (escalation: previously denied tool is now allowed)`
+      );
     }
   }
 

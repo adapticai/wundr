@@ -153,8 +153,8 @@ export class AlertManager extends EventEmitter<AlertManagerEvents> {
   updateThreshold(id: string, updates: Partial<AlertThreshold>): boolean {
     const existing = this.thresholds.get(id);
     if (!existing) {
-return false;
-}
+      return false;
+    }
     this.thresholds.set(id, { ...existing, ...updates });
     return true;
   }
@@ -181,20 +181,24 @@ return false;
   evaluate(
     metricName: string,
     value: number,
-    labels: Record<string, string>,
+    labels: Record<string, string>
   ): void {
     for (const threshold of this.thresholds.values()) {
       if (!threshold.enabled) {
-continue;
-}
+        continue;
+      }
       if (threshold.metric !== metricName) {
-continue;
-}
+        continue;
+      }
       if (!this.labelsMatch(threshold.labels, labels)) {
-continue;
-}
+        continue;
+      }
 
-      const conditionMet = this.compareValue(value, threshold.operator, threshold.value);
+      const conditionMet = this.compareValue(
+        value,
+        threshold.operator,
+        threshold.value
+      );
 
       if (conditionMet) {
         this.handleConditionMet(threshold, value, labels);
@@ -218,13 +222,13 @@ continue;
 
   getAlertsByState(state: AlertState): Alert[] {
     if (state === 'resolved') {
-return this.getResolvedAlerts();
-}
-    return this.getActiveAlerts().filter((a) => a.state === state);
+      return this.getResolvedAlerts();
+    }
+    return this.getActiveAlerts().filter(a => a.state === state);
   }
 
   getAlertsBySeverity(severity: AlertSeverity): Alert[] {
-    return this.getActiveAlerts().filter((a) => a.severity === severity);
+    return this.getActiveAlerts().filter(a => a.severity === severity);
   }
 
   /**
@@ -238,7 +242,11 @@ return this.getResolvedAlerts();
     bySeverity: Record<AlertSeverity, number>;
   } {
     const active = this.getActiveAlerts();
-    const bySeverity: Record<AlertSeverity, number> = { info: 0, warning: 0, critical: 0 };
+    const bySeverity: Record<AlertSeverity, number> = {
+      info: 0,
+      warning: 0,
+      critical: 0,
+    };
 
     let firing = 0;
     let pending = 0;
@@ -246,11 +254,11 @@ return this.getResolvedAlerts();
     for (const alert of active) {
       bySeverity[alert.severity]++;
       if (alert.state === 'firing') {
-firing++;
-}
+        firing++;
+      }
       if (alert.state === 'pending') {
-pending++;
-}
+        pending++;
+      }
     }
 
     return {
@@ -286,34 +294,44 @@ pending++;
 
   private labelsMatch(
     required: Record<string, string> | undefined,
-    actual: Record<string, string>,
+    actual: Record<string, string>
   ): boolean {
     if (!required) {
-return true;
-}
+      return true;
+    }
     for (const [key, val] of Object.entries(required)) {
       if (actual[key] !== val) {
-return false;
-}
+        return false;
+      }
     }
     return true;
   }
 
-  private compareValue(observed: number, op: ComparisonOp, threshold: number): boolean {
+  private compareValue(
+    observed: number,
+    op: ComparisonOp,
+    threshold: number
+  ): boolean {
     switch (op) {
-      case 'gt':  return observed > threshold;
-      case 'gte': return observed >= threshold;
-      case 'lt':  return observed < threshold;
-      case 'lte': return observed <= threshold;
-      case 'eq':  return observed === threshold;
-      case 'neq': return observed !== threshold;
+      case 'gt':
+        return observed > threshold;
+      case 'gte':
+        return observed >= threshold;
+      case 'lt':
+        return observed < threshold;
+      case 'lte':
+        return observed <= threshold;
+      case 'eq':
+        return observed === threshold;
+      case 'neq':
+        return observed !== threshold;
     }
   }
 
   private handleConditionMet(
     threshold: AlertThreshold,
     value: number,
-    labels: Record<string, string>,
+    labels: Record<string, string>
   ): void {
     const now = Date.now();
     const existingAlert = this.activeAlerts.get(threshold.id);
@@ -372,8 +390,8 @@ return false;
 
     const existingAlert = this.activeAlerts.get(threshold.id);
     if (!existingAlert) {
-return;
-}
+      return;
+    }
 
     const now = Date.now();
     existingAlert.state = 'resolved';

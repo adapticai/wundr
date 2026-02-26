@@ -67,14 +67,36 @@ function makeMockClient(overrides?: Partial<LLMClient>): LLMClient {
 
 /** A default set of auth profiles for testing (one per provider). */
 const DEFAULT_AUTH_PROFILES = [
-  { id: 'anthropic-key-1', provider: 'anthropic', type: 'api_key' as const, credential: 'sk-ant-test-1' },
-  { id: 'openai-key-1', provider: 'openai', type: 'api_key' as const, credential: 'sk-oai-test-1' },
-  { id: 'openai-key-2', provider: 'openai', type: 'api_key' as const, credential: 'sk-oai-test-2' },
-  { id: 'google-key-1', provider: 'google', type: 'api_key' as const, credential: 'goog-test-1' },
+  {
+    id: 'anthropic-key-1',
+    provider: 'anthropic',
+    type: 'api_key' as const,
+    credential: 'sk-ant-test-1',
+  },
+  {
+    id: 'openai-key-1',
+    provider: 'openai',
+    type: 'api_key' as const,
+    credential: 'sk-oai-test-1',
+  },
+  {
+    id: 'openai-key-2',
+    provider: 'openai',
+    type: 'api_key' as const,
+    credential: 'sk-oai-test-2',
+  },
+  {
+    id: 'google-key-1',
+    provider: 'google',
+    type: 'api_key' as const,
+    credential: 'goog-test-1',
+  },
 ];
 
 /** Build a default ModelRouterConfig with customizable overrides. */
-function makeRouterConfig(overrides?: Partial<ModelRouterConfig>): ModelRouterConfig {
+function makeRouterConfig(
+  overrides?: Partial<ModelRouterConfig>
+): ModelRouterConfig {
   const client = makeMockClient();
   return {
     primary: 'anthropic/claude-sonnet-4-5',
@@ -152,20 +174,24 @@ describe('ModelRouter', () => {
         const config = makeRouterConfig();
         router = new ModelRouter(config);
 
-        const result = await router.route(makeRequest({ taskComplexity: complexity }));
+        const result = await router.route(
+          makeRequest({ taskComplexity: complexity })
+        );
 
         expect(result.thinkingMode).toBe(expectedMode);
-      },
+      }
     );
 
     it('should prefer explicit thinkingMode over taskComplexity', async () => {
       const config = makeRouterConfig();
       router = new ModelRouter(config);
 
-      const result = await router.route(makeRequest({
-        thinkingMode: 'xhigh',
-        taskComplexity: 'trivial',
-      }));
+      const result = await router.route(
+        makeRequest({
+          thinkingMode: 'xhigh',
+          taskComplexity: 'trivial',
+        })
+      );
 
       expect(result.thinkingMode).toBe('xhigh');
     });
@@ -179,7 +205,8 @@ describe('ModelRouter', () => {
 
       // The clientFactory should have been called; check the chat params
       const client = clientFactory.mock.results[0].value as LLMClient;
-      const chatCall = (client.chat as ReturnType<typeof vi.fn>).mock.calls[0][0] as ChatParams;
+      const chatCall = (client.chat as ReturnType<typeof vi.fn>).mock
+        .calls[0][0] as ChatParams;
 
       // claude-sonnet-4-5 supports reasoning, so budget should be set
       expect(chatCall.providerParams?.thinkingBudget).toBe(32_768);
@@ -206,7 +233,9 @@ describe('ModelRouter', () => {
       const config = makeRouterConfig();
       router = new ModelRouter(config);
 
-      const result = await router.route(makeRequest({ routingStrategy: 'cost_optimized' }));
+      const result = await router.route(
+        makeRequest({ routingStrategy: 'cost_optimized' })
+      );
 
       // Should still succeed; first candidate (explicit primary) stays pinned
       expect(result.response.content).toBe('Hello from the model');
@@ -232,7 +261,9 @@ describe('ModelRouter', () => {
       });
       router = new ModelRouter(config);
 
-      const result = await router.route(makeRequest({ routingStrategy: 'cost_optimized' }));
+      const result = await router.route(
+        makeRequest({ routingStrategy: 'cost_optimized' })
+      );
 
       // Should have succeeded on a fallback
       expect(result.attempts.length).toBeGreaterThanOrEqual(1);
@@ -248,7 +279,9 @@ describe('ModelRouter', () => {
       health.recordSuccess('anthropic', 500);
       health.recordSuccess('google', 50);
 
-      const result = await router.route(makeRequest({ routingStrategy: 'latency_optimized' }));
+      const result = await router.route(
+        makeRequest({ routingStrategy: 'latency_optimized' })
+      );
 
       // Primary candidate stays at position 0 regardless of strategy
       expect(result.provider).toBe('anthropic');
@@ -258,7 +291,9 @@ describe('ModelRouter', () => {
       const config = makeRouterConfig();
       router = new ModelRouter(config);
 
-      const result = await router.route(makeRequest({ routingStrategy: 'balanced' }));
+      const result = await router.route(
+        makeRequest({ routingStrategy: 'balanced' })
+      );
 
       expect(result.response).toBeDefined();
     });
@@ -301,9 +336,11 @@ describe('ModelRouter', () => {
 
     it('should release the concurrency slot on failure', async () => {
       const failClient = makeMockClient({
-        chat: vi.fn().mockRejectedValue(
-          Object.assign(new Error('timeout'), { status: 408 }),
-        ),
+        chat: vi
+          .fn()
+          .mockRejectedValue(
+            Object.assign(new Error('timeout'), { status: 408 })
+          ),
       });
 
       const config = makeRouterConfig({
@@ -336,11 +373,15 @@ describe('ModelRouter', () => {
             callIndex++;
             if (callIndex === 1) {
               // First call (anthropic) fails with 429
-              const err = new Error('Too Many Requests') as Error & { status: number };
+              const err = new Error('Too Many Requests') as Error & {
+                status: number;
+              };
               err.status = 429;
               throw err;
             }
-            return makeChatResponse({ content: `response from call ${callIndex}` });
+            return makeChatResponse({
+              content: `response from call ${callIndex}`,
+            });
           }),
         });
       });
@@ -386,9 +427,11 @@ describe('ModelRouter', () => {
     it('should throw RoutingExhaustedError when all candidates fail', async () => {
       const factory = vi.fn().mockImplementation(() => {
         return makeMockClient({
-          chat: vi.fn().mockRejectedValue(
-            Object.assign(new Error('timeout'), { status: 408 }),
-          ),
+          chat: vi
+            .fn()
+            .mockRejectedValue(
+              Object.assign(new Error('timeout'), { status: 408 })
+            ),
         });
       });
 
@@ -398,7 +441,9 @@ describe('ModelRouter', () => {
       const exhaustedSpy = vi.fn();
       router.on('router:exhausted', exhaustedSpy);
 
-      await expect(router.route(makeRequest())).rejects.toThrow(RoutingExhaustedError);
+      await expect(router.route(makeRequest())).rejects.toThrow(
+        RoutingExhaustedError
+      );
 
       expect(exhaustedSpy).toHaveBeenCalledOnce();
     });
@@ -406,7 +451,9 @@ describe('ModelRouter', () => {
     it('should rethrow non-failover-class errors immediately', async () => {
       const factory = vi.fn().mockImplementation(() => {
         return makeMockClient({
-          chat: vi.fn().mockRejectedValue(new TypeError('Cannot read properties of null')),
+          chat: vi
+            .fn()
+            .mockRejectedValue(new TypeError('Cannot read properties of null')),
         });
       });
 
@@ -432,7 +479,7 @@ describe('ModelRouter', () => {
       router = new ModelRouter(config);
 
       await expect(
-        router.route(makeRequest({ signal: controller.signal })),
+        router.route(makeRequest({ signal: controller.signal }))
       ).rejects.toThrow('Retry aborted');
     });
 
@@ -475,7 +522,9 @@ describe('ModelRouter', () => {
       const result = await router.route(makeRequest());
 
       // Should have skipped anthropic (profile in cooldown) and used fallback
-      const anthropicAttempt = result.attempts.find((a) => a.provider === 'anthropic');
+      const anthropicAttempt = result.attempts.find(
+        a => a.provider === 'anthropic'
+      );
       if (anthropicAttempt) {
         expect(anthropicAttempt.error).toContain('cooldown');
       }
@@ -509,7 +558,7 @@ describe('ModelRouter', () => {
       });
 
       await expect(
-        router.route(makeRequest({ sessionId: 'session-1' })),
+        router.route(makeRequest({ sessionId: 'session-1' }))
       ).rejects.toThrow(BudgetExceededError);
     });
 
@@ -525,7 +574,9 @@ describe('ModelRouter', () => {
       });
       router = new ModelRouter(config);
 
-      const result = await router.route(makeRequest({ sessionId: 'session-1' }));
+      const result = await router.route(
+        makeRequest({ sessionId: 'session-1' })
+      );
 
       expect(result.budgetCheck).not.toBeNull();
       expect(result.budgetCheck!.allowed).toBe(true);
@@ -571,9 +622,11 @@ describe('ModelRouter', () => {
       const config = makeRouterConfig();
       router = new ModelRouter(config);
 
-      const result = await router.route(makeRequest({
-        model: 'openai/gpt-4o',
-      }));
+      const result = await router.route(
+        makeRequest({
+          model: 'openai/gpt-4o',
+        })
+      );
 
       // Explicit model should be first candidate
       expect(result.provider).toBe('openai');
@@ -584,9 +637,11 @@ describe('ModelRouter', () => {
       const config = makeRouterConfig();
       router = new ModelRouter(config);
 
-      const result = await router.route(makeRequest({
-        model: 'sonnet',
-      }));
+      const result = await router.route(
+        makeRequest({
+          model: 'sonnet',
+        })
+      );
 
       expect(result.provider).toBe('anthropic');
       expect(result.model).toBe('claude-sonnet-4-5');
@@ -599,9 +654,11 @@ describe('ModelRouter', () => {
       });
       router = new ModelRouter(config);
 
-      const result = await router.route(makeRequest({
-        model: 'anthropic/claude-sonnet-4-5',
-      }));
+      const result = await router.route(
+        makeRequest({
+          model: 'anthropic/claude-sonnet-4-5',
+        })
+      );
 
       // Should not have duplicate attempts for the same model
       expect(result.provider).toBe('anthropic');
@@ -630,12 +687,17 @@ describe('ModelRouter', () => {
       router = new ModelRouter(config);
 
       // Require reasoning -- gemini-flash and gpt-4o do not support reasoning
-      const result = await router.route(makeRequest({
-        requiredCapabilities: { reasoning: true },
-      }));
+      const result = await router.route(
+        makeRequest({
+          requiredCapabilities: { reasoning: true },
+        })
+      );
 
       // gemini-flash should have been excluded from candidates
-      const providers = [result.provider, ...result.attempts.map((a) => a.provider)];
+      const providers = [
+        result.provider,
+        ...result.attempts.map(a => a.provider),
+      ];
       expect(providers).not.toContain('gemini-2.0-flash');
     });
   });
@@ -733,7 +795,9 @@ describe('ModelRouter', () => {
       const config = makeRouterConfig();
       router = new ModelRouter(config);
 
-      const result = await router.route(makeRequest({ sessionId: 'test-session' }));
+      const result = await router.route(
+        makeRequest({ sessionId: 'test-session' })
+      );
 
       expect(result.response).toBeDefined();
       expect(result.provider).toBe('anthropic');
@@ -811,8 +875,18 @@ describe('ModelRouter', () => {
   describe('error classes', () => {
     it('RoutingExhaustedError should contain all attempt details', () => {
       const attempts = [
-        { provider: 'anthropic', model: 'claude-sonnet-4-5', error: 'rate limit', reason: 'rate_limit' as const },
-        { provider: 'openai', model: 'gpt-4o', error: 'timeout', reason: 'timeout' as const },
+        {
+          provider: 'anthropic',
+          model: 'claude-sonnet-4-5',
+          error: 'rate limit',
+          reason: 'rate_limit' as const,
+        },
+        {
+          provider: 'openai',
+          model: 'gpt-4o',
+          error: 'timeout',
+          reason: 'timeout' as const,
+        },
       ];
       const err = new RoutingExhaustedError(attempts);
 

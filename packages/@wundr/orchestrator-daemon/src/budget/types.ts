@@ -304,7 +304,11 @@ export interface Anomaly {
   orchestratorId: string;
   sessionId?: string;
   timestamp: Date;
-  type: 'spike' | 'unusual_pattern' | 'budget_exceeded' | 'rate_limit_approached';
+  type:
+    | 'spike'
+    | 'unusual_pattern'
+    | 'budget_exceeded'
+    | 'rate_limit_approached';
   severity: 'low' | 'medium' | 'high' | 'critical';
   description: string;
   actualValue: number;
@@ -370,9 +374,9 @@ export const UsageReporterConfigSchema = z.object({
   enabled: z.boolean().default(true),
   persistToDatabase: z.boolean().default(true),
   retentionDays: z.number().int().positive().default(90),
-  aggregationIntervals: z.array(
-    z.enum(['hourly', 'daily', 'weekly', 'monthly']),
-  ).default(['hourly', 'daily', 'monthly']),
+  aggregationIntervals: z
+    .array(z.enum(['hourly', 'daily', 'weekly', 'monthly']))
+    .default(['hourly', 'daily', 'monthly']),
   anomalyDetection: z.object({
     enabled: z.boolean().default(true),
     spikeThreshold: z.number().positive().default(2.5),

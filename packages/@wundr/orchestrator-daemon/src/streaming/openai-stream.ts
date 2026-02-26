@@ -28,8 +28,6 @@ import type {
   ChatCompletionCreateParamsStreaming,
 } from 'openai/resources/chat';
 
-
-
 /**
  * Tracked state per tool call index during streaming.
  */
@@ -57,9 +55,9 @@ export interface OpenAIStreamOptions {
  * Convert Wundr Message format to OpenAI ChatCompletionMessageParam format.
  */
 function convertMessages(
-  messages: Message[],
+  messages: Message[]
 ): OpenAI.ChatCompletionMessageParam[] {
-  return messages.map((msg) => {
+  return messages.map(msg => {
     if (msg.role === 'tool') {
       return {
         role: 'tool' as const,
@@ -94,13 +92,13 @@ function convertMessages(
  * Convert Wundr ToolDefinition to OpenAI ChatCompletionTool format.
  */
 function convertTools(
-  tools?: ToolDefinition[],
+  tools?: ToolDefinition[]
 ): OpenAI.ChatCompletionTool[] | undefined {
   if (!tools || tools.length === 0) {
-return undefined;
-}
+    return undefined;
+  }
 
-  return tools.map((tool) => ({
+  return tools.map(tool => ({
     type: 'function' as const,
     function: {
       name: tool.name,
@@ -137,7 +135,7 @@ function convertFinishReason(reason: string | null): FinishReason {
  * objects, and yields normalized StreamEvent objects.
  */
 export async function* createOpenAIStream(
-  options: OpenAIStreamOptions,
+  options: OpenAIStreamOptions
 ): AsyncGenerator<StreamEvent> {
   const { client, params, abortController } = options;
 

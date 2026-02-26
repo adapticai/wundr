@@ -144,24 +144,23 @@ export interface CRDTValue<T = unknown> {
   tombstoneAt?: number;
 }
 
-export type CRDTType =
-  | 'g-counter'
-  | 'pn-counter'
-  | 'lww-register'
-  | 'or-set';
+export type CRDTType = 'g-counter' | 'pn-counter' | 'lww-register' | 'or-set';
 
 /** Vector clock for causal ordering */
 export type VectorClock = Record<string, number>;
 
 export interface StateSyncEvents {
   'gossip:sent': (targetNodeId: string, messageType: GossipMessageType) => void;
-  'gossip:received': (fromNodeId: string, messageType: GossipMessageType) => void;
+  'gossip:received': (
+    fromNodeId: string,
+    messageType: GossipMessageType
+  ) => void;
   'gossip:state_updated': (key: string, value: unknown) => void;
   'crdt:merged': (key: string, type: CRDTType) => void;
   'crdt:gc': (removedCount: number) => void;
   'probe:suspect': (nodeId: string) => void;
   'probe:alive': (nodeId: string) => void;
-  'error': (error: Error, context: string) => void;
+  error: (error: Error, context: string) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -198,8 +197,8 @@ export class GCounter {
 
   increment(nodeId: string, amount: number = 1): void {
     if (amount < 0) {
-throw new Error('G-Counter only supports non-negative increments');
-}
+      throw new Error('G-Counter only supports non-negative increments');
+    }
     this.counts[nodeId] = (this.counts[nodeId] ?? 0) + amount;
   }
 
@@ -254,7 +253,10 @@ export class PNCounter {
     this.decrements.merge(other.decrements);
   }
 
-  toJSON(): { increments: Record<string, number>; decrements: Record<string, number> } {
+  toJSON(): {
+    increments: Record<string, number>;
+    decrements: Record<string, number>;
+  } {
     return {
       increments: this.increments.toJSON(),
       decrements: this.decrements.toJSON(),
@@ -311,10 +313,18 @@ export class LWWRegister<T = unknown> {
   }
 
   toJSON(): { value: T; timestamp: number; nodeId: string } {
-    return { value: this._value, timestamp: this._timestamp, nodeId: this._nodeId };
+    return {
+      value: this._value,
+      timestamp: this._timestamp,
+      nodeId: this._nodeId,
+    };
   }
 
-  static fromJSON<T>(data: { value: T; timestamp: number; nodeId: string }): LWWRegister<T> {
+  static fromJSON<T>(data: {
+    value: T;
+    timestamp: number;
+    nodeId: string;
+  }): LWWRegister<T> {
     return new LWWRegister(data.value, data.timestamp, data.nodeId);
   }
 }
@@ -351,8 +361,8 @@ export class ORSet<T = unknown> {
     const key = this.elementKey(element);
     const tags = this.elements.get(key);
     if (!tags) {
-return;
-}
+      return;
+    }
 
     for (const tag of tags) {
       this.tombstones.add(tag);
@@ -365,13 +375,13 @@ return;
     const key = this.elementKey(element);
     const tags = this.elements.get(key);
     if (!tags) {
-return false;
-}
+      return false;
+    }
 
     for (const tag of tags) {
       if (!this.tombstones.has(tag)) {
-return true;
-}
+        return true;
+      }
     }
     return false;
   }
@@ -489,7 +499,7 @@ export function mergeVectorClocks(a: VectorClock, b: VectorClock): VectorClock {
 
 export function incrementVectorClock(
   clock: VectorClock,
-  nodeId: string,
+  nodeId: string
 ): VectorClock {
   return {
     ...clock,
@@ -499,7 +509,7 @@ export function incrementVectorClock(
 
 export function compareVectorClocks(
   a: VectorClock,
-  b: VectorClock,
+  b: VectorClock
 ): 'before' | 'after' | 'concurrent' | 'equal' {
   let aBeforeB = false;
   let bBeforeA = false;
@@ -511,22 +521,22 @@ export function compareVectorClocks(
     const bVal = b[key] ?? 0;
 
     if (aVal < bVal) {
-aBeforeB = true;
-}
+      aBeforeB = true;
+    }
     if (aVal > bVal) {
-bBeforeA = true;
-}
+      bBeforeA = true;
+    }
   }
 
   if (aBeforeB && !bBeforeA) {
-return 'before';
-}
+    return 'before';
+  }
   if (bBeforeA && !aBeforeB) {
-return 'after';
-}
+    return 'after';
+  }
   if (!aBeforeB && !bBeforeA) {
-return 'equal';
-}
+    return 'equal';
+  }
   return 'concurrent';
 }
 
@@ -546,7 +556,8 @@ export class StateSync extends EventEmitter<StateSyncEvents> {
   private crdtStore: Map<string, CRDTValue> = new Map();
 
   /** Per-node state versions for efficient digest exchange */
-  private stateVersions: Map<string, { generation: number; sequence: number }> = new Map();
+  private stateVersions: Map<string, { generation: number; sequence: number }> =
+    new Map();
 
   /** Monotonic sequence counter for this node's state entries */
   private localSequence = 0;
@@ -571,7 +582,7 @@ export class StateSync extends EventEmitter<StateSyncEvents> {
     };
     this.logger = new Logger(
       'StateSync',
-      this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO,
+      this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO
     );
   }
 
@@ -586,14 +597,14 @@ export class StateSync extends EventEmitter<StateSyncEvents> {
    */
   start(transport: GossipTransport): void {
     if (this.running) {
-return;
-}
+      return;
+    }
 
     this.transport = transport;
     this.running = true;
 
     this.gossipTimer = setInterval(() => {
-      this.gossipRound().catch((error) => {
+      this.gossipRound().catch(error => {
         this.emit('error', error as Error, 'gossipRound');
       });
     }, this.config.gossip.interval);
@@ -610,8 +621,8 @@ return;
    */
   stop(): void {
     if (!this.running) {
-return;
-}
+      return;
+    }
     this.running = false;
 
     if (this.gossipTimer) {
@@ -662,8 +673,8 @@ return;
   get(key: string): unknown | undefined {
     const entry = this.localState.get(key);
     if (!entry) {
-return undefined;
-}
+      return undefined;
+    }
 
     // Check TTL
     if (entry.ttl && Date.now() - entry.timestamp > entry.ttl) {
@@ -773,18 +784,18 @@ return undefined;
    */
   private async gossipRound(): Promise<void> {
     if (!this.transport) {
-return;
-}
+      return;
+    }
 
     const peerIds = this.transport.getPeerNodeIds();
     if (peerIds.length === 0) {
-return;
-}
+      return;
+    }
 
     // Select random peers (fanout)
     const selected = this.selectRandomPeers(
       peerIds,
-      Math.min(this.config.gossip.fanout, peerIds.length),
+      Math.min(this.config.gossip.fanout, peerIds.length)
     );
 
     const digest = this.buildDigest();
@@ -814,7 +825,10 @@ return;
 
     switch (message.type) {
       case 'digest':
-        await this.handleDigest(message.senderId, message.payload as GossipDigest);
+        await this.handleDigest(
+          message.senderId,
+          message.payload as GossipDigest
+        );
         break;
       case 'delta':
         this.handleDelta(message.payload as GossipDelta);
@@ -823,7 +837,10 @@ return;
         await this.handleAck(message.senderId, message.payload as GossipAck);
         break;
       case 'probe':
-        await this.handleProbe(message.senderId, message.payload as GossipProbe);
+        await this.handleProbe(
+          message.senderId,
+          message.payload as GossipProbe
+        );
         break;
       case 'probe-ack':
         this.handleProbeAck(message.payload as GossipProbeAck);
@@ -836,11 +853,11 @@ return;
 
   private async handleDigest(
     senderId: string,
-    digest: GossipDigest,
+    digest: GossipDigest
   ): Promise<void> {
     if (!this.transport) {
-return;
-}
+      return;
+    }
 
     // Compare digest with local state to find what the peer is missing
     const entriesToSend: GossipStateEntry[] = [];
@@ -925,8 +942,8 @@ return;
 
   private async handleAck(senderId: string, ack: GossipAck): Promise<void> {
     if (!this.transport) {
-return;
-}
+      return;
+    }
 
     // The peer is requesting entries for specific nodes
     const entries: GossipStateEntry[] = [];
@@ -958,11 +975,11 @@ return;
 
   private async handleProbe(
     senderId: string,
-    probe: GossipProbe,
+    probe: GossipProbe
   ): Promise<void> {
     if (!this.transport) {
-return;
-}
+      return;
+    }
 
     // If the probe is for us, respond directly
     if (probe.targetNodeId === this.config.nodeId) {
@@ -990,11 +1007,11 @@ return;
   }
 
   private async handleProbeRequest(
-    probeRequest: GossipProbeRequest,
+    probeRequest: GossipProbeRequest
   ): Promise<void> {
     if (!this.transport) {
-return;
-}
+      return;
+    }
 
     // Indirect probe: we are asked to probe a target on behalf of requester
     const probeMessage: GossipMessage = {
@@ -1032,11 +1049,11 @@ return;
    */
   async requestIndirectProbe(
     suspectNodeId: string,
-    intermediaryNodeIds: string[],
+    intermediaryNodeIds: string[]
   ): Promise<void> {
     if (!this.transport) {
-return;
-}
+      return;
+    }
 
     for (const intermediary of intermediaryNodeIds) {
       const message: GossipMessage = {
@@ -1064,7 +1081,8 @@ return;
   // -----------------------------------------------------------------------
 
   private buildDigest(): GossipDigest {
-    const versions: Record<string, { generation: number; sequence: number }> = {};
+    const versions: Record<string, { generation: number; sequence: number }> =
+      {};
     for (const [nodeId, version] of this.stateVersions.entries()) {
       versions[nodeId] = { ...version };
     }
@@ -1074,7 +1092,7 @@ return;
   private updateVersion(
     nodeId: string,
     generation: number,
-    sequence: number,
+    sequence: number
   ): void {
     const existing = this.stateVersions.get(nodeId);
     if (

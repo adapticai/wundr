@@ -112,7 +112,10 @@ export class Planner {
    * @param constraints - Optional constraints that shape the plan.
    * @returns A fully populated TaskPlan ready for execution.
    */
-  async createPlan(goal: string, constraints: PlanConstraints = {}): Promise<TaskPlan> {
+  async createPlan(
+    goal: string,
+    constraints: PlanConstraints = {}
+  ): Promise<TaskPlan> {
     const constraintLines = this.buildConstraintLines(constraints);
     const prompt = this.buildPlanningPrompt(goal, constraintLines);
 
@@ -206,9 +209,7 @@ export class Planner {
     }
 
     const completedIds = new Set(
-      plan.steps
-        .filter(s => s.status === 'completed')
-        .map(s => s.id),
+      plan.steps.filter(s => s.status === 'completed').map(s => s.id)
     );
 
     // Find the first pending step whose dependencies are all satisfied
@@ -231,9 +232,10 @@ export class Planner {
    * Builds the initial planning prompt string.
    */
   private buildPlanningPrompt(goal: string, constraintLines: string[]): string {
-    const constraintSection = constraintLines.length > 0
-      ? `\n\nConstraints:\n${constraintLines.join('\n')}`
-      : '';
+    const constraintSection =
+      constraintLines.length > 0
+        ? `\n\nConstraints:\n${constraintLines.join('\n')}`
+        : '';
 
     return (
       `Create a detailed, dependency-aware execution plan for the following goal.\n\n` +
@@ -258,8 +260,13 @@ export class Planner {
       lines.push(`- Maximum ${constraints.maxSteps} steps`);
     }
 
-    if (constraints.requiredCapabilities && constraints.requiredCapabilities.length > 0) {
-      lines.push(`- Required capabilities: ${constraints.requiredCapabilities.join(', ')}`);
+    if (
+      constraints.requiredCapabilities &&
+      constraints.requiredCapabilities.length > 0
+    ) {
+      lines.push(
+        `- Required capabilities: ${constraints.requiredCapabilities.join(', ')}`
+      );
     }
 
     if (constraints.timeBudgetMs) {
@@ -304,13 +311,18 @@ export class Planner {
 
       // Extract depends annotation: [depends: 1,2,3] or [depends: none]
       const dependsMatch = line.match(/\[depends:\s*([^\]]+)\]/i);
-      const dependsRaw = dependsMatch ? dependsMatch[1].trim().toLowerCase() : 'none';
+      const dependsRaw = dependsMatch
+        ? dependsMatch[1].trim().toLowerCase()
+        : 'none';
 
       // Parse dependency step indices (we resolve to IDs after all steps are created)
       const dependencyIndices: number[] =
         dependsRaw === 'none' || dependsRaw === ''
           ? []
-          : dependsRaw.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+          : dependsRaw
+              .split(',')
+              .map(s => parseInt(s.trim(), 10))
+              .filter(n => !isNaN(n));
 
       // Extract capability annotation: [capability: market-data] or [capability: none]
       const capabilityMatch = line.match(/\[capability:\s*([^\]]+)\]/i);
@@ -354,7 +366,7 @@ export class Planner {
    */
   private extractCapabilities(
     text: string,
-    constraints: PlanConstraints,
+    constraints: PlanConstraints
   ): string[] {
     const found = new Set<string>(constraints.requiredCapabilities ?? []);
 

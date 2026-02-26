@@ -92,13 +92,13 @@ export class SessionExecutor extends EventEmitter {
   async executeSession(
     session: Session,
     task: Task,
-    options?: SessionExecutionOptions,
+    options?: SessionExecutionOptions
   ): Promise<SessionExecutionResult> {
     const startTime = Date.now();
     const opts = { ...this.DEFAULT_OPTIONS, ...options };
 
     this.logger.info(
-      `Starting session execution: ${session.id} for task: ${task.id}`,
+      `Starting session execution: ${session.id} for task: ${task.id}`
     );
 
     try {
@@ -156,13 +156,12 @@ export class SessionExecutor extends EventEmitter {
           response.toolCalls.length > 0 &&
           response.finishReason === 'tool_calls'
         ) {
-          this.logger.info(
-            `Executing ${response.toolCalls.length} tool calls`,
-          );
+          this.logger.info(`Executing ${response.toolCalls.length} tool calls`);
 
           // Execute tool calls
-          const toolResults =
-            await this.toolExecutor.executeToolCalls(response.toolCalls);
+          const toolResults = await this.toolExecutor.executeToolCalls(
+            response.toolCalls
+          );
           toolCallsMade += response.toolCalls.length;
 
           // Convert results to messages
@@ -189,7 +188,7 @@ export class SessionExecutor extends EventEmitter {
       const executionTime = Date.now() - startTime;
 
       this.logger.info(
-        `Session execution completed: ${session.id} in ${executionTime}ms, ${iterations} iterations, ${toolCallsMade} tool calls`,
+        `Session execution completed: ${session.id} in ${executionTime}ms, ${iterations} iterations, ${toolCallsMade} tool calls`
       );
 
       return {
@@ -205,10 +204,7 @@ export class SessionExecutor extends EventEmitter {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      this.logger.error(
-        `Session execution failed: ${session.id}`,
-        error,
-      );
+      this.logger.error(`Session execution failed: ${session.id}`, error);
 
       return {
         success: false,
@@ -228,7 +224,7 @@ export class SessionExecutor extends EventEmitter {
   private buildInitialMessages(
     session: Session,
     task: Task,
-    options: Required<SessionExecutionOptions>,
+    options: Required<SessionExecutionOptions>
   ): Message[] {
     const messages: Message[] = [];
 
@@ -264,11 +260,11 @@ export class SessionExecutor extends EventEmitter {
     ) {
       const recentEpisodic = session.memoryContext.episodic
         .slice(-5) // Last 5 entries
-        .filter((entry) => entry.type === 'interaction');
+        .filter(entry => entry.type === 'interaction');
 
       if (recentEpisodic.length > 0) {
         const contextContent = recentEpisodic
-          .map((entry) => `[${entry.timestamp.toISOString()}] ${entry.content}`)
+          .map(entry => `[${entry.timestamp.toISOString()}] ${entry.content}`)
           .join('\n');
 
         messages.push({
@@ -284,12 +280,12 @@ export class SessionExecutor extends EventEmitter {
       session.memoryContext.semantic.length > 0
     ) {
       const relevantKnowledge = session.memoryContext.semantic
-        .filter((entry) => entry.type === 'knowledge')
+        .filter(entry => entry.type === 'knowledge')
         .slice(-3); // Last 3 knowledge entries
 
       if (relevantKnowledge.length > 0) {
         const knowledgeContent = relevantKnowledge
-          .map((entry) => entry.content)
+          .map(entry => entry.content)
           .join('\n');
 
         messages.push({
@@ -333,9 +329,7 @@ Please analyze this task and execute it using the available tools. Provide a com
   /**
    * Build standard tool definitions for common MCP tools
    */
-  private buildStandardToolDefinitions(
-    toolNames: string[],
-  ): ToolDefinition[] {
+  private buildStandardToolDefinitions(toolNames: string[]): ToolDefinition[] {
     const standardTools: ToolDefinition[] = [
       {
         name: 'drift_detection',
@@ -387,7 +381,7 @@ Please analyze this task and execute it using the available tools. Provide a com
 
     // Filter to only include tools that are available
     if (toolNames.length > 0) {
-      return standardTools.filter((tool) => toolNames.includes(tool.name));
+      return standardTools.filter(tool => toolNames.includes(tool.name));
     }
 
     return standardTools;
@@ -417,10 +411,7 @@ Be proactive, thorough, and clear in your communication.`;
   /**
    * Update session metrics based on execution result
    */
-  updateSessionMetrics(
-    session: Session,
-    result: SessionExecutionResult,
-  ): void {
+  updateSessionMetrics(session: Session, result: SessionExecutionResult): void {
     const metrics: Partial<SessionMetrics> = {
       tokensUsed: session.metrics.tokensUsed + result.tokensUsed,
       duration: session.metrics.duration + result.executionTime,
@@ -445,7 +436,7 @@ Be proactive, thorough, and clear in your communication.`;
   addToSessionMemory(
     session: Session,
     task: Task,
-    result: SessionExecutionResult,
+    result: SessionExecutionResult
   ): void {
     // Add to episodic memory
     const episodicEntry: MemoryEntry = {

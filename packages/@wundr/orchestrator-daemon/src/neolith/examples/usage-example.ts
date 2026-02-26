@@ -42,7 +42,11 @@ async function basicAuthenticationExample() {
   console.log('Configuration loaded:');
   console.log('- Role:', config.orchestrator.role);
   console.log('- Discipline:', config.orchestrator.discipline);
-  console.log('- Heartbeat interval:', config.operationalConfig.heartbeatIntervalMs, 'ms');
+  console.log(
+    '- Heartbeat interval:',
+    config.operationalConfig.heartbeatIntervalMs,
+    'ms'
+  );
   console.log('- Scopes:', config.scopes.join(', '));
   console.log();
 }
@@ -112,7 +116,9 @@ async function periodicHeartbeatExample() {
       await client.sendHeartbeat({
         status: 'active',
         metrics: {
-          memoryUsageMB: Math.floor(process.memoryUsage().heapUsed / 1024 / 1024),
+          memoryUsageMB: Math.floor(
+            process.memoryUsage().heapUsed / 1024 / 1024
+          ),
           cpuUsagePercent: Math.random() * 20, // Simulated
           activeConnections: 3,
           messagesProcessed: messagesProcessed++,
@@ -120,7 +126,9 @@ async function periodicHeartbeatExample() {
         },
       });
 
-      console.log(`Heartbeat sent (uptime: ${uptime}s, messages: ${messagesProcessed})`);
+      console.log(
+        `Heartbeat sent (uptime: ${uptime}s, messages: ${messagesProcessed})`
+      );
     } catch (error) {
       console.error('Heartbeat failed:', error);
     }
@@ -149,7 +157,9 @@ async function messagingExample() {
 
   console.log(`Found ${messages.length} messages:`);
   messages.forEach(msg => {
-    console.log(`- [${msg.createdAt.toISOString()}] ${msg.author.name}: ${msg.content}`);
+    console.log(
+      `- [${msg.createdAt.toISOString()}] ${msg.author.name}: ${msg.content}`
+    );
   });
   console.log();
 
@@ -163,7 +173,7 @@ async function messagingExample() {
         source: 'automated',
         timestamp: new Date().toISOString(),
       },
-    },
+    }
   );
   console.log('Message sent with ID:', messageId);
   console.log();
@@ -176,7 +186,7 @@ async function messagingExample() {
       'This is a reply to the first message',
       {
         threadId: messages[0].id,
-      },
+      }
     );
     console.log('Reply sent with ID:', replyId);
   }
@@ -362,7 +372,7 @@ async function fullDaemonExample() {
         type: 'system',
         timestamp: new Date().toISOString(),
       },
-    },
+    }
   );
   console.log('✓ Status message sent');
 

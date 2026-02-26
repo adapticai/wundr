@@ -135,7 +135,11 @@ export { HookRegistry, createHookRegistry } from './hook-registry';
 
 // Engine
 export { HookEngine, createHookEngine } from './hook-engine';
-export type { HookEngineOptions, HookLLMClient, HookSessionSpawner } from './hook-engine';
+export type {
+  HookEngineOptions,
+  HookLLMClient,
+  HookSessionSpawner,
+} from './hook-engine';
 
 // Built-in hooks
 export { registerBuiltInHooks, getBuiltInHookIds } from './built-in-hooks';
@@ -153,10 +157,7 @@ export {
   buildHookSnapshot,
   loadAndRegisterHooks,
 } from './hook-discovery';
-export type {
-  DiscoveryOptions,
-  HookLoaderOptions,
-} from './hook-discovery';
+export type { DiscoveryOptions, HookLoaderOptions } from './hook-discovery';
 
 // Status & Diagnostics
 export {

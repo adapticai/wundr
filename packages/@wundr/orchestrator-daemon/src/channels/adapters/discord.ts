@@ -134,7 +134,11 @@ export interface DiscordEmbed {
   readonly image?: { url: string };
   readonly thumbnail?: { url: string };
   readonly author?: { name: string; url?: string; icon_url?: string };
-  readonly fields?: readonly { name: string; value: string; inline?: boolean }[];
+  readonly fields?: readonly {
+    name: string;
+    value: string;
+    inline?: boolean;
+  }[];
 }
 
 export interface DiscordOutboundMessage extends OutboundMessage {
@@ -206,7 +210,12 @@ class RateLimitTracker {
    * Record a rate-limit header set from a Discord API response.
    * @param route - The bucket key (e.g., "POST /channels/:id/messages").
    */
-  record(route: string, remaining: number, resetAt: number, retryAfterMs: number): void {
+  record(
+    route: string,
+    remaining: number,
+    resetAt: number,
+    retryAfterMs: number
+  ): void {
     this.buckets.set(route, { remaining, resetAt, retryAfterMs });
   }
 
@@ -217,11 +226,11 @@ class RateLimitTracker {
   delayMs(route: string): number {
     const bucket = this.buckets.get(route);
     if (!bucket) {
-return 0;
-}
+      return 0;
+    }
     if (bucket.remaining > 0) {
-return 0;
-}
+      return 0;
+    }
     const now = Date.now();
     if (now >= bucket.resetAt) {
       this.buckets.delete(route);
@@ -236,7 +245,7 @@ return 0;
   async wait(route: string): Promise<void> {
     const delay = this.delayMs(route);
     if (delay > 0) {
-      await new Promise<void>((resolve) => setTimeout(resolve, delay));
+      await new Promise<void>(resolve => setTimeout(resolve, delay));
     }
   }
 
@@ -262,14 +271,14 @@ function shouldAckReaction(params: {
 }): boolean {
   const scope = params.scope ?? 'off';
   if (scope === 'off') {
-return false;
-}
+    return false;
+  }
   if (scope === 'all') {
-return true;
-}
+    return true;
+  }
   if (scope === 'direct') {
-return params.isDirect;
-}
+    return params.isDirect;
+  }
   if (scope === 'group-mentions') {
     return params.isGroup && params.wasMentioned;
   }
@@ -319,8 +328,8 @@ interface OpenFence {
 function parseFenceLine(line: string): OpenFence | null {
   const match = line.match(FENCE_RE);
   if (!match) {
-return null;
-}
+    return null;
+  }
   const indent = match[1] ?? '';
   const marker = match[2] ?? '';
   return {
@@ -337,23 +346,27 @@ function closeFenceLine(fence: OpenFence): string {
 
 function closeFenceIfNeeded(text: string, fence: OpenFence | null): string {
   if (!fence) {
-return text;
-}
+    return text;
+  }
   const close = closeFenceLine(fence);
   if (!text) {
-return close;
-}
+    return close;
+  }
   if (!text.endsWith('\n')) {
-return `${text}\n${close}`;
-}
+    return `${text}\n${close}`;
+  }
   return `${text}${close}`;
 }
 
-function splitLongLine(line: string, limit: number, insideFence: boolean): string[] {
+function splitLongLine(
+  line: string,
+  limit: number,
+  insideFence: boolean
+): string[] {
   const effectiveLimit = Math.max(1, limit);
   if (line.length <= effectiveLimit) {
-return [line];
-}
+    return [line];
+  }
   const out: string[] = [];
   let remaining = line;
   while (remaining.length > effectiveLimit) {
@@ -371,14 +384,14 @@ return [line];
       }
     }
     if (breakIdx <= 0) {
-breakIdx = effectiveLimit;
-}
+      breakIdx = effectiveLimit;
+    }
     out.push(remaining.slice(0, breakIdx));
     remaining = remaining.slice(breakIdx);
   }
   if (remaining.length > 0) {
-out.push(remaining);
-}
+    out.push(remaining);
+  }
   return out;
 }
 
@@ -392,19 +405,19 @@ out.push(remaining);
 function chunkDiscordText(
   text: string,
   maxChars: number = DISCORD_MAX_CHARS,
-  maxLines: number = DISCORD_MAX_LINES,
+  maxLines: number = DISCORD_MAX_LINES
 ): string[] {
   const charLimit = Math.max(1, Math.floor(maxChars));
   const lineLimit = Math.max(1, Math.floor(maxLines));
   const body = text ?? '';
   if (!body) {
-return [];
-}
+    return [];
+  }
 
   const lineCount = body.split('\n').length;
   if (body.length <= charLimit && lineCount <= lineLimit) {
-return [body];
-}
+    return [body];
+  }
 
   const lines = body.split('\n');
   const chunks: string[] = [];
@@ -414,12 +427,12 @@ return [body];
 
   const flush = (): void => {
     if (!current) {
-return;
-}
+      return;
+    }
     const payload = closeFenceIfNeeded(current, openFence);
     if (payload.trim().length > 0) {
-chunks.push(payload);
-}
+      chunks.push(payload);
+    }
     current = '';
     currentLines = 0;
     if (openFence) {
@@ -444,7 +457,9 @@ chunks.push(payload);
       }
     }
 
-    const reserveChars = nextOpenFence ? closeFenceLine(nextOpenFence).length + 1 : 0;
+    const reserveChars = nextOpenFence
+      ? closeFenceLine(nextOpenFence).length + 1
+      : 0;
     const reserveLines = nextOpenFence ? 1 : 0;
     const effectiveCharLimit = Math.max(1, charLimit - reserveChars);
     const effectiveLineLimit = Math.max(1, lineLimit - reserveLines);
@@ -470,8 +485,8 @@ chunks.push(payload);
       if (current.length > 0) {
         current += addition;
         if (!isContinuation) {
-currentLines += 1;
-}
+          currentLines += 1;
+        }
       } else {
         current = segment;
         currentLines = 1;
@@ -484,8 +499,8 @@ currentLines += 1;
   if (current.length > 0) {
     const payload = closeFenceIfNeeded(current, openFence);
     if (payload.trim().length > 0) {
-chunks.push(payload);
-}
+      chunks.push(payload);
+    }
   }
 
   return chunks;
@@ -497,9 +512,9 @@ chunks.push(payload);
 
 function sanitizeThreadName(rawName: string, fallbackId: string): string {
   const cleaned = rawName
-    .replace(/<@!?\d+>/g, '')  // user mentions
-    .replace(/<@&\d+>/g, '')   // role mentions
-    .replace(/<#\d+>/g, '')    // channel mentions
+    .replace(/<@!?\d+>/g, '') // user mentions
+    .replace(/<@&\d+>/g, '') // role mentions
+    .replace(/<#\d+>/g, '') // channel mentions
     .replace(/\s+/g, ' ')
     .trim();
   const base = cleaned || `Thread ${fallbackId}`;
@@ -528,7 +543,8 @@ export class DiscordChannelAdapter extends BaseChannelAdapter {
   readonly meta: ChannelMeta = {
     id: 'discord',
     label: 'Discord',
-    blurb: 'Discord bot integration with threads, reactions, embeds, slash commands, and media.',
+    blurb:
+      'Discord bot integration with threads, reactions, embeds, slash commands, and media.',
     aliases: ['dc'],
     order: 20,
   };
@@ -568,11 +584,14 @@ export class DiscordChannelAdapter extends BaseChannelAdapter {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Ack tracking: messageId -> reaction emoji used
-  private readonly pendingAckReactions = new Map<string, {
-    emoji: string;
-    conversationId: string;
-    promise: Promise<boolean>;
-  }>();
+  private readonly pendingAckReactions = new Map<
+    string,
+    {
+      emoji: string;
+      conversationId: string;
+      promise: Promise<boolean>;
+    }
+  >();
 
   // Interaction handlers
   private readonly interactionHandlers = new Map<
@@ -651,7 +670,7 @@ export class DiscordChannelAdapter extends BaseChannelAdapter {
 
       this.logger.info(
         `Discord adapter connected (user: ${this.selfUserId}, ` +
-        `guilds: ${this.client.guilds?.cache?.size ?? 0}).`,
+          `guilds: ${this.client.guilds?.cache?.size ?? 0}).`
       );
 
       // Register slash commands if configured
@@ -685,7 +704,7 @@ export class DiscordChannelAdapter extends BaseChannelAdapter {
       this.client?.destroy();
     } catch (err) {
       this.logger.error(
-        `Error during Discord disconnect: ${err instanceof Error ? err.message : String(err)}`,
+        `Error during Discord disconnect: ${err instanceof Error ? err.message : String(err)}`
       );
     }
 
@@ -746,15 +765,24 @@ export class DiscordChannelAdapter extends BaseChannelAdapter {
     try {
       const channel = await this.fetchChannel(message.to);
       if (!channel || !isTextChannel(channel)) {
-        return { ok: false, error: `Channel ${message.to} not found or not a text channel.` };
+        return {
+          ok: false,
+          error: `Channel ${message.to} not found or not a text channel.`,
+        };
       }
 
       const discordMessage = message as DiscordOutboundMessage;
-      const hasEmbeds = discordMessage.embeds && discordMessage.embeds.length > 0;
-      const hasComponents = discordMessage.components && discordMessage.components.length > 0;
+      const hasEmbeds =
+        discordMessage.embeds && discordMessage.embeds.length > 0;
+      const hasComponents =
+        discordMessage.components && discordMessage.components.length > 0;
 
       // If there are embeds or components, send them with the first chunk.
-      const chunks = chunkDiscordText(message.text, DISCORD_MAX_CHARS, DISCORD_MAX_LINES);
+      const chunks = chunkDiscordText(
+        message.text,
+        DISCORD_MAX_CHARS,
+        DISCORD_MAX_LINES
+      );
 
       // Ensure we have at least one send for embeds/components even if text is empty
       if (chunks.length === 0 && (hasEmbeds || hasComponents)) {
@@ -793,8 +821,8 @@ export class DiscordChannelAdapter extends BaseChannelAdapter {
 
         // Attach files on first chunk only
         if (isFirst && message.attachments?.length) {
-          sendOptions['files'] = message.attachments.map((a) =>
-            buildDiscordAttachment(a),
+          sendOptions['files'] = message.attachments.map(a =>
+            buildDiscordAttachment(a)
           );
         }
 
@@ -819,7 +847,7 @@ export class DiscordChannelAdapter extends BaseChannelAdapter {
   async editMessage(
     conversationId: string,
     messageId: string,
-    newText: string,
+    newText: string
   ): Promise<DeliveryResult> {
     this.requireConnected();
 
@@ -841,21 +869,21 @@ export class DiscordChannelAdapter extends BaseChannelAdapter {
 
   async deleteMessage(
     conversationId: string,
-    messageId: string,
+    messageId: string
   ): Promise<boolean> {
     this.requireConnected();
 
     try {
       const channel = await this.fetchChannel(conversationId);
       if (!channel || !isTextChannel(channel)) {
-return false;
-}
+        return false;
+      }
       const msg = await channel.messages.fetch(messageId);
       await msg.delete();
       return true;
     } catch (err) {
       this.logger.error(
-        `Failed to delete Discord message ${messageId}: ${err instanceof Error ? err.message : String(err)}`,
+        `Failed to delete Discord message ${messageId}: ${err instanceof Error ? err.message : String(err)}`
       );
       return false;
     }
@@ -868,7 +896,7 @@ return false;
   async replyToThread(
     conversationId: string,
     threadId: string,
-    message: OutboundMessage,
+    message: OutboundMessage
   ): Promise<DeliveryResult> {
     this.requireConnected();
 
@@ -878,7 +906,11 @@ return false;
         return { ok: false, error: `Thread ${threadId} not found.` };
       }
 
-      const chunks = chunkDiscordText(message.text, DISCORD_MAX_CHARS, DISCORD_MAX_LINES);
+      const chunks = chunkDiscordText(
+        message.text,
+        DISCORD_MAX_CHARS,
+        DISCORD_MAX_LINES
+      );
       let lastMessageId: string | undefined;
 
       for (const chunk of chunks) {
@@ -908,7 +940,7 @@ return false;
     conversationId: string,
     messageId: string,
     name: string,
-    autoArchiveMinutes: 60 | 1440 | 4320 | 10080 = 60,
+    autoArchiveMinutes: 60 | 1440 | 4320 | 10080 = 60
   ): Promise<DeliveryResult> {
     this.requireConnected();
 
@@ -924,13 +956,16 @@ return false;
       // discord.js Message.startThread
       const startThread = (msg as Record<string, unknown>)['startThread'];
       if (typeof startThread !== 'function') {
-        return { ok: false, error: 'startThread not available on this message.' };
+        return {
+          ok: false,
+          error: 'startThread not available on this message.',
+        };
       }
       // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-      const thread = await (startThread as Function).call(msg, {
+      const thread = (await (startThread as Function).call(msg, {
         name: sanitizedName,
         autoArchiveDuration: autoArchiveMinutes,
-      }) as { id: string };
+      })) as { id: string };
 
       return {
         ok: true,
@@ -959,24 +994,21 @@ return false;
   }): Promise<string | null> {
     const autoChannels = this.discordConfig?.autoThreadChannelIds ?? [];
     if (autoChannels.length === 0) {
-return null;
-}
+      return null;
+    }
     if (msg.isThread) {
-return null;
-}
+      return null;
+    }
     if (!autoChannels.includes(msg.channelId)) {
-return null;
-}
+      return null;
+    }
 
-    const threadName = sanitizeThreadName(
-      msg.text || 'Thread',
-      msg.messageId,
-    );
+    const threadName = sanitizeThreadName(msg.text || 'Thread', msg.messageId);
 
     const result = await this.createThread(
       msg.channelId,
       msg.messageId,
-      threadName,
+      threadName
     );
 
     return result.ok ? (result.conversationId ?? null) : null;
@@ -988,22 +1020,22 @@ return null;
   async getThreadStarter(threadId: string): Promise<ThreadStarter | null> {
     const cached = THREAD_STARTER_CACHE.get(threadId);
     if (cached) {
-return cached;
-}
+      return cached;
+    }
 
     this.requireConnected();
 
     try {
       const thread = await this.fetchChannel(threadId);
       if (!thread) {
-return null;
-}
+        return null;
+      }
 
       // Fetch the starter message (message whose ID matches the thread ID)
       const starterMsg = await thread.messages.fetch(threadId);
       if (!starterMsg) {
-return null;
-}
+        return null;
+      }
 
       const starter: ThreadStarter = {
         text: starterMsg.content ?? '',
@@ -1025,13 +1057,13 @@ return null;
   async addReaction(
     conversationId: string,
     messageId: string,
-    emoji: string,
+    emoji: string
   ): Promise<void> {
     this.requireConnected();
     const channel = await this.fetchChannel(conversationId);
     if (!channel || !isTextChannel(channel)) {
-return;
-}
+      return;
+    }
     const msg = await channel.messages.fetch(messageId);
     await msg.react(emoji);
   }
@@ -1039,16 +1071,16 @@ return;
   async removeReaction(
     conversationId: string,
     messageId: string,
-    emoji: string,
+    emoji: string
   ): Promise<void> {
     this.requireConnected();
     const channel = await this.fetchChannel(conversationId);
     if (!channel || !isTextChannel(channel)) {
-return;
-}
+      return;
+    }
     const msg = await channel.messages.fetch(messageId);
     const reaction = msg.reactions.cache.find(
-      (r: { emoji: { name: string | null } }) => r.emoji.name === emoji,
+      (r: { emoji: { name: string | null } }) => r.emoji.name === emoji
     );
     if (reaction && this.selfUserId) {
       await reaction.users.remove(this.selfUserId);
@@ -1077,8 +1109,8 @@ return;
     });
 
     if (!should) {
-return false;
-}
+      return false;
+    }
 
     const promise = (async (): Promise<boolean> => {
       try {
@@ -1104,26 +1136,30 @@ return false;
    */
   async removeAckReactionAfterReply(messageId: string): Promise<void> {
     if (!this.discordConfig?.ackReactionRemoveAfterReply) {
-return;
-}
+      return;
+    }
 
     const pending = this.pendingAckReactions.get(messageId);
     if (!pending) {
-return;
-}
+      return;
+    }
 
     const didAck = await pending.promise;
     if (!didAck) {
-return;
-}
+      return;
+    }
 
     this.pendingAckReactions.delete(messageId);
 
     try {
-      await this.removeReaction(pending.conversationId, messageId, pending.emoji);
+      await this.removeReaction(
+        pending.conversationId,
+        messageId,
+        pending.emoji
+      );
     } catch (err) {
       this.logger.debug(
-        `Failed to remove ack reaction on ${messageId}: ${err instanceof Error ? err.message : String(err)}`,
+        `Failed to remove ack reaction on ${messageId}: ${err instanceof Error ? err.message : String(err)}`
       );
     }
   }
@@ -1144,8 +1180,8 @@ return;
 
     const sendOnce = async (): Promise<void> => {
       if (!active) {
-return;
-}
+        return;
+      }
       try {
         const channel = await this.fetchChannel(conversationId);
         if (channel && isTextChannel(channel)) {
@@ -1178,13 +1214,17 @@ return;
   async sendMedia(
     conversationId: string,
     attachment: OutboundAttachment,
-    options?: { text?: string; threadId?: string },
+    options?: { text?: string; threadId?: string }
   ): Promise<DeliveryResult> {
     this.requireConnected();
 
     // Validate size against maxMediaBytes
     const maxBytes = this.capabilities.maxMediaBytes;
-    if (maxBytes > 0 && attachment.buffer && attachment.buffer.length > maxBytes) {
+    if (
+      maxBytes > 0 &&
+      attachment.buffer &&
+      attachment.buffer.length > maxBytes
+    ) {
       return {
         ok: false,
         error: `File "${attachment.filename}" exceeds Discord's ${formatBytes(maxBytes)} upload limit (${formatBytes(attachment.buffer.length)}).`,
@@ -1198,7 +1238,9 @@ return;
         return { ok: false, error: 'Channel not found.' };
       }
 
-      const files: DiscordAttachmentLike[] = [buildDiscordAttachment(attachment)];
+      const files: DiscordAttachmentLike[] = [
+        buildDiscordAttachment(attachment),
+      ];
 
       const sent = await channel.send({
         content: options?.text ?? '',
@@ -1222,7 +1264,9 @@ return;
   async downloadMedia(url: string): Promise<Buffer> {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`Failed to download media: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to download media: ${response.status} ${response.statusText}`
+      );
     }
     const arrayBuffer = await response.arrayBuffer();
     return Buffer.from(arrayBuffer);
@@ -1238,23 +1282,29 @@ return;
    * Otherwise they are registered globally (can take up to 1 hour to propagate).
    */
   async registerSlashCommands(
-    commands: readonly SlashCommandDefinition[],
+    commands: readonly SlashCommandDefinition[]
   ): Promise<void> {
     if (!this.client || !this.discordConfig?.applicationId) {
       this.logger.warn(
-        'Cannot register slash commands: missing client or applicationId.',
+        'Cannot register slash commands: missing client or applicationId.'
       );
       return;
     }
 
     try {
       const rest = (this.client as unknown as Record<string, unknown>)['rest'];
-      if (!rest || typeof (rest as unknown as Record<string, unknown>)['put'] !== 'function') {
-        this.logger.warn('Cannot register slash commands: REST client unavailable.');
+      if (
+        !rest ||
+        typeof (rest as unknown as Record<string, unknown>)['put'] !==
+          'function'
+      ) {
+        this.logger.warn(
+          'Cannot register slash commands: REST client unavailable.'
+        );
         return;
       }
 
-      const body = commands.map((cmd) => ({
+      const body = commands.map(cmd => ({
         name: cmd.name,
         description: cmd.description,
         options: cmd.options ?? [],
@@ -1262,30 +1312,35 @@ return;
 
       const guildIds = this.discordConfig.guildIds ?? [];
       const appId = this.discordConfig.applicationId;
-      const restClient = rest as { put(route: string, opts: Record<string, unknown>): Promise<unknown> };
+      const restClient = rest as {
+        put(route: string, opts: Record<string, unknown>): Promise<unknown>;
+      };
 
       if (guildIds.length > 0) {
         // Guild-scoped registration (instant propagation)
         for (const guildId of guildIds) {
-          await restClient.put(`/applications/${appId}/guilds/${guildId}/commands`, {
-            body,
-          });
+          await restClient.put(
+            `/applications/${appId}/guilds/${guildId}/commands`,
+            {
+              body,
+            }
+          );
           this.logger.info(
-            `Registered ${commands.length} slash command(s) in guild ${guildId}.`,
+            `Registered ${commands.length} slash command(s) in guild ${guildId}.`
           );
         }
       } else {
         // Global registration
         await restClient.put(`/applications/${appId}/commands`, { body });
         this.logger.info(
-          `Registered ${commands.length} global slash command(s).`,
+          `Registered ${commands.length} global slash command(s).`
         );
       }
 
-      this.registeredCommands = commands.map((c) => c.name);
+      this.registeredCommands = commands.map(c => c.name);
     } catch (err) {
       this.logger.error(
-        `Failed to register slash commands: ${err instanceof Error ? err.message : String(err)}`,
+        `Failed to register slash commands: ${err instanceof Error ? err.message : String(err)}`
       );
     }
   }
@@ -1298,7 +1353,7 @@ return;
    */
   onInteraction(
     key: string,
-    handler: (event: DiscordInteractionEvent) => void | Promise<void>,
+    handler: (event: DiscordInteractionEvent) => void | Promise<void>
   ): () => void {
     this.interactionHandlers.set(key, handler);
     return () => {
@@ -1315,7 +1370,9 @@ return;
    * Resolves guild roles + channel overwrites using bitfield math,
    * matching OpenClaw's `fetchChannelPermissionsDiscord`.
    */
-  async checkPermissions(channelId: string): Promise<DiscordPermissionsSummary> {
+  async checkPermissions(
+    channelId: string
+  ): Promise<DiscordPermissionsSummary> {
     this.requireConnected();
 
     try {
@@ -1330,8 +1387,12 @@ return;
       }
 
       // DM channels have no permission overwrites.
-      const isDmBased = typeof (channel as unknown as Record<string, unknown>)['isDMBased'] === 'function'
-        && ((channel as unknown as Record<string, (...args: unknown[]) => unknown>)['isDMBased'])();
+      const isDmBased =
+        typeof (channel as unknown as Record<string, unknown>)['isDMBased'] ===
+          'function' &&
+        (channel as unknown as Record<string, (...args: unknown[]) => unknown>)[
+          'isDMBased'
+        ]();
       if (isDmBased) {
         return {
           channelId,
@@ -1387,11 +1448,15 @@ return;
         };
       }
 
-      const serialized: string[] = typeof permissions.toArray === 'function'
-        ? permissions.toArray() ?? []
-        : [];
+      const serialized: string[] =
+        typeof permissions.toArray === 'function'
+          ? (permissions.toArray() ?? [])
+          : [];
       const rawBitfield = permissions.bitfield;
-      const raw = rawBitfield !== null && rawBitfield !== undefined ? String(rawBitfield) : '0';
+      const raw =
+        rawBitfield !== null && rawBitfield !== undefined
+          ? String(rawBitfield)
+          : '0';
 
       return {
         channelId,
@@ -1403,7 +1468,7 @@ return;
       };
     } catch (err) {
       this.logger.error(
-        `Permission check failed for ${channelId}: ${err instanceof Error ? err.message : String(err)}`,
+        `Permission check failed for ${channelId}: ${err instanceof Error ? err.message : String(err)}`
       );
       return {
         channelId,
@@ -1431,17 +1496,25 @@ return;
     try {
       const channel = await this.fetchChannel(channelId);
       if (!channel) {
-return { chatType: 'channel' };
-}
+        return { chatType: 'channel' };
+      }
 
-      const isDm = typeof (channel as unknown as Record<string, unknown>)['isDMBased'] === 'function'
-        && ((channel as unknown as Record<string, (...args: unknown[]) => unknown>)['isDMBased'])();
+      const isDm =
+        typeof (channel as unknown as Record<string, unknown>)['isDMBased'] ===
+          'function' &&
+        (channel as unknown as Record<string, (...args: unknown[]) => unknown>)[
+          'isDMBased'
+        ]();
       if (isDm) {
         return { chatType: 'direct' };
       }
 
-      const isThread = typeof (channel as unknown as Record<string, unknown>)['isThread'] === 'function'
-        && ((channel as unknown as Record<string, (...args: unknown[]) => unknown>)['isThread'])();
+      const isThread =
+        typeof (channel as unknown as Record<string, unknown>)['isThread'] ===
+          'function' &&
+        (channel as unknown as Record<string, (...args: unknown[]) => unknown>)[
+          'isThread'
+        ]();
       if (isThread) {
         return {
           chatType: 'thread',
@@ -1469,38 +1542,45 @@ return { chatType: 'channel' };
    */
   getVoiceChannelInfo(guildId: string): VoiceChannelInfo[] {
     if (!this.client) {
-return [];
-}
+      return [];
+    }
 
     try {
-      const guildsCache = this.client.guilds?.cache as unknown as Map<string, Record<string, unknown>> | undefined;
+      const guildsCache = this.client.guilds?.cache as unknown as
+        | Map<string, Record<string, unknown>>
+        | undefined;
       if (!guildsCache) {
-return [];
-}
+        return [];
+      }
 
-      const guild = typeof guildsCache.get === 'function'
-        ? guildsCache.get(guildId)
-        : undefined;
+      const guild =
+        typeof guildsCache.get === 'function'
+          ? guildsCache.get(guildId)
+          : undefined;
       if (!guild) {
-return [];
-}
+        return [];
+      }
 
-      const voiceStatesObj = guild['voiceStates'] as { cache?: Map<string, Record<string, unknown>> } | undefined;
+      const voiceStatesObj = guild['voiceStates'] as
+        | { cache?: Map<string, Record<string, unknown>> }
+        | undefined;
       const voiceStates = voiceStatesObj?.cache;
       if (!voiceStates) {
-return [];
-}
+        return [];
+      }
       const voiceChannels = new Map<string, VoiceChannelInfo>();
 
-      voiceStates.forEach((state) => {
+      voiceStates.forEach(state => {
         const channelIdValue = state['channelId'];
         if (typeof channelIdValue !== 'string' || !channelIdValue) {
-return;
-}
+          return;
+        }
 
         let info = voiceChannels.get(channelIdValue);
         if (!info) {
-          const channelsObj = guild['channels'] as { cache?: Map<string, { name?: string }> } | undefined;
+          const channelsObj = guild['channels'] as
+            | { cache?: Map<string, { name?: string }> }
+            | undefined;
           const chan = channelsObj?.cache?.get(channelIdValue);
           info = {
             channelId: channelIdValue,
@@ -1531,14 +1611,14 @@ return;
    */
   getShardInfo(): ShardInfo | null {
     if (!this.client) {
-return null;
-}
+      return null;
+    }
 
     try {
       const shard = this.client.shard;
       if (!shard) {
-return null;
-}
+        return null;
+      }
 
       return {
         shardIds: shard.ids ?? [],
@@ -1556,7 +1636,7 @@ return null;
 
   async validateSender(
     senderId: string,
-    chatType: ChatType,
+    chatType: ChatType
   ): Promise<SenderValidation> {
     if (chatType !== 'direct') {
       return { allowed: true };
@@ -1569,7 +1649,7 @@ return null;
 
     const allowList = config.dmAllowList ?? config.pairing.allowList ?? [];
     const isAllowed = allowList.some(
-      (entry) => entry.trim().toLowerCase() === senderId.trim().toLowerCase(),
+      entry => entry.trim().toLowerCase() === senderId.trim().toLowerCase()
     );
 
     return isAllowed
@@ -1584,8 +1664,8 @@ return null;
   getPairingConfig(): PairingConfig | null {
     const config = this.discordConfig;
     if (!config?.pairing) {
-return null;
-}
+      return null;
+    }
     return {
       requireApproval: config.pairing.requireApproval,
       allowList: config.dmAllowList ?? config.pairing.allowList ?? [],
@@ -1599,16 +1679,16 @@ return null;
 
   private setupEventHandlers(): void {
     if (!this.client) {
-return;
-}
+      return;
+    }
 
     this.client.on('messageCreate', (msg: DiscordMessageLike) => {
       if (msg.author.id === this.selfUserId) {
-return;
-}
+        return;
+      }
       if (msg.author.bot && !msg.webhookId) {
-return;
-}
+        return;
+      }
 
       const normalized = this.normalizeInboundMessage(msg);
       if (normalized) {
@@ -1617,23 +1697,26 @@ return;
       }
     });
 
-    this.client.on('messageUpdate', (_old: unknown, updated: DiscordMessageLike) => {
-      if (!updated.channel?.id || !updated.id) {
-return;
-}
-      this.emit('message_edited', {
-        channelId: this.id,
-        conversationId: updated.channel.id,
-        messageId: updated.id,
-        newContent: this.normalizeDiscordContent(updated),
-        timestamp: new Date(),
-      });
-    });
+    this.client.on(
+      'messageUpdate',
+      (_old: unknown, updated: DiscordMessageLike) => {
+        if (!updated.channel?.id || !updated.id) {
+          return;
+        }
+        this.emit('message_edited', {
+          channelId: this.id,
+          conversationId: updated.channel.id,
+          messageId: updated.id,
+          newContent: this.normalizeDiscordContent(updated),
+          timestamp: new Date(),
+        });
+      }
+    );
 
     this.client.on('messageDelete', (msg: DiscordMessageLike) => {
       if (!msg.channel?.id || !msg.id) {
-return;
-}
+        return;
+      }
       this.emit('message_deleted', {
         channelId: this.id,
         conversationId: msg.channel.id,
@@ -1652,7 +1735,7 @@ return;
           userId: user.id,
           emoji: reaction.emoji.name ?? '',
         });
-      },
+      }
     );
 
     this.client.on(
@@ -1665,24 +1748,30 @@ return;
           userId: user.id,
           emoji: reaction.emoji.name ?? '',
         });
-      },
+      }
     );
 
-    this.client.on('typingStart', (typing: { channel?: { id: string }; user?: { id: string } }) => {
-      if (!typing.channel?.id || !typing.user?.id) {
-return;
-}
-      this.emit('typing', {
-        channelId: this.id,
-        conversationId: typing.channel.id,
-        userId: typing.user.id,
-      });
-    });
+    this.client.on(
+      'typingStart',
+      (typing: { channel?: { id: string }; user?: { id: string } }) => {
+        if (!typing.channel?.id || !typing.user?.id) {
+          return;
+        }
+        this.emit('typing', {
+          channelId: this.id,
+          conversationId: typing.channel.id,
+          userId: typing.user.id,
+        });
+      }
+    );
 
     // Interaction handling (slash commands, buttons, select menus)
-    this.client.on('interactionCreate', (interaction: DiscordInteractionLike) => {
-      void this.handleInteraction(interaction);
-    });
+    this.client.on(
+      'interactionCreate',
+      (interaction: DiscordInteractionLike) => {
+        void this.handleInteraction(interaction);
+      }
+    );
 
     this.client.on('error', (err: Error) => {
       this.lastError = err.message;
@@ -1701,45 +1790,50 @@ return;
 
   private setupReconnectHandlers(): void {
     if (!this.client) {
-return;
-}
+      return;
+    }
 
     // Track session ID + sequence for resume
     this.client.on('ready', () => {
       const wsObj = this.client?.ws as Record<string, unknown> | undefined;
-      const shardsObj = wsObj?.['shards'] as { first?: () => { sessionId?: string } } | undefined;
+      const shardsObj = wsObj?.['shards'] as
+        | { first?: () => { sessionId?: string } }
+        | undefined;
       this.reconnectState.sessionId = shardsObj?.first?.()?.sessionId ?? null;
       this.reconnectState.sequence = null;
       this.reconnectState.attempts = 0;
       this.reconnectState.backoffMs = 1000;
     });
 
-    this.client.on('shardDisconnect', (event: { code: number }, shardId: number) => {
-      this.logger.warn(
-        `Discord shard ${shardId} disconnected with code ${event.code}.`,
-      );
-
-      // Non-resumable close codes: 4004 (auth failed), 4010 (invalid shard),
-      // 4011 (sharding required), 4013 (invalid intents), 4014 (disallowed intents)
-      const NON_RESUMABLE = [4004, 4010, 4011, 4013, 4014];
-      if (NON_RESUMABLE.includes(event.code)) {
-        this.logger.error(
-          `Non-resumable close code ${event.code}. Not attempting reconnect.`,
+    this.client.on(
+      'shardDisconnect',
+      (event: { code: number }, shardId: number) => {
+        this.logger.warn(
+          `Discord shard ${shardId} disconnected with code ${event.code}.`
         );
-        this.connected = false;
-        this.emit('disconnected', {
-          channelId: this.id,
-          accountId: this.selfUserId ?? undefined,
-          reason: `Close code ${event.code}`,
-        });
-        return;
-      }
 
-      // discord.js handles automatic reconnection for most codes, but
-      // we track state so health checks can report it.
-      this.reconnectState.attempts += 1;
-      this.reconnectState.lastAttemptAt = Date.now();
-    });
+        // Non-resumable close codes: 4004 (auth failed), 4010 (invalid shard),
+        // 4011 (sharding required), 4013 (invalid intents), 4014 (disallowed intents)
+        const NON_RESUMABLE = [4004, 4010, 4011, 4013, 4014];
+        if (NON_RESUMABLE.includes(event.code)) {
+          this.logger.error(
+            `Non-resumable close code ${event.code}. Not attempting reconnect.`
+          );
+          this.connected = false;
+          this.emit('disconnected', {
+            channelId: this.id,
+            accountId: this.selfUserId ?? undefined,
+            reason: `Close code ${event.code}`,
+          });
+          return;
+        }
+
+        // discord.js handles automatic reconnection for most codes, but
+        // we track state so health checks can report it.
+        this.reconnectState.attempts += 1;
+        this.reconnectState.lastAttemptAt = Date.now();
+      }
+    );
 
     this.client.on('shardReconnecting', (shardId: number) => {
       this.logger.info(`Discord shard ${shardId} reconnecting...`);
@@ -1747,7 +1841,7 @@ return;
 
     this.client.on('shardResume', (shardId: number, replayedEvents: number) => {
       this.logger.info(
-        `Discord shard ${shardId} resumed. Replayed ${replayedEvents} events.`,
+        `Discord shard ${shardId} resumed. Replayed ${replayedEvents} events.`
       );
       this.connected = true;
       this.reconnectState.attempts = 0;
@@ -1764,11 +1858,13 @@ return;
   // Interaction Dispatch
   // -----------------------------------------------------------------------
 
-  private async handleInteraction(interaction: DiscordInteractionLike): Promise<void> {
+  private async handleInteraction(
+    interaction: DiscordInteractionLike
+  ): Promise<void> {
     const event = this.normalizeInteraction(interaction);
     if (!event) {
-return;
-}
+      return;
+    }
 
     const key = event.commandName ?? event.customId ?? '';
     const handler = this.interactionHandlers.get(key);
@@ -1778,7 +1874,7 @@ return;
         await handler(event);
       } catch (err) {
         this.logger.error(
-          `Interaction handler "${key}" error: ${err instanceof Error ? err.message : String(err)}`,
+          `Interaction handler "${key}" error: ${err instanceof Error ? err.message : String(err)}`
         );
       }
     } else {
@@ -1787,11 +1883,11 @@ return;
   }
 
   private normalizeInteraction(
-    interaction: DiscordInteractionLike,
+    interaction: DiscordInteractionLike
   ): DiscordInteractionEvent | null {
     if (!interaction.id) {
-return null;
-}
+      return null;
+    }
 
     let type: DiscordInteractionEvent['type'];
     let commandName: string | undefined;
@@ -1813,7 +1909,10 @@ return null;
     } else if (interaction.isButton?.()) {
       type = 'button';
       customId = interaction.customId;
-    } else if (interaction.isStringSelectMenu?.() || interaction.isSelectMenu?.()) {
+    } else if (
+      interaction.isStringSelectMenu?.() ||
+      interaction.isSelectMenu?.()
+    ) {
       type = 'select_menu';
       customId = interaction.customId;
     } else {
@@ -1838,11 +1937,11 @@ return null;
   // -----------------------------------------------------------------------
 
   private normalizeInboundMessage(
-    msg: DiscordMessageLike,
+    msg: DiscordMessageLike
   ): NormalizedMessage | null {
     if (!msg.channel?.id || !msg.id) {
-return null;
-}
+      return null;
+    }
 
     const chatType = this.resolveDiscordChatType(msg);
     const sender = this.normalizeDiscordSender(msg);
@@ -1866,11 +1965,11 @@ return null;
 
   private resolveDiscordChatType(msg: DiscordMessageLike): ChatType {
     if (msg.channel?.isThread?.()) {
-return 'thread';
-}
+      return 'thread';
+    }
     if (msg.channel?.isDMBased?.()) {
-return 'direct';
-}
+      return 'direct';
+    }
     return 'channel';
   }
 
@@ -1878,7 +1977,9 @@ return 'direct';
     return {
       id: msg.author.id,
       displayName:
-        msg.member?.displayName ?? msg.author.displayName ?? msg.author.username,
+        msg.member?.displayName ??
+        msg.author.displayName ??
+        msg.author.username,
       username: msg.author.username,
       isSelf: msg.author.id === this.selfUserId,
       isBot: msg.author.bot ?? false,
@@ -1905,7 +2006,7 @@ return 'direct';
 
   private extractDiscordMentions(
     text: string,
-    msg: DiscordMessageLike,
+    msg: DiscordMessageLike
   ): string[] {
     const mentionedIds: string[] = [];
 
@@ -1913,8 +2014,8 @@ return 'direct';
     let regexMatch: RegExpExecArray | null;
     while ((regexMatch = mentionRegex.exec(text)) !== null) {
       if (regexMatch[1]) {
-mentionedIds.push(regexMatch[1]);
-}
+        mentionedIds.push(regexMatch[1]);
+      }
     }
 
     if (msg.mentions?.users) {
@@ -1929,14 +2030,14 @@ mentionedIds.push(regexMatch[1]);
   }
 
   private extractDiscordAttachments(
-    msg: DiscordMessageLike,
+    msg: DiscordMessageLike
   ): NormalizedAttachment[] {
     if (!msg.attachments) {
-return [];
-}
+      return [];
+    }
 
     const result: NormalizedAttachment[] = [];
-    msg.attachments.forEach((attachment) => {
+    msg.attachments.forEach(attachment => {
       result.push({
         type: resolveAttachmentType(attachment.contentType ?? undefined),
         filename: attachment.name ?? 'unknown',
@@ -1952,9 +2053,9 @@ return [];
   /** Strip user/channel/role mentions from text (matching OpenClaw's stripPatterns). */
   private stripDiscordMentions(text: string): string {
     return text
-      .replace(/<@!?\d+>/g, '')  // user mentions
-      .replace(/<#\d+>/g, '')    // channel mentions
-      .replace(/<@&\d+>/g, '')   // role mentions
+      .replace(/<@!?\d+>/g, '') // user mentions
+      .replace(/<#\d+>/g, '') // channel mentions
+      .replace(/<@&\d+>/g, '') // role mentions
       .trim();
   }
 
@@ -1965,15 +2066,15 @@ return [];
   private requireConnected(): void {
     if (!this.connected || !this.client) {
       throw new Error(
-        'Discord adapter is not connected. Call connect() first.',
+        'Discord adapter is not connected. Call connect() first.'
       );
     }
   }
 
   private async fetchChannel(id: string): Promise<DiscordChannelLike | null> {
     if (!this.client) {
-return null;
-}
+      return null;
+    }
     try {
       return await this.client.channels.fetch(id);
     } catch {
@@ -1983,23 +2084,27 @@ return null;
 
   private getVoiceConnectionCount(): number {
     if (!this.client) {
-return 0;
-}
+      return 0;
+    }
     try {
       let count = 0;
-      const guildsCache = this.client.guilds?.cache as unknown as Map<string, Record<string, unknown>> | undefined;
+      const guildsCache = this.client.guilds?.cache as unknown as
+        | Map<string, Record<string, unknown>>
+        | undefined;
       if (!guildsCache) {
-return 0;
-}
-      guildsCache.forEach((guild) => {
-        const voiceStatesObj = guild['voiceStates'] as { cache?: Map<string, Record<string, unknown>> } | undefined;
+        return 0;
+      }
+      guildsCache.forEach(guild => {
+        const voiceStatesObj = guild['voiceStates'] as
+          | { cache?: Map<string, Record<string, unknown>> }
+          | undefined;
         const voiceStates = voiceStatesObj?.cache;
         if (voiceStates) {
           let found = false;
-          voiceStates.forEach((state) => {
+          voiceStates.forEach(state => {
             if (found) {
-return;
-}
+              return;
+            }
             const memberObj = state['member'] as { id?: string } | undefined;
             if (memberObj?.id === this.selfUserId) {
               count++;
@@ -2022,7 +2127,7 @@ return;
   static chunkText(
     text: string,
     maxChars: number = DISCORD_MAX_CHARS,
-    maxLines: number = DISCORD_MAX_LINES,
+    maxLines: number = DISCORD_MAX_LINES
   ): string[] {
     return chunkDiscordText(text, maxChars, maxLines);
   }
@@ -2102,7 +2207,7 @@ interface DiscordChannelLike {
       reactions: {
         cache: {
           find(
-            fn: (r: { emoji: { name: string | null } }) => boolean,
+            fn: (r: { emoji: { name: string | null } }) => boolean
           ): { users: { remove(id: string): Promise<void> } } | undefined;
         };
       };
@@ -2181,24 +2286,27 @@ interface DiscordAttachmentLike {
 // ---------------------------------------------------------------------------
 
 function isTextChannel(channel: unknown): channel is DiscordChannelLike {
-  return channel !== null && typeof (channel as { send?: unknown }).send === 'function';
+  return (
+    channel !== null &&
+    typeof (channel as { send?: unknown }).send === 'function'
+  );
 }
 
 function resolveAttachmentType(
-  mimeType?: string,
+  mimeType?: string
 ): 'image' | 'video' | 'audio' | 'file' {
   if (!mimeType) {
-return 'file';
-}
+    return 'file';
+  }
   if (mimeType.startsWith('image/')) {
-return 'image';
-}
+    return 'image';
+  }
   if (mimeType.startsWith('video/')) {
-return 'video';
-}
+    return 'video';
+  }
   if (mimeType.startsWith('audio/')) {
-return 'audio';
-}
+    return 'audio';
+  }
   return 'file';
 }
 
@@ -2217,11 +2325,11 @@ function buildDiscordAttachment(a: OutboundAttachment): DiscordAttachmentLike {
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) {
-return `${bytes} B`;
-}
+    return `${bytes} B`;
+  }
   if (bytes < 1024 * 1024) {
-return `${(bytes / 1024).toFixed(1)} KB`;
-}
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
@@ -2239,7 +2347,7 @@ async function importDiscordJs(): Promise<{
     return await import('discord.js');
   } catch {
     throw new Error(
-      'discord.js is not installed. Run `npm install discord.js` to use the Discord adapter.',
+      'discord.js is not installed. Run `npm install discord.js` to use the Discord adapter.'
     );
   }
 }

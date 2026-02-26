@@ -1,6 +1,7 @@
 # Direct OpenAI Wrapper Usage
 
-The `direct-openai.ts` module provides a simple, working LLM call wrapper using the OpenAI SDK directly. This serves as a backup to `@adaptic/lumic-utils`.
+The `direct-openai.ts` module provides a simple, working LLM call wrapper using the OpenAI SDK
+directly. This serves as a backup to `@adaptic/lumic-utils`.
 
 ## Features
 
@@ -27,10 +28,10 @@ const response = await llmCall({
   model: 'gpt-4o-mini',
   messages: [
     { role: 'system', content: 'You are a helpful assistant.' },
-    { role: 'user', content: 'What is the capital of France?' }
+    { role: 'user', content: 'What is the capital of France?' },
   ],
   temperature: 0.7,
-  maxTokens: 100
+  maxTokens: 100,
 });
 
 console.log(response.content);
@@ -46,9 +47,7 @@ console.log(`Used ${response.usage.totalTokens} tokens`);
 import { llmCall } from '@wundr.io/orchestrator-daemon/llm';
 
 const response = await llmCall({
-  messages: [
-    { role: 'user', content: 'What is the weather in San Francisco?' }
-  ],
+  messages: [{ role: 'user', content: 'What is the weather in San Francisco?' }],
   tools: [
     {
       type: 'function',
@@ -60,14 +59,14 @@ const response = await llmCall({
           properties: {
             location: {
               type: 'string',
-              description: 'The city and state, e.g. San Francisco, CA'
-            }
+              description: 'The city and state, e.g. San Francisco, CA',
+            },
           },
-          required: ['location']
-        }
-      }
-    }
-  ]
+          required: ['location'],
+        },
+      },
+    },
+  ],
 });
 
 if (response.toolCalls && response.toolCalls.length > 0) {
@@ -86,17 +85,17 @@ const fastLLM = createLLMCall('gpt-4o-mini', 0.3);
 
 // Use it without specifying model/temperature each time
 const response1 = await fastLLM({
-  messages: [{ role: 'user', content: 'Quick question 1?' }]
+  messages: [{ role: 'user', content: 'Quick question 1?' }],
 });
 
 const response2 = await fastLLM({
-  messages: [{ role: 'user', content: 'Quick question 2?' }]
+  messages: [{ role: 'user', content: 'Quick question 2?' }],
 });
 
 // Override defaults if needed
 const response3 = await fastLLM({
   messages: [{ role: 'user', content: 'Creative response please' }],
-  temperature: 0.9  // Override the default 0.3
+  temperature: 0.9, // Override the default 0.3
 });
 ```
 
@@ -107,6 +106,7 @@ const response3 = await fastLLM({
 Makes a direct LLM call using the OpenAI SDK.
 
 **Parameters:**
+
 - `model?: string` - Model to use (default: 'gpt-4o-mini')
 - `messages: Array<{role: string, content: string}>` - Conversation messages
 - `tools?: any[]` - OpenAI function/tool definitions
@@ -114,6 +114,7 @@ Makes a direct LLM call using the OpenAI SDK.
 - `maxTokens?: number` - Maximum tokens to generate (default: 4096)
 
 **Returns:**
+
 ```typescript
 {
   content: string;
@@ -131,6 +132,7 @@ Makes a direct LLM call using the OpenAI SDK.
 ```
 
 **Throws:**
+
 - `Error` if `OPENAI_API_KEY` environment variable is not set
 - `Error` if the API call fails
 
@@ -139,11 +141,11 @@ Makes a direct LLM call using the OpenAI SDK.
 Creates a configured LLM call function with default parameters.
 
 **Parameters:**
+
 - `defaultModel?: string` - Default model to use
 - `defaultTemperature?: number` - Default temperature
 
-**Returns:**
-A function with the same signature as `llmCall` but with defaults applied.
+**Returns:** A function with the same signature as `llmCall` but with defaults applied.
 
 ## Environment Variables
 
@@ -170,7 +172,7 @@ The wrapper includes comprehensive error handling:
 ```typescript
 try {
   const response = await llmCall({
-    messages: [{ role: 'user', content: 'Hello' }]
+    messages: [{ role: 'user', content: 'Hello' }],
   });
   console.log(response.content);
 } catch (error) {
@@ -184,12 +186,12 @@ try {
 
 ## Comparison with @adaptic/lumic-utils
 
-| Feature | direct-openai | @adaptic/lumic-utils |
-|---------|---------------|----------------------|
-| Setup complexity | Simple | More complex |
-| Dependencies | openai only | Multiple |
-| API surface | Minimal | Full-featured |
-| Use case | Backup/simple | Primary/advanced |
+| Feature          | direct-openai | @adaptic/lumic-utils |
+| ---------------- | ------------- | -------------------- |
+| Setup complexity | Simple        | More complex         |
+| Dependencies     | openai only   | Multiple             |
+| API surface      | Minimal       | Full-featured        |
+| Use case         | Backup/simple | Primary/advanced     |
 
 ## Migration from other wrappers
 
@@ -197,13 +199,13 @@ try {
 // Before (hypothetical wrapper)
 const response = await someWrapper.call({
   prompt: 'Hello',
-  model: 'gpt-4'
+  model: 'gpt-4',
 });
 
 // After (direct-openai)
 const response = await llmCall({
   messages: [{ role: 'user', content: 'Hello' }],
-  model: 'gpt-4'
+  model: 'gpt-4',
 });
 ```
 

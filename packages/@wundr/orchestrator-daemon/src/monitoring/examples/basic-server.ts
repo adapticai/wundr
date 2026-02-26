@@ -31,19 +31,19 @@ async function main() {
     // Update active sessions
     daemonMetrics.sessionsActive.set(
       { orchestrator_id: 'orch-1', session_type: 'claude-code' },
-      Math.floor(Math.random() * 10),
+      Math.floor(Math.random() * 10)
     );
 
     // Record token usage
     daemonMetrics.tokensUsed.inc(
       { orchestrator_id: 'orch-1', model: 'claude-sonnet-4' },
-      Math.floor(Math.random() * 1000),
+      Math.floor(Math.random() * 1000)
     );
 
     // Record latency
     daemonMetrics.messageLatency.observe(
       { orchestrator_id: 'orch-1' },
-      Math.random() * 2,
+      Math.random() * 2
     );
 
     console.log('Updated metrics...');

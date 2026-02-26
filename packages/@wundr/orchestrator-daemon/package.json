@@ -100,12 +100,7 @@
   "bin": {
     "orchestrator-daemon": "./bin/orchestrator-daemon.js"
   },
-  "files": [
-    "dist",
-    "bin",
-    "src",
-    "README.md"
-  ],
+  "files": ["dist", "bin", "src", "README.md"],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",

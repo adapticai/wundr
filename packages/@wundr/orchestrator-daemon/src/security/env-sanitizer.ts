@@ -377,7 +377,8 @@ const DEFAULT_TRUSTED_PATH_DIRS: readonly string[] = [
  * Default PATH used when the original PATH is entirely stripped.
  * Matches OpenClaw's DEFAULT_PATH.
  */
-const FALLBACK_PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin';
+const FALLBACK_PATH =
+  '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin';
 
 /**
  * Maximum length for an environment variable value before it is
@@ -412,14 +413,14 @@ const defaultLogger = new Logger('EnvSanitizer');
  */
 function resolveDangerousVars(platform: NodeJS.Platform): ReadonlySet<string> {
   const combined = new Set(
-    [...DANGEROUS_ENV_VARS_UNIVERSAL].map((v) => v.toUpperCase()),
+    [...DANGEROUS_ENV_VARS_UNIVERSAL].map(v => v.toUpperCase())
   );
 
   switch (platform) {
     case 'darwin':
       for (const v of DANGEROUS_ENV_VARS_MACOS) {
-combined.add(v.toUpperCase());
-}
+        combined.add(v.toUpperCase());
+      }
       break;
     case 'linux':
     case 'freebsd':
@@ -427,22 +428,22 @@ combined.add(v.toUpperCase());
     case 'sunos':
     case 'aix':
       for (const v of DANGEROUS_ENV_VARS_LINUX) {
-combined.add(v.toUpperCase());
-}
+        combined.add(v.toUpperCase());
+      }
       break;
     case 'win32':
       for (const v of DANGEROUS_ENV_VARS_WINDOWS) {
-combined.add(v.toUpperCase());
-}
+        combined.add(v.toUpperCase());
+      }
       break;
     default:
       // Conservative: include both Linux and macOS lists on unknown platforms
       for (const v of DANGEROUS_ENV_VARS_LINUX) {
-combined.add(v.toUpperCase());
-}
+        combined.add(v.toUpperCase());
+      }
       for (const v of DANGEROUS_ENV_VARS_MACOS) {
-combined.add(v.toUpperCase());
-}
+        combined.add(v.toUpperCase());
+      }
       break;
   }
 
@@ -452,7 +453,9 @@ combined.add(v.toUpperCase());
 /**
  * Resolve the combined set of dangerous variable prefixes for the given platform.
  */
-function resolveDangerousPrefixes(platform: NodeJS.Platform): readonly string[] {
+function resolveDangerousPrefixes(
+  platform: NodeJS.Platform
+): readonly string[] {
   const prefixes = [...DANGEROUS_PREFIXES_UNIVERSAL];
 
   switch (platform) {
@@ -498,7 +501,7 @@ function redactEnvValue(value: string): string {
 function isPathEntryTrusted(
   entry: string,
   trustedDirs: readonly string[],
-  homeDir: string,
+  homeDir: string
 ): boolean {
   const normalized = entry.replace(/\/+$/, '');
   if (!normalized) {
@@ -524,7 +527,10 @@ function isPathEntryTrusted(
   }
 
   // System package manager paths
-  if (normalized.startsWith('/usr/lib/') || normalized.startsWith('/usr/share/')) {
+  if (
+    normalized.startsWith('/usr/lib/') ||
+    normalized.startsWith('/usr/share/')
+  ) {
     return true;
   }
 
@@ -587,7 +593,7 @@ function detectInjection(key: string, value: string): string | null {
  */
 export function sanitizeEnv(
   env: Record<string, string>,
-  config?: EnvSanitizerConfig,
+  config?: EnvSanitizerConfig
 ): EnvSanitizeResult {
   const platform = config?.platform ?? (process.platform as NodeJS.Platform);
   const logger = config?.logger ?? defaultLogger;
@@ -601,18 +607,19 @@ export function sanitizeEnv(
   const dangerousVars = resolveDangerousVars(platform);
   const dangerousPrefixes = resolveDangerousPrefixes(platform);
   const configDenylist = new Set(
-    (config?.denylist ?? []).map((v) => v.toUpperCase()),
+    (config?.denylist ?? []).map(v => v.toUpperCase())
   );
-  const configDenyPrefixes = (config?.denyPrefixes ?? []).map((p) =>
-    p.toUpperCase(),
+  const configDenyPrefixes = (config?.denyPrefixes ?? []).map(p =>
+    p.toUpperCase()
   );
 
   // Build the effective allowlist (if configured)
-  const hasAllowlist = Array.isArray(config?.allowlist) && config!.allowlist.length > 0;
+  const hasAllowlist =
+    Array.isArray(config?.allowlist) && config!.allowlist.length > 0;
   const allowlistSet = hasAllowlist
     ? new Set([
-        ...config!.allowlist!.map((v) => v.toUpperCase()),
-        ...[...ALWAYS_ALLOWED_VARS].map((v) => v.toUpperCase()),
+        ...config!.allowlist!.map(v => v.toUpperCase()),
+        ...[...ALWAYS_ALLOWED_VARS].map(v => v.toUpperCase()),
       ])
     : null;
 
@@ -666,7 +673,7 @@ export function sanitizeEnv(
 
     // 2. Check dangerous prefixes
     const matchedPrefix = [...dangerousPrefixes, ...configDenyPrefixes].find(
-      (prefix) => upperKey.startsWith(prefix.toUpperCase()),
+      prefix => upperKey.startsWith(prefix.toUpperCase())
     );
     if (matchedPrefix) {
       blocked.push({
@@ -674,7 +681,9 @@ export function sanitizeEnv(
         reason: 'dangerous_prefix',
         redactedValue: redactEnvValue(value),
       });
-      logger.warn(`Blocked env var with dangerous prefix: ${key} (prefix: ${matchedPrefix})`);
+      logger.warn(
+        `Blocked env var with dangerous prefix: ${key} (prefix: ${matchedPrefix})`
+      );
       emitAudit({
         timestamp: Date.now(),
         severity: 'critical',
@@ -811,13 +820,13 @@ export function sanitizeEnv(
 export function sanitizePath(
   pathValue: string,
   trustedDirs?: readonly string[],
-  homeDir?: string,
+  homeDir?: string
 ): string {
   const dirs = trustedDirs ?? DEFAULT_TRUSTED_PATH_DIRS;
   const home = homeDir ?? os.homedir();
   const entries = pathValue.split(path.delimiter).filter(Boolean);
 
-  const safe = entries.filter((entry) => isPathEntryTrusted(entry, dirs, home));
+  const safe = entries.filter(entry => isPathEntryTrusted(entry, dirs, home));
 
   if (safe.length === 0) {
     return FALLBACK_PATH;
@@ -843,16 +852,16 @@ export function sanitizePath(
  */
 export function validateEnvForExec(
   env: Record<string, string>,
-  config?: Pick<EnvSanitizerConfig, 'platform' | 'denylist' | 'denyPrefixes'>,
+  config?: Pick<EnvSanitizerConfig, 'platform' | 'denylist' | 'denyPrefixes'>
 ): void {
   const platform = config?.platform ?? (process.platform as NodeJS.Platform);
   const dangerousVars = resolveDangerousVars(platform);
   const dangerousPrefixes = resolveDangerousPrefixes(platform);
   const configDenylist = new Set(
-    (config?.denylist ?? []).map((v) => v.toUpperCase()),
+    (config?.denylist ?? []).map(v => v.toUpperCase())
   );
-  const configDenyPrefixes = (config?.denyPrefixes ?? []).map((p) =>
-    p.toUpperCase(),
+  const configDenyPrefixes = (config?.denyPrefixes ?? []).map(p =>
+    p.toUpperCase()
   );
 
   for (const key of Object.keys(env)) {
@@ -867,19 +876,19 @@ export function validateEnvForExec(
       throw new EnvSecurityError(
         `Environment variable '${key}' is forbidden during host execution`,
         key,
-        'dangerous_variable',
+        'dangerous_variable'
       );
     }
 
     // Dangerous prefixes
     const matchedPrefix = [...dangerousPrefixes, ...configDenyPrefixes].find(
-      (prefix) => upperKey.startsWith(prefix.toUpperCase()),
+      prefix => upperKey.startsWith(prefix.toUpperCase())
     );
     if (matchedPrefix) {
       throw new EnvSecurityError(
         `Environment variable '${key}' is forbidden during host execution (prefix: ${matchedPrefix})`,
         key,
-        'dangerous_prefix',
+        'dangerous_prefix'
       );
     }
 
@@ -888,7 +897,7 @@ export function validateEnvForExec(
       throw new EnvSecurityError(
         "Custom 'PATH' variable is forbidden during host execution",
         key,
-        'path_modification_blocked',
+        'path_modification_blocked'
       );
     }
 
@@ -898,7 +907,7 @@ export function validateEnvForExec(
       throw new EnvSecurityError(
         `Environment variable '${key}' contains a potential injection: ${injectionReason}`,
         key,
-        'injection_detected',
+        'injection_detected'
       );
     }
   }
@@ -937,7 +946,7 @@ export function buildSubprocessEnv(
     cwd?: string;
     /** Base environment to start from. Defaults to process.env. */
     baseEnv?: Record<string, string>;
-  },
+  }
 ): EnvSanitizeResult {
   const baseEnv = config?.baseEnv ?? (process.env as Record<string, string>);
   const trustedPathDirs = config?.trustedPathDirs ?? DEFAULT_TRUSTED_PATH_DIRS;
@@ -951,7 +960,8 @@ export function buildSubprocessEnv(
   });
 
   // Phase 2: Ensure PATH exists and is sanitized
-  const currentPath = baseResult.env.PATH ?? baseResult.env.Path ?? FALLBACK_PATH;
+  const currentPath =
+    baseResult.env.PATH ?? baseResult.env.Path ?? FALLBACK_PATH;
   const safePath = sanitizePath(currentPath, trustedPathDirs, homeDir);
   baseResult.env.PATH = safePath;
 
@@ -1019,7 +1029,7 @@ export function buildSubprocessEnv(
  * @returns     A new map with values redacted or truncated.
  */
 export function redactEnvForLogging(
-  env: Record<string, string>,
+  env: Record<string, string>
 ): Record<string, string> {
   const result: Record<string, string> = {};
 
@@ -1085,7 +1095,7 @@ export function isSensitiveEnvVar(key: string): boolean {
     /^DB_/,
   ];
 
-  return sensitivePatterns.some((p) => p.test(upper));
+  return sensitivePatterns.some(p => p.test(upper));
 }
 
 // ============================================================================
@@ -1100,7 +1110,9 @@ export function isSensitiveEnvVar(key: string): boolean {
  * @returns          A sorted array of dangerous variable names.
  */
 export function getDangerousVarList(platform?: NodeJS.Platform): string[] {
-  const vars = resolveDangerousVars(platform ?? (process.platform as NodeJS.Platform));
+  const vars = resolveDangerousVars(
+    platform ?? (process.platform as NodeJS.Platform)
+  );
   return [...vars].sort();
 }
 
@@ -1111,7 +1123,11 @@ export function getDangerousVarList(platform?: NodeJS.Platform): string[] {
  * @returns          An array of dangerous prefixes.
  */
 export function getDangerousPrefixList(platform?: NodeJS.Platform): string[] {
-  return [...resolveDangerousPrefixes(platform ?? (process.platform as NodeJS.Platform))];
+  return [
+    ...resolveDangerousPrefixes(
+      platform ?? (process.platform as NodeJS.Platform)
+    ),
+  ];
 }
 
 // ============================================================================
@@ -1126,7 +1142,11 @@ export class EnvSecurityError extends Error {
   public readonly variableKey: string;
   public readonly blockReason: EnvBlockReason;
 
-  constructor(message: string, variableKey: string, blockReason: EnvBlockReason) {
+  constructor(
+    message: string,
+    variableKey: string,
+    blockReason: EnvBlockReason
+  ) {
     super(message);
     this.name = 'EnvSecurityError';
     this.variableKey = variableKey;
@@ -1151,7 +1171,7 @@ export class EnvSecurityError extends Error {
  */
 export function checkEnvForApproval(
   env: Record<string, string>,
-  config?: EnvSanitizerConfig,
+  config?: EnvSanitizerConfig
 ): {
   approved: boolean;
   blockedCount: number;
@@ -1167,12 +1187,12 @@ export function checkEnvForApproval(
     'injection_detected',
   ];
 
-  const criticalBlocked = result.blocked.filter((b) =>
-    criticalReasons.includes(b.reason),
+  const criticalBlocked = result.blocked.filter(b =>
+    criticalReasons.includes(b.reason)
   );
 
   if (criticalBlocked.length > 0) {
-    const names = criticalBlocked.map((b) => b.key).join(', ');
+    const names = criticalBlocked.map(b => b.key).join(', ');
     return {
       approved: false,
       blockedCount: result.blocked.length,

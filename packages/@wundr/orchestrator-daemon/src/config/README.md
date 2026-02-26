@@ -47,6 +47,7 @@ console.log(config.openai.apiKey); // sk-...
 ### Required Configuration
 
 #### OpenAI API
+
 ```typescript
 {
   openai: {
@@ -61,25 +62,27 @@ console.log(config.openai.apiKey); // sk-...
 ### Core Configuration
 
 #### Daemon Settings
+
 ```typescript
 {
   daemon: {
-    name: string;        // DAEMON_NAME (default: orchestrator-daemon)
-    port: number;        // DAEMON_PORT (default: 8787)
-    host: string;        // DAEMON_HOST (default: 127.0.0.1)
+    name: string; // DAEMON_NAME (default: orchestrator-daemon)
+    port: number; // DAEMON_PORT (default: 8787)
+    host: string; // DAEMON_HOST (default: 127.0.0.1)
     maxSessions: number; // DAEMON_MAX_SESSIONS (default: 100)
-    verbose: boolean;    // DAEMON_VERBOSE (default: false)
+    verbose: boolean; // DAEMON_VERBOSE (default: false)
   }
 }
 ```
 
 #### Health Configuration
+
 ```typescript
 {
   health: {
-    heartbeatInterval: number;    // DAEMON_HEARTBEAT_INTERVAL (default: 30000)
-    healthCheckInterval: number;  // DAEMON_HEALTH_CHECK_INTERVAL (default: 60000)
-    shutdownTimeout: number;      // DAEMON_SHUTDOWN_TIMEOUT (default: 10000)
+    heartbeatInterval: number; // DAEMON_HEARTBEAT_INTERVAL (default: 30000)
+    healthCheckInterval: number; // DAEMON_HEALTH_CHECK_INTERVAL (default: 60000)
+    shutdownTimeout: number; // DAEMON_SHUTDOWN_TIMEOUT (default: 10000)
   }
 }
 ```
@@ -87,6 +90,7 @@ console.log(config.openai.apiKey); // sk-...
 ### Optional Configuration
 
 #### Redis (for distributed features)
+
 ```typescript
 {
   redis?: {
@@ -99,6 +103,7 @@ console.log(config.openai.apiKey); // sk-...
 ```
 
 #### Database (for persistence)
+
 ```typescript
 {
   database?: {
@@ -110,6 +115,7 @@ console.log(config.openai.apiKey); // sk-...
 ```
 
 #### Distributed Features
+
 ```typescript
 {
   distributed?: {
@@ -122,6 +128,7 @@ console.log(config.openai.apiKey); // sk-...
 ```
 
 #### Security
+
 ```typescript
 {
   security: {
@@ -141,6 +148,7 @@ console.log(config.openai.apiKey); // sk-...
 ```
 
 #### Monitoring
+
 ```typescript
 {
   monitoring: {
@@ -189,8 +197,8 @@ const sameConfig = getConfig();
 
 ### `validateRequiredEnv(): void`
 
-Validates only required environment variables without loading full config.
-Useful for early validation before application startup.
+Validates only required environment variables without loading full config. Useful for early
+validation before application startup.
 
 ```typescript
 import { validateRequiredEnv } from './config';
@@ -278,9 +286,9 @@ All configuration is fully typed:
 const config = getConfig();
 
 // TypeScript knows the exact types
-config.daemon.port;        // number
-config.openai.apiKey;      // string
-config.redis?.url;         // string | undefined
+config.daemon.port; // number
+config.openai.apiKey; // string
+config.redis?.url; // string | undefined
 config.monitoring.metrics.enabled; // boolean
 ```
 
@@ -329,7 +337,8 @@ DAEMON_JWT_SECRET=your-production-secret-at-least-32-characters-long
 1. **Never commit `.env` files** - Use `.env.example` as a template
 2. **Use strong JWT secrets** - Minimum 32 characters, random
 3. **Change defaults in production** - Especially JWT secret
-4. **Use secrets managers** - For production deployments (AWS Secrets Manager, HashiCorp Vault, etc.)
+4. **Use secrets managers** - For production deployments (AWS Secrets Manager, HashiCorp Vault,
+   etc.)
 5. **Restrict CORS origins** - Only allow necessary origins
 6. **Enable rate limiting** - Protect against abuse
 
@@ -364,7 +373,8 @@ Error: Configuration validation failed:
 
 ### dotenv Not Found
 
-The config loader will work without dotenv - it will just use environment variables directly. To use `.env` files, install dotenv:
+The config loader will work without dotenv - it will just use environment variables directly. To use
+`.env` files, install dotenv:
 
 ```bash
 pnpm add dotenv

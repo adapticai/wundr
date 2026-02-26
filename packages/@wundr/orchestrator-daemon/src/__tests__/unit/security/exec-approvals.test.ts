@@ -73,7 +73,7 @@ import {
 function makeSegment(
   argv: string[],
   execName?: string,
-  resolvedPath?: string,
+  resolvedPath?: string
 ): CommandSegment {
   const name = execName ?? argv[0] ?? '';
   return {
@@ -124,7 +124,9 @@ describe('exec-approvals', () => {
     });
 
     it('should parse a pipeline', () => {
-      const result = analyzeShellCommand({ command: 'cat file.txt | grep foo' });
+      const result = analyzeShellCommand({
+        command: 'cat file.txt | grep foo',
+      });
       expect(result.ok).toBe(true);
       expect(result.segments).toHaveLength(2);
       expect(result.segments[0].argv[0]).toBe('cat');
@@ -241,7 +243,9 @@ describe('exec-approvals', () => {
     });
 
     it('should handle pipeline with multiple stages', () => {
-      const result = analyzeShellCommand({ command: 'cat f | grep x | sort | uniq' });
+      const result = analyzeShellCommand({
+        command: 'cat f | grep x | sort | uniq',
+      });
       expect(result.ok).toBe(true);
       expect(result.segments).toHaveLength(4);
     });
@@ -436,7 +440,12 @@ describe('exec-approvals', () => {
     });
 
     it('should accept safe arguments', () => {
-      const result = detectArgumentInjection(['--verbose', '-n', '10', 'hello']);
+      const result = detectArgumentInjection([
+        '--verbose',
+        '-n',
+        '10',
+        'hello',
+      ]);
       expect(result.safe).toBe(true);
     });
 
@@ -469,7 +478,9 @@ describe('exec-approvals', () => {
     });
 
     it('should reject DYLD_INSERT_LIBRARIES', () => {
-      const result = checkEnvSafety({ DYLD_INSERT_LIBRARIES: '/tmp/evil.dylib' });
+      const result = checkEnvSafety({
+        DYLD_INSERT_LIBRARIES: '/tmp/evil.dylib',
+      });
       expect(result.safe).toBe(false);
     });
 
@@ -542,7 +553,11 @@ describe('exec-approvals', () => {
 
   describe('detectWritePath', () => {
     it('should detect write-capable binaries (cp)', () => {
-      const segment = makeSegment(['cp', 'src.txt', 'dest.txt'], 'cp', '/usr/bin/cp');
+      const segment = makeSegment(
+        ['cp', 'src.txt', 'dest.txt'],
+        'cp',
+        '/usr/bin/cp'
+      );
       const result = detectWritePath(segment);
       expect(result).toBe('dest.txt');
     });
@@ -561,7 +576,7 @@ describe('exec-approvals', () => {
       const segment = makeSegment(
         ['sed', '-i', 's/foo/bar/', 'file.txt'],
         'sed',
-        '/usr/bin/sed',
+        '/usr/bin/sed'
       );
       expect(detectWritePath(segment)).toBe('file.txt');
     });
@@ -570,7 +585,7 @@ describe('exec-approvals', () => {
       const segment = makeSegment(
         ['sed', '--in-place', 's/foo/bar/', 'file.txt'],
         'sed',
-        '/usr/bin/sed',
+        '/usr/bin/sed'
       );
       expect(detectWritePath(segment)).toBe('file.txt');
     });
@@ -579,7 +594,7 @@ describe('exec-approvals', () => {
       const segment = makeSegment(
         ['sed', 's/foo/bar/', 'file.txt'],
         'sed',
-        '/usr/bin/sed',
+        '/usr/bin/sed'
       );
       expect(detectWritePath(segment)).toBeNull();
     });
@@ -588,7 +603,7 @@ describe('exec-approvals', () => {
       const segment = makeSegment(
         ['chmod', '755', 'script.sh'],
         'chmod',
-        '/usr/bin/chmod',
+        '/usr/bin/chmod'
       );
       expect(detectWritePath(segment)).toBe('script.sh');
     });
@@ -597,7 +612,7 @@ describe('exec-approvals', () => {
       const segment = makeSegment(
         ['chown', 'user:group', 'file.txt'],
         'chown',
-        '/usr/bin/chown',
+        '/usr/bin/chown'
       );
       expect(detectWritePath(segment)).toBe('file.txt');
     });
@@ -620,7 +635,7 @@ describe('exec-approvals', () => {
       const segment = makeSegment(
         ['perl', '-pi', '-e', 's/foo/bar/', 'file.txt'],
         'perl',
-        '/usr/bin/perl',
+        '/usr/bin/perl'
       );
       // -pi contains -i and -p combined
       expect(detectWritePath(segment)).toBe('file.txt');
@@ -630,7 +645,7 @@ describe('exec-approvals', () => {
       const segment = makeSegment(
         ['sort', '-o', 'output.txt', 'input.txt'],
         'sort',
-        '/usr/bin/sort',
+        '/usr/bin/sort'
       );
       expect(detectWritePath(segment)).toBe('input.txt');
     });
@@ -668,19 +683,23 @@ describe('exec-approvals', () => {
 
     it('should check user-defined protected paths', () => {
       expect(
-        isWritePathProtected('/my/protected/dir/file.txt', ['/my/protected/dir']),
+        isWritePathProtected('/my/protected/dir/file.txt', [
+          '/my/protected/dir',
+        ])
       ).toBe(true);
     });
 
     it('should check user-defined protected paths with trailing slash', () => {
       expect(
-        isWritePathProtected('/my/protected/dir/file.txt', ['/my/protected/dir/']),
+        isWritePathProtected('/my/protected/dir/file.txt', [
+          '/my/protected/dir/',
+        ])
       ).toBe(true);
     });
 
     it('should not false-positive on partial path matches', () => {
       expect(
-        isWritePathProtected('/my/protected-extra/file.txt', ['/my/protected']),
+        isWritePathProtected('/my/protected-extra/file.txt', ['/my/protected'])
       ).toBe(false);
     });
 
@@ -923,9 +942,7 @@ describe('exec-approvals', () => {
 
   describe('matchAllowlist', () => {
     it('should match by bare binary name', () => {
-      const entries: AllowlistEntry[] = [
-        { id: '1', pattern: 'node' },
-      ];
+      const entries: AllowlistEntry[] = [{ id: '1', pattern: 'node' }];
       const resolution: CommandResolution = {
         rawExecutable: 'node',
         executableName: 'node',
@@ -959,9 +976,7 @@ describe('exec-approvals', () => {
     });
 
     it('should match double-star glob patterns', () => {
-      const entries: AllowlistEntry[] = [
-        { id: '1', pattern: '/usr/**/node' },
-      ];
+      const entries: AllowlistEntry[] = [{ id: '1', pattern: '/usr/**/node' }];
       const resolution: CommandResolution = {
         rawExecutable: 'node',
         executableName: 'node',
@@ -971,9 +986,7 @@ describe('exec-approvals', () => {
     });
 
     it('should return null when no match', () => {
-      const entries: AllowlistEntry[] = [
-        { id: '1', pattern: 'python' },
-      ];
+      const entries: AllowlistEntry[] = [{ id: '1', pattern: 'python' }];
       const resolution: CommandResolution = {
         rawExecutable: 'node',
         executableName: 'node',
@@ -983,9 +996,7 @@ describe('exec-approvals', () => {
     });
 
     it('should return null when resolution has no resolvedPath', () => {
-      const entries: AllowlistEntry[] = [
-        { id: '1', pattern: 'node' },
-      ];
+      const entries: AllowlistEntry[] = [{ id: '1', pattern: 'node' }];
       const resolution: CommandResolution = {
         rawExecutable: 'node',
         executableName: 'node',
@@ -1004,16 +1015,12 @@ describe('exec-approvals', () => {
     });
 
     it('should return null for null resolution', () => {
-      const entries: AllowlistEntry[] = [
-        { id: '1', pattern: 'node' },
-      ];
+      const entries: AllowlistEntry[] = [{ id: '1', pattern: 'node' }];
       expect(matchAllowlist(entries, null)).toBeNull();
     });
 
     it('should match case-insensitively for bare names', () => {
-      const entries: AllowlistEntry[] = [
-        { id: '1', pattern: 'Node' },
-      ];
+      const entries: AllowlistEntry[] = [{ id: '1', pattern: 'Node' }];
       const resolution: CommandResolution = {
         rawExecutable: 'node',
         executableName: 'node',
@@ -1122,7 +1129,9 @@ describe('exec-approvals', () => {
     });
 
     it('should match launchctl unload', () => {
-      expect(matchesDenylist('launchctl unload /Library/LaunchDaemons/foo.plist')).not.toBeNull();
+      expect(
+        matchesDenylist('launchctl unload /Library/LaunchDaemons/foo.plist')
+      ).not.toBeNull();
     });
   });
 
@@ -1154,12 +1163,20 @@ describe('exec-approvals', () => {
     });
 
     it('should not deny rm -rf on non-root paths', () => {
-      const segment = makeSegment(['rm', '-rf', '/tmp/build'], 'rm', '/usr/bin/rm');
+      const segment = makeSegment(
+        ['rm', '-rf', '/tmp/build'],
+        'rm',
+        '/usr/bin/rm'
+      );
       expect(matchesStructuralDeny(segment)).toBeNull();
     });
 
     it('should deny chmod 777 /', () => {
-      const segment = makeSegment(['chmod', '777', '/'], 'chmod', '/usr/bin/chmod');
+      const segment = makeSegment(
+        ['chmod', '777', '/'],
+        'chmod',
+        '/usr/bin/chmod'
+      );
       expect(matchesStructuralDeny(segment)).not.toBeNull();
     });
 
@@ -1167,13 +1184,17 @@ describe('exec-approvals', () => {
       const segment = makeSegment(
         ['chmod', '755', '/tmp/script.sh'],
         'chmod',
-        '/usr/bin/chmod',
+        '/usr/bin/chmod'
       );
       expect(matchesStructuralDeny(segment)).toBeNull();
     });
 
     it('should deny eval', () => {
-      const segment = makeSegment(['eval', 'echo hello'], 'eval', '/usr/bin/eval');
+      const segment = makeSegment(
+        ['eval', 'echo hello'],
+        'eval',
+        '/usr/bin/eval'
+      );
       expect(matchesStructuralDeny(segment)).not.toBeNull();
       expect(matchesStructuralDeny(segment)).toContain('eval');
     });
@@ -1193,11 +1214,7 @@ describe('exec-approvals', () => {
     });
 
     it('should detect rm with combined flags containing r and f', () => {
-      const segment = makeSegment(
-        ['rm', '-rfi', '/'],
-        'rm',
-        '/usr/bin/rm',
-      );
+      const segment = makeSegment(['rm', '-rfi', '/'], 'rm', '/usr/bin/rm');
       expect(matchesStructuralDeny(segment)).not.toBeNull();
     });
   });
@@ -1214,7 +1231,9 @@ describe('exec-approvals', () => {
     });
 
     it('should deny curl piped to sh', () => {
-      const state = makeState({ policy: { security: 'allowlist', ask: 'on-miss', askFallback: 'deny' } });
+      const state = makeState({
+        policy: { security: 'allowlist', ask: 'on-miss', askFallback: 'deny' },
+      });
       const result = gate.evaluate({
         state,
         toolName: 'bash_execute',
@@ -1225,7 +1244,9 @@ describe('exec-approvals', () => {
     });
 
     it('should deny wget piped to bash', () => {
-      const state = makeState({ policy: { security: 'allowlist', ask: 'on-miss', askFallback: 'deny' } });
+      const state = makeState({
+        policy: { security: 'allowlist', ask: 'on-miss', askFallback: 'deny' },
+      });
       const result = gate.evaluate({
         state,
         toolName: 'bash_execute',
@@ -1236,7 +1257,9 @@ describe('exec-approvals', () => {
     });
 
     it('should deny curl piped to python', () => {
-      const state = makeState({ policy: { security: 'allowlist', ask: 'on-miss', askFallback: 'deny' } });
+      const state = makeState({
+        policy: { security: 'allowlist', ask: 'on-miss', askFallback: 'deny' },
+      });
       const result = gate.evaluate({
         state,
         toolName: 'bash_execute',
@@ -1272,7 +1295,7 @@ describe('exec-approvals', () => {
           security: 'full',
           analysisOk: true,
           allowlistSatisfied: true,
-        }),
+        })
       ).toBe(true);
     });
 
@@ -1283,7 +1306,7 @@ describe('exec-approvals', () => {
           security: 'allowlist',
           analysisOk: true,
           allowlistSatisfied: false,
-        }),
+        })
       ).toBe(true);
     });
 
@@ -1294,7 +1317,7 @@ describe('exec-approvals', () => {
           security: 'allowlist',
           analysisOk: false,
           allowlistSatisfied: false,
-        }),
+        })
       ).toBe(true);
     });
 
@@ -1305,7 +1328,7 @@ describe('exec-approvals', () => {
           security: 'allowlist',
           analysisOk: true,
           allowlistSatisfied: false,
-        }),
+        })
       ).toBe(false);
     });
 
@@ -1316,7 +1339,7 @@ describe('exec-approvals', () => {
           security: 'allowlist',
           analysisOk: true,
           allowlistSatisfied: true,
-        }),
+        })
       ).toBe(false);
     });
 
@@ -1327,7 +1350,7 @@ describe('exec-approvals', () => {
           security: 'full',
           analysisOk: true,
           allowlistSatisfied: false,
-        }),
+        })
       ).toBe(false);
     });
   });
@@ -1512,7 +1535,7 @@ describe('exec-approvals', () => {
       // Small delay so timestamp differs
       recordAllowlistUse(state, entry, 'node --version', '/usr/local/bin/node');
 
-      const updated = state.allowlist.find((e) => e.id === entry.id)!;
+      const updated = state.allowlist.find(e => e.id === entry.id)!;
       expect(updated.lastUsedCommand).toBe('node --version');
       expect(updated.lastResolvedPath).toBe('/usr/local/bin/node');
       expect(updated.lastUsedAt).toBeGreaterThanOrEqual(originalTime!);
@@ -1568,9 +1591,7 @@ describe('exec-approvals', () => {
     });
 
     it('should accept initial allowlist', () => {
-      const entries: AllowlistEntry[] = [
-        { id: '1', pattern: '/usr/bin/node' },
-      ];
+      const entries: AllowlistEntry[] = [{ id: '1', pattern: '/usr/bin/node' }];
       const state = createApprovalState({ initialAllowlist: entries });
       expect(state.allowlist).toHaveLength(1);
     });
@@ -1689,7 +1710,9 @@ describe('exec-approvals', () => {
           state,
           toolName: 'bash_execute',
           toolParams: { command: 'node app.js' },
-          env: { NODE_OPTIONS: '--require evil.js' } as unknown as NodeJS.ProcessEnv,
+          env: {
+            NODE_OPTIONS: '--require evil.js',
+          } as unknown as NodeJS.ProcessEnv,
         });
         expect(result.verdict).toBe('deny');
       });
@@ -1783,7 +1806,11 @@ describe('exec-approvals', () => {
 
       it('should deny structural violations (eval)', () => {
         const state = makeState({
-          policy: { security: 'allowlist', ask: 'on-miss', askFallback: 'deny' },
+          policy: {
+            security: 'allowlist',
+            ask: 'on-miss',
+            askFallback: 'deny',
+          },
         });
         const result = gate.evaluate({
           state,
@@ -1796,7 +1823,11 @@ describe('exec-approvals', () => {
 
       it('should deny argument injection in command', () => {
         const state = makeState({
-          policy: { security: 'allowlist', ask: 'on-miss', askFallback: 'deny' },
+          policy: {
+            security: 'allowlist',
+            ask: 'on-miss',
+            askFallback: 'deny',
+          },
         });
         const result = gate.evaluate({
           state,
@@ -1809,7 +1840,11 @@ describe('exec-approvals', () => {
 
       it('should deny unparseable commands when askFallback is deny', () => {
         const state = makeState({
-          policy: { security: 'allowlist', ask: 'on-miss', askFallback: 'deny' },
+          policy: {
+            security: 'allowlist',
+            ask: 'on-miss',
+            askFallback: 'deny',
+          },
         });
         // A command with unmatched quotes
         const result = gate.evaluate({
@@ -1838,7 +1873,11 @@ describe('exec-approvals', () => {
 
       it('should prompt when command not in allowlist and ask is on-miss', () => {
         const state = makeState({
-          policy: { security: 'allowlist', ask: 'on-miss', askFallback: 'deny' },
+          policy: {
+            security: 'allowlist',
+            ask: 'on-miss',
+            askFallback: 'deny',
+          },
         });
         const result = gate.evaluate({
           state,
@@ -2176,7 +2215,7 @@ describe('exec-approvals', () => {
 
     it('should handle mixed quoting styles', () => {
       const result = analyzeShellCommand({
-        command: "echo 'single' \"double\" plain",
+        command: 'echo \'single\' "double" plain',
       });
       expect(result.ok).toBe(true);
       expect(result.segments[0].argv).toEqual([

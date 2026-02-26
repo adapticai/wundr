@@ -14,18 +14,13 @@
 
 import { EventEmitter } from 'eventemitter3';
 
-
 import { createAnthropicStream } from './anthropic-stream';
 import { BlockParser } from './block-parser';
 import { createOpenAIStream } from './openai-stream';
 import { Logger } from '../utils/logger';
 
 import type { BlockParserConfig, StreamEvent } from './block-parser';
-import type {
-  LLMClient,
-  ChatParams,
-  TokenUsage,
-} from '../types/llm';
+import type { LLMClient, ChatParams, TokenUsage } from '../types/llm';
 
 /**
  * Options for starting a stream.
@@ -131,15 +126,17 @@ export class StreamHandler extends EventEmitter {
     client: LLMClient,
     params: ChatParams,
     options?: StartStreamOptions,
-    sessionId?: string,
+    sessionId?: string
   ): ActiveStream {
-    const streamId = sessionId || `stream_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const streamId =
+      sessionId ||
+      `stream_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     const abortController = new AbortController();
 
     const provider = this.detectProvider(client, params, options);
 
     this.logger.info(
-      `Starting ${provider} stream for ${streamId} (model: ${params.model})`,
+      `Starting ${provider} stream for ${streamId} (model: ${params.model})`
     );
 
     const blockParser = options?.rawMode
@@ -158,7 +155,7 @@ export class StreamHandler extends EventEmitter {
       params,
       provider,
       abortController,
-      options,
+      options
     );
 
     // Create the processed event pipeline
@@ -168,7 +165,14 @@ export class StreamHandler extends EventEmitter {
       usage,
       streamId,
       options?.maxRetries ?? 2,
-      () => this.createProviderStream(client, params, provider, abortController, options),
+      () =>
+        this.createProviderStream(
+          client,
+          params,
+          provider,
+          abortController,
+          options
+        )
     );
 
     const internal: ActiveStreamInternal = {
@@ -241,7 +245,7 @@ export class StreamHandler extends EventEmitter {
   private detectProvider(
     client: LLMClient,
     params: ChatParams,
-    options?: StartStreamOptions,
+    options?: StartStreamOptions
   ): 'anthropic' | 'openai' {
     if (options?.provider) {
       return options.provider;
@@ -250,23 +254,23 @@ export class StreamHandler extends EventEmitter {
     // Check client.provider field
     const clientProvider = client.provider?.toLowerCase();
     if (clientProvider === 'anthropic') {
-return 'anthropic';
-}
+      return 'anthropic';
+    }
     if (clientProvider === 'openai') {
-return 'openai';
-}
+      return 'openai';
+    }
 
     // Infer from model name
     if (params.model.startsWith('claude-')) {
-return 'anthropic';
-}
+      return 'anthropic';
+    }
     if (params.model.startsWith('gpt-') || params.model.startsWith('o1-')) {
-return 'openai';
-}
+      return 'openai';
+    }
 
     // Default to OpenAI as it has broader model name compatibility
     this.logger.warn(
-      `Could not detect provider for model "${params.model}", defaulting to openai`,
+      `Could not detect provider for model "${params.model}", defaulting to openai`
     );
     return 'openai';
   }
@@ -279,7 +283,7 @@ return 'openai';
     params: ChatParams,
     provider: 'anthropic' | 'openai',
     abortController: AbortController,
-    options?: StartStreamOptions,
+    options?: StartStreamOptions
   ): AsyncGenerator<StreamEvent> {
     if (provider === 'anthropic') {
       // Access the underlying Anthropic SDK client.
@@ -316,7 +320,7 @@ return 'openai';
     usage: TokenUsage,
     streamId: string,
     maxRetries: number,
-    retryFactory: () => AsyncGenerator<StreamEvent>,
+    retryFactory: () => AsyncGenerator<StreamEvent>
   ): AsyncGenerator<StreamEvent> {
     let retryCount = 0;
     let currentEvents = rawEvents;
@@ -365,7 +369,7 @@ return 'openai';
 
             this.logger.warn(
               `Recoverable error on stream ${streamId}, retrying in ${retryAfter}ms ` +
-                `(attempt ${retryCount}/${maxRetries})`,
+                `(attempt ${retryCount}/${maxRetries})`
             );
 
             // Yield the error event so clients know about the retry
@@ -378,9 +382,7 @@ return 'openai';
             }
 
             // Wait before retrying
-            await new Promise<void>((resolve) =>
-              setTimeout(resolve, retryAfter),
-            );
+            await new Promise<void>(resolve => setTimeout(resolve, retryAfter));
 
             // Reset block parser state for retry
             blockParser?.reset();

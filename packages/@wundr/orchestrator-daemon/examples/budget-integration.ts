@@ -16,16 +16,16 @@ async function basicIntegration() {
   // Configure budget tracker
   const budgetConfig: BudgetConfig = {
     defaultBudget: {
-      hourly: 100000,   // 100k tokens per hour
-      daily: 1000000,   // 1M tokens per day
-      monthly: 20000000 // 20M tokens per month
+      hourly: 100000, // 100k tokens per hour
+      daily: 1000000, // 1M tokens per day
+      monthly: 20000000, // 20M tokens per month
     },
     orchestratorBudgets: {
       'orchestrator-tier1': {
         hourly: 200000,
         daily: 2000000,
-        monthly: 40000000
-      }
+        monthly: 40000000,
+      },
     },
     thresholds: [0.5, 0.75, 0.9, 1.0],
     reservationTTL: 15 * 60 * 1000, // 15 minutes
@@ -33,8 +33,8 @@ async function basicIntegration() {
     redis: {
       host: 'localhost',
       port: 6379,
-      keyPrefix: 'orchestrator'
-    }
+      keyPrefix: 'orchestrator',
+    },
   };
 
   // Initialize components
@@ -45,7 +45,7 @@ async function basicIntegration() {
     maxSessions: 100,
     heartbeatInterval: 30000,
     shutdownTimeout: 10000,
-    verbose: true
+    verbose: true,
   });
 
   const tracker = new TokenBudgetTracker(budgetConfig);
@@ -67,7 +67,7 @@ function setupEventHandlers(
   tracker: TokenBudgetTracker
 ) {
   // 1. Pre-flight budget check when session is spawned
-  daemon.on('session:spawned', async (session) => {
+  daemon.on('session:spawned', async session => {
     console.log(`Session spawned: ${session.id}`);
 
     // Estimate initial tokens needed for session
@@ -77,13 +77,15 @@ function setupEventHandlers(
     const checks = await Promise.all([
       tracker.checkBudget(session.orchestratorId, estimatedTokens, 'hourly'),
       tracker.checkBudget(session.orchestratorId, estimatedTokens, 'daily'),
-      tracker.checkBudget(session.orchestratorId, estimatedTokens, 'monthly')
+      tracker.checkBudget(session.orchestratorId, estimatedTokens, 'monthly'),
     ]);
 
     // If any period is exceeded, stop the session
     const anyExceeded = checks.some(check => !check.allowed);
     if (anyExceeded) {
-      console.warn(`Budget exceeded for ${session.orchestratorId}, stopping session`);
+      console.warn(
+        `Budget exceeded for ${session.orchestratorId}, stopping session`
+      );
       await daemon.stop();
 
       const exceededPeriods = checks
@@ -97,7 +99,7 @@ function setupEventHandlers(
   });
 
   // 2. Track usage when session completes
-  daemon.on('session:completed', async (session) => {
+  daemon.on('session:completed', async session => {
     console.log(`Session completed: ${session.id}`);
 
     // Track actual usage
@@ -111,8 +113,8 @@ function setupEventHandlers(
       model: 'claude-sonnet-4.5',
       metadata: {
         duration: session.metrics.duration,
-        tasksCompleted: session.metrics.tasksCompleted
-      }
+        tasksCompleted: session.metrics.tasksCompleted,
+      },
     });
 
     // Get updated stats
@@ -125,32 +127,42 @@ function setupEventHandlers(
   });
 
   // 3. Handle threshold events
-  tracker.on('threshold:50', (event) => {
-    console.log(`⚠️  50% budget used: ${event.orchestratorId} (${event.period})`);
+  tracker.on('threshold:50', event => {
+    console.log(
+      `⚠️  50% budget used: ${event.orchestratorId} (${event.period})`
+    );
     // Send notification to team
   });
 
-  tracker.on('threshold:75', (event) => {
-    console.log(`⚠️⚠️  75% budget used: ${event.orchestratorId} (${event.period})`);
+  tracker.on('threshold:75', event => {
+    console.log(
+      `⚠️⚠️  75% budget used: ${event.orchestratorId} (${event.period})`
+    );
     // Send alert email
   });
 
-  tracker.on('threshold:90', (event) => {
-    console.log(`🚨 90% budget used: ${event.orchestratorId} (${event.period})`);
+  tracker.on('threshold:90', event => {
+    console.log(
+      `🚨 90% budget used: ${event.orchestratorId} (${event.period})`
+    );
     // Alert on-call engineer
     // Consider pausing low-priority tasks
   });
 
-  tracker.on('budget:exceeded', async (event) => {
-    console.log(`🚨🚨 Budget exceeded: ${event.orchestratorId} (${event.period})`);
+  tracker.on('budget:exceeded', async event => {
+    console.log(
+      `🚨🚨 Budget exceeded: ${event.orchestratorId} (${event.period})`
+    );
     // Pause orchestrator
     // Escalate to management
     // Send PagerDuty alert
   });
 
   // 4. Track all usage
-  tracker.on('usage:tracked', (usage) => {
-    console.log(`Tracked ${usage.totalTokens} tokens for ${usage.orchestratorId}`);
+  tracker.on('usage:tracked', usage => {
+    console.log(
+      `Tracked ${usage.totalTokens} tokens for ${usage.orchestratorId}`
+    );
   });
 }
 
@@ -176,14 +188,16 @@ async function llmCallWithReservation(
     return null;
   }
 
-  console.log(`Reserved ${estimatedTokens} tokens (ID: ${reservation.reservationId})`);
+  console.log(
+    `Reserved ${estimatedTokens} tokens (ID: ${reservation.reservationId})`
+  );
 
   try {
     // Make the LLM call (pseudo-code)
     const response = await makeLLMCall({
       prompt: 'Your prompt here',
       model: 'claude-sonnet-4.5',
-      max_tokens: 2000
+      max_tokens: 2000,
     });
 
     // Release reservation with actual usage
@@ -201,10 +215,12 @@ async function llmCallWithReservation(
       completionTokens: response.usage.completion_tokens,
       totalTokens: response.usage.total_tokens,
       model: response.model,
-      requestId: response.id
+      requestId: response.id,
     });
 
-    console.log(`Used ${response.usage.total_tokens} tokens (released reservation)`);
+    console.log(
+      `Used ${response.usage.total_tokens} tokens (released reservation)`
+    );
 
     return response;
   } catch (error) {
@@ -226,7 +242,11 @@ async function handlePriorityTask(
   const estimatedTokens = 50000;
 
   // Check budget
-  const check = await tracker.checkBudget(orchestratorId, estimatedTokens, 'hourly');
+  const check = await tracker.checkBudget(
+    orchestratorId,
+    estimatedTokens,
+    'hourly'
+  );
 
   if (!check.allowed && taskPriority === 'critical') {
     console.log('Budget exceeded, but task is critical - setting override');
@@ -242,8 +262,8 @@ async function handlePriorityTask(
       metadata: {
         priority: taskPriority,
         ticketId: 'INC-12345',
-        approvedBy: 'engineering-manager'
-      }
+        approvedBy: 'engineering-manager',
+      },
     });
 
     console.log('Budget override set - proceeding with critical task');
@@ -265,14 +285,14 @@ async function getDashboardData(
 ) {
   const dashboard = {
     timestamp: new Date(),
-    orchestrators: [] as any[]
+    orchestrators: [] as any[],
   };
 
   for (const orchestratorId of orchestratorIds) {
     const [hourly, daily, monthly] = await Promise.all([
       tracker.getUsageStats(orchestratorId, 'hourly'),
       tracker.getUsageStats(orchestratorId, 'daily'),
-      tracker.getUsageStats(orchestratorId, 'monthly')
+      tracker.getUsageStats(orchestratorId, 'monthly'),
     ]);
 
     dashboard.orchestrators.push({
@@ -281,22 +301,22 @@ async function getDashboardData(
         used: hourly.totalUsed,
         limit: hourly.limit,
         percentUsed: hourly.percentUsed,
-        remaining: hourly.remaining
+        remaining: hourly.remaining,
       },
       daily: {
         used: daily.totalUsed,
         limit: daily.limit,
         percentUsed: daily.percentUsed,
-        remaining: daily.remaining
+        remaining: daily.remaining,
       },
       monthly: {
         used: monthly.totalUsed,
         limit: monthly.limit,
         percentUsed: monthly.percentUsed,
-        remaining: monthly.remaining
+        remaining: monthly.remaining,
       },
       topModels: hourly.topModels,
-      breakdown: hourly.breakdown
+      breakdown: hourly.breakdown,
     });
   }
 
@@ -314,16 +334,16 @@ async function makeLLMCall(params: any): Promise<any> {
     usage: {
       prompt_tokens: 1000,
       completion_tokens: 2000,
-      total_tokens: 3000
+      total_tokens: 3000,
     },
     choices: [
       {
         message: {
           role: 'assistant',
-          content: 'Response here'
-        }
-      }
-    ]
+          content: 'Response here',
+        },
+      },
+    ],
   };
 }
 
@@ -348,5 +368,5 @@ export {
   basicIntegration,
   llmCallWithReservation,
   handlePriorityTask,
-  getDashboardData
+  getDashboardData,
 };

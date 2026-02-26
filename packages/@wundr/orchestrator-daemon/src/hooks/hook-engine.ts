@@ -177,7 +177,8 @@ export class HookEngine implements IHookEngine {
     this.logger = options.logger ?? noopLogger;
     this.maxConcurrency = options.maxConcurrency ?? DEFAULT_MAX_CONCURRENCY;
     this.globalCatchErrors = options.catchErrors ?? true;
-    this.shell = options.shell ?? (process.platform === 'win32' ? 'cmd.exe' : '/bin/sh');
+    this.shell =
+      options.shell ?? (process.platform === 'win32' ? 'cmd.exe' : '/bin/sh');
     this.llmClient = options.llmClient;
     this.sessionSpawner = options.sessionSpawner;
     this.cacheTtlMs = options.cacheTtlMs ?? DEFAULT_CACHE_TTL_MS;
@@ -201,7 +202,7 @@ export class HookEngine implements IHookEngine {
    */
   async fire<E extends HookEventName>(
     event: E,
-    metadata: HookMetadataMap[E],
+    metadata: HookMetadataMap[E]
   ): Promise<HookFireResult<E>> {
     if (this.disposed) {
       return this.emptyResult(event);
@@ -221,9 +222,7 @@ export class HookEngine implements IHookEngine {
       const cached = this.getCachedResult<E>(event, metadata);
       if (cached) {
         this.stats.totalCacheHits++;
-        this.logger.debug(
-          `[HookEngine] Cache hit for "${event}"`,
-        );
+        this.logger.debug(`[HookEngine] Cache hit for "${event}"`);
         return cached;
       }
       this.stats.totalCacheMisses++;
@@ -231,11 +230,13 @@ export class HookEngine implements IHookEngine {
 
     this.logger.debug(
       `[HookEngine] Firing "${event}" (${hooks.length} hooks)`,
-      { hookIds: hooks.map((h) => h.id) },
+      { hookIds: hooks.map(h => h.id) }
     );
 
     // Filter by matchers
-    const eligible = hooks.filter((hook) => this.matchesFilter(hook, event, metadata));
+    const eligible = hooks.filter(hook =>
+      this.matchesFilter(hook, event, metadata)
+    );
 
     let results: Array<HookExecutionResult<E>>;
     let mergedResult: HookFireResult<E>['mergedResult'];
@@ -245,7 +246,7 @@ export class HookEngine implements IHookEngine {
       const { results: seqResults, merged } = await this.executeSequential(
         eligible as unknown as Array<HookRegistration<ModifyingHookEvent>>,
         event as unknown as ModifyingHookEvent,
-        metadata as unknown as HookMetadataMap[ModifyingHookEvent],
+        metadata as unknown as HookMetadataMap[ModifyingHookEvent]
       );
       results = seqResults as unknown as Array<HookExecutionResult<E>>;
       mergedResult = merged as HookFireResult<E>['mergedResult'];
@@ -271,13 +272,13 @@ export class HookEngine implements IHookEngine {
     const allResults = [...results, ...skippedResults];
     const totalDurationMs = Date.now() - startTime;
 
-    const successCount = allResults.filter((r) => r.success && !r.skipped).length;
-    const failureCount = allResults.filter((r) => !r.success).length;
-    const skippedCount = allResults.filter((r) => r.skipped).length;
+    const successCount = allResults.filter(r => r.success && !r.skipped).length;
+    const failureCount = allResults.filter(r => !r.success).length;
+    const skippedCount = allResults.filter(r => r.skipped).length;
 
     this.logger.debug(
       `[HookEngine] "${event}" completed in ${totalDurationMs}ms ` +
-        `(${successCount} ok, ${failureCount} failed, ${skippedCount} skipped)`,
+        `(${successCount} ok, ${failureCount} failed, ${skippedCount} skipped)`
     );
 
     const fireResult: HookFireResult<E> = {
@@ -350,7 +351,7 @@ export class HookEngine implements IHookEngine {
   private async executeSequential<E extends ModifyingHookEvent>(
     hooks: Array<HookRegistration<E>>,
     event: E,
-    metadata: HookMetadataMap[E],
+    metadata: HookMetadataMap[E]
   ): Promise<{
     results: Array<HookExecutionResult<E>>;
     merged: HookResultMap[E] | undefined;
@@ -374,7 +375,11 @@ export class HookEngine implements IHookEngine {
 
       // Merge result if the hook returned one
       if (result.success && result.result !== undefined) {
-        merged = this.mergeResult(event, merged, result.result as HookResultMap[E]);
+        merged = this.mergeResult(
+          event,
+          merged,
+          result.result as HookResultMap[E]
+        );
       }
     }
 
@@ -388,7 +393,7 @@ export class HookEngine implements IHookEngine {
   private async executeParallel<E extends HookEventName>(
     hooks: Array<HookRegistration<E>>,
     event: E,
-    metadata: HookMetadataMap[E],
+    metadata: HookMetadataMap[E]
   ): Promise<Array<HookExecutionResult<E>>> {
     // Execute in batches of maxConcurrency
     const results: Array<HookExecutionResult<E>> = [];
@@ -396,7 +401,7 @@ export class HookEngine implements IHookEngine {
     for (let i = 0; i < hooks.length; i += this.maxConcurrency) {
       const batch = hooks.slice(i, i + this.maxConcurrency);
       const batchResults = await Promise.all(
-        batch.map((hook) => this.executeSingle(hook, event, metadata)),
+        batch.map(hook => this.executeSingle(hook, event, metadata))
       );
       results.push(...batchResults);
     }
@@ -411,7 +416,7 @@ export class HookEngine implements IHookEngine {
   private async executeSingle<E extends HookEventName>(
     hook: HookRegistration<E>,
     event: E,
-    metadata: HookMetadataMap[E],
+    metadata: HookMetadataMap[E]
   ): Promise<HookExecutionResult<E>> {
     const startTime = Date.now();
     const shouldCatch = hook.catchErrors ?? this.globalCatchErrors;
@@ -445,7 +450,7 @@ export class HookEngine implements IHookEngine {
       this.stats.totalErrors++;
 
       this.logger.error(
-        `[HookEngine] Hook "${hook.id}" failed for "${event}": ${errorMessage}`,
+        `[HookEngine] Hook "${hook.id}" failed for "${event}": ${errorMessage}`
       );
 
       if (!shouldCatch) {
@@ -471,7 +476,7 @@ export class HookEngine implements IHookEngine {
   private async executeHandler<E extends HookEventName>(
     hook: HookRegistration<E>,
     event: E,
-    metadata: HookMetadataMap[E],
+    metadata: HookMetadataMap[E]
   ): Promise<unknown> {
     // Direct handler function takes precedence
     if (hook.handler) {
@@ -488,7 +493,7 @@ export class HookEngine implements IHookEngine {
         return this.executeAgentHook(hook, event, metadata);
       default:
         throw new Error(
-          `[HookEngine] Hook "${hook.id}" has unknown type "${hook.type}" and no handler`,
+          `[HookEngine] Hook "${hook.id}" has unknown type "${hook.type}" and no handler`
         );
     }
   }
@@ -505,14 +510,17 @@ export class HookEngine implements IHookEngine {
   private async executeCommandHook<E extends HookEventName>(
     hook: HookRegistration<E>,
     event: E,
-    metadata: HookMetadataMap[E],
+    metadata: HookMetadataMap[E]
   ): Promise<unknown> {
     if (!hook.command) {
       throw new Error(`[HookEngine] Command hook "${hook.id}" has no command`);
     }
 
     // Interpolate metadata placeholders in command string
-    const interpolatedCommand = this.interpolateTemplate(hook.command, metadata as unknown as Record<string, unknown>);
+    const interpolatedCommand = this.interpolateTemplate(
+      hook.command,
+      metadata as unknown as Record<string, unknown>
+    );
 
     // Build environment
     const env: Record<string, string | undefined> = {
@@ -525,25 +533,35 @@ export class HookEngine implements IHookEngine {
 
     // Flatten top-level metadata fields into env vars
     if (metadata && typeof metadata === 'object') {
-      for (const [key, value] of Object.entries(metadata as unknown as Record<string, unknown>)) {
-        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      for (const [key, value] of Object.entries(
+        metadata as unknown as Record<string, unknown>
+      )) {
+        if (
+          typeof value === 'string' ||
+          typeof value === 'number' ||
+          typeof value === 'boolean'
+        ) {
           env[`WUNDR_HOOK_${key.toUpperCase()}`] = String(value);
         }
       }
     }
 
     this.logger.debug(
-      `[HookEngine] Executing command hook "${hook.id}": ${interpolatedCommand.substring(0, 200)}`,
+      `[HookEngine] Executing command hook "${hook.id}": ${interpolatedCommand.substring(0, 200)}`
     );
 
     const shellFlag = process.platform === 'win32' ? '/c' : '-c';
 
-    const { stdout } = await execFileAsync(this.shell, [shellFlag, interpolatedCommand], {
-      env: env as Record<string, string | undefined>,
-      cwd: hook.cwd ?? process.cwd(),
-      timeout: hook.timeoutMs ?? 10_000,
-      maxBuffer: 1024 * 1024, // 1MB
-    });
+    const { stdout } = await execFileAsync(
+      this.shell,
+      [shellFlag, interpolatedCommand],
+      {
+        env: env as Record<string, string | undefined>,
+        cwd: hook.cwd ?? process.cwd(),
+        timeout: hook.timeoutMs ?? 10_000,
+        maxBuffer: 1024 * 1024, // 1MB
+      }
+    );
 
     // Try to parse stdout as JSON result
     const trimmed = stdout.trim();
@@ -571,21 +589,23 @@ export class HookEngine implements IHookEngine {
   private async executePromptHook<E extends HookEventName>(
     hook: HookRegistration<E>,
     _event: E,
-    metadata: HookMetadataMap[E],
+    metadata: HookMetadataMap[E]
   ): Promise<unknown> {
     if (!hook.promptTemplate) {
-      throw new Error(`[HookEngine] Prompt hook "${hook.id}" has no promptTemplate`);
+      throw new Error(
+        `[HookEngine] Prompt hook "${hook.id}" has no promptTemplate`
+      );
     }
 
     const interpolatedPrompt = this.interpolateTemplate(
       hook.promptTemplate,
-      metadata as unknown as Record<string, unknown>,
+      metadata as unknown as Record<string, unknown>
     );
 
     // If we have a real LLM client, use it
     if (this.llmClient) {
       this.logger.debug(
-        `[HookEngine] Prompt hook "${hook.id}" sending to LLM: ${interpolatedPrompt.substring(0, 200)}...`,
+        `[HookEngine] Prompt hook "${hook.id}" sending to LLM: ${interpolatedPrompt.substring(0, 200)}...`
       );
 
       const response = await this.llmClient.chat({
@@ -593,7 +613,8 @@ export class HookEngine implements IHookEngine {
         messages: [
           {
             role: 'system',
-            content: 'You are a hook handler in the Wundr orchestrator system. ' +
+            content:
+              'You are a hook handler in the Wundr orchestrator system. ' +
               'Respond with valid JSON when the hook expects a structured result. ' +
               'Be concise and follow the instructions precisely.',
           },
@@ -615,12 +636,12 @@ export class HookEngine implements IHookEngine {
 
     // Placeholder mode: no LLM client
     this.logger.debug(
-      `[HookEngine] Prompt hook "${hook.id}" in placeholder mode: ${interpolatedPrompt.substring(0, 200)}...`,
+      `[HookEngine] Prompt hook "${hook.id}" in placeholder mode: ${interpolatedPrompt.substring(0, 200)}...`
     );
 
     this.logger.warn(
       `[HookEngine] Prompt hook "${hook.id}" executed in placeholder mode. ` +
-        'Provide an llmClient in HookEngineOptions for production use.',
+        'Provide an llmClient in HookEngineOptions for production use.'
     );
 
     return { prompt: interpolatedPrompt, placeholderMode: true };
@@ -638,7 +659,7 @@ export class HookEngine implements IHookEngine {
   private async executeAgentHook<E extends HookEventName>(
     hook: HookRegistration<E>,
     _event: E,
-    metadata: HookMetadataMap[E],
+    metadata: HookMetadataMap[E]
   ): Promise<unknown> {
     const agentConfig = hook.agentConfig;
 
@@ -646,7 +667,7 @@ export class HookEngine implements IHookEngine {
     if (this.sessionSpawner && agentConfig) {
       this.logger.debug(
         `[HookEngine] Agent hook "${hook.id}" spawning sub-session`,
-        { agentConfig },
+        { agentConfig }
       );
 
       const result = await this.sessionSpawner.spawnHookSession({
@@ -657,7 +678,7 @@ export class HookEngine implements IHookEngine {
 
       if (!result.success) {
         throw new Error(
-          `[HookEngine] Agent hook "${hook.id}" sub-session failed: ${result.error ?? 'unknown error'}`,
+          `[HookEngine] Agent hook "${hook.id}" sub-session failed: ${result.error ?? 'unknown error'}`
         );
       }
 
@@ -676,12 +697,12 @@ export class HookEngine implements IHookEngine {
     // Placeholder mode: no session spawner
     this.logger.debug(
       `[HookEngine] Agent hook "${hook.id}" would spawn sub-agent`,
-      { agentConfig },
+      { agentConfig }
     );
 
     this.logger.warn(
       `[HookEngine] Agent hook "${hook.id}" executed in placeholder mode. ` +
-        'Provide a sessionSpawner in HookEngineOptions for production use.',
+        'Provide a sessionSpawner in HookEngineOptions for production use.'
     );
 
     return { agentConfig, metadata, placeholderMode: true };
@@ -694,7 +715,7 @@ export class HookEngine implements IHookEngine {
   private matchesFilter<E extends HookEventName>(
     hook: HookRegistration<E>,
     _event: E,
-    metadata: HookMetadataMap[E],
+    metadata: HookMetadataMap[E]
   ): boolean {
     const matcher = hook.matcher;
     if (!matcher) {
@@ -758,7 +779,7 @@ export class HookEngine implements IHookEngine {
   private mergeResult<E extends ModifyingHookEvent>(
     _event: E,
     accumulated: HookResultMap[E] | undefined,
-    next: HookResultMap[E],
+    next: HookResultMap[E]
   ): HookResultMap[E] {
     if (!accumulated) {
       return next;
@@ -766,7 +787,9 @@ export class HookEngine implements IHookEngine {
 
     // Field-level merge: non-undefined fields from `next` override `accumulated`
     const merged = { ...accumulated } as Record<string, unknown>;
-    for (const [key, value] of Object.entries(next as Record<string, unknown>)) {
+    for (const [key, value] of Object.entries(
+      next as Record<string, unknown>
+    )) {
       if (value !== undefined) {
         merged[key] = value;
       }
@@ -785,11 +808,14 @@ export class HookEngine implements IHookEngine {
    */
   private buildCacheKey<E extends HookEventName>(
     event: E,
-    metadata: HookMetadataMap[E],
+    metadata: HookMetadataMap[E]
   ): string {
     try {
       // Sort keys for stable serialization
-      const sortedMeta = JSON.stringify(metadata, Object.keys(metadata as object).sort());
+      const sortedMeta = JSON.stringify(
+        metadata,
+        Object.keys(metadata as object).sort()
+      );
       return `${event}:${sortedMeta}`;
     } catch {
       // If metadata cannot be serialized (circular refs, etc.), skip caching
@@ -802,7 +828,7 @@ export class HookEngine implements IHookEngine {
    */
   private getCachedResult<E extends HookEventName>(
     event: E,
-    metadata: HookMetadataMap[E],
+    metadata: HookMetadataMap[E]
   ): HookFireResult<E> | undefined {
     const key = this.buildCacheKey(event, metadata);
     if (!key) {
@@ -829,7 +855,7 @@ export class HookEngine implements IHookEngine {
   private setCachedResult<E extends HookEventName>(
     event: E,
     metadata: HookMetadataMap[E],
-    result: HookFireResult<E>,
+    result: HookFireResult<E>
   ): void {
     const key = this.buildCacheKey(event, metadata);
     if (!key) {
@@ -879,9 +905,9 @@ export class HookEngine implements IHookEngine {
     // Convert glob to regex
     const regexStr = pattern
       .replace(/[.+^${}()|[\]\\]/g, '\\$&') // Escape regex special chars (except *)
-      .replace(/\*\*/g, '{{GLOBSTAR}}')       // Placeholder for **
-      .replace(/\*/g, '[^/]*')                 // * matches anything except /
-      .replace(/\{\{GLOBSTAR\}\}/g, '.*');     // ** matches anything
+      .replace(/\*\*/g, '{{GLOBSTAR}}') // Placeholder for **
+      .replace(/\*/g, '[^/]*') // * matches anything except /
+      .replace(/\{\{GLOBSTAR\}\}/g, '.*'); // ** matches anything
 
     try {
       const regex = new RegExp(`^${regexStr}$`);
@@ -897,25 +923,34 @@ export class HookEngine implements IHookEngine {
    */
   private interpolateTemplate(
     template: string,
-    metadata: Record<string, unknown>,
+    metadata: Record<string, unknown>
   ): string {
-    return template.replace(/\{\{metadata\.(\w+(?:\.\w+)*)\}\}/g, (_match, path: string) => {
-      const parts = path.split('.');
-      let current: unknown = metadata;
+    return template.replace(
+      /\{\{metadata\.(\w+(?:\.\w+)*)\}\}/g,
+      (_match, path: string) => {
+        const parts = path.split('.');
+        let current: unknown = metadata;
 
-      for (const part of parts) {
-        if (current === null || current === undefined || typeof current !== 'object') {
+        for (const part of parts) {
+          if (
+            current === null ||
+            current === undefined ||
+            typeof current !== 'object'
+          ) {
+            return '';
+          }
+          current = (current as Record<string, unknown>)[part];
+        }
+
+        if (current === null || current === undefined) {
           return '';
         }
-        current = (current as Record<string, unknown>)[part];
-      }
 
-      if (current === null || current === undefined) {
-        return '';
+        return typeof current === 'object'
+          ? JSON.stringify(current)
+          : String(current);
       }
-
-      return typeof current === 'object' ? JSON.stringify(current) : String(current);
-    });
+    );
   }
 
   /**
@@ -924,7 +959,9 @@ export class HookEngine implements IHookEngine {
   private createTimeout(ms: number, hookId: string): Promise<never> {
     return new Promise<never>((_, reject) => {
       const timer = setTimeout(() => {
-        reject(new Error(`[HookEngine] Hook "${hookId}" timed out after ${ms}ms`));
+        reject(
+          new Error(`[HookEngine] Hook "${hookId}" timed out after ${ms}ms`)
+        );
       }, ms);
 
       // Allow the process to exit even if this timer is pending

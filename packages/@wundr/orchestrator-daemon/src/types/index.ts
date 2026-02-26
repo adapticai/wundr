@@ -79,7 +79,13 @@ export interface Session {
   orchestratorId: string;
   task: Task;
   type: 'claude-code' | 'claude-flow';
-  status: 'initializing' | 'running' | 'paused' | 'completed' | 'failed' | 'terminated';
+  status:
+    | 'initializing'
+    | 'running'
+    | 'paused'
+    | 'completed'
+    | 'failed'
+    | 'terminated';
   startedAt: Date;
   endedAt?: Date;
   memoryContext: MemoryContext;
@@ -208,13 +214,26 @@ export type WSResponse =
   | { type: 'session_status_update'; session: Session }
   | { type: 'daemon_status_update'; status: DaemonStatus }
   | { type: 'health_check_response'; healthy: boolean }
-  | { type: 'stream_start'; sessionId: string; metadata?: Record<string, unknown> }
+  | {
+      type: 'stream_start';
+      sessionId: string;
+      metadata?: Record<string, unknown>;
+    }
   | { type: 'stream_chunk'; data: StreamChunk }
-  | { type: 'stream_end'; sessionId: string; metadata?: Record<string, unknown> }
+  | {
+      type: 'stream_end';
+      sessionId: string;
+      metadata?: Record<string, unknown>;
+    }
   | { type: 'tool_call_start'; data: ToolCallInfo }
   | { type: 'tool_call_result'; data: ToolCallInfo }
   | { type: 'task_executing'; sessionId: string; taskId: string }
-  | { type: 'task_completed'; sessionId: string; taskId: string; result?: unknown }
+  | {
+      type: 'task_completed';
+      sessionId: string;
+      taskId: string;
+      result?: unknown;
+    }
   | { type: 'task_failed'; sessionId: string; taskId: string; error: string }
   | { type: 'sessions_list'; sessions: Session[] };
 

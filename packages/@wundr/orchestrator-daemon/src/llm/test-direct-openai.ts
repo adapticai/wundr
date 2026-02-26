@@ -140,7 +140,10 @@ async function testErrorHandling() {
     console.error('❌ FAILED: Should have thrown an error');
     return false;
   } catch (error) {
-    console.log('✅ Correctly caught error:', error instanceof Error ? error.message : error);
+    console.log(
+      '✅ Correctly caught error:',
+      error instanceof Error ? error.message : error
+    );
     return true;
   } finally {
     // Restore API key
@@ -173,16 +176,21 @@ async function runAllTests() {
   console.log('Test 1 (Basic call):', results.test1 ? '✅ PASS' : '❌ FAIL');
   console.log('Test 2 (With tools):', results.test2 ? '✅ PASS' : '❌ FAIL');
   console.log('Test 3 (Configured):', results.test3 ? '✅ PASS' : '❌ FAIL');
-  console.log('Test 4 (Error handling):', results.test4 ? '✅ PASS' : '❌ FAIL');
+  console.log(
+    'Test 4 (Error handling):',
+    results.test4 ? '✅ PASS' : '❌ FAIL'
+  );
 
-  const allPassed = Object.values(results).every((r) => r);
-  console.log('\n' + (allPassed ? '✅ All tests passed!' : '❌ Some tests failed'));
+  const allPassed = Object.values(results).every(r => r);
+  console.log(
+    '\n' + (allPassed ? '✅ All tests passed!' : '❌ Some tests failed')
+  );
 
   process.exit(allPassed ? 0 : 1);
 }
 
 // Run tests
-runAllTests().catch((error) => {
+runAllTests().catch(error => {
   console.error('\n❌ Test suite failed:', error);
   process.exit(1);
 });

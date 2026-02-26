@@ -58,10 +58,12 @@ const ConfigSchema = z.object({
     organization: z.string().optional(),
     baseUrl: z.string().url().optional(),
   }),
-  anthropic: z.object({
-    apiKey: z.string().optional(),
-    model: z.string().default('claude-3-sonnet-20240229'),
-  }).optional(),
+  anthropic: z
+    .object({
+      apiKey: z.string().optional(),
+      model: z.string().default('claude-3-sonnet-20240229'),
+    })
+    .optional(),
   daemon: z.object({
     name: z.string().default('orchestrator-daemon'),
     port: z.number().int().min(1024).max(65535).default(8787),
@@ -74,28 +76,38 @@ const ConfigSchema = z.object({
     healthCheckInterval: z.number().int().positive().default(60000),
     shutdownTimeout: z.number().int().positive().default(10000),
   }),
-  redis: z.object({
-    url: z.string().optional(),
-    password: z.string().optional(),
-    db: z.number().int().min(0).max(15).default(0),
-    connectTimeout: z.number().int().positive().default(5000),
-  }).optional(),
-  database: z.object({
-    url: z.string().optional(),
-    poolSize: z.number().int().positive().default(10),
-    connectTimeout: z.number().int().positive().default(5000),
-  }).optional(),
-  distributed: z.object({
-    clusterName: z.string().default('orchestrator-cluster'),
-    loadBalancingStrategy: z.enum(['round-robin', 'least-loaded', 'weighted', 'hash-based']).default('least-loaded'),
-    rebalanceInterval: z.number().int().positive().default(300000),
-    migrationTimeout: z.number().int().positive().default(30000),
-  }).optional(),
-  neolith: z.object({
-    apiUrl: z.string().url().optional(),
-    apiKey: z.string().optional(),
-    apiSecret: z.string().optional(),
-  }).optional(),
+  redis: z
+    .object({
+      url: z.string().optional(),
+      password: z.string().optional(),
+      db: z.number().int().min(0).max(15).default(0),
+      connectTimeout: z.number().int().positive().default(5000),
+    })
+    .optional(),
+  database: z
+    .object({
+      url: z.string().optional(),
+      poolSize: z.number().int().positive().default(10),
+      connectTimeout: z.number().int().positive().default(5000),
+    })
+    .optional(),
+  distributed: z
+    .object({
+      clusterName: z.string().default('orchestrator-cluster'),
+      loadBalancingStrategy: z
+        .enum(['round-robin', 'least-loaded', 'weighted', 'hash-based'])
+        .default('least-loaded'),
+      rebalanceInterval: z.number().int().positive().default(300000),
+      migrationTimeout: z.number().int().positive().default(30000),
+    })
+    .optional(),
+  neolith: z
+    .object({
+      apiUrl: z.string().url().optional(),
+      apiKey: z.string().optional(),
+      apiSecret: z.string().optional(),
+    })
+    .optional(),
   logging: z.object({
     level: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
     format: z.enum(['json', 'text']).default('json'),
@@ -158,26 +170,32 @@ const ConfigSchema = z.object({
  */
 export type Config = z.infer<typeof ConfigSchema>;
 
-function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
+function parseBoolean(
+  value: string | undefined,
+  defaultValue: boolean
+): boolean {
   if (!value) {
-return defaultValue;
-}
+    return defaultValue;
+  }
   return value.toLowerCase() === 'true' || value === '1';
 }
 
 function parseNumber(value: string | undefined, defaultValue: number): number {
   if (!value) {
-return defaultValue;
-}
+    return defaultValue;
+  }
   const parsed = parseInt(value, 10);
   return isNaN(parsed) ? defaultValue : parsed;
 }
 
 function parseArray(value: string | undefined): string[] {
   if (!value) {
-return [];
-}
-  return value.split(',').map(v => v.trim()).filter(v => v.length > 0);
+    return [];
+  }
+  return value
+    .split(',')
+    .map(v => v.trim())
+    .filter(v => v.length > 0);
 }
 
 /**
@@ -195,10 +213,12 @@ export function loadConfig(): Config {
       organization: process.env.OPENAI_ORG_ID,
       baseUrl: process.env.OPENAI_BASE_URL,
     },
-    anthropic: process.env.ANTHROPIC_API_KEY ? {
-      apiKey: process.env.ANTHROPIC_API_KEY,
-      model: process.env.ANTHROPIC_MODEL || 'claude-3-sonnet-20240229',
-    } : undefined,
+    anthropic: process.env.ANTHROPIC_API_KEY
+      ? {
+          apiKey: process.env.ANTHROPIC_API_KEY,
+          model: process.env.ANTHROPIC_MODEL || 'claude-3-sonnet-20240229',
+        }
+      : undefined,
     daemon: {
       name: process.env.DAEMON_NAME || 'orchestrator-daemon',
       port: parseNumber(process.env.DAEMON_PORT, 8787),
@@ -207,34 +227,62 @@ export function loadConfig(): Config {
       verbose: parseBoolean(process.env.DAEMON_VERBOSE, false),
     },
     health: {
-      heartbeatInterval: parseNumber(process.env.DAEMON_HEARTBEAT_INTERVAL, 30000),
-      healthCheckInterval: parseNumber(process.env.DAEMON_HEALTH_CHECK_INTERVAL, 60000),
+      heartbeatInterval: parseNumber(
+        process.env.DAEMON_HEARTBEAT_INTERVAL,
+        30000
+      ),
+      healthCheckInterval: parseNumber(
+        process.env.DAEMON_HEALTH_CHECK_INTERVAL,
+        60000
+      ),
       shutdownTimeout: parseNumber(process.env.DAEMON_SHUTDOWN_TIMEOUT, 10000),
     },
-    redis: process.env.REDIS_URL ? {
-      url: process.env.REDIS_URL,
-      password: process.env.REDIS_PASSWORD,
-      db: parseNumber(process.env.REDIS_DB, 0),
-      connectTimeout: parseNumber(process.env.REDIS_CONNECT_TIMEOUT, 5000),
-    } : undefined,
-    database: process.env.DATABASE_URL ? {
-      url: process.env.DATABASE_URL,
-      poolSize: parseNumber(process.env.DATABASE_POOL_SIZE, 10),
-      connectTimeout: parseNumber(process.env.DATABASE_CONNECT_TIMEOUT, 5000),
-    } : undefined,
-    distributed: process.env.CLUSTER_NAME || process.env.REDIS_URL ? {
-      clusterName: process.env.CLUSTER_NAME || 'orchestrator-cluster',
-      loadBalancingStrategy: (process.env.LOAD_BALANCING_STRATEGY as 'round-robin' | 'least-loaded' | 'weighted' | 'hash-based') || 'least-loaded',
-      rebalanceInterval: parseNumber(process.env.REBALANCE_INTERVAL, 300000),
-      migrationTimeout: parseNumber(process.env.MIGRATION_TIMEOUT, 30000),
-    } : undefined,
-    neolith: process.env.NEOLITH_API_URL ? {
-      apiUrl: process.env.NEOLITH_API_URL,
-      apiKey: process.env.NEOLITH_API_KEY,
-      apiSecret: process.env.NEOLITH_API_SECRET,
-    } : undefined,
+    redis: process.env.REDIS_URL
+      ? {
+          url: process.env.REDIS_URL,
+          password: process.env.REDIS_PASSWORD,
+          db: parseNumber(process.env.REDIS_DB, 0),
+          connectTimeout: parseNumber(process.env.REDIS_CONNECT_TIMEOUT, 5000),
+        }
+      : undefined,
+    database: process.env.DATABASE_URL
+      ? {
+          url: process.env.DATABASE_URL,
+          poolSize: parseNumber(process.env.DATABASE_POOL_SIZE, 10),
+          connectTimeout: parseNumber(
+            process.env.DATABASE_CONNECT_TIMEOUT,
+            5000
+          ),
+        }
+      : undefined,
+    distributed:
+      process.env.CLUSTER_NAME || process.env.REDIS_URL
+        ? {
+            clusterName: process.env.CLUSTER_NAME || 'orchestrator-cluster',
+            loadBalancingStrategy:
+              (process.env.LOAD_BALANCING_STRATEGY as
+                | 'round-robin'
+                | 'least-loaded'
+                | 'weighted'
+                | 'hash-based') || 'least-loaded',
+            rebalanceInterval: parseNumber(
+              process.env.REBALANCE_INTERVAL,
+              300000
+            ),
+            migrationTimeout: parseNumber(process.env.MIGRATION_TIMEOUT, 30000),
+          }
+        : undefined,
+    neolith: process.env.NEOLITH_API_URL
+      ? {
+          apiUrl: process.env.NEOLITH_API_URL,
+          apiKey: process.env.NEOLITH_API_KEY,
+          apiSecret: process.env.NEOLITH_API_SECRET,
+        }
+      : undefined,
     logging: {
-      level: (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') || 'info',
+      level:
+        (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') ||
+        'info',
       format: (process.env.LOG_FORMAT as 'json' | 'text') || 'json',
       file: process.env.LOG_FILE,
       rotation: {
@@ -244,7 +292,9 @@ export function loadConfig(): Config {
       },
     },
     security: {
-      jwtSecret: process.env.DAEMON_JWT_SECRET || 'change-this-in-production-to-a-random-secure-string',
+      jwtSecret:
+        process.env.DAEMON_JWT_SECRET ||
+        'change-this-in-production-to-a-random-secure-string',
       jwtExpiration: process.env.DAEMON_JWT_EXPIRATION || '24h',
       cors: {
         enabled: parseBoolean(process.env.DAEMON_CORS_ENABLED, false),
@@ -269,7 +319,10 @@ export function loadConfig(): Config {
     },
     memory: {
       maxHeapMB: parseNumber(process.env.DAEMON_MAX_HEAP_MB, 2048),
-      maxContextTokens: parseNumber(process.env.DAEMON_MAX_CONTEXT_TOKENS, 128000),
+      maxContextTokens: parseNumber(
+        process.env.DAEMON_MAX_CONTEXT_TOKENS,
+        128000
+      ),
       compaction: {
         enabled: parseBoolean(process.env.MEMORY_COMPACTION_ENABLED, true),
         threshold: parseFloat(process.env.MEMORY_COMPACTION_THRESHOLD || '0.8'),
@@ -281,10 +334,14 @@ export function loadConfig(): Config {
       monthly: parseNumber(process.env.TOKEN_BUDGET_MONTHLY, 20000000),
       alerts: {
         enabled: parseBoolean(process.env.TOKEN_BUDGET_ALERTS_ENABLED, true),
-        threshold: parseFloat(process.env.TOKEN_BUDGET_ALERT_THRESHOLD || '0.8'),
+        threshold: parseFloat(
+          process.env.TOKEN_BUDGET_ALERT_THRESHOLD || '0.8'
+        ),
       },
     },
-    env: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development',
+    env:
+      (process.env.NODE_ENV as 'development' | 'production' | 'test') ||
+      'development',
     debug: parseBoolean(process.env.DEBUG, false),
   };
 
@@ -292,15 +349,17 @@ export function loadConfig(): Config {
     return ConfigSchema.parse(rawConfig);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errors = error.errors.map(err => {
-        const field = err.path.join('.');
-        return `  - ${field}: ${err.message}`;
-      }).join('\n');
+      const errors = error.errors
+        .map(err => {
+          const field = err.path.join('.');
+          return `  - ${field}: ${err.message}`;
+        })
+        .join('\n');
 
       throw new Error(
         `Configuration validation failed:\n${errors}\n\n` +
-        'Please check your environment variables or .env file.\n' +
-        'See .env.example for all available configuration options.',
+          'Please check your environment variables or .env file.\n' +
+          'See .env.example for all available configuration options.'
       );
     }
     throw error;
@@ -327,8 +386,8 @@ export function validateRequiredEnv(): void {
   if (missing.length > 0) {
     throw new Error(
       `Missing required environment variables:\n  - ${missing.join('\n  - ')}\n\n` +
-      'Please set these in your environment or create a .env file.\n' +
-      'See .env.example for reference.',
+        'Please set these in your environment or create a .env file.\n' +
+        'See .env.example for reference.'
     );
   }
 }

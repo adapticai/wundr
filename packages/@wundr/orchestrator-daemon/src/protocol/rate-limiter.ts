@@ -76,12 +76,15 @@ export class RateLimiter {
 
   constructor(
     config?: Partial<RateLimitConfig>,
-    methodCosts?: Record<string, number>,
+    methodCosts?: Record<string, number>
   ) {
     this.config = {
       maxTokens: config?.maxTokens ?? DEFAULT_RATE_LIMIT_CONFIG.maxTokens,
-      refillRatePerSecond: config?.refillRatePerSecond ?? DEFAULT_RATE_LIMIT_CONFIG.refillRatePerSecond,
-      tokensPerRequest: config?.tokensPerRequest ?? DEFAULT_RATE_LIMIT_CONFIG.tokensPerRequest!,
+      refillRatePerSecond:
+        config?.refillRatePerSecond ??
+        DEFAULT_RATE_LIMIT_CONFIG.refillRatePerSecond,
+      tokensPerRequest:
+        config?.tokensPerRequest ?? DEFAULT_RATE_LIMIT_CONFIG.tokensPerRequest!,
     };
     this.methodCosts = methodCosts ?? METHOD_COST_MAP;
   }
@@ -106,14 +109,18 @@ export class RateLimiter {
     const elapsedMs = now - bucket.lastRefillAt;
     if (elapsedMs > 0) {
       const tokensToAdd = (elapsedMs / 1000) * this.config.refillRatePerSecond;
-      bucket.tokens = Math.min(this.config.maxTokens, bucket.tokens + tokensToAdd);
+      bucket.tokens = Math.min(
+        this.config.maxTokens,
+        bucket.tokens + tokensToAdd
+      );
       bucket.lastRefillAt = now;
     }
 
     // Determine cost
-    const cost = method && this.methodCosts[method]
-      ? this.methodCosts[method]
-      : this.config.tokensPerRequest;
+    const cost =
+      method && this.methodCosts[method]
+        ? this.methodCosts[method]
+        : this.config.tokensPerRequest;
 
     if (bucket.tokens >= cost) {
       bucket.tokens -= cost;
@@ -125,7 +132,9 @@ export class RateLimiter {
 
     // Denied -- compute retry delay
     const deficit = cost - bucket.tokens;
-    const retryAfterMs = Math.ceil((deficit / this.config.refillRatePerSecond) * 1000);
+    const retryAfterMs = Math.ceil(
+      (deficit / this.config.refillRatePerSecond) * 1000
+    );
 
     return {
       allowed: false,
@@ -151,7 +160,9 @@ export class RateLimiter {
   /**
    * Get current bucket state for monitoring.
    */
-  getBucketState(connectionId: string): { tokens: number; maxTokens: number } | null {
+  getBucketState(
+    connectionId: string
+  ): { tokens: number; maxTokens: number } | null {
     const bucket = this.buckets.get(connectionId);
     if (!bucket) {
       return null;

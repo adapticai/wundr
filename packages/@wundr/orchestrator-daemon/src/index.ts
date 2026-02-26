@@ -124,9 +124,7 @@ export type {
   SessionExecutionResult,
 } from './session/session-executor';
 
-export type {
-  ToolExecutionResult,
-} from './session/tool-executor';
+export type { ToolExecutionResult } from './session/tool-executor';
 
 // Export federation module
 export * from './federation';
@@ -858,9 +856,7 @@ export type {
 // Models: provider-health, token-budget, retry, BudgetExceededError
 // ---------------------------------------------------------------------------
 
-export {
-  ProviderHealthTracker,
-} from './models/provider-health';
+export { ProviderHealthTracker } from './models/provider-health';
 
 export type {
   CircuitState,
@@ -868,9 +864,7 @@ export type {
   ProviderHealthSnapshot,
 } from './models/provider-health';
 
-export {
-  TokenBudgetManager,
-} from './models/token-budget';
+export { TokenBudgetManager } from './models/token-budget';
 
 export type {
   BudgetWindowKind,
@@ -880,9 +874,7 @@ export type {
   TokenBudgetConfig,
 } from './models/token-budget';
 
-export {
-  BudgetExceededError,
-} from './models/model-router';
+export { BudgetExceededError } from './models/model-router';
 
 export type {
   RequiredCapabilities,
@@ -896,10 +888,7 @@ export {
   DEFAULT_RETRY_CONFIG,
 } from './models/retry';
 
-export type {
-  RetryConfig,
-  RetryResult,
-} from './models/retry';
+export type { RetryConfig, RetryResult } from './models/retry';
 
 // ---------------------------------------------------------------------------
 // Protocol: rate-limiter, message-codec, streaming-response,
@@ -912,14 +901,9 @@ export {
   METHOD_COST_MAP,
 } from './protocol/rate-limiter';
 
-export type {
-  RateLimitConfig,
-  RateLimitResult,
-} from './protocol/rate-limiter';
+export type { RateLimitConfig, RateLimitResult } from './protocol/rate-limiter';
 
-export {
-  MessageCodec,
-} from './protocol/message-codec';
+export { MessageCodec } from './protocol/message-codec';
 
 export type {
   CompressionAlgorithm,
@@ -997,9 +981,7 @@ export type {
 // Plugins: plugin-ipc, plugin-signature, sandbox-metrics
 // ---------------------------------------------------------------------------
 
-export {
-  PluginIpcBus,
-} from './plugins/plugin-ipc';
+export { PluginIpcBus } from './plugins/plugin-ipc';
 
 export type {
   IpcMessage,
@@ -1036,9 +1018,7 @@ export {
   buildSandboxedEnvProxy,
 } from './plugins';
 
-export type {
-  SandboxTier,
-} from './plugins';
+export type { SandboxTier } from './plugins';
 
 // ---------------------------------------------------------------------------
 // Config: config-watcher, config-merger, config-template, config-export,
@@ -1192,9 +1172,7 @@ export {
   SENSITIVE_CONFIG_PATHS,
 } from './config/env-overrides';
 
-export type {
-  EnvOverrideMapping,
-} from './config/env-overrides';
+export type { EnvOverrideMapping } from './config/env-overrides';
 
 export {
   validateCommand,

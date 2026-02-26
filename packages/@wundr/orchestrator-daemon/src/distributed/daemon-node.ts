@@ -81,7 +81,12 @@ type NodeMessage =
 /**
  * Connection state
  */
-type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'failed';
+type ConnectionState =
+  | 'disconnected'
+  | 'connecting'
+  | 'connected'
+  | 'reconnecting'
+  | 'failed';
 
 /**
  * DaemonNode - Represents a single daemon instance in the distributed cluster
@@ -103,7 +108,8 @@ export class DaemonNode extends EventEmitter {
   private maxQueueSize = 1000;
   private lastHeartbeatReceived: Date | null = null;
   private lastHeartbeatSent: Date | null = null;
-  private pendingRequests: Map<string, (response: NodeMessage) => void> = new Map();
+  private pendingRequests: Map<string, (response: NodeMessage) => void> =
+    new Map();
   private healthMetrics: NodeHealth = {
     status: 'offline',
     cpuUsage: 0,
@@ -114,7 +120,12 @@ export class DaemonNode extends EventEmitter {
     uptime: 0,
   };
 
-  constructor(id: string, host: string, port: number, capabilities: NodeCapabilities) {
+  constructor(
+    id: string,
+    host: string,
+    port: number,
+    capabilities: NodeCapabilities
+  ) {
     super();
     this.id = id;
     this.host = host;
@@ -147,7 +158,10 @@ export class DaemonNode extends EventEmitter {
    * Connect to the daemon node
    */
   public async connect(): Promise<void> {
-    if (this.connectionState === 'connected' || this.connectionState === 'connecting') {
+    if (
+      this.connectionState === 'connected' ||
+      this.connectionState === 'connecting'
+    ) {
       return;
     }
 
@@ -230,9 +244,11 @@ export class DaemonNode extends EventEmitter {
       throw new Error(`Node ${this.id} does not support session spawning`);
     }
 
-    if (!this.capabilities.supportedSessionTypes.includes(request.sessionType)) {
+    if (
+      !this.capabilities.supportedSessionTypes.includes(request.sessionType)
+    ) {
       throw new Error(
-        `Node ${this.id} does not support session type: ${request.sessionType}`,
+        `Node ${this.id} does not support session type: ${request.sessionType}`
       );
     }
 
@@ -311,7 +327,9 @@ export class DaemonNode extends EventEmitter {
   /**
    * Restore a session from serialized state
    */
-  public async restoreSession(serializedSession: SerializedSession): Promise<boolean> {
+  public async restoreSession(
+    serializedSession: SerializedSession
+  ): Promise<boolean> {
     const message: NodeMessage = {
       type: 'restore_session',
       serializedSession,
@@ -399,14 +417,18 @@ export class DaemonNode extends EventEmitter {
   public isHealthy(): boolean {
     return (
       this.connectionState === 'connected' &&
-      (this.healthMetrics.status === 'healthy' || this.healthMetrics.status === 'degraded')
+      (this.healthMetrics.status === 'healthy' ||
+        this.healthMetrics.status === 'degraded')
     );
   }
 
   /**
    * Send a request and wait for response
    */
-  private async sendRequest(message: NodeMessage, timeout = 30000): Promise<NodeMessage> {
+  private async sendRequest(
+    message: NodeMessage,
+    timeout = 30000
+  ): Promise<NodeMessage> {
     return new Promise((resolve, reject) => {
       const requestId = `${message.type}_${Date.now()}_${Math.random()}`;
 
@@ -456,7 +478,9 @@ export class DaemonNode extends EventEmitter {
    */
   private handleMessage(data: WebSocket.RawData): void {
     try {
-      const message = JSON.parse(data.toString()) as NodeMessage & { requestId?: string };
+      const message = JSON.parse(data.toString()) as NodeMessage & {
+        requestId?: string;
+      };
 
       // Handle heartbeat responses
       if (message.type === 'heartbeat_ack') {
@@ -522,7 +546,7 @@ export class DaemonNode extends EventEmitter {
 
     const delay = Math.min(
       this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts),
-      this.maxReconnectDelay,
+      this.maxReconnectDelay
     );
 
     this.reconnectAttempts++;

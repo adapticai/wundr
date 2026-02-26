@@ -55,7 +55,11 @@ import type {
   JsonRpcSuccessResponse,
   JsonRpcErrorResponse,
 } from '../../../protocol/jsonrpc-compat';
-import type { MethodDescriptor, EventDescriptor, DiscoveryResult } from '../../../protocol/method-registry';
+import type {
+  MethodDescriptor,
+  EventDescriptor,
+  DiscoveryResult,
+} from '../../../protocol/method-registry';
 import type { V1Request } from '../../../protocol/protocol-upgrade';
 import type { ResponseFrame, EventFrame } from '../../../protocol/protocol-v2';
 
@@ -177,38 +181,38 @@ describe('MethodRegistry', () => {
     });
 
     it('should include all built-in methods', () => {
-      const methodNames = result.methods.map((m) => m.name);
+      const methodNames = result.methods.map(m => m.name);
       for (const method of PROTOCOL_V2_METHODS) {
         expect(methodNames).toContain(method);
       }
     });
 
     it('should include rpc.discover and rpc.describe in the catalog', () => {
-      const methodNames = result.methods.map((m) => m.name);
+      const methodNames = result.methods.map(m => m.name);
       expect(methodNames).toContain('rpc.discover');
       expect(methodNames).toContain('rpc.describe');
     });
 
     it('should include all built-in events', () => {
-      const eventNames = result.events.map((e) => e.name);
+      const eventNames = result.events.map(e => e.name);
       for (const event of PROTOCOL_V2_EVENTS) {
         expect(eventNames).toContain(event);
       }
     });
 
     it('should include stream.progress event', () => {
-      const eventNames = result.events.map((e) => e.name);
+      const eventNames = result.events.map(e => e.name);
       expect(eventNames).toContain('stream.progress');
     });
 
     it('should mark broadcast events as not requiring subscription', () => {
-      const heartbeat = result.events.find((e) => e.name === 'health.heartbeat');
+      const heartbeat = result.events.find(e => e.name === 'health.heartbeat');
       expect(heartbeat).toBeDefined();
       expect(heartbeat!.requiresSubscription).toBe(false);
     });
 
     it('should mark non-broadcast events as requiring subscription', () => {
-      const streamChunk = result.events.find((e) => e.name === 'stream.chunk');
+      const streamChunk = result.events.find(e => e.name === 'stream.chunk');
       expect(streamChunk).toBeDefined();
       expect(streamChunk!.requiresSubscription).toBe(true);
     });
@@ -226,7 +230,7 @@ describe('MethodRegistry', () => {
       registry.registerMethod(custom);
 
       const updated = registry.discover(PROTOCOL_VERSION);
-      const methodNames = updated.methods.map((m) => m.name);
+      const methodNames = updated.methods.map(m => m.name);
       expect(methodNames).toContain('plugin.custom');
     });
 
@@ -240,7 +244,7 @@ describe('MethodRegistry', () => {
       registry.registerEvent(customEvent);
 
       const updated = registry.discover(PROTOCOL_VERSION);
-      const eventNames = updated.events.map((e) => e.name);
+      const eventNames = updated.events.map(e => e.name);
       expect(eventNames).toContain('plugin.fired');
     });
 
@@ -324,7 +328,9 @@ describe('MethodRegistry', () => {
 
   describe('RPC discovery schemas', () => {
     it('should accept valid RpcDescribeParams', () => {
-      const result = RpcDescribeParamsSchema.safeParse({ method: 'session.create' });
+      const result = RpcDescribeParamsSchema.safeParse({
+        method: 'session.create',
+      });
       expect(result.success).toBe(true);
     });
 
@@ -339,7 +345,9 @@ describe('MethodRegistry', () => {
     });
 
     it('should accept RpcDiscoverParams with explicit includeSchemas', () => {
-      const result = RpcDiscoverParamsSchema.safeParse({ includeSchemas: false });
+      const result = RpcDiscoverParamsSchema.safeParse({
+        includeSchemas: false,
+      });
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data?.includeSchemas).toBe(false);
@@ -364,7 +372,9 @@ describe('JSON-RPC 2.0 compatibility', () => {
 
   describe('isJsonRpcMessage', () => {
     it('should detect JSON-RPC 2.0 request', () => {
-      expect(isJsonRpcMessage({ jsonrpc: '2.0', id: 1, method: 'test' })).toBe(true);
+      expect(isJsonRpcMessage({ jsonrpc: '2.0', id: 1, method: 'test' })).toBe(
+        true
+      );
     });
 
     it('should detect JSON-RPC 2.0 notification', () => {
@@ -372,7 +382,9 @@ describe('JSON-RPC 2.0 compatibility', () => {
     });
 
     it('should reject native v2 frame', () => {
-      expect(isJsonRpcMessage({ type: 'req', id: '1', method: 'test' })).toBe(false);
+      expect(isJsonRpcMessage({ type: 'req', id: '1', method: 'test' })).toBe(
+        false
+      );
     });
 
     it('should reject null/undefined/primitives', () => {
@@ -480,7 +492,9 @@ describe('JSON-RPC 2.0 compatibility', () => {
       expect(rpc.jsonrpc).toBe('2.0');
       expect(rpc.id).toBe('r-1');
       expect('result' in rpc).toBe(true);
-      expect((rpc as JsonRpcSuccessResponse).result).toEqual({ result: 'data' });
+      expect((rpc as JsonRpcSuccessResponse).result).toEqual({
+        result: 'data',
+      });
     });
 
     it('should convert a successful response with null payload', () => {
@@ -610,12 +624,18 @@ describe('JSON-RPC 2.0 compatibility', () => {
 
   describe('error code utilities', () => {
     it('wundrErrorToJsonRpcCode should map known codes', () => {
-      expect(wundrErrorToJsonRpcCode({ code: ErrorCodes.NOT_FOUND, message: '' })).toBe(-32601);
-      expect(wundrErrorToJsonRpcCode({ code: ErrorCodes.INTERNAL, message: '' })).toBe(-32603);
+      expect(
+        wundrErrorToJsonRpcCode({ code: ErrorCodes.NOT_FOUND, message: '' })
+      ).toBe(-32601);
+      expect(
+        wundrErrorToJsonRpcCode({ code: ErrorCodes.INTERNAL, message: '' })
+      ).toBe(-32603);
     });
 
     it('wundrErrorToJsonRpcCode should default to -32603 for unknown codes', () => {
-      expect(wundrErrorToJsonRpcCode({ code: 'UNKNOWN', message: '' })).toBe(-32603);
+      expect(wundrErrorToJsonRpcCode({ code: 'UNKNOWN', message: '' })).toBe(
+        -32603
+      );
     });
 
     it('jsonRpcCodeToWundrError should map known codes', () => {
@@ -630,7 +650,10 @@ describe('JSON-RPC 2.0 compatibility', () => {
 
     it('should round-trip known error codes', () => {
       const wundrCode = ErrorCodes.RATE_LIMITED;
-      const jsonRpcCode = wundrErrorToJsonRpcCode({ code: wundrCode, message: '' });
+      const jsonRpcCode = wundrErrorToJsonRpcCode({
+        code: wundrCode,
+        message: '',
+      });
       const backToWundr = jsonRpcCodeToWundrError(jsonRpcCode);
       expect(backToWundr).toBe(wundrCode);
     });
@@ -697,7 +720,9 @@ describe('Protocol Upgrade (v1 -> v2)', () => {
 
     describe('isJsonRpc2', () => {
       it('should detect JSON-RPC 2.0', () => {
-        expect(isJsonRpc2({ jsonrpc: '2.0', id: 1, method: 'test' })).toBe(true);
+        expect(isJsonRpc2({ jsonrpc: '2.0', id: 1, method: 'test' })).toBe(
+          true
+        );
       });
 
       it('should reject non-2.0', () => {
@@ -715,11 +740,15 @@ describe('Protocol Upgrade (v1 -> v2)', () => {
       });
 
       it('should detect v2 format', () => {
-        expect(detectFormat({ type: 'req', id: '1', method: 'test' })).toBe('v2');
+        expect(detectFormat({ type: 'req', id: '1', method: 'test' })).toBe(
+          'v2'
+        );
       });
 
       it('should detect jsonrpc2 format', () => {
-        expect(detectFormat({ jsonrpc: '2.0', id: 1, method: 'test' })).toBe('jsonrpc2');
+        expect(detectFormat({ jsonrpc: '2.0', id: 1, method: 'test' })).toBe(
+          'jsonrpc2'
+        );
       });
 
       it('should return unknown for unrecognized formats', () => {
@@ -763,46 +792,84 @@ describe('Protocol Upgrade (v1 -> v2)', () => {
     });
 
     it('should map all known session actions', () => {
-      expect(v1RequestToV2({ action: 'createSession' }).method).toBe('session.create');
-      expect(v1RequestToV2({ action: 'resumeSession' }).method).toBe('session.resume');
-      expect(v1RequestToV2({ action: 'stopSession' }).method).toBe('session.stop');
-      expect(v1RequestToV2({ action: 'listSessions' }).method).toBe('session.list');
-      expect(v1RequestToV2({ action: 'sessionStatus' }).method).toBe('session.status');
-      expect(v1RequestToV2({ action: 'getSessionStatus' }).method).toBe('session.status');
+      expect(v1RequestToV2({ action: 'createSession' }).method).toBe(
+        'session.create'
+      );
+      expect(v1RequestToV2({ action: 'resumeSession' }).method).toBe(
+        'session.resume'
+      );
+      expect(v1RequestToV2({ action: 'stopSession' }).method).toBe(
+        'session.stop'
+      );
+      expect(v1RequestToV2({ action: 'listSessions' }).method).toBe(
+        'session.list'
+      );
+      expect(v1RequestToV2({ action: 'sessionStatus' }).method).toBe(
+        'session.status'
+      );
+      expect(v1RequestToV2({ action: 'getSessionStatus' }).method).toBe(
+        'session.status'
+      );
     });
 
     it('should map prompt actions', () => {
-      expect(v1RequestToV2({ action: 'submitPrompt' }).method).toBe('prompt.submit');
-      expect(v1RequestToV2({ action: 'cancelPrompt' }).method).toBe('prompt.cancel');
+      expect(v1RequestToV2({ action: 'submitPrompt' }).method).toBe(
+        'prompt.submit'
+      );
+      expect(v1RequestToV2({ action: 'cancelPrompt' }).method).toBe(
+        'prompt.cancel'
+      );
     });
 
     it('should map tool actions', () => {
-      expect(v1RequestToV2({ action: 'approveTool' }).method).toBe('tool.approve');
+      expect(v1RequestToV2({ action: 'approveTool' }).method).toBe(
+        'tool.approve'
+      );
       expect(v1RequestToV2({ action: 'denyTool' }).method).toBe('tool.deny');
     });
 
     it('should map agent actions', () => {
-      expect(v1RequestToV2({ action: 'spawnAgent' }).method).toBe('agent.spawn');
-      expect(v1RequestToV2({ action: 'agentStatus' }).method).toBe('agent.status');
+      expect(v1RequestToV2({ action: 'spawnAgent' }).method).toBe(
+        'agent.spawn'
+      );
+      expect(v1RequestToV2({ action: 'agentStatus' }).method).toBe(
+        'agent.status'
+      );
       expect(v1RequestToV2({ action: 'stopAgent' }).method).toBe('agent.stop');
     });
 
     it('should map team actions', () => {
-      expect(v1RequestToV2({ action: 'createTeam' }).method).toBe('team.create');
-      expect(v1RequestToV2({ action: 'teamStatus' }).method).toBe('team.status');
-      expect(v1RequestToV2({ action: 'teamMessage' }).method).toBe('team.message');
-      expect(v1RequestToV2({ action: 'dissolveTeam' }).method).toBe('team.dissolve');
+      expect(v1RequestToV2({ action: 'createTeam' }).method).toBe(
+        'team.create'
+      );
+      expect(v1RequestToV2({ action: 'teamStatus' }).method).toBe(
+        'team.status'
+      );
+      expect(v1RequestToV2({ action: 'teamMessage' }).method).toBe(
+        'team.message'
+      );
+      expect(v1RequestToV2({ action: 'dissolveTeam' }).method).toBe(
+        'team.dissolve'
+      );
     });
 
     it('should map memory actions', () => {
-      expect(v1RequestToV2({ action: 'queryMemory' }).method).toBe('memory.query');
-      expect(v1RequestToV2({ action: 'storeMemory' }).method).toBe('memory.store');
-      expect(v1RequestToV2({ action: 'deleteMemory' }).method).toBe('memory.delete');
+      expect(v1RequestToV2({ action: 'queryMemory' }).method).toBe(
+        'memory.query'
+      );
+      expect(v1RequestToV2({ action: 'storeMemory' }).method).toBe(
+        'memory.store'
+      );
+      expect(v1RequestToV2({ action: 'deleteMemory' }).method).toBe(
+        'memory.delete'
+      );
     });
 
     it('should map health and auth actions', () => {
       expect(v1RequestToV2({ action: 'ping' }).method).toBe('health.ping');
-      expect(v1RequestToV2({ action: 'healthStatus' }).method).toBe('health.status');
+      expect(v1RequestToV2({ action: 'healthStatus' }).method).toBe(
+        'health.status'
+      );
       expect(v1RequestToV2({ action: 'connect' }).method).toBe('auth.connect');
       expect(v1RequestToV2({ action: 'refresh' }).method).toBe('auth.refresh');
       expect(v1RequestToV2({ action: 'logout' }).method).toBe('auth.logout');
@@ -810,7 +877,9 @@ describe('Protocol Upgrade (v1 -> v2)', () => {
 
     it('should map subscription actions', () => {
       expect(v1RequestToV2({ action: 'subscribe' }).method).toBe('subscribe');
-      expect(v1RequestToV2({ action: 'unsubscribe' }).method).toBe('unsubscribe');
+      expect(v1RequestToV2({ action: 'unsubscribe' }).method).toBe(
+        'unsubscribe'
+      );
     });
   });
 
@@ -926,7 +995,11 @@ describe('Protocol Upgrade (v1 -> v2)', () => {
 
     describe('inbound (v1 JSON -> v2 RequestFrame)', () => {
       it('should parse and convert a v1 request', () => {
-        const json = JSON.stringify({ action: 'createSession', data: { name: 'test' }, requestId: 'r-1' });
+        const json = JSON.stringify({
+          action: 'createSession',
+          data: { name: 'test' },
+          requestId: 'r-1',
+        });
         const frame = adapter.inbound(json);
         expect(frame).not.toBeNull();
         expect(frame!.type).toBe('req');
@@ -953,7 +1026,9 @@ describe('Protocol Upgrade (v1 -> v2)', () => {
     describe('outboundResponse (v2 ResponseFrame -> v1 JSON)', () => {
       it('should convert response and use tracked original action', () => {
         // First, inbound a v1 request to track the action
-        adapter.inbound(JSON.stringify({ action: 'createSession', requestId: 'r-1' }));
+        adapter.inbound(
+          JSON.stringify({ action: 'createSession', requestId: 'r-1' })
+        );
         expect(adapter.pendingCount).toBe(1);
 
         // Now convert the outbound response
@@ -1035,7 +1110,9 @@ describe('Protocol Upgrade (v1 -> v2)', () => {
 
       it('should handle interleaved events during a request', () => {
         // Client sends request
-        adapter.inbound(JSON.stringify({ action: 'submitPrompt', requestId: 'req-1' }));
+        adapter.inbound(
+          JSON.stringify({ action: 'submitPrompt', requestId: 'req-1' })
+        );
 
         // Server pushes events
         const event1 = adapter.outboundEvent({

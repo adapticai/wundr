@@ -94,7 +94,9 @@ export class PluginIpcBus {
   private pluginPendingCount = new Map<string, number>();
   private config: IpcBusConfig;
   private logger: Logger;
-  private accessChecker: ((from: string, to: string, channel: string) => boolean) | null = null;
+  private accessChecker:
+    | ((from: string, to: string, channel: string) => boolean)
+    | null = null;
 
   constructor(config?: Partial<IpcBusConfig>) {
     this.config = { ...DEFAULT_IPC_CONFIG, ...config };
@@ -106,7 +108,9 @@ export class PluginIpcBus {
    * a message to a destination plugin on a given channel. This enables
    * the permission system to gate inter-plugin communication.
    */
-  setAccessChecker(checker: (from: string, to: string, channel: string) => boolean): void {
+  setAccessChecker(
+    checker: (from: string, to: string, channel: string) => boolean
+  ): void {
     this.accessChecker = checker;
   }
 
@@ -117,7 +121,11 @@ export class PluginIpcBus {
   /**
    * Subscribe a plugin to a channel. Returns an unsubscribe function.
    */
-  subscribe(pluginName: string, channel: string, handler: IpcHandler): () => void {
+  subscribe(
+    pluginName: string,
+    channel: string,
+    handler: IpcHandler
+  ): () => void {
     const sub: IpcSubscription = { pluginName, channel, handler };
 
     const list = this.subscriptions.get(channel) ?? [];
@@ -128,18 +136,24 @@ export class PluginIpcBus {
     channels.add(channel);
     this.pluginChannels.set(pluginName, channels);
 
-    this.logger.debug(`Plugin "${pluginName}" subscribed to channel "${channel}"`);
+    this.logger.debug(
+      `Plugin "${pluginName}" subscribed to channel "${channel}"`
+    );
 
     return () => {
       this.unsubscribeSingle(pluginName, channel, handler);
     };
   }
 
-  private unsubscribeSingle(pluginName: string, channel: string, handler: IpcHandler): void {
+  private unsubscribeSingle(
+    pluginName: string,
+    channel: string,
+    handler: IpcHandler
+  ): void {
     const list = this.subscriptions.get(channel);
     if (list) {
       const filtered = list.filter(
-        s => !(s.pluginName === pluginName && s.handler === handler),
+        s => !(s.pluginName === pluginName && s.handler === handler)
       );
       if (filtered.length === 0) {
         this.subscriptions.delete(channel);
@@ -155,8 +169,8 @@ export class PluginIpcBus {
   unsubscribeAll(pluginName: string): void {
     const channels = this.pluginChannels.get(pluginName);
     if (!channels) {
-return;
-}
+      return;
+    }
 
     for (const channel of channels) {
       const list = this.subscriptions.get(channel);
@@ -174,7 +188,11 @@ return;
 
     // Reject pending requests from this plugin
     for (const [id, pending] of this.pendingRequests) {
-      pending.reject(new Error(`Plugin "${pluginName}" unsubscribed; pending request cancelled`));
+      pending.reject(
+        new Error(
+          `Plugin "${pluginName}" unsubscribed; pending request cancelled`
+        )
+      );
       clearTimeout(pending.timer);
       this.pendingRequests.delete(id);
     }
@@ -191,7 +209,11 @@ return;
    * Send an event (fire-and-forget) from one plugin to a channel.
    * All subscribers on that channel receive the message.
    */
-  async sendEvent(from: string, channel: string, payload: unknown): Promise<void> {
+  async sendEvent(
+    from: string,
+    channel: string,
+    payload: unknown
+  ): Promise<void> {
     this.validatePayloadSize(payload);
 
     const message: IpcMessage = {
@@ -208,18 +230,21 @@ return;
 
     for (const sub of subs) {
       if (sub.pluginName === from) {
-continue;
-} // Don't deliver to self
+        continue;
+      } // Don't deliver to self
 
-      if (this.accessChecker && !this.accessChecker(from, sub.pluginName, channel)) {
+      if (
+        this.accessChecker &&
+        !this.accessChecker(from, sub.pluginName, channel)
+      ) {
         this.logger.warn(
-          `IPC access denied: "${from}" -> "${sub.pluginName}" on channel "${channel}"`,
+          `IPC access denied: "${from}" -> "${sub.pluginName}" on channel "${channel}"`
         );
         continue;
       }
 
       deliveryPromises.push(
-        this.deliverToHandler(sub, { ...message, to: sub.pluginName }),
+        this.deliverToHandler(sub, { ...message, to: sub.pluginName })
       );
     }
 
@@ -233,7 +258,7 @@ continue;
     from: string,
     to: string,
     channel: string,
-    payload: unknown,
+    payload: unknown
   ): Promise<unknown> {
     this.validatePayloadSize(payload);
 
@@ -241,12 +266,14 @@ continue;
     const pending = this.pluginPendingCount.get(from) ?? 0;
     if (pending >= this.config.maxPendingPerPlugin) {
       throw new Error(
-        `Plugin "${from}" has too many pending IPC requests (${pending}/${this.config.maxPendingPerPlugin})`,
+        `Plugin "${from}" has too many pending IPC requests (${pending}/${this.config.maxPendingPerPlugin})`
       );
     }
 
     if (this.accessChecker && !this.accessChecker(from, to, channel)) {
-      throw new Error(`IPC access denied: "${from}" -> "${to}" on channel "${channel}"`);
+      throw new Error(
+        `IPC access denied: "${from}" -> "${to}" on channel "${channel}"`
+      );
     }
 
     const correlationId = generateId();
@@ -267,8 +294,8 @@ continue;
         this.decrementPending(from);
         reject(
           new Error(
-            `IPC request timeout: "${from}" -> "${to}" on channel "${channel}" after ${this.config.requestTimeoutMs}ms`,
-          ),
+            `IPC request timeout: "${from}" -> "${to}" on channel "${channel}" after ${this.config.requestTimeoutMs}ms`
+          )
         );
       }, this.config.requestTimeoutMs);
 
@@ -284,8 +311,8 @@ continue;
         this.decrementPending(from);
         reject(
           new Error(
-            `No handler registered by plugin "${to}" on channel "${channel}"`,
-          ),
+            `No handler registered by plugin "${to}" on channel "${channel}"`
+          )
         );
         return;
       }
@@ -307,7 +334,7 @@ continue;
             this.pendingRequests.delete(correlationId);
             this.decrementPending(from);
             pendingReq.reject(
-              err instanceof Error ? err : new Error(String(err)),
+              err instanceof Error ? err : new Error(String(err))
             );
           }
         });
@@ -317,7 +344,11 @@ continue;
   /**
    * Broadcast a message to all subscribers on a channel.
    */
-  async broadcast(from: string, channel: string, payload: unknown): Promise<void> {
+  async broadcast(
+    from: string,
+    channel: string,
+    payload: unknown
+  ): Promise<void> {
     this.validatePayloadSize(payload);
 
     const message: IpcMessage = {
@@ -334,10 +365,10 @@ continue;
 
     for (const sub of subs) {
       if (sub.pluginName === from) {
-continue;
-}
+        continue;
+      }
       deliveries.push(
-        this.deliverToHandler(sub, { ...message, to: sub.pluginName }),
+        this.deliverToHandler(sub, { ...message, to: sub.pluginName })
       );
     }
 
@@ -348,14 +379,17 @@ continue;
   // Internal
   // -----------------------------------------------------------------------
 
-  private async deliverToHandler(sub: IpcSubscription, message: IpcMessage): Promise<any> {
+  private async deliverToHandler(
+    sub: IpcSubscription,
+    message: IpcMessage
+  ): Promise<any> {
     try {
       return await sub.handler(message);
     } catch (err) {
       this.logger.error(
         `IPC handler error in plugin "${sub.pluginName}" on channel "${sub.channel}": ${
           err instanceof Error ? err.message : String(err)
-        }`,
+        }`
       );
       throw err;
     }
@@ -374,7 +408,7 @@ continue;
     const serialized = JSON.stringify(payload);
     if (serialized.length > this.config.maxPayloadBytes) {
       throw new Error(
-        `IPC payload exceeds maximum size (${serialized.length} > ${this.config.maxPayloadBytes} bytes)`,
+        `IPC payload exceeds maximum size (${serialized.length} > ${this.config.maxPayloadBytes} bytes)`
       );
     }
   }

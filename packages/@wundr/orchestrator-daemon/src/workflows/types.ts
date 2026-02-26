@@ -33,7 +33,12 @@ export type WorkflowStatus = 'DRAFT' | 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
  *                     \-> FAILED
  *                     \-> CANCELLED
  */
-export type ExecutionStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+export type ExecutionStatus =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'CANCELLED';
 
 /**
  * Supported step types. Each type drives different execution semantics in
@@ -266,12 +271,27 @@ export interface WorkflowEngineConfig {
 export interface WorkflowEventMap {
   'execution:started': (payload: { execution: WorkflowExecution }) => void;
   'execution:completed': (payload: { execution: WorkflowExecution }) => void;
-  'execution:failed': (payload: { execution: WorkflowExecution; error: string }) => void;
+  'execution:failed': (payload: {
+    execution: WorkflowExecution;
+    error: string;
+  }) => void;
   'execution:cancelled': (payload: { execution: WorkflowExecution }) => void;
-  'step:started': (payload: { execution: WorkflowExecution; stepId: string }) => void;
-  'step:completed': (payload: { execution: WorkflowExecution; result: StepResult }) => void;
-  'step:failed': (payload: { execution: WorkflowExecution; result: StepResult }) => void;
-  'step:skipped': (payload: { execution: WorkflowExecution; stepId: string }) => void;
+  'step:started': (payload: {
+    execution: WorkflowExecution;
+    stepId: string;
+  }) => void;
+  'step:completed': (payload: {
+    execution: WorkflowExecution;
+    result: StepResult;
+  }) => void;
+  'step:failed': (payload: {
+    execution: WorkflowExecution;
+    result: StepResult;
+  }) => void;
+  'step:skipped': (payload: {
+    execution: WorkflowExecution;
+    stepId: string;
+  }) => void;
 }
 
 // =============================================================================
@@ -301,7 +321,11 @@ export class WorkflowError extends Error {
   readonly code: WorkflowErrorCode;
   readonly details?: Record<string, unknown>;
 
-  constructor(code: WorkflowErrorCode, message: string, details?: Record<string, unknown>) {
+  constructor(
+    code: WorkflowErrorCode,
+    message: string,
+    details?: Record<string, unknown>
+  ) {
     super(message);
     this.name = 'WorkflowError';
     this.code = code;
@@ -312,7 +336,11 @@ export class WorkflowError extends Error {
 /** Thrown when a workflow definition ID cannot be found. */
 export class WorkflowNotFoundError extends WorkflowError {
   constructor(workflowId: string) {
-    super(WorkflowErrorCode.WORKFLOW_NOT_FOUND, `Workflow not found: ${workflowId}`, { workflowId });
+    super(
+      WorkflowErrorCode.WORKFLOW_NOT_FOUND,
+      `Workflow not found: ${workflowId}`,
+      { workflowId }
+    );
     this.name = 'WorkflowNotFoundError';
   }
 }
@@ -320,7 +348,11 @@ export class WorkflowNotFoundError extends WorkflowError {
 /** Thrown when an execution ID cannot be found. */
 export class ExecutionNotFoundError extends WorkflowError {
   constructor(executionId: string) {
-    super(WorkflowErrorCode.EXECUTION_NOT_FOUND, `Execution not found: ${executionId}`, { executionId });
+    super(
+      WorkflowErrorCode.EXECUTION_NOT_FOUND,
+      `Execution not found: ${executionId}`,
+      { executionId }
+    );
     this.name = 'ExecutionNotFoundError';
   }
 }
@@ -328,7 +360,11 @@ export class ExecutionNotFoundError extends WorkflowError {
 /** Thrown when attempting to execute a workflow that is not ACTIVE. */
 export class WorkflowInactiveError extends WorkflowError {
   constructor(workflowId: string, status: WorkflowStatus) {
-    super(WorkflowErrorCode.WORKFLOW_INACTIVE, `Workflow ${workflowId} is not active (status: ${status})`, { workflowId, status });
+    super(
+      WorkflowErrorCode.WORKFLOW_INACTIVE,
+      `Workflow ${workflowId} is not active (status: ${status})`,
+      { workflowId, status }
+    );
     this.name = 'WorkflowInactiveError';
   }
 }
@@ -339,7 +375,7 @@ export class WorkflowCircularDependencyError extends WorkflowError {
     super(
       WorkflowErrorCode.CIRCULAR_DEPENDENCY,
       `Circular step dependency detected: ${cycle.join(' -> ')}`,
-      { cycle },
+      { cycle }
     );
     this.name = 'WorkflowCircularDependencyError';
   }
@@ -348,7 +384,11 @@ export class WorkflowCircularDependencyError extends WorkflowError {
 /** Thrown when a step exceeds its configured timeout. */
 export class StepTimeoutError extends WorkflowError {
   constructor(stepId: string, timeoutMs: number) {
-    super(WorkflowErrorCode.STEP_TIMEOUT, `Step ${stepId} timed out after ${timeoutMs}ms`, { stepId, timeoutMs });
+    super(
+      WorkflowErrorCode.STEP_TIMEOUT,
+      `Step ${stepId} timed out after ${timeoutMs}ms`,
+      { stepId, timeoutMs }
+    );
     this.name = 'StepTimeoutError';
   }
 }

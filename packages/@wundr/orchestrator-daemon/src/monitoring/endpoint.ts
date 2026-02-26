@@ -26,7 +26,6 @@ import type { HealthChecker } from './health';
 import type { MetricsRegistry } from './metrics';
 import type { MetricRetentionStore } from './retention';
 
-
 /**
  * Health check status
  */
@@ -100,7 +99,12 @@ export interface MetricsServerConfig {
 export class MetricsServer {
   private server: http.Server | null = null;
   private registry: MetricsRegistry;
-  private config: Required<Omit<MetricsServerConfig, 'healthChecks' | 'healthChecker' | 'retentionStore' | 'alertManager'>> & {
+  private config: Required<
+    Omit<
+      MetricsServerConfig,
+      'healthChecks' | 'healthChecker' | 'retentionStore' | 'alertManager'
+    >
+  > & {
     healthChecks: HealthChecks;
     healthChecker: HealthChecker | null;
     retentionStore: MetricRetentionStore | null;
@@ -110,10 +114,7 @@ export class MetricsServer {
   private startTime: number;
   private isReady: boolean = false;
 
-  constructor(
-    registry: MetricsRegistry,
-    config: MetricsServerConfig = {},
-  ) {
+  constructor(registry: MetricsRegistry, config: MetricsServerConfig = {}) {
     this.registry = registry;
     this.config = {
       port: config.port ?? 9090,
@@ -143,7 +144,7 @@ export class MetricsServer {
       try {
         this.server = http.createServer(this.handleRequest.bind(this));
 
-        this.server.on('error', (error) => {
+        this.server.on('error', error => {
           this.logger.error('Server error:', error);
           reject(error);
         });
@@ -151,7 +152,7 @@ export class MetricsServer {
         this.server.listen(this.config.port, this.config.host, () => {
           this.isReady = true;
           this.logger.info(
-            `Metrics server listening on http://${this.config.host}:${this.config.port}`,
+            `Metrics server listening on http://${this.config.host}:${this.config.port}`
           );
           resolve();
         });
@@ -174,7 +175,7 @@ export class MetricsServer {
     return new Promise((resolve, reject) => {
       this.isReady = false;
 
-      this.server!.close((error) => {
+      this.server!.close(error => {
         if (error) {
           this.logger.error('Error stopping server:', error);
           reject(error);
@@ -206,7 +207,7 @@ export class MetricsServer {
    */
   private async handleRequest(
     req: http.IncomingMessage,
-    res: http.ServerResponse,
+    res: http.ServerResponse
   ): Promise<void> {
     const startTime = Date.now();
 
@@ -224,7 +225,9 @@ export class MetricsServer {
 
     // Log request
     if (this.config.enableLogging) {
-      this.logger.debug(`${req.method} ${req.url} from ${req.socket.remoteAddress}`);
+      this.logger.debug(
+        `${req.method} ${req.url} from ${req.socket.remoteAddress}`
+      );
     }
 
     try {
@@ -261,7 +264,9 @@ export class MetricsServer {
       // Log response time
       if (this.config.enableLogging) {
         const duration = Date.now() - startTime;
-        this.logger.debug(`${req.method} ${req.url} completed in ${duration}ms`);
+        this.logger.debug(
+          `${req.method} ${req.url} completed in ${duration}ms`
+        );
       }
     } catch (error) {
       this.handleError(error, req, res);
@@ -274,7 +279,7 @@ export class MetricsServer {
    */
   private async handleMetrics(
     req: http.IncomingMessage,
-    res: http.ServerResponse,
+    res: http.ServerResponse
   ): Promise<void> {
     if (req.method !== 'GET') {
       this.sendMethodNotAllowed(res, ['GET']);
@@ -302,7 +307,7 @@ export class MetricsServer {
    */
   private async handleHealth(
     req: http.IncomingMessage,
-    res: http.ServerResponse,
+    res: http.ServerResponse
   ): Promise<void> {
     if (req.method !== 'GET') {
       this.sendMethodNotAllowed(res, ['GET']);
@@ -316,8 +321,12 @@ export class MetricsServer {
         this.sendJson(res, statusCode, enhanced);
       } else {
         const healthResponse = await this.performHealthChecks();
-        const statusCode = healthResponse.status === 'healthy' ? 200 :
-                          healthResponse.status === 'degraded' ? 200 : 503;
+        const statusCode =
+          healthResponse.status === 'healthy'
+            ? 200
+            : healthResponse.status === 'degraded'
+              ? 200
+              : 503;
         this.sendJson(res, statusCode, healthResponse);
       }
     } catch (error) {
@@ -333,7 +342,7 @@ export class MetricsServer {
    */
   private async handleReady(
     req: http.IncomingMessage,
-    res: http.ServerResponse,
+    res: http.ServerResponse
   ): Promise<void> {
     if (req.method !== 'GET') {
       this.sendMethodNotAllowed(res, ['GET']);
@@ -363,7 +372,7 @@ export class MetricsServer {
    */
   private handleLive(
     req: http.IncomingMessage,
-    res: http.ServerResponse,
+    res: http.ServerResponse
   ): void {
     if (req.method !== 'GET') {
       this.sendMethodNotAllowed(res, ['GET']);
@@ -386,7 +395,7 @@ export class MetricsServer {
    */
   private handleDashboard(
     req: http.IncomingMessage,
-    res: http.ServerResponse,
+    res: http.ServerResponse
   ): void {
     if (req.method !== 'GET') {
       this.sendMethodNotAllowed(res, ['GET']);
@@ -397,7 +406,12 @@ export class MetricsServer {
       this.sendJson(res, 200, {
         message: 'Retention store not configured',
         metrics: [],
-        summary: { totalMetrics: 0, totalRawPoints: 0, totalMinuteRollups: 0, totalHourRollups: 0 },
+        summary: {
+          totalMetrics: 0,
+          totalRawPoints: 0,
+          totalMinuteRollups: 0,
+          totalHourRollups: 0,
+        },
       });
       return;
     }
@@ -416,18 +430,18 @@ export class MetricsServer {
       if (since) {
         const parsed = parseInt(since, 10);
         if (!isNaN(parsed)) {
-sinceMs = parsed;
-}
+          sinceMs = parsed;
+        }
       }
       if (params.get('raw') === 'false') {
-includeRaw = false;
-}
+        includeRaw = false;
+      }
       if (params.get('minute') === 'false') {
-includeMinute = false;
-}
+        includeMinute = false;
+      }
       if (params.get('hour') === 'false') {
-includeHour = false;
-}
+        includeHour = false;
+      }
     }
 
     const dashboard = this.config.retentionStore.exportForDashboard({
@@ -446,7 +460,7 @@ includeHour = false;
    */
   private handleAlerts(
     req: http.IncomingMessage,
-    res: http.ServerResponse,
+    res: http.ServerResponse
   ): void {
     if (req.method !== 'GET') {
       this.sendMethodNotAllowed(res, ['GET']);
@@ -456,7 +470,13 @@ includeHour = false;
     if (!this.config.alertManager) {
       this.sendJson(res, 200, {
         message: 'Alert manager not configured',
-        summary: { total: 0, firing: 0, pending: 0, resolved: 0, bySeverity: { info: 0, warning: 0, critical: 0 } },
+        summary: {
+          total: 0,
+          firing: 0,
+          pending: 0,
+          resolved: 0,
+          bySeverity: { info: 0, warning: 0, critical: 0 },
+        },
         alerts: [],
       });
       return;
@@ -481,7 +501,7 @@ includeHour = false;
    */
   private async handleLogLevel(
     req: http.IncomingMessage,
-    res: http.ServerResponse,
+    res: http.ServerResponse
   ): Promise<void> {
     const registry = LogLevelRegistry.getInstance();
 
@@ -525,7 +545,11 @@ includeHour = false;
             ...registry.getSnapshot(),
           });
         } else {
-          this.sendError(res, 400, 'Invalid request. Provide { level: "debug"|"info"|"warn"|"error", component?: string } or { reset: true }');
+          this.sendError(
+            res,
+            400,
+            'Invalid request. Provide { level: "debug"|"info"|"warn"|"error", component?: string } or { reset: true }'
+          );
         }
       } catch {
         this.sendError(res, 400, 'Invalid JSON body');
@@ -553,7 +577,7 @@ includeHour = false;
    */
   private handleNotFound(
     req: http.IncomingMessage,
-    res: http.ServerResponse,
+    res: http.ServerResponse
   ): void {
     this.sendError(res, 404, 'Not Found');
   }
@@ -564,7 +588,7 @@ includeHour = false;
   private handleError(
     error: unknown,
     req: http.IncomingMessage,
-    res: http.ServerResponse,
+    res: http.ServerResponse
   ): void {
     this.logger.error(`Error handling ${req.method} ${req.url}:`, error);
 
@@ -591,13 +615,14 @@ includeHour = false;
 
     if (this.config.healthChecks.redis) {
       checkPromises.push(
-        this.config.healthChecks.redis()
+        this.config.healthChecks
+          .redis()
           .then(result => {
- checks.redis = result; 
-})
+            checks.redis = result;
+          })
           .catch(() => {
- checks.redis = false; 
-}),
+            checks.redis = false;
+          })
       );
     } else {
       // If no health check provided, assume healthy
@@ -606,13 +631,14 @@ includeHour = false;
 
     if (this.config.healthChecks.database) {
       checkPromises.push(
-        this.config.healthChecks.database()
+        this.config.healthChecks
+          .database()
           .then(result => {
- checks.database = result; 
-})
+            checks.database = result;
+          })
           .catch(() => {
- checks.database = false; 
-}),
+            checks.database = false;
+          })
       );
     } else {
       checks.database = true;
@@ -620,13 +646,14 @@ includeHour = false;
 
     if (this.config.healthChecks.federationRegistry) {
       checkPromises.push(
-        this.config.healthChecks.federationRegistry()
+        this.config.healthChecks
+          .federationRegistry()
           .then(result => {
- checks.federationRegistry = result; 
-})
+            checks.federationRegistry = result;
+          })
           .catch(() => {
- checks.federationRegistry = false; 
-}),
+            checks.federationRegistry = false;
+          })
       );
     } else {
       checks.federationRegistry = true;
@@ -636,8 +663,10 @@ includeHour = false;
     await Promise.all(checkPromises);
 
     // Determine overall health status
-    const allHealthy = checks.redis && checks.database && checks.federationRegistry;
-    const someHealthy = checks.redis || checks.database || checks.federationRegistry;
+    const allHealthy =
+      checks.redis && checks.database && checks.federationRegistry;
+    const someHealthy =
+      checks.redis || checks.database || checks.federationRegistry;
 
     let status: HealthStatus;
     if (allHealthy) {
@@ -673,7 +702,7 @@ includeHour = false;
   private sendJson(
     res: http.ServerResponse,
     statusCode: number,
-    data: unknown,
+    data: unknown
   ): void {
     const body = JSON.stringify(data, null, 2);
 
@@ -690,7 +719,7 @@ includeHour = false;
   private sendError(
     res: http.ServerResponse,
     statusCode: number,
-    message: string,
+    message: string
   ): void {
     const errorBody = {
       error: message,
@@ -706,10 +735,10 @@ includeHour = false;
    */
   private sendMethodNotAllowed(
     res: http.ServerResponse,
-    allowedMethods: string[],
+    allowedMethods: string[]
   ): void {
     res.writeHead(405, {
-      'Allow': allowedMethods.join(', '),
+      Allow: allowedMethods.join(', '),
       'Content-Type': 'application/json',
     });
 
@@ -728,7 +757,7 @@ includeHour = false;
  */
 export function createMetricsServer(
   registry: MetricsRegistry,
-  config?: MetricsServerConfig,
+  config?: MetricsServerConfig
 ): MetricsServer {
   return new MetricsServer(registry, config);
 }

@@ -99,8 +99,7 @@ export class TerminalChannelAdapter extends BaseChannelAdapter {
 
     const terminalConfig = config as TerminalChannelConfig;
     this.terminalConfig = terminalConfig;
-    this.conversationId =
-      terminalConfig.conversationId ?? 'terminal:local';
+    this.conversationId = terminalConfig.conversationId ?? 'terminal:local';
 
     this.rl = readline.createInterface({
       input: process.stdin,
@@ -120,7 +119,7 @@ export class TerminalChannelAdapter extends BaseChannelAdapter {
 
     process.stdout.write(`\n${banner}\n`);
     process.stdout.write(
-      'Type messages to interact with the Orchestrator. Ctrl+C to exit.\n\n',
+      'Type messages to interact with the Orchestrator. Ctrl+C to exit.\n\n'
     );
 
     this.rl.prompt();
@@ -192,7 +191,7 @@ export class TerminalChannelAdapter extends BaseChannelAdapter {
         const indent = ' '.repeat(
           showTimestamps
             ? timestamp.length + 'Orchestrator: '.length
-            : 'Orchestrator: '.length,
+            : 'Orchestrator: '.length
         );
         process.stdout.write(`${indent}${lines[i]}\n`);
       }
@@ -219,7 +218,7 @@ export class TerminalChannelAdapter extends BaseChannelAdapter {
 
   async validateSender(
     _senderId: string,
-    _chatType: ChatType,
+    _chatType: ChatType
   ): Promise<SenderValidation> {
     // Terminal is always local, always allowed.
     return { allowed: true };
@@ -236,8 +235,8 @@ export class TerminalChannelAdapter extends BaseChannelAdapter {
 
   private setupEventHandlers(): void {
     if (!this.rl) {
-return;
-}
+      return;
+    }
 
     this.rl.on('line', (input: string) => {
       const trimmed = input.trim();
@@ -309,10 +308,8 @@ return;
         break;
 
       case 'health':
-        void this.healthCheck().then((status) => {
-          process.stdout.write(
-            `Health: ${JSON.stringify(status, null, 2)}\n`,
-          );
+        void this.healthCheck().then(status => {
+          process.stdout.write(`Health: ${JSON.stringify(status, null, 2)}\n`);
           this.rl?.prompt();
         });
         break;
@@ -331,13 +328,15 @@ return;
             '  /clear   - Clear the terminal',
             '  /quit    - Disconnect and exit',
             '',
-          ].join('\n'),
+          ].join('\n')
         );
         this.rl?.prompt();
         break;
 
       default:
-        process.stdout.write(`Unknown command: /${command}. Type /help for available commands.\n`);
+        process.stdout.write(
+          `Unknown command: /${command}. Type /help for available commands.\n`
+        );
         this.rl?.prompt();
         break;
     }

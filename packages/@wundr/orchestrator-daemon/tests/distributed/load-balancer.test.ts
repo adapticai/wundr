@@ -13,7 +13,7 @@ describe('LoadBalancer', () => {
 
   const createTestNode = (
     id: string,
-    overrides?: Partial<LoadBalancerNode>,
+    overrides?: Partial<LoadBalancerNode>
   ): LoadBalancerNode => ({
     id,
     endpoint: `http://node-${id}.example.com`,
@@ -136,7 +136,8 @@ describe('LoadBalancer', () => {
       loadBalancer.updateNodeLoad('node1', 0.3);
 
       expect(listener).toHaveBeenCalled();
-      const emittedLoad = listener.mock.calls[listener.mock.calls.length - 1][0];
+      const emittedLoad =
+        listener.mock.calls[listener.mock.calls.length - 1][0];
       expect(emittedLoad.currentLoad).toBe(0.3);
     });
   });
@@ -301,17 +302,17 @@ describe('LoadBalancer', () => {
 
     it('should select nodes with matching capabilities', () => {
       loadBalancer.addNode(
-        createTestNode('node1', { capabilities: ['session-management'] }),
+        createTestNode('node1', { capabilities: ['session-management'] })
       );
       loadBalancer.addNode(
         createTestNode('node2', {
           capabilities: ['session-management', 'gpu-compute'],
-        }),
+        })
       );
       loadBalancer.addNode(
         createTestNode('node3', {
           capabilities: ['session-management', 'gpu-compute', 'ml-inference'],
-        }),
+        })
       );
 
       const options: NodeSelectionOptions = {
@@ -325,12 +326,12 @@ describe('LoadBalancer', () => {
 
     it('should filter out nodes without required capabilities', () => {
       loadBalancer.addNode(
-        createTestNode('node1', { capabilities: ['session-management'] }),
+        createTestNode('node1', { capabilities: ['session-management'] })
       );
       loadBalancer.addNode(
         createTestNode('node2', {
           capabilities: ['session-management', 'gpu-compute'],
-        }),
+        })
       );
 
       const options: NodeSelectionOptions = {
@@ -498,7 +499,7 @@ describe('LoadBalancer', () => {
 
       expect(listener).toHaveBeenCalledWith(
         options,
-        'No eligible nodes meet the selection criteria',
+        'No eligible nodes meet the selection criteria'
       );
     });
 

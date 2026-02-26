@@ -24,9 +24,13 @@ async function main() {
     const charter = await loadCharter(templatePath, { useEnvOverrides: false });
     console.log(`   Loaded: ${charter.identity.name}`);
     console.log(`   Capabilities: ${charter.capabilities.length} capabilities`);
-    console.log(`   Responsibilities: ${charter.responsibilities.length} responsibilities\n`);
+    console.log(
+      `   Responsibilities: ${charter.responsibilities.length} responsibilities\n`
+    );
   } catch (error) {
-    console.log(`   Note: Using defaults (template can be found at: ${templatePath})\n`);
+    console.log(
+      `   Note: Using defaults (template can be found at: ${templatePath})\n`
+    );
   }
 
   // Example 3: Create and save a custom charter
@@ -41,7 +45,11 @@ async function main() {
       personality: 'Detail-oriented, constructive, and thorough',
     },
     capabilities: ['code_review', 'static_analysis', 'documentation'],
-    responsibilities: ['review_pull_requests', 'suggest_improvements', 'ensure_standards'],
+    responsibilities: [
+      'review_pull_requests',
+      'suggest_improvements',
+      'ensure_standards',
+    ],
     resourceLimits: {
       ...defaultCharter.resourceLimits,
       maxSessions: 5,
@@ -59,10 +67,16 @@ async function main() {
   process.env.ORCHESTRATOR_MAX_SESSIONS = '15';
   process.env.ORCHESTRATOR_MODEL = 'gpt-4o';
 
-  const charterWithEnv = await loadCharter(undefined, { useEnvOverrides: true });
+  const charterWithEnv = await loadCharter(undefined, {
+    useEnvOverrides: true,
+  });
   console.log(`   Name (from env): ${charterWithEnv.name}`);
-  console.log(`   Max Sessions (from env): ${charterWithEnv.resourceLimits.maxSessions}`);
-  console.log(`   Model (from env): ${charterWithEnv.operationalSettings.defaultModel}\n`);
+  console.log(
+    `   Max Sessions (from env): ${charterWithEnv.resourceLimits.maxSessions}`
+  );
+  console.log(
+    `   Model (from env): ${charterWithEnv.operationalSettings.defaultModel}\n`
+  );
 
   // Clean up env vars
   delete process.env.ORCHESTRATOR_NAME;
@@ -71,22 +85,36 @@ async function main() {
 
   // Example 5: Demonstrate safety heuristics
   console.log('5. Safety heuristics example...');
-  console.log(`   Auto-approve rules: ${defaultCharter.safetyHeuristics.autoApprove.length}`);
-  console.log(`   Require confirmation: ${defaultCharter.safetyHeuristics.requireConfirmation.length}`);
-  console.log(`   Always reject: ${defaultCharter.safetyHeuristics.alwaysReject.length}`);
-  console.log(`   Escalate: ${defaultCharter.safetyHeuristics.escalate.length}\n`);
+  console.log(
+    `   Auto-approve rules: ${defaultCharter.safetyHeuristics.autoApprove.length}`
+  );
+  console.log(
+    `   Require confirmation: ${defaultCharter.safetyHeuristics.requireConfirmation.length}`
+  );
+  console.log(
+    `   Always reject: ${defaultCharter.safetyHeuristics.alwaysReject.length}`
+  );
+  console.log(
+    `   Escalate: ${defaultCharter.safetyHeuristics.escalate.length}\n`
+  );
 
   // Example 6: Token budget management
   console.log('6. Token budget configuration...');
-  console.log(`   Hourly budget: ${defaultCharter.resourceLimits.tokenBudget.hourly.toLocaleString()} tokens`);
-  console.log(`   Daily budget: ${defaultCharter.resourceLimits.tokenBudget.daily.toLocaleString()} tokens`);
-  console.log(`   Per session: ${defaultCharter.resourceLimits.maxTokensPerSession.toLocaleString()} tokens\n`);
+  console.log(
+    `   Hourly budget: ${defaultCharter.resourceLimits.tokenBudget.hourly.toLocaleString()} tokens`
+  );
+  console.log(
+    `   Daily budget: ${defaultCharter.resourceLimits.tokenBudget.daily.toLocaleString()} tokens`
+  );
+  console.log(
+    `   Per session: ${defaultCharter.resourceLimits.maxTokensPerSession.toLocaleString()} tokens\n`
+  );
 
   console.log('✅ All examples completed successfully!');
 }
 
 // Run examples
-main().catch((error) => {
+main().catch(error => {
   console.error('Error running examples:', error);
   process.exit(1);
 });

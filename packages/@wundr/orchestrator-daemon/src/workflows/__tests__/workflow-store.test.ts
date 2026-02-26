@@ -15,14 +15,22 @@ import type { WorkflowDefinition, WorkflowExecution } from '../types';
 // Fixtures
 // ---------------------------------------------------------------------------
 
-function makeDefinition(overrides: Partial<WorkflowDefinition> = {}): WorkflowDefinition {
+function makeDefinition(
+  overrides: Partial<WorkflowDefinition> = {}
+): WorkflowDefinition {
   return {
     id: 'wf-1',
     name: 'Test Workflow',
     version: '1.0.0',
     status: 'ACTIVE',
     steps: [
-      { id: 'step-1', name: 'Step 1', type: 'task', config: {}, dependencies: [] },
+      {
+        id: 'step-1',
+        name: 'Step 1',
+        type: 'task',
+        config: {},
+        dependencies: [],
+      },
     ],
     triggers: [{ type: 'manual', config: {} }],
     variables: { foo: 'bar' },
@@ -31,7 +39,9 @@ function makeDefinition(overrides: Partial<WorkflowDefinition> = {}): WorkflowDe
   };
 }
 
-function makeExecution(overrides: Partial<WorkflowExecution> = {}): WorkflowExecution {
+function makeExecution(
+  overrides: Partial<WorkflowExecution> = {}
+): WorkflowExecution {
   return {
     id: 'exec-1',
     workflowId: 'wf-1',
@@ -88,11 +98,13 @@ describe('InMemoryWorkflowStore', () => {
   describe('listDefinitions', () => {
     it('should return all stored definitions', async () => {
       await store.saveDefinition(makeDefinition({ id: 'wf-1' }));
-      await store.saveDefinition(makeDefinition({ id: 'wf-2', name: 'Second' }));
+      await store.saveDefinition(
+        makeDefinition({ id: 'wf-2', name: 'Second' })
+      );
 
       const list = await store.listDefinitions();
       expect(list).toHaveLength(2);
-      expect(list.map((d) => d.id).sort()).toEqual(['wf-1', 'wf-2']);
+      expect(list.map(d => d.id).sort()).toEqual(['wf-1', 'wf-2']);
     });
 
     it('should return an empty array when the store is empty', async () => {
@@ -137,21 +149,31 @@ describe('InMemoryWorkflowStore', () => {
 
   describe('listExecutions', () => {
     it('should return all executions when no filter is provided', async () => {
-      await store.saveExecution(makeExecution({ id: 'e-1', workflowId: 'wf-1' }));
-      await store.saveExecution(makeExecution({ id: 'e-2', workflowId: 'wf-2' }));
+      await store.saveExecution(
+        makeExecution({ id: 'e-1', workflowId: 'wf-1' })
+      );
+      await store.saveExecution(
+        makeExecution({ id: 'e-2', workflowId: 'wf-2' })
+      );
 
       const all = await store.listExecutions();
       expect(all).toHaveLength(2);
     });
 
     it('should filter executions by workflowId', async () => {
-      await store.saveExecution(makeExecution({ id: 'e-1', workflowId: 'wf-1' }));
-      await store.saveExecution(makeExecution({ id: 'e-2', workflowId: 'wf-2' }));
-      await store.saveExecution(makeExecution({ id: 'e-3', workflowId: 'wf-1' }));
+      await store.saveExecution(
+        makeExecution({ id: 'e-1', workflowId: 'wf-1' })
+      );
+      await store.saveExecution(
+        makeExecution({ id: 'e-2', workflowId: 'wf-2' })
+      );
+      await store.saveExecution(
+        makeExecution({ id: 'e-3', workflowId: 'wf-1' })
+      );
 
       const filtered = await store.listExecutions('wf-1');
       expect(filtered).toHaveLength(2);
-      expect(filtered.every((e) => e.workflowId === 'wf-1')).toBe(true);
+      expect(filtered.every(e => e.workflowId === 'wf-1')).toBe(true);
     });
   });
 
@@ -183,7 +205,13 @@ describe('InMemoryWorkflowStore', () => {
 
       const loaded = await store.getDefinition('wf-1');
       loaded!.name = 'MUTATED';
-      loaded!.steps.push({ id: 'injected', name: 'Injected', type: 'task', config: {}, dependencies: [] });
+      loaded!.steps.push({
+        id: 'injected',
+        name: 'Injected',
+        type: 'task',
+        config: {},
+        dependencies: [],
+      });
 
       const reloaded = await store.getDefinition('wf-1');
       expect(reloaded!.name).toBe('Test Workflow');

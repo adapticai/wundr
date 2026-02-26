@@ -1,10 +1,12 @@
 # Token Usage Reporter & Cost Calculator
 
-Comprehensive token usage tracking, reporting, and cost estimation system for the Orchestrator Daemon.
+Comprehensive token usage tracking, reporting, and cost estimation system for the Orchestrator
+Daemon.
 
 ## Overview
 
 The Usage Reporter module provides:
+
 - Real-time token usage tracking
 - Historical usage analytics and reporting
 - Cost estimation with multi-currency support
@@ -45,7 +47,7 @@ The Usage Reporter module provides:
 import {
   UsageReporter,
   TokenUsageRecord,
-  getCostCalculator
+  getCostCalculator,
 } from '@wundr.io/orchestrator-daemon/budget';
 
 // Initialize reporter
@@ -57,9 +59,9 @@ const reporter = new UsageReporter({
     enabled: true,
     spikeThreshold: 2.5,
     budgetWarningThreshold: 0.8,
-    budgetCriticalThreshold: 0.95
+    budgetCriticalThreshold: 0.95,
   },
-  defaultCurrency: 'USD'
+  defaultCurrency: 'USD',
 });
 
 // Record usage
@@ -74,7 +76,7 @@ const usage: TokenUsageRecord = {
   outputTokens: 500,
   totalTokens: 1500,
   toolName: 'code_execution',
-  metadata: { task: 'analysis' }
+  metadata: { task: 'analysis' },
 };
 
 await reporter.recordUsage(usage);
@@ -91,7 +93,7 @@ const reportParams: ReportParams = {
   endTime: new Date('2025-11-30'),
   granularity: 'daily',
   groupBy: ['model', 'tool'],
-  includeAnomalies: true
+  includeAnomalies: true,
 };
 
 const report = await reporter.getReport(reportParams);
@@ -170,7 +172,7 @@ console.log(`Total cost: €${estimate.totalCost.toFixed(2)}`);
 const budgetStatus = await reporter.getBudgetStatus(
   'orch-001',
   'daily',
-  100000  // Daily token limit
+  100000 // Daily token limit
 );
 
 console.log(budgetStatus);
@@ -186,11 +188,11 @@ console.log(budgetStatus);
 // }
 
 // Listen for budget events
-reporter.on('budget-warning', (status) => {
+reporter.on('budget-warning', status => {
   console.warn(`Budget warning for ${status.orchestratorId}: ${status.percentage}% used`);
 });
 
-reporter.on('budget-exceeded', (status) => {
+reporter.on('budget-exceeded', status => {
   console.error(`Budget exceeded for ${status.orchestratorId}!`);
 });
 ```
@@ -208,13 +210,13 @@ for (const anomaly of anomalies) {
 }
 
 // Listen for anomaly events
-reporter.on('anomaly-detected', (anomaly) => {
+reporter.on('anomaly-detected', anomaly => {
   if (anomaly.severity === 'critical') {
     // Send alert
     alertOps({
       title: 'Critical Usage Anomaly',
       message: anomaly.description,
-      orchestratorId: anomaly.orchestratorId
+      orchestratorId: anomaly.orchestratorId,
     });
   }
 });
@@ -249,8 +251,8 @@ class PrismaUsageStorage implements UsageStorage {
         totalTokens: record.totalTokens,
         toolName: record.toolName,
         toolCallId: record.toolCallId,
-        metadata: record.metadata as any
-      }
+        metadata: record.metadata as any,
+      },
     });
   }
 
@@ -266,23 +268,23 @@ class PrismaUsageStorage implements UsageStorage {
         sessionId: params.sessionId,
         timestamp: {
           gte: params.startTime,
-          lte: params.endTime
-        }
+          lte: params.endTime,
+        },
       },
-      orderBy: { timestamp: 'asc' }
+      orderBy: { timestamp: 'asc' },
     });
 
     return records.map(r => ({
       ...r,
-      metadata: r.metadata as Record<string, unknown>
+      metadata: r.metadata as Record<string, unknown>,
     }));
   }
 
   async deleteOldRecords(olderThan: Date): Promise<number> {
     const result = await this.prisma.tokenUsage.deleteMany({
       where: {
-        timestamp: { lt: olderThan }
-      }
+        timestamp: { lt: olderThan },
+      },
     });
     return result.count;
   }
@@ -334,8 +336,8 @@ const customPricing: ModelPricing[] = [
     inputTokenCost: 5.0,
     outputTokenCost: 10.0,
     currency: 'USD',
-    effectiveDate: new Date('2025-12-01')
-  }
+    effectiveDate: new Date('2025-12-01'),
+  },
 ];
 
 const calculator = getCostCalculator(customPricing);
@@ -347,7 +349,7 @@ calculator.addCustomPricing({
   inputTokenCost: 2.5,
   outputTokenCost: 12.5,
   currency: 'USD',
-  effectiveDate: new Date('2026-01-01')
+  effectiveDate: new Date('2026-01-01'),
 });
 ```
 
@@ -355,19 +357,20 @@ calculator.addCustomPricing({
 
 ```typescript
 interface UsageReporterConfig {
-  enabled: boolean;                    // Enable/disable reporter (default: true)
-  persistToDatabase: boolean;          // Save to database (default: true)
-  retentionDays: number;              // Days to keep records (default: 90)
-  aggregationIntervals: Array<        // Report intervals
+  enabled: boolean; // Enable/disable reporter (default: true)
+  persistToDatabase: boolean; // Save to database (default: true)
+  retentionDays: number; // Days to keep records (default: 90)
+  aggregationIntervals: Array<
+    // Report intervals
     'hourly' | 'daily' | 'weekly' | 'monthly'
   >;
   anomalyDetection: {
-    enabled: boolean;                 // Enable anomaly detection (default: true)
-    spikeThreshold: number;           // Std deviations for spike (default: 2.5)
-    windowSize: number;               // Data points to analyze (default: 100)
-    minDataPoints: number;            // Min data for detection (default: 10)
-    budgetWarningThreshold: number;   // Warning at % of budget (default: 0.8)
-    budgetCriticalThreshold: number;  // Critical at % of budget (default: 0.95)
+    enabled: boolean; // Enable anomaly detection (default: true)
+    spikeThreshold: number; // Std deviations for spike (default: 2.5)
+    windowSize: number; // Data points to analyze (default: 100)
+    minDataPoints: number; // Min data for detection (default: 10)
+    budgetWarningThreshold: number; // Warning at % of budget (default: 0.8)
+    budgetCriticalThreshold: number; // Critical at % of budget (default: 0.95)
   };
   defaultCurrency: 'USD' | 'EUR' | 'GBP';
 }
@@ -387,17 +390,20 @@ The UsageReporter emits the following events:
 Default pricing includes:
 
 **Anthropic:**
+
 - claude-sonnet-4-5: $3/15 per 1M tokens (in/out)
 - claude-3-opus: $15/75 per 1M tokens
 - claude-3-sonnet: $3/15 per 1M tokens
 - claude-3-haiku: $0.25/1.25 per 1M tokens
 
 **OpenAI:**
+
 - gpt-4-turbo: $10/30 per 1M tokens
 - gpt-4: $30/60 per 1M tokens
 - gpt-3.5-turbo: $0.5/1.5 per 1M tokens
 
 **Google:**
+
 - gemini-pro: $0.5/1.5 per 1M tokens
 - gemini-ultra: $10/30 per 1M tokens
 
@@ -427,35 +433,35 @@ const reporter = new UsageReporter(
       enabled: true,
       spikeThreshold: 3.0,
       budgetWarningThreshold: 0.75,
-      budgetCriticalThreshold: 0.90
+      budgetCriticalThreshold: 0.9,
     },
-    defaultCurrency: 'USD'
+    defaultCurrency: 'USD',
   },
   new PrismaUsageStorage()
 );
 
 // Set up monitoring
-reporter.on('budget-warning', async (status) => {
+reporter.on('budget-warning', async status => {
   await sendSlackAlert({
     channel: '#ops-alerts',
-    message: `⚠️ Budget warning: ${status.orchestratorId} at ${status.percentage}%`
+    message: `⚠️ Budget warning: ${status.orchestratorId} at ${status.percentage}%`,
   });
 });
 
-reporter.on('budget-exceeded', async (status) => {
+reporter.on('budget-exceeded', async status => {
   await sendPagerDuty({
     severity: 'critical',
     summary: `Budget exceeded: ${status.orchestratorId}`,
-    details: status
+    details: status,
   });
 });
 
-reporter.on('anomaly-detected', async (anomaly) => {
+reporter.on('anomaly-detected', async anomaly => {
   if (anomaly.severity === 'critical') {
     await sendPagerDuty({
       severity: 'warning',
       summary: anomaly.description,
-      details: anomaly
+      details: anomaly,
     });
   }
 });

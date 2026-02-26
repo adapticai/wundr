@@ -8,7 +8,11 @@
 import { TaskDelegator, InMemoryDelegationTracker } from '../task-delegator';
 
 import type { Task } from '../../types';
-import type { OrchestratorInfo, DelegationContext, DelegationCallback } from '../types';
+import type {
+  OrchestratorInfo,
+  DelegationContext,
+  DelegationCallback,
+} from '../types';
 
 async function main() {
   console.log('=== Task Delegation Example ===\n');
@@ -23,11 +27,14 @@ async function main() {
   });
 
   // 2. Set up event listeners
-  delegator.on('delegation:started', ({ delegationId, task, targetOrchestrator }) => {
-    console.log(`✓ Delegation started: ${delegationId}`);
-    console.log(`  Task: ${task.description}`);
-    console.log(`  Target: ${targetOrchestrator}\n`);
-  });
+  delegator.on(
+    'delegation:started',
+    ({ delegationId, task, targetOrchestrator }) => {
+      console.log(`✓ Delegation started: ${delegationId}`);
+      console.log(`  Task: ${task.description}`);
+      console.log(`  Target: ${targetOrchestrator}\n`);
+    }
+  );
 
   delegator.on('delegation:callback', (callback: DelegationCallback) => {
     console.log(`✓ Callback received for delegation: ${callback.delegationId}`);
@@ -38,11 +45,14 @@ async function main() {
     console.log(`✗ Delegation timeout: ${delegationId}\n`);
   });
 
-  delegator.on('delegation:retried', ({ originalDelegationId, newDelegationId, retryCount }) => {
-    console.log(`↻ Retrying delegation ${originalDelegationId}`);
-    console.log(`  New delegation ID: ${newDelegationId}`);
-    console.log(`  Retry count: ${retryCount}\n`);
-  });
+  delegator.on(
+    'delegation:retried',
+    ({ originalDelegationId, newDelegationId, retryCount }) => {
+      console.log(`↻ Retrying delegation ${originalDelegationId}`);
+      console.log(`  New delegation ID: ${newDelegationId}`);
+      console.log(`  Retry count: ${retryCount}\n`);
+    }
+  );
 
   // 3. Define available orchestrators
   const orchestrators: OrchestratorInfo[] = [
@@ -102,16 +112,26 @@ async function main() {
     excludedOrchestrators: ['orch-frontend'], // Frontend not suitable for backend tasks
   };
 
-  const selectedOrchestrator = delegator.selectBestOrchestrator(task, orchestrators, context);
+  const selectedOrchestrator = delegator.selectBestOrchestrator(
+    task,
+    orchestrators,
+    context
+  );
 
   if (!selectedOrchestrator) {
     console.log('✗ No suitable orchestrator found\n');
     return;
   }
 
-  console.log(`✓ Selected: ${selectedOrchestrator.name} (${selectedOrchestrator.id})`);
-  console.log(`  Capabilities: ${selectedOrchestrator.capabilities.join(', ')}`);
-  console.log(`  Current load: ${selectedOrchestrator.currentLoad}/${selectedOrchestrator.maxLoad}\n`);
+  console.log(
+    `✓ Selected: ${selectedOrchestrator.name} (${selectedOrchestrator.id})`
+  );
+  console.log(
+    `  Capabilities: ${selectedOrchestrator.capabilities.join(', ')}`
+  );
+  console.log(
+    `  Current load: ${selectedOrchestrator.currentLoad}/${selectedOrchestrator.maxLoad}\n`
+  );
 
   // 6. Delegate the task
   console.log('Step 2: Delegating task...');
@@ -119,7 +139,7 @@ async function main() {
     task,
     selectedOrchestrator,
     context,
-    'local-orchestrator',
+    'local-orchestrator'
   );
 
   console.log('✓ Task delegated successfully');
@@ -149,7 +169,11 @@ async function main() {
         timestamp: new Date(),
         sessionId: 'session-123',
         metadata: {
-          filesCreated: ['auth.controller.ts', 'auth.service.ts', 'auth.test.ts'],
+          filesCreated: [
+            'auth.controller.ts',
+            'auth.service.ts',
+            'auth.test.ts',
+          ],
           linesOfCode: 250,
           metrics: {
             duration: 3000,
@@ -166,7 +190,9 @@ async function main() {
     console.log('\nStep 4: Checking final status...');
     const finalDelegation = await delegator.getDelegationStatus(delegationId);
     console.log(`Status: ${finalDelegation?.status}`);
-    console.log(`Result: ${JSON.stringify(finalDelegation?.result, null, 2)}\n`);
+    console.log(
+      `Result: ${JSON.stringify(finalDelegation?.result, null, 2)}\n`
+    );
 
     // 9. Cleanup
     await delegator.shutdown();
@@ -212,7 +238,12 @@ async function failureExample() {
     console.log(`Retry attempt ${retryCount}...`);
   });
 
-  const delegationId = await delegator.delegate(task, orchestrator, {}, 'local');
+  const delegationId = await delegator.delegate(
+    task,
+    orchestrator,
+    {},
+    'local'
+  );
 
   // Simulate a failure
   setTimeout(async () => {
@@ -264,7 +295,12 @@ async function cancellationExample() {
     lastSeen: new Date(),
   };
 
-  const delegationId = await delegator.delegate(task, orchestrator, {}, 'local');
+  const delegationId = await delegator.delegate(
+    task,
+    orchestrator,
+    {},
+    'local'
+  );
   console.log(`Task delegated: ${delegationId}`);
 
   // Cancel after 1 second

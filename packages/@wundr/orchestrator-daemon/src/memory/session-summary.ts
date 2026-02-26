@@ -11,7 +11,11 @@
  * @packageDocumentation
  */
 
-import type { ConversationTurn, DetectedMemory, MemoryScope } from './learning-detector';
+import type {
+  ConversationTurn,
+  DetectedMemory,
+  MemoryScope,
+} from './learning-detector';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -119,14 +123,17 @@ export class SessionSummaryGenerator {
   generateSummary(
     sessionId: string,
     turns: ConversationTurn[],
-    memoriesStored: number,
+    memoriesStored: number
   ): SessionSummaryResult | null {
     if (turns.length < this.config.minTurns) {
       return null;
     }
 
-    const startedAt = turns[0]?.timestamp.toISOString() ?? new Date().toISOString();
-    const endedAt = turns[turns.length - 1]?.timestamp.toISOString() ?? new Date().toISOString();
+    const startedAt =
+      turns[0]?.timestamp.toISOString() ?? new Date().toISOString();
+    const endedAt =
+      turns[turns.length - 1]?.timestamp.toISOString() ??
+      new Date().toISOString();
 
     const userTurns = turns.filter(t => t.role === 'user');
     const assistantTurns = turns.filter(t => t.role === 'assistant');
@@ -206,7 +213,7 @@ export class SessionSummaryGenerator {
    */
   parseTurnsFromTranscript(
     jsonlContent: string,
-    sessionId: string,
+    sessionId: string
   ): ConversationTurn[] {
     const turns: ConversationTurn[] = [];
     const lines = jsonlContent.split('\n');
@@ -216,7 +223,11 @@ export class SessionSummaryGenerator {
         continue;
       }
 
-      let record: { type?: string; message?: { role?: string; content?: unknown }; timestamp?: string };
+      let record: {
+        type?: string;
+        message?: { role?: string; content?: unknown };
+        timestamp?: string;
+      };
       try {
         record = JSON.parse(line);
       } catch {
@@ -240,9 +251,7 @@ export class SessionSummaryGenerator {
       turns.push({
         role: role as 'user' | 'assistant',
         content: textContent,
-        timestamp: record.timestamp
-          ? new Date(record.timestamp)
-          : new Date(),
+        timestamp: record.timestamp ? new Date(record.timestamp) : new Date(),
         sessionId,
       });
     }
@@ -260,11 +269,43 @@ export class SessionSummaryGenerator {
   private extractTopics(turns: ConversationTurn[]): string[] {
     const termCounts = new Map<string, number>();
     const stopWords = new Set([
-      'the', 'and', 'for', 'that', 'with', 'this', 'from', 'not',
-      'are', 'was', 'were', 'been', 'have', 'has', 'had', 'will',
-      'would', 'could', 'should', 'can', 'but', 'its', 'your',
-      'use', 'using', 'used', 'also', 'just', 'like', 'make',
-      'need', 'want', 'get', 'let', 'see', 'try', 'run',
+      'the',
+      'and',
+      'for',
+      'that',
+      'with',
+      'this',
+      'from',
+      'not',
+      'are',
+      'was',
+      'were',
+      'been',
+      'have',
+      'has',
+      'had',
+      'will',
+      'would',
+      'could',
+      'should',
+      'can',
+      'but',
+      'its',
+      'your',
+      'use',
+      'using',
+      'used',
+      'also',
+      'just',
+      'like',
+      'make',
+      'need',
+      'want',
+      'get',
+      'let',
+      'see',
+      'try',
+      'run',
     ]);
 
     for (const turn of turns) {
@@ -384,13 +425,20 @@ export class SessionSummaryGenerator {
    */
   private recommendScope(
     turns: ConversationTurn[],
-    topics: string[],
+    topics: string[]
   ): MemoryScope {
-    const content = turns.map(t => t.content).join(' ').toLowerCase();
+    const content = turns
+      .map(t => t.content)
+      .join(' ')
+      .toLowerCase();
 
     // Check for user-preference signals
     const userPrefIndicators = [
-      'i prefer', 'i like', 'i want you to', 'from now on', 'always',
+      'i prefer',
+      'i like',
+      'i want you to',
+      'from now on',
+      'always',
     ];
     if (userPrefIndicators.some(p => content.includes(p))) {
       return 'user';
@@ -398,8 +446,12 @@ export class SessionSummaryGenerator {
 
     // Check for project signals
     const projectIndicators = [
-      'in this project', 'in this repo', 'in this codebase',
-      'our convention', 'we use', 'the architecture',
+      'in this project',
+      'in this repo',
+      'in this codebase',
+      'our convention',
+      'we use',
+      'the architecture',
     ];
     if (projectIndicators.some(p => content.includes(p))) {
       return 'project';
@@ -425,8 +477,7 @@ export class SessionSummaryGenerator {
     const parts: string[] = [];
 
     parts.push(
-      `Session ${params.sessionId.slice(0, 8)} ` +
-      `(${params.turnCount} turns)`,
+      `Session ${params.sessionId.slice(0, 8)} ` + `(${params.turnCount} turns)`
     );
 
     if (params.topics.length > 0) {

@@ -38,16 +38,22 @@ import {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function createMockSessionManager(overrides?: Partial<TeamSessionManager>): TeamSessionManager {
+function createMockSessionManager(
+  overrides?: Partial<TeamSessionManager>
+): TeamSessionManager {
   return {
-    spawnSession: vi.fn().mockResolvedValue({ id: `session_${Date.now()}_${Math.random().toString(36).slice(2, 6)}` }),
+    spawnSession: vi.fn().mockResolvedValue({
+      id: `session_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    }),
     stopSession: vi.fn().mockResolvedValue(undefined),
     getSession: vi.fn().mockReturnValue({ id: 'session_1', status: 'running' }),
     ...overrides,
   };
 }
 
-function defaultTeamInput(overrides?: Partial<CreateTeamInput>): CreateTeamInput {
+function defaultTeamInput(
+  overrides?: Partial<CreateTeamInput>
+): CreateTeamInput {
   return {
     name: 'Test Team',
     teammateMode: 'in-process',
@@ -56,7 +62,9 @@ function defaultTeamInput(overrides?: Partial<CreateTeamInput>): CreateTeamInput
   };
 }
 
-function defaultSpawnOptions(overrides?: Partial<SpawnTeammateOptions>): SpawnTeammateOptions {
+function defaultSpawnOptions(
+  overrides?: Partial<SpawnTeammateOptions>
+): SpawnTeammateOptions {
   return {
     name: 'Worker',
     role: 'developer',
@@ -107,20 +115,29 @@ describe('TeamCoordinator', () => {
     });
 
     it('should resolve in-process backend when mode is "in-process"', () => {
-      const team = coordinator.createTeam('lead-1', defaultTeamInput({ teammateMode: 'in-process' }));
+      const team = coordinator.createTeam(
+        'lead-1',
+        defaultTeamInput({ teammateMode: 'in-process' })
+      );
 
       expect(team.resolvedBackend).toBe('in-process');
     });
 
     it('should default to auto mode when teammateMode is not specified', () => {
-      const team = coordinator.createTeam('lead-1', defaultTeamInput({ teammateMode: undefined }));
+      const team = coordinator.createTeam(
+        'lead-1',
+        defaultTeamInput({ teammateMode: undefined })
+      );
 
       // 'auto' resolves to 'in-process' outside tmux
       expect(['in-process', 'tmux']).toContain(team.resolvedBackend);
     });
 
     it('should use delegate mode from input when specified', () => {
-      const team = coordinator.createTeam('lead-1', defaultTeamInput({ delegateMode: true }));
+      const team = coordinator.createTeam(
+        'lead-1',
+        defaultTeamInput({ delegateMode: true })
+      );
 
       expect(team.delegateMode).toBe(true);
     });
@@ -132,9 +149,12 @@ describe('TeamCoordinator', () => {
     });
 
     it('should store metadata on the team', () => {
-      const team = coordinator.createTeam('lead-1', defaultTeamInput({
-        metadata: { purpose: 'testing' },
-      }));
+      const team = coordinator.createTeam(
+        'lead-1',
+        defaultTeamInput({
+          metadata: { purpose: 'testing' },
+        })
+      );
 
       expect(team.metadata).toEqual({ purpose: 'testing' });
     });
@@ -189,7 +209,10 @@ describe('TeamCoordinator', () => {
       coordinator.createTeam('lead-1', defaultTeamInput());
 
       expect(() => {
-        coordinator.createTeam('lead-1', defaultTeamInput({ name: 'Second Team' }));
+        coordinator.createTeam(
+          'lead-1',
+          defaultTeamInput({ name: 'Second Team' })
+        );
       }).toThrow(TeamError);
     });
 
@@ -201,13 +224,18 @@ describe('TeamCoordinator', () => {
         expect.unreachable('should have thrown');
       } catch (err) {
         expect(err).toBeInstanceOf(TeamError);
-        expect((err as TeamError).code).toBe(TeamErrorCode.ONE_TEAM_PER_SESSION);
+        expect((err as TeamError).code).toBe(
+          TeamErrorCode.ONE_TEAM_PER_SESSION
+        );
       }
     });
 
     it('should allow different sessions to each create a team', () => {
       const team1 = coordinator.createTeam('lead-1', defaultTeamInput());
-      const team2 = coordinator.createTeam('lead-2', defaultTeamInput({ name: 'Team 2' }));
+      const team2 = coordinator.createTeam(
+        'lead-2',
+        defaultTeamInput({ name: 'Team 2' })
+      );
 
       expect(team1.id).not.toBe(team2.id);
     });
@@ -225,7 +253,10 @@ describe('TeamCoordinator', () => {
     });
 
     it('should spawn a teammate and add it to the team', async () => {
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
       expect(member.name).toBe('Worker');
       expect(member.role).toBe('developer');
@@ -245,51 +276,74 @@ describe('TeamCoordinator', () => {
       coordinator.on('teammate:spawned', spawnedHandler);
       coordinator.on('teammate:active', activeHandler);
 
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
       expect(spawnedHandler).toHaveBeenCalledWith(team.id, member);
       expect(activeHandler).toHaveBeenCalledWith(team.id, member.id);
     });
 
     it('should register the teammate in the mailbox', async () => {
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
       const mailbox = coordinator.getMailbox(team.id)!;
       expect(mailbox.hasMember(member.id)).toBe(true);
     });
 
     it('should respect maxTeammates limit', async () => {
-      const smallTeam = coordinator.createTeam('lead-2', defaultTeamInput({
-        name: 'Small Team',
-        maxTeammates: 1,
-      }));
+      const smallTeam = coordinator.createTeam(
+        'lead-2',
+        defaultTeamInput({
+          name: 'Small Team',
+          maxTeammates: 1,
+        })
+      );
 
-      await coordinator.spawnTeammate(smallTeam.id, defaultSpawnOptions({ name: 'Worker 1' }));
+      await coordinator.spawnTeammate(
+        smallTeam.id,
+        defaultSpawnOptions({ name: 'Worker 1' })
+      );
 
       await expect(
-        coordinator.spawnTeammate(smallTeam.id, defaultSpawnOptions({ name: 'Worker 2' })),
+        coordinator.spawnTeammate(
+          smallTeam.id,
+          defaultSpawnOptions({ name: 'Worker 2' })
+        )
       ).rejects.toThrow(TeamError);
     });
 
     it('should throw MAX_TEAMMATES_REACHED when limit exceeded', async () => {
-      const smallTeam = coordinator.createTeam('lead-2', defaultTeamInput({
-        name: 'Small Team',
-        maxTeammates: 1,
-      }));
+      const smallTeam = coordinator.createTeam(
+        'lead-2',
+        defaultTeamInput({
+          name: 'Small Team',
+          maxTeammates: 1,
+        })
+      );
 
       await coordinator.spawnTeammate(smallTeam.id, defaultSpawnOptions());
 
       try {
-        await coordinator.spawnTeammate(smallTeam.id, defaultSpawnOptions({ name: 'Extra' }));
+        await coordinator.spawnTeammate(
+          smallTeam.id,
+          defaultSpawnOptions({ name: 'Extra' })
+        );
         expect.unreachable('should have thrown');
       } catch (err) {
-        expect((err as TeamError).code).toBe(TeamErrorCode.MAX_TEAMMATES_REACHED);
+        expect((err as TeamError).code).toBe(
+          TeamErrorCode.MAX_TEAMMATES_REACHED
+        );
       }
     });
 
     it('should throw TEAM_NOT_FOUND for nonexistent team', async () => {
       await expect(
-        coordinator.spawnTeammate('nonexistent', defaultSpawnOptions()),
+        coordinator.spawnTeammate('nonexistent', defaultSpawnOptions())
       ).rejects.toThrow(TeamError);
     });
 
@@ -298,7 +352,7 @@ describe('TeamCoordinator', () => {
       await coordinator.forceShutdownTeam(team.id);
 
       await expect(
-        coordinator.spawnTeammate(team.id, defaultSpawnOptions()),
+        coordinator.spawnTeammate(team.id, defaultSpawnOptions())
       ).rejects.toThrow(TeamError);
     });
 
@@ -313,15 +367,20 @@ describe('TeamCoordinator', () => {
         await coord.spawnTeammate(t.id, defaultSpawnOptions());
         expect.unreachable('should have thrown');
       } catch (err) {
-        expect((err as TeamError).code).toBe(TeamErrorCode.SESSION_SPAWN_FAILED);
+        expect((err as TeamError).code).toBe(
+          TeamErrorCode.SESSION_SPAWN_FAILED
+        );
       }
     });
 
     it('should register capabilities when provided', async () => {
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions({
-        capabilities: ['typescript', 'testing'],
-        maxConcurrentTasks: 5,
-      }));
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions({
+          capabilities: ['typescript', 'testing'],
+          maxConcurrentTasks: 5,
+        })
+      );
 
       const assigner = coordinator.getAssigner(team.id)!;
       const caps = assigner.getCapabilities(member.id);
@@ -331,15 +390,21 @@ describe('TeamCoordinator', () => {
     });
 
     it('should assign model from options', async () => {
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions({
-        model: 'claude-3-opus',
-      }));
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions({
+          model: 'claude-3-opus',
+        })
+      );
 
       expect(member.model).toBe('claude-3-opus');
     });
 
     it('should default model to null', async () => {
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
       expect(member.model).toBeNull();
     });
@@ -390,8 +455,14 @@ describe('TeamCoordinator', () => {
     });
 
     it('should report task stats correctly', () => {
-      coordinator.createTask(team.id, 'lead', { title: 'T1', description: 'D1' });
-      coordinator.createTask(team.id, 'lead', { title: 'T2', description: 'D2' });
+      coordinator.createTask(team.id, 'lead', {
+        title: 'T1',
+        description: 'D1',
+      });
+      coordinator.createTask(team.id, 'lead', {
+        title: 'T2',
+        description: 'D2',
+      });
 
       const taskList = coordinator.getTaskList(team.id)!;
       const stats = taskList.getStats();
@@ -604,7 +675,7 @@ describe('TeamCoordinator', () => {
       const leadId = team.members[0].id;
 
       await expect(
-        coordinator.requestShutdown(team.id, leadId),
+        coordinator.requestShutdown(team.id, leadId)
       ).rejects.toThrow(TeamError);
     });
   });
@@ -616,7 +687,10 @@ describe('TeamCoordinator', () => {
   describe('cleanupTeam', () => {
     it('should clean up a team after all members stopped', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
       await coordinator.requestShutdown(team.id, member.id);
       coordinator.cleanupTeam(team.id);
@@ -654,7 +728,9 @@ describe('TeamCoordinator', () => {
         coordinator.cleanupTeam(team.id);
         expect.unreachable('should have thrown');
       } catch (err) {
-        expect((err as TeamError).code).toBe(TeamErrorCode.TEAM_HAS_ACTIVE_MEMBERS);
+        expect((err as TeamError).code).toBe(
+          TeamErrorCode.TEAM_HAS_ACTIVE_MEMBERS
+        );
       }
     });
 
@@ -676,8 +752,14 @@ describe('TeamCoordinator', () => {
   describe('forceShutdownTeam', () => {
     it('should stop all members and clean up', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      await coordinator.spawnTeammate(team.id, defaultSpawnOptions({ name: 'W1' }));
-      await coordinator.spawnTeammate(team.id, defaultSpawnOptions({ name: 'W2' }));
+      await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions({ name: 'W1' })
+      );
+      await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions({ name: 'W2' })
+      );
 
       await coordinator.forceShutdownTeam(team.id);
 
@@ -686,8 +768,14 @@ describe('TeamCoordinator', () => {
 
     it('should call stopSession for each teammate', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      await coordinator.spawnTeammate(team.id, defaultSpawnOptions({ name: 'W1' }));
-      await coordinator.spawnTeammate(team.id, defaultSpawnOptions({ name: 'W2' }));
+      await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions({ name: 'W1' })
+      );
+      await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions({ name: 'W2' })
+      );
 
       await coordinator.forceShutdownTeam(team.id);
 
@@ -697,8 +785,14 @@ describe('TeamCoordinator', () => {
 
     it('should emit teammate:stopped for each teammate', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      await coordinator.spawnTeammate(team.id, defaultSpawnOptions({ name: 'W1' }));
-      await coordinator.spawnTeammate(team.id, defaultSpawnOptions({ name: 'W2' }));
+      await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions({ name: 'W1' })
+      );
+      await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions({ name: 'W2' })
+      );
 
       const handler = vi.fn();
       coordinator.on('teammate:stopped', handler);
@@ -716,7 +810,10 @@ describe('TeamCoordinator', () => {
   describe('handleTeammateCrash', () => {
     it('should mark crashed teammate as stopped', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
       await coordinator.handleTeammateCrash(member.sessionId);
 
@@ -725,7 +822,10 @@ describe('TeamCoordinator', () => {
 
     it('should release in-progress tasks', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
       const task = coordinator.createTask(team.id, 'lead', {
         title: 'Crash test task',
@@ -742,7 +842,10 @@ describe('TeamCoordinator', () => {
 
     it('should emit teammate:crash-recovered with released task IDs', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
       const task = coordinator.createTask(team.id, 'lead', {
         title: 'Crash test',
@@ -795,7 +898,11 @@ describe('TeamCoordinator', () => {
 
       coordinator.runHealthCheck();
 
-      expect(handler).toHaveBeenCalledWith(team.id, expect.any(Number), expect.any(Number));
+      expect(handler).toHaveBeenCalledWith(
+        team.id,
+        expect.any(Number),
+        expect.any(Number)
+      );
     });
 
     it('should detect stale teammates', async () => {
@@ -820,7 +927,9 @@ describe('TeamCoordinator', () => {
 
     it('should handle teammate crash during health check', async () => {
       const crashManager = createMockSessionManager({
-        getSession: vi.fn().mockReturnValue({ id: 'session_1', status: 'failed' }),
+        getSession: vi
+          .fn()
+          .mockReturnValue({ id: 'session_1', status: 'failed' }),
       });
       const coord = new TeamCoordinator(crashManager);
       const team = coord.createTeam('lead-1', defaultTeamInput());
@@ -878,7 +987,10 @@ describe('TeamCoordinator', () => {
   describe('progress reporting', () => {
     it('should return progress for a team', () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      coordinator.createTask(team.id, 'lead', { title: 'T1', description: 'D1' });
+      coordinator.createTask(team.id, 'lead', {
+        title: 'T1',
+        description: 'D1',
+      });
 
       const progress = coordinator.getTeamProgress(team.id);
 
@@ -948,7 +1060,10 @@ describe('TeamCoordinator', () => {
 
     it('should get team for teammate session', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
       expect(coordinator.getTeamForSession(member.sessionId)).toBe(team);
     });
@@ -966,7 +1081,10 @@ describe('TeamCoordinator', () => {
 
     it('should get a member by ID', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
       expect(coordinator.getMember(team.id, member.id)).toBe(member);
     });
@@ -979,8 +1097,14 @@ describe('TeamCoordinator', () => {
 
     it('should get active teammates (excluding lead)', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      await coordinator.spawnTeammate(team.id, defaultSpawnOptions({ name: 'W1' }));
-      await coordinator.spawnTeammate(team.id, defaultSpawnOptions({ name: 'W2' }));
+      await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions({ name: 'W1' })
+      );
+      await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions({ name: 'W2' })
+      );
 
       const active = coordinator.getActiveTeammates(team.id);
       expect(active).toHaveLength(2);
@@ -1109,7 +1233,10 @@ describe('TeamCoordinator', () => {
 
     it('should register member capabilities', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
       coordinator.registerMemberCapabilities(team.id, {
         memberId: member.id,
@@ -1164,7 +1291,10 @@ describe('TeamCoordinator', () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
       await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
 
-      coordinator.createTask(team.id, 'lead', { title: 'Task 1', description: 'D1' });
+      coordinator.createTask(team.id, 'lead', {
+        title: 'Task 1',
+        description: 'D1',
+      });
 
       const handler = vi.fn();
       coordinator.on('task:auto-assigned', handler);
@@ -1185,7 +1315,10 @@ describe('TeamCoordinator', () => {
 
     it('should return empty array when no teammates available', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      coordinator.createTask(team.id, 'lead', { title: 'Task', description: 'D' });
+      coordinator.createTask(team.id, 'lead', {
+        title: 'Task',
+        description: 'D',
+      });
 
       const assigned = await coordinator.autoAssignPendingTasks(team.id);
       expect(assigned).toHaveLength(0);
@@ -1199,14 +1332,23 @@ describe('TeamCoordinator', () => {
   describe('redistributeWorkToIdle', () => {
     it('should assign pending tasks to an idle teammate', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
-      coordinator.createTask(team.id, 'lead', { title: 'T1', description: 'D1' });
+      coordinator.createTask(team.id, 'lead', {
+        title: 'T1',
+        description: 'D1',
+      });
 
       const handler = vi.fn();
       coordinator.on('teammate:work-redistributed', handler);
 
-      const assigned = await coordinator.redistributeWorkToIdle(team.id, member.id);
+      const assigned = await coordinator.redistributeWorkToIdle(
+        team.id,
+        member.id
+      );
 
       expect(assigned.length).toBeGreaterThan(0);
       expect(handler).toHaveBeenCalled();
@@ -1214,9 +1356,15 @@ describe('TeamCoordinator', () => {
 
     it('should return empty when no pending tasks', async () => {
       const team = coordinator.createTeam('lead-1', defaultTeamInput());
-      const member = await coordinator.spawnTeammate(team.id, defaultSpawnOptions());
+      const member = await coordinator.spawnTeammate(
+        team.id,
+        defaultSpawnOptions()
+      );
 
-      const assigned = await coordinator.redistributeWorkToIdle(team.id, member.id);
+      const assigned = await coordinator.redistributeWorkToIdle(
+        team.id,
+        member.id
+      );
       expect(assigned).toHaveLength(0);
     });
   });

@@ -89,11 +89,7 @@
 // Team Coordinator (main entry point)
 // ---------------------------------------------------------------------------
 
-export {
-  TeamCoordinator,
-  TeamError,
-  TeamErrorCode,
-} from './team-coordinator';
+export { TeamCoordinator, TeamError, TeamErrorCode } from './team-coordinator';
 
 export type {
   TeammateMode,
@@ -134,11 +130,7 @@ export type {
 // Mailbox
 // ---------------------------------------------------------------------------
 
-export {
-  Mailbox,
-  MailboxError,
-  MailboxErrorCode,
-} from './mailbox';
+export { Mailbox, MailboxError, MailboxErrorCode } from './mailbox';
 
 export type {
   MessagePriority,
@@ -155,9 +147,7 @@ export type {
 // Team Hooks
 // ---------------------------------------------------------------------------
 
-export {
-  TeamHooks,
-} from './team-hooks';
+export { TeamHooks } from './team-hooks';
 
 export type {
   HookType,

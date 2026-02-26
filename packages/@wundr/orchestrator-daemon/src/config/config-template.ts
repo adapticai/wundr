@@ -62,10 +62,8 @@ const MAX_CROSS_REF_DEPTH = 10;
 // =============================================================================
 
 export class TemplateResolutionError extends Error {
-  constructor(
-    public readonly errors: TemplateError[],
-  ) {
-    const messages = errors.map((e) => `  ${e.path}: ${e.message}`).join('\n');
+  constructor(public readonly errors: TemplateError[]) {
+    const messages = errors.map(e => `  ${e.path}: ${e.message}`).join('\n');
     super(`Template resolution failed:\n${messages}`);
     this.name = 'TemplateResolutionError';
   }
@@ -137,7 +135,7 @@ function parseExpression(expr: string): ParsedExpression {
 
 function parseModifiers(
   raw: string,
-  type: ParsedExpression['type'],
+  type: ParsedExpression['type']
 ): ParsedExpression {
   // Check for :- (default value)
   const defaultIdx = raw.indexOf(':-');
@@ -171,7 +169,7 @@ function resolveExpression(
   ctx: TemplateContext,
   configPath: string,
   referencedVars: Set<string>,
-  referencedEnvVars: Set<string>,
+  referencedEnvVars: Set<string>
 ): { value: string | undefined; error?: TemplateError } {
   let rawValue: string | undefined;
 
@@ -250,7 +248,7 @@ function substituteString(
   configPath: string,
   errors: TemplateError[],
   referencedVars: Set<string>,
-  referencedEnvVars: Set<string>,
+  referencedEnvVars: Set<string>
 ): string {
   if (!value.includes('{{')) {
     return value;
@@ -263,7 +261,7 @@ function substituteString(
       ctx,
       configPath,
       referencedVars,
-      referencedEnvVars,
+      referencedEnvVars
     );
 
     if (result.error) {
@@ -281,7 +279,7 @@ function substituteAny(
   configPath: string,
   errors: TemplateError[],
   referencedVars: Set<string>,
-  referencedEnvVars: Set<string>,
+  referencedEnvVars: Set<string>
 ): unknown {
   if (typeof value === 'string') {
     return substituteString(
@@ -290,7 +288,7 @@ function substituteAny(
       configPath,
       errors,
       referencedVars,
-      referencedEnvVars,
+      referencedEnvVars
     );
   }
 
@@ -302,8 +300,8 @@ function substituteAny(
         `${configPath}[${index}]`,
         errors,
         referencedVars,
-        referencedEnvVars,
-      ),
+        referencedEnvVars
+      )
     );
   }
 
@@ -317,7 +315,7 @@ function substituteAny(
         childPath,
         errors,
         referencedVars,
-        referencedEnvVars,
+        referencedEnvVars
       );
     }
     return result;
@@ -343,7 +341,7 @@ function substituteAny(
  */
 export function resolveTemplates(
   obj: unknown,
-  context: Partial<TemplateContext> = {},
+  context: Partial<TemplateContext> = {}
 ): TemplateResult {
   const ctx: TemplateContext = {
     vars: context.vars ?? {},
@@ -361,7 +359,7 @@ export function resolveTemplates(
     '',
     errors,
     referencedVars,
-    referencedEnvVars,
+    referencedEnvVars
   );
 
   return { value, errors, referencedVars, referencedEnvVars };
@@ -377,7 +375,7 @@ export function resolveTemplates(
 export function resolveTemplatesWithCrossRefs(
   obj: unknown,
   context: Partial<TemplateContext> = {},
-  maxDepth: number = MAX_CROSS_REF_DEPTH,
+  maxDepth: number = MAX_CROSS_REF_DEPTH
 ): TemplateResult {
   let current = obj;
   const allErrors: TemplateError[] = [];
@@ -401,22 +399,22 @@ export function resolveTemplatesWithCrossRefs(
       '',
       errors,
       referencedVars,
-      referencedEnvVars,
+      referencedEnvVars
     );
 
     for (const v of referencedVars) {
-allReferencedVars.add(v);
-}
+      allReferencedVars.add(v);
+    }
     for (const v of referencedEnvVars) {
-allReferencedEnvVars.add(v);
-}
+      allReferencedEnvVars.add(v);
+    }
 
     // Check if anything changed
     if (JSON.stringify(next) === JSON.stringify(current)) {
       // Stable; collect any remaining errors
       for (const e of errors) {
-allErrors.push(e);
-}
+        allErrors.push(e);
+      }
       current = next;
       break;
     }
@@ -426,8 +424,8 @@ allErrors.push(e);
     // Only propagate errors from the final pass
     if (depth === maxDepth - 1) {
       for (const e of errors) {
-allErrors.push(e);
-}
+        allErrors.push(e);
+      }
     }
   }
 
@@ -474,15 +472,15 @@ export function extractTemplateVars(obj: unknown): {
 
     if (Array.isArray(value)) {
       for (const item of value) {
-walk(item);
-}
+        walk(item);
+      }
       return;
     }
 
     if (isPlainObject(value)) {
       for (const val of Object.values(value)) {
-walk(val);
-}
+        walk(val);
+      }
     }
   }
 

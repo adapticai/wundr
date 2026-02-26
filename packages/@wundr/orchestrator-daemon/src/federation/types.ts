@@ -93,7 +93,12 @@ export interface DelegationResult {
   /** Error message if delegation failed */
   error?: string;
   /** Reason for failure */
-  reason?: 'capability_mismatch' | 'overloaded' | 'unreachable' | 'rejected' | 'timeout';
+  reason?:
+    | 'capability_mismatch'
+    | 'overloaded'
+    | 'unreachable'
+    | 'rejected'
+    | 'timeout';
   /** Timestamp of the result */
   timestamp: Date;
   /** Additional metadata about the result */
@@ -157,12 +162,30 @@ export interface FederationConfig {
 export type FederationEvent =
   | { type: 'orchestrator:registered'; orchestrator: OrchestratorConnection }
   | { type: 'orchestrator:unregistered'; orchestratorId: string }
-  | { type: 'orchestrator:status_changed'; orchestratorId: string; status: OrchestratorStatus }
+  | {
+      type: 'orchestrator:status_changed';
+      orchestratorId: string;
+      status: OrchestratorStatus;
+    }
   | { type: 'orchestrator:heartbeat'; orchestratorId: string; timestamp: Date }
-  | { type: 'task:delegated'; delegation: DelegationRequest; result: DelegationResult }
+  | {
+      type: 'task:delegated';
+      delegation: DelegationRequest;
+      result: DelegationResult;
+    }
   | { type: 'task:completed'; sessionId: string; orchestratorId: string }
-  | { type: 'task:failed'; sessionId: string; orchestratorId: string; error: string }
-  | { type: 'context:shared'; fromOrchestrator: string; toOrchestrator: string; size: number }
+  | {
+      type: 'task:failed';
+      sessionId: string;
+      orchestratorId: string;
+      error: string;
+    }
+  | {
+      type: 'context:shared';
+      fromOrchestrator: string;
+      toOrchestrator: string;
+      size: number;
+    }
   | { type: 'federation:broadcast'; message: FederationBroadcast }
   | { type: 'federation:error'; error: string; orchestratorId?: string };
 
@@ -173,7 +196,12 @@ export interface FederationBroadcast {
   /** Source orchestrator ID */
   sourceId: string;
   /** Message type */
-  messageType: 'status_update' | 'capability_change' | 'load_alert' | 'shutdown_notice' | 'custom';
+  messageType:
+    | 'status_update'
+    | 'capability_change'
+    | 'load_alert'
+    | 'shutdown_notice'
+    | 'custom';
   /** Message payload */
   payload: Record<string, unknown>;
   /** Timestamp of the broadcast */
@@ -485,7 +513,11 @@ export interface FederationRegistryConfig {
 export interface FederationRegistryEvents {
   'orchestrator:registered': (metadata: OrchestratorMetadata) => void;
   'orchestrator:deregistered': (id: string) => void;
-  'orchestrator:status_changed': (id: string, oldStatus: string, newStatus: string) => void;
+  'orchestrator:status_changed': (
+    id: string,
+    oldStatus: string,
+    newStatus: string
+  ) => void;
   'orchestrator:stale': (id: string, lastHeartbeat: Date) => void;
   'orchestrator:unhealthy': (id: string, lastHeartbeat: Date) => void;
   'heartbeat:received': (id: string, timestamp: Date) => void;

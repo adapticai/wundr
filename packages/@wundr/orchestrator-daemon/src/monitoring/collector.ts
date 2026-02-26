@@ -71,12 +71,12 @@ export class MetricsCollector {
   private logger: Logger;
   private batchQueue: BatchedUpdate[] = [];
   private batchTimer: NodeJS.Timeout | null = null;
-  private activeTimers: Map<string, { start: number; labels?: Record<string, string> }> = new Map();
+  private activeTimers: Map<
+    string,
+    { start: number; labels?: Record<string, string> }
+  > = new Map();
 
-  constructor(
-    metricsRegistry: MetricsRegistry,
-    config: CollectorConfig = {},
-  ) {
+  constructor(metricsRegistry: MetricsRegistry, config: CollectorConfig = {}) {
     this.metrics = daemonMetrics;
     this.metricsRegistry = metricsRegistry;
     this.config = {
@@ -95,7 +95,10 @@ export class MetricsCollector {
   /**
    * Record session start - increments active sessions gauge
    */
-  recordSessionStart(orchestratorId: string, sessionType: 'claude-code' | 'claude-flow'): void {
+  recordSessionStart(
+    orchestratorId: string,
+    sessionType: 'claude-code' | 'claude-flow'
+  ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
         type: 'gauge',
@@ -104,7 +107,10 @@ export class MetricsCollector {
         labels: { orchestrator_id: orchestratorId, session_type: sessionType },
       });
     } else {
-      this.metrics.sessionsActive.inc({ orchestrator_id: orchestratorId, session_type: sessionType });
+      this.metrics.sessionsActive.inc({
+        orchestrator_id: orchestratorId,
+        session_type: sessionType,
+      });
     }
 
     if (this.config.debug) {
@@ -117,7 +123,7 @@ export class MetricsCollector {
    */
   recordSessionEnd(
     orchestratorId: string,
-    sessionType: 'claude-code' | 'claude-flow',
+    sessionType: 'claude-code' | 'claude-flow'
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
@@ -127,7 +133,10 @@ export class MetricsCollector {
         labels: { orchestrator_id: orchestratorId, session_type: sessionType },
       });
     } else {
-      this.metrics.sessionsActive.dec({ orchestrator_id: orchestratorId, session_type: sessionType });
+      this.metrics.sessionsActive.dec({
+        orchestrator_id: orchestratorId,
+        session_type: sessionType,
+      });
     }
 
     if (this.config.debug) {
@@ -141,7 +150,7 @@ export class MetricsCollector {
   recordTokenUsage(
     orchestratorId: string,
     model: string,
-    tokens: number,
+    tokens: number
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
@@ -151,11 +160,16 @@ export class MetricsCollector {
         labels: { orchestrator_id: orchestratorId, model },
       });
     } else {
-      this.metrics.tokensUsed.inc({ orchestrator_id: orchestratorId, model }, tokens);
+      this.metrics.tokensUsed.inc(
+        { orchestrator_id: orchestratorId, model },
+        tokens
+      );
     }
 
     if (this.config.debug) {
-      this.logger.debug(`Token usage: ${orchestratorId} model=${model} tokens=${tokens}`);
+      this.logger.debug(
+        `Token usage: ${orchestratorId} model=${model} tokens=${tokens}`
+      );
     }
   }
 
@@ -174,11 +188,16 @@ export class MetricsCollector {
         labels: { orchestrator_id: orchestratorId },
       });
     } else {
-      this.metrics.messageLatency.observe({ orchestrator_id: orchestratorId }, latencySeconds);
+      this.metrics.messageLatency.observe(
+        { orchestrator_id: orchestratorId },
+        latencySeconds
+      );
     }
 
     if (this.config.debug) {
-      this.logger.debug(`Message latency: ${orchestratorId} latency=${latencyMs}ms`);
+      this.logger.debug(
+        `Message latency: ${orchestratorId} latency=${latencyMs}ms`
+      );
     }
   }
 
@@ -188,14 +207,18 @@ export class MetricsCollector {
   recordToolInvocation(
     orchestratorId: string,
     toolName: string,
-    status: 'success' | 'error' | 'timeout',
+    status: 'success' | 'error' | 'timeout'
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
         type: 'counter',
         metricName: 'toolInvocations',
         operation: 'inc',
-        labels: { orchestrator_id: orchestratorId, tool_name: toolName, status },
+        labels: {
+          orchestrator_id: orchestratorId,
+          tool_name: toolName,
+          status,
+        },
       });
     } else {
       this.metrics.toolInvocations.inc({
@@ -206,7 +229,9 @@ export class MetricsCollector {
     }
 
     if (this.config.debug) {
-      this.logger.debug(`Tool invocation: ${orchestratorId} tool=${toolName} status=${status}`);
+      this.logger.debug(
+        `Tool invocation: ${orchestratorId} tool=${toolName} status=${status}`
+      );
     }
   }
 
@@ -216,14 +241,18 @@ export class MetricsCollector {
   recordDelegation(
     fromOrchestrator: string,
     toOrchestrator: string,
-    status: 'success' | 'error' | 'rejected',
+    status: 'success' | 'error' | 'rejected'
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
         type: 'counter',
         metricName: 'federationDelegations',
         operation: 'inc',
-        labels: { from_orchestrator: fromOrchestrator, to_orchestrator: toOrchestrator, status },
+        labels: {
+          from_orchestrator: fromOrchestrator,
+          to_orchestrator: toOrchestrator,
+          status,
+        },
       });
     } else {
       this.metrics.federationDelegations.inc({
@@ -234,17 +263,16 @@ export class MetricsCollector {
     }
 
     if (this.config.debug) {
-      this.logger.debug(`Delegation: ${fromOrchestrator} -> ${toOrchestrator} status=${status}`);
+      this.logger.debug(
+        `Delegation: ${fromOrchestrator} -> ${toOrchestrator} status=${status}`
+      );
     }
   }
 
   /**
    * Record error
    */
-  recordError(
-    orchestratorId: string,
-    errorType: string,
-  ): void {
+  recordError(orchestratorId: string, errorType: string): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
         type: 'counter',
@@ -291,7 +319,7 @@ export class MetricsCollector {
   updateBudgetUtilization(
     orchestratorId: string,
     period: 'daily' | 'weekly' | 'monthly',
-    percent: number,
+    percent: number
   ): void {
     if (this.config.enableBatching) {
       this.queueBatchedUpdate({
@@ -304,12 +332,14 @@ export class MetricsCollector {
     } else {
       this.metrics.budgetUtilization.set(
         { orchestrator_id: orchestratorId, period },
-        percent,
+        percent
       );
     }
 
     if (this.config.debug) {
-      this.logger.debug(`Budget utilization: ${orchestratorId} period=${period} percent=${percent}%`);
+      this.logger.debug(
+        `Budget utilization: ${orchestratorId} period=${period} percent=${percent}%`
+      );
     }
   }
 
@@ -338,7 +368,9 @@ export class MetricsCollector {
       this.activeTimers.delete(timerId);
 
       if (this.config.debug) {
-        this.logger.debug(`Timer completed: duration=${durationMs}ms labels=${JSON.stringify(labels)}`);
+        this.logger.debug(
+          `Timer completed: duration=${durationMs}ms labels=${JSON.stringify(labels)}`
+        );
       }
 
       return durationMs;
@@ -356,7 +388,7 @@ export class MetricsCollector {
    */
   async withMetrics<T>(
     fn: () => Promise<T>,
-    labels: { orchestrator_id: string },
+    labels: { orchestrator_id: string }
   ): Promise<T> {
     const startTime = Date.now();
 
@@ -388,13 +420,15 @@ export class MetricsCollector {
    */
   async getAggregatedStats(
     orchestratorId: string,
-    timeRange?: { start: Date; end: Date },
+    timeRange?: { start: Date; end: Date }
   ): Promise<AggregatedStats> {
     const end = timeRange?.end || new Date();
     const start = timeRange?.start || new Date(end.getTime() - 3600000); // Default: last hour
 
     // Get current metrics from registry
-    const metricsJSON = await this.metricsRegistry.getRegistry().getMetricsAsJSON();
+    const metricsJSON = await this.metricsRegistry
+      .getRegistry()
+      .getMetricsAsJSON();
 
     let totalSessions = 0;
     let totalTokens = 0;
@@ -453,7 +487,10 @@ export class MetricsCollector {
             toolInvocations += value.value || 0;
             if (value.labels?.status === 'success') {
               successfulToolCalls += value.value || 0;
-            } else if (value.labels?.status === 'error' || value.labels?.status === 'timeout') {
+            } else if (
+              value.labels?.status === 'error' ||
+              value.labels?.status === 'timeout'
+            ) {
               failedToolCalls += value.value || 0;
             }
           }
@@ -463,15 +500,18 @@ export class MetricsCollector {
       // Delegation metrics
       if (metric.name === 'orchestrator_federation_delegations_total') {
         for (const value of metric.values || []) {
-          if (value.labels?.from_orchestrator === orchestratorId ||
-              value.labels?.to_orchestrator === orchestratorId) {
+          if (
+            value.labels?.from_orchestrator === orchestratorId ||
+            value.labels?.to_orchestrator === orchestratorId
+          ) {
             delegations += value.value || 0;
           }
         }
       }
     }
 
-    const avgLatency = latencyCount > 0 ? (totalLatency / latencyCount) * 1000 : 0; // Convert to ms
+    const avgLatency =
+      latencyCount > 0 ? (totalLatency / latencyCount) * 1000 : 0; // Convert to ms
     const errorRate = toolInvocations > 0 ? totalErrors / toolInvocations : 0;
 
     return {
@@ -572,7 +612,10 @@ export class MetricsCollector {
           }
       }
     } catch (error) {
-      this.logger.error(`Failed to apply metric update: ${update.metricName}`, error);
+      this.logger.error(
+        `Failed to apply metric update: ${update.metricName}`,
+        error
+      );
     }
   }
 
@@ -596,7 +639,7 @@ export class MetricsCollector {
  */
 export function createMetricsCollector(
   metricsRegistry: MetricsRegistry,
-  config?: CollectorConfig,
+  config?: CollectorConfig
 ): MetricsCollector {
   return new MetricsCollector(metricsRegistry, config);
 }

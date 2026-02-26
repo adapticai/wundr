@@ -250,17 +250,19 @@ const WRITE_CAPABLE_BINS = new Set([
  * Binaries that write when specific flags are present.
  * Maps binary name to the set of flags that enable write mode.
  */
-const CONDITIONAL_WRITE_FLAGS: ReadonlyMap<string, ReadonlySet<string>> =
-  new Map([
-    ['sed', new Set(['-i', '--in-place'])],
-    ['awk', new Set(['-i'])],
-    ['perl', new Set(['-i', '-pi'])],
-    ['sort', new Set(['-o', '--output'])],
-    ['patch', new Set([])], // always writes
-    ['chmod', new Set([])],
-    ['chown', new Set([])],
-    ['chgrp', new Set([])],
-  ]);
+const CONDITIONAL_WRITE_FLAGS: ReadonlyMap<
+  string,
+  ReadonlySet<string>
+> = new Map([
+  ['sed', new Set(['-i', '--in-place'])],
+  ['awk', new Set(['-i'])],
+  ['perl', new Set(['-i', '-pi'])],
+  ['sort', new Set(['-o', '--output'])],
+  ['patch', new Set([])], // always writes
+  ['chmod', new Set([])],
+  ['chown', new Set([])],
+  ['chgrp', new Set([])],
+]);
 
 /**
  * Environment variables that can be abused for code injection or
@@ -330,14 +332,14 @@ const DEFAULT_TOOL_POLICIES: ToolPolicy[] = [
 
 function expandHome(value: string): string {
   if (!value) {
-return value;
-}
+    return value;
+  }
   if (value === '~') {
-return os.homedir();
-}
+    return os.homedir();
+  }
   if (value.startsWith('~/')) {
-return path.join(os.homedir(), value.slice(2));
-}
+    return path.join(os.homedir(), value.slice(2));
+  }
   return value;
 }
 
@@ -349,8 +351,8 @@ function isExecutableFile(filePath: string): boolean {
   try {
     const stat = fs.statSync(filePath);
     if (!stat.isFile()) {
-return false;
-}
+      return false;
+    }
     if (process.platform !== 'win32') {
       fs.accessSync(filePath, fs.constants.X_OK);
     }
@@ -363,7 +365,7 @@ return false;
 function resolveExecutablePath(
   rawExecutable: string,
   cwd?: string,
-  env?: NodeJS.ProcessEnv,
+  env?: NodeJS.ProcessEnv
 ): string | undefined {
   const expanded = rawExecutable.startsWith('~')
     ? expandHome(rawExecutable)
@@ -399,7 +401,7 @@ function resolveExecutablePath(
             '.EXE;.CMD;.BAT;.COM'
           )
             .split(';')
-            .map((ext) => ext.toLowerCase())
+            .map(ext => ext.toLowerCase())
       : [''];
 
   for (const entry of entries) {
@@ -420,15 +422,15 @@ function resolveExecutablePath(
 function parseFirstToken(command: string): string | null {
   const trimmed = command.trim();
   if (!trimmed) {
-return null;
-}
+    return null;
+  }
 
   const first = trimmed[0];
   if (first === '"' || first === "'") {
     const end = trimmed.indexOf(first, 1);
     if (end > 1) {
-return trimmed.slice(1, end);
-}
+      return trimmed.slice(1, end);
+    }
     return trimmed.slice(1);
   }
 
@@ -442,12 +444,12 @@ return trimmed.slice(1, end);
 export function resolveCommandResolution(
   command: string,
   cwd?: string,
-  env?: NodeJS.ProcessEnv,
+  env?: NodeJS.ProcessEnv
 ): CommandResolution | null {
   const rawExecutable = parseFirstToken(command);
   if (!rawExecutable) {
-return null;
-}
+    return null;
+  }
 
   const resolvedPath = resolveExecutablePath(rawExecutable, cwd, env);
   const executableName = resolvedPath
@@ -463,12 +465,12 @@ return null;
 export function resolveCommandResolutionFromArgv(
   argv: string[],
   cwd?: string,
-  env?: NodeJS.ProcessEnv,
+  env?: NodeJS.ProcessEnv
 ): CommandResolution | null {
   const rawExecutable = argv[0]?.trim();
   if (!rawExecutable) {
-return null;
-}
+    return null;
+  }
 
   const resolvedPath = resolveExecutablePath(rawExecutable, cwd, env);
   const executableName = resolvedPath
@@ -497,8 +499,8 @@ function iterateQuoteAware(
   onChar: (
     ch: string,
     next: string | undefined,
-    index: number,
-  ) => IteratorAction,
+    index: number
+  ) => IteratorAction
 ):
   | { ok: true; parts: string[]; hasSplit: boolean }
   | { ok: false; reason: string } {
@@ -512,8 +514,8 @@ function iterateQuoteAware(
   const pushPart = () => {
     const trimmed = buf.trim();
     if (trimmed) {
-parts.push(trimmed);
-}
+      parts.push(trimmed);
+    }
     buf = '';
   };
 
@@ -535,8 +537,8 @@ parts.push(trimmed);
 
     if (inSingle) {
       if (ch === "'") {
-inSingle = false;
-}
+        inSingle = false;
+      }
       buf += ch;
       continue;
     }
@@ -558,8 +560,8 @@ inSingle = false;
         return { ok: false, reason: 'unsupported shell token: newline' };
       }
       if (ch === '"') {
-inDouble = false;
-}
+        inDouble = false;
+      }
       buf += ch;
       continue;
     }
@@ -585,8 +587,8 @@ inDouble = false;
       continue;
     }
     if (action === 'skip') {
-continue;
-}
+      continue;
+    }
 
     buf += ch;
   }
@@ -603,9 +605,11 @@ continue;
  * Split a command by pipe (`|`) operators, rejecting `||`, `|&`, and other
  * dangerous shell tokens.
  */
-function splitShellPipeline(
-  command: string,
-): { ok: boolean; reason?: string; segments: string[] } {
+function splitShellPipeline(command: string): {
+  ok: boolean;
+  reason?: string;
+  segments: string[];
+} {
   let emptySegment = false;
 
   const result = iterateQuoteAware(command, (ch, next) => {
@@ -639,9 +643,7 @@ function splitShellPipeline(
     return {
       ok: false,
       reason:
-        result.parts.length === 0
-          ? 'empty command'
-          : 'empty pipeline segment',
+        result.parts.length === 0 ? 'empty command' : 'empty pipeline segment',
       segments: [],
     };
   }
@@ -689,8 +691,8 @@ function splitCommandChain(command: string): string[] | null {
     }
     if (inSingle) {
       if (ch === "'") {
-inSingle = false;
-}
+        inSingle = false;
+      }
       buf += ch;
       continue;
     }
@@ -702,8 +704,8 @@ inSingle = false;
         continue;
       }
       if (ch === '"') {
-inDouble = false;
-}
+        inDouble = false;
+      }
       buf += ch;
       continue;
     }
@@ -720,24 +722,24 @@ inDouble = false;
 
     if (ch === '&' && next === '&') {
       if (!pushPart()) {
-invalidChain = true;
-}
+        invalidChain = true;
+      }
       i += 1;
       foundChain = true;
       continue;
     }
     if (ch === '|' && next === '|') {
       if (!pushPart()) {
-invalidChain = true;
-}
+        invalidChain = true;
+      }
       i += 1;
       foundChain = true;
       continue;
     }
     if (ch === ';') {
       if (!pushPart()) {
-invalidChain = true;
-}
+        invalidChain = true;
+      }
       foundChain = true;
       continue;
     }
@@ -747,11 +749,11 @@ invalidChain = true;
 
   const pushedFinal = pushPart();
   if (!foundChain) {
-return null;
-}
+    return null;
+  }
   if (invalidChain || !pushedFinal) {
-return null;
-}
+    return null;
+  }
 
   return parts.length > 0 ? parts : null;
 }
@@ -824,8 +826,8 @@ function tokenizeShellSegment(segment: string): string[] | null {
   }
 
   if (escaped || inSingle || inDouble) {
-return null;
-}
+    return null;
+  }
 
   pushToken();
   return tokens;
@@ -880,8 +882,8 @@ function tokenizeWindowsSegment(segment: string): string[] | null {
   }
 
   if (inDouble) {
-return null;
-}
+    return null;
+  }
   pushToken();
   return tokens.length > 0 ? tokens : null;
 }
@@ -901,7 +903,11 @@ function analyzeWindowsShellCommand(params: {
   }
   const argv = tokenizeWindowsSegment(params.command);
   if (!argv || argv.length === 0) {
-    return { ok: false, reason: 'unable to parse windows command', segments: [] };
+    return {
+      ok: false,
+      reason: 'unable to parse windows command',
+      segments: [],
+    };
   }
   return {
     ok: true,
@@ -909,7 +915,11 @@ function analyzeWindowsShellCommand(params: {
       {
         raw: params.command,
         argv,
-        resolution: resolveCommandResolutionFromArgv(argv, params.cwd, params.env),
+        resolution: resolveCommandResolutionFromArgv(
+          argv,
+          params.cwd,
+          params.env
+        ),
       },
     ],
   };
@@ -922,15 +932,15 @@ function analyzeWindowsShellCommand(params: {
 function parseSegmentsFromParts(
   parts: string[],
   cwd?: string,
-  env?: NodeJS.ProcessEnv,
+  env?: NodeJS.ProcessEnv
 ): CommandSegment[] | null {
   const segments: CommandSegment[] = [];
 
   for (const raw of parts) {
     const argv = tokenizeShellSegment(raw);
     if (!argv || argv.length === 0) {
-return null;
-}
+      return null;
+    }
 
     segments.push({
       raw,
@@ -973,7 +983,7 @@ export function analyzeShellCommand(params: {
       const segments = parseSegmentsFromParts(
         pipelineSplit.segments,
         params.cwd,
-        params.env,
+        params.env
       );
       if (!segments) {
         return {
@@ -999,7 +1009,7 @@ export function analyzeShellCommand(params: {
   const segments = parseSegmentsFromParts(
     split.segments,
     params.cwd,
-    params.env,
+    params.env
   );
   if (!segments) {
     return {
@@ -1020,7 +1030,7 @@ export function analyzeArgvCommand(params: {
   cwd?: string;
   env?: NodeJS.ProcessEnv;
 }): CommandAnalysis {
-  const argv = params.argv.filter((entry) => entry.trim().length > 0);
+  const argv = params.argv.filter(entry => entry.trim().length > 0);
   if (argv.length === 0) {
     return { ok: false, reason: 'empty argv', segments: [] };
   }
@@ -1034,7 +1044,7 @@ export function analyzeArgvCommand(params: {
         resolution: resolveCommandResolutionFromArgv(
           argv,
           params.cwd,
-          params.env,
+          params.env
         ),
       },
     ],
@@ -1097,8 +1107,8 @@ function globToRegExp(pattern: string): RegExp {
 function matchesPattern(pattern: string, target: string): boolean {
   const trimmed = pattern.trim();
   if (!trimmed) {
-return false;
-}
+    return false;
+  }
 
   const expanded = trimmed.startsWith('~') ? expandHome(trimmed) : trimmed;
   const hasWildcard = /[*?]/.test(expanded);
@@ -1125,36 +1135,34 @@ return false;
  */
 export function matchAllowlist(
   entries: AllowlistEntry[],
-  resolution: CommandResolution | null,
+  resolution: CommandResolution | null
 ): AllowlistEntry | null {
   if (!entries.length || !resolution?.resolvedPath) {
-return null;
-}
+    return null;
+  }
 
   const resolvedPath = resolution.resolvedPath;
 
   for (const entry of entries) {
     const pattern = entry.pattern?.trim();
     if (!pattern) {
-continue;
-}
+      continue;
+    }
 
     // Bare names (no path separator) match against the binary name
     const hasPath =
-      pattern.includes('/') ||
-      pattern.includes('\\') ||
-      pattern.includes('~');
+      pattern.includes('/') || pattern.includes('\\') || pattern.includes('~');
 
     if (hasPath) {
       if (matchesPattern(pattern, resolvedPath)) {
-return entry;
-}
+        return entry;
+      }
     } else {
       // Match bare name against the binary basename
       if (
         resolution.executableName.toLowerCase() === pattern.toLowerCase() ||
         globToRegExp(pattern.toLowerCase()).test(
-          resolution.executableName.toLowerCase(),
+          resolution.executableName.toLowerCase()
         )
       ) {
         return entry;
@@ -1179,29 +1187,29 @@ return entry;
  */
 export function detectPathTraversal(value: string): boolean {
   if (!value) {
-return false;
-}
+    return false;
+  }
 
   // Literal traversal
   if (value.includes('../') || value.includes('..\\')) {
-return true;
-}
+    return true;
+  }
 
   // URL-encoded traversal
   const lower = value.toLowerCase();
   if (lower.includes('%2e%2e') || lower.includes('%2e%2e%2f')) {
-return true;
-}
+    return true;
+  }
 
   // Double-encoded
   if (lower.includes('%252e%252e')) {
-return true;
-}
+    return true;
+  }
 
   // Null byte injection
   if (lower.includes('%00') || value.includes('\0')) {
-return true;
-}
+    return true;
+  }
 
   return false;
 }
@@ -1271,11 +1279,11 @@ export function detectArgumentInjection(argv: string[]): ArgumentSafetyResult {
  * code injection or library preloading attacks.
  */
 export function checkEnvSafety(
-  env: Record<string, string | undefined> | undefined,
+  env: Record<string, string | undefined> | undefined
 ): EnvSafetyResult {
   if (!env) {
-return { safe: true };
-}
+    return { safe: true };
+  }
 
   for (const [key, value] of Object.entries(env)) {
     // Check for dangerous variable names
@@ -1288,8 +1296,8 @@ return { safe: true };
     }
 
     if (value === undefined) {
-continue;
-}
+      continue;
+    }
 
     // Check for command substitution in env values
     if (value.includes('$(') || value.includes('`')) {
@@ -1327,12 +1335,11 @@ continue;
  * - Redirect detection is handled at the pipeline parsing level
  */
 export function detectWritePath(segment: CommandSegment): string | null {
-  const execName =
-    segment.resolution?.executableName?.toLowerCase() ?? '';
+  const execName = segment.resolution?.executableName?.toLowerCase() ?? '';
 
   if (!execName) {
-return null;
-}
+    return null;
+  }
 
   // Unconditionally write-capable binaries -- the last non-flag argument
   // is typically the destination
@@ -1357,8 +1364,8 @@ return null;
       for (let i = args.length - 1; i >= 0; i--) {
         const arg = args[i];
         if (arg && !arg.startsWith('-')) {
-return arg;
-}
+          return arg;
+        }
       }
       return null;
     }
@@ -1370,8 +1377,8 @@ return arg;
         // Find the target path (next positional argument after the flag)
         for (let i = args.length - 1; i >= 0; i--) {
           if (args[i] && !args[i].startsWith('-')) {
-return args[i];
-}
+            return args[i];
+          }
         }
         return null;
       }
@@ -1384,8 +1391,8 @@ return args[i];
             if (arg.includes(flagChar)) {
               for (let i = args.length - 1; i >= 0; i--) {
                 if (args[i] && !args[i].startsWith('-')) {
-return args[i];
-}
+                  return args[i];
+                }
               }
               return null;
             }
@@ -1404,11 +1411,11 @@ return args[i];
 export function isWritePathProtected(
   writePath: string,
   protectedPaths?: string[],
-  cwd?: string,
+  cwd?: string
 ): boolean {
   if (!writePath) {
-return false;
-}
+    return false;
+  }
 
   const expanded = writePath.startsWith('~')
     ? expandHome(writePath)
@@ -1434,7 +1441,9 @@ return false;
       if (
         resolved === expandedProtected ||
         resolved.startsWith(
-          expandedProtected.endsWith('/') ? expandedProtected : expandedProtected + '/',
+          expandedProtected.endsWith('/')
+            ? expandedProtected
+            : expandedProtected + '/'
         )
       ) {
         return true;
@@ -1454,12 +1463,12 @@ return false;
  */
 export function normalizeSafeBins(entries?: readonly string[]): Set<string> {
   if (!Array.isArray(entries)) {
-return new Set();
-}
+    return new Set();
+  }
 
   const normalized = entries
-    .map((entry) => entry.trim().toLowerCase())
-    .filter((entry) => entry.length > 0);
+    .map(entry => entry.trim().toLowerCase())
+    .filter(entry => entry.length > 0);
 
   return new Set(normalized);
 }
@@ -1468,19 +1477,19 @@ return new Set();
  * Resolve the active set of safe binaries, falling back to defaults.
  */
 export function resolveSafeBins(
-  entries?: readonly string[] | null,
+  entries?: readonly string[] | null
 ): Set<string> {
   if (entries === undefined) {
-return normalizeSafeBins(DEFAULT_SAFE_BINS);
-}
+    return normalizeSafeBins(DEFAULT_SAFE_BINS);
+  }
   return normalizeSafeBins(entries ?? []);
 }
 
 function isPathLikeToken(value: string): boolean {
   const trimmed = value.trim();
   if (!trimmed || trimmed === '-') {
-return false;
-}
+    return false;
+  }
   if (
     trimmed.startsWith('./') ||
     trimmed.startsWith('../') ||
@@ -1489,8 +1498,8 @@ return false;
     return true;
   }
   if (trimmed.startsWith('/')) {
-return true;
-}
+    return true;
+  }
   return /^[A-Za-z]:[/\\]/.test(trimmed);
 }
 
@@ -1518,31 +1527,31 @@ export function isSafeBinUsage(params: {
   fileExists?: (filePath: string) => boolean;
 }): boolean {
   if (params.safeBins.size === 0) {
-return false;
-}
+    return false;
+  }
 
   const resolution = params.resolution;
   const execName = resolution?.executableName?.toLowerCase();
   if (!execName) {
-return false;
-}
+    return false;
+  }
 
   const matchesSafeBin =
     params.safeBins.has(execName) ||
     (process.platform === 'win32' &&
       params.safeBins.has(path.parse(execName).name));
   if (!matchesSafeBin) {
-return false;
-}
+    return false;
+  }
   if (!resolution?.resolvedPath) {
-return false;
-}
+    return false;
+  }
 
   // Check for argument injection in the full argv
   const injectionResult = detectArgumentInjection(params.argv.slice(1));
   if (!injectionResult.safe) {
-return false;
-}
+    return false;
+  }
 
   const cwd = params.cwd ?? process.cwd();
   const exists = params.fileExists ?? defaultFileExists;
@@ -1551,8 +1560,8 @@ return false;
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i];
     if (!token || token === '-') {
-continue;
-}
+      continue;
+    }
 
     if (token.startsWith('-')) {
       // Check flag values like --file=/etc/passwd
@@ -1570,11 +1579,11 @@ continue;
     }
 
     if (isPathLikeToken(token)) {
-return false;
-}
+      return false;
+    }
     if (exists(path.resolve(cwd, token))) {
-return false;
-}
+      return false;
+    }
   }
 
   return true;
@@ -1586,27 +1595,27 @@ return false;
 
 function resolveAllowlistCandidatePath(
   resolution: CommandResolution | null,
-  cwd?: string,
+  cwd?: string
 ): string | undefined {
   if (!resolution) {
-return undefined;
-}
+    return undefined;
+  }
   if (resolution.resolvedPath) {
-return resolution.resolvedPath;
-}
+    return resolution.resolvedPath;
+  }
 
   const raw = resolution.rawExecutable?.trim();
   if (!raw) {
-return undefined;
-}
+    return undefined;
+  }
 
   const expanded = raw.startsWith('~') ? expandHome(raw) : raw;
   if (!expanded.includes('/') && !expanded.includes('\\')) {
-return undefined;
-}
+    return undefined;
+  }
   if (path.isAbsolute(expanded)) {
-return expanded;
-}
+    return expanded;
+  }
 
   const base = cwd?.trim() || process.cwd();
   return path.resolve(base, expanded);
@@ -1621,22 +1630,25 @@ function evaluateSegments(
     skillBins?: Set<string>;
     autoAllowSkills?: boolean;
     writePaths?: string[];
-  },
+  }
 ): { satisfied: boolean; matches: AllowlistEntry[] } {
   const matches: AllowlistEntry[] = [];
   const allowSkills =
     params.autoAllowSkills === true && (params.skillBins?.size ?? 0) > 0;
 
-  const satisfied = segments.every((segment) => {
+  const satisfied = segments.every(segment => {
     // Check for write-path protection
     const writePath = detectWritePath(segment);
-    if (writePath && isWritePathProtected(writePath, params.writePaths, params.cwd)) {
+    if (
+      writePath &&
+      isWritePathProtected(writePath, params.writePaths, params.cwd)
+    ) {
       return false;
     }
 
     const candidatePath = resolveAllowlistCandidatePath(
       segment.resolution,
-      params.cwd,
+      params.cwd
     );
     const candidateResolution =
       candidatePath && segment.resolution
@@ -1645,8 +1657,8 @@ function evaluateSegments(
 
     const match = matchAllowlist(params.allowlist, candidateResolution);
     if (match) {
-matches.push(match);
-}
+      matches.push(match);
+    }
 
     const safe = isSafeBinUsage({
       argv: segment.argv,
@@ -1657,7 +1669,7 @@ matches.push(match);
 
     const skillAllow =
       allowSkills && segment.resolution?.executableName
-        ? params.skillBins?.has(segment.resolution.executableName) ?? false
+        ? (params.skillBins?.has(segment.resolution.executableName) ?? false)
         : false;
 
     return Boolean(match || safe || skillAllow);
@@ -1875,12 +1887,12 @@ export function recordAllowlistUse(
   state: ExecApprovalState,
   entry: AllowlistEntry,
   command: string,
-  resolvedPath?: string,
+  resolvedPath?: string
 ): void {
-  const idx = state.allowlist.findIndex((e) => e.id === entry.id);
+  const idx = state.allowlist.findIndex(e => e.id === entry.id);
   if (idx === -1) {
-return;
-}
+    return;
+  }
 
   state.allowlist[idx] = {
     ...state.allowlist[idx],
@@ -1895,14 +1907,14 @@ return;
  */
 export function addAllowlistEntry(
   state: ExecApprovalState,
-  pattern: string,
+  pattern: string
 ): AllowlistEntry | null {
   const trimmed = pattern.trim();
   if (!trimmed) {
-return null;
-}
+    return null;
+  }
 
-  if (state.allowlist.some((entry) => entry.pattern === trimmed)) {
+  if (state.allowlist.some(entry => entry.pattern === trimmed)) {
     return null;
   }
 
@@ -1964,14 +1976,18 @@ const STRUCTURAL_DENY_CHECKS: ReadonlyArray<
   // rm with force-recursive targeting root or home
   (argv, execName) => {
     if (execName !== 'rm') {
-return null;
-}
-    const hasForce = argv.some((a) => a === '-rf' || a === '-fr' ||
-      (a.startsWith('-') && a.includes('r') && a.includes('f')));
+      return null;
+    }
+    const hasForce = argv.some(
+      a =>
+        a === '-rf' ||
+        a === '-fr' ||
+        (a.startsWith('-') && a.includes('r') && a.includes('f'))
+    );
     if (!hasForce) {
-return null;
-}
-    const targets = argv.filter((a) => !a.startsWith('-'));
+      return null;
+    }
+    const targets = argv.filter(a => !a.startsWith('-'));
     for (const t of targets) {
       const expanded = t.startsWith('~') ? expandHome(t) : t;
       if (expanded === '/' || expanded === os.homedir()) {
@@ -1984,9 +2000,9 @@ return null;
   // chmod 777 on root
   (argv, execName) => {
     if (execName !== 'chmod') {
-return null;
-}
-    if (argv.includes('777') && argv.some((a) => a === '/')) {
+      return null;
+    }
+    if (argv.includes('777') && argv.some(a => a === '/')) {
       return 'chmod 777 /';
     }
     return null;
@@ -1995,8 +2011,8 @@ return null;
   // curl/wget piped to sh (detected at segment level in evaluateBashCommand)
   (_argv, execName) => {
     if (execName === 'eval') {
-return 'eval is not allowed';
-}
+      return 'eval is not allowed';
+    }
     return null;
   },
 ];
@@ -2022,17 +2038,16 @@ export function matchesDenylist(command: string): string | null {
  * on the parsed argv.
  */
 export function matchesStructuralDeny(segment: CommandSegment): string | null {
-  const execName =
-    segment.resolution?.executableName?.toLowerCase() ?? '';
+  const execName = segment.resolution?.executableName?.toLowerCase() ?? '';
   if (!execName) {
-return null;
-}
+    return null;
+  }
 
   for (const check of STRUCTURAL_DENY_CHECKS) {
     const result = check(segment.argv, execName);
     if (result) {
-return result;
-}
+      return result;
+    }
   }
 
   return null;
@@ -2048,11 +2063,23 @@ return result;
  */
 function detectDangerousPipeChain(segments: CommandSegment[]): string | null {
   if (segments.length < 2) {
-return null;
-}
+    return null;
+  }
 
   const downloadBins = new Set(['curl', 'wget', 'fetch']);
-  const shellBins = new Set(['sh', 'bash', 'zsh', 'dash', 'ksh', 'fish', 'python', 'python3', 'ruby', 'perl', 'node']);
+  const shellBins = new Set([
+    'sh',
+    'bash',
+    'zsh',
+    'dash',
+    'ksh',
+    'fish',
+    'python',
+    'python3',
+    'ruby',
+    'perl',
+    'node',
+  ]);
 
   const firstExec =
     segments[0]?.resolution?.executableName?.toLowerCase() ?? '';
@@ -2076,7 +2103,7 @@ return null;
  * charter safety heuristics.
  */
 export function buildToolPolicies(
-  charterHeuristics?: CharterSafetyHeuristics,
+  charterHeuristics?: CharterSafetyHeuristics
 ): Map<string, ToolPolicy> {
   const policies = new Map<string, ToolPolicy>();
 
@@ -2086,8 +2113,8 @@ export function buildToolPolicies(
   }
 
   if (!charterHeuristics) {
-return policies;
-}
+    return policies;
+  }
 
   // Apply charter overrides
   for (const pattern of charterHeuristics.autoApprove) {
@@ -2127,12 +2154,12 @@ return policies;
  */
 export function getToolPolicy(
   policies: Map<string, ToolPolicy>,
-  toolName: string,
+  toolName: string
 ): ToolPolicy {
   const existing = policies.get(toolName);
   if (existing) {
-return existing;
-}
+    return existing;
+  }
 
   // Unknown tools default to deny + always-ask
   return {
@@ -2162,7 +2189,7 @@ export interface CreateApprovalStateOptions {
  * Create a fresh session-scoped approval state.
  */
 export function createApprovalState(
-  options?: CreateApprovalStateOptions,
+  options?: CreateApprovalStateOptions
 ): ExecApprovalState {
   return {
     policy: {
@@ -2211,11 +2238,11 @@ export class ExecApprovalGate {
 
     // 0. Check environment variable safety if env is provided
     if (env) {
-      const envResult = checkEnvSafety(env as Record<string, string | undefined>);
+      const envResult = checkEnvSafety(
+        env as Record<string, string | undefined>
+      );
       if (!envResult.safe) {
-        this.logger.warn(
-          `Env safety check failed: ${envResult.reason}`,
-        );
+        this.logger.warn(`Env safety check failed: ${envResult.reason}`);
         return {
           verdict: 'deny',
           reason: `Environment variable safety violation: ${envResult.reason}`,
@@ -2257,12 +2284,7 @@ export class ExecApprovalGate {
       toolName === 'file_write' ||
       toolName === 'file_delete'
     ) {
-      return this.evaluateFileAccess(
-        state,
-        toolName,
-        toolPolicy,
-        toolParams,
-      );
+      return this.evaluateFileAccess(state, toolName, toolPolicy, toolParams);
     }
 
     // 6. For all other tools: apply the general tool policy
@@ -2276,7 +2298,7 @@ export class ExecApprovalGate {
     state: ExecApprovalState,
     toolParams: Record<string, unknown>,
     cwd?: string,
-    env?: NodeJS.ProcessEnv,
+    env?: NodeJS.ProcessEnv
   ): GateEvaluation {
     const command = String(toolParams.command ?? '').trim();
 
@@ -2339,9 +2361,7 @@ export class ExecApprovalGate {
       for (const segment of analysis.segments) {
         const structuralDeny = matchesStructuralDeny(segment);
         if (structuralDeny) {
-          this.logger.warn(
-            `Structural deny: ${structuralDeny}`,
-          );
+          this.logger.warn(`Structural deny: ${structuralDeny}`);
           return {
             verdict: 'deny',
             reason: `Command structurally denied: ${structuralDeny}`,
@@ -2354,9 +2374,7 @@ export class ExecApprovalGate {
         // Check argument injection on each segment's argv
         const argResult = detectArgumentInjection(segment.argv);
         if (!argResult.safe) {
-          this.logger.warn(
-            `Argument injection detected: ${argResult.reason}`,
-          );
+          this.logger.warn(`Argument injection detected: ${argResult.reason}`);
           return {
             verdict: 'deny',
             reason: `Argument safety violation: ${argResult.reason}`,
@@ -2372,9 +2390,7 @@ export class ExecApprovalGate {
         for (const chain of analysis.chains) {
           const pipeChainDeny = detectDangerousPipeChain(chain);
           if (pipeChainDeny) {
-            this.logger.warn(
-              `Dangerous pipe chain: ${pipeChainDeny}`,
-            );
+            this.logger.warn(`Dangerous pipe chain: ${pipeChainDeny}`);
             return {
               verdict: 'deny',
               reason: `Dangerous pipe chain detected: ${pipeChainDeny}`,
@@ -2388,9 +2404,7 @@ export class ExecApprovalGate {
         // Single pipeline (no chain operators)
         const pipeChainDeny = detectDangerousPipeChain(analysis.segments);
         if (pipeChainDeny) {
-          this.logger.warn(
-            `Dangerous pipe chain: ${pipeChainDeny}`,
-          );
+          this.logger.warn(`Dangerous pipe chain: ${pipeChainDeny}`);
           return {
             verdict: 'deny',
             reason: `Dangerous pipe chain detected: ${pipeChainDeny}`,
@@ -2435,8 +2449,7 @@ export class ExecApprovalGate {
       }
       return {
         verdict: 'prompt',
-        reason:
-          'Shell command could not be analyzed; requires manual approval',
+        reason: 'Shell command could not be analyzed; requires manual approval',
         toolName: 'bash_execute',
         command,
       };
@@ -2485,7 +2498,7 @@ export class ExecApprovalGate {
     state: ExecApprovalState,
     toolName: string,
     toolPolicy: ToolPolicy,
-    toolParams: Record<string, unknown>,
+    toolParams: Record<string, unknown>
   ): GateEvaluation {
     const filePath = String(toolParams.path ?? '').trim();
 
@@ -2509,12 +2522,9 @@ export class ExecApprovalGate {
     const resolvedPath = path.resolve(filePath);
 
     // Check path restrictions if defined on the policy
-    if (
-      toolPolicy.pathRestrictions &&
-      toolPolicy.pathRestrictions.length > 0
-    ) {
-      const allowed = toolPolicy.pathRestrictions.some((pattern) =>
-        matchesPattern(pattern, resolvedPath),
+    if (toolPolicy.pathRestrictions && toolPolicy.pathRestrictions.length > 0) {
+      const allowed = toolPolicy.pathRestrictions.some(pattern =>
+        matchesPattern(pattern, resolvedPath)
       );
       if (!allowed) {
         return {
@@ -2535,8 +2545,7 @@ export class ExecApprovalGate {
         // Allow reads of non-secret /etc files
         if (toolName === 'file_read' && resolvedPath.startsWith('/etc/')) {
           const isSecret = SENSITIVE_PATHS.some(
-            (s) =>
-              resolvedPath === s || resolvedPath.startsWith(s),
+            s => resolvedPath === s || resolvedPath.startsWith(s)
           );
           if (isSecret) {
             return {
@@ -2576,10 +2585,7 @@ export class ExecApprovalGate {
       };
     }
 
-    if (
-      toolPolicy.ask === 'on-miss' &&
-      toolPolicy.security === 'allowlist'
-    ) {
+    if (toolPolicy.ask === 'on-miss' && toolPolicy.security === 'allowlist') {
       // For write/delete, prompt unless the path is in a safe location
       if (toolName === 'file_write' || toolName === 'file_delete') {
         const effectiveCwd = process.cwd();
@@ -2614,7 +2620,7 @@ export class ExecApprovalGate {
   private evaluateGenericTool(
     _state: ExecApprovalState,
     toolName: string,
-    toolPolicy: ToolPolicy,
+    toolPolicy: ToolPolicy
   ): GateEvaluation {
     if (toolPolicy.security === 'full') {
       return {
@@ -2654,7 +2660,7 @@ export class ExecApprovalGate {
     state: ExecApprovalState,
     command: string,
     decision: ExecApprovalDecision,
-    addToAllowlistOnAlways?: boolean,
+    addToAllowlistOnAlways?: boolean
   ): void {
     const commandHash = hashCommand(command);
     state.decisions.set(commandHash, decision);
@@ -2665,7 +2671,7 @@ export class ExecApprovalGate {
       if (resolution?.resolvedPath) {
         addAllowlistEntry(state, resolution.resolvedPath);
         this.logger.info(
-          `Added to allowlist: ${resolution.resolvedPath} (from: ${command})`,
+          `Added to allowlist: ${resolution.resolvedPath} (from: ${command})`
         );
       }
     }

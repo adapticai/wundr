@@ -107,7 +107,8 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
       const keys = this.getBudgetKeys(usage.orchestratorId, period);
 
       // Increment usage counter with TTL
-      await this.redis.multi()
+      await this.redis
+        .multi()
         .incrBy(keys.usage, usage.totalTokens)
         .expire(keys.usage, window.ttlSeconds)
         .exec();
@@ -125,7 +126,8 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
         metadata: usage.metadata,
       };
 
-      await this.redis.multi()
+      await this.redis
+        .multi()
         .rPush(`${keys.metadata}:history`, JSON.stringify(metadata))
         .expire(`${keys.metadata}:history`, window.ttlSeconds)
         .exec();
@@ -143,7 +145,7 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
   async checkBudget(
     orchestratorId: string,
     estimatedTokens: number,
-    period: BudgetPeriod = 'hourly',
+    period: BudgetPeriod = 'hourly'
   ): Promise<BudgetCheck> {
     if (!this.connected) {
       throw new Error('Redis not connected');
@@ -189,7 +191,7 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
   async reserveTokens(
     orchestratorId: string,
     tokens: number,
-    period: BudgetPeriod = 'hourly',
+    period: BudgetPeriod = 'hourly'
   ): Promise<ReservationResult> {
     if (!this.connected) {
       throw new Error('Redis not connected');
@@ -219,11 +221,15 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
     const reservationKey = `${keys.reservations}:${reservationId}`;
 
     // Store reservation
-    await this.redis.multi()
+    await this.redis
+      .multi()
       .set(reservationKey, JSON.stringify(reservation))
       .expire(reservationKey, Math.floor(this.config.reservationTTL / 1000))
       .incrBy(`${keys.reservations}:total`, tokens)
-      .expire(`${keys.reservations}:total`, Math.floor(this.config.reservationTTL / 1000))
+      .expire(
+        `${keys.reservations}:total`,
+        Math.floor(this.config.reservationTTL / 1000)
+      )
       .exec();
 
     this.emit('reservation:created', reservation);
@@ -241,7 +247,7 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
    */
   async releaseReservation(
     reservationId: string,
-    actualUsed: number,
+    actualUsed: number
   ): Promise<void> {
     if (!this.connected) {
       throw new Error('Redis not connected');
@@ -265,8 +271,12 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
     const reservation: TokenReservation = JSON.parse(reservationData);
 
     // Release reserved tokens
-    const budgetKeys = this.getBudgetKeys(reservation.orchestratorId, reservation.period);
-    await this.redis.multi()
+    const budgetKeys = this.getBudgetKeys(
+      reservation.orchestratorId,
+      reservation.period
+    );
+    await this.redis
+      .multi()
       .del(reservationKey)
       .decrBy(`${budgetKeys.reservations}:total`, reservation.tokens)
       .exec();
@@ -285,7 +295,7 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
    */
   async getUsageStats(
     orchestratorId: string,
-    period: BudgetPeriod = 'hourly',
+    period: BudgetPeriod = 'hourly'
   ): Promise<UsageStats> {
     if (!this.connected) {
       throw new Error('Redis not connected');
@@ -306,10 +316,16 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
 
     // Count active reservations
     const reservationKeys = await this.redis.keys(`${keys.reservations}:*`);
-    const activeReservations = reservationKeys.filter((k: string) => !k.endsWith(':total')).length;
+    const activeReservations = reservationKeys.filter(
+      (k: string) => !k.endsWith(':total')
+    ).length;
 
     // Get metadata history for breakdown
-    const historyItems = await this.redis.lRange(`${keys.metadata}:history`, 0, -1);
+    const historyItems = await this.redis.lRange(
+      `${keys.metadata}:history`,
+      0,
+      -1
+    );
     const history = historyItems.map((item: string) => JSON.parse(item));
 
     let promptTokens = 0;
@@ -372,7 +388,8 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
     const overrideKey = `${keys.overrides}:${randomUUID()}`;
     const ttl = Math.floor((override.expiresAt.getTime() - Date.now()) / 1000);
 
-    await this.redis.multi()
+    await this.redis
+      .multi()
       .set(overrideKey, JSON.stringify(override))
       .expire(overrideKey, ttl)
       .exec();
@@ -391,7 +408,10 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
   /**
    * Get budget keys for Redis
    */
-  private getBudgetKeys(orchestratorId: string, period: BudgetPeriod): BudgetKeys {
+  private getBudgetKeys(
+    orchestratorId: string,
+    period: BudgetPeriod
+  ): BudgetKeys {
     const prefix = `${this.config.redis.keyPrefix}:budget:${orchestratorId}:${period}`;
     return {
       usage: `${prefix}:usage`,
@@ -404,7 +424,10 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
   /**
    * Get period window for budget tracking
    */
-  private getPeriodWindow(period: BudgetPeriod, timestamp?: Date): PeriodWindow {
+  private getPeriodWindow(
+    period: BudgetPeriod,
+    timestamp?: Date
+  ): PeriodWindow {
     const now = timestamp || new Date();
     let start: Date;
     let end: Date;
@@ -412,7 +435,12 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
 
     switch (period) {
       case 'hourly':
-        start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
+        start = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+          now.getHours()
+        );
         end = new Date(start.getTime() + 60 * 60 * 1000);
         ttlSeconds = 60 * 60; // 1 hour
         break;
@@ -446,7 +474,7 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
    */
   private async checkThresholds(
     orchestratorId: string,
-    period: BudgetPeriod,
+    period: BudgetPeriod
   ): Promise<void> {
     const stats = await this.getUsageStats(orchestratorId, period);
     const cacheKey = `${orchestratorId}:${period}`;
@@ -461,7 +489,10 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
     for (const threshold of this.config.thresholds) {
       const thresholdPercent = threshold * 100;
 
-      if (stats.percentUsed >= thresholdPercent && !firedThresholds.has(threshold)) {
+      if (
+        stats.percentUsed >= thresholdPercent &&
+        !firedThresholds.has(threshold)
+      ) {
         const event: BudgetThresholdEvent = {
           orchestratorId,
           period,
@@ -485,7 +516,10 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
         }
 
         firedThresholds.add(threshold);
-      } else if (stats.percentUsed < thresholdPercent && firedThresholds.has(threshold)) {
+      } else if (
+        stats.percentUsed < thresholdPercent &&
+        firedThresholds.has(threshold)
+      ) {
         // Reset threshold if usage drops below it
         firedThresholds.delete(threshold);
       }
@@ -495,7 +529,10 @@ export class TokenBudgetTracker extends EventEmitter<TokenBudgetTrackerEvents> {
   /**
    * Clean up threshold cache for a period window
    */
-  private cleanThresholdCache(orchestratorId: string, period: BudgetPeriod): void {
+  private cleanThresholdCache(
+    orchestratorId: string,
+    period: BudgetPeriod
+  ): void {
     const cacheKey = `${orchestratorId}:${period}`;
     this.thresholdCache.delete(cacheKey);
   }

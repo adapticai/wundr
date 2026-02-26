@@ -9,7 +9,11 @@ import WebSocket from 'ws';
 
 import { OrchestratorConnection } from '../connection';
 
-import type { DelegationRequest, FederationMessage, OrchestratorCapability } from '../types';
+import type {
+  DelegationRequest,
+  FederationMessage,
+  OrchestratorCapability,
+} from '../types';
 
 // Mock WebSocket
 class MockWebSocket extends EventEmitter {
@@ -36,7 +40,11 @@ class MockWebSocket extends EventEmitter {
 describe('OrchestratorConnection', () => {
   let mockSocket: MockWebSocket;
   let connection: OrchestratorConnection;
-  const capabilities: OrchestratorCapability[] = ['code-generation', 'testing', 'analysis'];
+  const capabilities: OrchestratorCapability[] = [
+    'code-generation',
+    'testing',
+    'analysis',
+  ];
 
   beforeEach(() => {
     mockSocket = new MockWebSocket();
@@ -69,7 +77,10 @@ describe('OrchestratorConnection', () => {
     });
 
     it('should return false if orchestrator is missing required capabilities', () => {
-      const result = connection.checkCapability(['code-generation', 'deployment']);
+      const result = connection.checkCapability([
+        'code-generation',
+        'deployment',
+      ]);
       expect(result).toBe(false);
     });
 
@@ -224,7 +235,7 @@ describe('OrchestratorConnection', () => {
     });
 
     it('should emit heartbeat event', async () => {
-      const heartbeatPromise = new Promise<Date>((resolve) => {
+      const heartbeatPromise = new Promise<Date>(resolve => {
         connection.on('heartbeat', (timestamp: Date) => {
           resolve(timestamp);
         });
@@ -274,7 +285,7 @@ describe('OrchestratorConnection', () => {
 
   describe('message handling', () => {
     it('should handle delegation messages', async () => {
-      const delegationPromise = new Promise<any>((resolve) => {
+      const delegationPromise = new Promise<any>(resolve => {
         connection.on('delegation', (request: any) => {
           resolve(request);
         });
@@ -308,7 +319,7 @@ describe('OrchestratorConnection', () => {
     });
 
     it('should handle callback messages', async () => {
-      const callbackPromise = new Promise<any>((resolve) => {
+      const callbackPromise = new Promise<any>(resolve => {
         connection.on('callback', (callback: any) => {
           resolve(callback);
         });
@@ -334,7 +345,7 @@ describe('OrchestratorConnection', () => {
     });
 
     it('should handle broadcast messages', async () => {
-      const broadcastPromise = new Promise<any>((resolve) => {
+      const broadcastPromise = new Promise<any>(resolve => {
         connection.on('broadcast', (payload: any) => {
           resolve(payload);
         });
@@ -358,7 +369,7 @@ describe('OrchestratorConnection', () => {
     });
 
     it('should emit error on malformed message', async () => {
-      const errorPromise = new Promise<Error>((resolve) => {
+      const errorPromise = new Promise<Error>(resolve => {
         connection.on('error', (error: Error) => {
           resolve(error);
         });

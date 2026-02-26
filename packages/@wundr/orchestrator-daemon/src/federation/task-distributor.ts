@@ -30,7 +30,10 @@ import type { ClusterNode, NodeCapability } from './node-registry';
 // ---------------------------------------------------------------------------
 
 export type HashFunction = 'sha256' | 'md5';
-export type RoutingStrategy = 'hash-primary' | 'capability-first' | 'load-aware';
+export type RoutingStrategy =
+  | 'hash-primary'
+  | 'capability-first'
+  | 'load-aware';
 export type FallbackStrategy = 'least-loaded' | 'round-robin';
 
 export interface TaskDistributorConfig {
@@ -86,12 +89,17 @@ export interface AgentMigrationPlan {
 
 export interface TaskDistributorEvents {
   'task:routed': (taskId: string, result: TaskRoutingResult) => void;
-  'task:redirect': (taskId: string, fromNode: string, toNode: string, reason: string) => void;
+  'task:redirect': (
+    taskId: string,
+    fromNode: string,
+    toNode: string,
+    reason: string
+  ) => void;
   'ring:updated': (nodeCount: number, virtualNodeCount: number) => void;
   'migration:planned': (plan: AgentMigrationPlan) => void;
   'migration:completed': (plan: AgentMigrationPlan, durationMs: number) => void;
   'migration:failed': (plan: AgentMigrationPlan, error: string) => void;
-  'error': (error: Error, context: string) => void;
+  error: (error: Error, context: string) => void;
 }
 
 /** Internal representation of a point on the hash ring */
@@ -149,12 +157,15 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
     this.config = {
       hashRing: { ...DEFAULT_CONFIG.hashRing, ...config.hashRing },
       routing: { ...DEFAULT_CONFIG.routing, ...config.routing },
-      agentMigration: { ...DEFAULT_CONFIG.agentMigration, ...config.agentMigration },
+      agentMigration: {
+        ...DEFAULT_CONFIG.agentMigration,
+        ...config.agentMigration,
+      },
       verbose: config.verbose ?? DEFAULT_CONFIG.verbose,
     };
     this.logger = new Logger(
       'TaskDistributor',
-      this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO,
+      this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO
     );
   }
 
@@ -180,7 +191,7 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
     this.ring.sort((a, b) => a.position - b.position);
 
     this.logger.info(
-      `Hash ring rebuilt: ${this.nodes.size} nodes, ${this.ring.length} virtual nodes`,
+      `Hash ring rebuilt: ${this.nodes.size} nodes, ${this.ring.length} virtual nodes`
     );
     this.emit('ring:updated', this.nodes.size, this.ring.length);
   }
@@ -201,7 +212,7 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
    */
   removeNode(nodeId: string): void {
     this.nodes.delete(nodeId);
-    this.ring = this.ring.filter((e) => e.nodeId !== nodeId);
+    this.ring = this.ring.filter(e => e.nodeId !== nodeId);
 
     this.emit('ring:updated', this.nodes.size, this.ring.length);
   }
@@ -227,7 +238,7 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
   routeTask(
     task: Task,
     requiredCapabilities: NodeCapability[] = [],
-    excludeNodes: string[] = [],
+    excludeNodes: string[] = []
   ): TaskRoutingResult | null {
     if (this.nodes.size === 0) {
       this.logger.warn('No nodes available for task routing');
@@ -235,7 +246,10 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
     }
 
     // Filter nodes by capability
-    const eligibleNodeIds = this.getEligibleNodes(requiredCapabilities, excludeNodes);
+    const eligibleNodeIds = this.getEligibleNodes(
+      requiredCapabilities,
+      excludeNodes
+    );
 
     if (eligibleNodeIds.length === 0) {
       this.logger.warn('No eligible nodes match required capabilities');
@@ -259,11 +273,17 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
     // If the primary strategy selected an overloaded node, fall back
     if (result && this.isNodeOverloaded(result.nodeId)) {
       this.logger.debug(
-        `Primary selection ${result.nodeId} is overloaded; using fallback`,
+        `Primary selection ${result.nodeId} is overloaded; using fallback`
       );
       const fallback = this.applyFallback(eligibleNodeIds, [result.nodeId]);
       if (fallback) {
-        this.emit('task:redirect', task.id, result.nodeId, fallback.nodeId, 'overloaded');
+        this.emit(
+          'task:redirect',
+          task.id,
+          result.nodeId,
+          fallback.nodeId,
+          'overloaded'
+        );
         result = fallback;
       }
     }
@@ -280,8 +300,8 @@ export class TaskDistributor extends EventEmitter<TaskDistributorEvents> {
    */
   getOwner(key: string): string | null {
     if (this.ring.length === 0) {
-return null;
-}
+      return null;
+    }
 
     const hash = this.hash(key);
     const entry = this.findRingEntry(hash);
@@ -302,14 +322,14 @@ return null;
   planColocationMigrations(
     agentLocations: Map<string, string>,
     swarmAgentIds: string[],
-    preferredNodeId?: string,
+    preferredNodeId?: string
   ): AgentMigrationPlan[] {
     if (!this.config.agentMigration.enabled) {
-return [];
-}
+      return [];
+    }
     if (swarmAgentIds.length <= 1) {
-return [];
-}
+      return [];
+    }
 
     const plans: AgentMigrationPlan[] = [];
 
@@ -329,8 +349,8 @@ return [];
     for (const [nodeId, count] of nodeAgentCounts.entries()) {
       const node = this.nodes.get(nodeId);
       if (!node || this.isNodeOverloaded(nodeId)) {
-continue;
-}
+        continue;
+      }
 
       if (count > maxAgents) {
         maxAgents = count;
@@ -339,15 +359,15 @@ continue;
     }
 
     if (!targetNodeId) {
-return [];
-}
+      return [];
+    }
 
     // Plan migrations for agents not on the target node
     for (const agentId of swarmAgentIds) {
       const currentNodeId = agentLocations.get(agentId);
       if (!currentNodeId || currentNodeId === targetNodeId) {
-continue;
-}
+        continue;
+      }
 
       // Check cooldown
       const lastMigration = this.migrationCooldowns.get(agentId);
@@ -385,23 +405,23 @@ continue;
    * Plan rebalance migrations when load is imbalanced across nodes.
    */
   planRebalanceMigrations(
-    sessionLocations: Map<string, string>,
+    sessionLocations: Map<string, string>
   ): AgentMigrationPlan[] {
     if (!this.config.agentMigration.enabled) {
-return [];
-}
+      return [];
+    }
 
     const plans: AgentMigrationPlan[] = [];
     const activeNodes = Array.from(this.nodes.values()).filter(
-      (n) => n.status === 'active',
+      n => n.status === 'active'
     );
 
     if (activeNodes.length < 2) {
-return [];
-}
+      return [];
+    }
 
     // Calculate average load
-    const loads = activeNodes.map((n) => n.load.activeSessions);
+    const loads = activeNodes.map(n => n.load.activeSessions);
     const avgLoad = loads.reduce((sum, l) => sum + l, 0) / loads.length;
     const maxLoad = Math.max(...loads);
     const minLoad = Math.min(...loads);
@@ -414,23 +434,25 @@ return [];
 
     // Sort nodes by load (descending)
     const sortedNodes = [...activeNodes].sort(
-      (a, b) => b.load.activeSessions - a.load.activeSessions,
+      (a, b) => b.load.activeSessions - a.load.activeSessions
     );
 
     // Move sessions from overloaded to underloaded
     for (const overloaded of sortedNodes) {
       if (overloaded.load.activeSessions <= avgLoad) {
-break;
-}
+        break;
+      }
 
       const underloaded = sortedNodes.filter(
-        (n) => n.load.activeSessions < avgLoad,
+        n => n.load.activeSessions < avgLoad
       );
       if (underloaded.length === 0) {
-break;
-}
+        break;
+      }
 
-      const sessionsToMove = Math.ceil(overloaded.load.activeSessions - avgLoad);
+      const sessionsToMove = Math.ceil(
+        overloaded.load.activeSessions - avgLoad
+      );
 
       // Find sessions on the overloaded node
       const sessionsOnNode: string[] = [];
@@ -441,7 +463,11 @@ break;
       }
 
       let targetIdx = 0;
-      for (let i = 0; i < Math.min(sessionsToMove, sessionsOnNode.length); i++) {
+      for (
+        let i = 0;
+        i < Math.min(sessionsToMove, sessionsOnNode.length);
+        i++
+      ) {
         const target = underloaded[targetIdx % underloaded.length];
         plans.push({
           agentId: sessionsOnNode[i],
@@ -502,8 +528,8 @@ break;
    */
   private findRingEntry(hash: number): RingEntry | null {
     if (this.ring.length === 0) {
-return null;
-}
+      return null;
+    }
 
     // Binary search for the first entry >= hash
     let lo = 0;
@@ -531,11 +557,11 @@ return null;
    */
   private findEligibleRingEntry(
     hash: number,
-    eligibleNodeIds: Set<string>,
+    eligibleNodeIds: Set<string>
   ): RingEntry | null {
     if (this.ring.length === 0) {
-return null;
-}
+      return null;
+    }
 
     // Binary search for starting position
     let lo = 0;
@@ -568,7 +594,7 @@ return null;
 
   private routeByHash(
     task: Task,
-    eligibleNodeIds: string[],
+    eligibleNodeIds: string[]
   ): TaskRoutingResult | null {
     const routingKey = this.buildRoutingKey(task);
     const hash = this.hash(routingKey);
@@ -576,21 +602,24 @@ return null;
 
     const entry = this.findEligibleRingEntry(hash, eligibleSet);
     if (!entry) {
-return null;
-}
+      return null;
+    }
 
     return {
       nodeId: entry.nodeId,
       strategy: 'hash-primary',
       hashPosition: entry.position,
-      reasons: [`hash(${routingKey}) = ${hash}`, `ring position: ${entry.position}`],
+      reasons: [
+        `hash(${routingKey}) = ${hash}`,
+        `ring position: ${entry.position}`,
+      ],
       redirectCount: 0,
     };
   }
 
   private routeByCapability(
     task: Task,
-    eligibleNodeIds: string[],
+    eligibleNodeIds: string[]
   ): TaskRoutingResult | null {
     // Score each eligible node by capability breadth and load
     let bestNodeId: string | null = null;
@@ -600,8 +629,8 @@ return null;
     for (const nodeId of eligibleNodeIds) {
       const node = this.nodes.get(nodeId);
       if (!node) {
-continue;
-}
+        continue;
+      }
 
       let score = node.capabilities.length * 10;
       score += (1 - this.getNodeLoadFraction(nodeId)) * 50;
@@ -613,8 +642,8 @@ continue;
     }
 
     if (!bestNodeId) {
-return null;
-}
+      return null;
+    }
 
     reasons.push(`best capability score: ${bestScore.toFixed(1)}`);
 
@@ -626,9 +655,7 @@ return null;
     };
   }
 
-  private routeByLoad(
-    eligibleNodeIds: string[],
-  ): TaskRoutingResult | null {
+  private routeByLoad(eligibleNodeIds: string[]): TaskRoutingResult | null {
     let leastLoaded: string | null = null;
     let lowestLoad = Infinity;
 
@@ -641,8 +668,8 @@ return null;
     }
 
     if (!leastLoaded) {
-return null;
-}
+      return null;
+    }
 
     return {
       nodeId: leastLoaded,
@@ -654,15 +681,13 @@ return null;
 
   private applyFallback(
     eligibleNodeIds: string[],
-    excludeNodes: string[],
+    excludeNodes: string[]
   ): TaskRoutingResult | null {
-    const candidates = eligibleNodeIds.filter(
-      (id) => !excludeNodes.includes(id),
-    );
+    const candidates = eligibleNodeIds.filter(id => !excludeNodes.includes(id));
 
     if (candidates.length === 0) {
-return null;
-}
+      return null;
+    }
 
     switch (this.config.routing.fallbackStrategy) {
       case 'least-loaded':
@@ -691,22 +716,22 @@ return null;
 
   private getEligibleNodes(
     requiredCapabilities: NodeCapability[],
-    excludeNodes: string[],
+    excludeNodes: string[]
   ): string[] {
     const excludeSet = new Set(excludeNodes);
 
     return Array.from(this.nodes.entries())
       .filter(([id, node]) => {
         if (excludeSet.has(id)) {
-return false;
-}
+          return false;
+        }
         if (node.status !== 'active') {
-return false;
-}
+          return false;
+        }
 
         if (requiredCapabilities.length > 0) {
-          return requiredCapabilities.every((cap) =>
-            node.capabilities.includes(cap),
+          return requiredCapabilities.every(cap =>
+            node.capabilities.includes(cap)
           );
         }
 
@@ -718,15 +743,19 @@ return false;
   private getNodeLoadFraction(nodeId: string): number {
     const node = this.nodes.get(nodeId);
     if (!node) {
-return 1;
-}
+      return 1;
+    }
 
     // Composite load: weighted average of CPU, memory, and session ratio
     const sessionLoad = node.load.activeSessions / 100; // Assume 100 max
-    return (node.load.cpuUsage / 100 + node.load.memoryUsage / 100 + sessionLoad) / 3;
+    return (
+      (node.load.cpuUsage / 100 + node.load.memoryUsage / 100 + sessionLoad) / 3
+    );
   }
 
   private isNodeOverloaded(nodeId: string): boolean {
-    return this.getNodeLoadFraction(nodeId) >= this.config.routing.overloadThreshold;
+    return (
+      this.getNodeLoadFraction(nodeId) >= this.config.routing.overloadThreshold
+    );
   }
 }

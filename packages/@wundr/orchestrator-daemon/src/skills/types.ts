@@ -174,10 +174,10 @@ export interface SkillHooks {
  * Source origin for a loaded skill, used for precedence resolution.
  */
 export type SkillSource =
-  | 'bundled'     // Ships with Wundr
-  | 'managed'     // User's global ~/.wundr/skills/
-  | 'workspace'   // Project-local ./skills/
-  | 'extra';      // Configured via extraDirs
+  | 'bundled' // Ships with Wundr
+  | 'managed' // User's global ~/.wundr/skills/
+  | 'workspace' // Project-local ./skills/
+  | 'extra'; // Configured via extraDirs
 
 /**
  * A fully parsed and validated skill definition.

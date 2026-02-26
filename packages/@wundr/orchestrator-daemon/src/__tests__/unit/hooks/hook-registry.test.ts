@@ -38,7 +38,10 @@ function createLogger(): HookLogger {
 }
 
 function makeHook(
-  overrides: Partial<HookRegistration> & { id: string; event: HookRegistration['event'] },
+  overrides: Partial<HookRegistration> & {
+    id: string;
+    event: HookRegistration['event'];
+  }
 ): HookRegistration {
   return {
     type: 'command',
@@ -70,7 +73,9 @@ describe('HookRegistry', () => {
 
   describe('register', () => {
     it('should register a valid command hook', () => {
-      registry.register(makeHook({ id: 'h1', event: 'SessionStart', command: 'echo hi' }));
+      registry.register(
+        makeHook({ id: 'h1', event: 'SessionStart', command: 'echo hi' })
+      );
 
       expect(registry.getHookById('h1')).toBeDefined();
       expect(registry.getHookById('h1')?.event).toBe('SessionStart');
@@ -84,7 +89,7 @@ describe('HookRegistry', () => {
           type: 'command',
           command: undefined,
           handler: (async () => {}) as any,
-        }),
+        })
       );
 
       expect(registry.getHookById('h-handler')).toBeDefined();
@@ -92,19 +97,23 @@ describe('HookRegistry', () => {
 
     it('should throw when id is missing', () => {
       expect(() =>
-        registry.register({ event: 'SessionStart', type: 'command', command: 'x' } as any),
+        registry.register({
+          event: 'SessionStart',
+          type: 'command',
+          command: 'x',
+        } as any)
       ).toThrow('must have an id');
     });
 
     it('should throw when event is missing', () => {
       expect(() =>
-        registry.register({ id: 'x', type: 'command', command: 'y' } as any),
+        registry.register({ id: 'x', type: 'command', command: 'y' } as any)
       ).toThrow('must have an event');
     });
 
     it('should throw when type and handler are both missing', () => {
       expect(() =>
-        registry.register({ id: 'x', event: 'SessionStart' } as any),
+        registry.register({ id: 'x', event: 'SessionStart' } as any)
       ).toThrow('must have a type');
     });
 
@@ -114,7 +123,7 @@ describe('HookRegistry', () => {
           id: 'x',
           event: 'SessionStart',
           type: 'command',
-        } as HookRegistration),
+        } as HookRegistration)
       ).toThrow('must have a command string or handler');
     });
 
@@ -124,33 +133,65 @@ describe('HookRegistry', () => {
           id: 'x',
           event: 'SessionStart',
           type: 'prompt',
-        } as HookRegistration),
+        } as HookRegistration)
       ).toThrow('must have a promptTemplate or handler');
     });
 
     it('should replace an existing hook with the same id and log a warning', () => {
-      registry.register(makeHook({ id: 'dup', event: 'SessionStart', command: 'first' }));
-      registry.register(makeHook({ id: 'dup', event: 'SessionEnd', command: 'second' }));
+      registry.register(
+        makeHook({ id: 'dup', event: 'SessionStart', command: 'first' })
+      );
+      registry.register(
+        makeHook({ id: 'dup', event: 'SessionEnd', command: 'second' })
+      );
 
       expect(registry.getHookById('dup')?.event).toBe('SessionEnd');
       expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('Replacing existing hook "dup"'),
+        expect.stringContaining('Replacing existing hook "dup"')
       );
     });
 
     it('should apply default timeout based on hook type', () => {
-      registry.register(makeHook({ id: 'cmd', event: 'SessionStart', type: 'command', command: 'x' }));
+      registry.register(
+        makeHook({
+          id: 'cmd',
+          event: 'SessionStart',
+          type: 'command',
+          command: 'x',
+        })
+      );
       expect(registry.getHookById('cmd')?.timeoutMs).toBe(10_000);
 
-      registry.register(makeHook({ id: 'pmt', event: 'SessionStart', type: 'prompt', promptTemplate: 'x' }));
+      registry.register(
+        makeHook({
+          id: 'pmt',
+          event: 'SessionStart',
+          type: 'prompt',
+          promptTemplate: 'x',
+        })
+      );
       expect(registry.getHookById('pmt')?.timeoutMs).toBe(30_000);
 
-      registry.register(makeHook({ id: 'agt', event: 'SessionStart', type: 'agent', agentConfig: 'x' } as any));
+      registry.register(
+        makeHook({
+          id: 'agt',
+          event: 'SessionStart',
+          type: 'agent',
+          agentConfig: 'x',
+        } as any)
+      );
       expect(registry.getHookById('agt')?.timeoutMs).toBe(60_000);
     });
 
     it('should honour an explicit timeoutMs over the default', () => {
-      registry.register(makeHook({ id: 'h', event: 'SessionStart', command: 'x', timeoutMs: 999 }));
+      registry.register(
+        makeHook({
+          id: 'h',
+          event: 'SessionStart',
+          command: 'x',
+          timeoutMs: 999,
+        })
+      );
       expect(registry.getHookById('h')?.timeoutMs).toBe(999);
     });
 
@@ -174,7 +215,9 @@ describe('HookRegistry', () => {
 
   describe('unregister', () => {
     it('should remove a registered hook and return true', () => {
-      registry.register(makeHook({ id: 'h1', event: 'SessionStart', command: 'x' }));
+      registry.register(
+        makeHook({ id: 'h1', event: 'SessionStart', command: 'x' })
+      );
       expect(registry.unregister('h1')).toBe(true);
       expect(registry.getHookById('h1')).toBeUndefined();
     });
@@ -184,7 +227,9 @@ describe('HookRegistry', () => {
     });
 
     it('should remove the hook from the event index', () => {
-      registry.register(makeHook({ id: 'h1', event: 'PostToolUse', command: 'x' }));
+      registry.register(
+        makeHook({ id: 'h1', event: 'PostToolUse', command: 'x' })
+      );
       registry.unregister('h1');
       expect(registry.getHooksForEvent('PostToolUse')).toHaveLength(0);
     });
@@ -200,18 +245,28 @@ describe('HookRegistry', () => {
     });
 
     it('should return only hooks for the requested event', () => {
-      registry.register(makeHook({ id: 'a', event: 'SessionStart', command: 'x' }));
-      registry.register(makeHook({ id: 'b', event: 'SessionEnd', command: 'x' }));
-      registry.register(makeHook({ id: 'c', event: 'SessionStart', command: 'x' }));
+      registry.register(
+        makeHook({ id: 'a', event: 'SessionStart', command: 'x' })
+      );
+      registry.register(
+        makeHook({ id: 'b', event: 'SessionEnd', command: 'x' })
+      );
+      registry.register(
+        makeHook({ id: 'c', event: 'SessionStart', command: 'x' })
+      );
 
       const hooks = registry.getHooksForEvent('SessionStart');
       expect(hooks).toHaveLength(2);
-      expect(hooks.map((h) => h.id).sort()).toEqual(['a', 'c']);
+      expect(hooks.map(h => h.id).sort()).toEqual(['a', 'c']);
     });
 
     it('should exclude disabled hooks', () => {
-      registry.register(makeHook({ id: 'a', event: 'Stop', command: 'x', enabled: true }));
-      registry.register(makeHook({ id: 'b', event: 'Stop', command: 'x', enabled: false }));
+      registry.register(
+        makeHook({ id: 'a', event: 'Stop', command: 'x', enabled: true })
+      );
+      registry.register(
+        makeHook({ id: 'b', event: 'Stop', command: 'x', enabled: false })
+      );
 
       const hooks = registry.getHooksForEvent('Stop');
       expect(hooks).toHaveLength(1);
@@ -219,12 +274,28 @@ describe('HookRegistry', () => {
     });
 
     it('should sort hooks by priority descending (higher first)', () => {
-      registry.register(makeHook({ id: 'low', event: 'PreToolUse', command: 'x', priority: -10 }));
-      registry.register(makeHook({ id: 'high', event: 'PreToolUse', command: 'x', priority: 100 }));
-      registry.register(makeHook({ id: 'mid', event: 'PreToolUse', command: 'x', priority: 50 }));
+      registry.register(
+        makeHook({
+          id: 'low',
+          event: 'PreToolUse',
+          command: 'x',
+          priority: -10,
+        })
+      );
+      registry.register(
+        makeHook({
+          id: 'high',
+          event: 'PreToolUse',
+          command: 'x',
+          priority: 100,
+        })
+      );
+      registry.register(
+        makeHook({ id: 'mid', event: 'PreToolUse', command: 'x', priority: 50 })
+      );
 
       const hooks = registry.getHooksForEvent('PreToolUse');
-      expect(hooks.map((h) => h.id)).toEqual(['high', 'mid', 'low']);
+      expect(hooks.map(h => h.id)).toEqual(['high', 'mid', 'low']);
     });
   });
 
@@ -234,8 +305,12 @@ describe('HookRegistry', () => {
 
   describe('getAllHooks', () => {
     it('should return all hooks including disabled ones', () => {
-      registry.register(makeHook({ id: 'a', event: 'SessionStart', command: 'x' }));
-      registry.register(makeHook({ id: 'b', event: 'SessionEnd', command: 'y', enabled: false }));
+      registry.register(
+        makeHook({ id: 'a', event: 'SessionStart', command: 'x' })
+      );
+      registry.register(
+        makeHook({ id: 'b', event: 'SessionEnd', command: 'y', enabled: false })
+      );
 
       const all = registry.getAllHooks();
       expect(all).toHaveLength(2);
@@ -256,7 +331,9 @@ describe('HookRegistry', () => {
     });
 
     it('should re-enable a disabled hook', () => {
-      registry.register(makeHook({ id: 'h', event: 'Stop', command: 'x', enabled: false }));
+      registry.register(
+        makeHook({ id: 'h', event: 'Stop', command: 'x', enabled: false })
+      );
 
       expect(registry.setEnabled('h', true)).toBe(true);
       expect(registry.getHookById('h')?.enabled).toBe(true);
@@ -274,8 +351,12 @@ describe('HookRegistry', () => {
 
   describe('clear', () => {
     it('should remove all registrations', () => {
-      registry.register(makeHook({ id: 'a', event: 'SessionStart', command: 'x' }));
-      registry.register(makeHook({ id: 'b', event: 'SessionEnd', command: 'y' }));
+      registry.register(
+        makeHook({ id: 'a', event: 'SessionStart', command: 'x' })
+      );
+      registry.register(
+        makeHook({ id: 'b', event: 'SessionEnd', command: 'y' })
+      );
       registry.clear();
 
       expect(registry.getAllHooks()).toHaveLength(0);
@@ -292,8 +373,18 @@ describe('HookRegistry', () => {
     it('should load hooks from a config object', () => {
       const config: HooksConfig = {
         hooks: [
-          { id: 'cfg1', event: 'SessionStart', type: 'command', command: 'echo 1' },
-          { id: 'cfg2', event: 'PostToolUse', type: 'command', command: 'echo 2' },
+          {
+            id: 'cfg1',
+            event: 'SessionStart',
+            type: 'command',
+            command: 'echo 1',
+          },
+          {
+            id: 'cfg2',
+            event: 'PostToolUse',
+            type: 'command',
+            command: 'echo 2',
+          },
         ],
       };
 
@@ -307,7 +398,9 @@ describe('HookRegistry', () => {
     it('should skip loading when enabled is false', () => {
       const config: HooksConfig = {
         enabled: false,
-        hooks: [{ id: 'x', event: 'SessionStart', type: 'command', command: 'echo' }],
+        hooks: [
+          { id: 'x', event: 'SessionStart', type: 'command', command: 'echo' },
+        ],
       };
 
       registry.loadFromConfig(config);
@@ -329,7 +422,13 @@ describe('HookRegistry', () => {
     it('should apply hookOverrides after loading hooks', () => {
       const config: HooksConfig = {
         hooks: [
-          { id: 'h1', event: 'SessionStart', type: 'command', command: 'echo', priority: 0 },
+          {
+            id: 'h1',
+            event: 'SessionStart',
+            type: 'command',
+            command: 'echo',
+            priority: 0,
+          },
         ],
         hookOverrides: {
           h1: { enabled: false, priority: 999 },
@@ -345,8 +444,18 @@ describe('HookRegistry', () => {
     it('should log errors for invalid hook definitions without crashing', () => {
       const config: HooksConfig = {
         hooks: [
-          { id: '', event: 'SessionStart', type: 'command', command: 'echo' } as any,
-          { id: 'good', event: 'SessionStart', type: 'command', command: 'echo' },
+          {
+            id: '',
+            event: 'SessionStart',
+            type: 'command',
+            command: 'echo',
+          } as any,
+          {
+            id: 'good',
+            event: 'SessionStart',
+            type: 'command',
+            command: 'echo',
+          },
         ],
       };
 
@@ -358,10 +467,14 @@ describe('HookRegistry', () => {
     });
 
     it('should not clear existing hooks when loading config', () => {
-      registry.register(makeHook({ id: 'existing', event: 'Stop', command: 'x' }));
+      registry.register(
+        makeHook({ id: 'existing', event: 'Stop', command: 'x' })
+      );
 
       registry.loadFromConfig({
-        hooks: [{ id: 'new', event: 'SessionStart', type: 'command', command: 'y' }],
+        hooks: [
+          { id: 'new', event: 'SessionStart', type: 'command', command: 'y' },
+        ],
       });
 
       expect(registry.getHookById('existing')).toBeDefined();
@@ -376,7 +489,12 @@ describe('HookRegistry', () => {
   describe('applyOverrides', () => {
     it('should apply env override by merging environment variables', () => {
       registry.register(
-        makeHook({ id: 'h1', event: 'SessionStart', command: 'x', env: { A: '1' } }),
+        makeHook({
+          id: 'h1',
+          event: 'SessionStart',
+          command: 'x',
+          env: { A: '1' },
+        })
       );
 
       registry.applyOverrides({
@@ -394,21 +512,23 @@ describe('HookRegistry', () => {
           name: 'my-hook',
           event: 'SessionStart',
           command: 'x',
-        }),
+        })
       );
 
       registry.applyOverrides({
         'my-hook': { timeoutMs: 5000 },
       });
 
-      expect(registry.getHookById('discovered:my-hook:SessionStart')?.timeoutMs).toBe(5000);
+      expect(
+        registry.getHookById('discovered:my-hook:SessionStart')?.timeoutMs
+      ).toBe(5000);
     });
 
     it('should silently ignore overrides for unknown hooks', () => {
       registry.applyOverrides({ unknown: { enabled: false } });
       // No error should be thrown; debug log should indicate no match.
       expect(logger.debug).toHaveBeenCalledWith(
-        expect.stringContaining('did not match any registered hook'),
+        expect.stringContaining('did not match any registered hook')
       );
     });
   });
@@ -419,9 +539,31 @@ describe('HookRegistry', () => {
 
   describe('getSummary', () => {
     it('should return accurate statistics', () => {
-      registry.register(makeHook({ id: 'a', event: 'SessionStart', command: 'x', source: 'built-in' }));
-      registry.register(makeHook({ id: 'b', event: 'SessionStart', command: 'y', enabled: false, source: 'config-file' }));
-      registry.register(makeHook({ id: 'c', event: 'PostToolUse', command: 'z', source: 'built-in' }));
+      registry.register(
+        makeHook({
+          id: 'a',
+          event: 'SessionStart',
+          command: 'x',
+          source: 'built-in',
+        })
+      );
+      registry.register(
+        makeHook({
+          id: 'b',
+          event: 'SessionStart',
+          command: 'y',
+          enabled: false,
+          source: 'config-file',
+        })
+      );
+      registry.register(
+        makeHook({
+          id: 'c',
+          event: 'PostToolUse',
+          command: 'z',
+          source: 'built-in',
+        })
+      );
 
       const summary = registry.getSummary();
 
@@ -429,7 +571,10 @@ describe('HookRegistry', () => {
       expect(summary.enabledHooks).toBe(2);
       expect(summary.disabledHooks).toBe(1);
       expect(summary.hooksByEvent).toEqual({ SessionStart: 2, PostToolUse: 1 });
-      expect(summary.hooksBySource).toEqual({ 'built-in': 2, 'config-file': 1 });
+      expect(summary.hooksBySource).toEqual({
+        'built-in': 2,
+        'config-file': 1,
+      });
     });
   });
 
@@ -443,7 +588,12 @@ describe('HookRegistry', () => {
         logger,
         config: {
           hooks: [
-            { id: 'f1', event: 'SessionStart', type: 'command', command: 'echo' },
+            {
+              id: 'f1',
+              event: 'SessionStart',
+              type: 'command',
+              command: 'echo',
+            },
           ],
         },
       });

@@ -141,7 +141,7 @@ export class CostCalculator {
    */
   public calculateRecordCost(
     record: TokenUsageRecord,
-    targetCurrency: 'USD' | 'EUR' | 'GBP' = 'USD',
+    targetCurrency: 'USD' | 'EUR' | 'GBP' = 'USD'
   ): number {
     const pricing = this.pricingMap.get(record.modelId);
     if (!pricing) {
@@ -151,7 +151,8 @@ export class CostCalculator {
 
     // Calculate cost per 1M tokens
     const inputCost = (record.inputTokens / 1_000_000) * pricing.inputTokenCost;
-    const outputCost = (record.outputTokens / 1_000_000) * pricing.outputTokenCost;
+    const outputCost =
+      (record.outputTokens / 1_000_000) * pricing.outputTokenCost;
     const totalCost = inputCost + outputCost;
 
     // Convert currency if needed
@@ -165,7 +166,7 @@ export class CostCalculator {
     records: TokenUsageRecord[],
     targetCurrency: 'USD' | 'EUR' | 'GBP' = 'USD',
     includeProjection = false,
-    projectionPeriod?: 'daily' | 'weekly' | 'monthly',
+    projectionPeriod?: 'daily' | 'weekly' | 'monthly'
   ): CostEstimate {
     // Group records by model
     const modelGroups = new Map<string, TokenUsageRecord[]>();
@@ -186,13 +187,27 @@ export class CostCalculator {
         continue;
       }
 
-      const inputTokens = modelRecords.reduce((sum, r) => sum + r.inputTokens, 0);
-      const outputTokens = modelRecords.reduce((sum, r) => sum + r.outputTokens, 0);
+      const inputTokens = modelRecords.reduce(
+        (sum, r) => sum + r.inputTokens,
+        0
+      );
+      const outputTokens = modelRecords.reduce(
+        (sum, r) => sum + r.outputTokens,
+        0
+      );
 
       const inputCost = (inputTokens / 1_000_000) * pricing.inputTokenCost;
       const outputCost = (outputTokens / 1_000_000) * pricing.outputTokenCost;
-      const convertedInputCost = this.convertCurrency(inputCost, pricing.currency, targetCurrency);
-      const convertedOutputCost = this.convertCurrency(outputCost, pricing.currency, targetCurrency);
+      const convertedInputCost = this.convertCurrency(
+        inputCost,
+        pricing.currency,
+        targetCurrency
+      );
+      const convertedOutputCost = this.convertCurrency(
+        outputCost,
+        pricing.currency,
+        targetCurrency
+      );
       const convertedTotal = convertedInputCost + convertedOutputCost;
 
       totalCost += convertedTotal;
@@ -220,7 +235,11 @@ export class CostCalculator {
     // Calculate projection if requested
     let projection: CostProjection | undefined;
     if (includeProjection && projectionPeriod && records.length > 0) {
-      projection = this.calculateProjection(records, totalCost, projectionPeriod);
+      projection = this.calculateProjection(
+        records,
+        totalCost,
+        projectionPeriod
+      );
     }
 
     return {
@@ -237,7 +256,7 @@ export class CostCalculator {
   private calculateProjection(
     records: TokenUsageRecord[],
     currentCost: number,
-    period: 'daily' | 'weekly' | 'monthly',
+    period: 'daily' | 'weekly' | 'monthly'
   ): CostProjection {
     if (records.length === 0) {
       return {
@@ -294,7 +313,7 @@ export class CostCalculator {
   public convertCurrency(
     amount: number,
     fromCurrency: 'USD' | 'EUR' | 'GBP',
-    toCurrency: 'USD' | 'EUR' | 'GBP',
+    toCurrency: 'USD' | 'EUR' | 'GBP'
   ): number {
     if (fromCurrency === toCurrency) {
       return amount;
@@ -317,16 +336,15 @@ export class CostCalculator {
    */
   public getCostPer1KTokens(
     modelId: string,
-    type: 'input' | 'output',
+    type: 'input' | 'output'
   ): number | null {
     const pricing = this.pricingMap.get(modelId);
     if (!pricing) {
       return null;
     }
 
-    const costPer1M = type === 'input'
-      ? pricing.inputTokenCost
-      : pricing.outputTokenCost;
+    const costPer1M =
+      type === 'input' ? pricing.inputTokenCost : pricing.outputTokenCost;
 
     return costPer1M / 1000; // Convert from per 1M to per 1K
   }
@@ -340,7 +358,9 @@ let calculatorInstance: CostCalculator | null = null;
 /**
  * Get the singleton cost calculator instance
  */
-export function getCostCalculator(customPricing?: ModelPricing[]): CostCalculator {
+export function getCostCalculator(
+  customPricing?: ModelPricing[]
+): CostCalculator {
   if (!calculatorInstance || customPricing) {
     calculatorInstance = new CostCalculator(customPricing);
   }

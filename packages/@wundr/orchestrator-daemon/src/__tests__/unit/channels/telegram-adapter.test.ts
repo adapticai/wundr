@@ -37,7 +37,6 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-
 // ---------------------------------------------------------------------------
 // Import the adapter AFTER mocking telegraf.
 // ---------------------------------------------------------------------------
@@ -117,7 +116,7 @@ function createLogger(): ChannelLogger {
 }
 
 function baseTelegramConfig(
-  overrides: Partial<TelegramChannelConfig> = {},
+  overrides: Partial<TelegramChannelConfig> = {}
 ): TelegramChannelConfig {
   return {
     enabled: true,
@@ -153,7 +152,7 @@ function sentMsg(overrides: Record<string, unknown> = {}) {
  */
 async function connectAdapter(
   adapter: TelegramChannelAdapter,
-  configOverrides: Partial<TelegramChannelConfig> = {},
+  configOverrides: Partial<TelegramChannelConfig> = {}
 ) {
   mockGetMe.mockResolvedValue(BOT_ME);
   mockCallApi.mockResolvedValue(true); // setMyCommands
@@ -168,25 +167,23 @@ type EventHandlerMap = Record<string, ((ctx: unknown) => void)[]>;
 
 function captureEventHandlers(): EventHandlerMap {
   const handlers: EventHandlerMap = {};
-  mockBotOn.mockImplementation((event: string, handler: (ctx: unknown) => void) => {
-    if (!handlers[event]) {
-handlers[event] = [];
-}
-    handlers[event].push(handler);
-  });
+  mockBotOn.mockImplementation(
+    (event: string, handler: (ctx: unknown) => void) => {
+      if (!handlers[event]) {
+        handlers[event] = [];
+      }
+      handlers[event].push(handler);
+    }
+  );
   return handlers;
 }
 
-function triggerEvent(
-  handlers: EventHandlerMap,
-  event: string,
-  ctx: unknown,
-) {
+function triggerEvent(handlers: EventHandlerMap, event: string, ctx: unknown) {
   const fns = handlers[event];
   if (fns) {
     for (const fn of fns) {
-fn(ctx);
-}
+      fn(ctx);
+    }
   }
 }
 
@@ -233,7 +230,7 @@ describe('TelegramChannelAdapter', () => {
 
     it('should include chatTypes direct, group, channel, thread', () => {
       expect(adapter.capabilities.chatTypes).toEqual(
-        expect.arrayContaining(['direct', 'group', 'channel', 'thread']),
+        expect.arrayContaining(['direct', 'group', 'channel', 'thread'])
       );
     });
 
@@ -250,7 +247,10 @@ describe('TelegramChannelAdapter', () => {
   describe('connect', () => {
     it('should throw when botToken is missing', async () => {
       await expect(
-        adapter.connect({ enabled: true, botToken: '' } as TelegramChannelConfig),
+        adapter.connect({
+          enabled: true,
+          botToken: '',
+        } as TelegramChannelConfig)
       ).rejects.toThrow('botToken');
     });
 
@@ -262,7 +262,7 @@ describe('TelegramChannelAdapter', () => {
 
       expect(adapter.isConnected()).toBe(true);
       expect(mockBotLaunch).toHaveBeenCalledWith(
-        expect.objectContaining({ dropPendingUpdates: true }),
+        expect.objectContaining({ dropPendingUpdates: true })
       );
       expect(mockSetWebhook).not.toHaveBeenCalled();
     });
@@ -276,13 +276,13 @@ describe('TelegramChannelAdapter', () => {
           mode: 'webhook',
           webhookUrl: 'https://example.com/hook',
           webhookSecret: 's3cret',
-        }),
+        })
       );
 
       expect(adapter.isConnected()).toBe(true);
       expect(mockSetWebhook).toHaveBeenCalledWith(
         'https://example.com/hook',
-        expect.objectContaining({ secret_token: 's3cret' }),
+        expect.objectContaining({ secret_token: 's3cret' })
       );
       expect(mockBotLaunch).not.toHaveBeenCalled();
     });
@@ -306,7 +306,7 @@ describe('TelegramChannelAdapter', () => {
         expect.objectContaining({
           channelId: 'telegram',
           accountId: '9999',
-        }),
+        })
       );
     });
 
@@ -320,7 +320,7 @@ describe('TelegramChannelAdapter', () => {
             { command: 'settings', description: 'Bot settings' },
             { command: '/deploy', description: 'Deploy app' },
           ],
-        }),
+        })
       );
 
       expect(mockCallApi).toHaveBeenCalledWith('setMyCommands', {
@@ -336,9 +336,9 @@ describe('TelegramChannelAdapter', () => {
     it('should record the error when connect fails', async () => {
       mockGetMe.mockRejectedValue(new Error('Network down'));
 
-      await expect(
-        adapter.connect(baseTelegramConfig()),
-      ).rejects.toThrow('Network down');
+      await expect(adapter.connect(baseTelegramConfig())).rejects.toThrow(
+        'Network down'
+      );
 
       expect(adapter.isConnected()).toBe(false);
     });
@@ -356,7 +356,7 @@ describe('TelegramChannelAdapter', () => {
       expect(adapter.isConnected()).toBe(false);
       expect(mockBotStop).toHaveBeenCalledWith('Orchestrator shutdown');
       expect(handler).toHaveBeenCalledWith(
-        expect.objectContaining({ channelId: 'telegram' }),
+        expect.objectContaining({ channelId: 'telegram' })
       );
     });
 
@@ -427,7 +427,7 @@ describe('TelegramChannelAdapter', () => {
     it('should throw when not connected', async () => {
       const fresh = new TelegramChannelAdapter(logger);
       await expect(
-        fresh.sendMessage({ to: '123', text: 'hi' }),
+        fresh.sendMessage({ to: '123', text: 'hi' })
       ).rejects.toThrow('not connected');
     });
 
@@ -444,7 +444,7 @@ describe('TelegramChannelAdapter', () => {
       expect(mockSendMessage).toHaveBeenCalledWith(
         '-1001234',
         'Hello world',
-        expect.objectContaining({ parse_mode: 'HTML' }),
+        expect.objectContaining({ parse_mode: 'HTML' })
       );
     });
 
@@ -460,7 +460,7 @@ describe('TelegramChannelAdapter', () => {
       expect(mockSendMessage).toHaveBeenCalledWith(
         '123',
         'reply',
-        expect.objectContaining({ reply_to_message_id: 42 }),
+        expect.objectContaining({ reply_to_message_id: 42 })
       );
     });
 
@@ -480,7 +480,7 @@ describe('TelegramChannelAdapter', () => {
         expect.objectContaining({
           disable_notification: true,
           protect_content: true,
-        }),
+        })
       );
     });
 
@@ -498,7 +498,7 @@ describe('TelegramChannelAdapter', () => {
         'no preview',
         expect.objectContaining({
           link_preview_options: { is_disabled: true },
-        }),
+        })
       );
     });
 
@@ -514,7 +514,7 @@ describe('TelegramChannelAdapter', () => {
       expect(mockSendMessage).toHaveBeenCalledWith(
         '123',
         'topic msg',
-        expect.objectContaining({ message_thread_id: 42 }),
+        expect.objectContaining({ message_thread_id: 42 })
       );
     });
 
@@ -530,7 +530,7 @@ describe('TelegramChannelAdapter', () => {
       expect(mockSendMessage).toHaveBeenCalledWith(
         '123',
         'thread msg',
-        expect.objectContaining({ message_thread_id: 55 }),
+        expect.objectContaining({ message_thread_id: 55 })
       );
     });
 
@@ -547,7 +547,7 @@ describe('TelegramChannelAdapter', () => {
       expect(mockSendMessage).toHaveBeenCalledWith(
         '123',
         'both',
-        expect.objectContaining({ message_thread_id: 99 }),
+        expect.objectContaining({ message_thread_id: 99 })
       );
     });
   });
@@ -564,7 +564,7 @@ describe('TelegramChannelAdapter', () => {
     it('should retry without message_thread_id on "message thread not found"', async () => {
       mockSendMessage
         .mockRejectedValueOnce(
-          new Error('400: Bad Request: message thread not found'),
+          new Error('400: Bad Request: message thread not found')
         )
         .mockResolvedValueOnce(sentMsg());
 
@@ -584,7 +584,7 @@ describe('TelegramChannelAdapter', () => {
 
     it('should NOT retry if error is not thread-related', async () => {
       mockSendMessage.mockRejectedValue(
-        new Error('400: Bad Request: chat not found'),
+        new Error('400: Bad Request: chat not found')
       );
 
       const result = await adapter.sendMessage({
@@ -599,7 +599,7 @@ describe('TelegramChannelAdapter', () => {
 
     it('should NOT retry thread recovery if no thread ID was set', async () => {
       mockSendMessage.mockRejectedValue(
-        new Error('400: Bad Request: message thread not found'),
+        new Error('400: Bad Request: message thread not found')
       );
 
       const result = await adapter.sendMessage({
@@ -624,9 +624,7 @@ describe('TelegramChannelAdapter', () => {
 
     it('should retry as plain text when "can\'t parse entities" error occurs', async () => {
       mockSendMessage
-        .mockRejectedValueOnce(
-          new Error("can't parse entities: invalid HTML"),
-        )
+        .mockRejectedValueOnce(new Error("can't parse entities: invalid HTML"))
         .mockResolvedValueOnce(sentMsg());
 
       const result = await adapter.sendMessage({
@@ -668,7 +666,7 @@ describe('TelegramChannelAdapter', () => {
 
     it('should wrap "chat not found" with helpful context', async () => {
       mockSendMessage.mockRejectedValue(
-        new Error('400: Bad Request: chat not found'),
+        new Error('400: Bad Request: chat not found')
       );
 
       const result = await adapter.sendMessage({
@@ -694,7 +692,7 @@ describe('TelegramChannelAdapter', () => {
 
     it('should log a warning and return error on 403 Forbidden', async () => {
       mockSendMessage.mockRejectedValue(
-        new Error('403: Forbidden: bot was blocked by the user'),
+        new Error('403: Forbidden: bot was blocked by the user')
       );
 
       const result = await adapter.sendMessage({
@@ -704,7 +702,7 @@ describe('TelegramChannelAdapter', () => {
 
       expect(result.ok).toBe(false);
       expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('403 Forbidden'),
+        expect.stringContaining('403 Forbidden')
       );
     });
   });
@@ -746,7 +744,7 @@ describe('TelegramChannelAdapter', () => {
               [{ text: 'Open', url: 'https://example.com' }],
             ],
           },
-        }),
+        })
       );
     });
 
@@ -959,7 +957,7 @@ describe('TelegramChannelAdapter', () => {
         expect.objectContaining({
           channelId: 'telegram',
           content: expect.objectContaining({ text: '/unknown_cmd arg1' }),
-        }),
+        })
       );
     });
 
@@ -986,7 +984,7 @@ describe('TelegramChannelAdapter', () => {
           content: expect.objectContaining({
             text: '/start deeplink_param',
           }),
-        }),
+        })
       );
     });
   });
@@ -1008,7 +1006,12 @@ describe('TelegramChannelAdapter', () => {
         callbackQuery: {
           id: 'cq-1',
           data: 'action:confirm',
-          from: { id: 42, is_bot: false, first_name: 'Alice', username: 'alice' },
+          from: {
+            id: 42,
+            is_bot: false,
+            first_name: 'Alice',
+            username: 'alice',
+          },
           message: {
             message_id: 10,
             chat: { id: 100, type: 'private' },
@@ -1026,7 +1029,7 @@ describe('TelegramChannelAdapter', () => {
           queryId: 'cq-1',
           data: 'action:confirm',
           chatId: '100',
-        }),
+        })
       );
     });
 
@@ -1092,7 +1095,7 @@ describe('TelegramChannelAdapter', () => {
           content: expect.objectContaining({
             text: '[callback] orphan_action',
           }),
-        }),
+        })
       );
     });
 
@@ -1147,7 +1150,7 @@ describe('TelegramChannelAdapter', () => {
         456,
         undefined,
         'updated text',
-        { parse_mode: 'HTML' },
+        { parse_mode: 'HTML' }
       );
     });
 
@@ -1164,7 +1167,7 @@ describe('TelegramChannelAdapter', () => {
 
     it('should handle "message to edit not found" gracefully', async () => {
       mockEditMessageText.mockRejectedValue(
-        new Error('400: Bad Request: message to edit not found'),
+        new Error('400: Bad Request: message to edit not found')
       );
 
       const result = await adapter.editMessage('123', '456', 'gone');
@@ -1194,7 +1197,7 @@ describe('TelegramChannelAdapter', () => {
 
     it('should return true when message is already deleted', async () => {
       mockDeleteMessage.mockRejectedValue(
-        new Error('400: Bad Request: message to delete not found'),
+        new Error('400: Bad Request: message to delete not found')
       );
 
       const ok = await adapter.deleteMessage('123', '456');
@@ -1203,7 +1206,7 @@ describe('TelegramChannelAdapter', () => {
 
     it('should return false on unexpected error', async () => {
       mockDeleteMessage.mockRejectedValue(
-        new Error('500: Internal Server Error'),
+        new Error('500: Internal Server Error')
       );
 
       const ok = await adapter.deleteMessage('123', '456');
@@ -1298,7 +1301,7 @@ describe('TelegramChannelAdapter', () => {
       mockCallApi.mockRejectedValue(new Error('Bad Request'));
 
       await expect(
-        adapter.addReaction('123', '456', '👍'),
+        adapter.addReaction('123', '456', '👍')
       ).resolves.toBeUndefined();
     });
   });
@@ -1350,7 +1353,7 @@ describe('TelegramChannelAdapter', () => {
             text: 'Hello bot!',
             mentionsSelf: false,
           }),
-        }),
+        })
       );
     });
 
@@ -1377,7 +1380,7 @@ describe('TelegramChannelAdapter', () => {
         expect.objectContaining({
           chatType: 'thread',
           threadId: '55',
-        }),
+        })
       );
     });
 
@@ -1399,7 +1402,7 @@ describe('TelegramChannelAdapter', () => {
       triggerEvent(handlers, 'message', { message: msg });
 
       expect(messageHandler).toHaveBeenCalledWith(
-        expect.objectContaining({ chatType: 'group' }),
+        expect.objectContaining({ chatType: 'group' })
       );
     });
 
@@ -1421,7 +1424,7 @@ describe('TelegramChannelAdapter', () => {
       triggerEvent(handlers, 'message', { message: msg });
 
       expect(messageHandler).toHaveBeenCalledWith(
-        expect.objectContaining({ chatType: 'channel' }),
+        expect.objectContaining({ chatType: 'channel' })
       );
     });
 
@@ -1469,7 +1472,7 @@ describe('TelegramChannelAdapter', () => {
             mentionsSelf: true,
             mentions: expect.arrayContaining(['test_bot']),
           }),
-        }),
+        })
       );
     });
 
@@ -1499,7 +1502,7 @@ describe('TelegramChannelAdapter', () => {
             mentionsSelf: true,
             mentions: expect.arrayContaining(['9999']),
           }),
-        }),
+        })
       );
     });
 
@@ -1522,7 +1525,7 @@ describe('TelegramChannelAdapter', () => {
       triggerEvent(handlers, 'message', { message: msg });
 
       expect(messageHandler).toHaveBeenCalledWith(
-        expect.objectContaining({ replyTo: '5' }),
+        expect.objectContaining({ replyTo: '5' })
       );
     });
   });
@@ -1747,7 +1750,7 @@ describe('TelegramChannelAdapter', () => {
 
       const normalized = messageHandler.mock.calls[0][0];
       expect(normalized.content.attachments[0].mimeType).toBe(
-        'application/x-tgsticker',
+        'application/x-tgsticker'
       );
     });
   });
@@ -1780,7 +1783,7 @@ describe('TelegramChannelAdapter', () => {
           conversationId: '42',
           messageId: '30',
           newContent: expect.objectContaining({ text: 'edited text' }),
-        }),
+        })
       );
     });
   });
@@ -1814,7 +1817,7 @@ describe('TelegramChannelAdapter', () => {
           channelId: 'telegram',
           conversationId: '-500',
           userId: '200',
-        }),
+        })
       );
     });
 
@@ -1841,7 +1844,7 @@ describe('TelegramChannelAdapter', () => {
         expect.objectContaining({
           conversationId: '-500',
           userId: '200',
-        }),
+        })
       );
     });
   });
@@ -1867,7 +1870,7 @@ describe('TelegramChannelAdapter', () => {
       expect(mockSendMessage).toHaveBeenCalledWith(
         '-1001234',
         'thread reply',
-        expect.objectContaining({ message_thread_id: 55 }),
+        expect.objectContaining({ message_thread_id: 55 })
       );
     });
   });
@@ -2010,7 +2013,7 @@ describe('TelegramChannelAdapter', () => {
 
       const checkString = Object.keys(data)
         .sort()
-        .map((key) => `${key}=${data[key as keyof typeof data]}`)
+        .map(key => `${key}=${data[key as keyof typeof data]}`)
         .join('\n');
 
       const secretKey = crypto.createHash('sha256').update(token).digest();
@@ -2107,7 +2110,7 @@ describe('TelegramChannelAdapter', () => {
           filename: 'img.png',
           mimeType: 'image/png',
         },
-        { text: longCaption },
+        { text: longCaption }
       );
 
       const extra = mockSendPhoto.mock.calls[0][2] as Record<string, any>;
@@ -2118,7 +2121,7 @@ describe('TelegramChannelAdapter', () => {
     it('should retry media send without thread on stale thread error', async () => {
       mockSendPhoto
         .mockRejectedValueOnce(
-          new Error('400: Bad Request: message thread not found'),
+          new Error('400: Bad Request: message thread not found')
         )
         .mockResolvedValueOnce(sentMsg());
 
@@ -2130,13 +2133,16 @@ describe('TelegramChannelAdapter', () => {
           filename: 'img.jpg',
           mimeType: 'image/jpeg',
         },
-        { threadId: '42' },
+        { threadId: '42' }
       );
 
       expect(result.ok).toBe(true);
       expect(mockSendPhoto).toHaveBeenCalledTimes(2);
 
-      const secondCallExtra = mockSendPhoto.mock.calls[1][2] as Record<string, any>;
+      const secondCallExtra = mockSendPhoto.mock.calls[1][2] as Record<
+        string,
+        any
+      >;
       expect(secondCallExtra).not.toHaveProperty('message_thread_id');
     });
   });
@@ -2266,7 +2272,7 @@ describe('TelegramChannelAdapter', () => {
   describe('escapeTelegramHtml', () => {
     it('should escape &, <, >', () => {
       expect(escapeTelegramHtml('a & b < c > d')).toBe(
-        'a &amp; b &lt; c &gt; d',
+        'a &amp; b &lt; c &gt; d'
       );
     });
 
@@ -2306,7 +2312,7 @@ describe('TelegramChannelAdapter', () => {
 
     it('should convert ||spoiler|| to <tg-spoiler>spoiler</tg-spoiler>', () => {
       expect(markdownToTelegramHtml('||spoiler||')).toBe(
-        '<tg-spoiler>spoiler</tg-spoiler>',
+        '<tg-spoiler>spoiler</tg-spoiler>'
       );
     });
 
@@ -2324,7 +2330,7 @@ describe('TelegramChannelAdapter', () => {
 
     it('should convert [text](url) to <a href="url">text</a>', () => {
       expect(markdownToTelegramHtml('[click](https://example.com)')).toBe(
-        '<a href="https://example.com">click</a>',
+        '<a href="https://example.com">click</a>'
       );
     });
 

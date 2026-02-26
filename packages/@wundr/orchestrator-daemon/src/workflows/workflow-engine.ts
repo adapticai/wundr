@@ -88,8 +88,10 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
     super();
     this.logger = new Logger('WorkflowEngine');
     this.config = {
-      maxConcurrentSteps: config.maxConcurrentSteps ?? DEFAULT_MAX_CONCURRENT_STEPS,
-      defaultStepTimeoutMs: config.defaultStepTimeoutMs ?? DEFAULT_STEP_TIMEOUT_MS,
+      maxConcurrentSteps:
+        config.maxConcurrentSteps ?? DEFAULT_MAX_CONCURRENT_STEPS,
+      defaultStepTimeoutMs:
+        config.defaultStepTimeoutMs ?? DEFAULT_STEP_TIMEOUT_MS,
       allowInactiveWorkflows: config.allowInactiveWorkflows ?? false,
     };
   }
@@ -105,7 +107,9 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
    */
   registerWorkflow(definition: WorkflowDefinition): void {
     this.definitions.set(definition.id, definition);
-    this.logger.info(`Workflow registered: ${definition.id} (${definition.name} v${definition.version})`);
+    this.logger.info(
+      `Workflow registered: ${definition.id} (${definition.name} v${definition.version})`
+    );
   }
 
   /**
@@ -159,7 +163,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
    */
   async execute(
     workflowId: string,
-    variables?: Record<string, unknown>,
+    variables?: Record<string, unknown>
   ): Promise<WorkflowExecution> {
     const definition = this.definitions.get(workflowId);
     if (!definition) {
@@ -181,7 +185,9 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
     };
 
     this.executions.set(execution.id, execution);
-    this.logger.info(`Execution started: ${execution.id} for workflow ${workflowId}`);
+    this.logger.info(
+      `Execution started: ${execution.id} for workflow ${workflowId}`
+    );
     this.emit('execution:started', { execution });
 
     try {
@@ -254,7 +260,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
    */
   listExecutions(workflowId?: string): WorkflowExecution[] {
     const all = Array.from(this.executions.values());
-    return workflowId ? all.filter((e) => e.workflowId === workflowId) : all;
+    return workflowId ? all.filter(e => e.workflowId === workflowId) : all;
   }
 
   // ===========================================================================
@@ -267,7 +273,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
    */
   private async executeLayer(
     steps: WorkflowStep[],
-    execution: WorkflowExecution,
+    execution: WorkflowExecution
   ): Promise<void> {
     // Apply concurrency cap by batching steps
     const batches: WorkflowStep[][] = [];
@@ -276,9 +282,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
     }
 
     for (const batch of batches) {
-      await Promise.all(
-        batch.map((step) => this.runStep(step, execution)),
-      );
+      await Promise.all(batch.map(step => this.runStep(step, execution)));
     }
   }
 
@@ -286,10 +290,16 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
    * Evaluate a step's conditions, then dispatch to the appropriate type handler.
    * Any failure from the type handler is recorded and re-thrown to abort the execution.
    */
-  private async runStep(step: WorkflowStep, execution: WorkflowExecution): Promise<void> {
+  private async runStep(
+    step: WorkflowStep,
+    execution: WorkflowExecution
+  ): Promise<void> {
     // Evaluate entry conditions
     if (step.conditions && step.conditions.length > 0) {
-      const conditionsMet = this.evaluateConditions(step.conditions, execution.variables);
+      const conditionsMet = this.evaluateConditions(
+        step.conditions,
+        execution.variables
+      );
       if (!conditionsMet) {
         this.logger.debug(`Step skipped (conditions not met): ${step.id}`);
         this.emit('step:skipped', { execution, stepId: step.id });
@@ -317,7 +327,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
       throw new WorkflowError(
         WorkflowErrorCode.STEP_FAILED,
         `Step ${step.id} failed: ${result.error ?? 'unknown error'}`,
-        { stepId: step.id },
+        { stepId: step.id }
       );
     }
 
@@ -335,7 +345,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
    */
   private async executeStep(
     step: WorkflowStep,
-    execution: WorkflowExecution,
+    execution: WorkflowExecution
   ): Promise<StepResult> {
     const startedAt = new Date();
     const timeoutMs = step.timeout ?? this.config.defaultStepTimeoutMs;
@@ -357,7 +367,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
           const _exhaustive: never = step.type;
           throw new WorkflowError(
             WorkflowErrorCode.INVALID_STEP_TYPE,
-            `Unknown step type: ${_exhaustive as string}`,
+            `Unknown step type: ${_exhaustive as string}`
           );
         }
       }
@@ -365,7 +375,10 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
 
     // Race step execution against a timeout
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new StepTimeoutError(step.id, timeoutMs)), timeoutMs),
+      setTimeout(
+        () => reject(new StepTimeoutError(step.id, timeoutMs)),
+        timeoutMs
+      )
     );
 
     try {
@@ -397,7 +410,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
   private async executeTaskStep(
     step: WorkflowStep,
     execution: WorkflowExecution,
-    startedAt: Date,
+    startedAt: Date
   ): Promise<StepResult> {
     this.logger.debug(`Executing task step: ${step.id}`);
 
@@ -428,7 +441,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
   private async executeDecisionStep(
     step: WorkflowStep,
     execution: WorkflowExecution,
-    startedAt: Date,
+    startedAt: Date
   ): Promise<StepResult> {
     this.logger.debug(`Executing decision step: ${step.id}`);
 
@@ -459,7 +472,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
   private async executeParallelStep(
     step: WorkflowStep,
     _execution: WorkflowExecution,
-    startedAt: Date,
+    startedAt: Date
   ): Promise<StepResult> {
     this.logger.debug(`Parallel barrier step: ${step.id}`);
     const completedAt = new Date();
@@ -490,13 +503,19 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
   private async executeLoopStep(
     step: WorkflowStep,
     execution: WorkflowExecution,
-    startedAt: Date,
+    startedAt: Date
   ): Promise<StepResult> {
     this.logger.debug(`Executing loop step: ${step.id}`);
 
-    const rawConditions = step.config['condition'] as StepCondition[] | undefined;
-    const maxIterations = (step.config['maxIterations'] as number | undefined) ?? DEFAULT_LOOP_MAX_ITERATIONS;
-    const iterationVariable = step.config['iterationVariable'] as string | undefined;
+    const rawConditions = step.config['condition'] as
+      | StepCondition[]
+      | undefined;
+    const maxIterations =
+      (step.config['maxIterations'] as number | undefined) ??
+      DEFAULT_LOOP_MAX_ITERATIONS;
+    const iterationVariable = step.config['iterationVariable'] as
+      | string
+      | undefined;
 
     let iterations = 0;
 
@@ -507,9 +526,10 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
       }
 
       const conditions = rawConditions ?? [];
-      const shouldContinue = conditions.length === 0
-        ? false
-        : this.evaluateConditions(conditions, execution.variables);
+      const shouldContinue =
+        conditions.length === 0
+          ? false
+          : this.evaluateConditions(conditions, execution.variables);
 
       if (!shouldContinue) {
         break;
@@ -540,11 +560,15 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
    *
    * Sleeps for `step.config.durationMs` milliseconds (default: 1000 ms).
    */
-  private async executeWaitStep(step: WorkflowStep, startedAt: Date): Promise<StepResult> {
-    const durationMs = (step.config['durationMs'] as number | undefined) ?? 1000;
+  private async executeWaitStep(
+    step: WorkflowStep,
+    startedAt: Date
+  ): Promise<StepResult> {
+    const durationMs =
+      (step.config['durationMs'] as number | undefined) ?? 1000;
     this.logger.debug(`Wait step: ${step.id} sleeping for ${durationMs}ms`);
 
-    await new Promise<void>((resolve) => setTimeout(resolve, durationMs));
+    await new Promise<void>(resolve => setTimeout(resolve, durationMs));
 
     const completedAt = new Date();
     return {
@@ -572,7 +596,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
    * @throws {WorkflowCircularDependencyError} If a cycle is detected.
    */
   private resolveDependencyOrder(steps: WorkflowStep[]): WorkflowStep[][] {
-    const stepMap = new Map<string, WorkflowStep>(steps.map((s) => [s.id, s]));
+    const stepMap = new Map<string, WorkflowStep>(steps.map(s => [s.id, s]));
 
     // Build in-degree map and adjacency list
     const inDegree = new Map<string, number>();
@@ -599,7 +623,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
     }
 
     const layers: WorkflowStep[][] = [];
-    let frontier = steps.filter((s) => (inDegree.get(s.id) ?? 0) === 0);
+    let frontier = steps.filter(s => (inDegree.get(s.id) ?? 0) === 0);
 
     while (frontier.length > 0) {
       layers.push(frontier);
@@ -619,9 +643,9 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
     }
 
     // If any step still has a positive in-degree, there is a cycle
-    const cycleNodes = steps.filter((s) => (inDegree.get(s.id) ?? 0) > 0);
+    const cycleNodes = steps.filter(s => (inDegree.get(s.id) ?? 0) > 0);
     if (cycleNodes.length > 0) {
-      throw new WorkflowCircularDependencyError(cycleNodes.map((s) => s.id));
+      throw new WorkflowCircularDependencyError(cycleNodes.map(s => s.id));
     }
 
     return layers;
@@ -643,9 +667,11 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
    */
   private evaluateConditions(
     conditions: StepCondition[],
-    variables: Record<string, unknown>,
+    variables: Record<string, unknown>
   ): boolean {
-    return conditions.every((condition) => this.evaluateCondition(condition, variables));
+    return conditions.every(condition =>
+      this.evaluateCondition(condition, variables)
+    );
   }
 
   /**
@@ -653,7 +679,7 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
    */
   private evaluateCondition(
     condition: StepCondition,
-    variables: Record<string, unknown>,
+    variables: Record<string, unknown>
   ): boolean {
     const fieldValue = this.resolvePath(condition.field, variables);
 
@@ -671,7 +697,10 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
         return fieldValue !== condition.value;
 
       case 'contains':
-        if (typeof fieldValue === 'string' && typeof condition.value === 'string') {
+        if (
+          typeof fieldValue === 'string' &&
+          typeof condition.value === 'string'
+        ) {
           return fieldValue.includes(condition.value);
         }
         if (Array.isArray(fieldValue)) {
@@ -680,7 +709,10 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
         return false;
 
       case 'not_contains':
-        if (typeof fieldValue === 'string' && typeof condition.value === 'string') {
+        if (
+          typeof fieldValue === 'string' &&
+          typeof condition.value === 'string'
+        ) {
           return !fieldValue.includes(condition.value);
         }
         if (Array.isArray(fieldValue)) {
@@ -689,13 +721,19 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
         return true;
 
       case 'greater_than':
-        if (typeof fieldValue === 'number' && typeof condition.value === 'number') {
+        if (
+          typeof fieldValue === 'number' &&
+          typeof condition.value === 'number'
+        ) {
           return fieldValue > condition.value;
         }
         return false;
 
       case 'less_than':
-        if (typeof fieldValue === 'number' && typeof condition.value === 'number') {
+        if (
+          typeof fieldValue === 'number' &&
+          typeof condition.value === 'number'
+        ) {
           return fieldValue < condition.value;
         }
         return false;
@@ -714,7 +752,9 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
 
       default: {
         const _exhaustive: never = condition.operator;
-        this.logger.warn(`Unknown condition operator: ${_exhaustive as string}`);
+        this.logger.warn(
+          `Unknown condition operator: ${_exhaustive as string}`
+        );
         return false;
       }
     }
@@ -726,12 +766,19 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
    * @example
    * resolvePath('user.role', { user: { role: 'admin' } }) // => 'admin'
    */
-  private resolvePath(path: string, variables: Record<string, unknown>): unknown {
+  private resolvePath(
+    path: string,
+    variables: Record<string, unknown>
+  ): unknown {
     const parts = path.split('.');
     let current: unknown = variables;
 
     for (const part of parts) {
-      if (current === null || current === undefined || typeof current !== 'object') {
+      if (
+        current === null ||
+        current === undefined ||
+        typeof current !== 'object'
+      ) {
         return undefined;
       }
       current = (current as Record<string, unknown>)[part];
@@ -747,7 +794,10 @@ export class WorkflowEngine extends EventEmitter<WorkflowEventMap> {
   /**
    * Set execution status and completedAt timestamp.
    */
-  private finaliseExecution(execution: WorkflowExecution, status: ExecutionStatus): void {
+  private finaliseExecution(
+    execution: WorkflowExecution,
+    status: ExecutionStatus
+  ): void {
     execution.status = status;
     execution.completedAt = new Date();
     execution.currentStepId = undefined;

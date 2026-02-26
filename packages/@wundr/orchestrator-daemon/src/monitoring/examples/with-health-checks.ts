@@ -64,7 +64,9 @@ async function main() {
 
   // Start server
   await server.start();
-  console.log('Metrics server with health checks started on http://localhost:9090');
+  console.log(
+    'Metrics server with health checks started on http://localhost:9090'
+  );
   console.log('\nEndpoints:');
   console.log('  - GET http://localhost:9090/metrics');
   console.log('  - GET http://localhost:9090/health');

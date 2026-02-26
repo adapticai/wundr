@@ -4,7 +4,9 @@ Real, functional MCP (Model Context Protocol) tools for the Orchestrator Daemon.
 
 ## Overview
 
-The MCP Tool Registry provides a collection of executable tools that can be invoked by AI agents, LLMs, and the orchestrator daemon. Each tool is fully functional with proper error handling, safety checks, and logging.
+The MCP Tool Registry provides a collection of executable tools that can be invoked by AI agents,
+LLMs, and the orchestrator daemon. Each tool is fully functional with proper error handling, safety
+checks, and logging.
 
 ## Architecture
 
@@ -44,6 +46,7 @@ The MCP Tool Registry provides a collection of executable tools that can be invo
 Read contents of a file from the filesystem.
 
 **Input Schema:**
+
 ```typescript
 {
   path: string;        // Absolute or relative path
@@ -52,20 +55,22 @@ Read contents of a file from the filesystem.
 ```
 
 **Output:**
+
 ```typescript
 {
-  path: string;        // Resolved absolute path
-  content: string;     // File contents
-  size: number;        // Content size in bytes
-  encoding: string;    // Encoding used
+  path: string; // Resolved absolute path
+  content: string; // File contents
+  size: number; // Content size in bytes
+  encoding: string; // Encoding used
 }
 ```
 
 **Example:**
+
 ```typescript
 const result = await registry.executeTool('file_read', 'read', {
   path: './config.json',
-  encoding: 'utf8'
+  encoding: 'utf8',
 });
 
 console.log(result.data.content);
@@ -76,6 +81,7 @@ console.log(result.data.content);
 Write content to a file on the filesystem.
 
 **Input Schema:**
+
 ```typescript
 {
   path: string;              // Absolute or relative path
@@ -86,20 +92,22 @@ Write content to a file on the filesystem.
 ```
 
 **Output:**
+
 ```typescript
 {
-  path: string;     // Resolved absolute path
-  size: number;     // Written size in bytes
+  path: string; // Resolved absolute path
+  size: number; // Written size in bytes
   encoding: string; // Encoding used
 }
 ```
 
 **Example:**
+
 ```typescript
 const result = await registry.executeTool('file_write', 'write', {
   path: './output/data.json',
   content: JSON.stringify(data, null, 2),
-  createDirectories: true
+  createDirectories: true,
 });
 ```
 
@@ -108,6 +116,7 @@ const result = await registry.executeTool('file_write', 'write', {
 Execute a bash command with safety checks.
 
 **Input Schema:**
+
 ```typescript
 {
   command: string;   // Bash command to execute
@@ -117,27 +126,30 @@ Execute a bash command with safety checks.
 ```
 
 **Output:**
+
 ```typescript
 {
-  stdout: string;    // Standard output
-  stderr: string;    // Standard error
-  exitCode: number;  // Exit code (0 = success)
-  command: string;   // Executed command
+  stdout: string; // Standard output
+  stderr: string; // Standard error
+  exitCode: number; // Exit code (0 = success)
+  command: string; // Executed command
 }
 ```
 
 **Safety Checks:**
+
 - Blocks dangerous commands (rm -rf /, fork bombs, etc.)
 - 10MB output buffer limit
 - Configurable timeout
 - Command logging
 
 **Example:**
+
 ```typescript
 const result = await registry.executeTool('bash_execute', 'execute', {
   command: 'ls -la',
   cwd: '/tmp',
-  timeout: 5000
+  timeout: 5000,
 });
 
 console.log(result.data.stdout);
@@ -148,6 +160,7 @@ console.log(result.data.stdout);
 Fetch content from a URL via HTTP/HTTPS.
 
 **Input Schema:**
+
 ```typescript
 {
   url: string;                      // URL to fetch
@@ -158,31 +171,34 @@ Fetch content from a URL via HTTP/HTTPS.
 ```
 
 **Output:**
+
 ```typescript
 {
-  url: string;                      // Fetched URL
-  statusCode: number;               // HTTP status code
-  statusMessage: string;            // HTTP status message
-  headers: Record<string, string>;  // Response headers
-  body: string;                     // Response body
-  size: number;                     // Body size in bytes
+  url: string; // Fetched URL
+  statusCode: number; // HTTP status code
+  statusMessage: string; // HTTP status message
+  headers: Record<string, string>; // Response headers
+  body: string; // Response body
+  size: number; // Body size in bytes
 }
 ```
 
 **Safety Checks:**
+
 - Only allows HTTP/HTTPS protocols
 - Configurable timeout
 - Custom User-Agent
 
 **Example:**
+
 ```typescript
 const result = await registry.executeTool('web_fetch', 'fetch', {
   url: 'https://api.example.com/data',
   method: 'GET',
   headers: {
-    'Accept': 'application/json'
+    Accept: 'application/json',
   },
-  timeout: 5000
+  timeout: 5000,
 });
 
 const data = JSON.parse(result.data.body);
@@ -193,6 +209,7 @@ const data = JSON.parse(result.data.body);
 List files and directories in a path.
 
 **Input Schema:**
+
 ```typescript
 {
   path: string;        // Directory path to list
@@ -201,25 +218,27 @@ List files and directories in a path.
 ```
 
 **Output:**
+
 ```typescript
 {
-  path: string;        // Resolved directory path
-  count: number;       // Number of entries
+  path: string; // Resolved directory path
+  count: number; // Number of entries
   files: Array<{
-    name: string;      // Entry name
-    path: string;      // Full path
+    name: string; // Entry name
+    path: string; // Full path
     type: 'file' | 'directory';
-    size: number;      // Size in bytes
-    modified: Date;    // Last modified time
+    size: number; // Size in bytes
+    modified: Date; // Last modified time
   }>;
 }
 ```
 
 **Example:**
+
 ```typescript
 const result = await registry.executeTool('file_list', 'list', {
   path: './src',
-  recursive: false
+  recursive: false,
 });
 
 result.data.files.forEach(file => {
@@ -232,6 +251,7 @@ result.data.files.forEach(file => {
 Delete a file or directory.
 
 **Input Schema:**
+
 ```typescript
 {
   path: string;        // Path to delete
@@ -240,19 +260,21 @@ Delete a file or directory.
 ```
 
 **Output:**
+
 ```typescript
 {
-  path: string;              // Deleted path
-  deleted: boolean;          // Deletion success
+  path: string; // Deleted path
+  deleted: boolean; // Deletion success
   type: 'file' | 'directory'; // Type of deleted entry
 }
 ```
 
 **Example:**
+
 ```typescript
 const result = await registry.executeTool('file_delete', 'delete', {
   path: './temp/cache',
-  recursive: true
+  recursive: true,
 });
 
 console.log(`Deleted ${result.data.type}: ${result.data.path}`);
@@ -261,11 +283,13 @@ console.log(`Deleted ${result.data.type}: ${result.data.path}`);
 ## Safety Features
 
 ### Path Safety
+
 - Blocks path traversal attempts (`..`)
 - Prevents access to system directories (`/etc`, `/var`, `/sys`, etc.)
 - Normalizes all paths before operations
 
 ### Command Safety
+
 - Blocks dangerous commands:
   - `rm -rf /`
   - Fork bombs
@@ -275,6 +299,7 @@ console.log(`Deleted ${result.data.type}: ${result.data.path}`);
 - Timeout enforcement
 
 ### Network Safety
+
 - Protocol whitelist (HTTP/HTTPS only)
 - Timeout enforcement
 - User-Agent identification
@@ -298,7 +323,7 @@ console.log('Tool schema:', tool?.inputSchema);
 
 // Execute tool
 const result = await registry.executeTool('file_read', 'read', {
-  path: './config.json'
+  path: './config.json',
 });
 
 if (result.success) {
@@ -322,8 +347,8 @@ const toolCalls = [
   {
     id: 'call_1',
     name: 'file_read',
-    arguments: JSON.stringify({ path: './data.json' })
-  }
+    arguments: JSON.stringify({ path: './data.json' }),
+  },
 ];
 
 const results = await executor.executeToolCalls(toolCalls);
@@ -344,14 +369,14 @@ const customTool: McpToolDefinition = {
   inputSchema: {
     type: 'object',
     properties: {
-      input: { type: 'string' }
+      input: { type: 'string' },
     },
-    required: ['input']
+    required: ['input'],
   },
-  execute: async (params) => {
+  execute: async params => {
     // Custom logic
     return { result: params.input.toUpperCase() };
-  }
+  },
 };
 
 // Register custom tool
@@ -359,7 +384,7 @@ registry.registerTool(customTool);
 
 // Use it
 const result = await registry.executeTool('custom_tool', 'execute', {
-  input: 'hello'
+  input: 'hello',
 });
 ```
 
@@ -371,13 +396,14 @@ All tools return a standardized result format:
 interface ToolResult {
   success: boolean;
   message: string;
-  data?: any;      // Present on success
-  error?: any;     // Present on failure
+  data?: any; // Present on success
+  error?: any; // Present on failure
   metadata?: Record<string, any>;
 }
 ```
 
 **Success Example:**
+
 ```typescript
 {
   success: true,
@@ -392,6 +418,7 @@ interface ToolResult {
 ```
 
 **Error Example:**
+
 ```typescript
 {
   success: false,
@@ -409,6 +436,7 @@ npm test src/mcp/__tests__/tool-registry.test.ts
 ```
 
 Tests cover:
+
 - Tool registration and listing
 - File operations (read, write, list, delete)
 - Bash command execution
@@ -426,11 +454,13 @@ Tests cover:
 ## Security Best Practices
 
 1. **Always enable safety checks in production**
+
    ```typescript
    const registry = createMcpToolRegistry({ safetyChecks: true });
    ```
 
 2. **Validate user input before tool execution**
+
    ```typescript
    if (!isValidPath(userInput)) {
      throw new Error('Invalid path');
@@ -438,10 +468,11 @@ Tests cover:
    ```
 
 3. **Use timeouts for all operations**
+
    ```typescript
    await registry.executeTool('bash_execute', 'execute', {
      command: cmd,
-     timeout: 5000 // Always set timeout
+     timeout: 5000, // Always set timeout
    });
    ```
 

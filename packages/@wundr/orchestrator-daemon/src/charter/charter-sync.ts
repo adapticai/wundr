@@ -44,13 +44,19 @@ export class CharterSync extends EventEmitter {
     }
 
     // Sync immediately, then on interval
-    this.syncNow().catch((err) => {
-      console.warn(`[CharterSync] Initial sync failed for org ${this.orgId}:`, err);
+    this.syncNow().catch(err => {
+      console.warn(
+        `[CharterSync] Initial sync failed for org ${this.orgId}:`,
+        err
+      );
     });
 
     this.timer = setInterval(() => {
-      this.syncNow().catch((err) => {
-        console.warn(`[CharterSync] Periodic sync failed for org ${this.orgId}:`, err);
+      this.syncNow().catch(err => {
+        console.warn(
+          `[CharterSync] Periodic sync failed for org ${this.orgId}:`,
+          err
+        );
       });
     }, this.syncIntervalMs);
   }
@@ -75,12 +81,16 @@ export class CharterSync extends EventEmitter {
     try {
       charter = await getEffectiveCharter(this.orgId, this.apiBaseUrl);
     } catch (err) {
-      console.warn(`[CharterSync] Could not retrieve charter for org ${this.orgId}:`, err);
+      console.warn(
+        `[CharterSync] Could not retrieve charter for org ${this.orgId}:`,
+        err
+      );
       return false;
     }
 
     const previousVersion = this.currentVersion;
-    const changed = previousVersion !== null && charter.version !== previousVersion;
+    const changed =
+      previousVersion !== null && charter.version !== previousVersion;
 
     this.currentVersion = charter.version;
 
@@ -88,7 +98,10 @@ export class CharterSync extends EventEmitter {
     try {
       await cacheCharter(charter, this.cachePath);
     } catch (err) {
-      console.warn(`[CharterSync] Failed to cache charter for org ${this.orgId}:`, err);
+      console.warn(
+        `[CharterSync] Failed to cache charter for org ${this.orgId}:`,
+        err
+      );
     }
 
     if (changed) {

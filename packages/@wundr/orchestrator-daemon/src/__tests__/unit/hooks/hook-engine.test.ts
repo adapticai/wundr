@@ -45,7 +45,9 @@ function createLogger(): HookLogger {
   };
 }
 
-function makeSessionStartMeta(overrides?: Partial<SessionStartMetadata>): SessionStartMetadata {
+function makeSessionStartMeta(
+  overrides?: Partial<SessionStartMetadata>
+): SessionStartMetadata {
   return {
     sessionId: 'sess-1',
     orchestratorId: 'orch-1',
@@ -54,7 +56,9 @@ function makeSessionStartMeta(overrides?: Partial<SessionStartMetadata>): Sessio
   };
 }
 
-function makePreToolUseMeta(overrides?: Partial<PreToolUseMetadata>): PreToolUseMetadata {
+function makePreToolUseMeta(
+  overrides?: Partial<PreToolUseMetadata>
+): PreToolUseMetadata {
   return {
     sessionId: 'sess-1',
     toolName: 'Bash',
@@ -149,7 +153,7 @@ describe('HookEngine', () => {
         command: 'echo',
         priority: 10,
         handler: async () => {
-          await new Promise((r) => setTimeout(r, 50));
+          await new Promise(r => setTimeout(r, 50));
           order.push('slow');
         },
       } as HookRegistration);
@@ -296,7 +300,7 @@ describe('HookEngine', () => {
         command: 'echo',
         timeoutMs: 50,
         handler: async () => {
-          await new Promise((r) => setTimeout(r, 200));
+          await new Promise(r => setTimeout(r, 200));
         },
       } as HookRegistration);
 
@@ -315,7 +319,7 @@ describe('HookEngine', () => {
         command: 'echo',
         timeoutMs: 10,
         handler: async () => {
-          await new Promise((r) => setTimeout(r, 200));
+          await new Promise(r => setTimeout(r, 200));
         },
       } as HookRegistration);
 
@@ -372,7 +376,7 @@ describe('HookEngine', () => {
       });
 
       await expect(
-        strictEngine.fire('SessionStart', makeSessionStartMeta()),
+        strictEngine.fire('SessionStart', makeSessionStartMeta())
       ).rejects.toThrow('propagated');
     });
 
@@ -458,11 +462,17 @@ describe('HookEngine', () => {
         handler,
       } as HookRegistration);
 
-      await engine.fire('SessionStart', makeSessionStartMeta({ sessionId: 'sess-abc' }));
+      await engine.fire(
+        'SessionStart',
+        makeSessionStartMeta({ sessionId: 'sess-abc' })
+      );
       expect(handler).toHaveBeenCalledTimes(1);
 
       handler.mockClear();
-      await engine.fire('SessionStart', makeSessionStartMeta({ sessionId: 'other-123' }));
+      await engine.fire(
+        'SessionStart',
+        makeSessionStartMeta({ sessionId: 'other-123' })
+      );
       expect(handler).not.toHaveBeenCalled();
     });
 
@@ -548,7 +558,10 @@ describe('HookEngine', () => {
         handler: vi.fn(),
       } as HookRegistration);
 
-      const result = await engine.fire('PreToolUse', makePreToolUseMeta({ toolName: 'Bash' }));
+      const result = await engine.fire(
+        'PreToolUse',
+        makePreToolUseMeta({ toolName: 'Bash' })
+      );
 
       expect(result.skippedCount).toBe(1);
       expect(result.results[0].skipped).toBe(true);
@@ -598,7 +611,10 @@ describe('HookEngine', () => {
         llmClient: mockLlm,
       });
 
-      const result = await promptEngine.fire('PreToolUse', makePreToolUseMeta({ toolName: 'Bash' }));
+      const result = await promptEngine.fire(
+        'PreToolUse',
+        makePreToolUseMeta({ toolName: 'Bash' })
+      );
 
       expect(mockLlm.chat).toHaveBeenCalledTimes(1);
       const chatArgs = mockLlm.chat.mock.calls[0][0];
@@ -624,7 +640,7 @@ describe('HookEngine', () => {
 
       expect(result.results[0].success).toBe(true);
       expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('placeholder mode'),
+        expect.stringContaining('placeholder mode')
       );
     });
 
@@ -714,7 +730,10 @@ describe('HookEngine', () => {
         sessionSpawner: mockSpawner,
       });
 
-      const result = await agentEngine.fire('SessionStart', makeSessionStartMeta());
+      const result = await agentEngine.fire(
+        'SessionStart',
+        makeSessionStartMeta()
+      );
 
       expect(result.failureCount).toBe(1);
       expect(result.results[0].error?.message).toContain('sub-session failed');
@@ -732,7 +751,7 @@ describe('HookEngine', () => {
 
       expect(result.results[0].success).toBe(true);
       expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('placeholder mode'),
+        expect.stringContaining('placeholder mode')
       );
     });
   });
@@ -809,8 +828,14 @@ describe('HookEngine', () => {
         cacheTtlMs: 60_000,
       });
 
-      await cachedEngine.fire('SessionStart', makeSessionStartMeta({ sessionId: 'a' }));
-      await cachedEngine.fire('SessionStart', makeSessionStartMeta({ sessionId: 'b' }));
+      await cachedEngine.fire(
+        'SessionStart',
+        makeSessionStartMeta({ sessionId: 'a' })
+      );
+      await cachedEngine.fire(
+        'SessionStart',
+        makeSessionStartMeta({ sessionId: 'b' })
+      );
 
       expect(cachedEngine.getCacheSize()).toBe(2);
 
@@ -953,7 +978,8 @@ describe('HookEngine', () => {
         id: 'interpolate-hook',
         event: 'PreToolUse',
         type: 'prompt',
-        promptTemplate: 'Tool name is {{metadata.toolName}}, call id is {{metadata.toolCallId}}',
+        promptTemplate:
+          'Tool name is {{metadata.toolName}}, call id is {{metadata.toolCallId}}',
       } as HookRegistration);
 
       const intEngine = new HookEngine({
@@ -963,7 +989,10 @@ describe('HookEngine', () => {
         llmClient: mockLlm,
       });
 
-      await intEngine.fire('PreToolUse', makePreToolUseMeta({ toolName: 'Write', toolCallId: 'tc-42' }));
+      await intEngine.fire(
+        'PreToolUse',
+        makePreToolUseMeta({ toolName: 'Write', toolCallId: 'tc-42' })
+      );
 
       expect(sentPrompt).toBe('Tool name is Write, call id is tc-42');
     });

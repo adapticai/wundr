@@ -78,7 +78,8 @@ function basicSerializationExample(): void {
     {
       id: 'msg-2',
       role: 'assistant',
-      content: 'I will implement OAuth2 authentication with the following steps...',
+      content:
+        'I will implement OAuth2 authentication with the following steps...',
       timestamp: new Date().toISOString(),
     },
   ];
@@ -93,7 +94,8 @@ function basicSerializationExample(): void {
   });
 
   // Deserialize on another node
-  const { session: restoredSession, messages: restoredMessages } = serializer.deserialize(serialized);
+  const { session: restoredSession, messages: restoredMessages } =
+    serializer.deserialize(serialized);
   console.log('\nRestored session:', {
     sessionId: restoredSession.id,
     status: restoredSession.status,
@@ -179,7 +181,12 @@ function checkpointMigrationExample(): void {
   });
 
   // Apply checkpoint 1
-  const result1 = serializer.applyCheckpoint(session, checkpoint1, currentMessages, currentContext);
+  const result1 = serializer.applyCheckpoint(
+    session,
+    checkpoint1,
+    currentMessages,
+    currentContext
+  );
   currentMessages = result1.messages;
   currentContext = result1.context;
 
@@ -216,7 +223,12 @@ function checkpointMigrationExample(): void {
   });
 
   // Apply checkpoint 2
-  const result2 = serializer.applyCheckpoint(session, checkpoint2, currentMessages, currentContext);
+  const result2 = serializer.applyCheckpoint(
+    session,
+    checkpoint2,
+    currentMessages,
+    currentContext
+  );
   currentMessages = result2.messages;
   currentContext = result2.context;
 
@@ -279,7 +291,11 @@ function compressionExample(): void {
   }
 
   console.log('Original message count:', largeMessages.length);
-  console.log('Estimated size:', (largeMessages.length * longContent.length / 1024 / 1024).toFixed(2), 'MB');
+  console.log(
+    'Estimated size:',
+    ((largeMessages.length * longContent.length) / 1024 / 1024).toFixed(2),
+    'MB'
+  );
 
   // Serialize (will automatically compress)
   const serialized = serializer.serialize(session, largeMessages, []);

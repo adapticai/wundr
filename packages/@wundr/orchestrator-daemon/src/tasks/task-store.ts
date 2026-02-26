@@ -13,7 +13,13 @@
 import { TaskStoreError, DuplicateTaskError } from './task-types';
 import { Logger } from '../utils/logger';
 
-import type { ITaskStore, ManagedTask, TaskQuery, TaskStatus, TaskPriority } from './task-types';
+import type {
+  ITaskStore,
+  ManagedTask,
+  TaskQuery,
+  TaskStatus,
+  TaskPriority,
+} from './task-types';
 
 // =============================================================================
 // In-Memory Implementation
@@ -48,7 +54,10 @@ export class InMemoryTaskStore implements ITaskStore {
     return task ? { ...task } : null;
   }
 
-  async update(id: string, updates: Partial<ManagedTask>): Promise<ManagedTask | null> {
+  async update(
+    id: string,
+    updates: Partial<ManagedTask>
+  ): Promise<ManagedTask | null> {
     const existing = this.tasks.get(id);
     if (!existing) {
       return null;
@@ -85,11 +94,11 @@ export class InMemoryTaskStore implements ITaskStore {
     const limit = query.limit ?? results.length;
     results = results.slice(offset, offset + limit);
 
-    return results.map((t) => ({ ...t }));
+    return results.map(t => ({ ...t }));
   }
 
   async getAll(): Promise<ManagedTask[]> {
-    return Array.from(this.tasks.values()).map((t) => ({ ...t }));
+    return Array.from(this.tasks.values()).map(t => ({ ...t }));
   }
 
   async count(query?: TaskQuery): Promise<number> {
@@ -155,13 +164,20 @@ export class SqliteTaskStore implements ITaskStore {
         )
       `);
 
-      this.db.run('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)');
+      this.db.run(
+        'CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)'
+      );
       this.db.run('CREATE INDEX IF NOT EXISTS idx_tasks_owner ON tasks(owner)');
-      this.db.run('CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority)');
+      this.db.run(
+        'CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority)'
+      );
 
       this.logger.info(`SqliteTaskStore initialized at ${this.dbPath}`);
     } catch (error) {
-      throw new TaskStoreError(`Failed to initialize SQLite store: ${error}`, error);
+      throw new TaskStoreError(
+        `Failed to initialize SQLite store: ${error}`,
+        error
+      );
     }
   }
 
@@ -187,12 +203,15 @@ export class SqliteTaskStore implements ITaskStore {
         JSON.stringify(task.blockedBy),
         JSON.stringify(task.metadata),
         task.createdAt.toISOString(),
-        task.updatedAt.toISOString(),
+        task.updatedAt.toISOString()
       );
 
       this.logger.debug(`Created task: ${task.id}`);
     } catch (error: unknown) {
-      if (error instanceof Error && error.message.includes('UNIQUE constraint')) {
+      if (
+        error instanceof Error &&
+        error.message.includes('UNIQUE constraint')
+      ) {
         throw new DuplicateTaskError(task.id);
       }
       throw new TaskStoreError(`Failed to create task: ${error}`, error);
@@ -216,7 +235,10 @@ export class SqliteTaskStore implements ITaskStore {
     }
   }
 
-  async update(id: string, updates: Partial<ManagedTask>): Promise<ManagedTask | null> {
+  async update(
+    id: string,
+    updates: Partial<ManagedTask>
+  ): Promise<ManagedTask | null> {
     this.ensureDb();
 
     try {
@@ -260,7 +282,7 @@ export class SqliteTaskStore implements ITaskStore {
         JSON.stringify(merged.blockedBy),
         JSON.stringify(merged.metadata),
         merged.updatedAt.toISOString(),
-        merged.id,
+        merged.id
       );
 
       this.logger.debug(`Updated task: ${id}`);
@@ -306,7 +328,9 @@ export class SqliteTaskStore implements ITaskStore {
     this.ensureDb();
 
     try {
-      const stmt = this.db!.prepare('SELECT * FROM tasks ORDER BY created_at ASC');
+      const stmt = this.db!.prepare(
+        'SELECT * FROM tasks ORDER BY created_at ASC'
+      );
       const rows = stmt.all() as SqliteRow[];
       return rows.map(rowToTask);
     } catch (error) {
@@ -346,7 +370,9 @@ export class SqliteTaskStore implements ITaskStore {
    */
   private ensureDb(): void {
     if (!this.db) {
-      throw new TaskStoreError('SqliteTaskStore is not initialized. Call initialize() first.');
+      throw new TaskStoreError(
+        'SqliteTaskStore is not initialized. Call initialize() first.'
+      );
     }
   }
 }
@@ -367,7 +393,10 @@ interface SqliteDatabase {
 }
 
 interface SqliteStatement {
-  run(...params: unknown[]): { changes: number; lastInsertRowid: number | bigint };
+  run(...params: unknown[]): {
+    changes: number;
+    lastInsertRowid: number | bigint;
+  };
   get(...params: unknown[]): unknown;
   all(...params: unknown[]): unknown[];
 }
@@ -415,7 +444,9 @@ function rowToTask(row: SqliteRow): ManagedTask {
  * Uses a string variable for the module name to avoid static analysis by the
  * TypeScript compiler, since better-sqlite3 is an optional peer dependency.
  */
-async function loadSqliteDriver(): Promise<new (path: string) => SqliteDatabase> {
+async function loadSqliteDriver(): Promise<
+  new (path: string) => SqliteDatabase
+> {
   try {
     // Use a variable to prevent TypeScript from resolving the module statically.
     const moduleName = 'better-sqlite3';
@@ -424,7 +455,7 @@ async function loadSqliteDriver(): Promise<new (path: string) => SqliteDatabase>
     return (mod.default ?? mod) as new (path: string) => SqliteDatabase;
   } catch {
     throw new TaskStoreError(
-      'better-sqlite3 is required for SqliteTaskStore. Install with: pnpm add better-sqlite3',
+      'better-sqlite3 is required for SqliteTaskStore. Install with: pnpm add better-sqlite3'
     );
   }
 }
@@ -480,7 +511,7 @@ function buildCountSql(query: TaskQuery): { sql: string; params: unknown[] } {
 function appendQueryConditions(
   query: TaskQuery,
   conditions: string[],
-  params: unknown[],
+  params: unknown[]
 ): void {
   if (query.status !== undefined) {
     if (Array.isArray(query.status)) {
@@ -529,33 +560,40 @@ function appendQueryConditions(
 /**
  * Apply query filters to an in-memory array of tasks.
  */
-function applyQueryFilters(tasks: ManagedTask[], query: TaskQuery): ManagedTask[] {
+function applyQueryFilters(
+  tasks: ManagedTask[],
+  query: TaskQuery
+): ManagedTask[] {
   let results = tasks;
 
   if (query.status !== undefined) {
-    const statuses: TaskStatus[] = Array.isArray(query.status) ? query.status : [query.status];
-    results = results.filter((t) => statuses.includes(t.status));
+    const statuses: TaskStatus[] = Array.isArray(query.status)
+      ? query.status
+      : [query.status];
+    results = results.filter(t => statuses.includes(t.status));
   }
 
   if (query.owner !== undefined) {
-    results = results.filter((t) => t.owner === query.owner);
+    results = results.filter(t => t.owner === query.owner);
   }
 
   if (query.priority !== undefined) {
-    const priorities: TaskPriority[] = Array.isArray(query.priority) ? query.priority : [query.priority];
-    results = results.filter((t) => priorities.includes(t.priority));
+    const priorities: TaskPriority[] = Array.isArray(query.priority)
+      ? query.priority
+      : [query.priority];
+    results = results.filter(t => priorities.includes(t.priority));
   }
 
   if (query.isBlocked === true) {
-    results = results.filter((t) => t.blockedBy.length > 0);
+    results = results.filter(t => t.blockedBy.length > 0);
   } else if (query.isBlocked === false) {
-    results = results.filter((t) => t.blockedBy.length === 0);
+    results = results.filter(t => t.blockedBy.length === 0);
   }
 
   if (query.hasOwner === true) {
-    results = results.filter((t) => t.owner !== null);
+    results = results.filter(t => t.owner !== null);
   } else if (query.hasOwner === false) {
-    results = results.filter((t) => t.owner === null);
+    results = results.filter(t => t.owner === null);
   }
 
   return results;

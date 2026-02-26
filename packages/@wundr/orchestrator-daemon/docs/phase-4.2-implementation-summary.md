@@ -2,7 +2,8 @@
 
 ## Overview
 
-Successfully implemented the token usage reporting and analytics system for the Orchestrator Daemon, providing comprehensive tracking, cost estimation, and anomaly detection capabilities.
+Successfully implemented the token usage reporting and analytics system for the Orchestrator Daemon,
+providing comprehensive tracking, cost estimation, and anomaly detection capabilities.
 
 ## Files Created/Modified
 
@@ -204,6 +205,7 @@ interface UsageStorage {
 ```
 
 **Implementations:**
+
 - `InMemoryStorage`: Built-in for testing
 - `PrismaUsageStorage`: Example in documentation for PostgreSQL
 
@@ -212,19 +214,19 @@ interface UsageStorage {
 Event-driven architecture for monitoring:
 
 ```typescript
-reporter.on('usage-recorded', (record) => {
+reporter.on('usage-recorded', record => {
   // Track individual usage events
 });
 
-reporter.on('anomaly-detected', (anomaly) => {
+reporter.on('anomaly-detected', anomaly => {
   // Alert on unusual patterns
 });
 
-reporter.on('budget-warning', (status) => {
+reporter.on('budget-warning', status => {
   // Warn at 80% budget threshold
 });
 
-reporter.on('budget-exceeded', (status) => {
+reporter.on('budget-exceeded', status => {
   // Critical alert when budget exceeded
 });
 ```
@@ -233,26 +235,28 @@ reporter.on('budget-exceeded', (status) => {
 
 ### Input/Output Token Costs (per 1M tokens)
 
-| Model | Provider | Input | Output |
-|-------|----------|-------|--------|
-| claude-sonnet-4-5 | Anthropic | $3.00 | $15.00 |
-| claude-3-opus | Anthropic | $15.00 | $75.00 |
-| claude-3-sonnet | Anthropic | $3.00 | $15.00 |
-| claude-3-haiku | Anthropic | $0.25 | $1.25 |
-| gpt-4-turbo | OpenAI | $10.00 | $30.00 |
-| gpt-4 | OpenAI | $30.00 | $60.00 |
-| gpt-3.5-turbo | OpenAI | $0.50 | $1.50 |
-| gemini-pro | Google | $0.50 | $1.50 |
-| gemini-ultra | Google | $10.00 | $30.00 |
+| Model             | Provider  | Input  | Output |
+| ----------------- | --------- | ------ | ------ |
+| claude-sonnet-4-5 | Anthropic | $3.00  | $15.00 |
+| claude-3-opus     | Anthropic | $15.00 | $75.00 |
+| claude-3-sonnet   | Anthropic | $3.00  | $15.00 |
+| claude-3-haiku    | Anthropic | $0.25  | $1.25  |
+| gpt-4-turbo       | OpenAI    | $10.00 | $30.00 |
+| gpt-4             | OpenAI    | $30.00 | $60.00 |
+| gpt-3.5-turbo     | OpenAI    | $0.50  | $1.50  |
+| gemini-pro        | Google    | $0.50  | $1.50  |
+| gemini-ultra      | Google    | $10.00 | $30.00 |
 
 ### Example Calculation
 
 **Usage:**
+
 - Model: claude-sonnet-4-5
 - Input: 100,000 tokens
 - Output: 50,000 tokens
 
 **Cost:**
+
 - Input: (100,000 / 1,000,000) × $3.00 = $0.30
 - Output: (50,000 / 1,000,000) × $15.00 = $0.75
 - **Total: $1.05**
@@ -287,11 +291,11 @@ const tracker = new TokenTracker(/* ... */);
 const reporter = new UsageReporter(/* ... */);
 
 // Record usage from tracker
-tracker.on('usage', async (usage) => {
+tracker.on('usage', async usage => {
   await reporter.recordUsage({
     id: generateId(),
     ...usage,
-    timestamp: new Date()
+    timestamp: new Date(),
   });
 });
 ```
@@ -321,7 +325,7 @@ class EnhancedDaemon extends OrchestratorDaemon {
       provider: response.provider,
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
-      totalTokens: response.usage.total_tokens
+      totalTokens: response.usage.total_tokens,
     });
 
     // Continue processing...
@@ -418,10 +422,12 @@ class EnhancedDaemon extends OrchestratorDaemon {
 ## Dependencies
 
 **Runtime:**
+
 - `eventemitter3`: ^5.0.1
 - `zod`: ^3.22.4
 
 **Optional (for Prisma storage):**
+
 - `@prisma/client`: ^5.x.x
 
 ## Code Statistics
@@ -447,7 +453,8 @@ docs/
 
 ## Conclusion
 
-Phase 4.2 successfully delivers a production-ready token usage reporting and cost estimation system with:
+Phase 4.2 successfully delivers a production-ready token usage reporting and cost estimation system
+with:
 
 - Comprehensive usage tracking and aggregation
 - Multi-model cost estimation with currency support
@@ -456,4 +463,5 @@ Phase 4.2 successfully delivers a production-ready token usage reporting and cos
 - Event-driven monitoring
 - Extensive documentation
 
-The system is ready for integration into the Orchestrator Daemon and can be extended with additional features as needed.
+The system is ready for integration into the Orchestrator Daemon and can be extended with additional
+features as needed.

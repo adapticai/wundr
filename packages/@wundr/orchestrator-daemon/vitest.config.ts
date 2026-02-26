@@ -30,10 +30,7 @@ export default defineConfig({
     // ---------------------------------------------------------------------------
     // File patterns
     // ---------------------------------------------------------------------------
-    include: [
-      'src/**/__tests__/**/*.test.ts',
-      'src/**/*.test.ts',
-    ],
+    include: ['src/**/__tests__/**/*.test.ts', 'src/**/*.test.ts'],
     exclude: [
       'dist/**',
       'node_modules/**',
@@ -78,9 +75,7 @@ export default defineConfig({
     // ---------------------------------------------------------------------------
     // Reporter
     // ---------------------------------------------------------------------------
-    reporters: isCI
-      ? ['verbose', 'junit']
-      : ['verbose'],
+    reporters: isCI ? ['verbose', 'junit'] : ['verbose'],
     ...(isCI && {
       outputFile: {
         junit: './test-results.xml',

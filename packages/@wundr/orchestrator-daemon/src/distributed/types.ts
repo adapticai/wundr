@@ -138,7 +138,10 @@ export interface SessionMigration {
  * Load balancing strategy
  */
 export interface LoadBalancingStrategy {
-  selectNode(nodes: DaemonNode[], request: SpawnSessionRequest): DaemonNode | null;
+  selectNode(
+    nodes: DaemonNode[],
+    request: SpawnSessionRequest
+  ): DaemonNode | null;
   shouldRebalance(nodes: DaemonNode[]): boolean;
   calculateMigrations(nodes: DaemonNode[]): SessionMigrationPlan[];
 }
@@ -164,7 +167,11 @@ export interface DistributedSessionConfig {
   healthCheckTimeout: number;
   migrationTimeout: number;
   rebalanceInterval: number;
-  loadBalancingStrategy: 'round-robin' | 'least-loaded' | 'weighted' | 'hash-based';
+  loadBalancingStrategy:
+    | 'round-robin'
+    | 'least-loaded'
+    | 'weighted'
+    | 'hash-based';
 }
 
 /**

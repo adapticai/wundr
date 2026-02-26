@@ -102,12 +102,17 @@ export class TokenCounter {
   private readonly capTokens: number | null;
 
   /** Optional tiktoken encoder for exact OpenAI token counts */
-  private tiktokenEncoder: { encode: (text: string) => { length: number }; free: () => void } | null = null;
+  private tiktokenEncoder: {
+    encode: (text: string) => { length: number };
+    free: () => void;
+  } | null = null;
   private tiktokenLoadAttempted = false;
 
   constructor(config?: TokenCounterConfig) {
-    this.hardMinTokens = config?.hardMinTokens ?? CONTEXT_WINDOW_HARD_MIN_TOKENS;
-    this.warnBelowTokens = config?.warnBelowTokens ?? CONTEXT_WINDOW_WARN_BELOW_TOKENS;
+    this.hardMinTokens =
+      config?.hardMinTokens ?? CONTEXT_WINDOW_HARD_MIN_TOKENS;
+    this.warnBelowTokens =
+      config?.warnBelowTokens ?? CONTEXT_WINDOW_WARN_BELOW_TOKENS;
     this.capTokens = config?.capTokens ?? null;
   }
 
@@ -179,7 +184,11 @@ export class TokenCounter {
     // Reserve space for the model's output
     const reservedForOutput = params.maxOutputTokens ?? 4_096;
 
-    const total = systemPromptTokens + messageTokens + toolDefinitionTokens + reservedForOutput;
+    const total =
+      systemPromptTokens +
+      messageTokens +
+      toolDefinitionTokens +
+      reservedForOutput;
 
     return {
       total,
@@ -220,7 +229,11 @@ export class TokenCounter {
     }
 
     // Apply global cap if configured and smaller
-    if (this.capTokens !== null && this.capTokens > 0 && this.capTokens < tokens) {
+    if (
+      this.capTokens !== null &&
+      this.capTokens > 0 &&
+      this.capTokens < tokens
+    ) {
       tokens = this.capTokens;
       source = 'cap';
     }
@@ -238,16 +251,20 @@ export class TokenCounter {
     const { estimate, contextWindow } = params;
     const remainingCapacity = contextWindow - estimate.total;
     const canFit = remainingCapacity >= 0;
-    const shouldWarn = remainingCapacity < this.warnBelowTokens && remainingCapacity >= 0;
-    const shouldBlock = contextWindow < this.hardMinTokens || remainingCapacity < 0;
+    const shouldWarn =
+      remainingCapacity < this.warnBelowTokens && remainingCapacity >= 0;
+    const shouldBlock =
+      contextWindow < this.hardMinTokens || remainingCapacity < 0;
 
     let recommendation: string | undefined;
     if (shouldBlock && remainingCapacity < 0) {
       const overshoot = Math.abs(remainingCapacity);
-      recommendation = `Request exceeds context window by ~${overshoot.toLocaleString()} tokens. ` +
+      recommendation =
+        `Request exceeds context window by ~${overshoot.toLocaleString()} tokens. ` +
         'Consider compacting conversation history or using a model with a larger context window.';
     } else if (shouldWarn) {
-      recommendation = `Only ~${remainingCapacity.toLocaleString()} tokens remaining in context window. ` +
+      recommendation =
+        `Only ~${remainingCapacity.toLocaleString()} tokens remaining in context window. ` +
         'Consider summarizing earlier messages to free space.';
     }
 
@@ -309,7 +326,7 @@ export class TokenCounter {
    * import failures in environments where tiktoken is not installed.
    */
   private async loadTiktoken(
-    model: string,
+    model: string
   ): Promise<{ encode: (text: string) => { length: number } } | null> {
     if (this.tiktokenEncoder) {
       return this.tiktokenEncoder;

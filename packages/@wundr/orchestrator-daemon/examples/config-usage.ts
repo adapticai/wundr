@@ -36,7 +36,10 @@ function example1_basicUsage() {
     console.log(`  Metrics Enabled: ${config.monitoring.metrics.enabled}`);
     console.log(`  Metrics Port: ${config.monitoring.metrics.port}`);
   } catch (error) {
-    console.error('Configuration Error:', error instanceof Error ? error.message : error);
+    console.error(
+      'Configuration Error:',
+      error instanceof Error ? error.message : error
+    );
   }
 }
 
@@ -71,7 +74,10 @@ function example3_freshLoad() {
     console.log(`Environment: ${config.env}`);
     console.log(`Debug Mode: ${config.debug}`);
   } catch (error) {
-    console.error('Configuration Error:', error instanceof Error ? error.message : error);
+    console.error(
+      'Configuration Error:',
+      error instanceof Error ? error.message : error
+    );
   }
 }
 
@@ -129,7 +135,9 @@ function example5_securityConfig() {
   const config = getConfig();
 
   console.log('Security Settings:');
-  console.log(`  JWT Secret Length: ${config.security.jwtSecret.length} characters`);
+  console.log(
+    `  JWT Secret Length: ${config.security.jwtSecret.length} characters`
+  );
   console.log(`  JWT Expiration: ${config.security.jwtExpiration}`);
   console.log(`  CORS Enabled: ${config.security.cors.enabled}`);
   if (config.security.cors.enabled) {
@@ -137,7 +145,9 @@ function example5_securityConfig() {
   }
   console.log(`  Rate Limiting: ${config.security.rateLimit.enabled}`);
   if (config.security.rateLimit.enabled) {
-    console.log(`    Max Requests: ${config.security.rateLimit.max} per ${config.security.rateLimit.windowMs}ms`);
+    console.log(
+      `    Max Requests: ${config.security.rateLimit.max} per ${config.security.rateLimit.windowMs}ms`
+    );
   }
 }
 
@@ -151,15 +161,23 @@ function example6_memoryAndBudget() {
 
   console.log('Memory Management:');
   console.log(`  Max Heap: ${config.memory.maxHeapMB}MB`);
-  console.log(`  Max Context Tokens: ${config.memory.maxContextTokens.toLocaleString()}`);
+  console.log(
+    `  Max Context Tokens: ${config.memory.maxContextTokens.toLocaleString()}`
+  );
   console.log(`  Compaction Enabled: ${config.memory.compaction.enabled}`);
-  console.log(`  Compaction Threshold: ${(config.memory.compaction.threshold * 100).toFixed(0)}%`);
+  console.log(
+    `  Compaction Threshold: ${(config.memory.compaction.threshold * 100).toFixed(0)}%`
+  );
 
   console.log('\nToken Budget:');
   console.log(`  Daily: ${config.tokenBudget.daily.toLocaleString()} tokens`);
   console.log(`  Weekly: ${config.tokenBudget.weekly.toLocaleString()} tokens`);
-  console.log(`  Monthly: ${config.tokenBudget.monthly.toLocaleString()} tokens`);
-  console.log(`  Alert Threshold: ${(config.tokenBudget.alerts.threshold * 100).toFixed(0)}%`);
+  console.log(
+    `  Monthly: ${config.tokenBudget.monthly.toLocaleString()} tokens`
+  );
+  console.log(
+    `  Alert Threshold: ${(config.tokenBudget.alerts.threshold * 100).toFixed(0)}%`
+  );
 }
 
 /**
@@ -188,7 +206,10 @@ async function example7_daemonInitialization() {
     console.log(`  Heartbeat every ${config.health.heartbeatInterval}ms`);
     console.log(`  ${config.daemon.verbose ? 'Verbose' : 'Normal'} logging`);
   } catch (error) {
-    console.error('Initialization Error:', error instanceof Error ? error.message : error);
+    console.error(
+      'Initialization Error:',
+      error instanceof Error ? error.message : error
+    );
   }
 }
 

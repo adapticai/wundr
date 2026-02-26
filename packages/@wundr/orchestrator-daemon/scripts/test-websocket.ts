@@ -80,7 +80,7 @@ function logWarning(message: string): void {
 function formatJson(obj: unknown): string {
   return JSON.stringify(obj, null, 2)
     .split('\n')
-    .map((line) => `  ${line}`)
+    .map(line => `  ${line}`)
     .join('\n');
 }
 
@@ -131,11 +131,17 @@ function handleResponse(response: WSResponse): void {
 
   switch (response.type) {
     case 'health_check_response':
-      log(formatJson({ type: response.type, healthy: response.healthy }), colors.cyan);
+      log(
+        formatJson({ type: response.type, healthy: response.healthy }),
+        colors.cyan
+      );
       break;
 
     case 'daemon_status_update':
-      log(formatJson({ type: response.type, status: response.status }), colors.cyan);
+      log(
+        formatJson({ type: response.type, status: response.status }),
+        colors.cyan
+      );
       break;
 
     case 'session_spawned':
@@ -145,7 +151,10 @@ function handleResponse(response: WSResponse): void {
       break;
 
     case 'session_status_update':
-      log(formatJson({ type: response.type, session: response.session }), colors.cyan);
+      log(
+        formatJson({ type: response.type, session: response.session }),
+        colors.cyan
+      );
       break;
 
     case 'stream_start':
@@ -222,8 +231,12 @@ const commands: Record<string, () => void> = {
     console.log('  health            - Request health check');
     console.log('  status            - Request daemon status');
     console.log('  spawn             - Spawn a test session');
-    console.log('  execute           - Execute task (uses last spawned session)');
-    console.log('  stop              - Stop session (uses last spawned session)');
+    console.log(
+      '  execute           - Execute task (uses last spawned session)'
+    );
+    console.log(
+      '  stop              - Stop session (uses last spawned session)'
+    );
     console.log('  session <id>      - Get session status');
     console.log('  custom <json>     - Send custom JSON message');
     console.log('  clear             - Clear screen');
@@ -343,7 +356,7 @@ function startPrompt(): void {
 
   rl.prompt();
 
-  rl.on('line', (line) => {
+  rl.on('line', line => {
     processCommand(line);
     rl.prompt();
   });

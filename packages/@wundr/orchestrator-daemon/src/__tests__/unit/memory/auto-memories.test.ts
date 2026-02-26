@@ -30,7 +30,6 @@ import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 // Imports after mocks
 // ---------------------------------------------------------------------------
 
-
 import {
   AutoMemories,
   type AutoMemoriesConfig,
@@ -77,7 +76,7 @@ vi.mock('node:fs', () => ({
 function _makeMemoryFile(
   filePath: string,
   sections: ParsedMemoryFile['sections'] = [],
-  opts: { exists?: boolean } = {},
+  opts: { exists?: boolean } = {}
 ): ParsedMemoryFile {
   const exists = opts.exists ?? sections.length > 0;
   const raw = exists ? '# Auto-Memories\n' : '';
@@ -93,7 +92,7 @@ function _makeMemoryFile(
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function makeEntry(
   text: string,
-  meta: ParsedMemoryFile['sections'][0]['entries'][0]['metadata'] = {},
+  meta: ParsedMemoryFile['sections'][0]['entries'][0]['metadata'] = {}
 ) {
   return { text, children: [], line: 0, metadata: meta };
 }
@@ -101,14 +100,12 @@ function makeEntry(
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _makeSection(
   title: string,
-  entries: ReturnType<typeof makeEntry>[] = [],
+  entries: ReturnType<typeof makeEntry>[] = []
 ) {
   return { title, entries, startLine: 0, endLine: 0 };
 }
 
-function makeTurn(
-  overrides: Partial<ConversationTurn> = {},
-): ConversationTurn {
+function makeTurn(overrides: Partial<ConversationTurn> = {}): ConversationTurn {
   return {
     role: 'user',
     content: 'test content',
@@ -120,7 +117,7 @@ function makeTurn(
 
 /** Partial config for tests that keeps scopes pointed at temp dirs */
 function testConfig(
-  overrides: Partial<AutoMemoriesConfig> = {},
+  overrides: Partial<AutoMemoriesConfig> = {}
 ): Partial<AutoMemoriesConfig> {
   return {
     userHome: '/tmp/test-user-home',
@@ -216,7 +213,7 @@ describe('AutoMemories', () => {
       const paths = am.resolvePaths();
 
       expect(paths.user).toBe(
-        path.join('/tmp/test-user-home', '.wundr', 'MEMORY.md'),
+        path.join('/tmp/test-user-home', '.wundr', 'MEMORY.md')
       );
     });
 
@@ -224,7 +221,7 @@ describe('AutoMemories', () => {
       const paths = am.resolvePaths();
 
       expect(paths.project).toBe(
-        path.join('/tmp/test-project', '.wundr', 'MEMORY.md'),
+        path.join('/tmp/test-project', '.wundr', 'MEMORY.md')
       );
     });
 
@@ -232,7 +229,7 @@ describe('AutoMemories', () => {
       const paths = am.resolvePaths();
 
       expect(paths.local).toBe(
-        path.join('/tmp/test-project', '.wundr', 'local', 'MEMORY.md'),
+        path.join('/tmp/test-project', '.wundr', 'local', 'MEMORY.md')
       );
     });
 
@@ -264,8 +261,8 @@ describe('AutoMemories', () => {
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -289,11 +286,11 @@ return content;
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         const resolved = path.resolve(p);
         if (resolved === path.resolve(paths.user)) {
-return userContent;
-}
+          return userContent;
+        }
         if (resolved === path.resolve(paths.project)) {
-return projectContent;
-}
+          return projectContent;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -315,8 +312,8 @@ return projectContent;
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(paths.user)) {
-return userContent;
-}
+          return userContent;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -337,8 +334,8 @@ return userContent;
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -490,8 +487,8 @@ return content;
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -517,8 +514,8 @@ return content;
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -538,8 +535,8 @@ return content;
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -559,14 +556,14 @@ return content;
       let writtenContent = '';
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
       (fs.writeFile as Mock).mockImplementation(
         async (_p: string, c: string) => {
           writtenContent = c;
-        },
+        }
       );
 
       await am.prune('project');
@@ -586,8 +583,8 @@ return content;
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -614,8 +611,8 @@ return content;
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -640,9 +637,7 @@ return content;
     });
 
     it('should mark old entries as stale', async () => {
-      am = new AutoMemories(
-        testConfig({ decayEnabled: true, decayDays: 30 }),
-      );
+      am = new AutoMemories(testConfig({ decayEnabled: true, decayDays: 30 }));
 
       const projectPath = am.resolvePaths().project;
       // Entry older than 30 days
@@ -655,14 +650,14 @@ return content;
       let writtenContent = '';
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
       (fs.writeFile as Mock).mockImplementation(
         async (_p: string, c: string) => {
           writtenContent = c;
-        },
+        }
       );
 
       const result = await am.decayCheck();
@@ -672,9 +667,7 @@ return content;
     });
 
     it('should remove entries already stale that are past decay threshold', async () => {
-      am = new AutoMemories(
-        testConfig({ decayEnabled: true, decayDays: 30 }),
-      );
+      am = new AutoMemories(testConfig({ decayEnabled: true, decayDays: 30 }));
 
       const projectPath = am.resolvePaths().project;
       const oldDate = '2025-01-01';
@@ -686,14 +679,14 @@ return content;
       let writtenContent = '';
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
       (fs.writeFile as Mock).mockImplementation(
         async (_p: string, c: string) => {
           writtenContent = c;
-        },
+        }
       );
 
       const result = await am.decayCheck();
@@ -704,20 +697,16 @@ return content;
     });
 
     it('should not touch entries without dates', async () => {
-      am = new AutoMemories(
-        testConfig({ decayEnabled: true, decayDays: 30 }),
-      );
+      am = new AutoMemories(testConfig({ decayEnabled: true, decayDays: 30 }));
 
       const projectPath = am.resolvePaths().project;
       const content =
-        '# Auto-Memories\n\n' +
-        '## User Preferences\n' +
-        '- No date entry\n';
+        '# Auto-Memories\n\n' + '## User Preferences\n' + '- No date entry\n';
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -728,9 +717,7 @@ return content;
     });
 
     it('should skip the Links section during decay', async () => {
-      am = new AutoMemories(
-        testConfig({ decayEnabled: true, decayDays: 1 }),
-      );
+      am = new AutoMemories(testConfig({ decayEnabled: true, decayDays: 1 }));
 
       const projectPath = am.resolvePaths().project;
       const content =
@@ -740,8 +727,8 @@ return content;
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -768,13 +755,12 @@ return content;
     it('should return zero-result when file does not need consolidation', async () => {
       // File with few lines (under maxLinesPerFile)
       const projectPath = am.resolvePaths().project;
-      const content =
-        '# Auto-Memories\n\n## User Preferences\n- One entry\n';
+      const content = '# Auto-Memories\n\n## User Preferences\n- One entry\n';
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -803,8 +789,8 @@ return content;
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -828,7 +814,7 @@ return content;
           decayEnabled: false,
           autoLinkEnabled: false,
           sessionSummaryEnabled: false,
-        }),
+        })
       );
 
       // Process a turn to build up history
@@ -850,7 +836,7 @@ return content;
           sessionSummaryEnabled: true,
           decayEnabled: false,
           autoLinkEnabled: false,
-        }),
+        })
       );
 
       // Feed enough turns to exceed minTurns threshold (3)
@@ -860,7 +846,7 @@ return content;
             role: i % 2 === 0 ? 'user' : 'assistant',
             content: `Turn ${i}: discussing TypeScript generics and testing`,
             sessionId: 'summary-session',
-          }),
+          })
         );
       }
 
@@ -886,7 +872,7 @@ return content;
       am = new AutoMemories(testConfig({ enabled: false }));
 
       const result = await am.processTurn(
-        makeTurn({ content: 'I prefer dark mode' }),
+        makeTurn({ content: 'I prefer dark mode' })
       );
 
       expect(result).toEqual([]);
@@ -899,7 +885,7 @@ return content;
         makeTurn({
           content:
             'I prefer using single quotes instead of double quotes in TypeScript',
-        }),
+        })
       );
 
       // Should detect a user-preference pattern
@@ -915,7 +901,7 @@ return content;
         makeTurn({
           content:
             "No, don't use var in this project. Always use const or let instead of var declarations.",
-        }),
+        })
       );
 
       expect(Array.isArray(result)).toBe(true);
@@ -952,8 +938,8 @@ return content;
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -971,8 +957,8 @@ return content;
 
       (fs.readFile as Mock).mockImplementation(async (p: string) => {
         if (path.resolve(p) === path.resolve(projectPath)) {
-return content;
-}
+          return content;
+        }
         throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
       });
 
@@ -1019,7 +1005,7 @@ return content;
       detector.analyze(
         makeTurn({
           content: 'No, use tabs not spaces for indentation in this file',
-        }),
+        })
       );
 
       expect(detector.getCorrectionHistorySize()).toBeGreaterThan(0);
@@ -1051,7 +1037,7 @@ return content;
         testConfig({
           userScopeEnabled: false,
           localScopeEnabled: false,
-        }),
+        })
       );
 
       const results = await am.consolidateAll();
@@ -1137,12 +1123,18 @@ return content;
       (fs.writeFile as Mock).mockResolvedValue(undefined);
 
       const jsonl = [
-        JSON.stringify({ type: 'system', message: { role: 'system', content: 'init' } }),
+        JSON.stringify({
+          type: 'system',
+          message: { role: 'system', content: 'init' },
+        }),
         '',
         'not json',
         JSON.stringify({
           type: 'message',
-          message: { role: 'user', content: 'I prefer tabs over spaces for indentation' },
+          message: {
+            role: 'user',
+            content: 'I prefer tabs over spaces for indentation',
+          },
         }),
       ].join('\n');
 

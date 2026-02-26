@@ -1,10 +1,12 @@
 # Federation - Multi-Orchestrator Coordination
 
-Phase 5.1 implementation of the Orchestrator Daemon federation system, enabling multiple orchestrators to coordinate, delegate tasks, and share context.
+Phase 5.1 implementation of the Orchestrator Daemon federation system, enabling multiple
+orchestrators to coordinate, delegate tasks, and share context.
 
 ## Overview
 
-The OrchestratorConnection class provides WebSocket-based communication between orchestrators in a federated network. It handles:
+The OrchestratorConnection class provides WebSocket-based communication between orchestrators in a
+federated network. It handles:
 
 - Message passing and routing
 - Capability checking and matching
@@ -51,7 +53,7 @@ const connection = new OrchestratorConnection({
   socket: websocketInstance,
   capabilities: ['code-generation', 'testing', 'analysis'],
   heartbeatTimeout: 60000, // Optional, default: 60s
-  maxQueueSize: 1000,      // Optional, default: 1000
+  maxQueueSize: 1000, // Optional, default: 1000
 });
 ```
 
@@ -71,10 +73,7 @@ const connection = new OrchestratorConnection({
 Check if the orchestrator has all required capabilities.
 
 ```typescript
-const canHandleTask = connection.checkCapability([
-  'code-generation',
-  'testing'
-]);
+const canHandleTask = connection.checkCapability(['code-generation', 'testing']);
 ```
 
 #### acceptDelegation(request: DelegationRequest): Promise<DelegationResponse>
@@ -130,8 +129,8 @@ Get connection status and health information.
 ```typescript
 const status = connection.getStatus();
 console.log({
-  status: status.status,        // 'connected', 'active', etc.
-  uptime: status.uptime,         // milliseconds
+  status: status.status, // 'connected', 'active', etc.
+  uptime: status.uptime, // milliseconds
   messagesSent: status.messagesSent,
   messagesReceived: status.messagesReceived,
   errors: status.errors,
@@ -285,12 +284,7 @@ type ConnectionStatus =
 ### FederationMessageType
 
 ```typescript
-type FederationMessageType =
-  | 'delegation'
-  | 'callback'
-  | 'broadcast'
-  | 'heartbeat'
-  | 'status';
+type FederationMessageType = 'delegation' | 'callback' | 'broadcast' | 'heartbeat' | 'status';
 ```
 
 ### FederationMessage
@@ -352,11 +346,11 @@ const connection = new OrchestratorConnection({
   capabilities: ['code-generation', 'testing'],
 });
 
-connection.on('message', (msg) => {
+connection.on('message', msg => {
   console.log('Received:', msg.type);
 });
 
-await new Promise((resolve) => socket.on('open', resolve));
+await new Promise(resolve => socket.on('open', resolve));
 console.log('Connected!');
 ```
 
@@ -392,7 +386,7 @@ if (connection.checkCapability(['code-generation', 'testing'])) {
 ### Handling Delegations
 
 ```typescript
-connection.on('delegation', async (request) => {
+connection.on('delegation', async request => {
   console.log('Received task:', request.task.description);
 
   const response = await connection.acceptDelegation(request);
@@ -435,7 +429,8 @@ setInterval(() => {
 
 ## Message Queue
 
-Messages sent when the connection is not open are automatically queued. The queue has a maximum size (default: 1000) and messages are sent in FIFO order when the connection becomes available.
+Messages sent when the connection is not open are automatically queued. The queue has a maximum size
+(default: 1000) and messages are sent in FIFO order when the connection becomes available.
 
 ```typescript
 // Messages are queued if connection not ready
@@ -450,14 +445,15 @@ socket.on('open', () => {
 
 ## Heartbeat Monitoring
 
-Connections automatically monitor heartbeat and will mark themselves as degraded if no heartbeat is received within the timeout period (default: 60 seconds).
+Connections automatically monitor heartbeat and will mark themselves as degraded if no heartbeat is
+received within the timeout period (default: 60 seconds).
 
 ```typescript
 // Manually send heartbeat
 connection.handleHeartbeat();
 
 // Listen for heartbeat events
-connection.on('heartbeat', (timestamp) => {
+connection.on('heartbeat', timestamp => {
   console.log('Heartbeat received:', timestamp);
 });
 
@@ -470,7 +466,7 @@ if (!connection.isHealthy()) {
 ## Error Handling
 
 ```typescript
-connection.on('error', (error) => {
+connection.on('error', error => {
   console.error('Connection error:', error.message);
 
   // Attempt recovery

@@ -59,8 +59,7 @@ export class ChannelRegistry {
   constructor(options?: ChannelRegistryOptions) {
     this.logger = options?.logger ?? {
       info: (msg, ...args) => console.log(`[ChannelRegistry] ${msg}`, ...args),
-      warn: (msg, ...args) =>
-        console.warn(`[ChannelRegistry] ${msg}`, ...args),
+      warn: (msg, ...args) => console.warn(`[ChannelRegistry] ${msg}`, ...args),
       error: (msg, ...args) =>
         console.error(`[ChannelRegistry] ${msg}`, ...args),
       debug: (msg, ...args) =>
@@ -82,7 +81,7 @@ export class ChannelRegistry {
     const id = normalizeKey(plugin.id);
     if (this.entries.has(id)) {
       throw new Error(
-        `Channel "${id}" is already registered. Unregister it first.`,
+        `Channel "${id}" is already registered. Unregister it first.`
       );
     }
 
@@ -99,7 +98,7 @@ export class ChannelRegistry {
         if (this.aliases.has(normalizedAlias)) {
           this.logger.warn(
             `Alias "${normalizedAlias}" already maps to "${this.aliases.get(normalizedAlias)}"; ` +
-              `overwriting with "${id}".`,
+              `overwriting with "${id}".`
           );
         }
         this.aliases.set(normalizedAlias, id);
@@ -194,7 +193,7 @@ export class ChannelRegistry {
     if (!plugin) {
       throw new Error(
         `Channel "${idOrAlias}" is not registered. ` +
-          `Available: ${this.listIds().join(', ') || '(none)'}`,
+          `Available: ${this.listIds().join(', ') || '(none)'}`
       );
     }
     return plugin;
@@ -230,21 +229,21 @@ export class ChannelRegistry {
       }
       return a.plugin.id.localeCompare(b.plugin.id);
     });
-    return sorted.map((entry) => entry.plugin);
+    return sorted.map(entry => entry.plugin);
   }
 
   /**
    * List metadata for all registered channels (lightweight, no plugin ref).
    */
   listMeta(): ChannelMeta[] {
-    return this.list().map((plugin) => plugin.meta);
+    return this.list().map(plugin => plugin.meta);
   }
 
   /**
    * List only channels that are currently enabled.
    */
   listEnabled(): ChannelPlugin[] {
-    return this.list().filter((plugin) => {
+    return this.list().filter(plugin => {
       const entry = this.entries.get(normalizeKey(plugin.id));
       return entry?.enabled ?? false;
     });
@@ -254,7 +253,7 @@ export class ChannelRegistry {
    * List only channels that are currently connected.
    */
   listConnected(): ChannelPlugin[] {
-    return this.list().filter((plugin) => plugin.isConnected());
+    return this.list().filter(plugin => plugin.isConnected());
   }
 
   /**
@@ -282,9 +281,7 @@ export class ChannelRegistry {
       return false;
     }
     entry.enabled = enabled;
-    this.logger.info(
-      `Channel ${resolved} ${enabled ? 'enabled' : 'disabled'}`,
-    );
+    this.logger.info(`Channel ${resolved} ${enabled ? 'enabled' : 'disabled'}`);
     return true;
   }
 
@@ -309,16 +306,16 @@ export class ChannelRegistry {
   async disconnectAll(): Promise<void> {
     const connected = this.listConnected();
     const results = await Promise.allSettled(
-      connected.map(async (plugin) => {
+      connected.map(async plugin => {
         this.logger.info(`Disconnecting channel: ${plugin.id}`);
         await plugin.disconnect();
-      }),
+      })
     );
 
     for (const result of results) {
       if (result.status === 'rejected') {
         this.logger.error(
-          `Error disconnecting channel: ${result.reason instanceof Error ? result.reason.message : String(result.reason)}`,
+          `Error disconnecting channel: ${result.reason instanceof Error ? result.reason.message : String(result.reason)}`
         );
       }
     }
@@ -329,7 +326,7 @@ export class ChannelRegistry {
    */
   async healthCheckAll(): Promise<ChannelHealthStatus[]> {
     const results = await Promise.allSettled(
-      this.list().map((plugin) => plugin.healthCheck()),
+      this.list().map(plugin => plugin.healthCheck())
     );
 
     return results.map((result, index) => {

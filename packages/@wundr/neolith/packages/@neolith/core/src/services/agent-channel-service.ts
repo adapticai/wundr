@@ -104,12 +104,12 @@ export class AgentChannelServiceImpl implements IAgentChannelService {
 
   private getChannelName(agent1Id: string, agent2Id: string): string {
     const sorted = [agent1Id, agent2Id].sort();
-    return `agent-dm-${sorted[0].slice(0, 8)}-${sorted[1].slice(0, 8)}`;
+    return `agent-dm-${sorted[0]!.slice(0, 8)}-${sorted[1]!.slice(0, 8)}`;
   }
 
   private getChannelSlug(agent1Id: string, agent2Id: string): string {
     const sorted = [agent1Id, agent2Id].sort();
-    return `agent-dm-${sorted[0].slice(0, 8)}-${sorted[1].slice(0, 8)}`;
+    return `agent-dm-${sorted[0]!.slice(0, 8)}-${sorted[1]!.slice(0, 8)}`;
   }
 
   private toAgentChannel(
@@ -299,7 +299,7 @@ export class AgentChannelServiceImpl implements IAgentChannelService {
     for (let i = 0; i < agentIds.length; i++) {
       for (let j = i + 1; j < agentIds.length; j++) {
         channels.push(
-          await this.getOrCreateChannel(agentIds[i], agentIds[j], workspaceId)
+          await this.getOrCreateChannel(agentIds[i]!, agentIds[j]!, workspaceId)
         );
       }
     }

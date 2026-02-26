@@ -52,7 +52,7 @@ describe('OrchestratorDaemon', () => {
     }, 10000);
 
     it('should emit started event when daemon starts', async () => {
-      const startedPromise = new Promise<void>((resolve) => {
+      const startedPromise = new Promise<void>(resolve => {
         daemon.once('started', () => resolve());
       });
 
@@ -65,7 +65,7 @@ describe('OrchestratorDaemon', () => {
     it('should emit stopped event when daemon stops', async () => {
       await daemon.start();
 
-      const stoppedPromise = new Promise<void>((resolve) => {
+      const stoppedPromise = new Promise<void>(resolve => {
         daemon.once('stopped', () => resolve());
       });
 
@@ -86,7 +86,7 @@ describe('OrchestratorDaemon', () => {
 
     it('should track uptime after starting', async () => {
       await daemon.start();
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const status = daemon.getStatus();
       expect(status.uptime).toBeGreaterThan(0);

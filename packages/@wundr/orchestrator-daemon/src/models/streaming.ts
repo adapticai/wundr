@@ -133,7 +133,7 @@ export class StreamingAdapter {
    */
   async *adaptChunks(
     chunks: AsyncIterableIterator<ChatChunk>,
-    metadata: { model: string; provider: string; sessionId?: string },
+    metadata: { model: string; provider: string; sessionId?: string }
   ): AsyncIterableIterator<StreamEvent> {
     // Emit stream start
     yield {
@@ -181,7 +181,8 @@ export class StreamingAdapter {
             } else {
               // Accumulate arguments
               if (delta.arguments) {
-                existing.arguments = (existing.arguments ?? '') + delta.arguments;
+                existing.arguments =
+                  (existing.arguments ?? '') + delta.arguments;
                 yield {
                   type: 'tool_call_delta',
                   index: i,
@@ -239,9 +240,10 @@ export class StreamingAdapter {
       yield {
         type: 'error',
         error: error instanceof Error ? error.message : String(error),
-        code: error instanceof Error && 'code' in error
-          ? String((error as { code?: string }).code)
-          : undefined,
+        code:
+          error instanceof Error && 'code' in error
+            ? String((error as { code?: string }).code)
+            : undefined,
         recoverable: false,
       };
     } finally {
@@ -253,13 +255,17 @@ export class StreamingAdapter {
    * Collect a stream into a complete result (useful for non-streaming callers).
    */
   async collectStream(
-    events: AsyncIterableIterator<StreamEvent>,
+    events: AsyncIterableIterator<StreamEvent>
   ): Promise<StreamResult> {
     let content = '';
     let thinkingContent = '';
     const toolCalls: ToolCall[] = [];
     let finishReason: FinishReason = 'stop';
-    let usage: TokenUsage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+    let usage: TokenUsage = {
+      promptTokens: 0,
+      completionTokens: 0,
+      totalTokens: 0,
+    };
 
     for await (const event of events) {
       switch (event.type) {

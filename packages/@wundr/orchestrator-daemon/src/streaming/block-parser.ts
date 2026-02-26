@@ -342,7 +342,9 @@ export class BlockParser {
     this.currentBlock.textBuffer += event.text;
 
     // Check if we should flush
-    if (this.currentBlock.textBuffer.length >= this.config.minCharsBeforeFlush) {
+    if (
+      this.currentBlock.textBuffer.length >= this.config.minCharsBeforeFlush
+    ) {
       const flushed = this.currentBlock.textBuffer;
       this.currentBlock.textBuffer = '';
       this.cancelFlushTimer();
@@ -381,7 +383,9 @@ export class BlockParser {
 
     this.currentBlock.textBuffer += event.text;
 
-    if (this.currentBlock.textBuffer.length >= this.config.minCharsBeforeFlush) {
+    if (
+      this.currentBlock.textBuffer.length >= this.config.minCharsBeforeFlush
+    ) {
       const flushed = this.currentBlock.textBuffer;
       this.currentBlock.textBuffer = '';
       this.cancelFlushTimer();
@@ -427,7 +431,9 @@ export class BlockParser {
     ) {
       this.currentBlock.jsonBuffer += event.partialJson;
 
-      if (this.currentBlock.jsonBuffer.length >= this.config.minCharsBeforeFlush) {
+      if (
+        this.currentBlock.jsonBuffer.length >= this.config.minCharsBeforeFlush
+      ) {
         const flushed = this.currentBlock.jsonBuffer;
         this.currentBlock.jsonBuffer = '';
         this.cancelFlushTimer();

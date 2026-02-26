@@ -266,7 +266,18 @@ export function OrgGenesisWizard() {
         <CharterStep
           data={wizardData.charterData}
           onChange={charterData =>
-            setWizardData(prev => ({ ...prev, charterData }))
+            setWizardData(prev => ({
+              ...prev,
+              charterData: {
+                mission: charterData.mission || '',
+                vision: charterData.vision || '',
+                values: charterData.values || [],
+                principles: charterData.principles || [],
+                governanceStyle: charterData.governanceStyle || 'hierarchical',
+                communicationStyle:
+                  charterData.communicationStyle || 'balanced',
+              },
+            }))
           }
           onNext={() => setCurrentStep('config')}
           onBack={() => setCurrentStep('description')}

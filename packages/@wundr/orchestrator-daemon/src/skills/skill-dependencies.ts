@@ -8,10 +8,7 @@
  * @module skills/skill-dependencies
  */
 
-import type {
-  SkillDependencyResolution,
-  SkillEntry,
-} from './types';
+import type { SkillDependencyResolution, SkillEntry } from './types';
 
 // ---------------------------------------------------------------------------
 // Dependency Resolution
@@ -27,7 +24,7 @@ import type {
  */
 export function resolveDependencies(
   skillName: string,
-  entries: Map<string, SkillEntry>,
+  entries: Map<string, SkillEntry>
 ): SkillDependencyResolution {
   const entry = entries.get(skillName);
   if (!entry) {
@@ -54,8 +51,8 @@ export function resolveDependencies(
 
   function collectDeps(name: string): void {
     if (visited.has(name)) {
-return;
-}
+      return;
+    }
     visited.add(name);
 
     const e = entries.get(name);
@@ -102,7 +99,7 @@ return;
  */
 export function resolveDependenciesBatch(
   skillNames: string[],
-  entries: Map<string, SkillEntry>,
+  entries: Map<string, SkillEntry>
 ): SkillDependencyResolution {
   const allMissing: string[] = [];
   const allOrders: string[][] = [];
@@ -156,30 +153,30 @@ export function resolveDependenciesBatch(
 export function wouldCreateCycle(
   fromSkill: string,
   toSkill: string,
-  entries: Map<string, SkillEntry>,
+  entries: Map<string, SkillEntry>
 ): boolean {
   // Check if toSkill transitively depends on fromSkill
   const visited = new Set<string>();
 
   function hasPath(current: string, target: string): boolean {
     if (current === target) {
-return true;
-}
+      return true;
+    }
     if (visited.has(current)) {
-return false;
-}
+      return false;
+    }
     visited.add(current);
 
     const entry = entries.get(current);
     if (!entry) {
-return false;
-}
+      return false;
+    }
 
     const deps = entry.skill.frontmatter.dependencies ?? [];
     for (const dep of deps) {
       if (hasPath(dep, target)) {
-return true;
-}
+        return true;
+      }
     }
 
     return false;
@@ -198,10 +195,10 @@ return true;
  */
 function detectCycle(
   graph: Map<string, string[]>,
-  startNode: string,
+  startNode: string
 ): string[] | undefined {
   const WHITE = 0; // Unvisited
-  const GRAY = 1;  // In progress
+  const GRAY = 1; // In progress
   const BLACK = 2; // Completed
 
   const colors = new Map<string, number>();
@@ -225,8 +222,8 @@ function detectCycle(
         while (current !== neighbor) {
           const p = parent.get(current);
           if (!p || cycle.includes(p)) {
-break;
-}
+            break;
+          }
           cycle.push(p);
           current = p;
         }
@@ -237,8 +234,8 @@ break;
         parent.set(neighbor, node);
         const result = dfs(neighbor);
         if (result) {
-return result;
-}
+          return result;
+        }
       }
     }
 
@@ -255,15 +252,15 @@ return result;
  */
 function topologicalSort(
   graph: Map<string, string[]>,
-  startNode: string,
+  startNode: string
 ): string[] {
   const visited = new Set<string>();
   const result: string[] = [];
 
   function dfs(node: string): void {
     if (visited.has(node)) {
-return;
-}
+      return;
+    }
     visited.add(node);
 
     const neighbors = graph.get(node) ?? [];

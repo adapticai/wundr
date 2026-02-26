@@ -94,7 +94,7 @@ function makeSession(id = 'test-session'): SessionToolPermissions {
 function makeRateLimitConfig(
   tool: string,
   maxInvocations: number,
-  windowMs: number,
+  windowMs: number
 ): WundrToolPolicyConfig {
   return {
     tools: {
@@ -108,7 +108,11 @@ function makeRateLimitConfig(
 /** Create a config with argument rules. */
 function makeArgRuleConfig(
   tool: string,
-  rules: WundrToolPolicyConfig['tools'] extends { argumentRules?: infer R } ? R extends Record<string, infer V> ? V : never : never,
+  rules: WundrToolPolicyConfig['tools'] extends { argumentRules?: infer R }
+    ? R extends Record<string, infer V>
+      ? V
+      : never
+    : never
 ): WundrToolPolicyConfig {
   return {
     tools: {
@@ -210,7 +214,7 @@ describe('tool-policy', () => {
 
     it('should deduplicate results', () => {
       const result = expandToolGroups(['group:fs', 'file_read']);
-      const fileReadOccurrences = result.filter((t) => t === 'file_read');
+      const fileReadOccurrences = result.filter(t => t === 'file_read');
       expect(fileReadOccurrences.length).toBe(1);
     });
 
@@ -270,8 +274,12 @@ describe('tool-policy', () => {
       }
 
       // Re-evaluate an early pattern that was likely evicted.
-      expect(isToolAllowedByPolicy('filler_0', { allow: ['filler_0'] })).toBe(true);
-      expect(isToolAllowedByPolicy('filler_0', { allow: ['filler_1'] })).toBe(false);
+      expect(isToolAllowedByPolicy('filler_0', { allow: ['filler_0'] })).toBe(
+        true
+      );
+      expect(isToolAllowedByPolicy('filler_0', { allow: ['filler_1'] })).toBe(
+        false
+      );
     });
   });
 
@@ -371,7 +379,9 @@ describe('tool-policy', () => {
     });
 
     it('should support multiple patterns in deny', () => {
-      const policy: ToolPolicy = { deny: ['bash_execute', 'file_delete', 'web_*'] };
+      const policy: ToolPolicy = {
+        deny: ['bash_execute', 'file_delete', 'web_*'],
+      };
       expect(isToolAllowedByPolicy('bash_execute', policy)).toBe(false);
       expect(isToolAllowedByPolicy('file_delete', policy)).toBe(false);
       expect(isToolAllowedByPolicy('web_fetch', policy)).toBe(false);
@@ -411,7 +421,9 @@ describe('tool-policy', () => {
     });
 
     it('should allow everything when all policies are undefined', () => {
-      expect(isToolAllowedByPolicies('anything', [undefined, undefined])).toBe(true);
+      expect(isToolAllowedByPolicies('anything', [undefined, undefined])).toBe(
+        true
+      );
     });
   });
 
@@ -510,13 +522,25 @@ describe('tool-policy', () => {
       });
 
       it('should classify network tools', () => {
-        expect(getToolClassification('web_fetch')).toEqual({ category: 'network', riskLevel: 'medium' });
-        expect(getToolClassification('web_search')).toEqual({ category: 'network', riskLevel: 'low' });
+        expect(getToolClassification('web_fetch')).toEqual({
+          category: 'network',
+          riskLevel: 'medium',
+        });
+        expect(getToolClassification('web_search')).toEqual({
+          category: 'network',
+          riskLevel: 'low',
+        });
       });
 
       it('should classify session tools', () => {
-        expect(getToolClassification('session_spawn')).toEqual({ category: 'session', riskLevel: 'medium' });
-        expect(getToolClassification('session_status')).toEqual({ category: 'session', riskLevel: 'none' });
+        expect(getToolClassification('session_spawn')).toEqual({
+          category: 'session',
+          riskLevel: 'medium',
+        });
+        expect(getToolClassification('session_status')).toEqual({
+          category: 'session',
+          riskLevel: 'none',
+        });
       });
 
       it('should return undefined for unknown tools', () => {
@@ -524,8 +548,14 @@ describe('tool-policy', () => {
       });
 
       it('should resolve aliases before lookup', () => {
-        expect(getToolClassification('bash')).toEqual({ category: 'execute', riskLevel: 'high' });
-        expect(getToolClassification('read')).toEqual({ category: 'read-only', riskLevel: 'none' });
+        expect(getToolClassification('bash')).toEqual({
+          category: 'execute',
+          riskLevel: 'high',
+        });
+        expect(getToolClassification('read')).toEqual({
+          category: 'read-only',
+          riskLevel: 'none',
+        });
       });
     });
 
@@ -597,7 +627,7 @@ describe('tool-policy', () => {
         const config: WundrToolPolicyConfig = {
           tools: {
             categories: {
-              'execute': { requiresApproval: false },
+              execute: { requiresApproval: false },
             },
           },
         };
@@ -609,7 +639,7 @@ describe('tool-policy', () => {
         const config: WundrToolPolicyConfig = {
           tools: {
             categories: {
-              'write': { requiresApproval: true },
+              write: { requiresApproval: true },
             },
           },
         };
@@ -628,7 +658,11 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('file_write', [
           { argument: 'path', check: 'required' },
         ]);
-        const result = validateToolArguments('file_write', { path: '/tmp/test' }, config);
+        const result = validateToolArguments(
+          'file_write',
+          { path: '/tmp/test' },
+          config
+        );
         expect(result.valid).toBe(true);
       });
 
@@ -646,7 +680,11 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('file_write', [
           { argument: 'path', check: 'required' },
         ]);
-        const result = validateToolArguments('file_write', { path: null }, config);
+        const result = validateToolArguments(
+          'file_write',
+          { path: null },
+          config
+        );
         expect(result.valid).toBe(false);
       });
 
@@ -654,7 +692,11 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('file_write', [
           { argument: 'path', check: 'required' },
         ]);
-        const result = validateToolArguments('file_write', { path: '' }, config);
+        const result = validateToolArguments(
+          'file_write',
+          { path: '' },
+          config
+        );
         expect(result.valid).toBe(false);
       });
     });
@@ -664,15 +706,27 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('bash_execute', [
           { argument: 'sudo', check: 'forbidden' },
         ]);
-        const result = validateToolArguments('bash_execute', { command: 'ls' }, config);
+        const result = validateToolArguments(
+          'bash_execute',
+          { command: 'ls' },
+          config
+        );
         expect(result.valid).toBe(true);
       });
 
       it('should fail when forbidden argument is present', () => {
         const config = makeArgRuleConfig('bash_execute', [
-          { argument: 'sudo', check: 'forbidden', reason: 'sudo is not allowed' },
+          {
+            argument: 'sudo',
+            check: 'forbidden',
+            reason: 'sudo is not allowed',
+          },
         ]);
-        const result = validateToolArguments('bash_execute', { command: 'ls', sudo: true }, config);
+        const result = validateToolArguments(
+          'bash_execute',
+          { command: 'ls', sudo: true },
+          config
+        );
         expect(result.valid).toBe(false);
         expect(result.message).toBe('sudo is not allowed');
       });
@@ -681,7 +735,11 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('bash_execute', [
           { argument: 'sudo', check: 'forbidden' },
         ]);
-        const result = validateToolArguments('bash_execute', { sudo: null }, config);
+        const result = validateToolArguments(
+          'bash_execute',
+          { sudo: null },
+          config
+        );
         expect(result.valid).toBe(true);
       });
     });
@@ -691,7 +749,11 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('file_write', [
           { argument: 'path', check: 'pattern', pattern: '^/workspace/' },
         ]);
-        const result = validateToolArguments('file_write', { path: '/workspace/foo.txt' }, config);
+        const result = validateToolArguments(
+          'file_write',
+          { path: '/workspace/foo.txt' },
+          config
+        );
         expect(result.valid).toBe(true);
       });
 
@@ -699,7 +761,11 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('file_write', [
           { argument: 'path', check: 'pattern', pattern: '^/workspace/' },
         ]);
-        const result = validateToolArguments('file_write', { path: '/etc/passwd' }, config);
+        const result = validateToolArguments(
+          'file_write',
+          { path: '/etc/passwd' },
+          config
+        );
         expect(result.valid).toBe(false);
       });
 
@@ -715,7 +781,11 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('file_write', [
           { argument: 'path', check: 'pattern' },
         ]);
-        const result = validateToolArguments('file_write', { path: 'anything' }, config);
+        const result = validateToolArguments(
+          'file_write',
+          { path: 'anything' },
+          config
+        );
         expect(result.valid).toBe(true);
       });
     });
@@ -725,7 +795,11 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('file_write', [
           { argument: 'content', check: 'max-length', maxLength: 100 },
         ]);
-        const result = validateToolArguments('file_write', { content: 'short' }, config);
+        const result = validateToolArguments(
+          'file_write',
+          { content: 'short' },
+          config
+        );
         expect(result.valid).toBe(true);
       });
 
@@ -733,7 +807,11 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('file_write', [
           { argument: 'content', check: 'max-length', maxLength: 5 },
         ]);
-        const result = validateToolArguments('file_write', { content: 'this is too long' }, config);
+        const result = validateToolArguments(
+          'file_write',
+          { content: 'this is too long' },
+          config
+        );
         expect(result.valid).toBe(false);
         expect(result.message).toContain('max length');
       });
@@ -750,7 +828,11 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('file_write', [
           { argument: 'content', check: 'max-length' },
         ]);
-        const result = validateToolArguments('file_write', { content: 'x'.repeat(10000) }, config);
+        const result = validateToolArguments(
+          'file_write',
+          { content: 'x'.repeat(10000) },
+          config
+        );
         expect(result.valid).toBe(true);
       });
     });
@@ -758,17 +840,33 @@ describe('tool-policy', () => {
     describe('one-of check', () => {
       it('should pass when value is in the allowed set', () => {
         const config = makeArgRuleConfig('file_write', [
-          { argument: 'mode', check: 'one-of', values: ['overwrite', 'append'] },
+          {
+            argument: 'mode',
+            check: 'one-of',
+            values: ['overwrite', 'append'],
+          },
         ]);
-        const result = validateToolArguments('file_write', { mode: 'overwrite' }, config);
+        const result = validateToolArguments(
+          'file_write',
+          { mode: 'overwrite' },
+          config
+        );
         expect(result.valid).toBe(true);
       });
 
       it('should fail when value is not in the allowed set', () => {
         const config = makeArgRuleConfig('file_write', [
-          { argument: 'mode', check: 'one-of', values: ['overwrite', 'append'] },
+          {
+            argument: 'mode',
+            check: 'one-of',
+            values: ['overwrite', 'append'],
+          },
         ]);
-        const result = validateToolArguments('file_write', { mode: 'truncate' }, config);
+        const result = validateToolArguments(
+          'file_write',
+          { mode: 'truncate' },
+          config
+        );
         expect(result.valid).toBe(false);
         expect(result.message).toContain('one of');
       });
@@ -785,7 +883,11 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('file_write', [
           { argument: 'mode', check: 'one-of' },
         ]);
-        const result = validateToolArguments('file_write', { mode: 'anything' }, config);
+        const result = validateToolArguments(
+          'file_write',
+          { mode: 'anything' },
+          config
+        );
         expect(result.valid).toBe(false);
       });
     });
@@ -793,12 +895,20 @@ describe('tool-policy', () => {
     describe('dot-notation nested argument paths', () => {
       it('should resolve nested arguments', () => {
         const config = makeArgRuleConfig('web_fetch', [
-          { argument: 'options.headers.authorization', check: 'forbidden', reason: 'no auth headers' },
+          {
+            argument: 'options.headers.authorization',
+            check: 'forbidden',
+            reason: 'no auth headers',
+          },
         ]);
-        const result = validateToolArguments('web_fetch', {
-          url: 'https://example.com',
-          options: { headers: { authorization: 'Bearer xyz' } },
-        }, config);
+        const result = validateToolArguments(
+          'web_fetch',
+          {
+            url: 'https://example.com',
+            options: { headers: { authorization: 'Bearer xyz' } },
+          },
+          config
+        );
         expect(result.valid).toBe(false);
         expect(result.message).toBe('no auth headers');
       });
@@ -807,9 +917,13 @@ describe('tool-policy', () => {
         const config = makeArgRuleConfig('web_fetch', [
           { argument: 'options.headers.authorization', check: 'forbidden' },
         ]);
-        const result = validateToolArguments('web_fetch', {
-          url: 'https://example.com',
-        }, config);
+        const result = validateToolArguments(
+          'web_fetch',
+          {
+            url: 'https://example.com',
+          },
+          config
+        );
         expect(result.valid).toBe(true);
       });
     });
@@ -818,7 +932,11 @@ describe('tool-policy', () => {
       it('should stop at the first failing rule', () => {
         const config = makeArgRuleConfig('file_write', [
           { argument: 'path', check: 'required', reason: 'first rule fails' },
-          { argument: 'content', check: 'required', reason: 'second rule fails' },
+          {
+            argument: 'content',
+            check: 'required',
+            reason: 'second rule fails',
+          },
         ]);
         // Both path and content are missing, but the first rule should be reported.
         const result = validateToolArguments('file_write', {}, config);
@@ -831,10 +949,14 @@ describe('tool-policy', () => {
           { argument: 'path', check: 'required' },
           { argument: 'content', check: 'max-length', maxLength: 1000 },
         ]);
-        const result = validateToolArguments('file_write', {
-          path: '/tmp/test',
-          content: 'hello',
-        }, config);
+        const result = validateToolArguments(
+          'file_write',
+          {
+            path: '/tmp/test',
+            content: 'hello',
+          },
+          config
+        );
         expect(result.valid).toBe(true);
       });
     });
@@ -870,9 +992,15 @@ describe('tool-policy', () => {
         const session = makeSession();
         const now = 1000;
 
-        expect(checkToolRateLimit('file_write', session, config, now)).toBe(true);
-        expect(checkToolRateLimit('file_write', session, config, now + 1)).toBe(true);
-        expect(checkToolRateLimit('file_write', session, config, now + 2)).toBe(true);
+        expect(checkToolRateLimit('file_write', session, config, now)).toBe(
+          true
+        );
+        expect(checkToolRateLimit('file_write', session, config, now + 1)).toBe(
+          true
+        );
+        expect(checkToolRateLimit('file_write', session, config, now + 2)).toBe(
+          true
+        );
       });
 
       it('should deny when limit is exceeded', () => {
@@ -880,9 +1008,15 @@ describe('tool-policy', () => {
         const session = makeSession();
         const now = 1000;
 
-        expect(checkToolRateLimit('file_write', session, config, now)).toBe(true);
-        expect(checkToolRateLimit('file_write', session, config, now + 1)).toBe(true);
-        expect(checkToolRateLimit('file_write', session, config, now + 2)).toBe(false);
+        expect(checkToolRateLimit('file_write', session, config, now)).toBe(
+          true
+        );
+        expect(checkToolRateLimit('file_write', session, config, now + 1)).toBe(
+          true
+        );
+        expect(checkToolRateLimit('file_write', session, config, now + 2)).toBe(
+          false
+        );
       });
 
       it('should allow again after the window expires', () => {
@@ -890,12 +1024,20 @@ describe('tool-policy', () => {
         const session = makeSession();
         const now = 1000;
 
-        expect(checkToolRateLimit('file_write', session, config, now)).toBe(true);
-        expect(checkToolRateLimit('file_write', session, config, now + 100)).toBe(true);
-        expect(checkToolRateLimit('file_write', session, config, now + 200)).toBe(false);
+        expect(checkToolRateLimit('file_write', session, config, now)).toBe(
+          true
+        );
+        expect(
+          checkToolRateLimit('file_write', session, config, now + 100)
+        ).toBe(true);
+        expect(
+          checkToolRateLimit('file_write', session, config, now + 200)
+        ).toBe(false);
 
         // After the window (1000ms), the old timestamps expire.
-        expect(checkToolRateLimit('file_write', session, config, now + 1100)).toBe(true);
+        expect(
+          checkToolRateLimit('file_write', session, config, now + 1100)
+        ).toBe(true);
       });
 
       it('should resolve tool aliases', () => {
@@ -905,7 +1047,9 @@ describe('tool-policy', () => {
         const now = 1000;
 
         expect(checkToolRateLimit('write', session, config, now)).toBe(true);
-        expect(checkToolRateLimit('write', session, config, now + 1)).toBe(false);
+        expect(checkToolRateLimit('write', session, config, now + 1)).toBe(
+          false
+        );
       });
 
       it('should isolate rate limits per tool', () => {
@@ -920,11 +1064,17 @@ describe('tool-policy', () => {
         const session = makeSession();
         const now = 1000;
 
-        expect(checkToolRateLimit('file_write', session, config, now)).toBe(true);
-        expect(checkToolRateLimit('file_write', session, config, now + 1)).toBe(false);
+        expect(checkToolRateLimit('file_write', session, config, now)).toBe(
+          true
+        );
+        expect(checkToolRateLimit('file_write', session, config, now + 1)).toBe(
+          false
+        );
 
         // file_read has its own bucket.
-        expect(checkToolRateLimit('file_read', session, config, now + 2)).toBe(true);
+        expect(checkToolRateLimit('file_read', session, config, now + 2)).toBe(
+          true
+        );
       });
     });
 
@@ -942,7 +1092,12 @@ describe('tool-policy', () => {
         checkToolRateLimit('file_write', session, config, now);
         checkToolRateLimit('file_write', session, config, now + 100);
 
-        const status = getToolRateLimitStatus('file_write', session, config, now + 200);
+        const status = getToolRateLimitStatus(
+          'file_write',
+          session,
+          config,
+          now + 200
+        );
         expect(status).toBeDefined();
         expect(status!.remaining).toBe(3);
         expect(status!.limited).toBe(false);
@@ -956,7 +1111,12 @@ describe('tool-policy', () => {
         checkToolRateLimit('file_write', session, config, now);
         checkToolRateLimit('file_write', session, config, now + 100);
 
-        const status = getToolRateLimitStatus('file_write', session, config, now + 200);
+        const status = getToolRateLimitStatus(
+          'file_write',
+          session,
+          config,
+          now + 200
+        );
         expect(status!.remaining).toBe(0);
         expect(status!.limited).toBe(true);
         expect(status!.resetMs).toBeGreaterThan(0);
@@ -1091,13 +1251,16 @@ describe('tool-policy', () => {
 
     it('should record entries to the session audit log', () => {
       const session = makeSession();
-      ToolAuditLogger.record({
-        timestamp: Date.now(),
-        toolName: 'file_read',
-        normalizedToolName: 'file_read',
-        outcome: 'allowed',
-        sessionId: session.sessionId,
-      }, session);
+      ToolAuditLogger.record(
+        {
+          timestamp: Date.now(),
+          toolName: 'file_read',
+          normalizedToolName: 'file_read',
+          outcome: 'allowed',
+          sessionId: session.sessionId,
+        },
+        session
+      );
       expect(session.auditLog.length).toBe(1);
     });
 
@@ -1114,7 +1277,7 @@ describe('tool-policy', () => {
 
       expect(listener).toHaveBeenCalledTimes(1);
       expect(listener).toHaveBeenCalledWith(
-        expect.objectContaining({ toolName: 'file_read', outcome: 'allowed' }),
+        expect.objectContaining({ toolName: 'file_read', outcome: 'allowed' })
       );
     });
 
@@ -1184,23 +1347,37 @@ describe('tool-policy', () => {
     describe('getEntriesForTool', () => {
       it('should filter by normalized tool name', () => {
         ToolAuditLogger.record({
-          timestamp: 1, toolName: 'file_read', normalizedToolName: 'file_read', outcome: 'allowed',
+          timestamp: 1,
+          toolName: 'file_read',
+          normalizedToolName: 'file_read',
+          outcome: 'allowed',
         });
         ToolAuditLogger.record({
-          timestamp: 2, toolName: 'bash', normalizedToolName: 'bash_execute', outcome: 'denied',
+          timestamp: 2,
+          toolName: 'bash',
+          normalizedToolName: 'bash_execute',
+          outcome: 'denied',
         });
         ToolAuditLogger.record({
-          timestamp: 3, toolName: 'file_read', normalizedToolName: 'file_read', outcome: 'denied',
+          timestamp: 3,
+          toolName: 'file_read',
+          normalizedToolName: 'file_read',
+          outcome: 'denied',
         });
 
         const entries = ToolAuditLogger.getEntriesForTool('file_read');
         expect(entries.length).toBe(2);
-        expect(entries.every((e) => e.normalizedToolName === 'file_read')).toBe(true);
+        expect(entries.every(e => e.normalizedToolName === 'file_read')).toBe(
+          true
+        );
       });
 
       it('should resolve aliases in lookups', () => {
         ToolAuditLogger.record({
-          timestamp: 1, toolName: 'bash', normalizedToolName: 'bash_execute', outcome: 'allowed',
+          timestamp: 1,
+          toolName: 'bash',
+          normalizedToolName: 'bash_execute',
+          outcome: 'allowed',
         });
 
         const entries = ToolAuditLogger.getEntriesForTool('bash');
@@ -1211,12 +1388,18 @@ describe('tool-policy', () => {
     describe('getEntriesForSession', () => {
       it('should filter by session ID', () => {
         ToolAuditLogger.record({
-          timestamp: 1, toolName: 'file_read', normalizedToolName: 'file_read',
-          outcome: 'allowed', sessionId: 'sess-a',
+          timestamp: 1,
+          toolName: 'file_read',
+          normalizedToolName: 'file_read',
+          outcome: 'allowed',
+          sessionId: 'sess-a',
         });
         ToolAuditLogger.record({
-          timestamp: 2, toolName: 'file_read', normalizedToolName: 'file_read',
-          outcome: 'denied', sessionId: 'sess-b',
+          timestamp: 2,
+          toolName: 'file_read',
+          normalizedToolName: 'file_read',
+          outcome: 'denied',
+          sessionId: 'sess-b',
         });
 
         const entries = ToolAuditLogger.getEntriesForSession('sess-a');
@@ -1228,16 +1411,25 @@ describe('tool-policy', () => {
     describe('getSummary', () => {
       it('should aggregate counts by outcome and category', () => {
         ToolAuditLogger.record({
-          timestamp: 1, toolName: 'file_read', normalizedToolName: 'file_read',
-          category: 'read-only', outcome: 'allowed',
+          timestamp: 1,
+          toolName: 'file_read',
+          normalizedToolName: 'file_read',
+          category: 'read-only',
+          outcome: 'allowed',
         });
         ToolAuditLogger.record({
-          timestamp: 2, toolName: 'bash_execute', normalizedToolName: 'bash_execute',
-          category: 'execute', outcome: 'denied',
+          timestamp: 2,
+          toolName: 'bash_execute',
+          normalizedToolName: 'bash_execute',
+          category: 'execute',
+          outcome: 'denied',
         });
         ToolAuditLogger.record({
-          timestamp: 3, toolName: 'file_write', normalizedToolName: 'file_write',
-          category: 'write', outcome: 'rate-limited',
+          timestamp: 3,
+          toolName: 'file_write',
+          normalizedToolName: 'file_write',
+          category: 'write',
+          outcome: 'rate-limited',
         });
 
         const summary = ToolAuditLogger.getSummary();
@@ -1317,9 +1509,7 @@ describe('tool-policy', () => {
       const config: WundrToolPolicyConfig = {
         tools: {
           argumentRules: {
-            file_write: [
-              { argument: 'path', check: 'required' },
-            ],
+            file_write: [{ argument: 'path', check: 'required' }],
           },
         },
       };
@@ -1523,7 +1713,7 @@ describe('tool-policy', () => {
     it('should filter tool objects by policy', () => {
       const result = filterToolsByPolicy(tools, { deny: ['bash_execute'] });
       expect(result.length).toBe(2);
-      expect(result.map((t) => t.name)).toEqual(['file_read', 'web_fetch']);
+      expect(result.map(t => t.name)).toEqual(['file_read', 'web_fetch']);
     });
   });
 
@@ -1541,7 +1731,7 @@ describe('tool-policy', () => {
         subagentPolicy: { deny: ['session_spawn'] },
       };
       const result = filterToolsByPolicies(tools, policies);
-      expect(result.map((t) => t.name)).toEqual(['file_read', 'web_fetch']);
+      expect(result.map(t => t.name)).toEqual(['file_read', 'web_fetch']);
     });
 
     it('should return all tools when no policies restrict anything', () => {
@@ -1874,7 +2064,9 @@ describe('tool-policy', () => {
     });
 
     it('should trim whitespace from entries', () => {
-      const result = collectExplicitAllowlist([{ allow: ['  file_read  ', '  '] }]);
+      const result = collectExplicitAllowlist([
+        { allow: ['  file_read  ', '  '] },
+      ]);
       expect(result).toContain('file_read');
       // Whitespace-only entries are filtered out.
       expect(result.length).toBe(1);
@@ -1907,7 +2099,11 @@ describe('tool-policy', () => {
     describe('ToolArgumentValidationError', () => {
       it('should contain tool name and failed rule', () => {
         const rule = { argument: 'path', check: 'required' as const };
-        const error = new ToolArgumentValidationError('file_write', 'path is required', rule);
+        const error = new ToolArgumentValidationError(
+          'file_write',
+          'path is required',
+          rule
+        );
         expect(error.name).toBe('ToolArgumentValidationError');
         expect(error.toolName).toBe('file_write');
         expect(error.failedRule).toBe(rule);
@@ -1978,7 +2174,10 @@ describe('tool-policy', () => {
 
     it('should handle non-array allow/deny gracefully', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const policy: ToolPolicy = { allow: 'file_read' as any, deny: null as any };
+      const policy: ToolPolicy = {
+        allow: 'file_read' as any,
+        deny: null as any,
+      };
       // Non-array should be treated as no restriction.
       expect(isToolAllowedByPolicy('file_read', policy)).toBe(true);
     });
@@ -1999,10 +2198,10 @@ describe('tool-policy', () => {
       const results: boolean[] = [];
       for (let i = 0; i < 100; i++) {
         results.push(
-          isToolAllowedByPolicy(`tool_${i}`, { allow: [`tool_${i}`] }),
+          isToolAllowedByPolicy(`tool_${i}`, { allow: [`tool_${i}`] })
         );
       }
-      expect(results.every((r) => r === true)).toBe(true);
+      expect(results.every(r => r === true)).toBe(true);
     });
 
     it('should handle evaluation of tools not in any category', () => {

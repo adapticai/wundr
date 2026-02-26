@@ -59,7 +59,7 @@ export function createMockTask(overrides?: Partial<Task>): Task {
 }
 
 export function createMockSessionMetrics(
-  overrides?: Partial<SessionMetrics>,
+  overrides?: Partial<SessionMetrics>
 ): SessionMetrics {
   return {
     tokensUsed: 0,
@@ -72,7 +72,7 @@ export function createMockSessionMetrics(
 }
 
 export function createMockMemoryEntry(
-  overrides?: Partial<MemoryEntry>,
+  overrides?: Partial<MemoryEntry>
 ): MemoryEntry {
   return {
     id: nextId('mem'),
@@ -84,7 +84,7 @@ export function createMockMemoryEntry(
 }
 
 export function createMockMemoryContext(
-  overrides?: Partial<MemoryContext>,
+  overrides?: Partial<MemoryContext>
 ): MemoryContext {
   return {
     scratchpad: {},
@@ -114,7 +114,7 @@ export function createMockSession(overrides?: Partial<Session>): Session {
 // ---------------------------------------------------------------------------
 
 export function createMockDaemonConfig(
-  overrides?: Partial<DaemonConfig>,
+  overrides?: Partial<DaemonConfig>
 ): DaemonConfig {
   return {
     name: 'test-daemon',
@@ -130,7 +130,7 @@ export function createMockDaemonConfig(
 }
 
 export function createMockMemoryConfig(
-  overrides?: Partial<MemoryConfig>,
+  overrides?: Partial<MemoryConfig>
 ): MemoryConfig {
   return {
     version: '1.0',
@@ -179,7 +179,7 @@ export const TEST_JWT_SECRET = 'test-jwt-secret-that-is-at-least-32-chars!';
 export const TEST_API_KEY = 'test-api-key-that-is-at-least-32-characters!';
 
 export function createMockAuthConfig(
-  overrides?: Partial<AuthConfig>,
+  overrides?: Partial<AuthConfig>
 ): AuthConfig {
   return {
     mode: 'both',
@@ -203,7 +203,7 @@ export function createMockAuthConfig(
 }
 
 export function createMockClientIdentity(
-  overrides?: Partial<ClientIdentity>,
+  overrides?: Partial<ClientIdentity>
 ): ClientIdentity {
   return {
     clientId: 'test-client',
@@ -215,7 +215,7 @@ export function createMockClientIdentity(
 }
 
 export function createMockJwtPayload(
-  overrides?: Partial<JwtPayload>,
+  overrides?: Partial<JwtPayload>
 ): JwtPayload {
   const now = Math.floor(Date.now() / 1000);
   return {
@@ -233,7 +233,7 @@ export function createMockJwtPayload(
 // ---------------------------------------------------------------------------
 
 export function createMockSpawnPayload(
-  overrides?: Partial<SpawnSessionPayload>,
+  overrides?: Partial<SpawnSessionPayload>
 ): SpawnSessionPayload {
   return {
     orchestratorId: 'orch-1',
@@ -249,7 +249,7 @@ export function createMockSpawnPayload(
 }
 
 export function createMockExecutePayload(
-  overrides?: Partial<ExecuteTaskPayload>,
+  overrides?: Partial<ExecuteTaskPayload>
 ): ExecuteTaskPayload {
   return {
     sessionId: 'session-1',
@@ -285,8 +285,8 @@ export class MockWebSocket extends EventEmitter {
   send(data: string, callback?: (error?: Error) => void): void {
     this.sentMessages.push(data);
     if (callback) {
-callback();
-}
+      callback();
+    }
   }
 
   ping(): void {
@@ -304,14 +304,14 @@ callback();
   lastSentJson<T = unknown>(): T {
     const last = this.sentMessages[this.sentMessages.length - 1];
     if (!last) {
-throw new Error('No messages sent');
-}
+      throw new Error('No messages sent');
+    }
     return JSON.parse(last) as T;
   }
 
   /** Parse all sent messages as JSON. */
   allSentJson<T = unknown>(): T[] {
-    return this.sentMessages.map((m) => JSON.parse(m) as T);
+    return this.sentMessages.map(m => JSON.parse(m) as T);
   }
 }
 
@@ -326,7 +326,7 @@ export interface MockIncomingMessageOptions {
 }
 
 export function createMockIncomingMessage(
-  options: MockIncomingMessageOptions = {},
+  options: MockIncomingMessageOptions = {}
 ): any {
   const { url = '/', headers = {}, remoteAddress = '192.168.1.1' } = options;
   return {
@@ -343,7 +343,7 @@ export function createMockIncomingMessage(
 // ---------------------------------------------------------------------------
 
 export function createMockDaemonStatus(
-  overrides?: Partial<DaemonStatus>,
+  overrides?: Partial<DaemonStatus>
 ): DaemonStatus {
   return {
     status: 'running',

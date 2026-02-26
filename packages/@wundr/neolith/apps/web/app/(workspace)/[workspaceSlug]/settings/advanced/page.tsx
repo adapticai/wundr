@@ -757,7 +757,7 @@ export default function AdvancedSettingsPage() {
               <div className='flex justify-between'>
                 <span className='text-muted-foreground'>Platform:</span>
                 <span>
-                  {navigator.userAgentData?.platform ??
+                  {(navigator as any).userAgentData?.platform ??
                     navigator.userAgent
                       .split(' ')
                       .find(s =>

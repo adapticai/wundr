@@ -103,9 +103,21 @@ const RELOAD_RULES: ReloadRule[] = [
   { prefix: 'agents', kind: 'hot', actions: ['reload-agents'] },
   { prefix: 'memory', kind: 'hot', actions: ['reload-memory'] },
   { prefix: 'channels.slack', kind: 'hot', actions: ['reload-channel:slack'] },
-  { prefix: 'channels.discord', kind: 'hot', actions: ['reload-channel:discord'] },
-  { prefix: 'channels.telegram', kind: 'hot', actions: ['reload-channel:telegram'] },
-  { prefix: 'channels.webhook', kind: 'hot', actions: ['reload-channel:webhook'] },
+  {
+    prefix: 'channels.discord',
+    kind: 'hot',
+    actions: ['reload-channel:discord'],
+  },
+  {
+    prefix: 'channels.telegram',
+    kind: 'hot',
+    actions: ['reload-channel:telegram'],
+  },
+  {
+    prefix: 'channels.webhook',
+    kind: 'hot',
+    actions: ['reload-channel:webhook'],
+  },
   { prefix: 'security.rateLimit', kind: 'hot', actions: ['reload-security'] },
   { prefix: 'security.cors', kind: 'hot', actions: ['reload-security'] },
   { prefix: 'security.audit', kind: 'hot', actions: ['reload-security'] },
@@ -137,7 +149,10 @@ const RELOAD_RULES: ReloadRule[] = [
 
 function matchRule(configPath: string): ReloadRule | null {
   for (const rule of RELOAD_RULES) {
-    if (configPath === rule.prefix || configPath.startsWith(`${rule.prefix}.`)) {
+    if (
+      configPath === rule.prefix ||
+      configPath.startsWith(`${rule.prefix}.`)
+    ) {
       return rule;
     }
   }
@@ -307,7 +322,7 @@ export function startConfigWatcher(opts: ConfigWatcherOptions): ConfigWatcher {
       const snapshot = await opts.readSnapshot();
       if (!snapshot.valid) {
         const issues = snapshot.issues
-          .map((issue) => `${issue.path}: ${issue.message}`)
+          .map(issue => `${issue.path}: ${issue.message}`)
           .join(', ');
         opts.log.warn(`config reload skipped (invalid config): ${issues}`);
         return;
@@ -323,7 +338,7 @@ export function startConfigWatcher(opts: ConfigWatcherOptions): ConfigWatcher {
       }
 
       opts.log.info(
-        `config change detected; evaluating reload (${changedPaths.join(', ')})`,
+        `config change detected; evaluating reload (${changedPaths.join(', ')})`
       );
       const plan = buildReloadPlan(changedPaths);
 
@@ -343,7 +358,7 @@ export function startConfigWatcher(opts: ConfigWatcherOptions): ConfigWatcher {
       if (plan.restartDaemon) {
         if (settings.mode === 'hot') {
           opts.log.warn(
-            `config reload requires daemon restart; hot mode ignoring (${plan.restartReasons.join(', ')})`,
+            `config reload requires daemon restart; hot mode ignoring (${plan.restartReasons.join(', ')})`
           );
           return;
         }
@@ -396,7 +411,7 @@ export function startConfigWatcher(opts: ConfigWatcherOptions): ConfigWatcher {
       watcher = w as unknown as NonNullable<typeof watcher>;
     } catch (err) {
       opts.log.warn(
-        `chokidar not available; config file watching disabled. Install chokidar for live reload support. Error: ${String(err)}`,
+        `chokidar not available; config file watching disabled. Install chokidar for live reload support. Error: ${String(err)}`
       );
 
       // Fallback: poll every debounceMs * 10 for changes
@@ -453,9 +468,7 @@ export function describeReloadPlan(plan: ReloadPlan): string {
   lines.push(`Config changes: ${plan.changedPaths.length} path(s)`);
 
   if (plan.restartDaemon) {
-    lines.push(
-      `  RESTART required: ${plan.restartReasons.join(', ')}`,
-    );
+    lines.push(`  RESTART required: ${plan.restartReasons.join(', ')}`);
   }
 
   if (plan.hotReasons.length > 0) {
@@ -463,20 +476,20 @@ export function describeReloadPlan(plan: ReloadPlan): string {
   }
 
   if (plan.reloadHooks) {
-lines.push('    - Re-register hooks');
-}
+    lines.push('    - Re-register hooks');
+  }
   if (plan.reloadAgents) {
-lines.push('    - Refresh agent registry');
-}
+    lines.push('    - Refresh agent registry');
+  }
   if (plan.reloadMemory) {
-lines.push('    - Reconfigure memory');
-}
+    lines.push('    - Reconfigure memory');
+  }
   if (plan.reloadSecurity) {
-lines.push('    - Reinitialize security middleware');
-}
+    lines.push('    - Reinitialize security middleware');
+  }
   if (plan.reloadChannels.size > 0) {
     lines.push(
-      `    - Restart channels: ${Array.from(plan.reloadChannels).join(', ')}`,
+      `    - Restart channels: ${Array.from(plan.reloadChannels).join(', ')}`
     );
   }
 

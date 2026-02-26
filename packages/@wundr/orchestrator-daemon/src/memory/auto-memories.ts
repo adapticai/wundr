@@ -44,10 +44,7 @@ import {
   type ConsolidationResult,
   type MemoryVersion,
 } from './memory-file-manager';
-import {
-  MemoryLinker,
-  type LinkingResult,
-} from './memory-linker';
+import { MemoryLinker, type LinkingResult } from './memory-linker';
 import {
   MemorySearch,
   type MemorySearchResult,
@@ -277,12 +274,7 @@ export class AutoMemories {
     return {
       user: path.join(this.config.userHome, '.wundr', 'MEMORY.md'),
       project: path.join(this.config.projectRoot, '.wundr', 'MEMORY.md'),
-      local: path.join(
-        this.config.projectRoot,
-        '.wundr',
-        'local',
-        'MEMORY.md',
-      ),
+      local: path.join(this.config.projectRoot, '.wundr', 'local', 'MEMORY.md'),
     };
   }
 
@@ -317,9 +309,21 @@ export class AutoMemories {
       enabled: boolean;
       path: string;
     }> = [
-      { scope: 'user', enabled: this.config.userScopeEnabled, path: paths.user },
-      { scope: 'project', enabled: this.config.projectScopeEnabled, path: paths.project },
-      { scope: 'local', enabled: this.config.localScopeEnabled, path: paths.local },
+      {
+        scope: 'user',
+        enabled: this.config.userScopeEnabled,
+        path: paths.user,
+      },
+      {
+        scope: 'project',
+        enabled: this.config.projectScopeEnabled,
+        path: paths.project,
+      },
+      {
+        scope: 'local',
+        enabled: this.config.localScopeEnabled,
+        path: paths.local,
+      },
     ];
 
     for (const { scope, enabled, path: filePath } of scopeOrder) {
@@ -391,9 +395,21 @@ export class AutoMemories {
       enabled: boolean;
       path: string;
     }> = [
-      { scope: 'user', enabled: this.config.userScopeEnabled, path: paths.user },
-      { scope: 'project', enabled: this.config.projectScopeEnabled, path: paths.project },
-      { scope: 'local', enabled: this.config.localScopeEnabled, path: paths.local },
+      {
+        scope: 'user',
+        enabled: this.config.userScopeEnabled,
+        path: paths.user,
+      },
+      {
+        scope: 'project',
+        enabled: this.config.projectScopeEnabled,
+        path: paths.project,
+      },
+      {
+        scope: 'local',
+        enabled: this.config.localScopeEnabled,
+        path: paths.local,
+      },
     ];
 
     for (const { scope, enabled, path: filePath } of scopeOrder) {
@@ -541,7 +557,7 @@ export class AutoMemories {
    * to the current context (current file, task, recent errors, etc.).
    */
   async buildContextAwarePromptSection(
-    context: RelevanceContext,
+    context: RelevanceContext
   ): Promise<string> {
     if (!this.config.enabled) {
       return '';
@@ -564,7 +580,7 @@ export class AutoMemories {
       contextQuery,
       files,
       { maxResults: 20, minScore: 0.05, recencyBoost: 0.3 },
-      context,
+      context
     );
 
     if (results.length === 0) {
@@ -635,7 +651,7 @@ export class AutoMemories {
         this.sessionMemoriesStored++;
         logger.info(
           `Auto-stored memory [${detection.category}] (${detection.confidence}): ` +
-            `"${detection.text.slice(0, 80)}..."`,
+            `"${detection.text.slice(0, 80)}..."`
         );
       }
     }
@@ -665,7 +681,7 @@ export class AutoMemories {
   async search(
     query: string,
     options?: MemorySearchOptions,
-    context?: RelevanceContext,
+    context?: RelevanceContext
   ): Promise<MemorySearchResult[]> {
     const files = await this.loadAllWithScopes();
     return this.searcher.search(query, files, options, context);
@@ -680,14 +696,24 @@ export class AutoMemories {
    */
   async consolidate(scope: MemoryScope): Promise<ConsolidationResult> {
     if (!this.config.overflowEnabled) {
-      return { movedEntries: 0, overflowFiles: [], linesBefore: 0, linesAfter: 0 };
+      return {
+        movedEntries: 0,
+        overflowFiles: [],
+        linesBefore: 0,
+        linesAfter: 0,
+      };
     }
 
     const filePath = this.resolvePathForScope(scope);
     const needsIt = await this.fileManager.needsConsolidation(filePath);
 
     if (!needsIt) {
-      return { movedEntries: 0, overflowFiles: [], linesBefore: 0, linesAfter: 0 };
+      return {
+        movedEntries: 0,
+        overflowFiles: [],
+        linesBefore: 0,
+        linesAfter: 0,
+      };
     }
 
     logger.info(`Consolidating ${scope} scope: ${filePath}`);
@@ -767,7 +793,8 @@ export class AutoMemories {
         const surviving: typeof section.entries = [];
 
         for (const entry of section.entries) {
-          const dateStr = entry.metadata?.dateConfirmed ?? entry.metadata?.dateAdded;
+          const dateStr =
+            entry.metadata?.dateConfirmed ?? entry.metadata?.dateAdded;
           if (!dateStr) {
             surviving.push(entry);
             continue;
@@ -802,7 +829,7 @@ export class AutoMemories {
           versionReason: 'decay-check',
         });
         logger.info(
-          `Decay check on ${scope}: ${markedStale} stale, ${removed} removed`,
+          `Decay check on ${scope}: ${markedStale} stale, ${removed} removed`
         );
       }
     }
@@ -854,7 +881,9 @@ export class AutoMemories {
             continue;
           }
 
-          if (this.fileManager.isSemanticDuplicate(entryA.text, [entryB], 0.85)) {
+          if (
+            this.fileManager.isSemanticDuplicate(entryA.text, [entryB], 0.85)
+          ) {
             const dateA = entryA.metadata?.dateAdded ?? '0000';
             const dateB = entryB.metadata?.dateAdded ?? '0000';
             const removeIdx = dateA >= dateB ? j : i;
@@ -865,7 +894,9 @@ export class AutoMemories {
       }
 
       if (toRemove.size > 0) {
-        section.entries = section.entries.filter((_, idx) => !toRemove.has(idx));
+        section.entries = section.entries.filter(
+          (_, idx) => !toRemove.has(idx)
+        );
         modified = true;
       }
     }
@@ -881,7 +912,9 @@ export class AutoMemories {
 
     const totalRemoved = contradicted + outdated;
     if (totalRemoved > 0) {
-      logger.info(`Pruned ${scope}: ${contradicted} contradicted, ${outdated} outdated`);
+      logger.info(
+        `Pruned ${scope}: ${contradicted} contradicted, ${outdated} outdated`
+      );
     }
 
     return { contradicted, outdated, totalRemoved };
@@ -975,14 +1008,14 @@ export class AutoMemories {
    */
   async importFromTranscript(
     jsonlContent: string,
-    sessionId: string,
+    sessionId: string
   ): Promise<{
     memoriesStored: DetectedMemory[];
     summary: SessionSummaryResult | null;
   }> {
     const turns = this.summaryGenerator.parseTurnsFromTranscript(
       jsonlContent,
-      sessionId,
+      sessionId
     );
 
     const memoriesStored: DetectedMemory[] = [];
@@ -995,7 +1028,7 @@ export class AutoMemories {
     const summary = this.summaryGenerator.generateSummary(
       sessionId,
       turns,
-      memoriesStored.length,
+      memoriesStored.length
     );
 
     if (summary) {
@@ -1186,11 +1219,12 @@ export class AutoMemories {
       summary = this.summaryGenerator.generateSummary(
         sid,
         this.sessionTurns,
-        this.sessionMemoriesStored,
+        this.sessionMemoriesStored
       );
 
       if (summary) {
-        const summaryMemory = this.summaryGenerator.summaryToMemoryEntry(summary);
+        const summaryMemory =
+          this.summaryGenerator.summaryToMemoryEntry(summary);
         await this.storeMemory(summaryMemory).catch(err => {
           logger.warn(`Failed to store session summary: ${String(err)}`);
         });
@@ -1233,9 +1267,21 @@ export class AutoMemories {
       enabled: boolean;
       path: string;
     }> = [
-      { scope: 'user', enabled: this.config.userScopeEnabled, path: paths.user },
-      { scope: 'project', enabled: this.config.projectScopeEnabled, path: paths.project },
-      { scope: 'local', enabled: this.config.localScopeEnabled, path: paths.local },
+      {
+        scope: 'user',
+        enabled: this.config.userScopeEnabled,
+        path: paths.user,
+      },
+      {
+        scope: 'project',
+        enabled: this.config.projectScopeEnabled,
+        path: paths.project,
+      },
+      {
+        scope: 'local',
+        enabled: this.config.localScopeEnabled,
+        path: paths.local,
+      },
     ];
 
     for (const { scope, enabled, path: filePath } of scopes) {
@@ -1247,7 +1293,9 @@ export class AutoMemories {
       const isOver = await this.fileManager.isOverSizeLimit(baseDir);
 
       if (isOver) {
-        logger.warn(`${scope} scope memory files exceed size limit. Running consolidation.`);
+        logger.warn(
+          `${scope} scope memory files exceed size limit. Running consolidation.`
+        );
         await this.consolidate(scope);
 
         const stillOver = await this.fileManager.isOverSizeLimit(baseDir);

@@ -107,18 +107,33 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       });
     }
 
-    // Check authorization for specific workspace filter
-    if (
-      filters.workspaceId &&
-      !accessibleWorkspaceIds.includes(filters.workspaceId)
-    ) {
-      return NextResponse.json(
-        createErrorResponse(
-          'Access denied to this workspace',
-          TASK_ERROR_CODES.FORBIDDEN
-        ),
-        { status: 403 }
-      );
+    // Resolve workspace ID from slug if needed
+    let resolvedWorkspaceId = filters.workspaceId;
+    if (resolvedWorkspaceId) {
+      // Check if it's a slug rather than an ID
+      if (!accessibleWorkspaceIds.includes(resolvedWorkspaceId)) {
+        // Try to find workspace by slug
+        const workspace = await prisma.workspace.findFirst({
+          where: {
+            OR: [{ id: resolvedWorkspaceId }, { slug: resolvedWorkspaceId }],
+          },
+          select: { id: true },
+        });
+
+        if (workspace) {
+          resolvedWorkspaceId = workspace.id;
+        }
+      }
+
+      if (!accessibleWorkspaceIds.includes(resolvedWorkspaceId)) {
+        return NextResponse.json(
+          createErrorResponse(
+            'Access denied to this workspace',
+            TASK_ERROR_CODES.FORBIDDEN
+          ),
+          { status: 403 }
+        );
+      }
     }
 
     // Normalize status and priority filters
@@ -136,8 +151,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Build where clause with priority-based sorting
     const where: Prisma.taskWhereInput = {
-      workspaceId: filters.workspaceId
-        ? filters.workspaceId
+      workspaceId: resolvedWorkspaceId
+        ? resolvedWorkspaceId
         : { in: accessibleWorkspaceIds },
       ...(filters.orchestratorId && { orchestratorId: filters.orchestratorId }),
       ...(filters.channelId && { channelId: filters.channelId }),

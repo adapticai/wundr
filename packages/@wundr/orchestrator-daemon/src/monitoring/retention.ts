@@ -156,12 +156,12 @@ export class MetricRetentionStore {
    */
   start(): void {
     if (this.compactionTimer) {
-return;
-}
+      return;
+    }
 
     this.compactionTimer = setInterval(
       () => this.compact(),
-      this.config.compactionIntervalMs,
+      this.config.compactionIntervalMs
     );
 
     if (this.compactionTimer.unref) {
@@ -232,37 +232,49 @@ return;
   /**
    * Query raw data points for a metric since a given timestamp.
    */
-  queryRaw(metric: string, sinceMs: number, labels?: Record<string, string>): DataPoint[] {
+  queryRaw(
+    metric: string,
+    sinceMs: number,
+    labels?: Record<string, string>
+  ): DataPoint[] {
     const key = this.metricKey(metric, labels);
     const points = this.raw.get(key);
     if (!points) {
-return [];
-}
-    return points.filter((p) => p.timestamp >= sinceMs);
+      return [];
+    }
+    return points.filter(p => p.timestamp >= sinceMs);
   }
 
   /**
    * Query minute-level rollups for a metric since a given timestamp.
    */
-  queryMinute(metric: string, sinceMs: number, labels?: Record<string, string>): RollupPoint[] {
+  queryMinute(
+    metric: string,
+    sinceMs: number,
+    labels?: Record<string, string>
+  ): RollupPoint[] {
     const key = this.metricKey(metric, labels);
     const rollups = this.minuteRollups.get(key);
     if (!rollups) {
-return [];
-}
-    return rollups.filter((r) => r.timestamp >= sinceMs);
+      return [];
+    }
+    return rollups.filter(r => r.timestamp >= sinceMs);
   }
 
   /**
    * Query hour-level rollups for a metric since a given timestamp.
    */
-  queryHour(metric: string, sinceMs: number, labels?: Record<string, string>): RollupPoint[] {
+  queryHour(
+    metric: string,
+    sinceMs: number,
+    labels?: Record<string, string>
+  ): RollupPoint[] {
     const key = this.metricKey(metric, labels);
     const rollups = this.hourRollups.get(key);
     if (!rollups) {
-return [];
-}
-    return rollups.filter((r) => r.timestamp >= sinceMs);
+      return [];
+    }
+    return rollups.filter(r => r.timestamp >= sinceMs);
   }
 
   /**
@@ -271,14 +283,14 @@ return [];
   getMetricKeys(): string[] {
     const keys = new Set<string>();
     for (const key of this.raw.keys()) {
-keys.add(key);
-}
+      keys.add(key);
+    }
     for (const key of this.minuteRollups.keys()) {
-keys.add(key);
-}
+      keys.add(key);
+    }
     for (const key of this.hourRollups.keys()) {
-keys.add(key);
-}
+      keys.add(key);
+    }
     return Array.from(keys);
   }
 
@@ -314,13 +326,13 @@ keys.add(key);
 
       if (includeRaw) {
         const rawPoints = this.raw.get(key) ?? [];
-        const filtered = rawPoints.filter((p) => p.timestamp >= sinceMs);
+        const filtered = rawPoints.filter(p => p.timestamp >= sinceMs);
         if (filtered.length > 0) {
           metrics.push({
             metric,
             labels,
             resolution: 'raw',
-            points: filtered.map((p) => ({
+            points: filtered.map(p => ({
               timestamp: p.timestamp,
               value: p.value,
             })),
@@ -331,13 +343,13 @@ keys.add(key);
 
       if (includeMinute) {
         const minutePoints = this.minuteRollups.get(key) ?? [];
-        const filtered = minutePoints.filter((p) => p.timestamp >= sinceMs);
+        const filtered = minutePoints.filter(p => p.timestamp >= sinceMs);
         if (filtered.length > 0) {
           metrics.push({
             metric,
             labels,
             resolution: 'minute',
-            points: filtered.map((r) => ({
+            points: filtered.map(r => ({
               timestamp: r.timestamp,
               value: r.avg,
               min: r.min,
@@ -351,13 +363,13 @@ keys.add(key);
 
       if (includeHour) {
         const hourPoints = this.hourRollups.get(key) ?? [];
-        const filtered = hourPoints.filter((p) => p.timestamp >= sinceMs);
+        const filtered = hourPoints.filter(p => p.timestamp >= sinceMs);
         if (filtered.length > 0) {
           metrics.push({
             metric,
             labels,
             resolution: 'hour',
-            points: filtered.map((r) => ({
+            points: filtered.map(r => ({
               timestamp: r.timestamp,
               value: r.avg,
               min: r.min,
@@ -407,10 +419,10 @@ keys.add(key);
     const cutoff = minuteFloor - 60_000;
 
     for (const [key, points] of this.raw) {
-      const eligible = points.filter((p) => p.timestamp < cutoff);
+      const eligible = points.filter(p => p.timestamp < cutoff);
       if (eligible.length === 0) {
-continue;
-}
+        continue;
+      }
 
       // Group by minute.
       const byMinute = new Map<number, DataPoint[]>();
@@ -433,11 +445,11 @@ continue;
 
       for (const [minuteTs, group] of byMinute) {
         // Skip if we already have a rollup for this minute.
-        if (rollups.some((r) => r.timestamp === minuteTs)) {
-continue;
-}
+        if (rollups.some(r => r.timestamp === minuteTs)) {
+          continue;
+        }
 
-        const values = group.map((p) => p.value);
+        const values = group.map(p => p.value);
         const sum = values.reduce((a, b) => a + b, 0);
         const min = Math.min(...values);
         const max = Math.max(...values);
@@ -463,10 +475,10 @@ continue;
     const cutoff = hourFloor - 3_600_000;
 
     for (const [key, minutePoints] of this.minuteRollups) {
-      const eligible = minutePoints.filter((p) => p.timestamp < cutoff);
+      const eligible = minutePoints.filter(p => p.timestamp < cutoff);
       if (eligible.length === 0) {
-continue;
-}
+        continue;
+      }
 
       // Group by hour.
       const byHour = new Map<number, RollupPoint[]>();
@@ -487,9 +499,9 @@ continue;
       }
 
       for (const [hourTs, group] of byHour) {
-        if (rollups.some((r) => r.timestamp === hourTs)) {
-continue;
-}
+        if (rollups.some(r => r.timestamp === hourTs)) {
+          continue;
+        }
 
         let totalCount = 0;
         let totalSum = 0;
@@ -500,11 +512,11 @@ continue;
           totalCount += r.count;
           totalSum += r.sum;
           if (r.min < globalMin) {
-globalMin = r.min;
-}
+            globalMin = r.min;
+          }
           if (r.max > globalMax) {
-globalMax = r.max;
-}
+            globalMax = r.max;
+          }
         }
 
         rollups.push({
@@ -528,7 +540,7 @@ globalMax = r.max;
     const hourCutoff = now - this.config.hourRetentionMs;
 
     for (const [key, points] of this.raw) {
-      const kept = points.filter((p) => p.timestamp >= rawCutoff);
+      const kept = points.filter(p => p.timestamp >= rawCutoff);
       if (kept.length === 0) {
         this.raw.delete(key);
       } else {
@@ -537,7 +549,7 @@ globalMax = r.max;
     }
 
     for (const [key, rollups] of this.minuteRollups) {
-      const kept = rollups.filter((r) => r.timestamp >= minuteCutoff);
+      const kept = rollups.filter(r => r.timestamp >= minuteCutoff);
       if (kept.length === 0) {
         this.minuteRollups.delete(key);
       } else {
@@ -546,7 +558,7 @@ globalMax = r.max;
     }
 
     for (const [key, rollups] of this.hourRollups) {
-      const kept = rollups.filter((r) => r.timestamp >= hourCutoff);
+      const kept = rollups.filter(r => r.timestamp >= hourCutoff);
       if (kept.length === 0) {
         this.hourRollups.delete(key);
       } else {
@@ -561,18 +573,23 @@ globalMax = r.max;
 
   private metricKey(metric: string, labels?: Record<string, string>): string {
     if (!labels || Object.keys(labels).length === 0) {
-return metric;
-}
-    const sorted = Object.entries(labels).sort(([a], [b]) => a.localeCompare(b));
+      return metric;
+    }
+    const sorted = Object.entries(labels).sort(([a], [b]) =>
+      a.localeCompare(b)
+    );
     const labelStr = sorted.map(([k, v]) => `${k}="${v}"`).join(',');
     return `${metric}{${labelStr}}`;
   }
 
-  private parseMetricKey(key: string): { metric: string; labels?: Record<string, string> } {
+  private parseMetricKey(key: string): {
+    metric: string;
+    labels?: Record<string, string>;
+  } {
     const braceIdx = key.indexOf('{');
     if (braceIdx === -1) {
-return { metric: key };
-}
+      return { metric: key };
+    }
 
     const metric = key.slice(0, braceIdx);
     const labelStr = key.slice(braceIdx + 1, -1);
@@ -581,15 +598,18 @@ return { metric: key };
     for (const pair of labelStr.split(',')) {
       const eqIdx = pair.indexOf('=');
       if (eqIdx === -1) {
-continue;
-}
+        continue;
+      }
       const k = pair.slice(0, eqIdx);
       // Remove surrounding quotes.
       const v = pair.slice(eqIdx + 1).replace(/^"|"$/g, '');
       labels[k] = v;
     }
 
-    return { metric, labels: Object.keys(labels).length > 0 ? labels : undefined };
+    return {
+      metric,
+      labels: Object.keys(labels).length > 0 ? labels : undefined,
+    };
   }
 
   private floorToMinute(ts: number): number {
@@ -605,6 +625,8 @@ continue;
 // Factory
 // ---------------------------------------------------------------------------
 
-export function createRetentionStore(config?: RetentionConfig): MetricRetentionStore {
+export function createRetentionStore(
+  config?: RetentionConfig
+): MetricRetentionStore {
   return new MetricRetentionStore(config);
 }

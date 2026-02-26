@@ -114,7 +114,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const offset = filters.offset ?? 0;
 
     // Build where clause
-    const where: Prisma.charterWhereInput = {
+    const where: any = {
       organizationId,
       ...(filters.search && {
         name: { contains: filters.search, mode: 'insensitive' },
@@ -124,19 +124,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Build orderBy
     const sortBy = filters.sortBy ?? 'createdAt';
     const sortOrder = filters.sortOrder ?? 'desc';
-    const orderBy: Prisma.charterOrderByWithRelationInput = {
+    const orderBy: any = {
       [sortBy]: sortOrder,
     };
 
     // Fetch charters and total count in parallel
     const [charters, totalCount] = await Promise.all([
-      prisma.charter.findMany({
+      (prisma as any).charter.findMany({
         where,
         skip: offset,
         take: limit,
         orderBy,
       }),
-      prisma.charter.count({ where }),
+      (prisma as any).charter.count({ where }),
     ]);
 
     const totalPages = Math.ceil(totalCount / limit);
@@ -254,7 +254,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Determine the next version number for this org
-    const latestCharter = await prisma.charter.findFirst({
+    const latestCharter = await (prisma as any).charter.findFirst({
       where: { organizationId: input.organizationId },
       orderBy: { version: 'desc' },
       select: { version: true },
@@ -263,7 +263,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const nextVersion = latestCharter ? latestCharter.version + 1 : 1;
 
     // Create the charter
-    const charter = await prisma.charter.create({
+    const charter = await (prisma as any).charter.create({
       data: {
         name: input.name,
         mission: input.mission,

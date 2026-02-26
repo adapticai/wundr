@@ -17,8 +17,6 @@
  * decorates WebSocket instances with identity metadata.
  */
 
-
-
 import { Authenticator } from './authenticator';
 import { RateLimiter } from './rate-limiter';
 import { AuthConfigSchema, AuthenticatedMessageSchema } from './types';
@@ -26,7 +24,7 @@ import { Logger } from '../utils/logger';
 
 import type { AuthConfig, ClientIdentity } from './types';
 import type http from 'node:http';
-import type { Server as WebSocketServer , WebSocket } from 'ws';
+import type { Server as WebSocketServer, WebSocket } from 'ws';
 
 // ---------------------------------------------------------------------------
 // Augmented WebSocket type
@@ -81,7 +79,10 @@ export class AuthMiddleware {
   install(
     httpServer: http.Server,
     wss: WebSocketServer,
-    onAuthenticated: (ws: AuthenticatedWebSocket, req: http.IncomingMessage) => void,
+    onAuthenticated: (
+      ws: AuthenticatedWebSocket,
+      req: http.IncomingMessage
+    ) => void
   ): void {
     // Remove the default upgrade listener that `ws` installs so we can
     // intercept it.
@@ -93,14 +94,14 @@ export class AuthMiddleware {
 
       if (!authResult.ok || !authResult.identity) {
         this.logger.warn(
-          `Rejected upgrade: ${authResult.reason} from ${req.socket?.remoteAddress}`,
+          `Rejected upgrade: ${authResult.reason} from ${req.socket?.remoteAddress}`
         );
         socket.write(
           'HTTP/1.1 401 Unauthorized\r\n' +
-          'Content-Type: application/json\r\n' +
-          'Connection: close\r\n' +
-          '\r\n' +
-          JSON.stringify({ error: authResult.reason ?? 'unauthorized' }),
+            'Content-Type: application/json\r\n' +
+            'Connection: close\r\n' +
+            '\r\n' +
+            JSON.stringify({ error: authResult.reason ?? 'unauthorized' })
         );
         socket.destroy();
         return;
@@ -111,14 +112,14 @@ export class AuthMiddleware {
       // --- Check connection concurrency ---
       if (!this.rateLimiter.addConnection(identity.clientId)) {
         this.logger.warn(
-          `Connection limit reached for client: ${identity.clientId}`,
+          `Connection limit reached for client: ${identity.clientId}`
         );
         socket.write(
           'HTTP/1.1 429 Too Many Requests\r\n' +
-          'Content-Type: application/json\r\n' +
-          'Connection: close\r\n' +
-          '\r\n' +
-          JSON.stringify({ error: 'connection_limit_exceeded' }),
+            'Content-Type: application/json\r\n' +
+            'Connection: close\r\n' +
+            '\r\n' +
+            JSON.stringify({ error: 'connection_limit_exceeded' })
         );
         socket.destroy();
         return;
@@ -156,7 +157,7 @@ export class AuthMiddleware {
    */
   validateMessage(
     ws: AuthenticatedWebSocket,
-    rawData: Buffer,
+    rawData: Buffer
   ): { payload: unknown; identity: ClientIdentity } | null {
     const identity = ws.__identity;
     if (!identity) {

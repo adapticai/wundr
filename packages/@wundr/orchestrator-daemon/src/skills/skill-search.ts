@@ -107,26 +107,38 @@ export class SkillSearchIndex {
 
     // Apply faceted filters first (narrowing)
     if (query.category) {
-      candidateNames = intersect(candidateNames, this.categoryIndex.get(query.category));
+      candidateNames = intersect(
+        candidateNames,
+        this.categoryIndex.get(query.category)
+      );
     }
 
     if (query.source) {
-      candidateNames = intersect(candidateNames, this.sourceIndex.get(query.source));
+      candidateNames = intersect(
+        candidateNames,
+        this.sourceIndex.get(query.source)
+      );
     }
 
     if (query.context) {
-      candidateNames = intersect(candidateNames, this.contextIndex.get(query.context));
+      candidateNames = intersect(
+        candidateNames,
+        this.contextIndex.get(query.context)
+      );
     }
 
     if (query.model) {
-      candidateNames = intersect(candidateNames, this.modelIndex.get(query.model));
+      candidateNames = intersect(
+        candidateNames,
+        this.modelIndex.get(query.model)
+      );
     }
 
     // Apply name substring filter
     if (query.name) {
       const nameLower = query.name.toLowerCase();
       const nameMatches = new Set<string>();
-      for (const name of (candidateNames ?? this.entriesByName.keys())) {
+      for (const name of candidateNames ?? this.entriesByName.keys()) {
         if (name.toLowerCase().includes(nameLower)) {
           nameMatches.add(name);
         }
@@ -138,11 +150,11 @@ export class SkillSearchIndex {
     if (query.tags && query.tags.length > 0) {
       const tagSet = new Set(query.tags.map(t => t.toLowerCase()));
       const tagMatches = new Set<string>();
-      for (const name of (candidateNames ?? this.entriesByName.keys())) {
+      for (const name of candidateNames ?? this.entriesByName.keys()) {
         const entry = this.entriesByName.get(name);
         if (!entry) {
-continue;
-}
+          continue;
+        }
         const entryTags = entry.skill.tags.map(t => t.toLowerCase());
         if (entryTags.some(t => tagSet.has(t))) {
           tagMatches.add(name);
@@ -163,16 +175,16 @@ continue;
     for (const name of candidates) {
       const entry = this.entriesByName.get(name);
       if (!entry) {
-continue;
-}
+        continue;
+      }
       results.push({
         entry,
         score: 1.0,
         matchedFields: [],
       });
       if (results.length >= limit) {
-break;
-}
+        break;
+      }
     }
 
     return results;
@@ -253,7 +265,12 @@ break;
     }
   }
 
-  private addTerm(term: string, skillName: string, field: string, boost: number): void {
+  private addTerm(
+    term: string,
+    skillName: string,
+    field: string,
+    boost: number
+  ): void {
     const existing = this.termIndex.get(term);
     const entry: IndexEntry = { skillName, field, boost };
     if (existing) {
@@ -270,12 +287,12 @@ break;
   private textSearch(
     text: string,
     candidates: Set<string> | undefined,
-    limit: number,
+    limit: number
   ): SkillSearchResult[] {
     const queryTerms = tokenize(text);
     if (queryTerms.length === 0) {
-return [];
-}
+      return [];
+    }
 
     // Score accumulator
     const scores = new Map<string, { score: number; fields: Set<string> }>();
@@ -284,15 +301,15 @@ return [];
       // Exact and prefix matches
       for (const [indexTerm, entries] of this.termIndex) {
         if (!indexTerm.startsWith(queryTerm) && indexTerm !== queryTerm) {
-continue;
-}
+          continue;
+        }
 
         const exactBonus = indexTerm === queryTerm ? 2.0 : 1.0;
 
         for (const entry of entries) {
           if (candidates && !candidates.has(entry.skillName)) {
-continue;
-}
+            continue;
+          }
 
           const existing = scores.get(entry.skillName);
           const termScore = entry.boost * exactBonus;
@@ -311,14 +328,17 @@ continue;
     }
 
     // Normalize scores and build results
-    const maxScore = Math.max(...Array.from(scores.values()).map(s => s.score), 1);
+    const maxScore = Math.max(
+      ...Array.from(scores.values()).map(s => s.score),
+      1
+    );
     const results: SkillSearchResult[] = [];
 
     for (const [name, { score, fields }] of scores) {
       const entry = this.entriesByName.get(name);
       if (!entry) {
-continue;
-}
+        continue;
+      }
 
       results.push({
         entry,
@@ -355,7 +375,7 @@ function tokenize(text: string): string[] {
 function addToSetIndex<K>(
   index: Map<K, Set<string>>,
   key: K,
-  name: string,
+  name: string
 ): void {
   const existing = index.get(key);
   if (existing) {
@@ -371,7 +391,7 @@ function addToSetIndex<K>(
  */
 function intersect(
   candidates: Set<string> | undefined,
-  filter: Set<string> | undefined,
+  filter: Set<string> | undefined
 ): Set<string> | undefined {
   if (!filter) {
     // Filter matches nothing

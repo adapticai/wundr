@@ -183,10 +183,7 @@ class SlackRateLimiter {
    * Execute `fn` with rate-limit awareness.
    * On 429 / rate_limited errors, wait and retry up to maxRetries times.
    */
-  async execute<T>(
-    method: string,
-    fn: () => Promise<T>,
-  ): Promise<T> {
+  async execute<T>(method: string, fn: () => Promise<T>): Promise<T> {
     const methodKey = method.split('.').slice(0, 2).join('.');
     let lastError: unknown;
 
@@ -195,7 +192,7 @@ class SlackRateLimiter {
       const waitMs = this.getWaitMs(methodKey);
       if (waitMs > 0) {
         this.logger.debug(
-          `Rate limiter: waiting ${waitMs}ms before ${method} (attempt ${attempt + 1}).`,
+          `Rate limiter: waiting ${waitMs}ms before ${method} (attempt ${attempt + 1}).`
         );
         await sleep(waitMs);
       }
@@ -210,7 +207,7 @@ class SlackRateLimiter {
         const retryAfter = extractRetryAfterSec(err);
         if (retryAfter > 0 && attempt < this.maxRetries) {
           this.logger.warn(
-            `Rate limited on ${method}: retry after ${retryAfter}s (attempt ${attempt + 1}/${this.maxRetries}).`,
+            `Rate limited on ${method}: retry after ${retryAfter}s (attempt ${attempt + 1}/${this.maxRetries}).`
           );
           this.recordLimit(methodKey, retryAfter);
           continue;
@@ -243,7 +240,7 @@ class SlackRateLimiter {
     // Also set a global backoff so parallel requests don't pile up.
     this.globalBackoffUntil = Math.max(
       this.globalBackoffUntil,
-      Date.now() + retryAfterSec * 1000,
+      Date.now() + retryAfterSec * 1000
     );
   }
 }
@@ -265,7 +262,9 @@ class ThreadTracker {
   }
 
   hasReplied(conversationId: string, threadTs: string): boolean {
-    return this.replied.get(ThreadTracker.key(conversationId, threadTs)) === true;
+    return (
+      this.replied.get(ThreadTracker.key(conversationId, threadTs)) === true
+    );
   }
 
   markReplied(conversationId: string, threadTs: string): void {
@@ -279,7 +278,7 @@ class ThreadTracker {
   resolveThreadTs(
     explicitThreadTs: string | undefined,
     targetChannel: string,
-    context: ThreadingToolContext | undefined,
+    context: ThreadingToolContext | undefined
   ): string | undefined {
     // Agent explicitly provided threadTs -- use it.
     if (explicitThreadTs) {
@@ -311,7 +310,7 @@ class ThreadTracker {
   buildToolContext(
     conversationId: string,
     threadTs: string | undefined,
-    replyToMode: ReplyToMode,
+    replyToMode: ReplyToMode
   ): ThreadingToolContext {
     const hasRepliedRef = threadTs
       ? { value: this.hasReplied(conversationId, threadTs) }
@@ -380,7 +379,7 @@ class AckReactionManager {
     emoji: string,
     chatType: ChatType,
     mentionsSelf: boolean,
-    scope: AckReactionScope | undefined,
+    scope: AckReactionScope | undefined
   ): Promise<boolean> {
     if (!this.shouldAck({ scope, chatType, mentionsSelf })) {
       return false;
@@ -402,12 +401,12 @@ class AckReactionManager {
     conversationId: string,
     messageId: string,
     emoji: string,
-    ackPromise: Promise<boolean>,
+    ackPromise: Promise<boolean>
   ): void {
-    void ackPromise.then(async (didAck) => {
+    void ackPromise.then(async didAck => {
       if (!didAck) {
-return;
-}
+        return;
+      }
       try {
         await this.adapter.removeReaction(conversationId, messageId, emoji);
       } catch {
@@ -512,13 +511,13 @@ export class SlackChannelAdapter extends BaseChannelAdapter {
       !slackConfig.signingSecret
     ) {
       throw new Error(
-        'Slack adapter requires userToken, botToken, appToken, and signingSecret.',
+        'Slack adapter requires userToken, botToken, appToken, and signingSecret.'
       );
     }
 
     this.rateLimiter = new SlackRateLimiter(
       slackConfig.maxRetries ?? 3,
-      this.logger,
+      this.logger
     );
     this.intentionalDisconnect = false;
     this.reconnectAttempts = 0;
@@ -553,7 +552,7 @@ export class SlackChannelAdapter extends BaseChannelAdapter {
       this.connected = true;
       this.config = config;
       this.logger.info(
-        `Slack adapter connected (user: ${this.selfUserId}, team: ${this.selfTeamId}).`,
+        `Slack adapter connected (user: ${this.selfUserId}, team: ${this.selfTeamId}).`
       );
 
       this.emit('connected', {
@@ -580,7 +579,7 @@ export class SlackChannelAdapter extends BaseChannelAdapter {
       await this.agent.stop();
     } catch (err) {
       this.logger.error(
-        `Error during Slack disconnect: ${err instanceof Error ? err.message : String(err)}`,
+        `Error during Slack disconnect: ${err instanceof Error ? err.message : String(err)}`
       );
     }
 
@@ -615,9 +614,7 @@ export class SlackChannelAdapter extends BaseChannelAdapter {
         accountId: health.teamId,
         lastMessageAt: this.lastMessageAt ?? undefined,
         lastError:
-          health.errors.length > 0
-            ? health.errors.join('; ')
-            : undefined,
+          health.errors.length > 0 ? health.errors.join('; ') : undefined,
         lastErrorAt: this.lastErrorAt ?? undefined,
         details: {
           userClientConnected: health.userClientConnected,
@@ -647,7 +644,7 @@ export class SlackChannelAdapter extends BaseChannelAdapter {
     const threadTs = this.threadTracker.resolveThreadTs(
       message.threadId,
       message.to,
-      this.buildCurrentThreadContext(message.to, message.threadId),
+      this.buildCurrentThreadContext(message.to, message.threadId)
     );
 
     const chunks = this.chunkText(message.text);
@@ -658,11 +655,7 @@ export class SlackChannelAdapter extends BaseChannelAdapter {
 
     for (let i = 0; i < chunks.length; i++) {
       try {
-        lastResult = await this.sendTextChunk(
-          message.to,
-          chunks[i],
-          threadTs,
-        );
+        lastResult = await this.sendTextChunk(message.to, chunks[i], threadTs);
         // Track reply for "first" mode.
         if (lastResult.ok && threadTs) {
           this.threadTracker.markReplied(message.to, threadTs);
@@ -698,7 +691,7 @@ export class SlackChannelAdapter extends BaseChannelAdapter {
     options?: {
       text?: string;
       threadId?: string;
-    },
+    }
   ): Promise<DeliveryResult> {
     this.requireConnected();
 
@@ -707,7 +700,7 @@ export class SlackChannelAdapter extends BaseChannelAdapter {
         this.getAgent().sendMessage(conversationId, options?.text ?? '', {
           threadTs: options?.threadId,
           blocks: blocks as BlockKitBlock[],
-        }),
+        })
       );
       return {
         ok: result.ok,
@@ -726,13 +719,13 @@ export class SlackChannelAdapter extends BaseChannelAdapter {
   async editMessage(
     conversationId: string,
     messageId: string,
-    newText: string,
+    newText: string
   ): Promise<DeliveryResult> {
     this.requireConnected();
 
     try {
       await this.withRateLimit('chat.update', () =>
-        this.getAgent().editMessage(conversationId, messageId, newText),
+        this.getAgent().editMessage(conversationId, messageId, newText)
       );
       return { ok: true, messageId, conversationId };
     } catch (err) {
@@ -745,18 +738,18 @@ export class SlackChannelAdapter extends BaseChannelAdapter {
 
   async deleteMessage(
     conversationId: string,
-    messageId: string,
+    messageId: string
   ): Promise<boolean> {
     this.requireConnected();
 
     try {
       await this.withRateLimit('chat.delete', () =>
-        this.getAgent().deleteMessage(conversationId, messageId),
+        this.getAgent().deleteMessage(conversationId, messageId)
       );
       return true;
     } catch (err) {
       this.logger.error(
-        `Failed to delete message ${messageId}: ${err instanceof Error ? err.message : String(err)}`,
+        `Failed to delete message ${messageId}: ${err instanceof Error ? err.message : String(err)}`
       );
       return false;
     }
@@ -769,17 +762,13 @@ export class SlackChannelAdapter extends BaseChannelAdapter {
   async replyToThread(
     conversationId: string,
     threadId: string,
-    message: OutboundMessage,
+    message: OutboundMessage
   ): Promise<DeliveryResult> {
     this.requireConnected();
 
     try {
       const result = await this.withRateLimit('chat.postMessage', () =>
-        this.getAgent().replyToThread(
-          conversationId,
-          threadId,
-          message.text,
-        ),
+        this.getAgent().replyToThread(conversationId, threadId, message.text)
       );
 
       if (result.ok) {
@@ -807,18 +796,17 @@ export class SlackChannelAdapter extends BaseChannelAdapter {
   resolveReplyToMode(chatType?: ChatType): ReplyToMode {
     const config = this.slackConfig;
     if (!config) {
-return 'off';
-}
+      return 'off';
+    }
 
     // Per-chat-type override takes precedence.
     if (chatType && config.replyToModeByChatType) {
       const mapped = chatType === 'thread' ? 'channel' : chatType;
-      const override = config.replyToModeByChatType[
-        mapped as 'direct' | 'group' | 'channel'
-      ];
+      const override =
+        config.replyToModeByChatType[mapped as 'direct' | 'group' | 'channel'];
       if (override) {
-return override;
-}
+        return override;
+      }
     }
 
     return config.replyToMode ?? 'off';
@@ -831,13 +819,13 @@ return override;
   getThreadContext(
     conversationId: string,
     threadTs?: string,
-    chatType?: ChatType,
+    chatType?: ChatType
   ): ThreadingToolContext {
     const replyToMode = this.resolveReplyToMode(chatType);
     return this.threadTracker.buildToolContext(
       conversationId,
       threadTs,
-      replyToMode,
+      replyToMode
     );
   }
 
@@ -848,24 +836,24 @@ return override;
   async addReaction(
     conversationId: string,
     messageId: string,
-    emoji: string,
+    emoji: string
   ): Promise<void> {
     this.requireConnected();
     const sanitized = emoji.replace(/:/g, '');
     await this.withRateLimit('reactions.add', () =>
-      this.getAgent().addReaction(conversationId, messageId, sanitized),
+      this.getAgent().addReaction(conversationId, messageId, sanitized)
     );
   }
 
   async removeReaction(
     conversationId: string,
     messageId: string,
-    emoji: string,
+    emoji: string
   ): Promise<void> {
     this.requireConnected();
     const sanitized = emoji.replace(/:/g, '');
     await this.withRateLimit('reactions.remove', () =>
-      this.getAgent().removeReaction(conversationId, messageId, sanitized),
+      this.getAgent().removeReaction(conversationId, messageId, sanitized)
     );
   }
 
@@ -880,7 +868,7 @@ return override;
     conversationId: string,
     messageId: string,
     chatType: ChatType,
-    mentionsSelf: boolean,
+    mentionsSelf: boolean
   ): Promise<boolean> {
     const emoji = this.slackConfig?.ackReactionEmoji ?? DEFAULT_ACK_EMOJI;
     const scope = this.slackConfig?.ackReactionScope;
@@ -890,7 +878,7 @@ return override;
       emoji,
       chatType,
       mentionsSelf,
-      scope,
+      scope
     );
   }
 
@@ -900,17 +888,17 @@ return override;
   scheduleAckRemoval(
     conversationId: string,
     messageId: string,
-    ackPromise: Promise<boolean>,
+    ackPromise: Promise<boolean>
   ): void {
     if (!this.slackConfig?.ackReactionRemoveAfterReply) {
-return;
-}
+      return;
+    }
     const emoji = this.slackConfig?.ackReactionEmoji ?? DEFAULT_ACK_EMOJI;
     this.ackManager.scheduleRemoval(
       conversationId,
       messageId,
       emoji,
-      ackPromise,
+      ackPromise
     );
   }
 
@@ -933,8 +921,8 @@ return;
 
     const sendTyping = () => {
       if (!active || !this.connected) {
-return;
-}
+        return;
+      }
       agent.indicateTyping?.(conversationId)?.catch(() => {
         // Non-fatal: typing indicators are best-effort.
       });
@@ -959,7 +947,7 @@ return;
   async sendMedia(
     conversationId: string,
     attachment: OutboundAttachment,
-    options?: { text?: string; threadId?: string },
+    options?: { text?: string; threadId?: string }
   ): Promise<DeliveryResult> {
     this.requireConnected();
 
@@ -974,8 +962,8 @@ return;
               title: attachment.filename,
               threadTs: options?.threadId,
               initialComment: options?.text,
-            },
-          ),
+            }
+          )
         );
         return {
           ok: result.ok,
@@ -987,15 +975,11 @@ return;
 
       if (attachment.source === 'path' && attachment.location) {
         const result = await this.withRateLimit('files.upload', () =>
-          this.getAgent().uploadFile(
-            attachment.location!,
-            [conversationId],
-            {
-              title: attachment.filename,
-              threadTs: options?.threadId,
-              initialComment: options?.text,
-            },
-          ),
+          this.getAgent().uploadFile(attachment.location!, [conversationId], {
+            title: attachment.filename,
+            threadTs: options?.threadId,
+            initialComment: options?.text,
+          })
         );
         return {
           ok: result.ok,
@@ -1017,8 +1001,8 @@ return;
               title: attachment.filename,
               threadTs: options?.threadId,
               initialComment: options?.text,
-            },
-          ),
+            }
+          )
         );
         return {
           ok: result.ok,
@@ -1043,7 +1027,7 @@ return;
   async downloadMedia(url: string): Promise<Buffer> {
     this.requireConnected();
     return this.withRateLimit('files.info', () =>
-      this.getAgent().downloadFile(url),
+      this.getAgent().downloadFile(url)
     );
   }
 
@@ -1061,7 +1045,7 @@ return;
     options?: {
       blocks?: readonly BlockKitBlock[];
       ephemeral?: boolean;
-    },
+    }
   ): Promise<DeliveryResult> {
     if (!payload.responseUrl) {
       // Fall back to sending a regular message.
@@ -1114,7 +1098,7 @@ return;
       blocks?: readonly BlockKitBlock[];
       replaceOriginal?: boolean;
       deleteOriginal?: boolean;
-    },
+    }
   ): Promise<DeliveryResult> {
     if (!action.responseUrl) {
       if (action.channelId) {
@@ -1156,13 +1140,13 @@ return;
    */
   async openModal(
     triggerId: string,
-    view: Record<string, unknown>,
+    view: Record<string, unknown>
   ): Promise<{ ok: boolean; viewId?: string; error?: string }> {
     this.requireConnected();
 
     try {
       const result = await this.withRateLimit('views.open', () =>
-        this.getAgent().openModal(triggerId, view),
+        this.getAgent().openModal(triggerId, view)
       );
       return { ok: true, viewId: result?.view?.id };
     } catch (err) {
@@ -1184,16 +1168,16 @@ return;
   async resolveUserDisplayName(userId: string): Promise<string> {
     const cached = this.userDisplayNameCache.get(userId);
     if (cached) {
-return cached;
-}
+      return cached;
+    }
 
     if (!this.agent) {
-return userId;
-}
+      return userId;
+    }
 
     try {
       const info = await this.withRateLimit('users.info', () =>
-        this.getAgent().getUserInfo(userId),
+        this.getAgent().getUserInfo(userId)
       );
       const name =
         info?.real_name || info?.display_name || info?.name || userId;
@@ -1211,8 +1195,8 @@ return userId;
     const mentionPattern = /<@([A-Z0-9_]+)>/gi;
     const matches = [...text.matchAll(mentionPattern)];
     if (matches.length === 0) {
-return text;
-}
+      return text;
+    }
 
     let result = text;
     for (const match of matches) {
@@ -1248,12 +1232,12 @@ return text;
       value?: string;
       style?: 'primary' | 'danger';
     }>,
-    blockId?: string,
+    blockId?: string
   ): BlockKitBlock {
     return {
       type: 'actions',
       ...(blockId ? { block_id: blockId } : {}),
-      elements: buttons.map((btn) => ({
+      elements: buttons.map(btn => ({
         type: 'button',
         action_id: btn.actionId,
         text: { type: 'plain_text', text: btn.text } as BlockKitText,
@@ -1273,13 +1257,10 @@ return text;
   /**
    * Build a Block Kit context block with mrkdwn elements.
    */
-  static contextBlock(
-    elements: string[],
-    blockId?: string,
-  ): BlockKitBlock {
+  static contextBlock(elements: string[], blockId?: string): BlockKitBlock {
     // Context blocks use BlockKitText objects, which conform to
     // BlockKitElement's index signature since both have `type` + `text`.
-    const textElements = elements.map((text) => ({
+    const textElements = elements.map(text => ({
       type: 'mrkdwn' as const,
       text,
     }));
@@ -1296,7 +1277,7 @@ return text;
 
   async validateSender(
     senderId: string,
-    chatType: ChatType,
+    chatType: ChatType
   ): Promise<SenderValidation> {
     // In group/channel contexts, all members are allowed.
     if (chatType !== 'direct') {
@@ -1311,7 +1292,7 @@ return text;
     const allowList = config.dmAllowList ?? config.pairing.allowList ?? [];
     const normalizedSender = senderId.trim().toLowerCase();
     const isAllowed = allowList.some(
-      (entry) => entry.trim().toLowerCase() === normalizedSender,
+      entry => entry.trim().toLowerCase() === normalizedSender
     );
 
     if (isAllowed) {
@@ -1354,15 +1335,15 @@ return text;
 
   private setupEventHandlers(): void {
     if (!this.agent) {
-return;
-}
+      return;
+    }
 
     // -- Messages ----------------------------------------------------------
     this.agent.onMessage(async (event: SlackEventLike) => {
       // Skip own messages.
       if (event.user === this.selfUserId) {
-return;
-}
+        return;
+      }
       // Skip message subtypes that are edits/deletes (handled separately).
       const subtype = (event as { subtype?: string }).subtype;
       if (subtype === 'message_changed') {
@@ -1384,8 +1365,8 @@ return;
     // -- Reactions ---------------------------------------------------------
     this.agent.onReactionAdded((event: SlackEventLike) => {
       if (!event.user || !event.channel || !event.ts) {
-return;
-}
+        return;
+      }
       this.emit('reaction_added', {
         channelId: this.id,
         conversationId: event.channel,
@@ -1397,8 +1378,8 @@ return;
 
     this.agent.onReactionRemoved((event: SlackEventLike) => {
       if (!event.user || !event.channel || !event.ts) {
-return;
-}
+        return;
+      }
       this.emit('reaction_removed', {
         channelId: this.id,
         conversationId: event.channel,
@@ -1413,14 +1394,14 @@ return;
       this.agent.onSlashCommand((event: SlackSlashCommandEvent) => {
         const slashConfig = this.slackConfig?.slashCommand;
         if (!slashConfig?.enabled) {
-return;
-}
+          return;
+        }
 
         const expectedName = slashConfig.name ?? 'wundr';
         const commandName = (event.command ?? '').replace(/^\//, '');
         if (commandName !== expectedName) {
-return;
-}
+          return;
+        }
 
         const payload: SlashCommandPayload = {
           command: event.command,
@@ -1462,8 +1443,8 @@ return;
     if (this.agent.onMemberJoined) {
       this.agent.onMemberJoined((event: SlackEventLike) => {
         if (!event.user || !event.channel) {
-return;
-}
+          return;
+        }
         this.emit('member_joined', {
           channelId: this.id,
           conversationId: event.channel,
@@ -1475,8 +1456,8 @@ return;
     if (this.agent.onMemberLeft) {
       this.agent.onMemberLeft((event: SlackEventLike) => {
         if (!event.user || !event.channel) {
-return;
-}
+          return;
+        }
         this.emit('member_left', {
           channelId: this.id,
           conversationId: event.channel,
@@ -1489,8 +1470,8 @@ return;
     if (this.agent.onDisconnect) {
       this.agent.onDisconnect((reason: string) => {
         if (this.intentionalDisconnect) {
-return;
-}
+          return;
+        }
 
         this.connected = false;
         this.lastError = reason;
@@ -1529,8 +1510,8 @@ return;
   private handleMessageEdited(event: SlackEventLike): void {
     const messageEvent = (event as { message?: SlackEventLike }).message;
     if (!messageEvent || !event.channel) {
-return;
-}
+      return;
+    }
 
     const content = this.normalizeSlackContent(messageEvent);
     this.emit('message_edited', {
@@ -1545,8 +1526,8 @@ return;
   private handleMessageDeleted(event: SlackEventLike): void {
     const deletedTs = (event as { deleted_ts?: string }).deleted_ts;
     if (!deletedTs || !event.channel) {
-return;
-}
+      return;
+    }
 
     this.emit('message_deleted', {
       channelId: this.id,
@@ -1564,36 +1545,30 @@ return;
     const maxAttempts = this.slackConfig?.maxReconnectAttempts ?? 10;
     if (this.reconnectAttempts >= maxAttempts) {
       this.logger.error(
-        `Slack adapter: max reconnect attempts (${maxAttempts}) reached. Giving up.`,
+        `Slack adapter: max reconnect attempts (${maxAttempts}) reached. Giving up.`
       );
       this.emit('error', {
         channelId: this.id,
-        error: new Error(
-          `Max reconnect attempts (${maxAttempts}) exceeded.`,
-        ),
+        error: new Error(`Max reconnect attempts (${maxAttempts}) exceeded.`),
         recoverable: false,
       });
       return;
     }
 
     const baseDelay = this.slackConfig?.reconnectBaseDelayMs ?? 1000;
-    const delay = calculateBackoff(
-      this.reconnectAttempts,
-      baseDelay,
-      60_000,
-    );
+    const delay = calculateBackoff(this.reconnectAttempts, baseDelay, 60_000);
     this.reconnectAttempts++;
 
     this.logger.info(
-      `Slack adapter: reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${maxAttempts}).`,
+      `Slack adapter: reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${maxAttempts}).`
     );
 
     this.clearReconnectTimer();
     this.reconnectTimer = setTimeout(async () => {
       try {
         if (this.intentionalDisconnect) {
-return;
-}
+          return;
+        }
         if (this.agent) {
           await this.agent.start();
           const health = await this.agent.healthCheck();
@@ -1609,7 +1584,7 @@ return;
         }
       } catch (err) {
         this.logger.error(
-          `Slack adapter: reconnect failed: ${err instanceof Error ? err.message : String(err)}`,
+          `Slack adapter: reconnect failed: ${err instanceof Error ? err.message : String(err)}`
         );
         this.scheduleReconnect();
       }
@@ -1628,7 +1603,7 @@ return;
   // =======================================================================
 
   private normalizeInboundMessage(
-    event: SlackEventLike,
+    event: SlackEventLike
   ): NormalizedMessage | null {
     if (!event.channel || !event.ts) {
       return null;
@@ -1698,18 +1673,18 @@ return;
 
   private extractSlackMentions(text: string): string[] {
     const matches = text.matchAll(/<@([A-Z0-9_]+)>/gi);
-    return [...matches].map((m) => m[1]);
+    return [...matches].map(m => m[1]);
   }
 
   private extractSlackAttachments(
-    event: SlackEventLike,
+    event: SlackEventLike
   ): NormalizedAttachment[] {
     const files = (event as { files?: SlackFileLike[] }).files;
     if (!files || !Array.isArray(files)) {
       return [];
     }
 
-    return files.map((file) => ({
+    return files.map(file => ({
       type: resolveAttachmentType(file.mimetype),
       filename: file.name ?? 'unknown',
       mimeType: file.mimetype,
@@ -1757,7 +1732,7 @@ return;
    */
   private async withRateLimit<T>(
     method: string,
-    fn: () => Promise<T>,
+    fn: () => Promise<T>
   ): Promise<T> {
     if (!this.rateLimiter) {
       return fn();
@@ -1771,11 +1746,11 @@ return;
   private async sendTextChunk(
     to: string,
     text: string,
-    threadTs?: string,
+    threadTs?: string
   ): Promise<DeliveryResult> {
     try {
       const result = await this.withRateLimit('chat.postMessage', () =>
-        this.getAgent().sendMessage(to, text, { threadTs }),
+        this.getAgent().sendMessage(to, text, { threadTs })
       );
       return {
         ok: result.ok,
@@ -1796,19 +1771,19 @@ return;
    */
   private buildCurrentThreadContext(
     conversationId: string,
-    threadTs?: string,
+    threadTs?: string
   ): ThreadingToolContext | undefined {
     if (!this.slackConfig) {
-return undefined;
-}
+      return undefined;
+    }
     const replyToMode = this.resolveReplyToMode();
     if (replyToMode === 'off') {
-return undefined;
-}
+      return undefined;
+    }
     return this.threadTracker.buildToolContext(
       conversationId,
       threadTs,
-      replyToMode,
+      replyToMode
     );
   }
 
@@ -1819,7 +1794,7 @@ return undefined;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(
-        `Failed to download from ${url}: ${response.status} ${response.statusText}`,
+        `Failed to download from ${url}: ${response.status} ${response.statusText}`
       );
     }
     const arrayBuffer = await response.arrayBuffer();
@@ -1887,13 +1862,13 @@ interface SlackUserAgentLike {
   sendMessage(
     channel: string,
     text: string,
-    options?: { threadTs?: string; blocks?: BlockKitBlock[] },
+    options?: { threadTs?: string; blocks?: BlockKitBlock[] }
   ): Promise<{ ok: boolean; channelId: string; ts: string }>;
   replyToThread(
     channel: string,
     threadTs: string,
     text: string,
-    broadcast?: boolean,
+    broadcast?: boolean
   ): Promise<{ ok: boolean; channel: string; ts: string }>;
   editMessage(channel: string, ts: string, newText: string): Promise<void>;
   deleteMessage(channel: string, ts: string): Promise<void>;
@@ -1906,7 +1881,7 @@ interface SlackUserAgentLike {
       title?: string;
       threadTs?: string;
       initialComment?: string;
-    },
+    }
   ): Promise<{
     ok: boolean;
     file: { id: string; name: string; permalink: string };
@@ -1919,7 +1894,7 @@ interface SlackUserAgentLike {
       title?: string;
       threadTs?: string;
       initialComment?: string;
-    },
+    }
   ): Promise<{
     ok: boolean;
     file: { id: string; name: string; permalink: string };
@@ -1932,30 +1907,26 @@ interface SlackUserAgentLike {
   }>;
   openModal(
     triggerId: string,
-    view: Record<string, unknown>,
+    view: Record<string, unknown>
   ): Promise<{ view?: { id: string } }>;
   indicateTyping?(channel: string): Promise<void>;
-  onMessage(
-    handler: (event: SlackEventLike) => void | Promise<void>,
-  ): void;
+  onMessage(handler: (event: SlackEventLike) => void | Promise<void>): void;
   onReactionAdded(
-    handler: (event: SlackEventLike) => void | Promise<void>,
+    handler: (event: SlackEventLike) => void | Promise<void>
   ): void;
   onReactionRemoved(
-    handler: (event: SlackEventLike) => void | Promise<void>,
+    handler: (event: SlackEventLike) => void | Promise<void>
   ): void;
   onSlashCommand?(
-    handler: (event: SlackSlashCommandEvent) => void | Promise<void>,
+    handler: (event: SlackSlashCommandEvent) => void | Promise<void>
   ): void;
   onInteractiveAction?(
-    handler: (event: SlackInteractiveEvent) => void | Promise<void>,
+    handler: (event: SlackInteractiveEvent) => void | Promise<void>
   ): void;
   onMemberJoined?(
-    handler: (event: SlackEventLike) => void | Promise<void>,
+    handler: (event: SlackEventLike) => void | Promise<void>
   ): void;
-  onMemberLeft?(
-    handler: (event: SlackEventLike) => void | Promise<void>,
-  ): void;
+  onMemberLeft?(handler: (event: SlackEventLike) => void | Promise<void>): void;
   onDisconnect?(handler: (reason: string) => void): void;
   onError?(handler: (err: Error) => void): void;
 }
@@ -2008,20 +1979,20 @@ interface SlackInteractiveEvent {
 // ---------------------------------------------------------------------------
 
 function resolveAttachmentType(
-  mimeType?: string,
+  mimeType?: string
 ): 'image' | 'video' | 'audio' | 'file' {
   if (!mimeType) {
-return 'file';
-}
+    return 'file';
+  }
   if (mimeType.startsWith('image/')) {
-return 'image';
-}
+    return 'image';
+  }
   if (mimeType.startsWith('video/')) {
-return 'video';
-}
+    return 'video';
+  }
   if (mimeType.startsWith('audio/')) {
-return 'audio';
-}
+    return 'audio';
+  }
   return 'file';
 }
 
@@ -2048,10 +2019,7 @@ function extractRetryAfterSec(err: unknown): number {
       }
     }
     // Fallback for rate_limited error string.
-    if (
-      typeof obj.error === 'string' &&
-      obj.error === 'rate_limited'
-    ) {
+    if (typeof obj.error === 'string' && obj.error === 'rate_limited') {
       return 5; // Default back-off.
     }
   }
@@ -2064,7 +2032,7 @@ function extractRetryAfterSec(err: unknown): number {
 function calculateBackoff(
   attempt: number,
   baseDelayMs: number,
-  maxDelayMs: number,
+  maxDelayMs: number
 ): number {
   const exponential = baseDelayMs * Math.pow(2, attempt);
   const capped = Math.min(exponential, maxDelayMs);
@@ -2074,7 +2042,7 @@ function calculateBackoff(
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**

@@ -113,7 +113,7 @@ export class MemorySearch {
     query: string,
     files: Array<{ file: ParsedMemoryFile; scope: string }>,
     options?: MemorySearchOptions,
-    context?: RelevanceContext,
+    context?: RelevanceContext
   ): MemorySearchResult[] {
     const maxResults = options?.maxResults ?? DEFAULT_MAX_RESULTS;
     const minScore = options?.minScore ?? DEFAULT_MIN_SCORE;
@@ -142,7 +142,7 @@ export class MemorySearch {
         if (
           options?.sections &&
           !options.sections.some(
-            s => s.toLowerCase() === section.title.toLowerCase(),
+            s => s.toLowerCase() === section.title.toLowerCase()
           )
         ) {
           continue;
@@ -167,7 +167,8 @@ export class MemorySearch {
 
           // Recency boost
           if (recencyBoost > 0 && entry.metadata?.dateAdded) {
-            score *= 1 + recencyBoost * this.recencyFactor(entry.metadata.dateAdded);
+            score *=
+              1 + recencyBoost * this.recencyFactor(entry.metadata.dateAdded);
           }
 
           // Context relevance boost
@@ -221,7 +222,7 @@ export class MemorySearch {
   scoreRelevance(
     entry: MemoryEntry,
     section: MemorySection,
-    context: RelevanceContext,
+    context: RelevanceContext
   ): number {
     let score = 0;
     const entryTerms = this.tokenize(entry.text);
@@ -277,7 +278,7 @@ export class MemorySearch {
   private tfIdfScore(
     queryTerms: string[],
     entryTerms: string[],
-    idf: Map<string, number>,
+    idf: Map<string, number>
   ): number {
     const entryFreq = this.termFrequency(entryTerms);
     let score = 0;
@@ -301,7 +302,7 @@ export class MemorySearch {
    */
   private computeIDF(
     allEntries: Array<{ terms: string[] }>,
-    queryTerms: string[],
+    queryTerms: string[]
   ): Map<string, number> {
     const N = Math.max(1, allEntries.length);
     const idf = new Map<string, number>();
@@ -325,7 +326,7 @@ export class MemorySearch {
    */
   private collectAllEntries(
     files: Array<{ file: ParsedMemoryFile; scope: string }>,
-    options?: MemorySearchOptions,
+    options?: MemorySearchOptions
   ): Array<{ terms: string[] }> {
     const result: Array<{ terms: string[] }> = [];
 
@@ -337,7 +338,7 @@ export class MemorySearch {
         if (
           options?.sections &&
           !options.sections.some(
-            s => s.toLowerCase() === section.title.toLowerCase(),
+            s => s.toLowerCase() === section.title.toLowerCase()
           )
         ) {
           continue;
@@ -356,15 +357,15 @@ export class MemorySearch {
    */
   private sectionBoost(sectionTitle: string): number {
     const boosts: Record<string, number> = {
-      'Corrections': 1.3,
+      Corrections: 1.3,
       'User Preferences': 1.2,
       'Project Conventions': 1.15,
       'Error Patterns': 1.1,
       'Tool Usage': 1.05,
-      'Workflow': 1.0,
+      Workflow: 1.0,
       'Architecture Decisions': 1.0,
       'People & Roles': 0.9,
-      'Links': 0.5,
+      Links: 0.5,
     };
     return boosts[sectionTitle] ?? 1.0;
   }
@@ -390,7 +391,7 @@ export class MemorySearch {
   private contextRelevanceFactor(
     entry: MemoryEntry,
     section: MemorySection,
-    context: RelevanceContext,
+    context: RelevanceContext
   ): number {
     return this.scoreRelevance(entry, section, context);
   }
@@ -422,12 +423,56 @@ export class MemorySearch {
    */
   private tokenize(text: string): string[] {
     const stopWords = new Set([
-      'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been',
-      'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
-      'would', 'could', 'should', 'may', 'might', 'shall', 'can',
-      'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from',
-      'it', 'its', 'this', 'that', 'and', 'or', 'but', 'not', 'if',
-      'then', 'else', 'when', 'up', 'out', 'so', 'no', 'as',
+      'a',
+      'an',
+      'the',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'being',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'shall',
+      'can',
+      'to',
+      'of',
+      'in',
+      'for',
+      'on',
+      'with',
+      'at',
+      'by',
+      'from',
+      'it',
+      'its',
+      'this',
+      'that',
+      'and',
+      'or',
+      'but',
+      'not',
+      'if',
+      'then',
+      'else',
+      'when',
+      'up',
+      'out',
+      'so',
+      'no',
+      'as',
     ]);
 
     return text

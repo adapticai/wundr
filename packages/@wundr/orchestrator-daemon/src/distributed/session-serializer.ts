@@ -35,7 +35,13 @@ export interface ToolResult {
 /**
  * Session state type
  */
-export type SessionState = 'initializing' | 'running' | 'paused' | 'completed' | 'failed' | 'terminated';
+export type SessionState =
+  | 'initializing'
+  | 'running'
+  | 'paused'
+  | 'completed'
+  | 'failed'
+  | 'terminated';
 
 /**
  * Serialized session format for transfer/storage
@@ -95,7 +101,14 @@ const ToolResultSchema = z.object({
 const SerializedSessionSchema = z.object({
   sessionId: z.string(),
   orchestratorId: z.string(),
-  state: z.enum(['initializing', 'running', 'paused', 'completed', 'failed', 'terminated']),
+  state: z.enum([
+    'initializing',
+    'running',
+    'paused',
+    'completed',
+    'failed',
+    'terminated',
+  ]),
   messages: z.array(MessageSchema),
   context: z.record(z.unknown()),
   toolResults: z.array(ToolResultSchema),
@@ -132,7 +145,11 @@ export class SessionSerializer {
   /**
    * Serialize session state to transferable format
    */
-  serialize(session: Session, messages: Message[] = [], toolResults: ToolResult[] = []): SerializedSession {
+  serialize(
+    session: Session,
+    messages: Message[] = [],
+    toolResults: ToolResult[] = []
+  ): SerializedSession {
     const serialized: SerializedSession = {
       sessionId: session.id,
       orchestratorId: session.orchestratorId,
@@ -192,7 +209,9 @@ export class SessionSerializer {
       type: decompressed.sessionType,
       status: decompressed.state,
       startedAt: new Date(decompressed.startedAt),
-      endedAt: decompressed.endedAt ? new Date(decompressed.endedAt) : undefined,
+      endedAt: decompressed.endedAt
+        ? new Date(decompressed.endedAt)
+        : undefined,
       memoryContext: decompressed.memoryContext,
       metrics: decompressed.metrics,
     };
@@ -213,7 +232,7 @@ export class SessionSerializer {
   getCheckpoint(
     session: Session,
     newMessages: Message[],
-    contextUpdates: Record<string, unknown> = {},
+    contextUpdates: Record<string, unknown> = {}
   ): SessionCheckpoint {
     const currentVersion = this.getCurrentVersion(session.id);
     const newVersion = currentVersion + 1;
@@ -240,7 +259,7 @@ export class SessionSerializer {
     session: Session,
     checkpoint: SessionCheckpoint,
     currentMessages: Message[],
-    currentContext: Record<string, unknown>,
+    currentContext: Record<string, unknown>
   ): {
     messages: Message[];
     context: Record<string, unknown>;
@@ -253,7 +272,7 @@ export class SessionSerializer {
     const currentVersion = this.getCurrentVersion(session.id);
     if (checkpoint.baseVersion !== currentVersion) {
       throw new Error(
-        `Checkpoint version mismatch: expected base version ${currentVersion}, got ${checkpoint.baseVersion}`,
+        `Checkpoint version mismatch: expected base version ${currentVersion}, got ${checkpoint.baseVersion}`
       );
     }
 
@@ -279,17 +298,19 @@ export class SessionSerializer {
   /**
    * Serialize memory context to plain object
    */
-  private serializeContext(memoryContext: MemoryContext): Record<string, unknown> {
+  private serializeContext(
+    memoryContext: MemoryContext
+  ): Record<string, unknown> {
     return {
       scratchpad: memoryContext.scratchpad,
-      episodic: memoryContext.episodic.map((entry) => ({
+      episodic: memoryContext.episodic.map(entry => ({
         id: entry.id,
         content: entry.content,
         timestamp: entry.timestamp.toISOString(),
         type: entry.type,
         metadata: entry.metadata,
       })),
-      semantic: memoryContext.semantic.map((entry) => ({
+      semantic: memoryContext.semantic.map(entry => ({
         id: entry.id,
         content: entry.content,
         timestamp: entry.timestamp.toISOString(),
@@ -394,12 +415,14 @@ export class SessionSerializer {
   private validateVersion(version: number): void {
     if (version > this.maxSupportedVersion) {
       throw new Error(
-        `Unsupported checkpoint version: ${version}. Maximum supported version: ${this.maxSupportedVersion}`,
+        `Unsupported checkpoint version: ${version}. Maximum supported version: ${this.maxSupportedVersion}`
       );
     }
 
     if (version < 0) {
-      throw new Error(`Invalid checkpoint version: ${version}. Version must be non-negative`);
+      throw new Error(
+        `Invalid checkpoint version: ${version}. Version must be non-negative`
+      );
     }
   }
 
@@ -409,29 +432,39 @@ export class SessionSerializer {
   private verifyIntegrity(data: SerializedSession): void {
     // Verify required fields are present
     if (!data.sessionId || !data.orchestratorId) {
-      throw new Error('Session integrity check failed: missing required fields');
+      throw new Error(
+        'Session integrity check failed: missing required fields'
+      );
     }
 
     // Verify timestamps are valid
     const createdAt = new Date(data.createdAt);
     if (isNaN(createdAt.getTime())) {
-      throw new Error('Session integrity check failed: invalid createdAt timestamp');
+      throw new Error(
+        'Session integrity check failed: invalid createdAt timestamp'
+      );
     }
 
     const startedAt = new Date(data.startedAt);
     if (isNaN(startedAt.getTime())) {
-      throw new Error('Session integrity check failed: invalid startedAt timestamp');
+      throw new Error(
+        'Session integrity check failed: invalid startedAt timestamp'
+      );
     }
 
     if (data.endedAt) {
       const endedAt = new Date(data.endedAt);
       if (isNaN(endedAt.getTime())) {
-        throw new Error('Session integrity check failed: invalid endedAt timestamp');
+        throw new Error(
+          'Session integrity check failed: invalid endedAt timestamp'
+        );
       }
 
       // Verify endedAt is after startedAt
       if (endedAt < startedAt) {
-        throw new Error('Session integrity check failed: endedAt is before startedAt');
+        throw new Error(
+          'Session integrity check failed: endedAt is before startedAt'
+        );
       }
     }
 
@@ -439,7 +472,9 @@ export class SessionSerializer {
     const messageIds = new Set<string>();
     for (const message of data.messages) {
       if (messageIds.has(message.id)) {
-        throw new Error(`Session integrity check failed: duplicate message ID ${message.id}`);
+        throw new Error(
+          `Session integrity check failed: duplicate message ID ${message.id}`
+        );
       }
       messageIds.add(message.id);
     }
@@ -448,7 +483,9 @@ export class SessionSerializer {
     const toolResultIds = new Set<string>();
     for (const result of data.toolResults) {
       if (toolResultIds.has(result.toolId)) {
-        throw new Error(`Session integrity check failed: duplicate tool result ID ${result.toolId}`);
+        throw new Error(
+          `Session integrity check failed: duplicate tool result ID ${result.toolId}`
+        );
       }
       toolResultIds.add(result.toolId);
     }

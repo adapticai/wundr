@@ -83,12 +83,16 @@ describe('deepMerge', () => {
 
   describe('array strategy: union', () => {
     it('should deduplicate primitive values', () => {
-      const result = deepMerge([1, 2, 3], [2, 3, 4], { arrayStrategy: 'union' });
+      const result = deepMerge([1, 2, 3], [2, 3, 4], {
+        arrayStrategy: 'union',
+      });
       expect(result).toEqual([1, 2, 3, 4]);
     });
 
     it('should deduplicate string values', () => {
-      const result = deepMerge(['a', 'b'], ['b', 'c'], { arrayStrategy: 'union' });
+      const result = deepMerge(['a', 'b'], ['b', 'c'], {
+        arrayStrategy: 'union',
+      });
       expect(result).toEqual(['a', 'b', 'c']);
     });
 
@@ -106,7 +110,9 @@ describe('deepMerge', () => {
     });
 
     it('should handle fully overlapping arrays', () => {
-      const result = deepMerge([1, 2, 3], [1, 2, 3], { arrayStrategy: 'union' });
+      const result = deepMerge([1, 2, 3], [1, 2, 3], {
+        arrayStrategy: 'union',
+      });
       expect(result).toEqual([1, 2, 3]);
     });
   });
@@ -140,11 +146,23 @@ describe('deepMerge', () => {
         { id: 'b', value: 20, extra: true },
         { id: 'c', value: 3 },
       ];
-      const result = deepMerge(target, source, { arrayStrategy: 'byKey' }) as any[];
+      const result = deepMerge(target, source, {
+        arrayStrategy: 'byKey',
+      }) as any[];
       expect(result).toHaveLength(3);
-      expect(result.find((r: any) => r.id === 'a')).toEqual({ id: 'a', value: 1 });
-      expect(result.find((r: any) => r.id === 'b')).toEqual({ id: 'b', value: 20, extra: true });
-      expect(result.find((r: any) => r.id === 'c')).toEqual({ id: 'c', value: 3 });
+      expect(result.find((r: any) => r.id === 'a')).toEqual({
+        id: 'a',
+        value: 1,
+      });
+      expect(result.find((r: any) => r.id === 'b')).toEqual({
+        id: 'b',
+        value: 20,
+        extra: true,
+      });
+      expect(result.find((r: any) => r.id === 'c')).toEqual({
+        id: 'c',
+        value: 3,
+      });
     });
 
     it('should use custom merge key', () => {
@@ -161,7 +179,9 @@ describe('deepMerge', () => {
     it('should append items without the merge key', () => {
       const target = [{ id: 'a', v: 1 }];
       const source = ['raw-string', 42];
-      const result = deepMerge(target, source, { arrayStrategy: 'byKey' }) as any[];
+      const result = deepMerge(target, source, {
+        arrayStrategy: 'byKey',
+      }) as any[];
       expect(result).toHaveLength(3);
       expect(result).toContain('raw-string');
       expect(result).toContain(42);
@@ -179,7 +199,12 @@ describe('deepMerge', () => {
         cors: { origins: ['http://a.com'] },
       };
       const source = {
-        agents: { list: [{ id: 'a', v: 2 }, { id: 'b', v: 3 }] },
+        agents: {
+          list: [
+            { id: 'a', v: 2 },
+            { id: 'b', v: 3 },
+          ],
+        },
         cors: { origins: ['http://a.com', 'http://b.com'] },
       };
       const result = deepMerge(target, source, {
@@ -192,7 +217,10 @@ describe('deepMerge', () => {
 
       // agents.list should be byKey-merged
       expect(result.agents.list).toHaveLength(2);
-      expect(result.agents.list.find((a: any) => a.id === 'a')).toEqual({ id: 'a', v: 2 });
+      expect(result.agents.list.find((a: any) => a.id === 'a')).toEqual({
+        id: 'a',
+        v: 2,
+      });
 
       // cors.origins should be union-merged
       expect(result.cors.origins).toEqual(['http://a.com', 'http://b.com']);
@@ -259,7 +287,9 @@ describe('deepMerge', () => {
 
     it('should handle deeply nested structures', () => {
       const target = { l1: { l2: { l3: { l4: { val: 'old' } } } } };
-      const source = { l1: { l2: { l3: { l4: { val: 'new', extra: true } } } } };
+      const source = {
+        l1: { l2: { l3: { l4: { val: 'new', extra: true } } } },
+      };
       const result = deepMerge(target, source) as any;
       expect(result.l1.l2.l3.l4).toEqual({ val: 'new', extra: true });
     });
@@ -287,7 +317,9 @@ describe('deepMerge', () => {
     it('should delete keys listed in unsetOnUndefined when patch value is undefined', () => {
       const base = { a: 1, b: 2, c: 3 } as Record<string, unknown>;
       const patch = { a: undefined };
-      const result = mergeConfigSection(base, patch, { unsetOnUndefined: ['a'] });
+      const result = mergeConfigSection(base, patch, {
+        unsetOnUndefined: ['a'],
+      });
       expect(result).not.toHaveProperty('a');
       expect(result).toEqual({ b: 2, c: 3 });
     });
@@ -303,7 +335,9 @@ describe('deepMerge', () => {
   // ---------------------------------------------------------------------------
 
   describe('resolveConfigIncludes', () => {
-    const createResolver = (files: Record<string, unknown>): IncludeResolver => ({
+    const createResolver = (
+      files: Record<string, unknown>
+    ): IncludeResolver => ({
       readFile: (filePath: string) => {
         if (filePath in files) {
           return JSON.stringify(files[filePath]);
@@ -340,7 +374,11 @@ describe('deepMerge', () => {
         [INCLUDE_KEY]: '/config/base.json',
         port: 9090,
       };
-      const result = resolveConfigIncludes(obj, '/config/main.json', resolver) as any;
+      const result = resolveConfigIncludes(
+        obj,
+        '/config/main.json',
+        resolver
+      ) as any;
       expect(result.port).toBe(9090);
       expect(result.host).toBe('0.0.0.0');
     });
@@ -349,19 +387,19 @@ describe('deepMerge', () => {
       const resolver: IncludeResolver = {
         readFile: (filePath: string) => {
           if (filePath === '/a.json') {
-return JSON.stringify({ [INCLUDE_KEY]: '/b.json' });
-}
+            return JSON.stringify({ [INCLUDE_KEY]: '/b.json' });
+          }
           if (filePath === '/b.json') {
-return JSON.stringify({ [INCLUDE_KEY]: '/a.json' });
-}
+            return JSON.stringify({ [INCLUDE_KEY]: '/a.json' });
+          }
           throw new Error(`ENOENT: ${filePath}`);
         },
         parseJson: (raw: string) => JSON.parse(raw),
       };
       const obj = { [INCLUDE_KEY]: '/a.json' };
-      expect(() =>
-        resolveConfigIncludes(obj, '/main.json', resolver),
-      ).toThrow(CircularIncludeError);
+      expect(() => resolveConfigIncludes(obj, '/main.json', resolver)).toThrow(
+        CircularIncludeError
+      );
     });
 
     it('should enforce maximum include depth', () => {
@@ -374,16 +412,16 @@ return JSON.stringify({ [INCLUDE_KEY]: '/a.json' });
 
       const resolver = createResolver(files);
       const obj = { [INCLUDE_KEY]: '/chain/0.json' };
-      expect(() =>
-        resolveConfigIncludes(obj, '/start.json', resolver),
-      ).toThrow(ConfigIncludeError);
+      expect(() => resolveConfigIncludes(obj, '/start.json', resolver)).toThrow(
+        ConfigIncludeError
+      );
     });
 
     it('should throw ConfigIncludeError when include file is not found', () => {
       const resolver = createResolver({});
       const obj = { [INCLUDE_KEY]: '/missing.json' };
       expect(() =>
-        resolveConfigIncludes(obj, '/config/main.json', resolver),
+        resolveConfigIncludes(obj, '/config/main.json', resolver)
       ).toThrow(ConfigIncludeError);
     });
 
@@ -391,7 +429,7 @@ return JSON.stringify({ [INCLUDE_KEY]: '/a.json' });
       const resolver = createResolver({});
       const obj = { [INCLUDE_KEY]: 42 };
       expect(() =>
-        resolveConfigIncludes(obj, '/config/main.json', resolver),
+        resolveConfigIncludes(obj, '/config/main.json', resolver)
       ).toThrow(ConfigIncludeError);
     });
 
@@ -404,11 +442,17 @@ return JSON.stringify({ [INCLUDE_KEY]: '/a.json' });
 
     it('should recursively process nested $include directives', () => {
       const resolver = createResolver({
-        '/config/partial.json': { nested: { [INCLUDE_KEY]: '/config/deep.json' } },
+        '/config/partial.json': {
+          nested: { [INCLUDE_KEY]: '/config/deep.json' },
+        },
         '/config/deep.json': { value: 42 },
       });
       const obj = { [INCLUDE_KEY]: '/config/partial.json' };
-      const result = resolveConfigIncludes(obj, '/config/main.json', resolver) as any;
+      const result = resolveConfigIncludes(
+        obj,
+        '/config/main.json',
+        resolver
+      ) as any;
       expect(result.nested).toEqual({ value: 42 });
     });
   });
@@ -421,43 +465,43 @@ return JSON.stringify({ [INCLUDE_KEY]: '/a.json' });
     it('should substitute ${VAR} with env value', () => {
       const result = resolveEnvVars(
         { url: 'https://${HOST}:${PORT}' },
-        { HOST: 'localhost', PORT: '8080' },
+        { HOST: 'localhost', PORT: '8080' }
       ) as any;
       expect(result.url).toBe('https://localhost:8080');
     });
 
     it('should throw MissingEnvVarError for missing env var', () => {
-      expect(() =>
-        resolveEnvVars({ key: '${MISSING_VAR}' }, {}),
-      ).toThrow(MissingEnvVarError);
+      expect(() => resolveEnvVars({ key: '${MISSING_VAR}' }, {})).toThrow(
+        MissingEnvVarError
+      );
     });
 
     it('should throw MissingEnvVarError for empty env var', () => {
       expect(() =>
-        resolveEnvVars({ key: '${EMPTY_VAR}' }, { EMPTY_VAR: '' }),
+        resolveEnvVars({ key: '${EMPTY_VAR}' }, { EMPTY_VAR: '' })
       ).toThrow(MissingEnvVarError);
     });
 
     it('should preserve escaped $${VAR} as literal ${VAR}', () => {
       const result = resolveEnvVars(
         { escaped: '$${HOST}' },
-        { HOST: 'should-not-resolve' },
+        { HOST: 'should-not-resolve' }
       ) as any;
       expect(result.escaped).toBe('${HOST}');
     });
 
     it('should handle arrays', () => {
-      const result = resolveEnvVars(
-        ['${KEY_A}', '${KEY_B}'],
-        { KEY_A: 'alpha', KEY_B: 'bravo' },
-      );
+      const result = resolveEnvVars(['${KEY_A}', '${KEY_B}'], {
+        KEY_A: 'alpha',
+        KEY_B: 'bravo',
+      });
       expect(result).toEqual(['alpha', 'bravo']);
     });
 
     it('should handle nested objects', () => {
       const result = resolveEnvVars(
         { outer: { inner: '${VALUE}' } },
-        { VALUE: 'resolved' },
+        { VALUE: 'resolved' }
       ) as any;
       expect(result.outer.inner).toBe('resolved');
     });
@@ -474,7 +518,10 @@ return JSON.stringify({ [INCLUDE_KEY]: '/a.json' });
 
     it('should only match uppercase env var names', () => {
       // ${lowercase} should not be substituted
-      const result = resolveEnvVars({ val: '${lowercase}' }, { lowercase: 'nope' });
+      const result = resolveEnvVars(
+        { val: '${lowercase}' },
+        { lowercase: 'nope' }
+      );
       expect(result).toEqual({ val: '${lowercase}' });
     });
   });
@@ -521,7 +568,9 @@ return JSON.stringify({ [INCLUDE_KEY]: '/a.json' });
     it('should apply overrides to a config object', () => {
       setOverride('daemon.port', 9090);
       setOverride('daemon.host', '0.0.0.0');
-      const config = { daemon: { port: 8080, host: '127.0.0.1', name: 'test' } };
+      const config = {
+        daemon: { port: 8080, host: '127.0.0.1', name: 'test' },
+      };
       const result = applyOverrides(config) as any;
       expect(result.daemon.port).toBe(9090);
       expect(result.daemon.host).toBe('0.0.0.0');

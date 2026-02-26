@@ -20,14 +20,22 @@ import type { WorkflowDefinition } from '../types';
 // Fixtures
 // ---------------------------------------------------------------------------
 
-function makeWorkflow(overrides: Partial<WorkflowDefinition> = {}): WorkflowDefinition {
+function makeWorkflow(
+  overrides: Partial<WorkflowDefinition> = {}
+): WorkflowDefinition {
   return {
     id: 'test-wf-1',
     name: 'Test Workflow',
     version: '1.0.0',
     status: 'ACTIVE',
     steps: [
-      { id: 'step-1', name: 'Step 1', type: 'task', config: {}, dependencies: [] },
+      {
+        id: 'step-1',
+        name: 'Step 1',
+        type: 'task',
+        config: {},
+        dependencies: [],
+      },
     ],
     triggers: [],
     variables: {},
@@ -67,7 +75,7 @@ describe('WorkflowEngine', () => {
 
       const list = engine.listWorkflows();
       expect(list).toHaveLength(2);
-      expect(list.map((w) => w.id).sort()).toEqual(['a', 'b']);
+      expect(list.map(w => w.id).sort()).toEqual(['a', 'b']);
     });
 
     it('should return undefined for an unregistered workflow', () => {
@@ -112,7 +120,7 @@ describe('WorkflowEngine', () => {
               dependencies: [],
             },
           ],
-        }),
+        })
       );
 
       const execution = await engine.execute('test-wf-1', { fromCaller: true });
@@ -134,11 +142,29 @@ describe('WorkflowEngine', () => {
       engine.registerWorkflow(
         makeWorkflow({
           steps: [
-            { id: 'first', name: 'First', type: 'task', config: {}, dependencies: [] },
-            { id: 'second', name: 'Second', type: 'task', config: {}, dependencies: ['first'] },
-            { id: 'third', name: 'Third', type: 'task', config: {}, dependencies: ['second'] },
+            {
+              id: 'first',
+              name: 'First',
+              type: 'task',
+              config: {},
+              dependencies: [],
+            },
+            {
+              id: 'second',
+              name: 'Second',
+              type: 'task',
+              config: {},
+              dependencies: ['first'],
+            },
+            {
+              id: 'third',
+              name: 'Third',
+              type: 'task',
+              config: {},
+              dependencies: ['second'],
+            },
           ],
-        }),
+        })
       );
 
       engine.on('step:started', ({ stepId }) => {
@@ -167,9 +193,15 @@ describe('WorkflowEngine', () => {
             { id: 'a', name: 'A', type: 'task', config: {}, dependencies: [] },
             { id: 'b', name: 'B', type: 'task', config: {}, dependencies: [] },
             { id: 'c', name: 'C', type: 'task', config: {}, dependencies: [] },
-            { id: 'final', name: 'Final', type: 'task', config: {}, dependencies: ['a', 'b', 'c'] },
+            {
+              id: 'final',
+              name: 'Final',
+              type: 'task',
+              config: {},
+              dependencies: ['a', 'b', 'c'],
+            },
           ],
-        }),
+        })
       );
 
       engine.on('step:started', ({ stepId }) => {
@@ -215,7 +247,7 @@ describe('WorkflowEngine', () => {
               timeout: 1, // 1ms timeout on a 60s wait forces a timeout failure
             },
           ],
-        }),
+        })
       );
 
       const execution = await engine.execute('test-wf-1');
@@ -236,17 +268,29 @@ describe('WorkflowEngine', () => {
       engine.registerWorkflow(
         makeWorkflow({
           steps: [
-            { id: 'wait-step', name: 'Wait', type: 'wait', config: { durationMs: 50 }, dependencies: [] },
-            { id: 'after-wait', name: 'After', type: 'task', config: {}, dependencies: ['wait-step'] },
+            {
+              id: 'wait-step',
+              name: 'Wait',
+              type: 'wait',
+              config: { durationMs: 50 },
+              dependencies: [],
+            },
+            {
+              id: 'after-wait',
+              name: 'After',
+              type: 'task',
+              config: {},
+              dependencies: ['wait-step'],
+            },
           ],
-        }),
+        })
       );
 
       // Start execution (do not await -- we need to cancel while it runs)
       const executionPromise = engine.execute('test-wf-1');
 
       // Wait a tick for the execution to register, then read its ID
-      await new Promise((resolve) => setTimeout(resolve, 5));
+      await new Promise(resolve => setTimeout(resolve, 5));
       const executions = engine.listExecutions('test-wf-1');
       expect(executions).toHaveLength(1);
       const executionId = executions[0].id;
@@ -303,7 +347,7 @@ describe('WorkflowEngine', () => {
               timeout: 1,
             },
           ],
-        }),
+        })
       );
 
       await engine.execute('test-wf-1');
@@ -322,11 +366,29 @@ describe('WorkflowEngine', () => {
       engine.registerWorkflow(
         makeWorkflow({
           steps: [
-            { id: 'a', name: 'A', type: 'task', config: {}, dependencies: ['c'] },
-            { id: 'b', name: 'B', type: 'task', config: {}, dependencies: ['a'] },
-            { id: 'c', name: 'C', type: 'task', config: {}, dependencies: ['b'] },
+            {
+              id: 'a',
+              name: 'A',
+              type: 'task',
+              config: {},
+              dependencies: ['c'],
+            },
+            {
+              id: 'b',
+              name: 'B',
+              type: 'task',
+              config: {},
+              dependencies: ['a'],
+            },
+            {
+              id: 'c',
+              name: 'C',
+              type: 'task',
+              config: {},
+              dependencies: ['b'],
+            },
           ],
-        }),
+        })
       );
 
       const execution = await engine.execute('test-wf-1');
@@ -345,14 +407,26 @@ describe('WorkflowEngine', () => {
       engine.registerWorkflow(
         makeWorkflow({
           steps: [
-            { id: 'x', name: 'X', type: 'task', config: {}, dependencies: ['y'] },
-            { id: 'y', name: 'Y', type: 'task', config: {}, dependencies: ['x'] },
+            {
+              id: 'x',
+              name: 'X',
+              type: 'task',
+              config: {},
+              dependencies: ['y'],
+            },
+            {
+              id: 'y',
+              name: 'Y',
+              type: 'task',
+              config: {},
+              dependencies: ['x'],
+            },
           ],
-        }),
+        })
       );
 
       // Execute triggers the internal error path
-      return engine.execute('test-wf-1').then((execution) => {
+      return engine.execute('test-wf-1').then(execution => {
         expect(execution.status).toBe('FAILED');
         expect(failedSpy).toHaveBeenCalledTimes(1);
         expect(failedSpy.mock.calls[0][0].error).toMatch(/Circular/i);
@@ -366,8 +440,12 @@ describe('WorkflowEngine', () => {
 
   describe('execute non-existent workflow', () => {
     it('should throw WorkflowNotFoundError', async () => {
-      await expect(engine.execute('no-such-workflow')).rejects.toThrow(WorkflowNotFoundError);
-      await expect(engine.execute('no-such-workflow')).rejects.toThrow('Workflow not found');
+      await expect(engine.execute('no-such-workflow')).rejects.toThrow(
+        WorkflowNotFoundError
+      );
+      await expect(engine.execute('no-such-workflow')).rejects.toThrow(
+        'Workflow not found'
+      );
     });
   });
 });

@@ -27,7 +27,6 @@ import {
 } from './task-types';
 import { Logger } from '../utils/logger';
 
-
 import type {
   ITaskStore,
   ManagedTask,
@@ -130,7 +129,7 @@ export class TaskManager extends EventEmitter<TaskEventMap> {
       throw new TaskError(
         TaskErrorCode.VALIDATION_ERROR,
         `Invalid task input: ${parsed.error.message}`,
-        { validationErrors: parsed.error.errors },
+        { validationErrors: parsed.error.errors }
       );
     }
 
@@ -212,7 +211,7 @@ export class TaskManager extends EventEmitter<TaskEventMap> {
       throw new TaskError(
         TaskErrorCode.VALIDATION_ERROR,
         `Invalid update input: ${parsed.error.message}`,
-        { validationErrors: parsed.error.errors },
+        { validationErrors: parsed.error.errors }
       );
     }
 
@@ -223,29 +222,47 @@ export class TaskManager extends EventEmitter<TaskEventMap> {
     const updates: Partial<ManagedTask> = {};
 
     // Simple field updates
-    if (parsed.data.subject !== undefined && parsed.data.subject !== existing.subject) {
+    if (
+      parsed.data.subject !== undefined &&
+      parsed.data.subject !== existing.subject
+    ) {
       updates.subject = parsed.data.subject;
       changes.push('subject');
     }
-    if (parsed.data.description !== undefined && parsed.data.description !== existing.description) {
+    if (
+      parsed.data.description !== undefined &&
+      parsed.data.description !== existing.description
+    ) {
       updates.description = parsed.data.description;
       changes.push('description');
     }
-    if (parsed.data.owner !== undefined && parsed.data.owner !== existing.owner) {
+    if (
+      parsed.data.owner !== undefined &&
+      parsed.data.owner !== existing.owner
+    ) {
       updates.owner = parsed.data.owner;
       changes.push('owner');
     }
-    if (parsed.data.activeForm !== undefined && parsed.data.activeForm !== existing.activeForm) {
+    if (
+      parsed.data.activeForm !== undefined &&
+      parsed.data.activeForm !== existing.activeForm
+    ) {
       updates.activeForm = parsed.data.activeForm;
       changes.push('activeForm');
     }
-    if (parsed.data.priority !== undefined && parsed.data.priority !== existing.priority) {
+    if (
+      parsed.data.priority !== undefined &&
+      parsed.data.priority !== existing.priority
+    ) {
       updates.priority = parsed.data.priority;
       changes.push('priority');
     }
 
     // Status transition
-    if (parsed.data.status !== undefined && parsed.data.status !== existing.status) {
+    if (
+      parsed.data.status !== undefined &&
+      parsed.data.status !== existing.status
+    ) {
       this.validateTransition(id, existing.status, parsed.data.status);
 
       // Block check: cannot move to in_progress if blockers exist
@@ -282,10 +299,10 @@ export class TaskManager extends EventEmitter<TaskEventMap> {
     if (parsed.data.removeBlocks?.length) {
       const toRemove = new Set(parsed.data.removeBlocks);
       const before = blocks.length;
-      blocks = blocks.filter((b) => !toRemove.has(b));
+      blocks = blocks.filter(b => !toRemove.has(b));
       if (blocks.length !== before) {
-depsChanged = true;
-}
+        depsChanged = true;
+      }
     }
     if (parsed.data.addBlockedBy?.length) {
       for (const blockerId of parsed.data.addBlockedBy) {
@@ -298,10 +315,10 @@ depsChanged = true;
     if (parsed.data.removeBlockedBy?.length) {
       const toRemove = new Set(parsed.data.removeBlockedBy);
       const before = blockedBy.length;
-      blockedBy = blockedBy.filter((b) => !toRemove.has(b));
+      blockedBy = blockedBy.filter(b => !toRemove.has(b));
       if (blockedBy.length !== before) {
-depsChanged = true;
-}
+        depsChanged = true;
+      }
     }
 
     if (depsChanged) {
@@ -404,7 +421,9 @@ depsChanged = true;
    * @param id - The task ID to complete.
    * @returns The completed task and list of unblocked task IDs.
    */
-  async completeTask(id: string): Promise<{ task: ManagedTask; unblocked: string[] }> {
+  async completeTask(
+    id: string
+  ): Promise<{ task: ManagedTask; unblocked: string[] }> {
     this.ensureInitialized();
 
     const existing = await this.getTaskOrThrow(id);
@@ -443,7 +462,11 @@ depsChanged = true;
    * @returns The claimed task.
    * @throws {TaskBlockedError} If the task has unresolved blockers.
    */
-  async claimTask(id: string, owner: string, activeForm?: string): Promise<ManagedTask> {
+  async claimTask(
+    id: string,
+    owner: string,
+    activeForm?: string
+  ): Promise<ManagedTask> {
     this.ensureInitialized();
 
     const existing = await this.getTaskOrThrow(id);
@@ -527,7 +550,10 @@ depsChanged = true;
     const blocked = await this.getTaskOrThrow(blockedId);
 
     // Skip if dependency already exists
-    if (blocker.blocks.includes(blockedId) && blocked.blockedBy.includes(blockerId)) {
+    if (
+      blocker.blocks.includes(blockedId) &&
+      blocked.blockedBy.includes(blockerId)
+    ) {
       return;
     }
 
@@ -553,7 +579,10 @@ depsChanged = true;
     }
 
     this.logger.debug(`Dependency added: ${blockerId} blocks ${blockedId}`);
-    this.emit('task:blocked', { taskId: blockedId, blockedBy: [...blocked.blockedBy, blockerId] });
+    this.emit('task:blocked', {
+      taskId: blockedId,
+      blockedBy: [...blocked.blockedBy, blockerId],
+    });
   }
 
   /**
@@ -569,16 +598,22 @@ depsChanged = true;
     const blocked = await this.store.get(blockedId);
 
     if (blocker) {
-      const newBlocks = blocker.blocks.filter((b) => b !== blockedId);
+      const newBlocks = blocker.blocks.filter(b => b !== blockedId);
       if (newBlocks.length !== blocker.blocks.length) {
-        await this.store.update(blockerId, { blocks: newBlocks, updatedAt: new Date() });
+        await this.store.update(blockerId, {
+          blocks: newBlocks,
+          updatedAt: new Date(),
+        });
       }
     }
 
     if (blocked) {
-      const newBlockedBy = blocked.blockedBy.filter((b) => b !== blockerId);
+      const newBlockedBy = blocked.blockedBy.filter(b => b !== blockerId);
       if (newBlockedBy.length !== blocked.blockedBy.length) {
-        await this.store.update(blockedId, { blockedBy: newBlockedBy, updatedAt: new Date() });
+        await this.store.update(blockedId, {
+          blockedBy: newBlockedBy,
+          updatedAt: new Date(),
+        });
 
         // Check if this task is now unblocked
         if (newBlockedBy.length === 0) {
@@ -587,7 +622,9 @@ depsChanged = true;
       }
     }
 
-    this.logger.debug(`Dependency removed: ${blockerId} no longer blocks ${blockedId}`);
+    this.logger.debug(
+      `Dependency removed: ${blockerId} no longer blocks ${blockedId}`
+    );
   }
 
   /**
@@ -606,7 +643,7 @@ depsChanged = true;
 
     // Sort by priority weight descending
     return pending.sort(
-      (a, b) => PRIORITY_WEIGHTS[b.priority] - PRIORITY_WEIGHTS[a.priority],
+      (a, b) => PRIORITY_WEIGHTS[b.priority] - PRIORITY_WEIGHTS[a.priority]
     );
   }
 
@@ -623,14 +660,15 @@ depsChanged = true;
   }> {
     this.ensureInitialized();
 
-    const [total, pending, inProgress, completed, deleted, blocked] = await Promise.all([
-      this.store.count(),
-      this.store.count({ status: 'pending' }),
-      this.store.count({ status: 'in_progress' }),
-      this.store.count({ status: 'completed' }),
-      this.store.count({ status: 'deleted' }),
-      this.store.count({ isBlocked: true }),
-    ]);
+    const [total, pending, inProgress, completed, deleted, blocked] =
+      await Promise.all([
+        this.store.count(),
+        this.store.count({ status: 'pending' }),
+        this.store.count({ status: 'in_progress' }),
+        this.store.count({ status: 'completed' }),
+        this.store.count({ status: 'deleted' }),
+        this.store.count({ isBlocked: true }),
+      ]);
 
     return { total, pending, inProgress, completed, deleted, blocked };
   }
@@ -660,7 +698,7 @@ depsChanged = true;
     if (!this.initialized) {
       throw new TaskError(
         TaskErrorCode.STORE_ERROR,
-        'TaskManager is not initialized. Call initialize() first.',
+        'TaskManager is not initialized. Call initialize() first.'
       );
     }
   }
@@ -668,7 +706,11 @@ depsChanged = true;
   /**
    * Validate a status transition.
    */
-  private validateTransition(taskId: string, from: TaskStatus, to: TaskStatus): void {
+  private validateTransition(
+    taskId: string,
+    from: TaskStatus,
+    to: TaskStatus
+  ): void {
     if (!this.config.enforceTransitions) {
       return;
     }
@@ -687,7 +729,11 @@ depsChanged = true;
 
     for (const blockerId of task.blockedBy) {
       const blocker = await this.store.get(blockerId);
-      if (blocker && blocker.status !== 'completed' && blocker.status !== 'deleted') {
+      if (
+        blocker &&
+        blocker.status !== 'completed' &&
+        blocker.status !== 'deleted'
+      ) {
         activeBlockers.push(blockerId);
       }
     }
@@ -730,20 +776,20 @@ depsChanged = true;
 
     for (const task of allTasks) {
       if (task.id === taskId) {
-continue;
-}
+        continue;
+      }
 
       let needsUpdate = false;
       let newBlocks = task.blocks;
       let newBlockedBy = task.blockedBy;
 
       if (task.blocks.includes(taskId)) {
-        newBlocks = task.blocks.filter((b) => b !== taskId);
+        newBlocks = task.blocks.filter(b => b !== taskId);
         needsUpdate = true;
       }
 
       if (task.blockedBy.includes(taskId)) {
-        newBlockedBy = task.blockedBy.filter((b) => b !== taskId);
+        newBlockedBy = task.blockedBy.filter(b => b !== taskId);
         needsUpdate = true;
       }
 
@@ -763,17 +809,17 @@ continue;
    */
   private async unblockDownstreamTasks(
     completedId: string,
-    blockedIds: string[],
+    blockedIds: string[]
   ): Promise<string[]> {
     const unblocked: string[] = [];
 
     for (const blockedId of blockedIds) {
       const blocked = await this.store.get(blockedId);
       if (!blocked) {
-continue;
-}
+        continue;
+      }
 
-      const newBlockedBy = blocked.blockedBy.filter((b) => b !== completedId);
+      const newBlockedBy = blocked.blockedBy.filter(b => b !== completedId);
       await this.store.update(blockedId, {
         blockedBy: newBlockedBy,
         updatedAt: new Date(),
@@ -803,8 +849,8 @@ continue;
     for (const taskId of taskIds) {
       const task = await this.store.get(taskId);
       if (!task || task.status === 'completed' || task.status === 'deleted') {
-continue;
-}
+        continue;
+      }
 
       const activeBlockers = await this.getActiveBlockers(task);
       if (activeBlockers.length === 0 && task.blockedBy.length > 0) {
@@ -824,7 +870,10 @@ continue;
    * Uses DFS from blockedId following the "blocks" edges. If we reach blockerId,
    * there is a cycle.
    */
-  private async detectCycle(blockerId: string, blockedId: string): Promise<void> {
+  private async detectCycle(
+    blockerId: string,
+    blockedId: string
+  ): Promise<void> {
     const visited = new Set<string>();
     const path: string[] = [blockedId];
 
@@ -840,8 +889,8 @@ continue;
       visited.add(current);
       const task = await this.store.get(current);
       if (!task) {
-return false;
-}
+        return false;
+      }
 
       for (const downstream of task.blocks) {
         path.push(downstream);

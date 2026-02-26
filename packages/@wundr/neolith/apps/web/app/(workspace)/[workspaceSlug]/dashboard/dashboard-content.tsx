@@ -403,4 +403,3 @@ function ActivityIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-

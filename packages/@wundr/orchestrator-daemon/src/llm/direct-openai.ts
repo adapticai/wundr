@@ -94,7 +94,7 @@ export async function llmCall(params: LLMCallParams): Promise<LLMCallResponse> {
 
     return {
       content: choice.message.content || '',
-      toolCalls: choice.message.tool_calls?.map((tc) => ({
+      toolCalls: choice.message.tool_calls?.map(tc => ({
         id: tc.id,
         name: tc.function.name,
         arguments: tc.function.arguments,
@@ -128,7 +128,10 @@ export async function llmCall(params: LLMCallParams): Promise<LLMCallResponse> {
  * });
  * ```
  */
-export function createLLMCall(defaultModel?: string, defaultTemperature?: number) {
+export function createLLMCall(
+  defaultModel?: string,
+  defaultTemperature?: number
+) {
   return (params: LLMCallParams) =>
     llmCall({
       ...params,

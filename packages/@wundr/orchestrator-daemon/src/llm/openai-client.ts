@@ -17,8 +17,14 @@ import type {
   ToolCall,
   FinishReason,
 } from '../types/llm';
-import type { LLMResponse, LLMOptions } from '@adaptic/lumic-utils/dist/types/openai-types';
-import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat';
+import type {
+  LLMResponse,
+  LLMOptions,
+} from '@adaptic/lumic-utils/dist/types/openai-types';
+import type {
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+} from 'openai/resources/chat';
 
 /**
  * Configuration for OpenAI client
@@ -86,9 +92,10 @@ export class OpenAIClient implements LLMClient {
 
       // Get the last message content
       const lastMessage = messages[messages.length - 1];
-      const content = typeof lastMessage.content === 'string'
-        ? lastMessage.content
-        : JSON.stringify(lastMessage.content);
+      const content =
+        typeof lastMessage.content === 'string'
+          ? lastMessage.content
+          : JSON.stringify(lastMessage.content);
 
       if (this.config.debug) {
         console.log('[OpenAIClient] Making LLM call:', {
@@ -102,7 +109,7 @@ export class OpenAIClient implements LLMClient {
       const response: LLMResponse<string> = await lumic.llm.call(
         content,
         'text',
-        options,
+        options
       );
 
       if (this.config.debug) {
@@ -153,7 +160,10 @@ export class OpenAIClient implements LLMClient {
    * Uses a simple estimation based on character count.
    * For production, consider integrating tiktoken or similar.
    */
-  async countTokens(input: string | Message[], _model: string): Promise<number> {
+  async countTokens(
+    input: string | Message[],
+    _model: string
+  ): Promise<number> {
     let charCount = 0;
 
     if (typeof input === 'string') {
@@ -262,15 +272,20 @@ export class OpenAIClient implements LLMClient {
   private convertResponse(response: LLMResponse<string>): ChatResponse {
     // Extract tool calls if present
     const toolCalls: ToolCall[] = response.tool_calls
-      ? response.tool_calls.map((tc: { id: string; function?: { name: string; arguments: string } }) => {
-          // Handle both function and custom tool call types
-          const functionData = 'function' in tc ? tc.function : null;
-          return {
-            id: tc.id,
-            name: functionData?.name || '',
-            arguments: functionData?.arguments || '',
-          };
-        })
+      ? response.tool_calls.map(
+          (tc: {
+            id: string;
+            function?: { name: string; arguments: string };
+          }) => {
+            // Handle both function and custom tool call types
+            const functionData = 'function' in tc ? tc.function : null;
+            return {
+              id: tc.id,
+              name: functionData?.name || '',
+              arguments: functionData?.arguments || '',
+            };
+          }
+        )
       : [];
 
     // Generate a unique ID for this response
@@ -280,7 +295,9 @@ export class OpenAIClient implements LLMClient {
     let finishReason: FinishReason = 'stop';
     if (toolCalls.length > 0) {
       finishReason = 'tool_calls';
-    } else if (response.usage.completion_tokens >= (this.config.maxTokens || 4096)) {
+    } else if (
+      response.usage.completion_tokens >= (this.config.maxTokens || 4096)
+    ) {
       finishReason = 'length';
     }
 
@@ -291,7 +308,8 @@ export class OpenAIClient implements LLMClient {
       usage: {
         promptTokens: response.usage.prompt_tokens,
         completionTokens: response.usage.completion_tokens,
-        totalTokens: response.usage.prompt_tokens + response.usage.completion_tokens,
+        totalTokens:
+          response.usage.prompt_tokens + response.usage.completion_tokens,
       },
       finishReason,
       raw: response,

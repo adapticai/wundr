@@ -155,7 +155,8 @@ const LINE_RULES: LineRule[] = [
     ruleId: 'prototype-pollution',
     severity: 'warn',
     message: 'Potential prototype pollution pattern detected',
-    pattern: /__proto__|constructor\s*\[\s*['"]prototype['"]\s*\]|Object\.setPrototypeOf/,
+    pattern:
+      /__proto__|constructor\s*\[\s*['"]prototype['"]\s*\]|Object\.setPrototypeOf/,
   },
 
   // --- Warn: Suspicious network ---
@@ -171,7 +172,8 @@ const LINE_RULES: LineRule[] = [
     ruleId: 'global-override',
     severity: 'warn',
     message: 'Global object modification detected',
-    pattern: /\bglobalThis\s*\[|global\s*\.\s*\w+\s*=|Object\.defineProperty\s*\(\s*global/,
+    pattern:
+      /\bglobalThis\s*\[|global\s*\.\s*\w+\s*=|Object\.defineProperty\s*\(\s*global/,
   },
 
   // --- Info: Debugger statements ---
@@ -193,7 +195,8 @@ const SOURCE_RULES: SourceRule[] = [
   {
     ruleId: 'potential-exfiltration',
     severity: 'warn',
-    message: 'File read combined with network send -- possible data exfiltration',
+    message:
+      'File read combined with network send -- possible data exfiltration',
     pattern: /readFileSync|readFile/,
     requiresContext: /\bfetch\b|\bpost\b|http\.request/i,
   },
@@ -206,13 +209,15 @@ const SOURCE_RULES: SourceRule[] = [
   {
     ruleId: 'obfuscated-code-base64',
     severity: 'warn',
-    message: 'Large base64 payload with decode call detected (possible obfuscation)',
+    message:
+      'Large base64 payload with decode call detected (possible obfuscation)',
     pattern: /(?:atob|Buffer\.from)\s*\(\s*["'][A-Za-z0-9+/=]{200,}["']/,
   },
   {
     ruleId: 'env-harvesting',
     severity: 'critical',
-    message: 'Environment variable access combined with network send -- possible credential harvesting',
+    message:
+      'Environment variable access combined with network send -- possible credential harvesting',
     pattern: /process\.env/,
     requiresContext: /\bfetch\b|\bpost\b|http\.request/i,
   },
@@ -220,7 +225,8 @@ const SOURCE_RULES: SourceRule[] = [
     ruleId: 'env-dump',
     severity: 'critical',
     message: 'Bulk environment variable enumeration detected',
-    pattern: /JSON\.stringify\s*\(\s*process\.env\s*\)|Object\.(keys|entries|values)\s*\(\s*process\.env\s*\)/,
+    pattern:
+      /JSON\.stringify\s*\(\s*process\.env\s*\)|Object\.(keys|entries|values)\s*\(\s*process\.env\s*\)/,
   },
   {
     ruleId: 'reverse-shell',
@@ -267,13 +273,13 @@ export function scanSource(source: string, filePath: string): ScanFinding[] {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       if (!line) {
-continue;
-}
+        continue;
+      }
 
       const match = rule.pattern.exec(line);
       if (!match) {
-continue;
-}
+        continue;
+      }
 
       // Special handling for suspicious-network: check port
       if (rule.ruleId === 'suspicious-network') {
@@ -354,25 +360,32 @@ continue;
 export function scanSourceWithManifest(
   source: string,
   filePath: string,
-  manifest: PluginManifest,
+  manifest: PluginManifest
 ): ScanFinding[] {
   const findings: ScanFinding[] = [];
   const lines = source.split('\n');
 
   // Detect undeclared network hosts
-  const declaredHosts = new Set(manifest.permissions.network.hosts.map(h => h.toLowerCase()));
+  const declaredHosts = new Set(
+    manifest.permissions.network.hosts.map(h => h.toLowerCase())
+  );
   const urlPattern = /(?:https?:\/\/)([a-zA-Z0-9.-]+)/g;
   const seenHosts = new Set<string>();
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (!line) {
-continue;
-}
+      continue;
+    }
 
     let match: RegExpExecArray | null;
     while ((match = urlPattern.exec(line)) !== null) {
       const host = (match[1] ?? '').toLowerCase();
-      if (host && !seenHosts.has(host) && !declaredHosts.has(host) && host !== 'localhost') {
+      if (
+        host &&
+        !seenHosts.has(host) &&
+        !declaredHosts.has(host) &&
+        host !== 'localhost'
+      ) {
         seenHosts.add(host);
         findings.push({
           ruleId: 'undeclared-network',
@@ -388,7 +401,8 @@ continue;
   }
 
   // Detect absolute filesystem paths outside declared permissions
-  const absolutePathPattern = /(?:['"`])(\/((?:usr|home|var|opt|tmp|etc)[^\s'"`,;)}\]]*))(?:['"`])/g;
+  const absolutePathPattern =
+    /(?:['"`])(\/((?:usr|home|var|opt|tmp|etc)[^\s'"`,;)}\]]*))(?:['"`])/g;
   const declaredReadPaths = manifest.permissions.filesystem.read;
   const declaredWritePaths = manifest.permissions.filesystem.write;
   const allDeclaredPaths = [...declaredReadPaths, ...declaredWritePaths];
@@ -397,8 +411,8 @@ continue;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (!line) {
-continue;
-}
+      continue;
+    }
 
     let match: RegExpExecArray | null;
     while ((match = absolutePathPattern.exec(line)) !== null) {
@@ -406,7 +420,8 @@ continue;
       if (absPath && !seenAbsPaths.has(absPath)) {
         seenAbsPaths.add(absPath);
         const isDeclared = allDeclaredPaths.some(
-          declared => absPath.startsWith(declared) || declared.startsWith(absPath),
+          declared =>
+            absPath.startsWith(declared) || declared.startsWith(absPath)
         );
         if (!isDeclared) {
           findings.push({
@@ -430,28 +445,34 @@ continue;
 // Directory Scanner
 // ---------------------------------------------------------------------------
 
-async function walkDirWithLimit(dirPath: string, maxFiles: number): Promise<string[]> {
+async function walkDirWithLimit(
+  dirPath: string,
+  maxFiles: number
+): Promise<string[]> {
   const files: string[] = [];
   const stack: string[] = [dirPath];
 
   while (stack.length > 0 && files.length < maxFiles) {
     const currentDir = stack.pop();
     if (!currentDir) {
-break;
-}
+      break;
+    }
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-imports
     let entries: import('fs').Dirent[];
     try {
-      entries = await fs.readdir(currentDir, { withFileTypes: true, encoding: 'utf-8' });
+      entries = await fs.readdir(currentDir, {
+        withFileTypes: true,
+        encoding: 'utf-8',
+      });
     } catch {
       continue;
     }
 
     for (const entry of entries) {
       if (files.length >= maxFiles) {
-break;
-}
+        break;
+      }
 
       // Skip hidden dirs and node_modules
       if (entry.name.startsWith('.') || entry.name === 'node_modules') {
@@ -470,7 +491,10 @@ break;
   return files;
 }
 
-async function readFileIfSmall(filePath: string, maxBytes: number): Promise<string | null> {
+async function readFileIfSmall(
+  filePath: string,
+  maxBytes: number
+): Promise<string | null> {
   try {
     const stat = await fs.stat(filePath);
     if (!stat.isFile() || stat.size > maxBytes) {
@@ -487,10 +511,13 @@ async function readFileIfSmall(filePath: string, maxBytes: number): Promise<stri
  */
 export async function scanPluginDirectory(
   pluginDir: string,
-  options?: ScanOptions,
+  options?: ScanOptions
 ): Promise<ScanSummary> {
   const maxFiles = Math.max(1, options?.maxFiles ?? DEFAULT_MAX_FILES);
-  const maxFileBytes = Math.max(1, options?.maxFileBytes ?? DEFAULT_MAX_FILE_BYTES);
+  const maxFileBytes = Math.max(
+    1,
+    options?.maxFileBytes ?? DEFAULT_MAX_FILE_BYTES
+  );
   const failOnCritical = options?.failOnCritical ?? true;
   const maxWarnings = options?.maxWarnings ?? 0;
   const manifest = options?.manifest;
@@ -502,8 +529,8 @@ export async function scanPluginDirectory(
   for (const file of files) {
     const source = await readFileIfSmall(file, maxFileBytes);
     if (source === null || source === undefined) {
-continue;
-}
+      continue;
+    }
 
     scannedFiles++;
 
@@ -545,7 +572,9 @@ export function formatScanReport(summary: ScanSummary): string {
   lines.push('Plugin Scan Report');
   lines.push('==================');
   lines.push(`Files scanned: ${summary.scannedFiles}`);
-  lines.push(`Critical: ${summary.critical}  Warn: ${summary.warn}  Info: ${summary.info}`);
+  lines.push(
+    `Critical: ${summary.critical}  Warn: ${summary.warn}  Info: ${summary.info}`
+  );
   lines.push(`Result: ${summary.passed ? 'PASSED' : 'FAILED'}`);
   lines.push('');
 
@@ -565,8 +594,8 @@ export function formatScanReport(summary: ScanSummary): string {
   for (const severity of ['critical', 'warn', 'info'] as ScanSeverity[]) {
     const group = bySeverity.get(severity);
     if (!group || group.length === 0) {
-continue;
-}
+      continue;
+    }
 
     lines.push(`--- ${severity.toUpperCase()} ---`);
     for (const f of group) {

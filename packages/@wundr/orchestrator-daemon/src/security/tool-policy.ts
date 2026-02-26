@@ -66,7 +66,14 @@ export interface ResolvedToolPolicy extends ToolPolicy {
  * Tracks the origin of a resolved policy for debugging.
  */
 export interface ToolPolicySource {
-  layer: 'global' | 'provider' | 'agent' | 'group' | 'subagent' | 'profile' | 'default';
+  layer:
+    | 'global'
+    | 'provider'
+    | 'agent'
+    | 'group'
+    | 'subagent'
+    | 'profile'
+    | 'default';
   /** Human-readable config key path hint (e.g. "tools.byProvider.openai.deny"). */
   key?: string;
 }
@@ -123,9 +130,12 @@ export interface WundrToolPolicyConfig {
     /** Whether to enable audit logging for tool usage. */
     auditEnabled?: boolean;
   };
-  agents?: Record<string, {
-    tools?: ToolPolicyConfig;
-  }>;
+  agents?: Record<
+    string,
+    {
+      tools?: ToolPolicyConfig;
+    }
+  >;
   groups?: Record<string, GroupToolPolicyConfig>;
 }
 
@@ -164,7 +174,13 @@ export type ToolRiskLevel = 'none' | 'low' | 'medium' | 'high' | 'critical';
  * Broad functional categories for tools. Each tool belongs to exactly one category.
  * Categories determine default risk levels and approval requirements.
  */
-export type ToolCategory = 'read-only' | 'write' | 'execute' | 'network' | 'admin' | 'session';
+export type ToolCategory =
+  | 'read-only'
+  | 'write'
+  | 'execute'
+  | 'network'
+  | 'admin'
+  | 'session';
 
 /**
  * Configuration for a tool category.
@@ -181,39 +197,42 @@ export interface ToolCategoryConfig {
 /**
  * Built-in classification of tools into categories with default risk levels.
  */
-const TOOL_CATEGORY_MAP: Record<string, { category: ToolCategory; riskLevel: ToolRiskLevel }> = {
+const TOOL_CATEGORY_MAP: Record<
+  string,
+  { category: ToolCategory; riskLevel: ToolRiskLevel }
+> = {
   // Read-only tools -- safe, no side effects.
-  file_read:           { category: 'read-only', riskLevel: 'none' },
-  file_list:           { category: 'read-only', riskLevel: 'none' },
-  memory_search:       { category: 'read-only', riskLevel: 'none' },
-  memory_get:          { category: 'read-only', riskLevel: 'none' },
-  codebase_analysis:   { category: 'read-only', riskLevel: 'none' },
-  drift_detection:     { category: 'read-only', riskLevel: 'none' },
-  dependency_analyze:  { category: 'read-only', riskLevel: 'low' },
+  file_read: { category: 'read-only', riskLevel: 'none' },
+  file_list: { category: 'read-only', riskLevel: 'none' },
+  memory_search: { category: 'read-only', riskLevel: 'none' },
+  memory_get: { category: 'read-only', riskLevel: 'none' },
+  codebase_analysis: { category: 'read-only', riskLevel: 'none' },
+  drift_detection: { category: 'read-only', riskLevel: 'none' },
+  dependency_analyze: { category: 'read-only', riskLevel: 'low' },
 
   // Write tools -- modify state but within the workspace.
-  file_write:          { category: 'write', riskLevel: 'low' },
-  file_edit:           { category: 'write', riskLevel: 'low' },
-  file_delete:         { category: 'write', riskLevel: 'medium' },
+  file_write: { category: 'write', riskLevel: 'low' },
+  file_edit: { category: 'write', riskLevel: 'low' },
+  file_delete: { category: 'write', riskLevel: 'medium' },
   pattern_standardize: { category: 'write', riskLevel: 'low' },
-  governance_report:   { category: 'write', riskLevel: 'low' },
-  git_helpers:         { category: 'write', riskLevel: 'low' },
-  git_worktree:        { category: 'write', riskLevel: 'medium' },
-  test_baseline:       { category: 'write', riskLevel: 'low' },
+  governance_report: { category: 'write', riskLevel: 'low' },
+  git_helpers: { category: 'write', riskLevel: 'low' },
+  git_worktree: { category: 'write', riskLevel: 'medium' },
+  test_baseline: { category: 'write', riskLevel: 'low' },
 
   // Execute tools -- run arbitrary code or commands.
-  bash_execute:        { category: 'execute', riskLevel: 'high' },
+  bash_execute: { category: 'execute', riskLevel: 'high' },
 
   // Network tools -- make outbound requests.
-  web_fetch:           { category: 'network', riskLevel: 'medium' },
-  web_search:          { category: 'network', riskLevel: 'low' },
+  web_fetch: { category: 'network', riskLevel: 'medium' },
+  web_search: { category: 'network', riskLevel: 'low' },
 
   // Session/admin tools -- orchestrate agents or access system state.
-  session_spawn:       { category: 'session', riskLevel: 'medium' },
-  session_list:        { category: 'session', riskLevel: 'low' },
-  session_status:      { category: 'session', riskLevel: 'none' },
-  session_send:        { category: 'session', riskLevel: 'medium' },
-  session_history:     { category: 'session', riskLevel: 'low' },
+  session_spawn: { category: 'session', riskLevel: 'medium' },
+  session_list: { category: 'session', riskLevel: 'low' },
+  session_status: { category: 'session', riskLevel: 'none' },
+  session_send: { category: 'session', riskLevel: 'medium' },
+  session_history: { category: 'session', riskLevel: 'low' },
 };
 
 /**
@@ -221,17 +240,20 @@ const TOOL_CATEGORY_MAP: Record<string, { category: ToolCategory; riskLevel: Too
  */
 const CATEGORY_DEFAULT_RISK: Record<ToolCategory, ToolRiskLevel> = {
   'read-only': 'none',
-  'write':     'low',
-  'execute':   'high',
-  'network':   'medium',
-  'admin':     'critical',
-  'session':   'medium',
+  write: 'low',
+  execute: 'high',
+  network: 'medium',
+  admin: 'critical',
+  session: 'medium',
 };
 
 /**
  * Categories that require explicit approval by default.
  */
-const APPROVAL_REQUIRED_CATEGORIES = new Set<ToolCategory>(['execute', 'admin']);
+const APPROVAL_REQUIRED_CATEGORIES = new Set<ToolCategory>([
+  'execute',
+  'admin',
+]);
 
 // ============================================================================
 // Tool Argument Validation
@@ -342,9 +364,18 @@ export interface ToolAuditEntry {
   /** The risk level of the tool, if classified. */
   riskLevel?: ToolRiskLevel;
   /** The outcome of the evaluation. */
-  outcome: 'allowed' | 'denied' | 'rate-limited' | 'argument-invalid' | 'approval-required';
+  outcome:
+    | 'allowed'
+    | 'denied'
+    | 'rate-limited'
+    | 'argument-invalid'
+    | 'approval-required';
   /** Which policy layer denied the tool, if blocked. */
-  deniedBy?: ToolPolicySource['layer'] | 'rate-limit' | 'argument-validation' | 'session-revocation';
+  deniedBy?:
+    | ToolPolicySource['layer']
+    | 'rate-limit'
+    | 'argument-validation'
+    | 'session-revocation';
   /** The agent that requested the tool. */
   agentId?: string;
   /** The session in which the tool was requested. */
@@ -380,7 +411,13 @@ const TOOL_NAME_ALIASES: Record<string, string> = {
  * Named tool groups that can be referenced in policies using `group:<name>` syntax.
  */
 export const TOOL_GROUPS: Record<string, string[]> = {
-  'group:fs': ['file_read', 'file_write', 'file_list', 'file_delete', 'file_edit'],
+  'group:fs': [
+    'file_read',
+    'file_write',
+    'file_list',
+    'file_delete',
+    'file_edit',
+  ],
   'group:runtime': ['bash_execute'],
   'group:web': ['web_fetch', 'web_search'],
   'group:sessions': [
@@ -435,7 +472,13 @@ const TOOL_PROFILES: Record<ToolProfileId, ToolPolicy> = {
     allow: ['session_status'],
   },
   coding: {
-    allow: ['group:fs', 'group:runtime', 'group:sessions', 'group:memory', 'group:git'],
+    allow: [
+      'group:fs',
+      'group:runtime',
+      'group:sessions',
+      'group:memory',
+      'group:git',
+    ],
   },
   analysis: {
     allow: ['group:analysis', 'file_read', 'file_list', 'group:git'],
@@ -600,7 +643,7 @@ function compilePatterns(patterns?: string[]): CompiledPattern[] {
 
   const compiled = expanded
     .map(compilePattern)
-    .filter((p) => p.kind !== 'exact' || p.value !== '');
+    .filter(p => p.kind !== 'exact' || p.value !== '');
 
   patternCache.set(key, compiled);
   evictPatternCache();
@@ -618,13 +661,13 @@ function matchesAny(name: string, patterns: CompiledPattern[]): boolean {
         return true;
       case 'exact':
         if (name === pattern.value) {
-return true;
-}
+          return true;
+        }
         break;
       case 'regex':
         if (pattern.value.test(name)) {
-return true;
-}
+          return true;
+        }
         break;
     }
   }
@@ -635,20 +678,23 @@ return true;
  * Find the specific pattern that matches a name (for audit/debugging).
  * Returns the source string of the matching pattern, or undefined.
  */
-function findMatchingPattern(name: string, patterns: CompiledPattern[]): string | undefined {
+function findMatchingPattern(
+  name: string,
+  patterns: CompiledPattern[]
+): string | undefined {
   for (const pattern of patterns) {
     switch (pattern.kind) {
       case 'all':
         return '*';
       case 'exact':
         if (name === pattern.value) {
-return pattern.value;
-}
+          return pattern.value;
+        }
         break;
       case 'regex':
         if (pattern.value.test(name)) {
-return pattern.source;
-}
+          return pattern.source;
+        }
         break;
     }
   }
@@ -698,7 +744,9 @@ function makeToolPolicyMatcher(policy: ToolPolicy): (name: string) => boolean {
 /**
  * Create a detailed matcher that returns the matching deny pattern (for audit).
  */
-function makeDetailedPolicyMatcher(policy: ToolPolicy): (name: string) => { allowed: boolean; deniedByPattern?: string } {
+function makeDetailedPolicyMatcher(
+  policy: ToolPolicy
+): (name: string) => { allowed: boolean; deniedByPattern?: string } {
   const deny = compilePatterns(policy.deny);
   const allow = compilePatterns(policy.allow);
 
@@ -726,7 +774,10 @@ function makeDetailedPolicyMatcher(policy: ToolPolicy): (name: string) => { allo
  * Check whether a single tool name is allowed by a single policy layer.
  * If no policy is provided, the tool is allowed (no restrictions).
  */
-export function isToolAllowedByPolicy(name: string, policy?: ToolPolicy): boolean {
+export function isToolAllowedByPolicy(
+  name: string,
+  policy?: ToolPolicy
+): boolean {
   if (!policy) {
     return true;
   }
@@ -743,9 +794,9 @@ export function isToolAllowedByPolicy(name: string, policy?: ToolPolicy): boolea
  */
 export function isToolAllowedByPolicies(
   name: string,
-  policies: Array<ToolPolicy | undefined>,
+  policies: Array<ToolPolicy | undefined>
 ): boolean {
-  return policies.every((policy) => isToolAllowedByPolicy(name, policy));
+  return policies.every(policy => isToolAllowedByPolicy(name, policy));
 }
 
 /**
@@ -755,9 +806,12 @@ export function isToolAllowedByPolicies(
  */
 export function evaluateToolPolicy(
   name: string,
-  policies: EffectiveToolPolicies,
+  policies: EffectiveToolPolicies
 ): PolicyEvaluationResult {
-  const layers: Array<{ layer: ToolPolicySource['layer']; policy?: ToolPolicy }> = [
+  const layers: Array<{
+    layer: ToolPolicySource['layer'];
+    policy?: ToolPolicy;
+  }> = [
     { layer: 'global', policy: policies.globalPolicy },
     { layer: 'provider', policy: policies.globalProviderPolicy },
     { layer: 'agent', policy: policies.agentPolicy },
@@ -785,8 +839,12 @@ export function evaluateToolPolicy(
   const normalized = normalizeToolName(name);
   const classification = TOOL_CATEGORY_MAP[normalized];
   const category = classification?.category;
-  const riskLevel = classification?.riskLevel ?? (category ? CATEGORY_DEFAULT_RISK[category] : undefined);
-  const requiresApproval = category ? APPROVAL_REQUIRED_CATEGORIES.has(category) : undefined;
+  const riskLevel =
+    classification?.riskLevel ??
+    (category ? CATEGORY_DEFAULT_RISK[category] : undefined);
+  const requiresApproval = category
+    ? APPROVAL_REQUIRED_CATEGORIES.has(category)
+    : undefined;
 
   return {
     allowed: true,
@@ -804,7 +862,9 @@ export function evaluateToolPolicy(
  * Get the category and risk level for a tool name.
  * Returns undefined if the tool is not classified in the built-in map.
  */
-export function getToolClassification(name: string): { category: ToolCategory; riskLevel: ToolRiskLevel } | undefined {
+export function getToolClassification(
+  name: string
+): { category: ToolCategory; riskLevel: ToolRiskLevel } | undefined {
   const normalized = normalizeToolName(name);
   return TOOL_CATEGORY_MAP[normalized];
 }
@@ -846,7 +906,7 @@ export function getToolsAtOrAboveRisk(minRisk: ToolRiskLevel): string[] {
  */
 export function toolRequiresApproval(
   name: string,
-  config?: WundrToolPolicyConfig,
+  config?: WundrToolPolicyConfig
 ): boolean {
   const normalized = normalizeToolName(name);
   const classification = TOOL_CATEGORY_MAP[normalized];
@@ -875,7 +935,11 @@ function resolveArgPath(args: Record<string, unknown>, path: string): unknown {
   const parts = path.split('.');
   let current: unknown = args;
   for (const part of parts) {
-    if (current === null || current === undefined || typeof current !== 'object') {
+    if (
+      current === null ||
+      current === undefined ||
+      typeof current !== 'object'
+    ) {
       return undefined;
     }
     current = (current as Record<string, unknown>)[part];
@@ -892,7 +956,7 @@ function resolveArgPath(args: Record<string, unknown>, path: string): unknown {
 export function validateToolArguments(
   toolName: string,
   args: Record<string, unknown>,
-  config?: WundrToolPolicyConfig,
+  config?: WundrToolPolicyConfig
 ): ArgumentValidationResult {
   const normalized = normalizeToolName(toolName);
   const rules = config?.tools?.argumentRules?.[normalized];
@@ -917,7 +981,7 @@ export function validateToolArguments(
  */
 function evaluateArgumentRule(
   rule: ToolArgumentRule,
-  value: unknown,
+  value: unknown
 ): ArgumentValidationResult {
   switch (rule.check) {
     case 'required': {
@@ -955,7 +1019,9 @@ function evaluateArgumentRule(
         return {
           valid: false,
           failedRule: rule,
-          message: rule.reason ?? `Argument '${rule.argument}' does not match pattern '${rule.pattern}'`,
+          message:
+            rule.reason ??
+            `Argument '${rule.argument}' does not match pattern '${rule.pattern}'`,
         };
       }
       return { valid: true };
@@ -971,7 +1037,9 @@ function evaluateArgumentRule(
         return {
           valid: false,
           failedRule: rule,
-          message: rule.reason ?? `Argument '${rule.argument}' exceeds max length of ${max}`,
+          message:
+            rule.reason ??
+            `Argument '${rule.argument}' exceeds max length of ${max}`,
         };
       }
       return { valid: true };
@@ -986,7 +1054,9 @@ function evaluateArgumentRule(
         return {
           valid: false,
           failedRule: rule,
-          message: rule.reason ?? `Argument '${rule.argument}' must be one of: ${(rule.values ?? []).join(', ')}`,
+          message:
+            rule.reason ??
+            `Argument '${rule.argument}' must be one of: ${(rule.values ?? []).join(', ')}`,
         };
       }
       return { valid: true };
@@ -1012,7 +1082,7 @@ export function checkToolRateLimit(
   toolName: string,
   session: SessionToolPermissions,
   config?: WundrToolPolicyConfig,
-  now?: number,
+  now?: number
 ): boolean {
   const normalized = normalizeToolName(toolName);
   const limitConfig = config?.tools?.rateLimits?.[normalized];
@@ -1031,7 +1101,7 @@ export function checkToolRateLimit(
   }
 
   // Prune expired timestamps.
-  bucket.timestamps = bucket.timestamps.filter((t) => t > windowStart);
+  bucket.timestamps = bucket.timestamps.filter(t => t > windowStart);
 
   if (bucket.timestamps.length >= limitConfig.maxInvocations) {
     return false;
@@ -1048,7 +1118,7 @@ export function getToolRateLimitStatus(
   toolName: string,
   session: SessionToolPermissions,
   config?: WundrToolPolicyConfig,
-  now?: number,
+  now?: number
 ): { remaining: number; resetMs: number; limited: boolean } | undefined {
   const normalized = normalizeToolName(toolName);
   const limitConfig = config?.tools?.rateLimits?.[normalized];
@@ -1061,7 +1131,7 @@ export function getToolRateLimitStatus(
   const windowStart = currentTime - limitConfig.windowMs;
 
   const bucket = session.rateLimitBuckets.get(normalized);
-  const timestamps = bucket?.timestamps.filter((t) => t > windowStart) ?? [];
+  const timestamps = bucket?.timestamps.filter(t => t > windowStart) ?? [];
   const remaining = Math.max(0, limitConfig.maxInvocations - timestamps.length);
   const oldestInWindow = timestamps.length > 0 ? timestamps[0] : currentTime;
   const resetMs = oldestInWindow + limitConfig.windowMs - currentTime;
@@ -1081,7 +1151,7 @@ export function getToolRateLimitStatus(
  * Create a new session-scoped tool permission state.
  */
 export function createSessionToolPermissions(
-  options: CreateSessionPermissionsOptions,
+  options: CreateSessionPermissionsOptions
 ): SessionToolPermissions {
   const session: SessionToolPermissions = {
     sessionId: options.sessionId,
@@ -1110,7 +1180,10 @@ export function createSessionToolPermissions(
 /**
  * Grant a tool within a session scope. Removes from revocations if present.
  */
-export function grantSessionTool(session: SessionToolPermissions, toolName: string): void {
+export function grantSessionTool(
+  session: SessionToolPermissions,
+  toolName: string
+): void {
   const normalized = normalizeToolName(toolName);
   session.revocations.delete(normalized);
   session.grants.add(normalized);
@@ -1119,7 +1192,10 @@ export function grantSessionTool(session: SessionToolPermissions, toolName: stri
 /**
  * Revoke a tool within a session scope. Removes from grants if present.
  */
-export function revokeSessionTool(session: SessionToolPermissions, toolName: string): void {
+export function revokeSessionTool(
+  session: SessionToolPermissions,
+  toolName: string
+): void {
   const normalized = normalizeToolName(toolName);
   session.grants.delete(normalized);
   session.revocations.add(normalized);
@@ -1131,7 +1207,7 @@ export function revokeSessionTool(session: SessionToolPermissions, toolName: str
  */
 export function isToolAllowedBySession(
   name: string,
-  session?: SessionToolPermissions,
+  session?: SessionToolPermissions
 ): boolean | undefined {
   if (!session) {
     return undefined;
@@ -1170,10 +1246,7 @@ export class ToolAuditLogger {
    * Record an audit entry. Appends to the global buffer, the session log
    * (if provided), and notifies all listeners.
    */
-  static record(
-    entry: ToolAuditEntry,
-    session?: SessionToolPermissions,
-  ): void {
+  static record(entry: ToolAuditEntry, session?: SessionToolPermissions): void {
     // Append to global buffer.
     ToolAuditLogger.buffer.push(entry);
     if (ToolAuditLogger.buffer.length > ToolAuditLogger.MAX_BUFFER_SIZE) {
@@ -1226,14 +1299,16 @@ export class ToolAuditLogger {
    */
   static getEntriesForTool(toolName: string): ToolAuditEntry[] {
     const normalized = normalizeToolName(toolName);
-    return ToolAuditLogger.buffer.filter((e) => e.normalizedToolName === normalized);
+    return ToolAuditLogger.buffer.filter(
+      e => e.normalizedToolName === normalized
+    );
   }
 
   /**
    * Get entries from the global buffer filtered by session ID.
    */
   static getEntriesForSession(sessionId: string): ToolAuditEntry[] {
-    return ToolAuditLogger.buffer.filter((e) => e.sessionId === sessionId);
+    return ToolAuditLogger.buffer.filter(e => e.sessionId === sessionId);
   }
 
   /**
@@ -1259,9 +1334,15 @@ export class ToolAuditLogger {
         byCategory[entry.category] = (byCategory[entry.category] ?? 0) + 1;
       }
       switch (entry.outcome) {
-        case 'allowed': allowed++; break;
-        case 'denied': denied++; break;
-        case 'rate-limited': rateLimited++; break;
+        case 'allowed':
+          allowed++;
+          break;
+        case 'denied':
+          denied++;
+          break;
+        case 'rate-limited':
+          rateLimited++;
+          break;
       }
     }
 
@@ -1317,14 +1398,19 @@ export function evaluateToolAccess(params: {
   config?: WundrToolPolicyConfig;
   auditEnabled?: boolean;
 }): PolicyEvaluationResult {
-  const startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  const startTime =
+    typeof performance !== 'undefined' ? performance.now() : Date.now();
   const normalized = normalizeToolName(params.toolName);
   const classification = TOOL_CATEGORY_MAP[normalized];
 
-  const makeAuditEntry = (outcome: ToolAuditEntry['outcome'], deniedBy?: ToolAuditEntry['deniedBy']): ToolAuditEntry => {
-    const elapsed = typeof performance !== 'undefined'
-      ? Math.round((performance.now() - startTime) * 1000)
-      : 0;
+  const makeAuditEntry = (
+    outcome: ToolAuditEntry['outcome'],
+    deniedBy?: ToolAuditEntry['deniedBy']
+  ): ToolAuditEntry => {
+    const elapsed =
+      typeof performance !== 'undefined'
+        ? Math.round((performance.now() - startTime) * 1000)
+        : 0;
     return {
       timestamp: Date.now(),
       toolName: params.toolName,
@@ -1339,7 +1425,8 @@ export function evaluateToolAccess(params: {
     };
   };
 
-  const shouldAudit = params.auditEnabled ?? params.config?.tools?.auditEnabled ?? false;
+  const shouldAudit =
+    params.auditEnabled ?? params.config?.tools?.auditEnabled ?? false;
 
   // Step 1: Session-scoped revocations.
   if (params.session) {
@@ -1353,19 +1440,27 @@ export function evaluateToolAccess(params: {
         riskLevel: classification?.riskLevel,
       };
       if (shouldAudit) {
-        ToolAuditLogger.record(makeAuditEntry('denied', 'session-revocation'), params.session);
+        ToolAuditLogger.record(
+          makeAuditEntry('denied', 'session-revocation'),
+          params.session
+        );
       }
       return result;
     }
   }
 
   // Step 2: Multi-layer policy evaluation (skipped if session grants the tool).
-  const sessionGranted = params.session ? isToolAllowedBySession(normalized, params.session) : undefined;
+  const sessionGranted = params.session
+    ? isToolAllowedBySession(normalized, params.session)
+    : undefined;
   if (sessionGranted !== true) {
     const policyResult = evaluateToolPolicy(params.toolName, params.policies);
     if (!policyResult.allowed) {
       if (shouldAudit) {
-        ToolAuditLogger.record(makeAuditEntry('denied', policyResult.deniedBy), params.session);
+        ToolAuditLogger.record(
+          makeAuditEntry('denied', policyResult.deniedBy),
+          params.session
+        );
       }
       return policyResult;
     }
@@ -1373,7 +1468,11 @@ export function evaluateToolAccess(params: {
 
   // Step 3: Argument validation.
   if (params.toolArgs && params.config) {
-    const argResult = validateToolArguments(params.toolName, params.toolArgs, params.config);
+    const argResult = validateToolArguments(
+      params.toolName,
+      params.toolArgs,
+      params.config
+    );
     if (!argResult.valid) {
       const result: PolicyEvaluationResult = {
         allowed: false,
@@ -1383,7 +1482,10 @@ export function evaluateToolAccess(params: {
         riskLevel: classification?.riskLevel,
       };
       if (shouldAudit) {
-        ToolAuditLogger.record(makeAuditEntry('argument-invalid', 'argument-validation'), params.session);
+        ToolAuditLogger.record(
+          makeAuditEntry('argument-invalid', 'argument-validation'),
+          params.session
+        );
       }
       return result;
     }
@@ -1391,7 +1493,11 @@ export function evaluateToolAccess(params: {
 
   // Step 4: Rate limiting.
   if (params.session && params.config) {
-    const withinLimit = checkToolRateLimit(params.toolName, params.session, params.config);
+    const withinLimit = checkToolRateLimit(
+      params.toolName,
+      params.session,
+      params.config
+    );
     if (!withinLimit) {
       const result: PolicyEvaluationResult = {
         allowed: false,
@@ -1401,7 +1507,10 @@ export function evaluateToolAccess(params: {
         riskLevel: classification?.riskLevel,
       };
       if (shouldAudit) {
-        ToolAuditLogger.record(makeAuditEntry('rate-limited', 'rate-limit'), params.session);
+        ToolAuditLogger.record(
+          makeAuditEntry('rate-limited', 'rate-limit'),
+          params.session
+        );
       }
       return result;
     }
@@ -1409,7 +1518,9 @@ export function evaluateToolAccess(params: {
 
   // Step 5: Approval requirements.
   const category = classification?.category;
-  const riskLevel = classification?.riskLevel ?? (category ? CATEGORY_DEFAULT_RISK[category] : undefined);
+  const riskLevel =
+    classification?.riskLevel ??
+    (category ? CATEGORY_DEFAULT_RISK[category] : undefined);
   const requiresApproval = toolRequiresApproval(params.toolName, params.config);
 
   if (shouldAudit) {
@@ -1435,14 +1546,14 @@ export function evaluateToolAccess(params: {
  */
 export function filterToolNamesByPolicy(
   toolNames: string[],
-  policy?: ToolPolicy,
+  policy?: ToolPolicy
 ): string[] {
   if (!policy) {
     return toolNames;
   }
 
   const matcher = makeToolPolicyMatcher(policy);
-  return toolNames.filter((name) => matcher(name));
+  return toolNames.filter(name => matcher(name));
 }
 
 /**
@@ -1450,14 +1561,14 @@ export function filterToolNamesByPolicy(
  */
 export function filterToolsByPolicy<T extends { name: string }>(
   tools: T[],
-  policy?: ToolPolicy,
+  policy?: ToolPolicy
 ): T[] {
   if (!policy) {
     return tools;
   }
 
   const matcher = makeToolPolicyMatcher(policy);
-  return tools.filter((tool) => matcher(tool.name));
+  return tools.filter(tool => matcher(tool.name));
 }
 
 /**
@@ -1465,7 +1576,7 @@ export function filterToolsByPolicy<T extends { name: string }>(
  */
 export function filterToolsByPolicies<T extends { name: string }>(
   tools: T[],
-  policies: EffectiveToolPolicies,
+  policies: EffectiveToolPolicies
 ): T[] {
   const allPolicies: Array<ToolPolicy | undefined> = [
     policies.globalPolicy,
@@ -1477,8 +1588,8 @@ export function filterToolsByPolicies<T extends { name: string }>(
   ];
 
   // Build a combined matcher that checks all layers.
-  return tools.filter((tool) =>
-    allPolicies.every((policy) => isToolAllowedByPolicy(tool.name, policy)),
+  return tools.filter(tool =>
+    allPolicies.every(policy => isToolAllowedByPolicy(tool.name, policy))
   );
 }
 
@@ -1580,7 +1691,10 @@ function resolveProviderToolPolicy(params: {
       : rawModelId;
 
   // Try full model ID first, then provider name.
-  const candidates = [...(fullModelId ? [fullModelId] : []), normalizedProvider];
+  const candidates = [
+    ...(fullModelId ? [fullModelId] : []),
+    normalizedProvider,
+  ];
 
   for (const key of candidates) {
     const match = lookup.get(key);
@@ -1600,7 +1714,9 @@ function resolveProviderToolPolicy(params: {
  * Resolve the tool policy for subagents, merging the default deny list
  * with any configured overrides.
  */
-export function resolveSubagentToolPolicy(config?: WundrToolPolicyConfig): ToolPolicy {
+export function resolveSubagentToolPolicy(
+  config?: WundrToolPolicyConfig
+): ToolPolicy {
   const configured = config?.tools?.subagents?.tools;
   const deny = [
     ...DEFAULT_SUBAGENT_TOOL_DENY,
@@ -1660,7 +1776,7 @@ export function resolveGroupToolPolicy(params: {
  */
 function resolveGroupMemberPolicy(
   groupConfig: GroupToolPolicyConfig,
-  params: { memberId?: string | null; memberName?: string | null },
+  params: { memberId?: string | null; memberName?: string | null }
 ): ToolPolicy | undefined {
   if (!groupConfig.toolsByMember) {
     return pickToolPolicy(groupConfig);
@@ -1676,12 +1792,12 @@ function resolveGroupMemberPolicy(
 
   for (const [rawKey, policy] of entries) {
     if (!policy) {
-continue;
-}
+      continue;
+    }
     const key = normalizeMemberKey(rawKey);
     if (!key) {
-continue;
-}
+      continue;
+    }
     if (key === '*') {
       wildcard = policy;
       continue;
@@ -1703,8 +1819,8 @@ continue;
   for (const candidate of candidates) {
     const key = normalizeMemberKey(candidate);
     if (!key) {
-continue;
-}
+      continue;
+    }
     const match = lookup.get(key);
     if (match) {
       return pickToolPolicy(match);
@@ -1726,7 +1842,9 @@ continue;
  * Resolve a tool profile by name. Returns the profile's policy configuration,
  * or undefined if the profile is not recognized.
  */
-export function resolveToolProfilePolicy(profile?: string): ToolPolicy | undefined {
+export function resolveToolProfilePolicy(
+  profile?: string
+): ToolPolicy | undefined {
   if (!profile) {
     return undefined;
   }
@@ -1823,7 +1941,9 @@ export function resolveEffectiveToolPolicy(params: {
  * Collect all non-undefined policies from an `EffectiveToolPolicies` object
  * into a flat array suitable for `isToolAllowedByPolicies`.
  */
-export function collectPolicies(policies: EffectiveToolPolicies): Array<ToolPolicy | undefined> {
+export function collectPolicies(
+  policies: EffectiveToolPolicies
+): Array<ToolPolicy | undefined> {
   return [
     policies.globalPolicy,
     policies.globalProviderPolicy,
@@ -1847,7 +1967,9 @@ export class ToolPolicyDeniedError extends Error {
 
   constructor(toolName: string, deniedBy?: ToolPolicySource['layer']) {
     const layerHint = deniedBy ? ` (denied by ${deniedBy} policy)` : '';
-    super(`Tool '${toolName}' is not permitted by the current policy${layerHint}`);
+    super(
+      `Tool '${toolName}' is not permitted by the current policy${layerHint}`
+    );
     this.name = 'ToolPolicyDeniedError';
     this.toolName = toolName;
     this.deniedBy = deniedBy;
@@ -1861,7 +1983,11 @@ export class ToolArgumentValidationError extends Error {
   public readonly toolName: string;
   public readonly failedRule: ToolArgumentRule | undefined;
 
-  constructor(toolName: string, message: string, failedRule?: ToolArgumentRule) {
+  constructor(
+    toolName: string,
+    message: string,
+    failedRule?: ToolArgumentRule
+  ) {
     super(message);
     this.name = 'ToolArgumentValidationError';
     this.toolName = toolName;
@@ -1876,7 +2002,8 @@ export class ToolRateLimitError extends Error {
   public readonly toolName: string;
 
   constructor(toolName: string, resetMs?: number) {
-    const resetHint = resetMs !== undefined ? ` (resets in ${Math.ceil(resetMs / 1000)}s)` : '';
+    const resetHint =
+      resetMs !== undefined ? ` (resets in ${Math.ceil(resetMs / 1000)}s)` : '';
     super(`Tool '${toolName}' has exceeded its rate limit${resetHint}`);
     this.name = 'ToolRateLimitError';
     this.toolName = toolName;
@@ -1918,17 +2045,17 @@ export function isDefaultSubagentDenied(name: string): boolean {
  * Useful for building combined allowlists for profile/plugin interactions.
  */
 export function collectExplicitAllowlist(
-  policies: Array<ToolPolicy | undefined>,
+  policies: Array<ToolPolicy | undefined>
 ): string[] {
   const entries: string[] = [];
   for (const policy of policies) {
     if (!policy?.allow) {
-continue;
-}
+      continue;
+    }
     for (const value of policy.allow) {
       if (typeof value !== 'string') {
-continue;
-}
+        continue;
+      }
       const trimmed = value.trim();
       if (trimmed) {
         entries.push(trimmed);

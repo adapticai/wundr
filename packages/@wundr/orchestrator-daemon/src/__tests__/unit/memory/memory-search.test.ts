@@ -39,10 +39,7 @@ import {
   type MemoryEntry,
   type MemorySection,
 } from '../../../memory/memory-file-manager';
-import {
-  MemoryLinker,
-  type MemoryLink,
-} from '../../../memory/memory-linker';
+import { MemoryLinker, type MemoryLink } from '../../../memory/memory-linker';
 import {
   MemorySearch,
   type RelevanceContext,
@@ -86,16 +83,13 @@ vi.mock('node:fs', () => ({
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeEntry(
-  text: string,
-  meta?: MemoryEntry['metadata'],
-): MemoryEntry {
+function makeEntry(text: string, meta?: MemoryEntry['metadata']): MemoryEntry {
   return { text, children: [], line: 1, metadata: meta };
 }
 
 function makeSection(
   title: string,
-  entries: MemoryEntry[] = [],
+  entries: MemoryEntry[] = []
 ): MemorySection {
   return { title, entries, startLine: 1, endLine: 10 };
 }
@@ -103,7 +97,7 @@ function makeSection(
 function makeFile(
   filePath: string,
   sections: MemorySection[] = [],
-  exists = true,
+  exists = true
 ): ParsedMemoryFile {
   return {
     path: filePath,
@@ -119,7 +113,7 @@ type ScopedFile = { file: ParsedMemoryFile; scope: string };
 function makeScopedFile(
   scope: string,
   sections: MemorySection[],
-  filePath = `/test/${scope}/MEMORY.md`,
+  filePath = `/test/${scope}/MEMORY.md`
 ): ScopedFile {
   return { file: makeFile(filePath, sections), scope };
 }
@@ -219,11 +213,9 @@ describe('MemorySearch', () => {
         ]),
       ];
 
-      const results = searcher.search(
-        'TypeScript compiler error',
-        files,
-        { minScore: 0 },
-      );
+      const results = searcher.search('TypeScript compiler error', files, {
+        minScore: 0,
+      });
 
       expect(results.length).toBe(2);
       // Entry with more overlap should rank first
@@ -461,7 +453,12 @@ describe('MemorySearch', () => {
         recentErrors: ['ENOENT: no such file /foo/bar'],
       };
 
-      const results = searcher.search('enoent', files, { minScore: 0 }, context);
+      const results = searcher.search(
+        'enoent',
+        files,
+        { minScore: 0 },
+        context
+      );
 
       // Error Patterns entry should get context boost
       if (results.length >= 2) {
@@ -486,7 +483,12 @@ describe('MemorySearch', () => {
         recentTools: ['vitest', 'read_file'],
       };
 
-      const results = searcher.search('vitest', files, { minScore: 0 }, context);
+      const results = searcher.search(
+        'vitest',
+        files,
+        { minScore: 0 },
+        context
+      );
 
       expect(results.length).toBeGreaterThan(0);
     });
@@ -528,9 +530,9 @@ describe('MemorySearch', () => {
         minScore: 0,
       });
 
-      expect(
-        results.every(r => r.section === 'Project Conventions'),
-      ).toBe(true);
+      expect(results.every(r => r.section === 'Project Conventions')).toBe(
+        true
+      );
     });
 
     it('should filter out stale entries by default', () => {
@@ -575,7 +577,7 @@ describe('MemorySearch', () => {
   describe('limits and thresholds', () => {
     it('should limit results to maxResults', () => {
       const entries = Array.from({ length: 20 }, (_, i) =>
-        makeEntry(`Error pattern number ${i} details here`),
+        makeEntry(`Error pattern number ${i} details here`)
       );
       const files: ScopedFile[] = [
         makeScopedFile('project', [makeSection('Error Patterns', entries)]),
@@ -611,7 +613,7 @@ describe('MemorySearch', () => {
 
     it('should use default maxResults of 10 when not specified', () => {
       const entries = Array.from({ length: 30 }, (_, i) =>
-        makeEntry(`Testing pattern entry number ${i}`),
+        makeEntry(`Testing pattern entry number ${i}`)
       );
       const files: ScopedFile[] = [
         makeScopedFile('project', [makeSection('Error Patterns', entries)]),
@@ -680,7 +682,7 @@ describe('MemorySearch', () => {
           makeSection('Error Patterns', [
             makeEntry('General error debugging tips'),
             makeEntry(
-              'TypeScript compiler error details for advanced debugging',
+              'TypeScript compiler error details for advanced debugging'
             ),
           ]),
         ]),
@@ -691,9 +693,7 @@ describe('MemorySearch', () => {
       });
 
       for (let i = 1; i < results.length; i++) {
-        expect(results[i - 1]!.score).toBeGreaterThanOrEqual(
-          results[i]!.score,
-        );
+        expect(results[i - 1]!.score).toBeGreaterThanOrEqual(results[i]!.score);
       }
     });
 
@@ -714,10 +714,7 @@ describe('MemorySearch', () => {
 
       // With no recency boost, TF-IDF scores should be very similar
       // Tie-break should put the newer entry first
-      if (
-        results.length === 2 &&
-        results[0]!.score === results[1]!.score
-      ) {
+      if (results.length === 2 && results[0]!.score === results[1]!.score) {
         expect(results[0]!.metadata?.dateAdded).toBe('2026-02-01');
       }
     });
@@ -739,7 +736,7 @@ describe('MemorySearch', () => {
 
     it('should score higher for task description overlap', () => {
       const entry = makeEntry(
-        'Use TypeScript strict mode for better type safety',
+        'Use TypeScript strict mode for better type safety'
       );
       const section = makeSection('Project Conventions', [entry]);
 
@@ -765,7 +762,7 @@ describe('MemorySearch', () => {
 
     it('should cap the score at 1.0', () => {
       const entry = makeEntry(
-        'TypeScript compiler error in testing infrastructure',
+        'TypeScript compiler error in testing infrastructure'
       );
       const section = makeSection('Error Patterns', [entry]);
 
@@ -789,9 +786,7 @@ describe('MemorySearch', () => {
       const entry = makeEntry('Use prettier');
       entry.line = 42;
       const files: ScopedFile[] = [
-        makeScopedFile('project', [
-          makeSection('User Preferences', [entry]),
-        ]),
+        makeScopedFile('project', [makeSection('User Preferences', [entry])]),
       ];
 
       const results = searcher.search('prettier', files, { minScore: 0 });
@@ -855,7 +850,8 @@ describe('SessionSummaryGenerator', () => {
         }),
         makeTurn({
           role: 'assistant',
-          content: "I'll help with TypeScript generics. Let me look at the code.",
+          content:
+            "I'll help with TypeScript generics. Let me look at the code.",
           timestamp: new Date('2026-01-15T10:00:30Z'),
         }),
         makeTurn({
@@ -1017,12 +1013,16 @@ describe('SessionSummaryGenerator', () => {
 
     it('should recommend project scope for project-specific content', () => {
       const turns = [
-        makeTurn({ content: 'In this project we use ESLint with strict rules' }),
+        makeTurn({
+          content: 'In this project we use ESLint with strict rules',
+        }),
         makeTurn({
           role: 'assistant',
           content: "I'll follow the project conventions.",
         }),
-        makeTurn({ content: 'The architecture uses microservices and more stuff' }),
+        makeTurn({
+          content: 'The architecture uses microservices and more stuff',
+        }),
       ];
 
       const result = generator.generateSummary('sess-1', turns, 0);
@@ -1034,8 +1034,14 @@ describe('SessionSummaryGenerator', () => {
       const gen = new SessionSummaryGenerator({ maxSummaryLength: 50 });
 
       const turns = [
-        makeTurn({ content: 'Very long discussion about multiple topics including TypeScript and React' }),
-        makeTurn({ role: 'assistant', content: 'Working on all the topics you mentioned.' }),
+        makeTurn({
+          content:
+            'Very long discussion about multiple topics including TypeScript and React',
+        }),
+        makeTurn({
+          role: 'assistant',
+          content: 'Working on all the topics you mentioned.',
+        }),
         makeTurn({ content: 'Also discuss testing and deployment strategies' }),
       ];
 
@@ -1248,9 +1254,7 @@ describe('MemoryLinker', () => {
 
     it('should skip the Links section', () => {
       const file = makeFile('/test/MEMORY.md', [
-        makeSection('Links', [
-          makeEntry('[Errors](memory/errors.md)'),
-        ]),
+        makeSection('Links', [makeEntry('[Errors](memory/errors.md)')]),
         makeSection('Error Patterns', [
           makeEntry('Check error logs in memory directory'),
         ]),
@@ -1585,7 +1589,7 @@ describe('MemoryFileManager', () => {
 
       const result = fm.isSemanticDuplicate(
         'Use TypeScript strict mode for improved type safety',
-        existing,
+        existing
       );
 
       expect(result).toBe(true);
@@ -1598,7 +1602,7 @@ describe('MemoryFileManager', () => {
 
       const result = fm.isSemanticDuplicate(
         'Deploy using Docker containers on AWS',
-        existing,
+        existing
       );
 
       expect(result).toBe(false);
@@ -1618,22 +1622,20 @@ describe('MemoryFileManager', () => {
     });
 
     it('should respect the custom threshold parameter', () => {
-      const existing = [
-        makeEntry('Use prettier for code formatting'),
-      ];
+      const existing = [makeEntry('Use prettier for code formatting')];
 
       // With a very high threshold, even similar entries should not match
       fm.isSemanticDuplicate(
         'Use prettier for formatting code',
         existing,
-        0.99,
+        0.99
       );
 
       // With a very low threshold, most entries would match
       const lowThreshold = fm.isSemanticDuplicate(
         'Use prettier for formatting code',
         existing,
-        0.3,
+        0.3
       );
 
       expect(lowThreshold).toBe(true);
@@ -1661,13 +1663,13 @@ describe('MemoryFileManager', () => {
 
     it('should collapse whitespace', () => {
       expect(fm.normalizeEntry('Use   multiple    spaces')).toBe(
-        'use multiple spaces',
+        'use multiple spaces'
       );
     });
 
     it('should remove backticks and quotes', () => {
       expect(fm.normalizeEntry("Use `prettier` for 'formatting'")).toBe(
-        'use prettier for formatting',
+        'use prettier for formatting'
       );
     });
   });
@@ -1684,7 +1686,7 @@ describe('MemoryFileManager', () => {
 
     it('should detect Bearer tokens', () => {
       expect(
-        fm.containsSecret('Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test'),
+        fm.containsSecret('Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test')
       ).toBe(true);
     });
 
@@ -1700,7 +1702,7 @@ describe('MemoryFileManager', () => {
     it('should not flag normal text', () => {
       expect(fm.containsSecret('Use dark mode in the editor')).toBe(false);
       expect(fm.containsSecret('Remember to run tests before committing')).toBe(
-        false,
+        false
       );
     });
   });
@@ -1741,10 +1743,7 @@ describe('MemoryFileManager', () => {
   describe('getAllEntries', () => {
     it('should return all entries across sections', () => {
       const file = makeFile('/test/MEMORY.md', [
-        makeSection('User Preferences', [
-          makeEntry('A'),
-          makeEntry('B'),
-        ]),
+        makeSection('User Preferences', [makeEntry('A'), makeEntry('B')]),
         makeSection('Corrections', [makeEntry('C')]),
       ]);
 

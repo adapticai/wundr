@@ -99,7 +99,11 @@ export async function POST(
 
     const input: ProvisionEmailInput = parseResult.data;
 
-    const result = await agentIdentityService.provisionEmail(identityId, input);
+    const result = await agentIdentityService.provisionEmail(
+      input.orchestratorId,
+      input.emailDomain,
+      input.preferredUsername
+    );
 
     if (!result) {
       return NextResponse.json(

@@ -205,7 +205,7 @@ describe('MemoryManager', () => {
       const results = manager.retrieve('TypeScript');
 
       expect(results.length).toBe(2);
-      expect(results.every((r) => r.content.includes('TypeScript'))).toBe(true);
+      expect(results.every(r => r.content.includes('TypeScript'))).toBe(true);
     });
 
     it('should retrieve matching semantic entries', () => {
@@ -290,8 +290,8 @@ describe('MemoryManager', () => {
 
       // Export and check semantic entries
       const context = manager.exportContext();
-      const summaries = context.semantic.filter(
-        (e) => e.content.includes('Archived summary'),
+      const summaries = context.semantic.filter(e =>
+        e.content.includes('Archived summary')
       );
 
       expect(summaries.length).toBeGreaterThan(0);

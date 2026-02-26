@@ -2,7 +2,9 @@
 
 ## Overview
 
-The `MetricsCollector` provides a high-level API for recording Prometheus metrics in the Orchestrator Daemon. It offers batching, timing utilities, and aggregation capabilities to efficiently monitor orchestrator performance, resource usage, and system health.
+The `MetricsCollector` provides a high-level API for recording Prometheus metrics in the
+Orchestrator Daemon. It offers batching, timing utilities, and aggregation capabilities to
+efficiently monitor orchestrator performance, resource usage, and system health.
 
 ## Features
 
@@ -48,7 +50,7 @@ The `MetricsCollector` provides a high-level API for recording Prometheus metric
 import {
   MetricsRegistry,
   MetricsCollector,
-  createMetricsCollector
+  createMetricsCollector,
 } from '@wundr.io/orchestrator-daemon';
 ```
 
@@ -66,7 +68,7 @@ const collector = createMetricsCollector(registry, {
   enableBatching: true,
   batchFlushInterval: 5000, // 5 seconds
   maxBatchSize: 100,
-  debug: false
+  debug: false,
 });
 
 // Record session start
@@ -94,6 +96,7 @@ constructor(
 ```
 
 **CollectorConfig**:
+
 - `enableBatching?: boolean` - Enable batching of metric updates (default: `true`)
 - `batchFlushInterval?: number` - Batch flush interval in milliseconds (default: `5000`)
 - `maxBatchSize?: number` - Maximum batch size before auto-flush (default: `100`)
@@ -102,6 +105,7 @@ constructor(
 ### Session Metrics
 
 #### recordSessionStart()
+
 Increment active sessions gauge.
 
 ```typescript
@@ -112,11 +116,13 @@ recordSessionStart(
 ```
 
 **Example**:
+
 ```typescript
 collector.recordSessionStart('orch-1', 'claude-code');
 ```
 
 #### recordSessionEnd()
+
 Decrement active sessions gauge.
 
 ```typescript
@@ -127,6 +133,7 @@ recordSessionEnd(
 ```
 
 **Example**:
+
 ```typescript
 collector.recordSessionEnd('orch-1', 'claude-code');
 ```
@@ -134,6 +141,7 @@ collector.recordSessionEnd('orch-1', 'claude-code');
 ### Token Metrics
 
 #### recordTokenUsage()
+
 Record token consumption.
 
 ```typescript
@@ -145,6 +153,7 @@ recordTokenUsage(
 ```
 
 **Example**:
+
 ```typescript
 collector.recordTokenUsage('orch-1', 'claude-sonnet-3.5', 1500);
 ```
@@ -152,6 +161,7 @@ collector.recordTokenUsage('orch-1', 'claude-sonnet-3.5', 1500);
 ### Latency Metrics
 
 #### recordMessageLatency()
+
 Record message processing latency in milliseconds.
 
 ```typescript
@@ -162,6 +172,7 @@ recordMessageLatency(
 ```
 
 **Example**:
+
 ```typescript
 collector.recordMessageLatency('orch-1', 150); // 150ms
 ```
@@ -169,6 +180,7 @@ collector.recordMessageLatency('orch-1', 150); // 150ms
 ### Tool Metrics
 
 #### recordToolInvocation()
+
 Record tool invocation with status.
 
 ```typescript
@@ -180,6 +192,7 @@ recordToolInvocation(
 ```
 
 **Example**:
+
 ```typescript
 collector.recordToolInvocation('orch-1', 'file_read', 'success');
 collector.recordToolInvocation('orch-1', 'api_call', 'error');
@@ -188,6 +201,7 @@ collector.recordToolInvocation('orch-1', 'api_call', 'error');
 ### Federation Metrics
 
 #### recordDelegation()
+
 Record delegation between orchestrators.
 
 ```typescript
@@ -199,6 +213,7 @@ recordDelegation(
 ```
 
 **Example**:
+
 ```typescript
 collector.recordDelegation('orch-1', 'orch-2', 'success');
 ```
@@ -206,6 +221,7 @@ collector.recordDelegation('orch-1', 'orch-2', 'success');
 ### Error Metrics
 
 #### recordError()
+
 Record error occurrence.
 
 ```typescript
@@ -216,6 +232,7 @@ recordError(
 ```
 
 **Example**:
+
 ```typescript
 collector.recordError('orch-1', 'timeout_error');
 collector.recordError('orch-1', 'memory_limit_exceeded');
@@ -224,6 +241,7 @@ collector.recordError('orch-1', 'memory_limit_exceeded');
 ### Resource Metrics
 
 #### updateNodeLoad()
+
 Update node load gauge (0-1 scale).
 
 ```typescript
@@ -234,11 +252,13 @@ updateNodeLoad(
 ```
 
 **Example**:
+
 ```typescript
 collector.updateNodeLoad('node-1', 0.65); // 65% load
 ```
 
 #### updateBudgetUtilization()
+
 Update budget utilization percentage.
 
 ```typescript
@@ -250,6 +270,7 @@ updateBudgetUtilization(
 ```
 
 **Example**:
+
 ```typescript
 collector.updateBudgetUtilization('orch-1', 'daily', 75.5); // 75.5%
 ```
@@ -257,6 +278,7 @@ collector.updateBudgetUtilization('orch-1', 'daily', 75.5); // 75.5%
 ### Timing Utilities
 
 #### startTimer()
+
 Start a timer and return a function to record duration.
 
 ```typescript
@@ -264,6 +286,7 @@ startTimer(): TimerFunction
 ```
 
 **Example**:
+
 ```typescript
 const endTimer = collector.startTimer();
 
@@ -274,6 +297,7 @@ console.log(`Took ${durationMs}ms`);
 ```
 
 #### withMetrics()
+
 Wrap an async function with automatic timing and error recording.
 
 ```typescript
@@ -284,21 +308,20 @@ async withMetrics<T>(
 ```
 
 **Example**:
+
 ```typescript
 async function processTask() {
   // ... task logic ...
   return { status: 'completed' };
 }
 
-const result = await collector.withMetrics(
-  processTask,
-  { orchestrator_id: 'orch-1' }
-);
+const result = await collector.withMetrics(processTask, { orchestrator_id: 'orch-1' });
 ```
 
 ### Aggregation
 
 #### getAggregatedStats()
+
 Get aggregated statistics for an orchestrator over a time range.
 
 ```typescript
@@ -309,14 +332,18 @@ async getAggregatedStats(
 ```
 
 **Returns**:
+
 ```typescript
 {
   orchestratorId: string;
-  timeRange: { start: Date; end: Date };
+  timeRange: {
+    start: Date;
+    end: Date;
+  }
   totalSessions: number;
   totalTokens: number;
-  avgLatency: number;          // in milliseconds
-  errorRate: number;            // 0-1 scale
+  avgLatency: number; // in milliseconds
+  errorRate: number; // 0-1 scale
   successfulToolCalls: number;
   failedToolCalls: number;
   toolInvocations: number;
@@ -325,10 +352,11 @@ async getAggregatedStats(
 ```
 
 **Example**:
+
 ```typescript
 const stats = await collector.getAggregatedStats('orch-1', {
   start: new Date(Date.now() - 3600000), // 1 hour ago
-  end: new Date()
+  end: new Date(),
 });
 
 console.log(`Avg latency: ${stats.avgLatency}ms`);
@@ -338,6 +366,7 @@ console.log(`Error rate: ${(stats.errorRate * 100).toFixed(2)}%`);
 ### Lifecycle Management
 
 #### flush()
+
 Manually flush all pending batched updates.
 
 ```typescript
@@ -345,11 +374,13 @@ flush(): void
 ```
 
 **Example**:
+
 ```typescript
 collector.flush();
 ```
 
 #### close()
+
 Close the collector and cleanup resources.
 
 ```typescript
@@ -357,6 +388,7 @@ close(): void
 ```
 
 **Example**:
+
 ```typescript
 collector.close();
 ```
@@ -377,23 +409,27 @@ The MetricsCollector implements efficient batching to reduce overhead:
 ### Batching vs. Immediate
 
 **With Batching** (recommended for high-throughput scenarios):
+
 ```typescript
 const collector = createMetricsCollector(registry, {
   enableBatching: true,
   batchFlushInterval: 5000,
-  maxBatchSize: 100
+  maxBatchSize: 100,
 });
 ```
+
 - Lower overhead per metric update
 - Reduced lock contention
 - Slight delay in metric visibility
 
 **Without Batching** (for real-time requirements):
+
 ```typescript
 const collector = createMetricsCollector(registry, {
-  enableBatching: false
+  enableBatching: false,
 });
 ```
+
 - Immediate metric updates
 - Higher overhead per update
 - Real-time visibility
@@ -458,7 +494,7 @@ class OrchestratorWorker {
     const registry = new MetricsRegistry();
     this.collector = createMetricsCollector(registry, {
       enableBatching: true,
-      batchFlushInterval: 10000 // 10 seconds
+      batchFlushInterval: 10000, // 10 seconds
     });
   }
 
@@ -469,20 +505,12 @@ class OrchestratorWorker {
       // Process task...
       const result = await this.executeTask(task);
 
-      this.collector.recordToolInvocation(
-        orchestratorId,
-        task.tool,
-        'success'
-      );
+      this.collector.recordToolInvocation(orchestratorId, task.tool, 'success');
 
       return result;
     } catch (error) {
       this.collector.recordError(orchestratorId, error.type);
-      this.collector.recordToolInvocation(
-        orchestratorId,
-        task.tool,
-        'error'
-      );
+      this.collector.recordToolInvocation(orchestratorId, task.tool, 'error');
       throw error;
     } finally {
       const durationMs = endTimer();
@@ -502,6 +530,7 @@ class OrchestratorWorker {
 Example PromQL queries for the recorded metrics:
 
 ### Active Sessions
+
 ```promql
 # Current active sessions by orchestrator
 orchestrator_sessions_active{orchestrator_id="orch-1"}
@@ -511,6 +540,7 @@ sum(orchestrator_sessions_active)
 ```
 
 ### Token Usage
+
 ```promql
 # Total tokens used by orchestrator over last hour
 rate(orchestrator_tokens_used_total{orchestrator_id="orch-1"}[1h])
@@ -520,6 +550,7 @@ sum by (model) (rate(orchestrator_tokens_used_total[5m]))
 ```
 
 ### Latency
+
 ```promql
 # Average message latency
 histogram_quantile(0.50, orchestrator_message_latency_seconds_bucket{orchestrator_id="orch-1"})
@@ -529,6 +560,7 @@ histogram_quantile(0.95, orchestrator_message_latency_seconds_bucket{orchestrato
 ```
 
 ### Error Rate
+
 ```promql
 # Error rate over 5 minutes
 rate(orchestrator_errors_total{orchestrator_id="orch-1"}[5m])
@@ -538,6 +570,7 @@ sum by (error_type) (rate(orchestrator_errors_total[5m]))
 ```
 
 ### Tool Success Rate
+
 ```promql
 # Tool success rate
 sum(rate(orchestrator_tool_invocations_total{status="success"}[5m])) /
@@ -558,16 +591,19 @@ sum(rate(orchestrator_tool_invocations_total[5m]))
 ## Troubleshooting
 
 ### Metrics Not Updating
+
 - Check if batching is enabled and flush interval configured
 - Call `flush()` manually to verify pending updates
 - Enable debug mode to see metric recording logs
 
 ### High Memory Usage
+
 - Reduce `maxBatchSize` if batch queue grows too large
 - Check for timer leaks (uncalled timer functions)
 - Monitor active timer count
 
 ### Prometheus Export Issues
+
 - Verify registry is properly initialized with `register()`
 - Check metric name format (must match Prometheus conventions)
 - Ensure labels don't contain invalid characters

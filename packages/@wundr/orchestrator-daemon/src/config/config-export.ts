@@ -45,7 +45,10 @@ export interface ConfigExportResult {
 // Format Metadata
 // =============================================================================
 
-const FORMAT_META: Record<ConfigExportFormat, { extension: string; mimeType: string }> = {
+const FORMAT_META: Record<
+  ConfigExportFormat,
+  { extension: string; mimeType: string }
+> = {
   json: { extension: '.json', mimeType: 'application/json' },
   json5: { extension: '.json5', mimeType: 'application/json5' },
   yaml: { extension: '.yaml', mimeType: 'application/x-yaml' },
@@ -67,7 +70,8 @@ const SECTION_DOCS: Record<string, string> = {
   agents: 'Agent definitions and shared defaults',
   memory: 'Memory backend, compaction, and context window settings',
   security: 'JWT, CORS, rate limiting, audit logging, mTLS',
-  channels: 'Messaging channel configurations (Slack, Discord, Telegram, webhook)',
+  channels:
+    'Messaging channel configurations (Slack, Discord, Telegram, webhook)',
   models: 'Multi-provider model routing and fallback configuration',
   plugins: 'Plugin loading, allow/deny lists, and per-plugin settings',
   hooks: 'Lifecycle hook registrations and execution settings',
@@ -87,7 +91,7 @@ const SECTION_DOCS: Record<string, string> = {
 
 function filterSections(
   config: Record<string, unknown>,
-  sections: string[] | undefined,
+  sections: string[] | undefined
 ): Record<string, unknown> {
   if (!sections || sections.length === 0) {
     return config;
@@ -109,10 +113,7 @@ function filterSections(
 // JSON Export
 // =============================================================================
 
-function exportJson(
-  config: Record<string, unknown>,
-  indent: number,
-): string {
+function exportJson(config: Record<string, unknown>, indent: number): string {
   return JSON.stringify(config, null, indent).trimEnd().concat('\n');
 }
 
@@ -129,27 +130,27 @@ function toJson5Value(value: unknown, indent: number, depth: number): string {
   const childPad = ' '.repeat(indent * (depth + 1));
 
   if (value === null) {
-return 'null';
-}
+    return 'null';
+  }
   if (value === undefined) {
-return 'undefined';
-}
+    return 'undefined';
+  }
   if (typeof value === 'boolean') {
-return String(value);
-}
+    return String(value);
+  }
   if (typeof value === 'number') {
-return String(value);
-}
+    return String(value);
+  }
   if (typeof value === 'string') {
-return escapeJson5String(value);
-}
+    return escapeJson5String(value);
+  }
 
   if (Array.isArray(value)) {
     if (value.length === 0) {
-return '[]';
-}
+      return '[]';
+    }
     const items = value.map(
-      (item) => `${childPad}${toJson5Value(item, indent, depth + 1)}`,
+      item => `${childPad}${toJson5Value(item, indent, depth + 1)}`
     );
     return `[\n${items.join(',\n')},\n${pad}]`;
   }
@@ -157,14 +158,14 @@ return '[]';
   if (typeof value === 'object') {
     const entries = Object.entries(value as Record<string, unknown>);
     if (entries.length === 0) {
-return '{}';
-}
+      return '{}';
+    }
 
     const lines: string[] = [];
     for (const [key, val] of entries) {
       if (val === undefined) {
-continue;
-}
+        continue;
+      }
 
       // Use unquoted keys when possible
       const safeKey = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key)
@@ -172,7 +173,7 @@ continue;
         : JSON.stringify(key);
 
       lines.push(
-        `${childPad}${safeKey}: ${toJson5Value(val, indent, depth + 1)}`,
+        `${childPad}${safeKey}: ${toJson5Value(val, indent, depth + 1)}`
       );
     }
 
@@ -185,28 +186,32 @@ continue;
 function exportJson5(
   config: Record<string, unknown>,
   indent: number,
-  includeComments: boolean,
+  includeComments: boolean
 ): string {
   if (!includeComments) {
     return toJson5Value(config, indent, 0).trimEnd().concat('\n');
   }
 
   // Build with section comments
-  const lines: string[] = ['// Wundr Orchestrator Daemon Configuration', '// See docs at https://wundr.io/docs/config', '{'];
+  const lines: string[] = [
+    '// Wundr Orchestrator Daemon Configuration',
+    '// See docs at https://wundr.io/docs/config',
+    '{',
+  ];
   const pad = ' '.repeat(indent);
   const entries = Object.entries(config);
 
   for (let i = 0; i < entries.length; i++) {
     const [key, value] = entries[i];
     if (value === undefined) {
-continue;
-}
+      continue;
+    }
 
     const doc = SECTION_DOCS[key];
     if (doc) {
       if (i > 0) {
-lines.push('');
-}
+        lines.push('');
+      }
       lines.push(`${pad}// ${doc}`);
     }
 
@@ -215,7 +220,9 @@ lines.push('');
       : JSON.stringify(key);
 
     const trailing = i < entries.length - 1 ? ',' : ',';
-    lines.push(`${pad}${safeKey}: ${toJson5Value(value, indent, 1)}${trailing}`);
+    lines.push(
+      `${pad}${safeKey}: ${toJson5Value(value, indent, 1)}${trailing}`
+    );
   }
 
   lines.push('}');
@@ -251,33 +258,36 @@ function toYamlValue(
   indent: number,
   depth: number,
   includeComments: boolean,
-  _key?: string,
+  _key?: string
 ): string {
   const pad = ' '.repeat(indent * depth);
 
   if (value === null || value === undefined) {
-return 'null';
-}
+    return 'null';
+  }
   if (typeof value === 'boolean') {
-return String(value);
-}
+    return String(value);
+  }
   if (typeof value === 'number') {
-return String(value);
-}
+    return String(value);
+  }
   if (typeof value === 'string') {
-return escapeYamlString(value);
-}
+    return escapeYamlString(value);
+  }
 
   if (Array.isArray(value)) {
     if (value.length === 0) {
-return '[]';
-}
-    const items = value.map((item) => {
+      return '[]';
+    }
+    const items = value.map(item => {
       const rendered = toYamlValue(item, indent, depth + 1, includeComments);
       if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
         // Object in array: indent the object body under the dash
         const objLines = rendered.split('\n');
-        return `${pad}- ${objLines[0]}\n${objLines.slice(1).map((l) => `${pad}  ${l}`).join('\n')}`;
+        return `${pad}- ${objLines[0]}\n${objLines
+          .slice(1)
+          .map(l => `${pad}  ${l}`)
+          .join('\n')}`;
       }
       return `${pad}- ${rendered}`;
     });
@@ -287,14 +297,14 @@ return '[]';
   if (typeof value === 'object') {
     const entries = Object.entries(value as Record<string, unknown>);
     if (entries.length === 0) {
-return '{}';
-}
+      return '{}';
+    }
 
     const lines: string[] = [];
     for (const [k, v] of entries) {
       if (v === undefined) {
-continue;
-}
+        continue;
+      }
 
       // Add section comment at top level
       if (depth === 0 && includeComments) {
@@ -314,7 +324,9 @@ continue;
         ((Array.isArray(v) && v.length > 0) ||
           (!Array.isArray(v) && Object.keys(v).length > 0))
       ) {
-        lines.push(`${pad}${k}:${rendered.startsWith('\n') ? rendered : '\n' + ' '.repeat(indent * (depth + 1)) + rendered}`);
+        lines.push(
+          `${pad}${k}:${rendered.startsWith('\n') ? rendered : '\n' + ' '.repeat(indent * (depth + 1)) + rendered}`
+        );
       } else {
         lines.push(`${pad}${k}: ${rendered}`);
       }
@@ -330,7 +342,7 @@ continue;
 function exportYaml(
   config: Record<string, unknown>,
   indent: number,
-  includeComments: boolean,
+  includeComments: boolean
 ): string {
   const header = includeComments
     ? '# Wundr Orchestrator Daemon Configuration\n# See docs at https://wundr.io/docs/config\n\n'
@@ -349,28 +361,28 @@ function escapeTomlString(value: string): string {
 
 function toTomlValue(value: unknown): string {
   if (value === null || value === undefined) {
-return '""';
-}
+    return '""';
+  }
   if (typeof value === 'boolean') {
-return String(value);
-}
+    return String(value);
+  }
   if (typeof value === 'number') {
-return String(value);
-}
+    return String(value);
+  }
   if (typeof value === 'string') {
-return escapeTomlString(value);
-}
+    return escapeTomlString(value);
+  }
 
   if (Array.isArray(value)) {
     if (value.length === 0) {
-return '[]';
-}
+      return '[]';
+    }
     // Check if it's an array of primitives
     const allPrimitive = value.every(
-      (item) =>
+      item =>
         typeof item === 'string' ||
         typeof item === 'number' ||
-        typeof item === 'boolean',
+        typeof item === 'boolean'
     );
     if (allPrimitive) {
       const items = value.map(toTomlValue);
@@ -387,7 +399,7 @@ function flattenToToml(
   obj: Record<string, unknown>,
   prefix: string,
   lines: string[],
-  includeComments: boolean,
+  includeComments: boolean
 ): void {
   // First pass: inline values (primitives and primitive arrays)
   const inlineEntries: [string, unknown][] = [];
@@ -396,8 +408,8 @@ function flattenToToml(
 
   for (const [key, value] of Object.entries(obj)) {
     if (value === undefined) {
-continue;
-}
+      continue;
+    }
 
     if (
       value === null ||
@@ -408,17 +420,18 @@ continue;
       inlineEntries.push([key, value]);
     } else if (Array.isArray(value)) {
       const allPrimitive = value.every(
-        (item) =>
+        item =>
           typeof item === 'string' ||
           typeof item === 'number' ||
-          typeof item === 'boolean',
+          typeof item === 'boolean'
       );
       if (allPrimitive) {
         inlineEntries.push([key, value]);
       } else {
         // Array of tables
         const allObjects = value.every(
-          (item) => typeof item === 'object' && item !== null && !Array.isArray(item),
+          item =>
+            typeof item === 'object' && item !== null && !Array.isArray(item)
         );
         if (allObjects) {
           arrayTableEntries.push([key, value]);
@@ -453,7 +466,7 @@ continue;
       value as Record<string, unknown>,
       tablePath,
       lines,
-      includeComments,
+      includeComments
     );
   }
 
@@ -467,7 +480,7 @@ continue;
         item as Record<string, unknown>,
         tablePath,
         lines,
-        includeComments,
+        includeComments
       );
     }
   }
@@ -475,7 +488,7 @@ continue;
 
 function exportToml(
   config: Record<string, unknown>,
-  includeComments: boolean,
+  includeComments: boolean
 ): string {
   const lines: string[] = [];
 
@@ -491,8 +504,8 @@ function exportToml(
 
   for (const [key, value] of Object.entries(config)) {
     if (value === undefined) {
-continue;
-}
+      continue;
+    }
     if (
       typeof value === 'string' ||
       typeof value === 'number' ||
@@ -544,7 +557,7 @@ continue;
  */
 export function exportConfig(
   config: WundrConfig,
-  options: ConfigExportOptions = { format: 'json' },
+  options: ConfigExportOptions = { format: 'json' }
 ): ConfigExportResult {
   const indent = options.indent ?? 2;
   const includeComments = options.includeComments ?? true;
@@ -559,7 +572,10 @@ export function exportConfig(
 
   // Remove $include from exports (it's a build-time directive)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { $include: _include, ...exportable } = configObj as Record<string, unknown> & { $include?: unknown };
+  const { $include: _include, ...exportable } = configObj as Record<
+    string,
+    unknown
+  > & { $include?: unknown };
   const clean = exportable;
 
   let content: string;
@@ -599,7 +615,7 @@ export function exportConfig(
  */
 export function generateDefaultConfigFile(
   format: ConfigExportFormat = 'json5',
-  options: Partial<ConfigExportOptions> = {},
+  options: Partial<ConfigExportOptions> = {}
 ): ConfigExportResult {
   const config = generateDefaultConfig();
 

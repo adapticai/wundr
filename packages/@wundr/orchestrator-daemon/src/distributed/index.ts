@@ -19,9 +19,7 @@ export type {
   SerializedSession,
 } from './daemon-node';
 
-export {
-  LoadBalancer,
-} from './load-balancer';
+export { LoadBalancer } from './load-balancer';
 export type {
   LoadBalancerNode,
   NodeLoad,

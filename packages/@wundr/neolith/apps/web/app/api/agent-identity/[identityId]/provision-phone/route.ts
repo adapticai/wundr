@@ -101,8 +101,8 @@ export async function POST(
     const input: ProvisionPhoneNumberInput = parseResult.data;
 
     const result = await agentIdentityService.provisionPhoneNumber(
-      identityId,
-      input
+      input.orchestratorId,
+      input.countryCode
     );
 
     if (!result) {

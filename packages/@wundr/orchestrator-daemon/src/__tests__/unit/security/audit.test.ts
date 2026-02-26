@@ -118,9 +118,16 @@ function makeConfig(overrides?: Record<string, unknown>): Config {
   // Simple top-level merge for test convenience.
   if (overrides) {
     for (const [key, value] of Object.entries(overrides)) {
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
         (base as Record<string, unknown>)[key] = {
-          ...((base as Record<string, unknown>)[key] as Record<string, unknown>),
+          ...((base as Record<string, unknown>)[key] as Record<
+            string,
+            unknown
+          >),
           ...(value as Record<string, unknown>),
         };
       } else {
@@ -143,7 +150,7 @@ function assertAutoFixPresent(findings: SecurityAuditFinding[]): void {
 
 /** Assert that a check ID appears among findings. */
 function hasCheck(findings: SecurityAuditFinding[], checkId: string): boolean {
-  return findings.some((f) => f.checkId === checkId);
+  return findings.some(f => f.checkId === checkId);
 }
 
 // ---------------------------------------------------------------------------
@@ -157,21 +164,39 @@ describe('Security Audit', () => {
 
   describe('collectDaemonConfigFindings', () => {
     it('should flag host=0.0.0.0 as critical', () => {
-      const cfg = makeConfig({ daemon: { host: '0.0.0.0', port: 8787, name: 'test', maxSessions: 100, verbose: false } });
+      const cfg = makeConfig({
+        daemon: {
+          host: '0.0.0.0',
+          port: 8787,
+          name: 'test',
+          maxSessions: 100,
+          verbose: false,
+        },
+      });
       const findings = collectDaemonConfigFindings(cfg);
 
       expect(hasCheck(findings, 'daemon.host_all_interfaces')).toBe(true);
-      const f = findings.find((x) => x.checkId === 'daemon.host_all_interfaces')!;
+      const f = findings.find(x => x.checkId === 'daemon.host_all_interfaces')!;
       expect(f.severity).toBe('critical');
       assertAutoFixPresent(findings);
     });
 
     it('should flag non-loopback host as high', () => {
-      const cfg = makeConfig({ daemon: { host: '10.0.0.1', port: 8787, name: 'test', maxSessions: 100, verbose: false } });
+      const cfg = makeConfig({
+        daemon: {
+          host: '10.0.0.1',
+          port: 8787,
+          name: 'test',
+          maxSessions: 100,
+          verbose: false,
+        },
+      });
       const findings = collectDaemonConfigFindings(cfg);
 
       expect(hasCheck(findings, 'daemon.host_not_loopback')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'daemon.host_not_loopback')!.severity).toBe('high');
+      expect(
+        findings.find(x => x.checkId === 'daemon.host_not_loopback')!.severity
+      ).toBe('high');
     });
 
     it('should not flag loopback host', () => {
@@ -183,26 +208,56 @@ describe('Security Audit', () => {
     });
 
     it('should flag maxSessions=0 as critical', () => {
-      const cfg = makeConfig({ daemon: { host: '127.0.0.1', port: 8787, name: 'test', maxSessions: 0, verbose: false } });
+      const cfg = makeConfig({
+        daemon: {
+          host: '127.0.0.1',
+          port: 8787,
+          name: 'test',
+          maxSessions: 0,
+          verbose: false,
+        },
+      });
       const findings = collectDaemonConfigFindings(cfg);
 
       expect(hasCheck(findings, 'daemon.max_sessions_unlimited')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'daemon.max_sessions_unlimited')!.severity).toBe('critical');
+      expect(
+        findings.find(x => x.checkId === 'daemon.max_sessions_unlimited')!
+          .severity
+      ).toBe('critical');
     });
 
     it('should flag negative maxSessions as critical', () => {
-      const cfg = makeConfig({ daemon: { host: '127.0.0.1', port: 8787, name: 'test', maxSessions: -1, verbose: false } });
+      const cfg = makeConfig({
+        daemon: {
+          host: '127.0.0.1',
+          port: 8787,
+          name: 'test',
+          maxSessions: -1,
+          verbose: false,
+        },
+      });
       const findings = collectDaemonConfigFindings(cfg);
 
       expect(hasCheck(findings, 'daemon.max_sessions_unlimited')).toBe(true);
     });
 
     it('should flag maxSessions>500 as low', () => {
-      const cfg = makeConfig({ daemon: { host: '127.0.0.1', port: 8787, name: 'test', maxSessions: 1000, verbose: false } });
+      const cfg = makeConfig({
+        daemon: {
+          host: '127.0.0.1',
+          port: 8787,
+          name: 'test',
+          maxSessions: 1000,
+          verbose: false,
+        },
+      });
       const findings = collectDaemonConfigFindings(cfg);
 
       expect(hasCheck(findings, 'daemon.max_sessions_excessive')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'daemon.max_sessions_excessive')!.severity).toBe('low');
+      expect(
+        findings.find(x => x.checkId === 'daemon.max_sessions_excessive')!
+          .severity
+      ).toBe('low');
     });
 
     it('should flag default daemon name as info', () => {
@@ -210,23 +265,39 @@ describe('Security Audit', () => {
       const findings = collectDaemonConfigFindings(cfg);
 
       expect(hasCheck(findings, 'daemon.default_name')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'daemon.default_name')!.severity).toBe('info');
+      expect(
+        findings.find(x => x.checkId === 'daemon.default_name')!.severity
+      ).toBe('info');
     });
 
     it('should flag verbose=true in production as medium', () => {
       const cfg = makeConfig({
-        daemon: { host: '127.0.0.1', port: 8787, name: 'node-01', maxSessions: 100, verbose: true },
+        daemon: {
+          host: '127.0.0.1',
+          port: 8787,
+          name: 'node-01',
+          maxSessions: 100,
+          verbose: true,
+        },
         env: 'production',
       });
       const findings = collectDaemonConfigFindings(cfg);
 
       expect(hasCheck(findings, 'daemon.verbose_production')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'daemon.verbose_production')!.severity).toBe('medium');
+      expect(
+        findings.find(x => x.checkId === 'daemon.verbose_production')!.severity
+      ).toBe('medium');
     });
 
     it('should not flag verbose in development', () => {
       const cfg = makeConfig({
-        daemon: { host: '127.0.0.1', port: 8787, name: 'node-01', maxSessions: 100, verbose: true },
+        daemon: {
+          host: '127.0.0.1',
+          port: 8787,
+          name: 'node-01',
+          maxSessions: 100,
+          verbose: true,
+        },
         env: 'development',
       });
       const findings = collectDaemonConfigFindings(cfg);
@@ -236,7 +307,13 @@ describe('Security Audit', () => {
 
     it('should flag default port in production as low', () => {
       const cfg = makeConfig({
-        daemon: { host: '127.0.0.1', port: 8787, name: 'node-01', maxSessions: 100, verbose: false },
+        daemon: {
+          host: '127.0.0.1',
+          port: 8787,
+          name: 'node-01',
+          maxSessions: 100,
+          verbose: false,
+        },
         env: 'production',
       });
       const findings = collectDaemonConfigFindings(cfg);
@@ -246,7 +323,13 @@ describe('Security Audit', () => {
 
     it('should have autoFix on every daemon finding', () => {
       const cfg = makeConfig({
-        daemon: { host: '0.0.0.0', port: 8787, name: 'orchestrator-daemon', maxSessions: 0, verbose: true },
+        daemon: {
+          host: '0.0.0.0',
+          port: 8787,
+          name: 'orchestrator-daemon',
+          maxSessions: 0,
+          verbose: true,
+        },
         env: 'production',
       });
       assertAutoFixPresent(collectDaemonConfigFindings(cfg));
@@ -260,7 +343,13 @@ describe('Security Audit', () => {
   describe('collectWebSocketSecurityFindings', () => {
     it('should flag no auth on non-loopback host as critical', () => {
       const cfg = makeConfig({
-        daemon: { host: '10.0.0.1', port: 8787, name: 'test', maxSessions: 100, verbose: false },
+        daemon: {
+          host: '10.0.0.1',
+          port: 8787,
+          name: 'test',
+          maxSessions: 100,
+          verbose: false,
+        },
         security: {
           jwtSecret: 'change-this-in-production-to-a-random-secure-string',
           jwtExpiration: '24h',
@@ -271,14 +360,23 @@ describe('Security Audit', () => {
       const findings = collectWebSocketSecurityFindings(cfg);
 
       expect(hasCheck(findings, 'ws.no_auth')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'ws.no_auth')!.severity).toBe('critical');
+      expect(findings.find(x => x.checkId === 'ws.no_auth')!.severity).toBe(
+        'critical'
+      );
     });
 
     it('should not flag auth when JWT secret is set and host is non-loopback', () => {
       const cfg = makeConfig({
-        daemon: { host: '10.0.0.1', port: 8787, name: 'test', maxSessions: 100, verbose: false },
+        daemon: {
+          host: '10.0.0.1',
+          port: 8787,
+          name: 'test',
+          maxSessions: 100,
+          verbose: false,
+        },
         security: {
-          jwtSecret: 'a-very-strong-random-secret-that-is-not-the-default-placeholder',
+          jwtSecret:
+            'a-very-strong-random-secret-that-is-not-the-default-placeholder',
           jwtExpiration: '24h',
           cors: { enabled: false, origins: [] },
           rateLimit: { enabled: true, max: 100, windowMs: 60000 },
@@ -318,7 +416,11 @@ describe('Security Audit', () => {
 
     it('should flag excessive heartbeat interval', () => {
       const cfg = makeConfig({
-        health: { heartbeatInterval: 150000, healthCheckInterval: 60000, shutdownTimeout: 10000 },
+        health: {
+          heartbeatInterval: 150000,
+          healthCheckInterval: 60000,
+          shutdownTimeout: 10000,
+        },
       });
       const findings = collectWebSocketSecurityFindings(cfg);
 
@@ -327,7 +429,13 @@ describe('Security Audit', () => {
 
     it('should flag no TLS on non-loopback', () => {
       const cfg = makeConfig({
-        daemon: { host: '10.0.0.1', port: 8787, name: 'test', maxSessions: 100, verbose: false },
+        daemon: {
+          host: '10.0.0.1',
+          port: 8787,
+          name: 'test',
+          maxSessions: 100,
+          verbose: false,
+        },
       });
       const findings = collectWebSocketSecurityFindings(cfg);
 
@@ -343,7 +451,11 @@ describe('Security Audit', () => {
 
     it('should flag excessive shutdown timeout', () => {
       const cfg = makeConfig({
-        health: { heartbeatInterval: 30000, healthCheckInterval: 60000, shutdownTimeout: 90000 },
+        health: {
+          heartbeatInterval: 30000,
+          healthCheckInterval: 60000,
+          shutdownTimeout: 90000,
+        },
       });
       const findings = collectWebSocketSecurityFindings(cfg);
 
@@ -359,8 +471,18 @@ describe('Security Audit', () => {
 
     it('should have autoFix on every WebSocket finding', () => {
       const cfg = makeConfig({
-        daemon: { host: '10.0.0.1', port: 8787, name: 'test', maxSessions: 100, verbose: false },
-        health: { heartbeatInterval: 150000, healthCheckInterval: 60000, shutdownTimeout: 90000 },
+        daemon: {
+          host: '10.0.0.1',
+          port: 8787,
+          name: 'test',
+          maxSessions: 100,
+          verbose: false,
+        },
+        health: {
+          heartbeatInterval: 150000,
+          healthCheckInterval: 60000,
+          shutdownTimeout: 90000,
+        },
         security: {
           jwtSecret: 'change-this-in-production-to-a-random-secure-string',
           jwtExpiration: '24h',
@@ -382,7 +504,9 @@ describe('Security Audit', () => {
       const findings = collectJwtSecurityFindings(cfg, {});
 
       expect(hasCheck(findings, 'jwt.secret_default')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'jwt.secret_default')!.severity).toBe('critical');
+      expect(
+        findings.find(x => x.checkId === 'jwt.secret_default')!.severity
+      ).toBe('critical');
     });
 
     it('should flag short JWT secret as critical', () => {
@@ -401,7 +525,8 @@ describe('Security Audit', () => {
 
     it('should flag low-entropy JWT secret (Shannon entropy)', () => {
       // Repeating character has very low entropy
-      const lowEntropySecret = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+      const lowEntropySecret =
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
       const cfg = makeConfig({
         security: {
           jwtSecret: lowEntropySecret,
@@ -413,7 +538,9 @@ describe('Security Audit', () => {
       const findings = collectJwtSecurityFindings(cfg, {});
 
       expect(hasCheck(findings, 'jwt.secret_low_entropy')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'jwt.secret_low_entropy')!.severity).toBe('high');
+      expect(
+        findings.find(x => x.checkId === 'jwt.secret_low_entropy')!.severity
+      ).toBe('high');
     });
 
     it('should not flag high-entropy JWT secret', () => {
@@ -426,7 +553,9 @@ describe('Security Audit', () => {
           rateLimit: { enabled: true, max: 100, windowMs: 60000 },
         },
       });
-      const findings = collectJwtSecurityFindings(cfg, { DAEMON_JWT_SECRET: highEntropySecret });
+      const findings = collectJwtSecurityFindings(cfg, {
+        DAEMON_JWT_SECRET: highEntropySecret,
+      });
 
       expect(hasCheck(findings, 'jwt.secret_low_entropy')).toBe(false);
       expect(hasCheck(findings, 'jwt.secret_too_short')).toBe(false);
@@ -487,7 +616,9 @@ describe('Security Audit', () => {
           rateLimit: { enabled: true, max: 100, windowMs: 60000 },
         },
       });
-      const findings = collectJwtSecurityFindings(cfg, { DAEMON_JWT_SECRET: secret });
+      const findings = collectJwtSecurityFindings(cfg, {
+        DAEMON_JWT_SECRET: secret,
+      });
 
       expect(hasCheck(findings, 'jwt.secret_in_config_file')).toBe(false);
     });
@@ -592,7 +723,9 @@ describe('Security Audit', () => {
       const findings = collectRateLimitFindings(cfg);
 
       expect(hasCheck(findings, 'rate_limit.disabled')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'rate_limit.disabled')!.severity).toBe('high');
+      expect(
+        findings.find(x => x.checkId === 'rate_limit.disabled')!.severity
+      ).toBe('high');
     });
 
     it('should flag max>1000 as medium', () => {
@@ -640,13 +773,21 @@ describe('Security Audit', () => {
   describe('collectTlsFindings', () => {
     it('should flag no HTTPS in production on non-loopback', () => {
       const cfg = makeConfig({
-        daemon: { host: '10.0.0.1', port: 8787, name: 'test', maxSessions: 100, verbose: false },
+        daemon: {
+          host: '10.0.0.1',
+          port: 8787,
+          name: 'test',
+          maxSessions: 100,
+          verbose: false,
+        },
         env: 'production',
       });
       const findings = collectTlsFindings(cfg, {});
 
       expect(hasCheck(findings, 'tls.no_https')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'tls.no_https')!.severity).toBe('critical');
+      expect(findings.find(x => x.checkId === 'tls.no_https')!.severity).toBe(
+        'critical'
+      );
     });
 
     it('should not flag HTTPS on loopback', () => {
@@ -673,7 +814,9 @@ describe('Security Audit', () => {
       });
 
       expect(hasCheck(findings, 'tls.weak_protocol')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'tls.weak_protocol')!.severity).toBe('critical');
+      expect(
+        findings.find(x => x.checkId === 'tls.weak_protocol')!.severity
+      ).toBe('critical');
     });
 
     it('should flag weak cipher suites', () => {
@@ -715,7 +858,10 @@ describe('Security Audit', () => {
 
     it('should flag DEBUG in production as high', () => {
       const cfg = makeConfig({ env: 'production', debug: true });
-      const findings = collectEnvSecurityFindings({ NODE_ENV: 'production', DEBUG: 'true' }, cfg);
+      const findings = collectEnvSecurityFindings(
+        { NODE_ENV: 'production', DEBUG: 'true' },
+        cfg
+      );
 
       expect(hasCheck(findings, 'env.debug_enabled_production')).toBe(true);
     });
@@ -729,12 +875,16 @@ describe('Security Audit', () => {
 
     it('should flag sensitive vars with debug logging in production', () => {
       const cfg = makeConfig({
-        logging: { level: 'debug', format: 'json', rotation: { enabled: true, maxSize: 10, maxFiles: 5 } },
+        logging: {
+          level: 'debug',
+          format: 'json',
+          rotation: { enabled: true, maxSize: 10, maxFiles: 5 },
+        },
         env: 'production',
       });
       const findings = collectEnvSecurityFindings(
         { NODE_ENV: 'production', OPENAI_API_KEY: 'sk-real' },
-        cfg,
+        cfg
       );
 
       expect(hasCheck(findings, 'env.sensitive_vars_logged')).toBe(true);
@@ -742,7 +892,10 @@ describe('Security Audit', () => {
 
     it('should flag NODE_PATH containing /tmp as high', () => {
       const cfg = makeConfig();
-      const findings = collectEnvSecurityFindings({ NODE_PATH: '/tmp/evil', NODE_ENV: 'production' }, cfg);
+      const findings = collectEnvSecurityFindings(
+        { NODE_PATH: '/tmp/evil', NODE_ENV: 'production' },
+        cfg
+      );
 
       expect(hasCheck(findings, 'env.path_manipulation')).toBe(true);
     });
@@ -755,7 +908,11 @@ describe('Security Audit', () => {
   describe('collectLoggingFindings', () => {
     it('should flag debug in production as medium', () => {
       const cfg = makeConfig({
-        logging: { level: 'debug', format: 'json', rotation: { enabled: true, maxSize: 10, maxFiles: 5 } },
+        logging: {
+          level: 'debug',
+          format: 'json',
+          rotation: { enabled: true, maxSize: 10, maxFiles: 5 },
+        },
         env: 'production',
       });
       const findings = collectLoggingFindings(cfg);
@@ -772,7 +929,12 @@ describe('Security Audit', () => {
 
     it('should flag disabled rotation when file logging is active', () => {
       const cfg = makeConfig({
-        logging: { level: 'info', format: 'json', file: '/var/log/daemon.log', rotation: { enabled: false, maxSize: 10, maxFiles: 5 } },
+        logging: {
+          level: 'info',
+          format: 'json',
+          file: '/var/log/daemon.log',
+          rotation: { enabled: false, maxSize: 10, maxFiles: 5 },
+        },
       });
       const findings = collectLoggingFindings(cfg);
 
@@ -781,7 +943,12 @@ describe('Security Audit', () => {
 
     it('should not flag when config is reasonable', () => {
       const cfg = makeConfig({
-        logging: { level: 'info', format: 'json', file: '/var/log/daemon.log', rotation: { enabled: true, maxSize: 10, maxFiles: 5 } },
+        logging: {
+          level: 'info',
+          format: 'json',
+          file: '/var/log/daemon.log',
+          rotation: { enabled: true, maxSize: 10, maxFiles: 5 },
+        },
         env: 'production',
       });
       const findings = collectLoggingFindings(cfg);
@@ -798,15 +965,21 @@ describe('Security Audit', () => {
 
   describe('collectApiKeyFindings', () => {
     it('should flag hardcoded OpenAI key as critical', () => {
-      const cfg = makeConfig({ openai: { apiKey: 'sk-live-abc123', model: 'gpt-4' } });
+      const cfg = makeConfig({
+        openai: { apiKey: 'sk-live-abc123', model: 'gpt-4' },
+      });
       const findings = collectApiKeyFindings(cfg, {});
 
       expect(hasCheck(findings, 'api.openai_key_exposed')).toBe(true);
     });
 
     it('should not flag OpenAI key when env var is set', () => {
-      const cfg = makeConfig({ openai: { apiKey: 'sk-live-abc123', model: 'gpt-4' } });
-      const findings = collectApiKeyFindings(cfg, { OPENAI_API_KEY: 'sk-live-abc123' });
+      const cfg = makeConfig({
+        openai: { apiKey: 'sk-live-abc123', model: 'gpt-4' },
+      });
+      const findings = collectApiKeyFindings(cfg, {
+        OPENAI_API_KEY: 'sk-live-abc123',
+      });
 
       expect(hasCheck(findings, 'api.openai_key_exposed')).toBe(false);
     });
@@ -822,7 +995,11 @@ describe('Security Audit', () => {
 
     it('should flag hardcoded Neolith secret', () => {
       const cfg = makeConfig({
-        neolith: { apiUrl: 'https://api.neolith.io', apiKey: 'key', apiSecret: 'secret123' },
+        neolith: {
+          apiUrl: 'https://api.neolith.io',
+          apiKey: 'key',
+          apiSecret: 'secret123',
+        },
       });
       const findings = collectApiKeyFindings(cfg, {});
 
@@ -830,7 +1007,9 @@ describe('Security Audit', () => {
     });
 
     it('should detect API key patterns in loaded config', () => {
-      const cfg = makeConfig({ openai: { apiKey: 'sk-real-key', model: 'gpt-4' } });
+      const cfg = makeConfig({
+        openai: { apiKey: 'sk-real-key', model: 'gpt-4' },
+      });
       const findings = collectApiKeyFindings(cfg, {});
 
       expect(hasCheck(findings, 'api.key_in_source')).toBe(true);
@@ -860,7 +1039,12 @@ describe('Security Audit', () => {
 
     it('should flag non-TLS Redis to remote host', () => {
       const cfg = makeConfig({
-        redis: { url: 'redis://redis-host:6379', password: 'pass', db: 0, connectTimeout: 5000 },
+        redis: {
+          url: 'redis://redis-host:6379',
+          password: 'pass',
+          db: 0,
+          connectTimeout: 5000,
+        },
       });
       const findings = collectRedisSecurityFindings(cfg);
 
@@ -869,7 +1053,12 @@ describe('Security Audit', () => {
 
     it('should not flag TLS Redis', () => {
       const cfg = makeConfig({
-        redis: { url: 'rediss://redis-host:6379', password: 'pass', db: 0, connectTimeout: 5000 },
+        redis: {
+          url: 'rediss://redis-host:6379',
+          password: 'pass',
+          db: 0,
+          connectTimeout: 5000,
+        },
       });
       const findings = collectRedisSecurityFindings(cfg);
 
@@ -878,7 +1067,12 @@ describe('Security Audit', () => {
 
     it('should flag default port on remote host', () => {
       const cfg = makeConfig({
-        redis: { url: 'redis://redis-host:6379', password: 'pass', db: 0, connectTimeout: 5000 },
+        redis: {
+          url: 'redis://redis-host:6379',
+          password: 'pass',
+          db: 0,
+          connectTimeout: 5000,
+        },
       });
       const findings = collectRedisSecurityFindings(cfg);
 
@@ -900,7 +1094,11 @@ describe('Security Audit', () => {
 
     it('should flag credentials in database URL', () => {
       const cfg = makeConfig({
-        database: { url: 'postgresql://user:pass@db-host:5432/mydb', poolSize: 10, connectTimeout: 5000 },
+        database: {
+          url: 'postgresql://user:pass@db-host:5432/mydb',
+          poolSize: 10,
+          connectTimeout: 5000,
+        },
       });
       const findings = collectDatabaseSecurityFindings(cfg);
 
@@ -909,7 +1107,11 @@ describe('Security Audit', () => {
 
     it('should flag missing SSL on remote host', () => {
       const cfg = makeConfig({
-        database: { url: 'postgresql://db-host:5432/mydb', poolSize: 10, connectTimeout: 5000 },
+        database: {
+          url: 'postgresql://db-host:5432/mydb',
+          poolSize: 10,
+          connectTimeout: 5000,
+        },
       });
       const findings = collectDatabaseSecurityFindings(cfg);
 
@@ -918,7 +1120,11 @@ describe('Security Audit', () => {
 
     it('should not flag SSL when sslmode=require present', () => {
       const cfg = makeConfig({
-        database: { url: 'postgresql://db-host:5432/mydb?sslmode=require', poolSize: 10, connectTimeout: 5000 },
+        database: {
+          url: 'postgresql://db-host:5432/mydb?sslmode=require',
+          poolSize: 10,
+          connectTimeout: 5000,
+        },
       });
       const findings = collectDatabaseSecurityFindings(cfg);
 
@@ -927,7 +1133,11 @@ describe('Security Audit', () => {
 
     it('should flag excessive pool size', () => {
       const cfg = makeConfig({
-        database: { url: 'postgresql://localhost/mydb', poolSize: 200, connectTimeout: 5000 },
+        database: {
+          url: 'postgresql://localhost/mydb',
+          poolSize: 200,
+          connectTimeout: 5000,
+        },
       });
       const findings = collectDatabaseSecurityFindings(cfg);
 
@@ -993,7 +1203,9 @@ describe('Security Audit', () => {
       });
       const findings = collectDistributedSecurityFindings(cfg);
 
-      expect(hasCheck(findings, 'distributed.migration_timeout_long')).toBe(true);
+      expect(hasCheck(findings, 'distributed.migration_timeout_long')).toBe(
+        true
+      );
     });
 
     it('should flag aggressive rebalancing', () => {
@@ -1057,7 +1269,13 @@ describe('Security Audit', () => {
 
     it('should flag metrics on non-loopback interface', () => {
       const cfg = makeConfig({
-        daemon: { host: '10.0.0.1', port: 8787, name: 'test', maxSessions: 100, verbose: false },
+        daemon: {
+          host: '10.0.0.1',
+          port: 8787,
+          name: 'test',
+          maxSessions: 100,
+          verbose: false,
+        },
       });
       const findings = collectMonitoringSecurityFindings(cfg);
 
@@ -1072,7 +1290,13 @@ describe('Security Audit', () => {
 
     it('should flag verbose health endpoint', () => {
       const cfg = makeConfig({
-        daemon: { host: '127.0.0.1', port: 8787, name: 'test', maxSessions: 100, verbose: true },
+        daemon: {
+          host: '127.0.0.1',
+          port: 8787,
+          name: 'test',
+          maxSessions: 100,
+          verbose: true,
+        },
       });
       const findings = collectMonitoringSecurityFindings(cfg);
 
@@ -1102,7 +1326,11 @@ describe('Security Audit', () => {
 
     it('should flag heap > 8192MB as medium', () => {
       const cfg = makeConfig({
-        memory: { maxHeapMB: 16384, maxContextTokens: 128000, compaction: { enabled: true, threshold: 0.8 } },
+        memory: {
+          maxHeapMB: 16384,
+          maxContextTokens: 128000,
+          compaction: { enabled: true, threshold: 0.8 },
+        },
       });
       const findings = collectMemorySecurityFindings(cfg);
 
@@ -1111,7 +1339,11 @@ describe('Security Audit', () => {
 
     it('should flag disabled compaction', () => {
       const cfg = makeConfig({
-        memory: { maxHeapMB: 2048, maxContextTokens: 128000, compaction: { enabled: false, threshold: 0.8 } },
+        memory: {
+          maxHeapMB: 2048,
+          maxContextTokens: 128000,
+          compaction: { enabled: false, threshold: 0.8 },
+        },
       });
       const findings = collectMemorySecurityFindings(cfg);
 
@@ -1120,7 +1352,11 @@ describe('Security Audit', () => {
 
     it('should flag excessive context tokens', () => {
       const cfg = makeConfig({
-        memory: { maxHeapMB: 2048, maxContextTokens: 500000, compaction: { enabled: true, threshold: 0.8 } },
+        memory: {
+          maxHeapMB: 2048,
+          maxContextTokens: 500000,
+          compaction: { enabled: true, threshold: 0.8 },
+        },
       });
       const findings = collectMemorySecurityFindings(cfg);
 
@@ -1129,7 +1365,11 @@ describe('Security Audit', () => {
 
     it('should flag low compaction threshold', () => {
       const cfg = makeConfig({
-        memory: { maxHeapMB: 2048, maxContextTokens: 128000, compaction: { enabled: true, threshold: 0.1 } },
+        memory: {
+          maxHeapMB: 2048,
+          maxContextTokens: 128000,
+          compaction: { enabled: true, threshold: 0.1 },
+        },
       });
       const findings = collectMemorySecurityFindings(cfg);
 
@@ -1153,7 +1393,9 @@ describe('Security Audit', () => {
     it('should flag disabled alerts', () => {
       const cfg = makeConfig({
         tokenBudget: {
-          daily: 1000000, weekly: 5000000, monthly: 20000000,
+          daily: 1000000,
+          weekly: 5000000,
+          monthly: 20000000,
           alerts: { enabled: false, threshold: 0.8 },
         },
       });
@@ -1165,7 +1407,9 @@ describe('Security Audit', () => {
     it('should flag excessive daily budget', () => {
       const cfg = makeConfig({
         tokenBudget: {
-          daily: 50000000, weekly: 50000000, monthly: 200000000,
+          daily: 50000000,
+          weekly: 50000000,
+          monthly: 200000000,
           alerts: { enabled: true, threshold: 0.8 },
         },
       });
@@ -1177,19 +1421,25 @@ describe('Security Audit', () => {
     it('should flag high alert threshold', () => {
       const cfg = makeConfig({
         tokenBudget: {
-          daily: 1000000, weekly: 5000000, monthly: 20000000,
+          daily: 1000000,
+          weekly: 5000000,
+          monthly: 20000000,
           alerts: { enabled: true, threshold: 0.99 },
         },
       });
       const findings = collectTokenBudgetFindings(cfg);
 
-      expect(hasCheck(findings, 'token_budget.alert_threshold_high')).toBe(true);
+      expect(hasCheck(findings, 'token_budget.alert_threshold_high')).toBe(
+        true
+      );
     });
 
     it('should flag extremely high monthly budget', () => {
       const cfg = makeConfig({
         tokenBudget: {
-          daily: 1000000, weekly: 5000000, monthly: 500000000,
+          daily: 1000000,
+          weekly: 5000000,
+          monthly: 500000000,
           alerts: { enabled: true, threshold: 0.8 },
         },
       });
@@ -1226,7 +1476,9 @@ describe('Security Audit', () => {
       });
 
       expect(hasCheck(findings, 'fs.config_file_writable')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'fs.config_file_writable')!.severity).toBe('critical');
+      expect(
+        findings.find(x => x.checkId === 'fs.config_file_writable')!.severity
+      ).toBe('critical');
     });
 
     it('should flag world-readable config file as high', async () => {
@@ -1272,7 +1524,9 @@ describe('Security Audit', () => {
       });
 
       expect(hasCheck(findings, 'fs.dotenv_world_readable')).toBe(true);
-      expect(findings.find((x) => x.checkId === 'fs.dotenv_world_readable')!.severity).toBe('critical');
+      expect(
+        findings.find(x => x.checkId === 'fs.dotenv_world_readable')!.severity
+      ).toBe('critical');
     });
 
     it('should flag group-readable .env file as high', async () => {
@@ -1316,12 +1570,13 @@ describe('Security Audit', () => {
             lodash: '^4.17.20',
             express: '^4.18.0',
           },
-        }),
+        })
       );
 
       const findings = await collectDependencyFindings({
         projectDir: '/workspace',
-        readFileFn: mockReadFile as unknown as typeof import('node:fs/promises').readFile,
+        readFileFn:
+          mockReadFile as unknown as typeof import('node:fs/promises').readFile,
       });
 
       expect(hasCheck(findings, 'deps.known_vulnerabilities')).toBe(true);
@@ -1334,12 +1589,13 @@ describe('Security Audit', () => {
             jsonwebtoken: '^0.9.0',
             ws: '^8.16.0',
           },
-        }),
+        })
       );
 
       const findings = await collectDependencyFindings({
         projectDir: '/workspace',
-        readFileFn: mockReadFile as unknown as typeof import('node:fs/promises').readFile,
+        readFileFn:
+          mockReadFile as unknown as typeof import('node:fs/promises').readFile,
       });
 
       expect(hasCheck(findings, 'deps.outdated_critical')).toBe(true);
@@ -1350,7 +1606,8 @@ describe('Security Audit', () => {
 
       const findings = await collectDependencyFindings({
         projectDir: '/nonexistent',
-        readFileFn: mockReadFile as unknown as typeof import('node:fs/promises').readFile,
+        readFileFn:
+          mockReadFile as unknown as typeof import('node:fs/promises').readFile,
       });
 
       expect(findings).toHaveLength(0);
@@ -1362,12 +1619,13 @@ describe('Security Audit', () => {
           dependencies: {
             'safe-package': '^2.0.0',
           },
-        }),
+        })
       );
 
       const findings = await collectDependencyFindings({
         projectDir: '/workspace',
-        readFileFn: mockReadFile as unknown as typeof import('node:fs/promises').readFile,
+        readFileFn:
+          mockReadFile as unknown as typeof import('node:fs/promises').readFile,
       });
 
       expect(hasCheck(findings, 'deps.known_vulnerabilities')).toBe(false);
@@ -1379,12 +1637,13 @@ describe('Security Audit', () => {
           devDependencies: {
             lodash: '4.17.10',
           },
-        }),
+        })
       );
 
       const findings = await collectDependencyFindings({
         projectDir: '/workspace',
-        readFileFn: mockReadFile as unknown as typeof import('node:fs/promises').readFile,
+        readFileFn:
+          mockReadFile as unknown as typeof import('node:fs/promises').readFile,
       });
 
       expect(hasCheck(findings, 'deps.known_vulnerabilities')).toBe(true);
@@ -1628,7 +1887,14 @@ describe('Security Audit', () => {
       const report: SecurityAuditReport = {
         ts: 1700000000000,
         version: '2.0.0',
-        summary: { critical: 2, high: 3, medium: 1, low: 4, info: 5, total: 15 },
+        summary: {
+          critical: 2,
+          high: 3,
+          medium: 1,
+          low: 4,
+          info: 5,
+          total: 15,
+        },
         findings: [],
       };
       const html = formatAuditReportHtml(report);
@@ -1692,7 +1958,7 @@ describe('Security Audit', () => {
           report.summary.high +
           report.summary.medium +
           report.summary.low +
-          report.summary.info,
+          report.summary.info
       ).toBe(report.summary.total);
     });
 
@@ -1739,7 +2005,7 @@ describe('Security Audit', () => {
       const mockReadFile = vi.fn().mockResolvedValue(
         JSON.stringify({
           dependencies: { lodash: '4.17.20' },
-        }),
+        })
       );
 
       const report = await runSecurityAudit({
@@ -1748,10 +2014,13 @@ describe('Security Audit', () => {
         platform: 'linux',
         includeFilesystem: false,
         projectDir: '/workspace',
-        readFileFn: mockReadFile as unknown as typeof import('node:fs/promises').readFile,
+        readFileFn:
+          mockReadFile as unknown as typeof import('node:fs/promises').readFile,
       });
 
-      expect(report.findings.some((f) => f.checkId.startsWith('deps.'))).toBe(true);
+      expect(report.findings.some(f => f.checkId.startsWith('deps.'))).toBe(
+        true
+      );
     });
 
     it('should include filesystem findings when enabled', async () => {
@@ -1769,7 +2038,7 @@ describe('Security Audit', () => {
         statFn: mockStat as unknown as typeof import('node:fs/promises').stat,
       });
 
-      expect(report.findings.some((f) => f.checkId.startsWith('fs.'))).toBe(true);
+      expect(report.findings.some(f => f.checkId.startsWith('fs.'))).toBe(true);
     });
 
     it('should not include deep mode results when deep=false', async () => {
@@ -1826,7 +2095,9 @@ describe('Security Audit', () => {
         probeWebSocketFn: mockProbe,
       });
 
-      expect(report.findings.some((f) => f.checkId === 'ws.probe_failed')).toBe(true);
+      expect(report.findings.some(f => f.checkId === 'ws.probe_failed')).toBe(
+        true
+      );
     });
   });
 
@@ -1851,11 +2122,21 @@ describe('Security Audit', () => {
 
       for (const f of report.findings) {
         switch (f.severity) {
-          case 'critical': critical++; break;
-          case 'high': high++; break;
-          case 'medium': medium++; break;
-          case 'low': low++; break;
-          case 'info': info++; break;
+          case 'critical':
+            critical++;
+            break;
+          case 'high':
+            high++;
+            break;
+          case 'medium':
+            medium++;
+            break;
+          case 'low':
+            low++;
+            break;
+          case 'info':
+            info++;
+            break;
         }
       }
 
@@ -1870,7 +2151,13 @@ describe('Security Audit', () => {
     it('should have a total that equals the sum of all severities', async () => {
       const report = await runSecurityAudit({
         config: makeConfig({
-          daemon: { host: '0.0.0.0', port: 8787, name: 'orchestrator-daemon', maxSessions: 0, verbose: true },
+          daemon: {
+            host: '0.0.0.0',
+            port: 8787,
+            name: 'orchestrator-daemon',
+            maxSessions: 0,
+            verbose: true,
+          },
           env: 'production',
         }),
         env: { DEBUG: 'true', NODE_ENV: 'production' },
@@ -1897,7 +2184,13 @@ describe('Security Audit', () => {
     it('should provide autoFix on all findings from a comprehensive audit', async () => {
       const report = await runSecurityAudit({
         config: makeConfig({
-          daemon: { host: '0.0.0.0', port: 8787, name: 'orchestrator-daemon', maxSessions: 0, verbose: true },
+          daemon: {
+            host: '0.0.0.0',
+            port: 8787,
+            name: 'orchestrator-daemon',
+            maxSessions: 0,
+            verbose: true,
+          },
           env: 'production',
           distributed: {
             clusterName: 'test',
@@ -1935,7 +2228,9 @@ describe('Security Audit', () => {
           rateLimit: { enabled: true, max: 100, windowMs: 60000 },
         },
       });
-      const findings = collectJwtSecurityFindings(cfg, { DAEMON_JWT_SECRET: secret });
+      const findings = collectJwtSecurityFindings(cfg, {
+        DAEMON_JWT_SECRET: secret,
+      });
 
       expect(hasCheck(findings, 'jwt.secret_low_entropy')).toBe(false);
     });

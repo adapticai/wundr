@@ -24,25 +24,41 @@ export class Logger {
 
   debug(message: string, ...args: unknown[]): void {
     if (this.level <= LogLevel.DEBUG) {
-      console.debug(`[${this.timestamp()}] [DEBUG] [${this.name}]`, message, ...args);
+      console.debug(
+        `[${this.timestamp()}] [DEBUG] [${this.name}]`,
+        message,
+        ...args
+      );
     }
   }
 
   info(message: string, ...args: unknown[]): void {
     if (this.level <= LogLevel.INFO) {
-      console.info(`[${this.timestamp()}] [INFO] [${this.name}]`, message, ...args);
+      console.info(
+        `[${this.timestamp()}] [INFO] [${this.name}]`,
+        message,
+        ...args
+      );
     }
   }
 
   warn(message: string, ...args: unknown[]): void {
     if (this.level <= LogLevel.WARN) {
-      console.warn(`[${this.timestamp()}] [WARN] [${this.name}]`, message, ...args);
+      console.warn(
+        `[${this.timestamp()}] [WARN] [${this.name}]`,
+        message,
+        ...args
+      );
     }
   }
 
   error(message: string, ...args: unknown[]): void {
     if (this.level <= LogLevel.ERROR) {
-      console.error(`[${this.timestamp()}] [ERROR] [${this.name}]`, message, ...args);
+      console.error(
+        `[${this.timestamp()}] [ERROR] [${this.name}]`,
+        message,
+        ...args
+      );
     }
   }
 

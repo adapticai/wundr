@@ -49,7 +49,8 @@ const TASK_EXECUTION_TIMEOUT = 45000; // 45 seconds for LLM call
 let daemon: OrchestratorDaemon | null = null;
 let ws: WebSocket | null = null;
 let sessionId: string | null = null;
-const testResults: Array<{ name: string; passed: boolean; message?: string }> = [];
+const testResults: Array<{ name: string; passed: boolean; message?: string }> =
+  [];
 
 // Utility functions
 function log(message: string, color = colors.reset): void {
@@ -165,7 +166,7 @@ async function connectWebSocket(): Promise<void> {
       resolve();
     });
 
-    ws.on('error', (error) => {
+    ws.on('error', error => {
       clearTimeout(timeout);
       recordTest('WebSocket Connection', false, error.message);
       reject(error);
@@ -261,22 +262,26 @@ async function testExecuteTask(): Promise<void> {
   }
 
   logInfo('Testing task execution (calling LLM)...');
-  logWarning('This will make a real OpenAI API call and may take 10-30 seconds...');
+  logWarning(
+    'This will make a real OpenAI API call and may take 10-30 seconds...'
+  );
 
   try {
     // Send execute task message
-    ws?.send(JSON.stringify({
-      type: 'execute_task',
-      payload: {
-        sessionId,
-        task: 'Say hello and confirm you received this test message. Keep your response brief.',
-        streamResponse: true,
-      },
-    }));
+    ws?.send(
+      JSON.stringify({
+        type: 'execute_task',
+        payload: {
+          sessionId,
+          task: 'Say hello and confirm you received this test message. Keep your response brief.',
+          streamResponse: true,
+        },
+      })
+    );
 
     // Wait for stream to start
     const streamStart = await waitForMessage(
-      (msg) => msg.type === 'stream_start' && msg.sessionId === sessionId,
+      msg => msg.type === 'stream_start' && msg.sessionId === sessionId,
       TASK_EXECUTION_TIMEOUT
     );
     logInfo('  Stream started');
@@ -286,9 +291,14 @@ async function testExecuteTask(): Promise<void> {
     const streamHandler = (data: WebSocket.Data) => {
       try {
         const response = JSON.parse(data.toString()) as WSResponse;
-        if (response.type === 'stream_chunk' && response.data.sessionId === sessionId) {
+        if (
+          response.type === 'stream_chunk' &&
+          response.data.sessionId === sessionId
+        ) {
           chunks.push(response.data.chunk);
-          process.stdout.write(colors.cyan + response.data.chunk + colors.reset);
+          process.stdout.write(
+            colors.cyan + response.data.chunk + colors.reset
+          );
         }
       } catch (error) {
         // Ignore parse errors
@@ -299,7 +309,7 @@ async function testExecuteTask(): Promise<void> {
 
     // Wait for stream to end
     await waitForMessage(
-      (msg) => msg.type === 'stream_end' && msg.sessionId === sessionId,
+      msg => msg.type === 'stream_end' && msg.sessionId === sessionId,
       TASK_EXECUTION_TIMEOUT
     );
 
@@ -307,21 +317,27 @@ async function testExecuteTask(): Promise<void> {
     console.log(); // New line after streaming
 
     const fullResponse = chunks.join('');
-    logInfo(`  Received ${chunks.length} chunks, ${fullResponse.length} characters`);
+    logInfo(
+      `  Received ${chunks.length} chunks, ${fullResponse.length} characters`
+    );
 
     // Validate response contains expected content
-    if (fullResponse.length > 0 && (
-      fullResponse.toLowerCase().includes('hello') ||
-      fullResponse.toLowerCase().includes('received') ||
-      fullResponse.toLowerCase().includes('test')
-    )) {
+    if (
+      fullResponse.length > 0 &&
+      (fullResponse.toLowerCase().includes('hello') ||
+        fullResponse.toLowerCase().includes('received') ||
+        fullResponse.toLowerCase().includes('test'))
+    ) {
       recordTest('Execute Task', true);
       logInfo('  LLM Response validated ✓');
     } else {
-      recordTest('Execute Task', false, 'Response does not contain expected content');
+      recordTest(
+        'Execute Task',
+        false,
+        'Response does not contain expected content'
+      );
       logWarning(`  Response: ${fullResponse.substring(0, 100)}...`);
     }
-
   } catch (error) {
     recordTest('Execute Task', false, (error as Error).message);
     throw error;
@@ -382,11 +398,11 @@ function printSummary(): void {
   log('TEST SUMMARY', colors.bright);
   console.log('='.repeat(60));
 
-  const passed = testResults.filter((t) => t.passed).length;
-  const failed = testResults.filter((t) => !t.passed).length;
+  const passed = testResults.filter(t => t.passed).length;
+  const failed = testResults.filter(t => !t.passed).length;
   const total = testResults.length;
 
-  testResults.forEach((test) => {
+  testResults.forEach(test => {
     const icon = test.passed ? '✓' : '✗';
     const color = test.passed ? colors.green : colors.red;
     const msg = test.message ? ` (${test.message})` : '';
@@ -414,14 +430,16 @@ async function runTests(): Promise<void> {
   // Check for OpenAI API key
   if (!process.env.OPENAI_API_KEY) {
     logError('OPENAI_API_KEY environment variable not set');
-    logInfo('This test requires a valid OpenAI API key to test LLM integration');
+    logInfo(
+      'This test requires a valid OpenAI API key to test LLM integration'
+    );
     process.exit(1);
   }
 
   try {
     // Run test sequence
     await startDaemon();
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for daemon to fully start
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for daemon to fully start
     await connectWebSocket();
     await testHealthCheck();
     await testDaemonStatus();
@@ -441,7 +459,7 @@ async function runTests(): Promise<void> {
     printSummary();
 
     // Exit with appropriate code
-    const allPassed = testResults.every((t) => t.passed);
+    const allPassed = testResults.every(t => t.passed);
     process.exit(allPassed ? 0 : 1);
   }
 }
@@ -470,7 +488,7 @@ process.on('SIGTERM', async () => {
 });
 
 // Run tests
-runTests().catch((error) => {
+runTests().catch(error => {
   logError(`Fatal error: ${error.message}`);
   cleanup().finally(() => {
     process.exit(1);

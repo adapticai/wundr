@@ -66,9 +66,18 @@ function gifBuffer(): Buffer {
 function webpBuffer(): Buffer {
   // RIFF + 4 bytes size + WEBP
   const bytes = [
-    0x52, 0x49, 0x46, 0x46, // RIFF
-    0x00, 0x00, 0x00, 0x00, // size placeholder
-    0x57, 0x45, 0x42, 0x50, // WEBP
+    0x52,
+    0x49,
+    0x46,
+    0x46, // RIFF
+    0x00,
+    0x00,
+    0x00,
+    0x00, // size placeholder
+    0x57,
+    0x45,
+    0x42,
+    0x50, // WEBP
   ];
   return magicBuffer(bytes, 16);
 }
@@ -119,9 +128,18 @@ function flacBuffer(): Buffer {
 /** A RIFF header that is NOT WebP (e.g., could be AVI or WAV). */
 function riffNonWebpBuffer(): Buffer {
   const bytes = [
-    0x52, 0x49, 0x46, 0x46, // RIFF
-    0x00, 0x00, 0x00, 0x00, // size placeholder
-    0x41, 0x56, 0x49, 0x20, // "AVI " instead of "WEBP"
+    0x52,
+    0x49,
+    0x46,
+    0x46, // RIFF
+    0x00,
+    0x00,
+    0x00,
+    0x00, // size placeholder
+    0x41,
+    0x56,
+    0x49,
+    0x20, // "AVI " instead of "WEBP"
   ];
   return magicBuffer(bytes, 16);
 }
@@ -142,7 +160,7 @@ function silentLogger(): ChannelLogger {
 function bufferAttachment(
   filename: string,
   buffer: Buffer,
-  mimeType?: string,
+  mimeType?: string
 ): OutboundAttachment {
   return {
     source: 'buffer',
@@ -169,19 +187,27 @@ describe('MediaPipeline', () => {
 
   describe('detectMimeType', () => {
     it('should detect JPEG from magic bytes', () => {
-      expect(pipeline.detectMimeType(jpegBuffer(), 'unknown.bin')).toBe('image/jpeg');
+      expect(pipeline.detectMimeType(jpegBuffer(), 'unknown.bin')).toBe(
+        'image/jpeg'
+      );
     });
 
     it('should detect PNG from magic bytes', () => {
-      expect(pipeline.detectMimeType(pngBuffer(), 'unknown.bin')).toBe('image/png');
+      expect(pipeline.detectMimeType(pngBuffer(), 'unknown.bin')).toBe(
+        'image/png'
+      );
     });
 
     it('should detect GIF from magic bytes', () => {
-      expect(pipeline.detectMimeType(gifBuffer(), 'unknown.bin')).toBe('image/gif');
+      expect(pipeline.detectMimeType(gifBuffer(), 'unknown.bin')).toBe(
+        'image/gif'
+      );
     });
 
     it('should detect WebP from RIFF+WEBP magic bytes', () => {
-      expect(pipeline.detectMimeType(webpBuffer(), 'unknown.bin')).toBe('image/webp');
+      expect(pipeline.detectMimeType(webpBuffer(), 'unknown.bin')).toBe(
+        'image/webp'
+      );
     });
 
     it('should NOT detect WebP from RIFF header with non-WEBP fourcc', () => {
@@ -191,48 +217,70 @@ describe('MediaPipeline', () => {
     });
 
     it('should detect PDF from magic bytes', () => {
-      expect(pipeline.detectMimeType(pdfBuffer(), 'unknown.bin')).toBe('application/pdf');
+      expect(pipeline.detectMimeType(pdfBuffer(), 'unknown.bin')).toBe(
+        'application/pdf'
+      );
     });
 
     it('should detect ZIP from magic bytes', () => {
-      expect(pipeline.detectMimeType(zipBuffer(), 'unknown.bin')).toBe('application/zip');
+      expect(pipeline.detectMimeType(zipBuffer(), 'unknown.bin')).toBe(
+        'application/zip'
+      );
     });
 
     it('should detect GZIP from magic bytes', () => {
-      expect(pipeline.detectMimeType(gzipBuffer(), 'unknown.bin')).toBe('application/gzip');
+      expect(pipeline.detectMimeType(gzipBuffer(), 'unknown.bin')).toBe(
+        'application/gzip'
+      );
     });
 
     it('should detect BMP from magic bytes', () => {
-      expect(pipeline.detectMimeType(bmpBuffer(), 'unknown.bin')).toBe('image/bmp');
+      expect(pipeline.detectMimeType(bmpBuffer(), 'unknown.bin')).toBe(
+        'image/bmp'
+      );
     });
 
     it('should detect Windows PE (MZ) from magic bytes', () => {
-      expect(pipeline.detectMimeType(mzExeBuffer(), 'unknown.bin')).toBe('application/x-msdownload');
+      expect(pipeline.detectMimeType(mzExeBuffer(), 'unknown.bin')).toBe(
+        'application/x-msdownload'
+      );
     });
 
     it('should detect ELF from magic bytes', () => {
-      expect(pipeline.detectMimeType(elfBuffer(), 'unknown.bin')).toBe('application/x-elf');
+      expect(pipeline.detectMimeType(elfBuffer(), 'unknown.bin')).toBe(
+        'application/x-elf'
+      );
     });
 
     it('should detect MP3 (ID3 header) from magic bytes', () => {
-      expect(pipeline.detectMimeType(mp3Buffer(), 'unknown.bin')).toBe('audio/mpeg');
+      expect(pipeline.detectMimeType(mp3Buffer(), 'unknown.bin')).toBe(
+        'audio/mpeg'
+      );
     });
 
     it('should detect MP4 (ftyp at offset 4) from magic bytes', () => {
-      expect(pipeline.detectMimeType(mp4Buffer(), 'unknown.bin')).toBe('video/mp4');
+      expect(pipeline.detectMimeType(mp4Buffer(), 'unknown.bin')).toBe(
+        'video/mp4'
+      );
     });
 
     it('should detect OGG from magic bytes', () => {
-      expect(pipeline.detectMimeType(oggBuffer(), 'unknown.bin')).toBe('audio/ogg');
+      expect(pipeline.detectMimeType(oggBuffer(), 'unknown.bin')).toBe(
+        'audio/ogg'
+      );
     });
 
     it('should detect FLAC from magic bytes', () => {
-      expect(pipeline.detectMimeType(flacBuffer(), 'unknown.bin')).toBe('audio/flac');
+      expect(pipeline.detectMimeType(flacBuffer(), 'unknown.bin')).toBe(
+        'audio/flac'
+      );
     });
 
     it('should fall back to extension when magic bytes are unrecognized', () => {
       const unknownBytes = Buffer.from([0x00, 0x01, 0x02, 0x03]);
-      expect(pipeline.detectMimeType(unknownBytes, 'photo.jpg')).toBe('image/jpeg');
+      expect(pipeline.detectMimeType(unknownBytes, 'photo.jpg')).toBe(
+        'image/jpeg'
+      );
     });
 
     it('should return undefined when buffer and extension are both unrecognized', () => {
@@ -242,19 +290,25 @@ describe('MediaPipeline', () => {
 
     it('should handle empty buffer and fall back to extension', () => {
       const emptyBuffer = Buffer.alloc(0);
-      expect(pipeline.detectMimeType(emptyBuffer, 'file.png')).toBe('image/png');
+      expect(pipeline.detectMimeType(emptyBuffer, 'file.png')).toBe(
+        'image/png'
+      );
     });
 
     it('should handle buffer too short for any magic match', () => {
       const tinyBuffer = Buffer.from([0x89]);
       // PNG needs 8 bytes, JPEG needs 3, etc. -- 1 byte is too short for all.
       // Falls through to extension.
-      expect(pipeline.detectMimeType(tinyBuffer, 'file.txt')).toBe('text/plain');
+      expect(pipeline.detectMimeType(tinyBuffer, 'file.txt')).toBe(
+        'text/plain'
+      );
     });
 
     it('should handle buffer with partial magic bytes that do not match', () => {
       // Starts like PNG but missing the full signature
-      const partial = Buffer.from([0x89, 0x50, 0x4e, 0x00, 0x00, 0x00, 0x00, 0x00]);
+      const partial = Buffer.from([
+        0x89, 0x50, 0x4e, 0x00, 0x00, 0x00, 0x00, 0x00,
+      ]);
       expect(pipeline.detectMimeType(partial, 'file.unknown')).toBeUndefined();
     });
   });
@@ -286,7 +340,10 @@ describe('MediaPipeline', () => {
       ['audio.flac', 'audio/flac'],
       ['audio.opus', 'audio/opus'],
       ['doc.pdf', 'application/pdf'],
-      ['doc.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+      [
+        'doc.docx',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ],
       ['data.json', 'application/json'],
       ['data.csv', 'text/csv'],
       ['notes.txt', 'text/plain'],
@@ -366,21 +423,35 @@ describe('MediaPipeline', () => {
 
   describe('classifyFile', () => {
     it('should classify executables by extension', () => {
-      expect(pipeline.classifyFile('application/octet-stream', 'malware.exe')).toBe('executable');
+      expect(
+        pipeline.classifyFile('application/octet-stream', 'malware.exe')
+      ).toBe('executable');
       expect(pipeline.classifyFile(undefined, 'script.bat')).toBe('executable');
       expect(pipeline.classifyFile(undefined, 'tool.msi')).toBe('executable');
       expect(pipeline.classifyFile(undefined, 'script.ps1')).toBe('executable');
       expect(pipeline.classifyFile(undefined, 'binary.dll')).toBe('executable');
       expect(pipeline.classifyFile(undefined, 'app.apk')).toBe('executable');
-      expect(pipeline.classifyFile(undefined, 'package.deb')).toBe('executable');
-      expect(pipeline.classifyFile(undefined, 'package.rpm')).toBe('executable');
+      expect(pipeline.classifyFile(undefined, 'package.deb')).toBe(
+        'executable'
+      );
+      expect(pipeline.classifyFile(undefined, 'package.rpm')).toBe(
+        'executable'
+      );
     });
 
     it('should classify executables by MIME type', () => {
-      expect(pipeline.classifyFile('application/x-msdownload', 'file.dat')).toBe('executable');
-      expect(pipeline.classifyFile('application/x-executable', 'file.dat')).toBe('executable');
-      expect(pipeline.classifyFile('application/x-elf', 'file.dat')).toBe('executable');
-      expect(pipeline.classifyFile('application/x-shellscript', 'file.dat')).toBe('executable');
+      expect(
+        pipeline.classifyFile('application/x-msdownload', 'file.dat')
+      ).toBe('executable');
+      expect(
+        pipeline.classifyFile('application/x-executable', 'file.dat')
+      ).toBe('executable');
+      expect(pipeline.classifyFile('application/x-elf', 'file.dat')).toBe(
+        'executable'
+      );
+      expect(
+        pipeline.classifyFile('application/x-shellscript', 'file.dat')
+      ).toBe('executable');
     });
 
     it('should classify images', () => {
@@ -400,39 +471,71 @@ describe('MediaPipeline', () => {
     });
 
     it('should classify documents (text, pdf, office)', () => {
-      expect(pipeline.classifyFile('text/plain', 'readme.txt')).toBe('document');
-      expect(pipeline.classifyFile('application/pdf', 'report.pdf')).toBe('document');
-      expect(pipeline.classifyFile('application/json', 'data.json')).toBe('document');
-      expect(pipeline.classifyFile(
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'essay.docx',
-      )).toBe('document');
-      expect(pipeline.classifyFile(
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'data.xlsx',
-      )).toBe('document');
-      expect(pipeline.classifyFile(
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-        'slides.pptx',
-      )).toBe('document');
-      expect(pipeline.classifyFile('application/rtf', 'doc.rtf')).toBe('document');
-      expect(pipeline.classifyFile('application/xml', 'config.xml')).toBe('document');
+      expect(pipeline.classifyFile('text/plain', 'readme.txt')).toBe(
+        'document'
+      );
+      expect(pipeline.classifyFile('application/pdf', 'report.pdf')).toBe(
+        'document'
+      );
+      expect(pipeline.classifyFile('application/json', 'data.json')).toBe(
+        'document'
+      );
+      expect(
+        pipeline.classifyFile(
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'essay.docx'
+        )
+      ).toBe('document');
+      expect(
+        pipeline.classifyFile(
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'data.xlsx'
+        )
+      ).toBe('document');
+      expect(
+        pipeline.classifyFile(
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+          'slides.pptx'
+        )
+      ).toBe('document');
+      expect(pipeline.classifyFile('application/rtf', 'doc.rtf')).toBe(
+        'document'
+      );
+      expect(pipeline.classifyFile('application/xml', 'config.xml')).toBe(
+        'document'
+      );
     });
 
     it('should classify archives', () => {
-      expect(pipeline.classifyFile('application/zip', 'archive.zip')).toBe('archive');
-      expect(pipeline.classifyFile('application/gzip', 'archive.gz')).toBe('archive');
-      expect(pipeline.classifyFile('application/x-tar', 'archive.tar')).toBe('archive');
-      expect(pipeline.classifyFile('application/x-7z-compressed', 'archive.7z')).toBe('archive');
-      expect(pipeline.classifyFile('application/vnd.rar', 'archive.rar')).toBe('archive');
-      expect(pipeline.classifyFile('application/x-bzip2', 'archive.bz2')).toBe('archive');
-      expect(pipeline.classifyFile('application/x-xz', 'archive.xz')).toBe('archive');
+      expect(pipeline.classifyFile('application/zip', 'archive.zip')).toBe(
+        'archive'
+      );
+      expect(pipeline.classifyFile('application/gzip', 'archive.gz')).toBe(
+        'archive'
+      );
+      expect(pipeline.classifyFile('application/x-tar', 'archive.tar')).toBe(
+        'archive'
+      );
+      expect(
+        pipeline.classifyFile('application/x-7z-compressed', 'archive.7z')
+      ).toBe('archive');
+      expect(pipeline.classifyFile('application/vnd.rar', 'archive.rar')).toBe(
+        'archive'
+      );
+      expect(pipeline.classifyFile('application/x-bzip2', 'archive.bz2')).toBe(
+        'archive'
+      );
+      expect(pipeline.classifyFile('application/x-xz', 'archive.xz')).toBe(
+        'archive'
+      );
     });
 
     it('should return "unknown" for unrecognized MIME types', () => {
       // Note: 'data.bin' uses .bin which is in the executable extensions set.
       // Use a non-executable extension to test unknown classification.
-      expect(pipeline.classifyFile('application/octet-stream', 'data.dat')).toBe('unknown');
+      expect(
+        pipeline.classifyFile('application/octet-stream', 'data.dat')
+      ).toBe('unknown');
     });
 
     it('should return "unknown" when MIME type is undefined and extension is not executable', () => {
@@ -494,19 +597,56 @@ describe('MediaPipeline', () => {
 
       it('should block executable extensions', () => {
         const executables = [
-          'app.exe', 'script.bat', 'run.cmd', 'tool.com', 'screen.scr',
-          'installer.msi', 'script.vbs', 'link.lnk', 'patch.ps1', 'lib.dll',
-          'script.sh', 'app.apk', 'package.deb', 'package.rpm', 'binary.elf',
-          'binary.bin', 'binary.run', 'script.hta', 'script.wsh', 'script.jse',
-          'driver.sys', 'driver.drv', 'control.cpl', 'helper.pif',
-          'script.vbe', 'shortcut.shs', 'shortcut.shb', 'script.sct',
-          'script.wsf', 'script.wsc', 'script.ws', 'reg.rgs', 'reg.reg',
-          'installer.msp', 'installer.mst', 'config.inf', 'config.ins',
-          'config.isp', 'control.ocx',
-          'script.ps1xml', 'script.ps2', 'script.ps2xml',
-          'script.psc1', 'script.psc2',
-          'app.app', 'action.action', 'cmd.command', 'wf.workflow',
-          'script.csh', 'script.ksh',
+          'app.exe',
+          'script.bat',
+          'run.cmd',
+          'tool.com',
+          'screen.scr',
+          'installer.msi',
+          'script.vbs',
+          'link.lnk',
+          'patch.ps1',
+          'lib.dll',
+          'script.sh',
+          'app.apk',
+          'package.deb',
+          'package.rpm',
+          'binary.elf',
+          'binary.bin',
+          'binary.run',
+          'script.hta',
+          'script.wsh',
+          'script.jse',
+          'driver.sys',
+          'driver.drv',
+          'control.cpl',
+          'helper.pif',
+          'script.vbe',
+          'shortcut.shs',
+          'shortcut.shb',
+          'script.sct',
+          'script.wsf',
+          'script.wsc',
+          'script.ws',
+          'reg.rgs',
+          'reg.reg',
+          'installer.msp',
+          'installer.mst',
+          'config.inf',
+          'config.ins',
+          'config.isp',
+          'control.ocx',
+          'script.ps1xml',
+          'script.ps2',
+          'script.ps2xml',
+          'script.psc1',
+          'script.psc2',
+          'app.app',
+          'action.action',
+          'cmd.command',
+          'wf.workflow',
+          'script.csh',
+          'script.ksh',
         ];
 
         for (const exe of executables) {
@@ -578,12 +718,18 @@ describe('MediaPipeline', () => {
       });
 
       it('should allow files matching the allowlist by MIME type', () => {
-        const result = allowlistPipeline.checkFilePolicy('unknown.dat', 'image/png');
+        const result = allowlistPipeline.checkFilePolicy(
+          'unknown.dat',
+          'image/png'
+        );
         expect(result.allowed).toBe(true);
       });
 
       it('should reject files not in the allowlist', () => {
-        const result = allowlistPipeline.checkFilePolicy('archive.zip', 'application/zip');
+        const result = allowlistPipeline.checkFilePolicy(
+          'archive.zip',
+          'application/zip'
+        );
         expect(result.allowed).toBe(false);
         expect(result.reason).toContain('not in the allowlist');
       });
@@ -626,7 +772,10 @@ describe('MediaPipeline', () => {
       });
 
       it('should allow executable MIME types when blocking is disabled', () => {
-        const result = permissivePipeline.checkFilePolicy('file.dat', 'application/x-msdownload');
+        const result = permissivePipeline.checkFilePolicy(
+          'file.dat',
+          'application/x-msdownload'
+        );
         expect(result.allowed).toBe(true);
       });
     });
@@ -649,7 +798,9 @@ describe('MediaPipeline', () => {
     });
 
     it('should return the default max bytes for unknown channels', () => {
-      expect(pipeline.resolveMaxBytes('custom-channel')).toBe(DEFAULT_MAX_MEDIA_BYTES);
+      expect(pipeline.resolveMaxBytes('custom-channel')).toBe(
+        DEFAULT_MAX_MEDIA_BYTES
+      );
     });
 
     it('should normalize channel IDs (trim, lowercase)', () => {
@@ -763,7 +914,11 @@ describe('MediaPipeline', () => {
       // Discord limit is 25 MB; create a buffer slightly over
       const overSizeBytes = 26_214_401;
       const bigBuffer = Buffer.alloc(overSizeBytes, 0x00);
-      const attachment = bufferAttachment('bigfile.dat', bigBuffer, 'application/octet-stream');
+      const attachment = bufferAttachment(
+        'bigfile.dat',
+        bigBuffer,
+        'application/octet-stream'
+      );
       const result = pipeline.validate(attachment, 'discord');
 
       expect(result.valid).toBe(false);
@@ -772,7 +927,11 @@ describe('MediaPipeline', () => {
 
     it('should pass validation for files at exactly the size limit', () => {
       const buf = Buffer.alloc(26_214_400, 0x00); // exactly 25 MB
-      const attachment = bufferAttachment('exact.dat', buf, 'application/octet-stream');
+      const attachment = bufferAttachment(
+        'exact.dat',
+        buf,
+        'application/octet-stream'
+      );
       const result = pipeline.validate(attachment, 'discord');
 
       expect(result.valid).toBe(true);
@@ -816,7 +975,11 @@ describe('MediaPipeline', () => {
       // 0 means unlimited, so even a huge file passes size checks.
       // (The size check condition is maxBytes > 0 && size > maxBytes.)
       const bigBuffer = Buffer.alloc(100_000_000, 0x00);
-      const attachment = bufferAttachment('big.dat', bigBuffer, 'application/octet-stream');
+      const attachment = bufferAttachment(
+        'big.dat',
+        bigBuffer,
+        'application/octet-stream'
+      );
       const result = custom.validate(attachment, 'unlimited');
 
       expect(result.valid).toBe(true);
@@ -855,7 +1018,10 @@ describe('MediaPipeline', () => {
 
     it('should handle empty buffer', () => {
       const emptyHash = pipeline.computeHash(Buffer.alloc(0));
-      const expected = crypto.createHash('sha256').update(Buffer.alloc(0)).digest('hex');
+      const expected = crypto
+        .createHash('sha256')
+        .update(Buffer.alloc(0))
+        .digest('hex');
       expect(emptyHash).toBe(expected);
     });
   });
@@ -892,13 +1058,19 @@ describe('MediaPipeline', () => {
       });
 
       it('should convert links: [text](url) -> <url|text>', () => {
-        const result = pipeline.formatMarkdown('[Click](https://example.com)', 'slack');
+        const result = pipeline.formatMarkdown(
+          '[Click](https://example.com)',
+          'slack'
+        );
         expect(result.text).toBe('<https://example.com|Click>');
       });
 
       it('should convert headers to bold (italic regex re-wraps to underscores)', () => {
         // Headers: # text -> *text* (bold), then italic regex: *text* -> _text_
-        const result = pipeline.formatMarkdown('# Header 1\n## Header 2', 'slack');
+        const result = pipeline.formatMarkdown(
+          '# Header 1\n## Header 2',
+          'slack'
+        );
         expect(result.text).toContain('_Header 1_');
         expect(result.text).toContain('_Header 2_');
       });
@@ -933,12 +1105,18 @@ describe('MediaPipeline', () => {
       });
 
       it('should preserve code blocks with language hints', () => {
-        const result = pipeline.formatMarkdown('```typescript\nconst x = 1;\n```', 'discord');
+        const result = pipeline.formatMarkdown(
+          '```typescript\nconst x = 1;\n```',
+          'discord'
+        );
         expect(result.text).toContain('```typescript');
       });
 
       it('should preserve standard markdown (bold, italic, links)', () => {
-        const result = pipeline.formatMarkdown('**bold** *italic* [link](url)', 'discord');
+        const result = pipeline.formatMarkdown(
+          '**bold** *italic* [link](url)',
+          'discord'
+        );
         expect(result.text).toContain('**bold**');
         expect(result.text).toContain('*italic*');
         expect(result.text).toContain('[link](url)');
@@ -967,7 +1145,10 @@ describe('MediaPipeline', () => {
       });
 
       it('should convert links: [text](url) -> <a href="url">text</a>', () => {
-        const result = pipeline.formatMarkdown('[Click](https://example.com)', 'telegram');
+        const result = pipeline.formatMarkdown(
+          '[Click](https://example.com)',
+          'telegram'
+        );
         expect(result.text).toBe('<a href="https://example.com">Click</a>');
       });
 
@@ -977,7 +1158,10 @@ describe('MediaPipeline', () => {
       });
 
       it('should convert code blocks with language to pre/code tags', () => {
-        const result = pipeline.formatMarkdown('```python\nprint("hi")\n```', 'telegram');
+        const result = pipeline.formatMarkdown(
+          '```python\nprint("hi")\n```',
+          'telegram'
+        );
         expect(result.text).toContain('<pre><code class="language-python">');
         expect(result.text).toContain('print(&quot;hi&quot;)');
       });
@@ -1000,12 +1184,18 @@ describe('MediaPipeline', () => {
 
     describe('plain text', () => {
       it('should strip all markdown formatting', () => {
-        const result = pipeline.formatMarkdown('**bold** *italic* ~~struck~~', 'plain');
+        const result = pipeline.formatMarkdown(
+          '**bold** *italic* ~~struck~~',
+          'plain'
+        );
         expect(result.text).toBe('bold italic struck');
       });
 
       it('should convert links to text (url)', () => {
-        const result = pipeline.formatMarkdown('[Click](https://example.com)', 'plain');
+        const result = pipeline.formatMarkdown(
+          '[Click](https://example.com)',
+          'plain'
+        );
         expect(result.text).toBe('Click (https://example.com)');
       });
 
@@ -1081,7 +1271,9 @@ describe('MediaPipeline', () => {
 
     it('should produce <pre><code> for Telegram with language class', () => {
       const result = pipeline.formatCodeBlock(code, 'typescript', 'telegram');
-      expect(result).toBe('<pre><code class="language-typescript">const x = 1;</code></pre>');
+      expect(result).toBe(
+        '<pre><code class="language-typescript">const x = 1;</code></pre>'
+      );
     });
 
     it('should produce <pre><code> without language for Telegram when no language', () => {
@@ -1105,12 +1297,20 @@ describe('MediaPipeline', () => {
 
   describe('formatFileAsCodeBlock', () => {
     it('should auto-detect language from filename', () => {
-      const result = pipeline.formatFileAsCodeBlock('print("hi")', 'script.py', 'discord');
+      const result = pipeline.formatFileAsCodeBlock(
+        'print("hi")',
+        'script.py',
+        'discord'
+      );
       expect(result).toBe('```python\nprint("hi")\n```');
     });
 
     it('should handle files with no recognized language', () => {
-      const result = pipeline.formatFileAsCodeBlock('data', 'mystery.xyz', 'discord');
+      const result = pipeline.formatFileAsCodeBlock(
+        'data',
+        'mystery.xyz',
+        'discord'
+      );
       expect(result).toBe('```\ndata\n```');
     });
   });
@@ -1123,37 +1323,45 @@ describe('MediaPipeline', () => {
     const url = 'https://example.com';
 
     it('should format Slack links as <url|title>', () => {
-      expect(pipeline.formatLinkPreview(url, 'Example', undefined, 'slack')).toBe(
-        '<https://example.com|Example>',
-      );
+      expect(
+        pipeline.formatLinkPreview(url, 'Example', undefined, 'slack')
+      ).toBe('<https://example.com|Example>');
     });
 
     it('should return bare URL for Slack when no title', () => {
-      expect(pipeline.formatLinkPreview(url, undefined, undefined, 'slack')).toBe(url);
+      expect(
+        pipeline.formatLinkPreview(url, undefined, undefined, 'slack')
+      ).toBe(url);
     });
 
     it('should return bare URL for Discord', () => {
-      expect(pipeline.formatLinkPreview(url, 'Example', undefined, 'discord')).toBe(url);
+      expect(
+        pipeline.formatLinkPreview(url, 'Example', undefined, 'discord')
+      ).toBe(url);
     });
 
     it('should format Telegram links as <a> tags', () => {
-      expect(pipeline.formatLinkPreview(url, 'Example', 'A description', 'telegram')).toBe(
-        '<a href="https://example.com">Example</a>\nA description',
-      );
+      expect(
+        pipeline.formatLinkPreview(url, 'Example', 'A description', 'telegram')
+      ).toBe('<a href="https://example.com">Example</a>\nA description');
     });
 
     it('should return bare URL for Telegram when no title', () => {
-      expect(pipeline.formatLinkPreview(url, undefined, undefined, 'telegram')).toBe(url);
+      expect(
+        pipeline.formatLinkPreview(url, undefined, undefined, 'telegram')
+      ).toBe(url);
     });
 
     it('should format plain text with title and optional description', () => {
       expect(pipeline.formatLinkPreview(url, 'Example', 'Desc', 'plain')).toBe(
-        'Example\nhttps://example.com\nDesc',
+        'Example\nhttps://example.com\nDesc'
       );
     });
 
     it('should return bare URL for plain text when no title', () => {
-      expect(pipeline.formatLinkPreview(url, undefined, undefined, 'plain')).toBe(url);
+      expect(
+        pipeline.formatLinkPreview(url, undefined, undefined, 'plain')
+      ).toBe(url);
     });
   });
 
@@ -1350,7 +1558,11 @@ describe('MediaPipeline', () => {
         channelLimits: { tiny: 100 },
       });
       const bigBuf = Buffer.alloc(200, 0x00);
-      const attachment = bufferAttachment('file.dat', bigBuf, 'application/octet-stream');
+      const attachment = bufferAttachment(
+        'file.dat',
+        bigBuf,
+        'application/octet-stream'
+      );
       const result = await custom.process(attachment, 'tiny');
 
       expect(result.validation.valid).toBe(false);
@@ -1361,7 +1573,11 @@ describe('MediaPipeline', () => {
       it('should pass clean files through the scanner', async () => {
         const scanner: MediaScannerProvider = {
           name: 'test-scanner',
-          scan: vi.fn().mockResolvedValue({ clean: true, scanner: 'test', verdict: 'clean' }),
+          scan: vi.fn().mockResolvedValue({
+            clean: true,
+            scanner: 'test',
+            verdict: 'clean',
+          }),
         };
         const scanPipeline = new MediaPipeline({
           logger: silentLogger(),
@@ -1374,7 +1590,11 @@ describe('MediaPipeline', () => {
 
         expect(result.validation.valid).toBe(true);
         expect(scanner.scan).toHaveBeenCalledOnce();
-        expect(result.scanResult).toEqual({ clean: true, scanner: 'test', verdict: 'clean' });
+        expect(result.scanResult).toEqual({
+          clean: true,
+          scanner: 'test',
+          verdict: 'clean',
+        });
       });
 
       it('should reject files that fail the scan', async () => {
@@ -1404,7 +1624,11 @@ describe('MediaPipeline', () => {
       it('should emit scan progress events', async () => {
         const scanner: MediaScannerProvider = {
           name: 'test-scanner',
-          scan: vi.fn().mockResolvedValue({ clean: true, scanner: 'test', verdict: 'clean' }),
+          scan: vi.fn().mockResolvedValue({
+            clean: true,
+            scanner: 'test',
+            verdict: 'clean',
+          }),
         };
         const scanPipeline = new MediaPipeline({
           logger: silentLogger(),
@@ -1417,7 +1641,7 @@ describe('MediaPipeline', () => {
         await scanPipeline.process(attachment, 'discord', onProgress);
 
         const scanEvents = onProgress.mock.calls
-          .map((c) => c[0])
+          .map(c => c[0])
           .filter((e: { operation: string }) => e.operation === 'scan');
         expect(scanEvents.length).toBe(2); // start + end
         expect(scanEvents[0].fraction).toBe(0);
@@ -1525,7 +1749,8 @@ describe('MediaPipeline', () => {
         await resizerPipeline.process(attachment, 'telegram');
 
         expect(resizer.resize).toHaveBeenCalledOnce();
-        const [, , options] = (resizer.resize as ReturnType<typeof vi.fn>).mock.calls[0];
+        const [, , options] = (resizer.resize as ReturnType<typeof vi.fn>).mock
+          .calls[0];
         expect(options.maxWidth).toBe(5120);
         expect(options.maxHeight).toBe(5120);
       });
@@ -1561,7 +1786,7 @@ describe('MediaPipeline', () => {
         await resizerPipeline.process(attachment, 'discord', onProgress);
 
         const resizeEvents = onProgress.mock.calls
-          .map((c) => c[0])
+          .map(c => c[0])
           .filter((e: { operation: string }) => e.operation === 'resize');
         expect(resizeEvents.length).toBe(2);
         expect(resizeEvents[0].fraction).toBe(0);
@@ -1629,7 +1854,9 @@ describe('MediaPipeline', () => {
     });
 
     it('should handle filenames with multiple dots', () => {
-      expect(pipeline.resolveMimeType('archive.tar.gz')).toBe('application/gzip');
+      expect(pipeline.resolveMimeType('archive.tar.gz')).toBe(
+        'application/gzip'
+      );
       expect(pipeline.resolveMimeType('photo.backup.jpg')).toBe('image/jpeg');
     });
 
@@ -1658,7 +1885,9 @@ describe('MediaPipeline', () => {
     });
 
     it('should handle buffer with random noise', () => {
-      const noiseBuffer = Buffer.from(Array.from({ length: 64 }, () => Math.floor(Math.random() * 256)));
+      const noiseBuffer = Buffer.from(
+        Array.from({ length: 64 }, () => Math.floor(Math.random() * 256))
+      );
       // Should not throw, just return undefined or extension-based MIME
       const mime = pipeline.detectMimeType(noiseBuffer, 'noise.dat');
       // It may or may not match depending on random bytes, but should not throw

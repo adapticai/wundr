@@ -51,59 +51,211 @@ const STATIC_MAPPINGS: EnvOverrideMapping[] = [
   { envKey: 'WUNDR_DAEMON_NAME', configPath: 'daemon.name', type: 'string' },
   { envKey: 'WUNDR_DAEMON_PORT', configPath: 'daemon.port', type: 'number' },
   { envKey: 'WUNDR_DAEMON_HOST', configPath: 'daemon.host', type: 'string' },
-  { envKey: 'WUNDR_DAEMON_MAX_SESSIONS', configPath: 'daemon.maxSessions', type: 'number' },
-  { envKey: 'WUNDR_DAEMON_VERBOSE', configPath: 'daemon.verbose', type: 'boolean' },
-  { envKey: 'WUNDR_DAEMON_SHUTDOWN_TIMEOUT_MS', configPath: 'daemon.shutdownTimeoutMs', type: 'number' },
-  { envKey: 'WUNDR_DAEMON_HEARTBEAT_INTERVAL_MS', configPath: 'daemon.heartbeatIntervalMs', type: 'number' },
-  { envKey: 'WUNDR_DAEMON_HEALTH_CHECK_INTERVAL_MS', configPath: 'daemon.healthCheckIntervalMs', type: 'number' },
-  { envKey: 'WUNDR_DAEMON_RELOAD_MODE', configPath: 'daemon.reload.mode', type: 'string' },
-  { envKey: 'WUNDR_DAEMON_RELOAD_DEBOUNCE_MS', configPath: 'daemon.reload.debounceMs', type: 'number' },
+  {
+    envKey: 'WUNDR_DAEMON_MAX_SESSIONS',
+    configPath: 'daemon.maxSessions',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_DAEMON_VERBOSE',
+    configPath: 'daemon.verbose',
+    type: 'boolean',
+  },
+  {
+    envKey: 'WUNDR_DAEMON_SHUTDOWN_TIMEOUT_MS',
+    configPath: 'daemon.shutdownTimeoutMs',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_DAEMON_HEARTBEAT_INTERVAL_MS',
+    configPath: 'daemon.heartbeatIntervalMs',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_DAEMON_HEALTH_CHECK_INTERVAL_MS',
+    configPath: 'daemon.healthCheckIntervalMs',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_DAEMON_RELOAD_MODE',
+    configPath: 'daemon.reload.mode',
+    type: 'string',
+  },
+  {
+    envKey: 'WUNDR_DAEMON_RELOAD_DEBOUNCE_MS',
+    configPath: 'daemon.reload.debounceMs',
+    type: 'number',
+  },
 
   // --- Security ---
-  { envKey: 'WUNDR_SECURITY_JWT_SECRET', configPath: 'security.jwt.secret', type: 'string' },
-  { envKey: 'WUNDR_SECURITY_JWT_EXPIRATION', configPath: 'security.jwt.expiration', type: 'string' },
-  { envKey: 'WUNDR_SECURITY_JWT_ISSUER', configPath: 'security.jwt.issuer', type: 'string' },
-  { envKey: 'WUNDR_SECURITY_JWT_AUDIENCE', configPath: 'security.jwt.audience', type: 'string' },
-  { envKey: 'WUNDR_SECURITY_CORS_ENABLED', configPath: 'security.cors.enabled', type: 'boolean' },
-  { envKey: 'WUNDR_SECURITY_CORS_ORIGINS', configPath: 'security.cors.origins', type: 'string[]' },
-  { envKey: 'WUNDR_SECURITY_RATE_LIMIT_ENABLED', configPath: 'security.rateLimit.enabled', type: 'boolean' },
-  { envKey: 'WUNDR_SECURITY_RATE_LIMIT_MAX', configPath: 'security.rateLimit.max', type: 'number' },
-  { envKey: 'WUNDR_SECURITY_RATE_LIMIT_WINDOW_MS', configPath: 'security.rateLimit.windowMs', type: 'number' },
-  { envKey: 'WUNDR_SECURITY_AUDIT_ENABLED', configPath: 'security.audit.enabled', type: 'boolean' },
+  {
+    envKey: 'WUNDR_SECURITY_JWT_SECRET',
+    configPath: 'security.jwt.secret',
+    type: 'string',
+  },
+  {
+    envKey: 'WUNDR_SECURITY_JWT_EXPIRATION',
+    configPath: 'security.jwt.expiration',
+    type: 'string',
+  },
+  {
+    envKey: 'WUNDR_SECURITY_JWT_ISSUER',
+    configPath: 'security.jwt.issuer',
+    type: 'string',
+  },
+  {
+    envKey: 'WUNDR_SECURITY_JWT_AUDIENCE',
+    configPath: 'security.jwt.audience',
+    type: 'string',
+  },
+  {
+    envKey: 'WUNDR_SECURITY_CORS_ENABLED',
+    configPath: 'security.cors.enabled',
+    type: 'boolean',
+  },
+  {
+    envKey: 'WUNDR_SECURITY_CORS_ORIGINS',
+    configPath: 'security.cors.origins',
+    type: 'string[]',
+  },
+  {
+    envKey: 'WUNDR_SECURITY_RATE_LIMIT_ENABLED',
+    configPath: 'security.rateLimit.enabled',
+    type: 'boolean',
+  },
+  {
+    envKey: 'WUNDR_SECURITY_RATE_LIMIT_MAX',
+    configPath: 'security.rateLimit.max',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_SECURITY_RATE_LIMIT_WINDOW_MS',
+    configPath: 'security.rateLimit.windowMs',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_SECURITY_AUDIT_ENABLED',
+    configPath: 'security.audit.enabled',
+    type: 'boolean',
+  },
 
   // --- Memory ---
-  { envKey: 'WUNDR_MEMORY_BACKEND', configPath: 'memory.backend', type: 'string' },
-  { envKey: 'WUNDR_MEMORY_MAX_HEAP_MB', configPath: 'memory.maxHeapMB', type: 'number' },
-  { envKey: 'WUNDR_MEMORY_MAX_CONTEXT_TOKENS', configPath: 'memory.maxContextTokens', type: 'number' },
-  { envKey: 'WUNDR_MEMORY_COMPACTION_ENABLED', configPath: 'memory.compaction.enabled', type: 'boolean' },
-  { envKey: 'WUNDR_MEMORY_COMPACTION_THRESHOLD', configPath: 'memory.compaction.threshold', type: 'number' },
-  { envKey: 'WUNDR_MEMORY_COMPACTION_STRATEGY', configPath: 'memory.compaction.strategy', type: 'string' },
-  { envKey: 'WUNDR_MEMORY_CITATIONS', configPath: 'memory.citations', type: 'string' },
+  {
+    envKey: 'WUNDR_MEMORY_BACKEND',
+    configPath: 'memory.backend',
+    type: 'string',
+  },
+  {
+    envKey: 'WUNDR_MEMORY_MAX_HEAP_MB',
+    configPath: 'memory.maxHeapMB',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_MEMORY_MAX_CONTEXT_TOKENS',
+    configPath: 'memory.maxContextTokens',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_MEMORY_COMPACTION_ENABLED',
+    configPath: 'memory.compaction.enabled',
+    type: 'boolean',
+  },
+  {
+    envKey: 'WUNDR_MEMORY_COMPACTION_THRESHOLD',
+    configPath: 'memory.compaction.threshold',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_MEMORY_COMPACTION_STRATEGY',
+    configPath: 'memory.compaction.strategy',
+    type: 'string',
+  },
+  {
+    envKey: 'WUNDR_MEMORY_CITATIONS',
+    configPath: 'memory.citations',
+    type: 'string',
+  },
 
   // --- Logging ---
-  { envKey: 'WUNDR_LOGGING_LEVEL', configPath: 'logging.level', type: 'string' },
-  { envKey: 'WUNDR_LOGGING_FORMAT', configPath: 'logging.format', type: 'string' },
+  {
+    envKey: 'WUNDR_LOGGING_LEVEL',
+    configPath: 'logging.level',
+    type: 'string',
+  },
+  {
+    envKey: 'WUNDR_LOGGING_FORMAT',
+    configPath: 'logging.format',
+    type: 'string',
+  },
   { envKey: 'WUNDR_LOGGING_FILE', configPath: 'logging.file', type: 'string' },
-  { envKey: 'WUNDR_LOGGING_STRUCTURED', configPath: 'logging.structured', type: 'boolean' },
+  {
+    envKey: 'WUNDR_LOGGING_STRUCTURED',
+    configPath: 'logging.structured',
+    type: 'boolean',
+  },
 
   // --- Monitoring ---
-  { envKey: 'WUNDR_MONITORING_METRICS_ENABLED', configPath: 'monitoring.metrics.enabled', type: 'boolean' },
-  { envKey: 'WUNDR_MONITORING_METRICS_PORT', configPath: 'monitoring.metrics.port', type: 'number' },
-  { envKey: 'WUNDR_MONITORING_HEALTH_CHECK_ENABLED', configPath: 'monitoring.healthCheck.enabled', type: 'boolean' },
-  { envKey: 'WUNDR_MONITORING_HEALTH_CHECK_PATH', configPath: 'monitoring.healthCheck.path', type: 'string' },
+  {
+    envKey: 'WUNDR_MONITORING_METRICS_ENABLED',
+    configPath: 'monitoring.metrics.enabled',
+    type: 'boolean',
+  },
+  {
+    envKey: 'WUNDR_MONITORING_METRICS_PORT',
+    configPath: 'monitoring.metrics.port',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_MONITORING_HEALTH_CHECK_ENABLED',
+    configPath: 'monitoring.healthCheck.enabled',
+    type: 'boolean',
+  },
+  {
+    envKey: 'WUNDR_MONITORING_HEALTH_CHECK_PATH',
+    configPath: 'monitoring.healthCheck.path',
+    type: 'string',
+  },
 
   // --- Hooks ---
-  { envKey: 'WUNDR_HOOKS_ENABLED', configPath: 'hooks.enabled', type: 'boolean' },
-  { envKey: 'WUNDR_HOOKS_DEFAULT_TIMEOUT_MS', configPath: 'hooks.defaultTimeoutMs', type: 'number' },
-  { envKey: 'WUNDR_HOOKS_MAX_CONCURRENCY', configPath: 'hooks.maxConcurrency', type: 'number' },
+  {
+    envKey: 'WUNDR_HOOKS_ENABLED',
+    configPath: 'hooks.enabled',
+    type: 'boolean',
+  },
+  {
+    envKey: 'WUNDR_HOOKS_DEFAULT_TIMEOUT_MS',
+    configPath: 'hooks.defaultTimeoutMs',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_HOOKS_MAX_CONCURRENCY',
+    configPath: 'hooks.maxConcurrency',
+    type: 'number',
+  },
 
   // --- Plugins ---
-  { envKey: 'WUNDR_PLUGINS_ENABLED', configPath: 'plugins.enabled', type: 'boolean' },
+  {
+    envKey: 'WUNDR_PLUGINS_ENABLED',
+    configPath: 'plugins.enabled',
+    type: 'boolean',
+  },
 
   // --- Token Budget ---
-  { envKey: 'WUNDR_TOKEN_BUDGET_DAILY', configPath: 'tokenBudget.daily', type: 'number' },
-  { envKey: 'WUNDR_TOKEN_BUDGET_WEEKLY', configPath: 'tokenBudget.weekly', type: 'number' },
-  { envKey: 'WUNDR_TOKEN_BUDGET_MONTHLY', configPath: 'tokenBudget.monthly', type: 'number' },
+  {
+    envKey: 'WUNDR_TOKEN_BUDGET_DAILY',
+    configPath: 'tokenBudget.daily',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_TOKEN_BUDGET_WEEKLY',
+    configPath: 'tokenBudget.weekly',
+    type: 'number',
+  },
+  {
+    envKey: 'WUNDR_TOKEN_BUDGET_MONTHLY',
+    configPath: 'tokenBudget.monthly',
+    type: 'number',
+  },
 
   // --- Global ---
   { envKey: 'WUNDR_NODE_ENV', configPath: 'nodeEnv', type: 'string' },
@@ -120,10 +272,7 @@ for (const mapping of STATIC_MAPPINGS) {
 // Type Coercion
 // =============================================================================
 
-function coerceValue(
-  raw: string,
-  type: EnvOverrideMapping['type'],
-): unknown {
+function coerceValue(raw: string, type: EnvOverrideMapping['type']): unknown {
   switch (type) {
     case 'boolean':
       return raw.toLowerCase() === 'true' || raw === '1';
@@ -137,8 +286,8 @@ function coerceValue(
     case 'string[]':
       return raw
         .split(',')
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0);
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
     case 'string':
     default:
       return raw;
@@ -152,7 +301,7 @@ function coerceValue(
 function setNestedValue(
   obj: Record<string, unknown>,
   dotPath: string,
-  value: unknown,
+  value: unknown
 ): void {
   const parts = dotPath.split('.');
   let current: Record<string, unknown> = obj;
@@ -207,7 +356,9 @@ function envKeyToConfigPath(envKey: string): string | null {
   // Convert remaining segments to camelCase
   const camelCase = remaining
     .map((seg, index) =>
-      index === 0 ? seg.toLowerCase() : seg.charAt(0) + seg.slice(1).toLowerCase(),
+      index === 0
+        ? seg.toLowerCase()
+        : seg.charAt(0) + seg.slice(1).toLowerCase()
     )
     .join('');
 
@@ -226,12 +377,16 @@ function envKeyToConfigPath(envKey: string): string | null {
  * object that can be deep-merged on top of the file config.
  */
 export function buildWundrEnvOverrides(
-  env: NodeJS.ProcessEnv = process.env,
+  env: NodeJS.ProcessEnv = process.env
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   for (const [key, rawValue] of Object.entries(env)) {
-    if (!key.startsWith('WUNDR_') || rawValue === undefined || rawValue === '') {
+    if (
+      !key.startsWith('WUNDR_') ||
+      rawValue === undefined ||
+      rawValue === ''
+    ) {
       continue;
     }
 

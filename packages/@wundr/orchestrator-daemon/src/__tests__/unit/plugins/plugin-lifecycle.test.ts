@@ -21,9 +21,16 @@ import {
   PluginLifecycleManager,
   type LifecycleEvent,
 } from '../../../plugins/plugin-lifecycle';
-import { loadManifest, verifyPluginIntegrity } from '../../../plugins/plugin-manifest';
+import {
+  loadManifest,
+  verifyPluginIntegrity,
+} from '../../../plugins/plugin-manifest';
 import { scanPluginDirectory } from '../../../plugins/plugin-scanner';
-import { createSandboxedPlugin, destroyAllHandles, getMetricsRegistry } from '../../../plugins/sandbox';
+import {
+  createSandboxedPlugin,
+  destroyAllHandles,
+  getMetricsRegistry,
+} from '../../../plugins/sandbox';
 
 import type { PluginManifest } from '../../../plugins/plugin-manifest';
 
@@ -217,7 +224,9 @@ describe('PluginLifecycleManager', () => {
     const registry = getMetricsRegistry();
     (registry.get as ReturnType<typeof vi.fn>).mockReturnValue(undefined);
     (registry.allSnapshots as ReturnType<typeof vi.fn>).mockReturnValue([]);
-    (destroyAllHandles as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    (destroyAllHandles as ReturnType<typeof vi.fn>).mockResolvedValue(
+      undefined
+    );
 
     manager = new PluginLifecycleManager({
       pluginsDir: '/tmp/test-plugins',
@@ -345,7 +354,7 @@ describe('PluginLifecycleManager', () => {
 
     it('should throw if plugin is not installed', async () => {
       await expect(manager.validate('nonexistent')).rejects.toThrow(
-        'Plugin "nonexistent" is not installed',
+        'Plugin "nonexistent" is not installed'
       );
     });
 
@@ -359,7 +368,7 @@ describe('PluginLifecycleManager', () => {
 
       // Now in 'validated' state, trying to validate again should fail
       await expect(manager.validate('test-plugin')).rejects.toThrow(
-        'must be in "installed" state',
+        'must be in "installed" state'
       );
     });
   });
@@ -374,7 +383,10 @@ describe('PluginLifecycleManager', () => {
         verifySignatures: true,
         shutdownTimeoutMs: 500,
       });
-      const manifest = makeManifest({ name: 'sig-plugin', trustLevel: 'community' });
+      const manifest = makeManifest({
+        name: 'sig-plugin',
+        trustLevel: 'community',
+      });
       setupInstallSuccess(manifest);
       setupValidateSuccess();
 
@@ -440,7 +452,7 @@ describe('PluginLifecycleManager', () => {
 
     it('should throw if plugin is not installed', async () => {
       await expect(manager.load('nonexistent')).rejects.toThrow(
-        'not installed',
+        'not installed'
       );
     });
 
@@ -452,7 +464,7 @@ describe('PluginLifecycleManager', () => {
 
       // Still in 'installed' state, not 'validated'
       await expect(manager.load('test-plugin')).rejects.toThrow(
-        'must be in "validated" or "disabled"',
+        'must be in "validated" or "disabled"'
       );
     });
 
@@ -476,7 +488,7 @@ describe('PluginLifecycleManager', () => {
       await manager.validate('child-plugin');
 
       await expect(manager.load('child-plugin')).rejects.toThrow(
-        'depends on "dep-plugin" which is not active',
+        'depends on "dep-plugin" which is not active'
       );
     });
   });
@@ -516,7 +528,9 @@ describe('PluginLifecycleManager', () => {
       await manager.validate('test-plugin');
       await manager.load('test-plugin');
 
-      await expect(manager.activate('test-plugin')).rejects.toThrow('activation error');
+      await expect(manager.activate('test-plugin')).rejects.toThrow(
+        'activation error'
+      );
       // Should remain in 'loaded' state
       expect(manager.getPlugin('test-plugin')?.state).toBe('loaded');
     });
@@ -530,7 +544,7 @@ describe('PluginLifecycleManager', () => {
       await manager.validate('test-plugin');
 
       await expect(manager.activate('test-plugin')).rejects.toThrow(
-        'must be in "loaded" state',
+        'must be in "loaded" state'
       );
     });
   });
@@ -630,7 +644,7 @@ describe('PluginLifecycleManager', () => {
       await manager.activate('test-plugin');
 
       await expect(manager.unload('test-plugin')).rejects.toThrow(
-        'must be "disabled"',
+        'must be "disabled"'
       );
     });
   });
@@ -654,7 +668,9 @@ describe('PluginLifecycleManager', () => {
       await manager.uninstall('test-plugin');
 
       expect(manager.getPlugin('test-plugin')).toBeUndefined();
-      expect(manager.getIpcBus().unsubscribeAll).toHaveBeenCalledWith('test-plugin');
+      expect(manager.getIpcBus().unsubscribeAll).toHaveBeenCalledWith(
+        'test-plugin'
+      );
       expect(getMetricsRegistry().remove).toHaveBeenCalledWith('test-plugin');
     });
 
@@ -688,8 +704,8 @@ describe('PluginLifecycleManager', () => {
       const events: LifecycleEvent[] = [];
       manager.onEvent(e => {
         if (e.type === 'hot_reload') {
-events.push(e);
-}
+          events.push(e);
+        }
       });
 
       const result = await manager.hotReload('test-plugin');
@@ -777,9 +793,9 @@ events.push(e);
         warnings: [],
       });
 
-      await expect(manager.installAndActivate('/tmp/bad-plugin')).rejects.toThrow(
-        'Plugin installation failed',
-      );
+      await expect(
+        manager.installAndActivate('/tmp/bad-plugin')
+      ).rejects.toThrow('Plugin installation failed');
     });
   });
 
@@ -810,11 +826,11 @@ events.push(e);
       const handleA = makeMockHandle('plugin-a');
       const handleB = makeMockHandle('plugin-b');
       const callOrder: string[] = [];
-      mockedCreateSandbox.mockImplementation(async (params) => {
+      mockedCreateSandbox.mockImplementation(async params => {
         callOrder.push(params.manifest.name);
         if (params.manifest.name === 'plugin-a') {
-return handleA;
-}
+          return handleA;
+        }
         return handleB;
       });
 
@@ -823,7 +839,7 @@ return handleA;
       expect(result.loaded).toContain('plugin-a');
       expect(result.loaded).toContain('plugin-b');
       expect(callOrder.indexOf('plugin-a')).toBeLessThan(
-        callOrder.indexOf('plugin-b'),
+        callOrder.indexOf('plugin-b')
       );
     });
 
@@ -847,7 +863,9 @@ return handleA;
       await manager.install('/tmp/cycle-b');
       await manager.validate('cycle-b');
 
-      await expect(manager.loadAll()).rejects.toThrow('Circular plugin dependency');
+      await expect(manager.loadAll()).rejects.toThrow(
+        'Circular plugin dependency'
+      );
     });
 
     it('should report failures and continue with remaining plugins', async () => {
@@ -865,7 +883,7 @@ return handleA;
       await manager.validate('fail-plugin');
 
       const handleA = makeMockHandle('ok-plugin');
-      mockedCreateSandbox.mockImplementation(async (params) => {
+      mockedCreateSandbox.mockImplementation(async params => {
         if (params.manifest.name === 'fail-plugin') {
           throw new Error('Sandbox creation failed');
         }
@@ -881,7 +899,7 @@ return handleA;
             name: 'fail-plugin',
             error: expect.stringContaining('Sandbox creation failed'),
           }),
-        ]),
+        ])
       );
     });
   });
@@ -1055,7 +1073,9 @@ return handleA;
       setupValidateSuccess();
       const handle = makeMockHandle();
       // Make destroy slow so shutdown is still in progress
-      handle.destroy.mockImplementation(() => new Promise(r => setTimeout(r, 100)));
+      handle.destroy.mockImplementation(
+        () => new Promise(r => setTimeout(r, 100))
+      );
       setupLoadSuccess(handle);
 
       await manager.install('/tmp/test-plugin');

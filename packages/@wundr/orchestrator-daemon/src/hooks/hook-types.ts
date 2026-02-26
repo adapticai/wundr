@@ -313,7 +313,9 @@ export type VoidHookEvent = Exclude<HookEventName, ModifyingHookEvent>;
  */
 export type HookHandler<E extends HookEventName = HookEventName> =
   E extends ModifyingHookEvent
-    ? (metadata: HookMetadataMap[E]) => Promise<HookResultMap[E] | void> | HookResultMap[E] | void
+    ? (
+        metadata: HookMetadataMap[E]
+      ) => Promise<HookResultMap[E] | void> | HookResultMap[E] | void
     : (metadata: HookMetadataMap[E]) => Promise<void> | void;
 
 // =============================================================================
@@ -392,12 +394,12 @@ export interface HookRegistration<E extends HookEventName = HookEventName> {
  * Where a hook registration originated from.
  */
 export type HookSource =
-  | 'config-file'    // From wundr.config.ts or hooks config file
-  | 'programmatic'   // Registered via API at runtime
-  | 'plugin'         // Registered by a plugin
-  | 'built-in'       // Shipped with the orchestrator
-  | 'directory'      // Discovered from a hooks directory on disk
-  | 'workspace';     // Loaded from a workspace hooks directory
+  | 'config-file' // From wundr.config.ts or hooks config file
+  | 'programmatic' // Registered via API at runtime
+  | 'plugin' // Registered by a plugin
+  | 'built-in' // Shipped with the orchestrator
+  | 'directory' // Discovered from a hooks directory on disk
+  | 'workspace'; // Loaded from a workspace hooks directory
 
 // =============================================================================
 // Hook Configuration (Config File Format)
@@ -695,7 +697,7 @@ export interface IHookEngine {
   /** Fire a hook event. Returns aggregated results. */
   fire<E extends HookEventName>(
     event: E,
-    metadata: HookMetadataMap[E],
+    metadata: HookMetadataMap[E]
   ): Promise<HookFireResult<E>>;
 
   /** Check if any hooks are registered for an event. */
@@ -719,7 +721,9 @@ export interface IHookRegistry {
   unregister(hookId: string): boolean;
 
   /** Get all registrations for an event, sorted by priority */
-  getHooksForEvent<E extends HookEventName>(event: E): Array<HookRegistration<E>>;
+  getHooksForEvent<E extends HookEventName>(
+    event: E
+  ): Array<HookRegistration<E>>;
 
   /** Get a registration by ID */
   getHookById(hookId: string): HookRegistration | undefined;

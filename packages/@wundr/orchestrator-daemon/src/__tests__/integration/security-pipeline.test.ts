@@ -27,14 +27,18 @@ import type { WundrToolPolicyConfig } from '../../security/tool-policy';
  * Build a minimal tool-policy config that allows everything except
  * explicitly denied tools.
  */
-function buildPolicyConfig(overrides: Partial<WundrToolPolicyConfig> = {}): WundrToolPolicyConfig {
+function buildPolicyConfig(
+  overrides: Partial<WundrToolPolicyConfig> = {}
+): WundrToolPolicyConfig {
   return {
     deny: [],
     ...overrides,
   } as WundrToolPolicyConfig;
 }
 
-function buildSessionState(opts?: Parameters<typeof createApprovalState>[0]): ExecApprovalState {
+function buildSessionState(
+  opts?: Parameters<typeof createApprovalState>[0]
+): ExecApprovalState {
   return createApprovalState(opts);
 }
 
@@ -215,7 +219,8 @@ describe('Security Pipeline Integration', () => {
     });
 
     it('redacts AWS credentials', () => {
-      const text = 'key: AKIAIOSFODNN7EXAMPLE secret: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLE';
+      const text =
+        'key: AKIAIOSFODNN7EXAMPLE secret: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLE';
       const redacted = gate.redactOutput(text);
       expect(redacted).not.toContain('AKIAIOSFODNN7EXAMPLE');
     });
@@ -227,7 +232,8 @@ describe('Security Pipeline Integration', () => {
     });
 
     it('redacts JWT tokens', () => {
-      const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U';
+      const jwt =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U';
       const text = `Bearer ${jwt}`;
       const redacted = gate.redactOutput(text);
       expect(redacted).not.toContain(jwt);
@@ -248,13 +254,16 @@ describe('Security Pipeline Integration', () => {
     it('sanitizes env for subprocess spawning', () => {
       gate = new SecurityGate();
 
-      const result = gate.sanitizeEnv({
-        PATH: '/usr/bin:/usr/local/bin',
-        HOME: '/home/test',
-        NODE_OPTIONS: '--max-old-space-size=8192 --require=evil.js',
-        LD_PRELOAD: '/tmp/evil.so',
-        SAFE_VAR: 'hello',
-      }, { platform: 'linux' });
+      const result = gate.sanitizeEnv(
+        {
+          PATH: '/usr/bin:/usr/local/bin',
+          HOME: '/home/test',
+          NODE_OPTIONS: '--max-old-space-size=8192 --require=evil.js',
+          LD_PRELOAD: '/tmp/evil.so',
+          SAFE_VAR: 'hello',
+        },
+        { platform: 'linux' }
+      );
 
       expect(result).toBeDefined();
       expect(result.env).toBeDefined();

@@ -146,36 +146,36 @@ export function Sidebar({
   ];
 
   return (
-    <aside className='fixed inset-y-0 left-0 z-50 hidden w-64 border-r border-stone-800 bg-stone-950 lg:block'>
+    <aside className='fixed inset-y-0 left-0 z-50 hidden w-64 border-r border bg-background lg:block'>
       <div className='flex h-full flex-col'>
         {/* Spacer for macOS Electron window controls (traffic lights) */}
         <div className='h-8 shrink-0 [-webkit-app-region:drag]' />
         {/* Workspace Switcher */}
-        <div className='relative border-b border-stone-800'>
+        <div className='relative border-b'>
           <button
             type='button'
             onClick={() => setShowWorkspaceSwitcher(!showWorkspaceSwitcher)}
-            className='flex h-14 w-full items-center gap-3 px-4 hover:bg-stone-900'
+            className='flex h-14 w-full items-center gap-3 px-4 hover:bg-muted'
           >
             {currentWorkspace?.icon ? (
-              <div className='flex h-9 w-9 items-center justify-center rounded-lg bg-stone-800 text-sm font-bold text-stone-100'>
+              <div className='flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-sm font-bold text-foreground'>
                 {currentWorkspace.icon}
               </div>
             ) : currentWorkspace?.name ? (
-              <div className='flex h-9 w-9 items-center justify-center rounded-lg bg-stone-800 text-sm font-bold text-stone-100'>
+              <div className='flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-sm font-bold text-foreground'>
                 {currentWorkspace.name.charAt(0).toUpperCase()}
               </div>
             ) : (
-              <Logo className='h-6 w-auto text-stone-100' />
+              <Logo className='h-6 w-auto text-foreground' />
             )}
             <div className='flex-1 text-left'>
-              <p className='font-semibold text-stone-100'>
+              <p className='font-semibold text-foreground'>
                 {currentWorkspace?.name || 'Neolith'}
               </p>
             </div>
             <ChevronDownIcon
               className={cn(
-                'h-4 w-4 text-stone-400 transition-transform',
+                'h-4 w-4 text-muted-foreground transition-transform',
                 showWorkspaceSwitcher && 'rotate-180'
               )}
             />
@@ -188,35 +188,35 @@ export function Sidebar({
                 className='fixed inset-0 z-10'
                 onClick={() => setShowWorkspaceSwitcher(false)}
               />
-              <div className='absolute left-2 right-2 top-full z-20 mt-1 rounded-md border border-stone-800 bg-stone-900 py-1 shadow-lg'>
+              <div className='absolute left-2 right-2 top-full z-20 mt-1 rounded-md border bg-card py-1 shadow-lg'>
                 {workspaces.map(workspace => (
                   <Link
                     key={workspace.id}
                     href={`/${workspace.id}/dashboard`}
                     onClick={() => setShowWorkspaceSwitcher(false)}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2 text-stone-100 hover:bg-stone-800',
-                      workspace.id === currentWorkspace?.id && 'bg-stone-800/50'
+                      'flex items-center gap-3 px-3 py-2 text-foreground hover:bg-muted',
+                      workspace.id === currentWorkspace?.id && 'bg-muted/50'
                     )}
                   >
-                    <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-sm font-bold text-stone-100'>
+                    <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-sm font-bold text-foreground'>
                       {workspace.icon || workspace.name.charAt(0).toUpperCase()}
                     </div>
                     <span className='text-sm font-medium'>
                       {workspace.name}
                     </span>
                     {workspace.id === currentWorkspace?.id && (
-                      <CheckIcon className='ml-auto h-4 w-4 text-stone-400' />
+                      <CheckIcon className='ml-auto h-4 w-4 text-muted-foreground' />
                     )}
                   </Link>
                 ))}
-                <div className='my-1 h-px bg-stone-800' />
+                <div className='my-1 h-px bg-border' />
                 <Link
                   href='/workspaces/new'
                   onClick={() => setShowWorkspaceSwitcher(false)}
-                  className='flex items-center gap-3 px-3 py-2 text-stone-400 hover:bg-stone-800 hover:text-stone-100'
+                  className='flex items-center gap-3 px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground'
                 >
-                  <div className='flex h-8 w-8 items-center justify-center rounded-lg border border-dashed border-stone-700'>
+                  <div className='flex h-8 w-8 items-center justify-center rounded-lg border border-dashed'>
                     <PlusIcon className='h-4 w-4' />
                   </div>
                   <span className='text-sm'>Create workspace</span>
@@ -255,7 +255,7 @@ export function Sidebar({
           )}
         </nav>
 
-        <div className='h-px bg-stone-800' />
+        <div className='h-px bg-border' />
 
         {/* Channel List */}
         <div className='flex-1 overflow-hidden'>
@@ -276,10 +276,10 @@ export function Sidebar({
         </div>
 
         {/* User Section */}
-        <div className='border-t border-stone-800 p-3'>
+        <div className='border-t p-3'>
           <Link
             href={`/${workspaceId}/settings/profile`}
-            className='flex items-center gap-3 rounded-lg p-2 hover:bg-stone-900'
+            className='flex items-center gap-3 rounded-lg p-2 hover:bg-muted'
           >
             <UserAvatar
               user={{
@@ -290,13 +290,13 @@ export function Sidebar({
               size='lg'
               shape='rounded'
               showStatus
-              fallbackClassName='bg-stone-800 text-stone-100'
+              fallbackClassName='bg-muted text-foreground'
             />
             <div className='flex-1 min-w-0'>
-              <p className='truncate text-sm font-medium text-stone-100'>
+              <p className='truncate text-sm font-medium text-foreground'>
                 {user?.name || 'User'}
               </p>
-              <p className='truncate text-xs text-stone-400'>
+              <p className='truncate text-xs text-muted-foreground'>
                 {user?.email || 'user@example.com'}
               </p>
             </div>
@@ -321,8 +321,8 @@ function NavItem({ href, icon, label, isActive }: NavItemProps) {
       className={cn(
         'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
         isActive
-          ? 'bg-stone-900 text-stone-100'
-          : 'text-stone-400 hover:bg-stone-900 hover:text-stone-100'
+          ? 'bg-muted text-foreground'
+          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
       )}
     >
       <span className='flex h-5 w-5 items-center justify-center'>{icon}</span>
@@ -393,8 +393,8 @@ function LaterNavItem({
           className={cn(
             'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
             isActive
-              ? 'bg-stone-900 text-stone-100'
-              : 'text-stone-400 hover:bg-stone-900 hover:text-stone-100'
+              ? 'bg-muted text-foreground'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           )}
         >
           <span className='flex h-5 w-5 items-center justify-center'>
@@ -402,7 +402,7 @@ function LaterNavItem({
           </span>
           Later
           {count > 0 && (
-            <span className='ml-auto rounded-full bg-stone-800 px-1.5 py-0.5 text-xs'>
+            <span className='ml-auto rounded-full bg-muted px-1.5 py-0.5 text-xs'>
               {count}
             </span>
           )}
@@ -411,13 +411,13 @@ function LaterNavItem({
       <HoverCardContent
         side='right'
         align='start'
-        className='w-72 bg-stone-900 border-stone-800 p-0'
+        className='w-72 bg-card border p-0'
       >
-        <div className='p-3 border-b border-stone-800'>
+        <div className='p-3 border-b'>
           <div className='flex items-center justify-between'>
-            <h4 className='font-medium text-stone-100'>Saved for later</h4>
+            <h4 className='font-medium text-foreground'>Saved for later</h4>
             {count > 0 && (
-              <span className='text-xs text-stone-400'>
+              <span className='text-xs text-muted-foreground'>
                 {count} item{count !== 1 ? 's' : ''}
               </span>
             )}
@@ -426,31 +426,31 @@ function LaterNavItem({
         <div className='max-h-64 overflow-y-auto'>
           {isLoading ? (
             <div className='flex items-center justify-center py-6'>
-              <div className='h-5 w-5 animate-spin rounded-full border-2 border-stone-600 border-t-stone-300' />
+              <div className='h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground' />
             </div>
           ) : items.length === 0 ? (
-            <div className='p-4 text-center text-sm text-stone-500'>
+            <div className='p-4 text-center text-sm text-muted-foreground'>
               No saved items yet
             </div>
           ) : (
-            <div className='divide-y divide-stone-800'>
+            <div className='divide-y'>
               {items.map(item => (
-                <div key={item.id} className='p-3 hover:bg-stone-800/50'>
+                <div key={item.id} className='p-3 hover:bg-muted/50'>
                   {item.itemType === 'MESSAGE' && item.message ? (
                     <div>
-                      <p className='text-xs text-stone-400 mb-1'>
+                      <p className='text-xs text-muted-foreground mb-1'>
                         {item.message.author.displayName ||
                           item.message.author.name ||
                           'Unknown'}
                       </p>
-                      <p className='text-sm text-stone-300 line-clamp-2'>
+                      <p className='text-sm text-foreground/80 line-clamp-2'>
                         {item.message.content}
                       </p>
                     </div>
                   ) : item.itemType === 'FILE' && item.file ? (
                     <div className='flex items-center gap-2'>
-                      <FileIcon className='h-4 w-4 text-stone-400 shrink-0' />
-                      <p className='text-sm text-stone-300 truncate'>
+                      <FileIcon className='h-4 w-4 text-muted-foreground shrink-0' />
+                      <p className='text-sm text-foreground/80 truncate'>
                         {item.file.originalName}
                       </p>
                     </div>
@@ -461,10 +461,10 @@ function LaterNavItem({
           )}
         </div>
         {items.length > 0 && (
-          <div className='p-2 border-t border-stone-800'>
+          <div className='p-2 border-t'>
             <Link
               href={href}
-              className='block w-full rounded px-3 py-1.5 text-center text-xs text-stone-400 hover:bg-stone-800 hover:text-stone-100'
+              className='block w-full rounded px-3 py-1.5 text-center text-xs text-muted-foreground hover:bg-muted hover:text-foreground'
             >
               View all saved items
             </Link>

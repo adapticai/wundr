@@ -14,11 +14,7 @@
  */
 
 import type { StreamEvent, ContentBlockType } from './block-parser';
-import type {
-  ChatParams,
-  TokenUsage,
-  FinishReason,
-} from '../types/llm';
+import type { ChatParams, TokenUsage, FinishReason } from '../types/llm';
 import type Anthropic from '@anthropic-ai/sdk';
 import type { MessageStream } from '@anthropic-ai/sdk/lib/MessageStream';
 import type {
@@ -26,8 +22,6 @@ import type {
   TextBlock,
   ToolUseBlock,
 } from '@anthropic-ai/sdk/resources/messages';
-
-
 
 /**
  * Metadata tracked per content block during streaming.
@@ -128,11 +122,11 @@ function convertMessages(messages: ChatParams['messages']): {
  * Convert Wundr ToolDefinition to Anthropic Tool format.
  */
 function convertTools(
-  tools?: ChatParams['tools'],
+  tools?: ChatParams['tools']
 ): Anthropic.Tool[] | undefined {
   if (!tools || tools.length === 0) {
-return undefined;
-}
+    return undefined;
+  }
 
   return tools.map((tool: NonNullable<ChatParams['tools']>[number]) => ({
     name: tool.name,
@@ -167,9 +161,15 @@ function convertStopReason(stopReason: string | null): FinishReason {
  * normalized StreamEvent objects.
  */
 export async function* createAnthropicStream(
-  options: AnthropicStreamOptions,
+  options: AnthropicStreamOptions
 ): AsyncGenerator<StreamEvent> {
-  const { client, params, abortController, enableThinking, thinkingBudgetTokens } = options;
+  const {
+    client,
+    params,
+    abortController,
+    enableThinking,
+    thinkingBudgetTokens,
+  } = options;
   const { systemMessage, messages } = convertMessages(params.messages);
   const tools = convertTools(params.tools);
 
@@ -180,7 +180,9 @@ export async function* createAnthropicStream(
     messages,
     ...(systemMessage && { system: systemMessage }),
     ...(tools && tools.length > 0 && { tools }),
-    ...(params.temperature !== undefined && { temperature: params.temperature }),
+    ...(params.temperature !== undefined && {
+      temperature: params.temperature,
+    }),
     ...(params.topP !== undefined && { top_p: params.topP }),
     ...(params.stop && { stop_sequences: params.stop }),
   };
@@ -293,8 +295,7 @@ export async function* createAnthropicStream(
     // Detect overloaded errors (Anthropic 529) -- retryable
     const isOverloaded =
       error instanceof Error &&
-      ((error as any).status === 529 ||
-        error.message.includes('overloaded'));
+      ((error as any).status === 529 || error.message.includes('overloaded'));
 
     // Compute retry-after from error headers or use defaults
     let retryAfterMs = 5000;
@@ -334,7 +335,7 @@ export async function* createAnthropicStream(
 function convertStreamEvent(
   event: MessageStreamEvent,
   activeBlocks: Map<number, ActiveBlock>,
-  _currentMessageId: string,
+  _currentMessageId: string
 ): StreamEvent[] {
   const events: StreamEvent[] = [];
 

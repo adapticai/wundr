@@ -31,10 +31,8 @@ describe('Credential Handling Security', () => {
       auth = new Authenticator(
         createMockAuthConfig({
           mode: 'api-key',
-          apiKeys: [
-            { key: TEST_API_KEY, clientId: 'test-client', scopes: [] },
-          ],
-        }),
+          apiKeys: [{ key: TEST_API_KEY, clientId: 'test-client', scopes: [] }],
+        })
       );
     });
 
@@ -69,7 +67,8 @@ describe('Credential Handling Security', () => {
     });
 
     it('should reject API key that differs in last character only', () => {
-      const almostRight = TEST_API_KEY.slice(0, -1) + (TEST_API_KEY.endsWith('!') ? '?' : '!');
+      const almostRight =
+        TEST_API_KEY.slice(0, -1) + (TEST_API_KEY.endsWith('!') ? '?' : '!');
 
       const req = createMockIncomingMessage({
         headers: { 'x-api-key': almostRight },
@@ -80,7 +79,8 @@ describe('Credential Handling Security', () => {
     });
 
     it('should reject API key that differs in first character only', () => {
-      const almostRight = (TEST_API_KEY.startsWith('t') ? 'u' : 't') + TEST_API_KEY.slice(1);
+      const almostRight =
+        (TEST_API_KEY.startsWith('t') ? 'u' : 't') + TEST_API_KEY.slice(1);
 
       const req = createMockIncomingMessage({
         headers: { 'x-api-key': almostRight },
@@ -148,9 +148,13 @@ describe('Credential Handling Security', () => {
     it('should use opaque error codes instead of descriptive messages', () => {
       // Test various failure modes return code-like reasons
       const scenarios = [
-        { headers: {} },                              // no credentials
+        { headers: {} }, // no credentials
         { headers: { authorization: 'Bearer bad' } }, // bad JWT
-        { headers: { 'x-api-key': 'bad-key-that-is-at-least-32-characters-long!' } }, // bad API key
+        {
+          headers: {
+            'x-api-key': 'bad-key-that-is-at-least-32-characters-long!',
+          },
+        }, // bad API key
       ];
 
       for (const { headers } of scenarios) {
@@ -176,17 +180,13 @@ describe('Credential Handling Security', () => {
       // time. This test verifies it does not crash. In production, short
       // secrets should be caught by configuration validation upstream.
       expect(() => {
-        new Authenticator(
-          createMockAuthConfig({ jwtSecret: 'too-short' }),
-        );
+        new Authenticator(createMockAuthConfig({ jwtSecret: 'too-short' }));
       }).not.toThrow();
     });
 
     it('should accept JWT secret of exactly 32 characters', () => {
       expect(() => {
-        new Authenticator(
-          createMockAuthConfig({ jwtSecret: 'a'.repeat(32) }),
-        );
+        new Authenticator(createMockAuthConfig({ jwtSecret: 'a'.repeat(32) }));
       }).not.toThrow();
     });
 
@@ -197,7 +197,7 @@ describe('Credential Handling Security', () => {
         createMockAuthConfig({
           mode: 'api-key',
           apiKeys: [{ key: 'too-short', clientId: 'test', scopes: [] }],
-        }),
+        })
       );
 
       const req = createMockIncomingMessage({
@@ -221,10 +221,8 @@ describe('Credential Handling Security', () => {
       const auth = new Authenticator(
         createMockAuthConfig({
           mode: 'api-key',
-          apiKeys: [
-            { key: TEST_API_KEY, clientId: 'test', scopes: [] },
-          ],
-        }),
+          apiKeys: [{ key: TEST_API_KEY, clientId: 'test', scopes: [] }],
+        })
       );
 
       const correctReq = createMockIncomingMessage({
@@ -255,7 +253,9 @@ describe('Credential Handling Security', () => {
       // The times should be within 10x of each other (very generous).
       // In practice, timing-safe comparison ensures they are nearly equal,
       // but we use a wide margin to avoid flaky tests.
-      const ratio = Math.max(avgCorrect, avgWrong) / Math.max(Math.min(avgCorrect, avgWrong), 0.001);
+      const ratio =
+        Math.max(avgCorrect, avgWrong) /
+        Math.max(Math.min(avgCorrect, avgWrong), 0.001);
       expect(ratio).toBeLessThan(10);
     });
   });

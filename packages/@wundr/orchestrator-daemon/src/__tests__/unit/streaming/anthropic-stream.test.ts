@@ -34,7 +34,7 @@ import type { ChatParams, ToolDefinition } from '../../../types/llm';
  * Collect all events from the async generator into an array.
  */
 async function collectEvents(
-  gen: AsyncGenerator<StreamEvent>,
+  gen: AsyncGenerator<StreamEvent>
 ): Promise<StreamEvent[]> {
   const events: StreamEvent[] = [];
   for await (const event of gen) {
@@ -63,7 +63,7 @@ function createMockMessageStream(
   options?: {
     finalMessage?: unknown;
     finalMessageError?: Error;
-  },
+  }
 ) {
   // resolved tracking removed (was unused)
   const finalMsg = options?.finalMessage ?? {
@@ -103,7 +103,9 @@ function createMockMessageStream(
  * Build a mock Anthropic SDK client whose messages.stream() returns
  * the given mock stream.
  */
-function createMockClient(mockStream: ReturnType<typeof createMockMessageStream>) {
+function createMockClient(
+  mockStream: ReturnType<typeof createMockMessageStream>
+) {
   return {
     messages: {
       stream: vi.fn().mockReturnValue(mockStream),
@@ -118,7 +120,7 @@ function createMockClient(mockStream: ReturnType<typeof createMockMessageStream>
 function messageStartEvent(
   msgId = 'msg_123',
   inputTokens = 100,
-  outputTokens = 0,
+  outputTokens = 0
 ) {
   return {
     type: 'message_start',
@@ -154,7 +156,7 @@ function contentBlockStartThinking(index = 0) {
 function contentBlockStartToolUse(
   index = 0,
   toolId = 'toolu_01',
-  toolName = 'get_weather',
+  toolName = 'get_weather'
 ) {
   return {
     type: 'content_block_start',
@@ -240,9 +242,7 @@ describe('AnthropicStreamAdapter', () => {
       const callArgs = client.messages.stream.mock.calls[0][0];
       expect(callArgs.system).toBe('You are helpful.');
       // The messages array should contain only the user message
-      expect(callArgs.messages).toEqual([
-        { role: 'user', content: 'Hi' },
-      ]);
+      expect(callArgs.messages).toEqual([{ role: 'user', content: 'Hi' }]);
     });
 
     it('should join multiple system messages with newlines', async () => {
@@ -290,9 +290,7 @@ describe('AnthropicStreamAdapter', () => {
           {
             role: 'assistant',
             content: '',
-            toolCalls: [
-              { id: 'tc_1', name: 'my_tool', arguments: '{"x":1}' },
-            ],
+            toolCalls: [{ id: 'tc_1', name: 'my_tool', arguments: '{"x":1}' }],
           },
           { role: 'tool', content: 'Tool output here', toolCallId: 'tc_1' },
         ],
@@ -345,7 +343,12 @@ describe('AnthropicStreamAdapter', () => {
       expect(assistantMsg.role).toBe('assistant');
       expect(assistantMsg.content).toEqual([
         { type: 'text', text: 'Thinking about it...' },
-        { type: 'tool_use', id: 'tc_a', name: 'search', input: { q: 'vitest' } },
+        {
+          type: 'tool_use',
+          id: 'tc_a',
+          name: 'search',
+          input: { q: 'vitest' },
+        },
       ]);
     });
 
@@ -356,9 +359,7 @@ describe('AnthropicStreamAdapter', () => {
           {
             role: 'assistant',
             content: '',
-            toolCalls: [
-              { id: 'tc_b', name: 'run', arguments: '{}' },
-            ],
+            toolCalls: [{ id: 'tc_b', name: 'run', arguments: '{}' }],
           },
         ],
       });
@@ -501,19 +502,19 @@ describe('AnthropicStreamAdapter', () => {
               stop_reason: anthropicReason,
               usage: { input_tokens: 5, output_tokens: 10 },
             },
-          },
+          }
         );
         const client = createMockClient(mockStream);
         const params = makeChatParams();
 
         const events = await collectEvents(
-          createAnthropicStream({ client, params }),
+          createAnthropicStream({ client, params })
         );
 
-        const streamEnd = events.find((e) => e.type === 'stream_end');
+        const streamEnd = events.find(e => e.type === 'stream_end');
         expect(streamEnd).toBeDefined();
         expect((streamEnd as any).finishReason).toBe(expectedReason);
-      },
+      }
     );
   });
 
@@ -574,7 +575,7 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       await collectEvents(
-        createAnthropicStream({ client, params, abortController }),
+        createAnthropicStream({ client, params, abortController })
       );
 
       const callOptions = client.messages.stream.mock.calls[0][1];
@@ -591,7 +592,7 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       await collectEvents(
-        createAnthropicStream({ client, params, enableThinking: true }),
+        createAnthropicStream({ client, params, enableThinking: true })
       );
 
       const callArgs = client.messages.stream.mock.calls[0][0];
@@ -616,7 +617,7 @@ describe('AnthropicStreamAdapter', () => {
           params,
           enableThinking: true,
           thinkingBudgetTokens: 50000,
-        }),
+        })
       );
 
       const callArgs = client.messages.stream.mock.calls[0][0];
@@ -636,7 +637,7 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       await collectEvents(
-        createAnthropicStream({ client, params, enableThinking: false }),
+        createAnthropicStream({ client, params, enableThinking: false })
       );
 
       const callArgs = client.messages.stream.mock.calls[0][0];
@@ -657,10 +658,10 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const startEvents = events.filter((e) => e.type === 'stream_start');
+      const startEvents = events.filter(e => e.type === 'stream_start');
       expect(startEvents).toHaveLength(1);
       expect((startEvents[0] as any).messageId).toBe('msg_abc');
     });
@@ -673,10 +674,10 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const usageEvents = events.filter((e) => e.type === 'usage');
+      const usageEvents = events.filter(e => e.type === 'usage');
       expect(usageEvents.length).toBeGreaterThanOrEqual(1);
       const firstUsage = usageEvents[0] as any;
       expect(firstUsage.inputTokens).toBe(150);
@@ -699,10 +700,10 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const toolStarts = events.filter((e) => e.type === 'tool_use_start');
+      const toolStarts = events.filter(e => e.type === 'tool_use_start');
       expect(toolStarts).toHaveLength(1);
       expect(toolStarts[0]).toMatchObject({
         type: 'tool_use_start',
@@ -723,11 +724,11 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
       // No explicit "text_block_start" event -- only text_delta
-      const textDeltas = events.filter((e) => e.type === 'text_delta');
+      const textDeltas = events.filter(e => e.type === 'text_delta');
       expect(textDeltas.length).toBeGreaterThanOrEqual(1);
     });
 
@@ -742,10 +743,10 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const thinkingDeltas = events.filter((e) => e.type === 'thinking_delta');
+      const thinkingDeltas = events.filter(e => e.type === 'thinking_delta');
       expect(thinkingDeltas.length).toBeGreaterThanOrEqual(1);
     });
   });
@@ -767,10 +768,10 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const textDeltas = events.filter((e) => e.type === 'text_delta');
+      const textDeltas = events.filter(e => e.type === 'text_delta');
       expect(textDeltas).toHaveLength(2);
       expect((textDeltas[0] as any).text).toBe('Hello, ');
       expect((textDeltas[1] as any).text).toBe('world!');
@@ -789,10 +790,10 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const thinkingDeltas = events.filter((e) => e.type === 'thinking_delta');
+      const thinkingDeltas = events.filter(e => e.type === 'thinking_delta');
       expect(thinkingDeltas).toHaveLength(2);
       expect((thinkingDeltas[0] as any).text).toBe('Let me think...');
       expect((thinkingDeltas[1] as any).text).toBe('Got it!');
@@ -811,17 +812,17 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const toolDeltas = events.filter((e) => e.type === 'tool_use_delta');
+      const toolDeltas = events.filter(e => e.type === 'tool_use_delta');
       expect(toolDeltas).toHaveLength(2);
       expect((toolDeltas[0] as any).partialJson).toBe('{"ci');
       expect((toolDeltas[0] as any).toolId).toBe('toolu_01');
       expect((toolDeltas[1] as any).partialJson).toBe('ty":"NY"}');
 
       // The tool_use_end event should contain the full accumulated arguments
-      const toolEnds = events.filter((e) => e.type === 'tool_use_end');
+      const toolEnds = events.filter(e => e.type === 'tool_use_end');
       expect(toolEnds).toHaveLength(1);
       expect((toolEnds[0] as any).arguments).toBe('{"city":"NY"}');
     });
@@ -840,11 +841,11 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
       // Since block at index 0 is text, input_json_delta should be silently ignored
-      const toolDeltas = events.filter((e) => e.type === 'tool_use_delta');
+      const toolDeltas = events.filter(e => e.type === 'tool_use_delta');
       expect(toolDeltas).toHaveLength(0);
     });
   });
@@ -865,10 +866,10 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const toolEnd = events.find((e) => e.type === 'tool_use_end') as any;
+      const toolEnd = events.find(e => e.type === 'tool_use_end') as any;
       expect(toolEnd).toBeDefined();
       expect(toolEnd.toolId).toBe('toolu_99');
       expect(toolEnd.toolName).toBe('calculator');
@@ -876,7 +877,7 @@ describe('AnthropicStreamAdapter', () => {
       expect(toolEnd.blockIndex).toBe(0);
 
       const blockStop = events.find(
-        (e) => e.type === 'content_block_stop' && (e as any).blockIndex === 0,
+        e => e.type === 'content_block_stop' && (e as any).blockIndex === 0
       ) as any;
       expect(blockStop).toBeDefined();
       expect(blockStop.blockType).toBe('tool_use');
@@ -892,10 +893,10 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const toolEnd = events.find((e) => e.type === 'tool_use_end') as any;
+      const toolEnd = events.find(e => e.type === 'tool_use_end') as any;
       expect(toolEnd).toBeDefined();
       expect(toolEnd.arguments).toBe('{}');
     });
@@ -911,11 +912,11 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
       const blockStop = events.find(
-        (e) => e.type === 'content_block_stop',
+        e => e.type === 'content_block_stop'
       ) as any;
       expect(blockStop).toBeDefined();
       expect(blockStop.blockType).toBe('text');
@@ -933,11 +934,11 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
       const blockStop = events.find(
-        (e) => e.type === 'content_block_stop',
+        e => e.type === 'content_block_stop'
       ) as any;
       expect(blockStop).toBeDefined();
       expect(blockStop.blockType).toBe('thinking');
@@ -953,12 +954,10 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const blockStops = events.filter(
-        (e) => e.type === 'content_block_stop',
-      );
+      const blockStops = events.filter(e => e.type === 'content_block_stop');
       expect(blockStops).toHaveLength(0);
     });
   });
@@ -980,11 +979,11 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
       // Filter usage events -- there should be one from message_start and one from message_delta
-      const usageEvents = events.filter((e) => e.type === 'usage');
+      const usageEvents = events.filter(e => e.type === 'usage');
       expect(usageEvents.length).toBeGreaterThanOrEqual(2);
 
       const deltaUsage = usageEvents[usageEvents.length - 1] as any;
@@ -1009,11 +1008,11 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
       // There should be a stream_end from finalMessage handling, not from message_stop
-      const streamEnds = events.filter((e) => e.type === 'stream_end');
+      const streamEnds = events.filter(e => e.type === 'stream_end');
       expect(streamEnds).toHaveLength(1);
     });
   });
@@ -1036,10 +1035,10 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const types = events.map((e) => e.type);
+      const types = events.map(e => e.type);
       expect(types).toContain('stream_start');
       expect(types).toContain('usage');
       expect(types).toContain('text_delta');
@@ -1067,12 +1066,12 @@ describe('AnthropicStreamAdapter', () => {
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const thinkingDeltas = events.filter((e) => e.type === 'thinking_delta');
-      const textDeltas = events.filter((e) => e.type === 'text_delta');
-      const blockStops = events.filter((e) => e.type === 'content_block_stop');
+      const thinkingDeltas = events.filter(e => e.type === 'thinking_delta');
+      const textDeltas = events.filter(e => e.type === 'text_delta');
+      const blockStops = events.filter(e => e.type === 'content_block_stop');
 
       expect(thinkingDeltas).toHaveLength(1);
       expect(textDeltas).toHaveLength(1);
@@ -1103,20 +1102,20 @@ describe('AnthropicStreamAdapter', () => {
             stop_reason: 'tool_use',
             usage: { input_tokens: 60, output_tokens: 40 },
           },
-        },
+        }
       );
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      expect(events.filter((e) => e.type === 'text_delta')).toHaveLength(1);
-      expect(events.filter((e) => e.type === 'tool_use_start')).toHaveLength(1);
-      expect(events.filter((e) => e.type === 'tool_use_delta')).toHaveLength(1);
-      expect(events.filter((e) => e.type === 'tool_use_end')).toHaveLength(1);
+      expect(events.filter(e => e.type === 'text_delta')).toHaveLength(1);
+      expect(events.filter(e => e.type === 'tool_use_start')).toHaveLength(1);
+      expect(events.filter(e => e.type === 'tool_use_delta')).toHaveLength(1);
+      expect(events.filter(e => e.type === 'tool_use_end')).toHaveLength(1);
 
-      const streamEnd = events.find((e) => e.type === 'stream_end') as any;
+      const streamEnd = events.find(e => e.type === 'stream_end') as any;
       expect(streamEnd.finishReason).toBe('tool_calls');
     });
   });
@@ -1144,15 +1143,15 @@ describe('AnthropicStreamAdapter', () => {
             stop_reason: 'end_turn',
             usage: { input_tokens: 200, output_tokens: 85 },
           },
-        },
+        }
       );
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const streamEnd = events.find((e) => e.type === 'stream_end') as any;
+      const streamEnd = events.find(e => e.type === 'stream_end') as any;
       expect(streamEnd).toBeDefined();
       expect(streamEnd.usage).toEqual({
         promptTokens: 200,
@@ -1170,15 +1169,15 @@ describe('AnthropicStreamAdapter', () => {
         ],
         {
           finalMessageError: new Error('Stream was aborted'),
-        },
+        }
       );
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const streamEnd = events.find((e) => e.type === 'stream_end') as any;
+      const streamEnd = events.find(e => e.type === 'stream_end') as any;
       expect(streamEnd).toBeDefined();
       // The last usage event was from message_delta (inputTokens=0, outputTokens=30)
       // So finalUsage should reflect that
@@ -1196,9 +1195,7 @@ describe('AnthropicStreamAdapter', () => {
       const abortController = new AbortController();
 
       // Create a stream that yields one event, then stalls so we can abort
-      const events_raw = [
-        messageStartEvent('msg_abort'),
-      ];
+      const events_raw = [messageStartEvent('msg_abort')];
 
       let eventIndex = 0;
       const mockStream = {
@@ -1232,11 +1229,11 @@ describe('AnthropicStreamAdapter', () => {
         collected.push(event);
         // Safety: break after collecting enough events to avoid infinite loop
         if (collected.length > 20) {
-break;
-}
+          break;
+        }
       }
 
-      const errorEvents = collected.filter((e) => e.type === 'error');
+      const errorEvents = collected.filter(e => e.type === 'error');
       expect(errorEvents.length).toBeGreaterThanOrEqual(1);
       expect((errorEvents[0] as any).error.message).toContain('aborted');
     });
@@ -1261,15 +1258,19 @@ break;
 
       const client = createMockClient(mockStream as any);
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams(), abortController }),
+        createAnthropicStream({
+          client,
+          params: makeChatParams(),
+          abortController,
+        })
       );
 
-      const errorEvents = events.filter((e) => e.type === 'error');
+      const errorEvents = events.filter(e => e.type === 'error');
       expect(errorEvents).toHaveLength(1);
       expect((errorEvents[0] as any).recoverable).toBe(false);
 
       // Abort errors should NOT emit stream_end
-      const streamEnds = events.filter((e) => e.type === 'stream_end');
+      const streamEnds = events.filter(e => e.type === 'stream_end');
       expect(streamEnds).toHaveLength(0);
     });
   });
@@ -1298,16 +1299,16 @@ break;
 
       const client = createMockClient(mockStream as any);
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const errorEvent = events.find((e) => e.type === 'error') as any;
+      const errorEvent = events.find(e => e.type === 'error') as any;
       expect(errorEvent).toBeDefined();
       expect(errorEvent.recoverable).toBe(true);
       expect(errorEvent.retryAfter).toBe(3000); // 3 seconds * 1000
 
       // Rate limit errors also emit stream_end with 'error' finishReason
-      const streamEnd = events.find((e) => e.type === 'stream_end') as any;
+      const streamEnd = events.find(e => e.type === 'stream_end') as any;
       expect(streamEnd).toBeDefined();
       expect(streamEnd.finishReason).toBe('error');
     });
@@ -1330,10 +1331,10 @@ break;
 
       const client = createMockClient(mockStream as any);
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const errorEvent = events.find((e) => e.type === 'error') as any;
+      const errorEvent = events.find(e => e.type === 'error') as any;
       expect(errorEvent.recoverable).toBe(true);
     });
 
@@ -1353,10 +1354,10 @@ break;
 
       const client = createMockClient(mockStream as any);
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const errorEvent = events.find((e) => e.type === 'error') as any;
+      const errorEvent = events.find(e => e.type === 'error') as any;
       expect(errorEvent.recoverable).toBe(true);
     });
 
@@ -1378,10 +1379,10 @@ break;
 
       const client = createMockClient(mockStream as any);
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const errorEvent = events.find((e) => e.type === 'error') as any;
+      const errorEvent = events.find(e => e.type === 'error') as any;
       expect(errorEvent).toBeDefined();
       expect(errorEvent.recoverable).toBe(true);
       expect(errorEvent.retryAfter).toBeGreaterThanOrEqual(10000);
@@ -1403,10 +1404,10 @@ break;
 
       const client = createMockClient(mockStream as any);
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const errorEvent = events.find((e) => e.type === 'error') as any;
+      const errorEvent = events.find(e => e.type === 'error') as any;
       expect(errorEvent.recoverable).toBe(true);
       expect(errorEvent.retryAfter).toBeGreaterThanOrEqual(10000);
     });
@@ -1430,10 +1431,10 @@ break;
 
       const client = createMockClient(mockStream as any);
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const errorEvent = events.find((e) => e.type === 'error') as any;
+      const errorEvent = events.find(e => e.type === 'error') as any;
       // 30 seconds * 1000 = 30000, which is greater than 10000 minimum
       expect(errorEvent.retryAfter).toBe(30000);
     });
@@ -1454,16 +1455,16 @@ break;
 
       const client = createMockClient(mockStream as any);
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const errorEvent = events.find((e) => e.type === 'error') as any;
+      const errorEvent = events.find(e => e.type === 'error') as any;
       expect(errorEvent).toBeDefined();
       expect(errorEvent.recoverable).toBe(false);
       expect(errorEvent.retryAfter).toBeUndefined();
 
       // Non-abort errors emit stream_end
-      const streamEnd = events.find((e) => e.type === 'stream_end') as any;
+      const streamEnd = events.find(e => e.type === 'stream_end') as any;
       expect(streamEnd).toBeDefined();
       expect(streamEnd.finishReason).toBe('error');
     });
@@ -1484,10 +1485,10 @@ break;
 
       const client = createMockClient(mockStream as any);
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const errorEvent = events.find((e) => e.type === 'error') as any;
+      const errorEvent = events.find(e => e.type === 'error') as any;
       expect(errorEvent).toBeDefined();
       expect(errorEvent.error).toBeInstanceOf(Error);
       expect(errorEvent.error.message).toBe('string error');
@@ -1518,10 +1519,10 @@ break;
           client,
           params: makeChatParams(),
           abortController,
-        }),
+        })
       );
 
-      const errorEvent = events.find((e) => e.type === 'error') as any;
+      const errorEvent = events.find(e => e.type === 'error') as any;
       expect(errorEvent).toBeDefined();
       // When abort is also signaled, recoverable should be false
       expect(errorEvent.recoverable).toBe(false);
@@ -1546,10 +1547,10 @@ break;
 
       const client = createMockClient(mockStream as any);
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const errorEvent = events.find((e) => e.type === 'error') as any;
+      const errorEvent = events.find(e => e.type === 'error') as any;
       expect(errorEvent.recoverable).toBe(true);
       expect(errorEvent.retryAfter).toBe(5000);
     });
@@ -1573,10 +1574,10 @@ break;
 
       const client = createMockClient(mockStream as any);
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const errorEvent = events.find((e) => e.type === 'error') as any;
+      const errorEvent = events.find(e => e.type === 'error') as any;
       expect(errorEvent.retryAfter).toBe(5000);
     });
   });
@@ -1596,7 +1597,7 @@ break;
       } as any;
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
       expect(events).toHaveLength(1);
@@ -1615,7 +1616,7 @@ break;
       } as any;
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
       expect(events).toHaveLength(1);
@@ -1639,14 +1640,14 @@ break;
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
       // Should have stream_start, usage, and stream_end -- no errors
-      const errorEvents = events.filter((e) => e.type === 'error');
+      const errorEvents = events.filter(e => e.type === 'error');
       expect(errorEvents).toHaveLength(0);
 
-      const streamStart = events.find((e) => e.type === 'stream_start');
+      const streamStart = events.find(e => e.type === 'stream_start');
       expect(streamStart).toBeDefined();
     });
   });
@@ -1661,11 +1662,11 @@ break;
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
       // Should still emit stream_end from finalMessage
-      const streamEnd = events.find((e) => e.type === 'stream_end');
+      const streamEnd = events.find(e => e.type === 'stream_end');
       expect(streamEnd).toBeDefined();
     });
 
@@ -1691,16 +1692,16 @@ break;
             stop_reason: 'tool_use',
             usage: { input_tokens: 30, output_tokens: 50 },
           },
-        },
+        }
       );
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
-      const toolStarts = events.filter((e) => e.type === 'tool_use_start');
-      const toolEnds = events.filter((e) => e.type === 'tool_use_end');
+      const toolStarts = events.filter(e => e.type === 'tool_use_start');
+      const toolEnds = events.filter(e => e.type === 'tool_use_end');
 
       expect(toolStarts).toHaveLength(2);
       expect(toolEnds).toHaveLength(2);
@@ -1725,11 +1726,11 @@ break;
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
       // Should not crash -- the delta usage event is simply not emitted
-      const errorEvents = events.filter((e) => e.type === 'error');
+      const errorEvents = events.filter(e => e.type === 'error');
       expect(errorEvents).toHaveLength(0);
     });
 
@@ -1752,17 +1753,17 @@ break;
       const client = createMockClient(mockStream);
 
       const events = await collectEvents(
-        createAnthropicStream({ client, params: makeChatParams() }),
+        createAnthropicStream({ client, params: makeChatParams() })
       );
 
       // stream_start should still be emitted
-      const streamStart = events.find((e) => e.type === 'stream_start');
+      const streamStart = events.find(e => e.type === 'stream_start');
       expect(streamStart).toBeDefined();
       expect((streamStart as any).messageId).toBe('msg_no_usage');
 
       // No usage event from message_start
       // (usage comes from message_start only if msg.usage is truthy)
-      const errorEvents = events.filter((e) => e.type === 'error');
+      const errorEvents = events.filter(e => e.type === 'error');
       expect(errorEvents).toHaveLength(0);
     });
   });

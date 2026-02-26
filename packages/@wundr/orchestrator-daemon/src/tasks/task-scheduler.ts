@@ -51,9 +51,15 @@ export interface AssignmentResult {
  * Events emitted by the scheduler.
  */
 export interface SchedulerEventMap {
-  'scheduler:assigned': (event: { taskId: string; agentId: string; score: AgentScore }) => void;
+  'scheduler:assigned': (event: {
+    taskId: string;
+    agentId: string;
+    score: AgentScore;
+  }) => void;
   'scheduler:no_agent': (event: { taskId: string; reason: string }) => void;
-  'scheduler:rebalanced': (event: { reassignments: Array<{ taskId: string; from: string; to: string }> }) => void;
+  'scheduler:rebalanced': (event: {
+    reassignments: Array<{ taskId: string; from: string; to: string }>;
+  }) => void;
   'scheduler:cycle_complete': (event: AssignmentResult) => void;
 }
 
@@ -117,23 +123,29 @@ export class TaskScheduler extends EventEmitter<SchedulerEventMap> {
   start(): void {
     if (this.config.autoAssignInterval > 0) {
       this.autoAssignTimer = setInterval(() => {
-        this.autoAssign(this.registeredAgents).catch((err) => {
+        this.autoAssign(this.registeredAgents).catch(err => {
           this.logger.error('Auto-assign cycle failed:', err);
         });
       }, this.config.autoAssignInterval);
-      this.logger.info(`Auto-assign polling started (${this.config.autoAssignInterval}ms)`);
+      this.logger.info(
+        `Auto-assign polling started (${this.config.autoAssignInterval}ms)`
+      );
     }
 
     if (this.config.unblockCheckInterval > 0) {
       this.unblockCheckTimer = setInterval(() => {
-        this.checkAndUnblock().catch((err) => {
+        this.checkAndUnblock().catch(err => {
           this.logger.error('Unblock check failed:', err);
         });
       }, this.config.unblockCheckInterval);
-      this.logger.info(`Unblock check polling started (${this.config.unblockCheckInterval}ms)`);
+      this.logger.info(
+        `Unblock check polling started (${this.config.unblockCheckInterval}ms)`
+      );
     }
 
-    this.logger.info(`TaskScheduler started (strategy: ${this.config.assignmentStrategy})`);
+    this.logger.info(
+      `TaskScheduler started (strategy: ${this.config.assignmentStrategy})`
+    );
   }
 
   /**
@@ -164,7 +176,7 @@ export class TaskScheduler extends EventEmitter<SchedulerEventMap> {
    * Update a single agent's info (e.g., load change).
    */
   updateAgent(agent: AgentInfo): void {
-    const index = this.registeredAgents.findIndex((a) => a.id === agent.id);
+    const index = this.registeredAgents.findIndex(a => a.id === agent.id);
     if (index >= 0) {
       this.registeredAgents[index] = { ...agent };
     } else {
@@ -176,7 +188,7 @@ export class TaskScheduler extends EventEmitter<SchedulerEventMap> {
    * Remove an agent from the registered pool.
    */
   removeAgent(agentId: string): void {
-    this.registeredAgents = this.registeredAgents.filter((a) => a.id !== agentId);
+    this.registeredAgents = this.registeredAgents.filter(a => a.id !== agentId);
   }
 
   // ===========================================================================
@@ -192,7 +204,7 @@ export class TaskScheduler extends EventEmitter<SchedulerEventMap> {
    */
   selectBestAgent(
     task: ManagedTask,
-    agents: AgentInfo[],
+    agents: AgentInfo[]
   ): { agent: AgentInfo; score: AgentScore } | null {
     switch (this.config.assignmentStrategy) {
       case 'round-robin':
@@ -229,21 +241,32 @@ export class TaskScheduler extends EventEmitter<SchedulerEventMap> {
     for (const task of readyTasks) {
       // Build adjusted agent list with load deltas
       const adjustedAgents = agents
-        .map((a) => ({
+        .map(a => ({
           ...a,
           currentLoad: a.currentLoad + (loadDelta.get(a.id) ?? 0),
         }))
-        .filter((a) => a.available && a.currentLoad < this.config.maxTasksPerAgent);
+        .filter(
+          a => a.available && a.currentLoad < this.config.maxTasksPerAgent
+        );
 
       if (adjustedAgents.length === 0) {
-        result.skipped.push({ taskId: task.id, reason: 'All agents at capacity' });
+        result.skipped.push({
+          taskId: task.id,
+          reason: 'All agents at capacity',
+        });
         continue;
       }
 
       const selection = this.selectBestAgent(task, adjustedAgents);
       if (!selection) {
-        result.skipped.push({ taskId: task.id, reason: 'No suitable agent found' });
-        this.emit('scheduler:no_agent', { taskId: task.id, reason: 'No suitable agent found' });
+        result.skipped.push({
+          taskId: task.id,
+          reason: 'No suitable agent found',
+        });
+        this.emit('scheduler:no_agent', {
+          taskId: task.id,
+          reason: 'No suitable agent found',
+        });
         continue;
       }
 
@@ -251,7 +274,7 @@ export class TaskScheduler extends EventEmitter<SchedulerEventMap> {
         await this.taskManager.claimTask(task.id, selection.agent.id);
         loadDelta.set(
           selection.agent.id,
-          (loadDelta.get(selection.agent.id) ?? 0) + 1,
+          (loadDelta.get(selection.agent.id) ?? 0) + 1
         );
         result.assigned.push({ taskId: task.id, agentId: selection.agent.id });
         this.emit('scheduler:assigned', {
@@ -260,7 +283,10 @@ export class TaskScheduler extends EventEmitter<SchedulerEventMap> {
           score: selection.score,
         });
       } catch (error) {
-        this.logger.warn(`Failed to assign task ${task.id} to ${selection.agent.id}:`, error);
+        this.logger.warn(
+          `Failed to assign task ${task.id} to ${selection.agent.id}:`,
+          error
+        );
         result.skipped.push({
           taskId: task.id,
           reason: `Assignment failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -270,7 +296,7 @@ export class TaskScheduler extends EventEmitter<SchedulerEventMap> {
 
     if (result.assigned.length > 0) {
       this.logger.info(
-        `Auto-assign cycle: ${result.assigned.length} assigned, ${result.skipped.length} skipped`,
+        `Auto-assign cycle: ${result.assigned.length} assigned, ${result.skipped.length} skipped`
       );
     }
 
@@ -287,20 +313,21 @@ export class TaskScheduler extends EventEmitter<SchedulerEventMap> {
    * @returns List of reassignments made.
    */
   async rebalance(
-    agents: AgentInfo[],
+    agents: AgentInfo[]
   ): Promise<Array<{ taskId: string; from: string; to: string }>> {
-    const reassignments: Array<{ taskId: string; from: string; to: string }> = [];
+    const reassignments: Array<{ taskId: string; from: string; to: string }> =
+      [];
 
     // Find overloaded agents (over maxTasksPerAgent)
     const overloaded = agents.filter(
-      (a) => a.currentLoad > this.config.maxTasksPerAgent,
+      a => a.currentLoad > this.config.maxTasksPerAgent
     );
 
     for (const agent of overloaded) {
       const excess = agent.currentLoad - this.config.maxTasksPerAgent;
       if (excess <= 0) {
-continue;
-}
+        continue;
+      }
 
       // Get this agent's in_progress tasks, ordered by priority (lowest first
       // -- we move the lowest-priority tasks)
@@ -310,7 +337,7 @@ continue;
       });
 
       const sortedByPriority = agentTasks.sort(
-        (a, b) => PRIORITY_WEIGHTS[a.priority] - PRIORITY_WEIGHTS[b.priority],
+        (a, b) => PRIORITY_WEIGHTS[a.priority] - PRIORITY_WEIGHTS[b.priority]
       );
 
       const toRelease = sortedByPriority.slice(0, excess);
@@ -321,10 +348,10 @@ continue;
 
           // Try to find a new agent
           const available = agents.filter(
-            (a) =>
+            a =>
               a.id !== agent.id &&
               a.available &&
-              a.currentLoad < this.config.maxTasksPerAgent,
+              a.currentLoad < this.config.maxTasksPerAgent
           );
 
           const selection = this.selectBestAgent(task, available);
@@ -361,23 +388,23 @@ continue;
     const allTasks = await this.taskManager.getAllTasks();
     const completedIds = new Set(
       allTasks
-        .filter((t) => t.status === 'completed' || t.status === 'deleted')
-        .map((t) => t.id),
+        .filter(t => t.status === 'completed' || t.status === 'deleted')
+        .map(t => t.id)
     );
 
     const unblocked: string[] = [];
 
     for (const task of allTasks) {
       if (task.status !== 'pending' || task.blockedBy.length === 0) {
-continue;
-}
+        continue;
+      }
 
       // Check if all blockers are completed/deleted
-      const stillBlocked = task.blockedBy.filter((id) => !completedIds.has(id));
+      const stillBlocked = task.blockedBy.filter(id => !completedIds.has(id));
       if (stillBlocked.length < task.blockedBy.length) {
         // Some blockers completed; update
         await this.taskManager.updateTask(task.id, {
-          removeBlockedBy: task.blockedBy.filter((id) => completedIds.has(id)),
+          removeBlockedBy: task.blockedBy.filter(id => completedIds.has(id)),
         });
 
         if (stillBlocked.length === 0) {
@@ -404,20 +431,20 @@ continue;
       status: ['pending', 'in_progress'],
     });
 
-    const taskMap = new Map(allTasks.map((t) => [t.id, t]));
+    const taskMap = new Map(allTasks.map(t => [t.id, t]));
     const visited = new Set<string>();
     const order: ManagedTask[] = [];
 
     const visit = (id: string): void => {
       if (visited.has(id)) {
-return;
-}
+        return;
+      }
       visited.add(id);
 
       const task = taskMap.get(id);
       if (!task) {
-return;
-}
+        return;
+      }
 
       // Visit blockers first
       for (const blockerId of task.blockedBy) {
@@ -443,15 +470,15 @@ return;
    */
   private selectRoundRobin(
     task: ManagedTask,
-    agents: AgentInfo[],
+    agents: AgentInfo[]
   ): { agent: AgentInfo; score: AgentScore } | null {
     const available = agents.filter(
-      (a) => a.available && a.currentLoad < a.maxLoad,
+      a => a.available && a.currentLoad < a.maxLoad
     );
 
     if (available.length === 0) {
-return null;
-}
+      return null;
+    }
 
     const selected = available[this.roundRobinIndex % available.length];
     this.roundRobinIndex = (this.roundRobinIndex + 1) % available.length;
@@ -477,15 +504,15 @@ return null;
    */
   private selectLeastLoaded(
     task: ManagedTask,
-    agents: AgentInfo[],
+    agents: AgentInfo[]
   ): { agent: AgentInfo; score: AgentScore } | null {
     const available = agents.filter(
-      (a) => a.available && a.currentLoad < a.maxLoad,
+      a => a.available && a.currentLoad < a.maxLoad
     );
 
     if (available.length === 0) {
-return null;
-}
+      return null;
+    }
 
     // Sort by load ascending
     const sorted = [...available].sort((a, b) => {
@@ -523,15 +550,15 @@ return null;
    */
   private selectCapabilityMatch(
     task: ManagedTask,
-    agents: AgentInfo[],
+    agents: AgentInfo[]
   ): { agent: AgentInfo; score: AgentScore } | null {
     const available = agents.filter(
-      (a) => a.available && a.currentLoad < a.maxLoad,
+      a => a.available && a.currentLoad < a.maxLoad
     );
 
     if (available.length === 0) {
-return null;
-}
+      return null;
+    }
 
     const scores: Array<{ agent: AgentInfo; score: AgentScore }> = [];
 
@@ -627,10 +654,12 @@ return null;
     }
 
     // Check metadata for capability hints
-    const requiredCaps = task.metadata['requiredCapabilities'] as string[] | undefined;
+    const requiredCaps = task.metadata['requiredCapabilities'] as
+      | string[]
+      | undefined;
     if (requiredCaps && Array.isArray(requiredCaps)) {
-      const matched = requiredCaps.filter((rc) =>
-        agent.capabilities.some((ac) => ac.toLowerCase() === rc.toLowerCase()),
+      const matched = requiredCaps.filter(rc =>
+        agent.capabilities.some(ac => ac.toLowerCase() === rc.toLowerCase())
       );
       score += (matched.length / requiredCaps.length) * 20;
     }

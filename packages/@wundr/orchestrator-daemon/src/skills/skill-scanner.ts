@@ -28,14 +28,27 @@ import type {
 // ---------------------------------------------------------------------------
 
 const SCANNABLE_EXTENSIONS = new Set([
-  '.js', '.ts', '.mjs', '.cjs', '.mts', '.cts', '.jsx', '.tsx',
+  '.js',
+  '.ts',
+  '.mjs',
+  '.cjs',
+  '.mts',
+  '.cts',
+  '.jsx',
+  '.tsx',
 ]);
 
 const DEFAULT_MAX_SCAN_FILES = 500;
 const DEFAULT_MAX_FILE_BYTES = 1024 * 1024; // 1MB
 const EVIDENCE_MAX_LENGTH = 120;
 
-const IGNORED_DIRS = new Set(['.git', 'node_modules', 'dist', '.next', '__pycache__']);
+const IGNORED_DIRS = new Set([
+  '.git',
+  'node_modules',
+  'dist',
+  '.next',
+  '__pycache__',
+]);
 
 // ---------------------------------------------------------------------------
 // Rule Definitions
@@ -119,7 +132,8 @@ const SOURCE_RULES: SourceRule[] = [
   {
     ruleId: 'potential-exfiltration',
     severity: 'warn',
-    message: 'File read combined with network send -- possible data exfiltration',
+    message:
+      'File read combined with network send -- possible data exfiltration',
     pattern: /readFileSync|readFile/,
     requiresContext: /\bfetch\b|\bpost\b|http\.request/i,
   },
@@ -132,13 +146,15 @@ const SOURCE_RULES: SourceRule[] = [
   {
     ruleId: 'obfuscated-code-base64',
     severity: 'warn',
-    message: 'Large base64 payload with decode call detected (possible obfuscation)',
+    message:
+      'Large base64 payload with decode call detected (possible obfuscation)',
     pattern: /(?:atob|Buffer\.from)\s*\(\s*["'][A-Za-z0-9+/=]{200,}["']/,
   },
   {
     ruleId: 'env-harvesting',
     severity: 'critical',
-    message: 'Environment variable access combined with network send -- possible credential harvesting',
+    message:
+      'Environment variable access combined with network send -- possible credential harvesting',
     pattern: /process\.env/,
     requiresContext: /\bfetch\b|\bpost\b|http\.request/i,
   },
@@ -164,7 +180,8 @@ const BODY_RULES: BodyRule[] = [
     ruleId: 'prompt-injection-ignore',
     severity: 'critical',
     message: 'Prompt injection: instruction to ignore previous context',
-    pattern: /ignore\s+(all\s+)?(previous|prior|above)\s+(instructions|context|rules)/i,
+    pattern:
+      /ignore\s+(all\s+)?(previous|prior|above)\s+(instructions|context|rules)/i,
   },
   {
     ruleId: 'prompt-injection-system',
@@ -181,7 +198,8 @@ const BODY_RULES: BodyRule[] = [
   {
     ruleId: 'path-traversal',
     severity: 'critical',
-    message: 'Path traversal detected: attempts to access files outside skill directory',
+    message:
+      'Path traversal detected: attempts to access files outside skill directory',
     pattern: /!\s*(cat|read|head|tail|less|more)\s+[^\n]*\.\.\//,
   },
   {
@@ -212,7 +230,10 @@ export function isScannable(filePath: string): boolean {
 /**
  * Truncate evidence string for display.
  */
-function truncateEvidence(evidence: string, maxLen = EVIDENCE_MAX_LENGTH): string {
+function truncateEvidence(
+  evidence: string,
+  maxLen = EVIDENCE_MAX_LENGTH
+): string {
   return evidence.length <= maxLen
     ? evidence
     : evidence.slice(0, maxLen) + '...';
@@ -222,7 +243,10 @@ function truncateEvidence(evidence: string, maxLen = EVIDENCE_MAX_LENGTH): strin
  * Scan a source code string for malicious patterns.
  * Returns findings for all matched rules.
  */
-export function scanSource(source: string, filePath: string): SkillScanFinding[] {
+export function scanSource(
+  source: string,
+  filePath: string
+): SkillScanFinding[] {
   const findings: SkillScanFinding[] = [];
   const lines = source.split('\n');
   const matchedLineRules = new Set<string>();
@@ -230,27 +254,27 @@ export function scanSource(source: string, filePath: string): SkillScanFinding[]
   // Line rules: test each line, report first match per rule
   for (const rule of LINE_RULES) {
     if (matchedLineRules.has(rule.ruleId)) {
-continue;
-}
+      continue;
+    }
 
     // Skip rule if context requirement is not met
     if (rule.requiresContext && !rule.requiresContext.test(source)) {
-continue;
-}
+      continue;
+    }
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const match = rule.pattern.exec(line);
       if (!match) {
-continue;
-}
+        continue;
+      }
 
       // Special handling for suspicious-network: ignore standard ports
       if (rule.ruleId === 'suspicious-network') {
         const port = parseInt(match[1], 10);
         if (STANDARD_PORTS.has(port)) {
-continue;
-}
+          continue;
+        }
       }
 
       findings.push({
@@ -271,15 +295,15 @@ continue;
   for (const rule of SOURCE_RULES) {
     const ruleKey = `${rule.ruleId}::${rule.message}`;
     if (matchedSourceRules.has(ruleKey)) {
-continue;
-}
+      continue;
+    }
 
     if (!rule.pattern.test(source)) {
-continue;
-}
+      continue;
+    }
     if (rule.requiresContext && !rule.requiresContext.test(source)) {
-continue;
-}
+      continue;
+    }
 
     // Find the first matching line for evidence
     let matchLine = 1;
@@ -309,7 +333,10 @@ continue;
 /**
  * Scan SKILL.md body content for prompt injection and suspicious patterns.
  */
-export function scanSkillBody(body: string, filePath: string): SkillScanFinding[] {
+export function scanSkillBody(
+  body: string,
+  filePath: string
+): SkillScanFinding[] {
   const findings: SkillScanFinding[] = [];
   const lines = body.split('\n');
 
@@ -336,7 +363,9 @@ export function scanSkillBody(body: string, filePath: string): SkillScanFinding[
 // Directory Scanner
 // ---------------------------------------------------------------------------
 
-function normalizeScanOptions(opts?: SkillScanOptions): Required<SkillScanOptions> {
+function normalizeScanOptions(
+  opts?: SkillScanOptions
+): Required<SkillScanOptions> {
   return {
     includeFiles: opts?.includeFiles ?? [],
     maxFiles: Math.max(1, opts?.maxFiles ?? DEFAULT_MAX_SCAN_FILES),
@@ -347,31 +376,37 @@ function normalizeScanOptions(opts?: SkillScanOptions): Required<SkillScanOption
 /**
  * Recursively walk a directory collecting scannable files up to a limit.
  */
-async function walkDirWithLimit(dirPath: string, maxFiles: number): Promise<string[]> {
+async function walkDirWithLimit(
+  dirPath: string,
+  maxFiles: number
+): Promise<string[]> {
   const files: string[] = [];
   const stack: string[] = [dirPath];
 
   while (stack.length > 0 && files.length < maxFiles) {
     const currentDir = stack.pop();
     if (!currentDir) {
-break;
-}
+      break;
+    }
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-imports
     let entries: import('fs').Dirent[];
     try {
-      entries = await fs.readdir(currentDir, { withFileTypes: true, encoding: 'utf-8' });
+      entries = await fs.readdir(currentDir, {
+        withFileTypes: true,
+        encoding: 'utf-8',
+      });
     } catch {
       continue;
     }
 
     for (const entry of entries) {
       if (files.length >= maxFiles) {
-break;
-}
+        break;
+      }
       if (entry.name.startsWith('.') || IGNORED_DIRS.has(entry.name)) {
-continue;
-}
+        continue;
+      }
 
       const fullPath = path.join(currentDir, entry.name);
       if (entry.isDirectory()) {
@@ -390,13 +425,13 @@ continue;
  */
 async function readScannableSource(
   filePath: string,
-  maxFileBytes: number,
+  maxFileBytes: number
 ): Promise<string | null> {
   try {
     const stat = await fs.stat(filePath);
     if (!stat.isFile() || stat.size > maxFileBytes) {
-return null;
-}
+      return null;
+    }
     return await fs.readFile(filePath, 'utf-8');
   } catch {
     return null;
@@ -409,24 +444,24 @@ return null;
  */
 async function collectScannableFiles(
   dirPath: string,
-  opts: Required<SkillScanOptions>,
+  opts: Required<SkillScanOptions>
 ): Promise<string[]> {
   // First collect forced-include files
   const forcedFiles: string[] = [];
   for (const rawPath of opts.includeFiles) {
     const includePath = path.resolve(dirPath, rawPath);
     if (!isPathInside(dirPath, includePath)) {
-continue;
-}
+      continue;
+    }
     if (!isScannable(includePath)) {
-continue;
-}
+      continue;
+    }
 
     try {
       const stat = await fs.stat(includePath);
       if (stat.isFile()) {
-forcedFiles.push(includePath);
-}
+        forcedFiles.push(includePath);
+      }
     } catch {
       continue;
     }
@@ -443,12 +478,12 @@ forcedFiles.push(includePath);
 
   for (const file of walkedFiles) {
     if (result.length >= opts.maxFiles) {
-break;
-}
+      break;
+    }
     const resolved = path.resolve(file);
     if (seen.has(resolved)) {
-continue;
-}
+      continue;
+    }
     result.push(file);
     seen.add(resolved);
   }
@@ -463,7 +498,10 @@ function isPathInside(basePath: string, candidatePath: string): boolean {
   const base = path.resolve(basePath);
   const candidate = path.resolve(candidatePath);
   const rel = path.relative(base, candidate);
-  return rel === '' || (!rel.startsWith(`..${path.sep}`) && rel !== '..' && !path.isAbsolute(rel));
+  return (
+    rel === '' ||
+    (!rel.startsWith(`..${path.sep}`) && rel !== '..' && !path.isAbsolute(rel))
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -479,7 +517,7 @@ function isPathInside(basePath: string, candidatePath: string): boolean {
  */
 export async function scanDirectory(
   dirPath: string,
-  opts?: SkillScanOptions,
+  opts?: SkillScanOptions
 ): Promise<SkillScanFinding[]> {
   const scanOptions = normalizeScanOptions(opts);
   const files = await collectScannableFiles(dirPath, scanOptions);
@@ -488,8 +526,8 @@ export async function scanDirectory(
   for (const file of files) {
     const source = await readScannableSource(file, scanOptions.maxFileBytes);
     if (source === null) {
-continue;
-}
+      continue;
+    }
     allFindings.push(...scanSource(source, file));
   }
 
@@ -505,7 +543,7 @@ continue;
  */
 export async function scanDirectoryWithSummary(
   dirPath: string,
-  opts?: SkillScanOptions,
+  opts?: SkillScanOptions
 ): Promise<SkillScanSummary> {
   const scanOptions = normalizeScanOptions(opts);
   const files = await collectScannableFiles(dirPath, scanOptions);
@@ -515,8 +553,8 @@ export async function scanDirectoryWithSummary(
   for (const file of files) {
     const source = await readScannableSource(file, scanOptions.maxFileBytes);
     if (source === null) {
-continue;
-}
+      continue;
+    }
     scannedFiles++;
     allFindings.push(...scanSource(source, file));
   }
@@ -544,7 +582,7 @@ export async function scanSkillComplete(
   skillDir: string,
   skillBody: string,
   skillFilePath: string,
-  opts?: SkillScanOptions,
+  opts?: SkillScanOptions
 ): Promise<SkillScanSummary> {
   // Scan source code files
   const dirSummary = await scanDirectoryWithSummary(skillDir, opts);
@@ -590,7 +628,7 @@ export function formatScanReport(summary: SkillScanSummary): string {
       lines.push(
         `  [${severity}] ${finding.message}`,
         `    File: ${finding.file}:${finding.line}`,
-        `    Evidence: ${finding.evidence}`,
+        `    Evidence: ${finding.evidence}`
       );
     }
   }

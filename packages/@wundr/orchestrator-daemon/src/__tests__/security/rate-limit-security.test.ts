@@ -17,7 +17,6 @@ import {
 
 import type { AuthenticatedWebSocket } from '../../auth/middleware';
 
-
 describe('Rate Limit Security', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -192,7 +191,7 @@ describe('Rate Limit Security', () => {
         createMockAuthConfig({
           rateLimitMaxMessages: 3,
           rateLimitWindowMs: 60_000,
-        }),
+        })
       );
     });
 
@@ -217,17 +216,23 @@ describe('Rate Limit Security', () => {
       // Verify error was sent
       const mockWs = ws as unknown as MockWebSocket;
       const errors = mockWs.allSentJson<{ error: string }>();
-      const rateLimitError = errors.find((e) => e.error === 'rate_limit_exceeded');
+      const rateLimitError = errors.find(
+        e => e.error === 'rate_limit_exceeded'
+      );
       expect(rateLimitError).toBeDefined();
     });
 
     it('should track rate limits per client identity, not per socket', () => {
       // Two sockets with the same client identity
       const ws1 = new MockWebSocket() as unknown as AuthenticatedWebSocket;
-      ws1.__identity = createMockClientIdentity({ clientId: 'shared-identity' });
+      ws1.__identity = createMockClientIdentity({
+        clientId: 'shared-identity',
+      });
 
       const ws2 = new MockWebSocket() as unknown as AuthenticatedWebSocket;
-      ws2.__identity = createMockClientIdentity({ clientId: 'shared-identity' });
+      ws2.__identity = createMockClientIdentity({
+        clientId: 'shared-identity',
+      });
 
       const msg = Buffer.from(JSON.stringify({ type: 'ping' }));
 

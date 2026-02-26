@@ -12,7 +12,7 @@ export enum AlertLevel {
   INFO = 'info',
   WARNING = 'warning',
   CRITICAL = 'critical',
-  EMERGENCY = 'emergency'
+  EMERGENCY = 'emergency',
 }
 
 /**
@@ -23,7 +23,7 @@ export enum AlertChannel {
   EMAIL = 'email',
   SLACK = 'slack',
   IN_APP = 'in_app',
-  SMS = 'sms'
+  SMS = 'sms',
 }
 
 /**

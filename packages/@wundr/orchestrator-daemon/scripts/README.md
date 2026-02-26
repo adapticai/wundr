@@ -5,9 +5,11 @@ This directory contains startup and utility scripts for the orchestrator-daemon.
 ## Scripts Overview
 
 ### 1. start.sh - Production Startup
+
 Main production startup script with comprehensive checks and graceful shutdown.
 
 **Features:**
+
 - Validates Node.js version (requires 18+)
 - Checks for required environment variables (OPENAI_API_KEY)
 - Verifies Redis availability (warns if not available)
@@ -16,6 +18,7 @@ Main production startup script with comprehensive checks and graceful shutdown.
 - Provides colored console output for status
 
 **Usage:**
+
 ```bash
 ./scripts/start.sh
 # or via npm
@@ -23,15 +26,18 @@ npm start
 ```
 
 **Environment Variables:**
+
 - `OPENAI_API_KEY` (required) - OpenAI API key for AI features
 - `PORT` (optional, default: 3000) - Port to run daemon on
 - `LOG_LEVEL` (optional, default: info) - Logging level
 - `REDIS_ENABLED` (optional, default: true) - Enable Redis session persistence
 
 ### 2. start-dev.sh - Development Startup
+
 Development mode with hot reload and verbose logging.
 
 **Features:**
+
 - Uses ts-node for direct TypeScript execution
 - Enables debug logging
 - Hot reload on file changes
@@ -39,6 +45,7 @@ Development mode with hot reload and verbose logging.
 - No build step required
 
 **Usage:**
+
 ```bash
 ./scripts/start-dev.sh
 # or via npm
@@ -46,15 +53,18 @@ npm run start:dev
 ```
 
 **Environment Variables:**
+
 - `OPENAI_API_KEY` (required)
 - `PORT` (optional, default: 3000)
 - `LOG_LEVEL` (optional, default: debug)
 - `NODE_ENV` (optional, default: development)
 
 ### 3. start-docker.sh - Docker Startup
+
 Optimized startup script for Docker containers.
 
 **Features:**
+
 - Waits for dependencies (Redis, PostgreSQL) to be ready
 - Runs database migrations if configured
 - Handles container shutdown signals
@@ -62,6 +72,7 @@ Optimized startup script for Docker containers.
 - Configurable retry logic
 
 **Usage:**
+
 ```bash
 ./scripts/start-docker.sh
 # or via npm
@@ -69,6 +80,7 @@ npm run start:docker
 ```
 
 **Environment Variables:**
+
 - `OPENAI_API_KEY` (required)
 - `REDIS_HOST` (optional, default: redis)
 - `REDIS_PORT` (optional, default: 6379)
@@ -77,15 +89,18 @@ npm run start:docker
 - `PORT` (optional, default: 3000)
 
 ### 4. health-check.sh - Health Check
+
 Performs health checks on running daemon instance.
 
 **Features:**
+
 - Configurable retry logic
 - Timeout support
 - Proper exit codes for container orchestration
 - Verbose mode for debugging
 
 **Usage:**
+
 ```bash
 ./scripts/health-check.sh
 # or via npm
@@ -93,6 +108,7 @@ npm run health-check
 ```
 
 **Environment Variables:**
+
 - `HOST` (optional, default: localhost)
 - `PORT` (optional, default: 3000)
 - `TIMEOUT` (optional, default: 5) - Request timeout in seconds
@@ -100,6 +116,7 @@ npm run health-check
 - `VERBOSE` (optional) - Show full response
 
 **Exit Codes:**
+
 - `0` - Health check passed
 - `1` - Health check failed
 
@@ -113,14 +130,14 @@ services:
   daemon:
     build: .
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - REDIS_ENABLED=true
       - REDIS_HOST=redis
     command: ./scripts/start-docker.sh
     healthcheck:
-      test: ["CMD", "./scripts/health-check.sh"]
+      test: ['CMD', './scripts/health-check.sh']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -130,7 +147,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
 ```
 
 ### Docker Commands (via npm)
@@ -149,6 +166,7 @@ npm run docker:logs
 ## Common Scenarios
 
 ### Local Development
+
 ```bash
 # 1. Set environment variables
 export OPENAI_API_KEY="your-key-here"
@@ -158,6 +176,7 @@ npm run start:dev
 ```
 
 ### Production Deployment
+
 ```bash
 # 1. Build the project
 npm run build
@@ -172,6 +191,7 @@ npm start
 ```
 
 ### Docker Deployment
+
 ```bash
 # 1. Create .env file
 cat > .env << EOF
@@ -191,6 +211,7 @@ npm run docker:logs
 ```
 
 ### Health Monitoring
+
 ```bash
 # Basic health check
 npm run health-check
@@ -205,12 +226,14 @@ HOST=myserver.com PORT=8080 npm run health-check
 ## Troubleshooting
 
 ### Script Permission Issues
+
 ```bash
 # If scripts are not executable
 chmod +x scripts/*.sh
 ```
 
 ### Node Version Issues
+
 ```bash
 # Check Node version
 node -v
@@ -222,6 +245,7 @@ nvm use 18
 ```
 
 ### Redis Connection Issues
+
 ```bash
 # Check if Redis is running
 redis-cli ping
@@ -237,6 +261,7 @@ export REDIS_ENABLED=false
 ```
 
 ### Build Issues
+
 ```bash
 # Clean and rebuild
 npm run clean
@@ -244,6 +269,7 @@ npm run build
 ```
 
 ### Health Check Failures
+
 ```bash
 # Check if daemon is running
 ps aux | grep orchestrator-daemon
@@ -269,6 +295,7 @@ All scripts follow these principles:
 ## Exit Codes
 
 All scripts use standard exit codes:
+
 - `0` - Success
 - `1` - General error (missing dependencies, startup failure, etc.)
 
@@ -281,6 +308,7 @@ All scripts use standard exit codes:
 Comprehensive E2E test that verifies the complete daemon workflow including real LLM calls.
 
 **Features:**
+
 - Starts daemon programmatically
 - Tests WebSocket connection and all message types
 - Executes real LLM calls via OpenAI API
@@ -289,10 +317,12 @@ Comprehensive E2E test that verifies the complete daemon workflow including real
 - Timeout handling and proper cleanup
 
 **Requirements:**
+
 - `OPENAI_API_KEY` environment variable must be set
 - OpenAI API key must have available credits
 
 **Usage:**
+
 ```bash
 npm run test:e2e
 # or directly
@@ -300,6 +330,7 @@ npx tsx scripts/test-e2e.ts
 ```
 
 **Test Steps:**
+
 1. Start Daemon - Initializes orchestrator daemon
 2. WebSocket Connection - Establishes connection
 3. Health Check - Verifies daemon responsiveness
@@ -309,6 +340,7 @@ npx tsx scripts/test-e2e.ts
 7. Stop Session - Gracefully terminates session
 
 **Exit Codes:**
+
 - `0` - All tests passed
 - `1` - One or more tests failed
 - `130` - Interrupted by user (Ctrl+C)
@@ -320,6 +352,7 @@ npx tsx scripts/test-e2e.ts
 Interactive command-line client for manual testing and debugging of the daemon.
 
 **Features:**
+
 - Interactive CLI with command history
 - Pretty-printed JSON responses
 - Color-coded output
@@ -328,6 +361,7 @@ Interactive command-line client for manual testing and debugging of the daemon.
 - Custom message support
 
 **Usage:**
+
 ```bash
 npm run test:ws
 # or directly
@@ -339,21 +373,22 @@ npx tsx scripts/test-websocket.ts --host 127.0.0.1 --port 8787
 
 **Available Commands:**
 
-| Command | Description |
-|---------|-------------|
-| `help` | Show available commands |
-| `ping` | Send ping message |
-| `health` | Request health check |
-| `status` | Request daemon status |
-| `spawn` | Spawn a test session |
-| `execute` | Execute task in current session |
-| `stop` | Stop current session |
-| `session <id>` | Get status of specific session |
-| `custom <json>` | Send custom JSON message |
-| `clear` | Clear screen |
-| `exit`, `quit` | Exit the client |
+| Command         | Description                     |
+| --------------- | ------------------------------- |
+| `help`          | Show available commands         |
+| `ping`          | Send ping message               |
+| `health`        | Request health check            |
+| `status`        | Request daemon status           |
+| `spawn`         | Spawn a test session            |
+| `execute`       | Execute task in current session |
+| `stop`          | Stop current session            |
+| `session <id>`  | Get status of specific session  |
+| `custom <json>` | Send custom JSON message        |
+| `clear`         | Clear screen                    |
+| `exit`, `quit`  | Exit the client                 |
 
 **Example Session:**
+
 ```
 ws> health
 ✓ Health check passed
@@ -420,18 +455,21 @@ ws> custom {"type":"spawn_session","payload":{...}}
 ### E2E Test Issues
 
 **Problem: "OPENAI_API_KEY environment variable not set"**
+
 ```bash
 export OPENAI_API_KEY="your-api-key-here"
 npm run test:e2e
 ```
 
 **Problem: Test timeout**
+
 - Check network connectivity to OpenAI API
 - Verify API key has available credits
 - Check OpenAI service status
 - Increase timeout in test-e2e.ts if needed
 
 **Problem: LLM call fails**
+
 ```bash
 # Verify API key is valid
 curl https://api.openai.com/v1/models \
@@ -441,6 +479,7 @@ curl https://api.openai.com/v1/models \
 ### WebSocket Client Issues
 
 **Problem: "Failed to connect"**
+
 ```bash
 # Make sure daemon is running
 npm run start:dev
@@ -450,6 +489,7 @@ curl http://127.0.0.1:8787/health
 ```
 
 **Problem: Connection refused**
+
 - Verify daemon is running on expected port (default: 8787)
 - Check firewall settings
 - Use `--port` flag to specify correct port

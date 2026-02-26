@@ -19,11 +19,9 @@
  */
 
 import { createAgentLoader } from './agent-loader';
-import {
-  DEFAULT_MAX_TURNS_BY_TYPE,
-} from './agent-types';
+import { DEFAULT_MAX_TURNS_BY_TYPE } from './agent-types';
 
-import type { AgentLoader} from './agent-loader';
+import type { AgentLoader } from './agent-loader';
 import type {
   AgentDefinition,
   AgentGroup,
@@ -63,11 +61,9 @@ export class AgentRegistry {
   private readonly logger: (message: string) => void;
 
   constructor(options: AgentRegistryOptions = {}) {
-    this.loader = options.loader ?? (
-      options.projectRoot
-        ? createAgentLoader(options.projectRoot)
-        : null
-    );
+    this.loader =
+      options.loader ??
+      (options.projectRoot ? createAgentLoader(options.projectRoot) : null);
     this.logger = options.logger ?? console.warn;
   }
 
@@ -90,7 +86,7 @@ export class AgentRegistry {
   async loadFromDirectory(): Promise<number> {
     if (!this.loader) {
       throw new Error(
-        'AgentRegistry: No loader configured. Provide a loader or projectRoot in options.',
+        'AgentRegistry: No loader configured. Provide a loader or projectRoot in options.'
       );
     }
 
@@ -102,7 +98,7 @@ export class AgentRegistry {
 
     for (const error of result.errors) {
       this.logger(
-        `[AgentRegistry] Failed to load ${error.filePath}: ${error.error}`,
+        `[AgentRegistry] Failed to load ${error.filePath}: ${error.error}`
       );
     }
 
@@ -151,9 +147,8 @@ export class AgentRegistry {
   getByCapability(capability: string): AgentDefinition[] {
     const cap = capability.toLowerCase().trim();
     return this.filterDefinitions(
-      def => def.metadata.capabilities?.some(
-        c => c.toLowerCase() === cap,
-      ) ?? false,
+      def =>
+        def.metadata.capabilities?.some(c => c.toLowerCase() === cap) ?? false
     );
   }
 
@@ -162,9 +157,7 @@ export class AgentRegistry {
    */
   getByCategory(category: string): AgentDefinition[] {
     const cat = category.toLowerCase().trim();
-    return this.filterDefinitions(
-      def => def.category.toLowerCase() === cat,
-    );
+    return this.filterDefinitions(def => def.category.toLowerCase() === cat);
   }
 
   /**
@@ -185,18 +178,14 @@ export class AgentRegistry {
    * Gets all agent definitions that support a given memory scope.
    */
   getByMemoryScope(scope: MemoryScope): AgentDefinition[] {
-    return this.filterDefinitions(
-      def => def.metadata.memoryScope === scope,
-    );
+    return this.filterDefinitions(def => def.metadata.memoryScope === scope);
   }
 
   /**
    * Gets all agent definitions that persist state across sessions.
    */
   getStateful(): AgentDefinition[] {
-    return this.filterDefinitions(
-      def => def.metadata.persistState === true,
-    );
+    return this.filterDefinitions(def => def.metadata.persistState === true);
   }
 
   /**
@@ -246,11 +235,7 @@ export class AgentRegistry {
   /**
    * Defines a named group of agents.
    */
-  defineGroup(
-    groupId: string,
-    agentIds: string[],
-    description?: string,
-  ): void {
+  defineGroup(groupId: string, agentIds: string[], description?: string): void {
     this.groups.set(groupId, {
       groupId,
       agentIds: [...agentIds],
@@ -312,10 +297,7 @@ export class AgentRegistry {
    *
    * Example: Task(developer) will only match agents with type === 'developer'.
    */
-  validateTypeRestriction(
-    agentId: string,
-    requiredType: AgentType,
-  ): boolean {
+  validateTypeRestriction(agentId: string, requiredType: AgentType): boolean {
     const definition = this.get(agentId);
     if (!definition) {
       return false;
@@ -328,10 +310,7 @@ export class AgentRegistry {
    * Validates that an agent meets minimum tier requirements.
    * Lower tier numbers indicate higher authority.
    */
-  validateTierRestriction(
-    agentId: string,
-    maxTier: AgentTier,
-  ): boolean {
+  validateTierRestriction(agentId: string, maxTier: AgentTier): boolean {
     const definition = this.get(agentId);
     if (!definition || definition.metadata.tier === undefined) {
       return false;
@@ -350,7 +329,7 @@ export class AgentRegistry {
     options?: {
       readonly maxTier?: AgentTier;
       readonly requiredCapabilities?: readonly string[];
-    },
+    }
   ): AgentDefinition[] {
     const typed = this.getByType(requiredType);
 
@@ -365,9 +344,12 @@ export class AgentRegistry {
       }
 
       // Capability check
-      if (options?.requiredCapabilities && options.requiredCapabilities.length > 0) {
+      if (
+        options?.requiredCapabilities &&
+        options.requiredCapabilities.length > 0
+      ) {
         const agentCaps = new Set(
-          (def.metadata.capabilities ?? []).map(c => c.toLowerCase()),
+          (def.metadata.capabilities ?? []).map(c => c.toLowerCase())
         );
         for (const reqCap of options.requiredCapabilities) {
           if (!agentCaps.has(reqCap.toLowerCase())) {
@@ -397,7 +379,7 @@ export class AgentRegistry {
   resolveEffectiveTools(
     agentId: string,
     availableTools: readonly string[],
-    parentRestrictions?: ToolRestrictions,
+    parentRestrictions?: ToolRestrictions
   ): string[] {
     const definition = this.get(agentId);
     const agentRestrictions = definition?.metadata.toolRestrictions;
@@ -412,20 +394,23 @@ export class AgentRegistry {
     // Allowed list: only these tools
     if (restrictions.allowed && restrictions.allowed.length > 0) {
       const allowSet = new Set(
-        restrictions.allowed.map(t => t.toLowerCase().trim()),
+        restrictions.allowed.map(t => t.toLowerCase().trim())
       );
 
       // If parent also has an allowed list, intersect
       let effective = availableTools.filter(t =>
-        allowSet.has(t.toLowerCase().trim()),
+        allowSet.has(t.toLowerCase().trim())
       );
 
-      if (parentRestrictions?.allowed && parentRestrictions.allowed.length > 0) {
+      if (
+        parentRestrictions?.allowed &&
+        parentRestrictions.allowed.length > 0
+      ) {
         const parentAllowSet = new Set(
-          parentRestrictions.allowed.map(t => t.toLowerCase().trim()),
+          parentRestrictions.allowed.map(t => t.toLowerCase().trim())
         );
         effective = effective.filter(t =>
-          parentAllowSet.has(t.toLowerCase().trim()),
+          parentAllowSet.has(t.toLowerCase().trim())
         );
       }
 
@@ -435,7 +420,7 @@ export class AgentRegistry {
     // Denied list: remove these tools
     if (restrictions.denied && restrictions.denied.length > 0) {
       const denySet = new Set(
-        restrictions.denied.map(t => t.toLowerCase().trim()),
+        restrictions.denied.map(t => t.toLowerCase().trim())
       );
 
       // Also apply parent denied list
@@ -445,9 +430,7 @@ export class AgentRegistry {
         }
       }
 
-      return availableTools.filter(t =>
-        !denySet.has(t.toLowerCase().trim()),
-      );
+      return availableTools.filter(t => !denySet.has(t.toLowerCase().trim()));
     }
 
     // Fall through to parent restrictions
@@ -464,12 +447,12 @@ export class AgentRegistry {
   isToolAllowed(
     agentId: string,
     toolName: string,
-    parentRestrictions?: ToolRestrictions,
+    parentRestrictions?: ToolRestrictions
   ): boolean {
     const effective = this.resolveEffectiveTools(
       agentId,
       [toolName],
-      parentRestrictions,
+      parentRestrictions
     );
     return effective.length > 0;
   }
@@ -488,7 +471,7 @@ export class AgentRegistry {
    */
   resolvePermissions(
     agentId: string,
-    parentPermissions?: AgentPermissions,
+    parentPermissions?: AgentPermissions
   ): AgentPermissions {
     const definition = this.get(agentId);
     if (!definition) {
@@ -496,9 +479,10 @@ export class AgentRegistry {
     }
 
     const meta = definition.metadata;
-    const agentMaxTurns = meta.maxTurns
-      ?? (meta.type ? DEFAULT_MAX_TURNS_BY_TYPE[meta.type] : undefined)
-      ?? 30;
+    const agentMaxTurns =
+      meta.maxTurns ??
+      (meta.type ? DEFAULT_MAX_TURNS_BY_TYPE[meta.type] : undefined) ??
+      30;
 
     // Build agent's own declared permissions
     const selfPermissions: AgentPermissions = {
@@ -548,19 +532,17 @@ export class AgentRegistry {
    * Resolves the effective max turns for an agent, considering its
    * definition, type defaults, and parent constraints.
    */
-  resolveMaxTurns(
-    agentId: string,
-    parentMaxTurns?: number,
-  ): number {
+  resolveMaxTurns(agentId: string, parentMaxTurns?: number): number {
     const definition = this.get(agentId);
     if (!definition) {
       return parentMaxTurns ?? 30;
     }
 
     const meta = definition.metadata;
-    const agentMaxTurns = meta.maxTurns
-      ?? (meta.type ? DEFAULT_MAX_TURNS_BY_TYPE[meta.type] : undefined)
-      ?? 30;
+    const agentMaxTurns =
+      meta.maxTurns ??
+      (meta.type ? DEFAULT_MAX_TURNS_BY_TYPE[meta.type] : undefined) ??
+      30;
 
     if (parentMaxTurns !== undefined) {
       return Math.min(agentMaxTurns, parentMaxTurns);
@@ -577,10 +559,7 @@ export class AgentRegistry {
    * Resolves the effective memory scope for an agent.
    * Falls back through: agent config -> parent scope -> 'local'.
    */
-  resolveMemoryScope(
-    agentId: string,
-    parentScope?: MemoryScope,
-  ): MemoryScope {
+  resolveMemoryScope(agentId: string, parentScope?: MemoryScope): MemoryScope {
     const definition = this.get(agentId);
     if (!definition) {
       return parentScope ?? 'local';
@@ -657,7 +636,7 @@ export class AgentRegistry {
    * Filters definitions by a predicate.
    */
   private filterDefinitions(
-    predicate: (def: AgentDefinition) => boolean,
+    predicate: (def: AgentDefinition) => boolean
   ): AgentDefinition[] {
     const results: AgentDefinition[] = [];
     for (const def of this.definitions.values()) {
@@ -671,17 +650,14 @@ export class AgentRegistry {
   /**
    * Scores an agent definition against requirements.
    */
-  private scoreAgent(
-    def: AgentDefinition,
-    req: AgentRequirements,
-  ): number {
+  private scoreAgent(def: AgentDefinition, req: AgentRequirements): number {
     let score = 0;
     const meta = def.metadata;
 
     // Capability match (most important)
     if (req.requiredCapabilities && req.requiredCapabilities.length > 0) {
       const agentCaps = new Set(
-        (meta.capabilities ?? []).map(c => c.toLowerCase()),
+        (meta.capabilities ?? []).map(c => c.toLowerCase())
       );
       let matchCount = 0;
       for (const reqCap of req.requiredCapabilities) {
@@ -742,7 +718,7 @@ export class AgentRegistry {
         this.defineGroup(
           groupId,
           def.metadata.keySubAgents as string[],
-          `Team managed by ${def.metadata.name}`,
+          `Team managed by ${def.metadata.name}`
         );
       }
     }
@@ -753,18 +729,18 @@ export class AgentRegistry {
    */
   private applyToolRestrictions(
     tools: readonly string[],
-    restrictions: ToolRestrictions,
+    restrictions: ToolRestrictions
   ): string[] {
     if (restrictions.allowed && restrictions.allowed.length > 0) {
       const allowSet = new Set(
-        restrictions.allowed.map(t => t.toLowerCase().trim()),
+        restrictions.allowed.map(t => t.toLowerCase().trim())
       );
       return tools.filter(t => allowSet.has(t.toLowerCase().trim()));
     }
 
     if (restrictions.denied && restrictions.denied.length > 0) {
       const denySet = new Set(
-        restrictions.denied.map(t => t.toLowerCase().trim()),
+        restrictions.denied.map(t => t.toLowerCase().trim())
       );
       return tools.filter(t => !denySet.has(t.toLowerCase().trim()));
     }
@@ -791,7 +767,7 @@ export class AgentRegistry {
    */
   private intersectPermissions(
     child: AgentPermissions,
-    parent: AgentPermissions,
+    parent: AgentPermissions
   ): AgentPermissions {
     // Permission mode: most restrictive wins
     const permModeOrder: Record<string, number> = {
@@ -801,20 +777,19 @@ export class AgentRegistry {
     };
     const childOrder = permModeOrder[child.permissionMode] ?? 1;
     const parentOrder = permModeOrder[parent.permissionMode] ?? 1;
-    const effectivePermMode = childOrder <= parentOrder
-      ? child.permissionMode
-      : parent.permissionMode;
+    const effectivePermMode =
+      childOrder <= parentOrder ? child.permissionMode : parent.permissionMode;
 
     // Tool restrictions: intersect allowed, union denied
     const effectiveToolRestrictions = this.intersectToolRestrictions(
       child.toolRestrictions,
-      parent.toolRestrictions,
+      parent.toolRestrictions
     );
 
     // Memory scopes: intersection
     const parentScopeSet = new Set(parent.memoryScopes);
-    const effectiveScopes = child.memoryScopes.filter(
-      s => parentScopeSet.has(s),
+    const effectiveScopes = child.memoryScopes.filter(s =>
+      parentScopeSet.has(s)
     );
 
     return {
@@ -833,7 +808,7 @@ export class AgentRegistry {
    */
   private intersectToolRestrictions(
     child?: ToolRestrictions,
-    parent?: ToolRestrictions,
+    parent?: ToolRestrictions
   ): ToolRestrictions | undefined {
     if (!child && !parent) {
       return undefined;
@@ -850,32 +825,28 @@ export class AgentRegistry {
     // If both have allowed lists, intersect them
     if (child.allowed && parent.allowed) {
       const parentSet = new Set(
-        parent.allowed.map(t => t.toLowerCase().trim()),
+        parent.allowed.map(t => t.toLowerCase().trim())
       );
       const intersected = child.allowed.filter(t =>
-        parentSet.has(t.toLowerCase().trim()),
+        parentSet.has(t.toLowerCase().trim())
       );
       return { allowed: intersected };
     }
 
     // If child has allowed but parent has denied, apply deny to allowed
     if (child.allowed && parent.denied) {
-      const denySet = new Set(
-        parent.denied.map(t => t.toLowerCase().trim()),
-      );
-      const filtered = child.allowed.filter(t =>
-        !denySet.has(t.toLowerCase().trim()),
+      const denySet = new Set(parent.denied.map(t => t.toLowerCase().trim()));
+      const filtered = child.allowed.filter(
+        t => !denySet.has(t.toLowerCase().trim())
       );
       return { allowed: filtered };
     }
 
     // If child has denied but parent has allowed, parent allowed wins
     if (child.denied && parent.allowed) {
-      const denySet = new Set(
-        child.denied.map(t => t.toLowerCase().trim()),
-      );
-      const filtered = parent.allowed.filter(t =>
-        !denySet.has(t.toLowerCase().trim()),
+      const denySet = new Set(child.denied.map(t => t.toLowerCase().trim()));
+      const filtered = parent.allowed.filter(
+        t => !denySet.has(t.toLowerCase().trim())
       );
       return { allowed: filtered };
     }
@@ -902,7 +873,12 @@ export class AgentRegistry {
     }
 
     // A declared scope implies that scope and all more-restricted scopes
-    const scopeHierarchy: MemoryScope[] = ['global', 'user', 'project', 'local'];
+    const scopeHierarchy: MemoryScope[] = [
+      'global',
+      'user',
+      'project',
+      'local',
+    ];
     const idx = scopeHierarchy.indexOf(declared);
     if (idx === -1) {
       return ['local'];
@@ -920,7 +896,7 @@ export class AgentRegistry {
  * Creates an AgentRegistry and loads definitions from the standard directory.
  */
 export async function createAgentRegistry(
-  projectRoot: string,
+  projectRoot: string
 ): Promise<AgentRegistry> {
   const registry = new AgentRegistry({ projectRoot });
   await registry.loadFromDirectory();

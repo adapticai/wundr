@@ -92,8 +92,8 @@ function isCacheValid(entry: SkillCacheEntry): boolean {
 function getCachedSkill(filePath: string): Skill | undefined {
   const entry = parseCache.get(filePath);
   if (!entry) {
-return undefined;
-}
+    return undefined;
+  }
   if (!isCacheValid(entry)) {
     parseCache.delete(filePath);
     return undefined;
@@ -273,8 +273,10 @@ function parseYamlSimple(yaml: string): ParsedSkillFrontmatter {
     }
 
     // Handle quoted strings
-    if ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))) {
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
       value = value.slice(1, -1);
     }
 
@@ -303,8 +305,8 @@ function countChar(str: string, char: string): number {
   let count = 0;
   for (const c of str) {
     if (c === char) {
-count++;
-}
+      count++;
+    }
   }
   return count;
 }
@@ -318,31 +320,32 @@ count++;
  * The metadata field is expected to be a JSON string containing a `wundr` key.
  */
 export function resolveWundrMetadata(
-  frontmatter: ParsedSkillFrontmatter,
+  frontmatter: ParsedSkillFrontmatter
 ): WundrSkillMetadata | undefined {
   const raw = frontmatter['metadata'];
   if (!raw) {
-return undefined;
-}
+    return undefined;
+  }
 
   try {
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') {
-return undefined;
-}
+      return undefined;
+    }
 
     // Look for wundr-specific metadata (also support 'openclaw' for compat)
     const metadataObj = parsed['wundr'] ?? parsed['openclaw'];
     if (!metadataObj || typeof metadataObj !== 'object') {
-return undefined;
-}
+      return undefined;
+    }
 
-    const requiresRaw = typeof metadataObj.requires === 'object' && metadataObj.requires !== null
-      ? metadataObj.requires as Record<string, unknown>
-      : undefined;
+    const requiresRaw =
+      typeof metadataObj.requires === 'object' && metadataObj.requires !== null
+        ? (metadataObj.requires as Record<string, unknown>)
+        : undefined;
 
     const installRaw = Array.isArray(metadataObj.install)
-      ? metadataObj.install as unknown[]
+      ? (metadataObj.install as unknown[])
       : [];
     const install = installRaw
       .map(entry => parseInstallSpec(entry))
@@ -351,19 +354,37 @@ return undefined;
     const osList = normalizeStringList(metadataObj.os);
 
     return {
-      always: typeof metadataObj.always === 'boolean' ? metadataObj.always : undefined,
-      emoji: typeof metadataObj.emoji === 'string' ? metadataObj.emoji : undefined,
-      homepage: typeof metadataObj.homepage === 'string' ? metadataObj.homepage : undefined,
-      skillKey: typeof metadataObj.skillKey === 'string' ? metadataObj.skillKey : undefined,
-      primaryEnv: typeof metadataObj.primaryEnv === 'string' ? metadataObj.primaryEnv : undefined,
-      category: typeof metadataObj.category === 'string' ? metadataObj.category : undefined,
+      always:
+        typeof metadataObj.always === 'boolean'
+          ? metadataObj.always
+          : undefined,
+      emoji:
+        typeof metadataObj.emoji === 'string' ? metadataObj.emoji : undefined,
+      homepage:
+        typeof metadataObj.homepage === 'string'
+          ? metadataObj.homepage
+          : undefined,
+      skillKey:
+        typeof metadataObj.skillKey === 'string'
+          ? metadataObj.skillKey
+          : undefined,
+      primaryEnv:
+        typeof metadataObj.primaryEnv === 'string'
+          ? metadataObj.primaryEnv
+          : undefined,
+      category:
+        typeof metadataObj.category === 'string'
+          ? metadataObj.category
+          : undefined,
       os: osList.length > 0 ? osList : undefined,
-      requires: requiresRaw ? {
-        bins: normalizeStringList(requiresRaw.bins),
-        anyBins: normalizeStringList(requiresRaw.anyBins),
-        env: normalizeStringList(requiresRaw.env),
-        config: normalizeStringList(requiresRaw.config),
-      } : undefined,
+      requires: requiresRaw
+        ? {
+            bins: normalizeStringList(requiresRaw.bins),
+            anyBins: normalizeStringList(requiresRaw.anyBins),
+            env: normalizeStringList(requiresRaw.env),
+            config: normalizeStringList(requiresRaw.config),
+          }
+        : undefined,
       install: install.length > 0 ? install : undefined,
     };
   } catch {
@@ -375,11 +396,12 @@ return undefined;
  * Resolve the invocation policy from frontmatter flags.
  */
 export function resolveInvocationPolicy(
-  frontmatter: ParsedSkillFrontmatter,
+  frontmatter: ParsedSkillFrontmatter
 ): SkillInvocationPolicy {
   return {
     userInvocable: parseBooleanValue(frontmatter['user-invocable']) ?? true,
-    disableModelInvocation: parseBooleanValue(frontmatter['disable-model-invocation']) ?? false,
+    disableModelInvocation:
+      parseBooleanValue(frontmatter['disable-model-invocation']) ?? false,
   };
 }
 
@@ -387,21 +409,23 @@ export function resolveInvocationPolicy(
  * Resolve lifecycle hooks from frontmatter.
  */
 export function resolveHooks(
-  frontmatter: ParsedSkillFrontmatter,
+  frontmatter: ParsedSkillFrontmatter
 ): SkillHooks | undefined {
-  const before = frontmatter['hook-before']?.trim() || frontmatter['hooks-before']?.trim();
-  const after = frontmatter['hook-after']?.trim() || frontmatter['hooks-after']?.trim();
+  const before =
+    frontmatter['hook-before']?.trim() || frontmatter['hooks-before']?.trim();
+  const after =
+    frontmatter['hook-after']?.trim() || frontmatter['hooks-after']?.trim();
 
   if (!before && !after) {
-return undefined;
-}
+    return undefined;
+  }
   const hooks: SkillHooks = {};
   if (before) {
-hooks.before = before;
-}
+    hooks.before = before;
+  }
   if (after) {
-hooks.after = after;
-}
+    hooks.after = after;
+  }
   return hooks;
 }
 
@@ -409,14 +433,14 @@ hooks.after = after;
  * Resolve a strongly-typed SkillFrontmatter from raw key-value pairs.
  */
 export function resolveSkillFrontmatter(
-  raw: ParsedSkillFrontmatter,
+  raw: ParsedSkillFrontmatter
 ): SkillFrontmatter | undefined {
   const name = raw['name']?.trim();
   const description = raw['description']?.trim();
 
   if (!name || !description) {
-return undefined;
-}
+    return undefined;
+  }
 
   const result: SkillFrontmatter = { name, description };
 
@@ -427,30 +451,32 @@ return undefined;
 
   const model = raw['model']?.trim();
   if (model) {
-result.model = model;
-}
+    result.model = model;
+  }
 
   const tools = raw['tools']?.trim();
   if (tools) {
-result.tools = normalizeStringList(tools);
-}
+    result.tools = normalizeStringList(tools);
+  }
 
   const allowedTools = raw['allowed_tools'] ?? raw['allowed-tools'];
   if (allowedTools) {
-result.allowedTools = normalizeStringList(allowedTools);
-}
+    result.allowedTools = normalizeStringList(allowedTools);
+  }
 
   if (raw['user-invocable'] !== undefined) {
     result.userInvocable = parseBooleanValue(raw['user-invocable']);
   }
   if (raw['disable-model-invocation'] !== undefined) {
-    result.disableModelInvocation = parseBooleanValue(raw['disable-model-invocation']);
+    result.disableModelInvocation = parseBooleanValue(
+      raw['disable-model-invocation']
+    );
   }
 
   const tags = raw['tags']?.trim();
   if (tags) {
-result.tags = normalizeStringList(tags);
-}
+    result.tags = normalizeStringList(tags);
+  }
 
   const metadataRaw = raw['metadata']?.trim();
   if (metadataRaw) {
@@ -464,8 +490,8 @@ result.tags = normalizeStringList(tags);
   // Hooks
   const hooks = resolveHooks(raw);
   if (hooks) {
-result.hooks = hooks;
-}
+    result.hooks = hooks;
+  }
 
   // Dependencies
   const deps = raw['dependencies']?.trim() || raw['depends-on']?.trim();
@@ -476,8 +502,8 @@ result.hooks = hooks;
   // Version
   const version = raw['version']?.trim();
   if (version) {
-result.version = version;
-}
+    result.version = version;
+  }
 
   return result;
 }
@@ -490,14 +516,18 @@ result.version = version;
  * Resolve install preferences from skills configuration (OpenClaw-compatible).
  */
 export function resolveInstallPreferences(
-  config?: SkillsConfig,
+  config?: SkillsConfig
 ): SkillsInstallPreferences {
   const raw = config?.install;
   const preferBrew = raw?.preferBrew ?? true;
-  const managerRaw = typeof raw?.nodeManager === 'string' ? raw.nodeManager.trim() : '';
+  const managerRaw =
+    typeof raw?.nodeManager === 'string' ? raw.nodeManager.trim() : '';
   const manager = managerRaw.toLowerCase();
   const nodeManager: SkillsInstallPreferences['nodeManager'] =
-    manager === 'pnpm' || manager === 'yarn' || manager === 'bun' || manager === 'npm'
+    manager === 'pnpm' ||
+    manager === 'yarn' ||
+    manager === 'bun' ||
+    manager === 'npm'
       ? manager
       : 'npm';
   const prefRaw = raw?.preference?.trim().toLowerCase() ?? '';
@@ -521,13 +551,10 @@ export function resolveInstallPreferences(
  *
  * Uses the parse cache to avoid re-parsing unchanged files.
  */
-export function loadSkillsFromDir(
-  dir: string,
-  source: SkillSource,
-): Skill[] {
+export function loadSkillsFromDir(dir: string, source: SkillSource): Skill[] {
   if (!fs.existsSync(dir)) {
-return [];
-}
+    return [];
+  }
 
   const skills: Skill[] = [];
 
@@ -540,11 +567,11 @@ return [];
 
   for (const entry of entries) {
     if (entry.name.startsWith('.')) {
-continue;
-}
+      continue;
+    }
     if (entry.name === 'node_modules') {
-continue;
-}
+      continue;
+    }
 
     const fullPath = path.join(dir, entry.name);
 
@@ -554,15 +581,19 @@ continue;
       if (fs.existsSync(skillFile)) {
         const skill = loadSingleSkill(skillFile, fullPath, source);
         if (skill) {
-skills.push(skill);
-}
+          skills.push(skill);
+        }
       }
-    } else if (entry.isFile() && entry.name.endsWith('.md') && entry.name !== 'README.md') {
+    } else if (
+      entry.isFile() &&
+      entry.name.endsWith('.md') &&
+      entry.name !== 'README.md'
+    ) {
       // Flat layout: .md file is itself a skill
       const skill = loadSingleSkill(fullPath, dir, source);
       if (skill) {
-skills.push(skill);
-}
+        skills.push(skill);
+      }
     }
   }
 
@@ -575,7 +606,7 @@ skills.push(skill);
 function loadSingleSkill(
   filePath: string,
   baseDir: string,
-  source: SkillSource,
+  source: SkillSource
 ): Skill | undefined {
   const resolvedPath = path.resolve(filePath);
 
@@ -647,21 +678,21 @@ function loadSingleSkill(
 export function resolveBundledSkillsDir(): string | undefined {
   const override = process.env['WUNDR_BUNDLED_SKILLS_DIR']?.trim();
   if (override && fs.existsSync(override)) {
-return override;
-}
+    return override;
+  }
 
   // Look relative to this module's location
   let current = __dirname;
   for (let depth = 0; depth < 6; depth++) {
     const candidate = path.join(current, 'skills');
     if (looksLikeSkillsDir(candidate)) {
-return candidate;
-}
+      return candidate;
+    }
 
     const next = path.dirname(current);
     if (next === current) {
-break;
-}
+      break;
+    }
     current = next;
   }
 
@@ -676,13 +707,13 @@ export function resolveDiscoveryDirs(
   workspaceDir: string,
   config?: SkillsConfig,
   managedSkillsDir?: string,
-  bundledSkillsDir?: string,
+  bundledSkillsDir?: string
 ): Array<{ dir: string; source: SkillSource }> {
   const dirs: Array<{ dir: string; source: SkillSource }> = [];
 
   // Extra dirs (lowest precedence)
   const extraDirs = (config?.load?.extraDirs ?? [])
-    .map(d => typeof d === 'string' ? d.trim() : '')
+    .map(d => (typeof d === 'string' ? d.trim() : ''))
     .filter(Boolean)
     .map(d => resolveUserPath(d));
   for (const dir of extraDirs) {
@@ -705,7 +736,10 @@ export function resolveDiscoveryDirs(
 
   // Workspace: project-local ./skills/ and .claude/skills/ (OpenClaw compat)
   dirs.push({ dir: path.join(workspaceDir, 'skills'), source: 'workspace' });
-  dirs.push({ dir: path.join(workspaceDir, '.claude', 'skills'), source: 'workspace' });
+  dirs.push({
+    dir: path.join(workspaceDir, '.claude', 'skills'),
+    source: 'workspace',
+  });
 
   return dirs;
 }
@@ -723,10 +757,13 @@ export function loadAllSkillEntries(
   workspaceDir: string,
   config?: SkillsConfig,
   managedSkillsDir?: string,
-  bundledSkillsDir?: string,
+  bundledSkillsDir?: string
 ): SkillEntry[] {
   const discoveryDirs = resolveDiscoveryDirs(
-    workspaceDir, config, managedSkillsDir, bundledSkillsDir,
+    workspaceDir,
+    config,
+    managedSkillsDir,
+    bundledSkillsDir
   );
 
   // Load from all directories in precedence order
@@ -741,7 +778,7 @@ export function loadAllSkillEntries(
   // Build entries with resolved metadata
   return Array.from(merged.values()).map(skill => {
     const raw = parseFrontmatter(
-      fs.readFileSync(skill.filePath, 'utf-8'),
+      fs.readFileSync(skill.filePath, 'utf-8')
     ).frontmatter;
 
     return {
@@ -765,22 +802,25 @@ export function loadAllSkillEntries(
  */
 export function formatSkillsForPrompt(skills: Skill[]): string {
   if (skills.length === 0) {
-return '';
-}
+    return '';
+  }
 
-  const lines: string[] = [
-    'Available skills (invoke with /skill-name):',
-    '',
-  ];
+  const lines: string[] = ['Available skills (invoke with /skill-name):', ''];
 
   for (const skill of skills) {
     const emoji = skill.frontmatter.metadata?.['wundr']
-      ? (skill.frontmatter.metadata['wundr'] as Record<string, unknown>)?.['emoji'] ?? ''
+      ? ((skill.frontmatter.metadata['wundr'] as Record<string, unknown>)?.[
+          'emoji'
+        ] ?? '')
       : '';
     const prefix = emoji ? `${emoji} ` : '';
-    const version = skill.frontmatter.version ? ` (v${skill.frontmatter.version})` : '';
+    const version = skill.frontmatter.version
+      ? ` (v${skill.frontmatter.version})`
+      : '';
     const context = skill.frontmatter.context === 'fork' ? ' [fork]' : '';
-    lines.push(`- **${prefix}${skill.name}**${version}${context}: ${skill.description}`);
+    lines.push(
+      `- **${prefix}${skill.name}**${version}${context}: ${skill.description}`
+    );
   }
 
   return lines.join('\n');
@@ -792,92 +832,100 @@ return '';
 
 export function normalizeStringList(input: unknown): string[] {
   if (!input) {
-return [];
-}
+    return [];
+  }
   if (Array.isArray(input)) {
     return input.map(v => String(v).trim()).filter(Boolean);
   }
   if (typeof input === 'string') {
     // Handle both comma-separated and YAML array notation
     const cleaned = input.replace(/^\[|\]$/g, '');
-    return cleaned.split(',').map(v => v.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+    return cleaned
+      .split(',')
+      .map(v => v.trim().replace(/^["']|["']$/g, ''))
+      .filter(Boolean);
   }
   return [];
 }
 
 function parseInstallSpec(input: unknown): SkillInstallSpec | undefined {
   if (!input || typeof input !== 'object') {
-return undefined;
-}
+    return undefined;
+  }
 
   const raw = input as Record<string, unknown>;
-  const kindRaw = typeof raw.kind === 'string'
-    ? raw.kind
-    : typeof raw.type === 'string' ? raw.type : '';
+  const kindRaw =
+    typeof raw.kind === 'string'
+      ? raw.kind
+      : typeof raw.type === 'string'
+        ? raw.type
+        : '';
   const kind = kindRaw.trim().toLowerCase();
 
   const validKinds = ['brew', 'apt', 'node', 'go', 'uv', 'download'];
   if (!validKinds.includes(kind)) {
-return undefined;
-}
+    return undefined;
+  }
 
   const spec: SkillInstallSpec = {
     kind: kind as SkillInstallSpec['kind'],
   };
 
   if (typeof raw.id === 'string') {
-spec.id = raw.id;
-}
+    spec.id = raw.id;
+  }
   if (typeof raw.label === 'string') {
-spec.label = raw.label;
-}
+    spec.label = raw.label;
+  }
   const bins = normalizeStringList(raw.bins);
   if (bins.length > 0) {
-spec.bins = bins;
-}
+    spec.bins = bins;
+  }
   const osList = normalizeStringList(raw.os);
   if (osList.length > 0) {
-spec.os = osList;
-}
+    spec.os = osList;
+  }
   if (typeof raw.formula === 'string') {
-spec.formula = raw.formula;
-}
+    spec.formula = raw.formula;
+  }
   if (typeof raw.package === 'string') {
-spec.package = raw.package;
-}
+    spec.package = raw.package;
+  }
   if (typeof raw.module === 'string') {
-spec.module = raw.module;
-}
+    spec.module = raw.module;
+  }
   if (typeof raw.url === 'string') {
-spec.url = raw.url;
-}
+    spec.url = raw.url;
+  }
   if (typeof raw.archive === 'string') {
-spec.archive = raw.archive;
-}
+    spec.archive = raw.archive;
+  }
   if (typeof raw.extract === 'boolean') {
-spec.extract = raw.extract;
-}
+    spec.extract = raw.extract;
+  }
   if (typeof raw.stripComponents === 'number') {
-spec.stripComponents = raw.stripComponents;
-}
+    spec.stripComponents = raw.stripComponents;
+  }
   if (typeof raw.targetDir === 'string') {
-spec.targetDir = raw.targetDir;
-}
+    spec.targetDir = raw.targetDir;
+  }
 
   return spec;
 }
 
-export function parseBooleanValue(value: string | undefined): boolean | undefined {
+export function parseBooleanValue(
+  value: string | undefined
+): boolean | undefined {
   if (value === undefined || value === null || value === '') {
-return undefined;
-}
+    return undefined;
+  }
   const lower = String(value).trim().toLowerCase();
   if (lower === 'true' || lower === '1' || lower === 'yes') {
-return true;
-}
+    return true;
+  }
   if (lower === 'false' || lower === '0' || lower === 'no') {
-return false;
-}
+    return false;
+  }
   return undefined;
 }
 
@@ -893,15 +941,15 @@ function looksLikeSkillsDir(dir: string): boolean {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       if (entry.name.startsWith('.')) {
-continue;
-}
+        continue;
+      }
       if (entry.isFile() && entry.name.endsWith('.md')) {
-return true;
-}
+        return true;
+      }
       if (entry.isDirectory()) {
         if (fs.existsSync(path.join(dir, entry.name, SKILL_FILENAME))) {
-return true;
-}
+          return true;
+        }
       }
     }
   } catch {

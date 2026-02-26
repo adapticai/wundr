@@ -11,9 +11,7 @@ import * as path from 'path';
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-
 import { AgentLoader, createAgentLoader } from '../../../agents/agent-loader';
-
 
 // ---------------------------------------------------------------------------
 // Mock the 'fs' module before importing the loader
@@ -54,7 +52,7 @@ function makeDirent(name: string, isDir: boolean): fs.Dirent {
 
 function makeAgentMd(
   frontmatter: Record<string, unknown>,
-  body: string,
+  body: string
 ): string {
   const lines: string[] = ['---'];
   for (const [key, value] of Object.entries(frontmatter)) {
@@ -190,10 +188,7 @@ describe('AgentLoader', () => {
 
       vi.mocked(fs.readdirSync).mockImplementation(((dirPath: string) => {
         if (dirPath === AGENTS_DIR) {
-          return [
-            makeDirent('core', true),
-            makeDirent('quality', true),
-          ];
+          return [makeDirent('core', true), makeDirent('quality', true)];
         }
         if (dirPath === path.join(AGENTS_DIR, 'core')) {
           return [makeDirent('coder.md', false)];
@@ -206,11 +201,11 @@ describe('AgentLoader', () => {
 
       vi.mocked(fs.readFileSync).mockImplementation(((filePath: string) => {
         if (filePath.includes('coder.md')) {
-return coderMd;
-}
+          return coderMd;
+        }
         if (filePath.includes('tester.md')) {
-return testerMd;
-}
+          return testerMd;
+        }
         throw new Error('ENOENT');
       }) as typeof fs.readFileSync);
 
@@ -219,7 +214,7 @@ return testerMd;
       const result = await loader.loadAll();
 
       expect(result.definitions).toHaveLength(2);
-      const ids = result.definitions.map((d) => d.id).sort();
+      const ids = result.definitions.map(d => d.id).sort();
       expect(ids).toEqual(['coder', 'tester']);
     });
   });
@@ -244,7 +239,7 @@ return testerMd;
     it('parses YAML frontmatter and markdown body', async () => {
       const content = makeAgentMd(
         { name: 'parser-test', type: 'developer', tier: 3 },
-        'You are a parser test agent.',
+        'You are a parser test agent.'
       );
       setupSingleFile(content);
 
@@ -261,7 +256,7 @@ return testerMd;
     it('parses array frontmatter values', async () => {
       const content = makeAgentMd(
         { name: 'array-test', capabilities: ['code-gen', 'refactoring'] },
-        'System prompt.',
+        'System prompt.'
       );
       setupSingleFile(content);
 
@@ -275,7 +270,7 @@ return testerMd;
     it('parses nested object frontmatter values', async () => {
       const content = makeAgentMd(
         { name: 'nested-test', hooks: { pre: 'lint', post: 'test' } },
-        'Body.',
+        'Body.'
       );
       setupSingleFile(content);
 
@@ -289,7 +284,7 @@ return testerMd;
     it('parses boolean frontmatter values', async () => {
       const content = makeAgentMd(
         { name: 'bool-test', persistState: true, canSpawnSubagents: false },
-        'Body.',
+        'Body.'
       );
       setupSingleFile(content);
 
@@ -303,7 +298,7 @@ return testerMd;
     it('parses numeric frontmatter values', async () => {
       const content = makeAgentMd(
         { name: 'num-test', maxTurns: 42, heartbeatIntervalMs: 15000 },
-        'Body.',
+        'Body.'
       );
       setupSingleFile(content);
 
@@ -400,14 +395,16 @@ return testerMd;
         return [];
       }) as typeof fs.readdirSync);
 
-      vi.mocked(fs.readFileSync).mockReturnValue('Just a body, no frontmatter.');
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        'Just a body, no frontmatter.'
+      );
       vi.mocked(fs.statSync).mockReturnValue(mockStat());
 
       const result = await loader.loadAll();
 
       expect(result.definitions).toHaveLength(0);
       expect(logger).toHaveBeenCalledWith(
-        expect.stringContaining('No frontmatter found'),
+        expect.stringContaining('No frontmatter found')
       );
     });
 
@@ -428,7 +425,7 @@ return testerMd;
 
       expect(result.definitions).toHaveLength(0);
       expect(logger).toHaveBeenCalledWith(
-        expect.stringContaining("Missing 'name'"),
+        expect.stringContaining("Missing 'name'")
       );
     });
 
@@ -518,11 +515,11 @@ return testerMd;
 
       vi.mocked(fs.readFileSync).mockImplementation(((filePath: string) => {
         if (filePath.endsWith('parent.md')) {
-return parentMd;
-}
+          return parentMd;
+        }
         if (filePath.endsWith('child.md')) {
-return childMd;
-}
+          return childMd;
+        }
         throw new Error('ENOENT');
       }) as typeof fs.readFileSync);
 
@@ -532,18 +529,18 @@ return childMd;
     it('merges parent metadata into child', async () => {
       const parent = makeAgentMd(
         { name: 'parent', type: 'developer', model: 'opus' },
-        'Parent prompt.',
+        'Parent prompt.'
       );
       const child = makeAgentMd(
         { name: 'child', extends: 'parent', maxTurns: 25 },
-        'Child prompt.',
+        'Child prompt.'
       );
 
       setupTwoFiles(parent, child);
 
       const result = await loader.loadAll();
 
-      const childDef = result.definitions.find((d) => d.id === 'child');
+      const childDef = result.definitions.find(d => d.id === 'child');
       expect(childDef).toBeDefined();
       // Child should inherit parent's type and model
       expect(childDef!.metadata.type).toBe('developer');
@@ -556,14 +553,14 @@ return childMd;
       const parent = makeAgentMd({ name: 'parent' }, 'Parent prompt.');
       const child = makeAgentMd(
         { name: 'child', extends: 'parent' },
-        'Child prompt.',
+        'Child prompt.'
       );
 
       setupTwoFiles(parent, child);
 
       const result = await loader.loadAll();
 
-      const childDef = result.definitions.find((d) => d.id === 'child');
+      const childDef = result.definitions.find(d => d.id === 'child');
       expect(childDef!.systemPrompt).toBe('Child prompt.');
     });
 
@@ -575,25 +572,29 @@ return childMd;
 
       const result = await loader.loadAll();
 
-      const childDef = result.definitions.find((d) => d.id === 'child');
+      const childDef = result.definitions.find(d => d.id === 'child');
       expect(childDef!.systemPrompt).toBe('Parent prompt.');
     });
 
     it('deduplicates capabilities from parent and child', async () => {
       const parent = makeAgentMd(
         { name: 'parent', capabilities: ['code-gen', 'review'] },
-        'Parent.',
+        'Parent.'
       );
       const child = makeAgentMd(
-        { name: 'child', extends: 'parent', capabilities: ['review', 'testing'] },
-        'Child.',
+        {
+          name: 'child',
+          extends: 'parent',
+          capabilities: ['review', 'testing'],
+        },
+        'Child.'
       );
 
       setupTwoFiles(parent, child);
 
       const result = await loader.loadAll();
 
-      const childDef = result.definitions.find((d) => d.id === 'child');
+      const childDef = result.definitions.find(d => d.id === 'child');
       const caps = childDef!.metadata.capabilities;
       // Should contain all three, with 'review' deduplicated
       expect(caps).toContain('code-gen');
@@ -606,18 +607,18 @@ return childMd;
     it('deduplicates tools from parent and child', async () => {
       const parent = makeAgentMd(
         { name: 'parent', tools: ['Read', 'Write'] },
-        'Parent.',
+        'Parent.'
       );
       const child = makeAgentMd(
         { name: 'child', extends: 'parent', tools: ['Write', 'Bash'] },
-        'Child.',
+        'Child.'
       );
 
       setupTwoFiles(parent, child);
 
       const result = await loader.loadAll();
 
-      const childDef = result.definitions.find((d) => d.id === 'child');
+      const childDef = result.definitions.find(d => d.id === 'child');
       const tools = childDef!.metadata.tools;
       expect(tools).toContain('Read');
       expect(tools).toContain('Write');
@@ -628,7 +629,7 @@ return childMd;
     it('logs warning when extends target is not found', async () => {
       const child = makeAgentMd(
         { name: 'orphan', extends: 'nonexistent' },
-        'Orphan.',
+        'Orphan.'
       );
 
       vi.mocked(fs.readdirSync).mockImplementation(((dirPath: string) => {
@@ -647,25 +648,22 @@ return childMd;
       expect(result.definitions).toHaveLength(1);
       expect(result.definitions[0].id).toBe('orphan');
       expect(logger).toHaveBeenCalledWith(
-        expect.stringContaining('Cannot resolve extends'),
+        expect.stringContaining('Cannot resolve extends')
       );
     });
 
     it('does not propagate the extends key into merged metadata', async () => {
       const parent = makeAgentMd(
         { name: 'parent', type: 'developer' },
-        'Parent.',
+        'Parent.'
       );
-      const child = makeAgentMd(
-        { name: 'child', extends: 'parent' },
-        'Child.',
-      );
+      const child = makeAgentMd({ name: 'child', extends: 'parent' }, 'Child.');
 
       setupTwoFiles(parent, child);
 
       const result = await loader.loadAll();
 
-      const childDef = result.definitions.find((d) => d.id === 'child');
+      const childDef = result.definitions.find(d => d.id === 'child');
       // extends should be stripped during merge
       expect(childDef!.metadata.extends).toBeUndefined();
     });
@@ -679,7 +677,7 @@ return childMd;
     it('loads a single agent by file path', () => {
       const content = makeAgentMd(
         { name: 'single-agent', type: 'tester' },
-        'Test prompt.',
+        'Test prompt.'
       );
 
       vi.mocked(fs.readFileSync).mockReturnValue(content);
@@ -897,7 +895,7 @@ return childMd;
       // Invalid type will fail Zod validation, but buildDefinition is fail-soft
       const content = makeAgentMd(
         { name: 'soft-fail', type: 'invalid-type' },
-        'Body.',
+        'Body.'
       );
       setupSingleFile(content);
 
@@ -907,7 +905,7 @@ return childMd;
       expect(result.definitions).toHaveLength(1);
       expect(result.definitions[0].id).toBe('soft-fail');
       expect(logger).toHaveBeenCalledWith(
-        expect.stringContaining('Validation warnings'),
+        expect.stringContaining('Validation warnings')
       );
     });
 
@@ -944,7 +942,7 @@ return childMd;
       const result = await loader.loadAll();
 
       expect(result.definitions[0].sourcePath).toBe(
-        path.join('core', 'path-test.md'),
+        path.join('core', 'path-test.md')
       );
     });
 

@@ -9,7 +9,7 @@ import { Logger } from '../utils/logger';
 
 import type { SessionExecutionOptions } from './session-executor';
 import type { MemoryManager } from '../memory/memory-manager';
-import type { Session, Task, SessionMetrics} from '../types';
+import type { Session, Task, SessionMetrics } from '../types';
 import type { McpToolRegistry } from './tool-executor';
 import type { LLMClient } from '../types/llm';
 
@@ -26,7 +26,7 @@ export class SessionManager extends EventEmitter {
     memoryManager: MemoryManager,
     maxSessions: number,
     llmClient: LLMClient,
-    mcpRegistry: McpToolRegistry,
+    mcpRegistry: McpToolRegistry
   ) {
     super();
     this.logger = new Logger('SessionManager');
@@ -44,12 +44,12 @@ export class SessionManager extends EventEmitter {
   async spawnSession(
     orchestratorId: string,
     task: Task,
-    sessionType: 'claude-code' | 'claude-flow' = 'claude-code',
+    sessionType: 'claude-code' | 'claude-flow' = 'claude-code'
   ): Promise<Session> {
     // Check session limit
     if (this.sessions.size >= this.maxSessions) {
       throw new Error(
-        `Maximum session limit reached (${this.maxSessions}). Cannot spawn new session.`,
+        `Maximum session limit reached (${this.maxSessions}). Cannot spawn new session.`
       );
     }
 
@@ -104,7 +104,7 @@ export class SessionManager extends EventEmitter {
    */
   async executeTask(
     sessionId: string,
-    options?: SessionExecutionOptions,
+    options?: SessionExecutionOptions
   ): Promise<void> {
     const session = this.sessions.get(sessionId);
     if (!session) {
@@ -118,7 +118,7 @@ export class SessionManager extends EventEmitter {
       const result = await this.sessionExecutor.executeSession(
         session,
         session.task,
-        options,
+        options
       );
 
       // Update session metrics based on execution results
@@ -133,14 +133,14 @@ export class SessionManager extends EventEmitter {
       } else {
         await this.failSession(
           sessionId,
-          new Error(result.error || 'Task execution failed'),
+          new Error(result.error || 'Task execution failed')
         );
       }
     } catch (error) {
       this.logger.error(`Task execution error in session ${sessionId}`, error);
       await this.failSession(
         sessionId,
-        error instanceof Error ? error : new Error('Unknown execution error'),
+        error instanceof Error ? error : new Error('Unknown execution error')
       );
     }
   }
@@ -164,7 +164,7 @@ export class SessionManager extends EventEmitter {
    */
   getActiveSessions(): Session[] {
     return this.getAllSessions().filter(
-      (s) => s.status === 'running' || s.status === 'initializing',
+      s => s.status === 'running' || s.status === 'initializing'
     );
   }
 
@@ -252,7 +252,8 @@ export class SessionManager extends EventEmitter {
         session.status === 'failed' ||
         session.status === 'terminated'
       ) {
-        const endTime = session.endedAt?.getTime() ?? session.startedAt.getTime();
+        const endTime =
+          session.endedAt?.getTime() ?? session.startedAt.getTime();
         if (now - endTime > oneHour) {
           this.logger.debug(`Cleaning up old session: ${sessionId}`);
           this.sessions.delete(sessionId);

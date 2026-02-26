@@ -78,7 +78,11 @@ interface ProviderHealthEvents {
   'circuit:half_open': (provider: string) => void;
   'circuit:closed': (provider: string) => void;
   'latency:recorded': (provider: string, latencyMs: number) => void;
-  'concurrency:rejected': (provider: string, current: number, max: number) => void;
+  'concurrency:rejected': (
+    provider: string,
+    current: number,
+    max: number
+  ) => void;
 }
 
 export class ProviderHealthTracker extends EventEmitter<ProviderHealthEvents> {
@@ -91,11 +95,15 @@ export class ProviderHealthTracker extends EventEmitter<ProviderHealthEvents> {
 
   constructor(config?: ProviderHealthConfig) {
     super();
-    this.failureThreshold = config?.failureThreshold ?? DEFAULT_FAILURE_THRESHOLD;
+    this.failureThreshold =
+      config?.failureThreshold ?? DEFAULT_FAILURE_THRESHOLD;
     this.openDurationMs = config?.openDurationMs ?? DEFAULT_OPEN_DURATION_MS;
-    this.halfOpenSuccessThreshold = config?.halfOpenSuccessThreshold ?? DEFAULT_HALF_OPEN_SUCCESS_THRESHOLD;
-    this.latencyWindowSize = config?.latencyWindowSize ?? DEFAULT_LATENCY_WINDOW_SIZE;
-    this.maxConcurrent = config?.maxConcurrentPerProvider ?? DEFAULT_MAX_CONCURRENT;
+    this.halfOpenSuccessThreshold =
+      config?.halfOpenSuccessThreshold ?? DEFAULT_HALF_OPEN_SUCCESS_THRESHOLD;
+    this.latencyWindowSize =
+      config?.latencyWindowSize ?? DEFAULT_LATENCY_WINDOW_SIZE;
+    this.maxConcurrent =
+      config?.maxConcurrentPerProvider ?? DEFAULT_MAX_CONCURRENT;
   }
 
   // -------------------------------------------------------------------------
@@ -149,7 +157,12 @@ export class ProviderHealthTracker extends EventEmitter<ProviderHealthEvents> {
   acquireSlot(provider: string): boolean {
     const state = this.getState(provider);
     if (state.currentConcurrent >= this.maxConcurrent) {
-      this.emit('concurrency:rejected', provider, state.currentConcurrent, this.maxConcurrent);
+      this.emit(
+        'concurrency:rejected',
+        provider,
+        state.currentConcurrent,
+        this.maxConcurrent
+      );
       return false;
     }
     state.currentConcurrent++;
@@ -263,7 +276,7 @@ export class ProviderHealthTracker extends EventEmitter<ProviderHealthEvents> {
    * Get snapshots for all tracked providers.
    */
   getAllSnapshots(): ProviderHealthSnapshot[] {
-    return Array.from(this.states.keys()).map((p) => this.getSnapshot(p));
+    return Array.from(this.states.keys()).map(p => this.getSnapshot(p));
   }
 
   // -------------------------------------------------------------------------
@@ -319,7 +332,11 @@ export class ProviderHealthTracker extends EventEmitter<ProviderHealthEvents> {
     this.emit('circuit:opened', provider, state.consecutiveFailures);
   }
 
-  private recordLatency(state: ProviderState, provider: string, latencyMs: number): void {
+  private recordLatency(
+    state: ProviderState,
+    provider: string,
+    latencyMs: number
+  ): void {
     state.latencies.push(latencyMs);
     if (state.latencies.length > this.latencyWindowSize) {
       state.latencies.shift();

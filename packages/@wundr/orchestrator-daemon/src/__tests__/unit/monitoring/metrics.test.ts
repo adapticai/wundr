@@ -168,9 +168,7 @@ describe('legacy daemon metrics', () => {
       recordSessionActive(labels, 5);
 
       const val = await daemonMetrics.sessionsActive.get();
-      const found = val.values.find(
-        (v) => v.labels.orchestrator_id === 'orch-1',
-      );
+      const found = val.values.find(v => v.labels.orchestrator_id === 'orch-1');
       expect(found?.value).toBe(5);
     });
 
@@ -180,9 +178,7 @@ describe('legacy daemon metrics', () => {
       recordSessionActive(labels, 10);
 
       const val = await daemonMetrics.sessionsActive.get();
-      const found = val.values.find(
-        (v) => v.labels.orchestrator_id === 'orch-1',
-      );
+      const found = val.values.find(v => v.labels.orchestrator_id === 'orch-1');
       expect(found?.value).toBe(10);
     });
   });
@@ -195,8 +191,7 @@ describe('legacy daemon metrics', () => {
 
       const val = await daemonMetrics.tokensUsed.get();
       const found = val.values.find(
-        (v) =>
-          v.labels.orchestrator_id === 'orch-1' && v.labels.model === 'gpt-4',
+        v => v.labels.orchestrator_id === 'orch-1' && v.labels.model === 'gpt-4'
       );
       expect(found?.value).toBe(150);
     });
@@ -211,14 +206,14 @@ describe('legacy daemon metrics', () => {
       const val = await daemonMetrics.messageLatency.get();
       // Histogram has sum and count
       const sumEntry = val.values.find(
-        (v) =>
+        v =>
           v.metricName === 'orchestrator_message_latency_seconds_sum' &&
-          v.labels.orchestrator_id === 'orch-1',
+          v.labels.orchestrator_id === 'orch-1'
       );
       const countEntry = val.values.find(
-        (v) =>
+        v =>
           v.metricName === 'orchestrator_message_latency_seconds_count' &&
-          v.labels.orchestrator_id === 'orch-1',
+          v.labels.orchestrator_id === 'orch-1'
       );
       expect(sumEntry?.value).toBe(2.0);
       expect(countEntry?.value).toBe(2);
@@ -240,8 +235,7 @@ describe('legacy daemon metrics', () => {
 
       const val = await daemonMetrics.toolInvocations.get();
       const found = val.values.find(
-        (v) =>
-          v.labels.tool_name === 'search' && v.labels.status === 'success',
+        v => v.labels.tool_name === 'search' && v.labels.status === 'success'
       );
       expect(found?.value).toBe(2);
     });
@@ -257,9 +251,8 @@ describe('legacy daemon metrics', () => {
 
       const val = await daemonMetrics.federationDelegations.get();
       const found = val.values.find(
-        (v) =>
-          v.labels.from_orchestrator === 'a' &&
-          v.labels.to_orchestrator === 'b',
+        v =>
+          v.labels.from_orchestrator === 'a' && v.labels.to_orchestrator === 'b'
       );
       expect(found?.value).toBe(1);
     });
@@ -270,7 +263,7 @@ describe('legacy daemon metrics', () => {
       recordNodeLoad({ node_id: 'node-1' }, 0.75);
 
       const val = await daemonMetrics.nodeLoad.get();
-      const found = val.values.find((v) => v.labels.node_id === 'node-1');
+      const found = val.values.find(v => v.labels.node_id === 'node-1');
       expect(found?.value).toBe(0.75);
     });
   });
@@ -282,10 +275,8 @@ describe('legacy daemon metrics', () => {
       recordError({ orchestrator_id: 'orch-1', error_type: 'auth' });
 
       const val = await daemonMetrics.errorCount.get();
-      const timeout = val.values.find(
-        (v) => v.labels.error_type === 'timeout',
-      );
-      const auth = val.values.find((v) => v.labels.error_type === 'auth');
+      const timeout = val.values.find(v => v.labels.error_type === 'timeout');
+      const auth = val.values.find(v => v.labels.error_type === 'auth');
       expect(timeout?.value).toBe(2);
       expect(auth?.value).toBe(1);
     });
@@ -295,13 +286,13 @@ describe('legacy daemon metrics', () => {
     it('should set budget utilization via helper', async () => {
       recordBudgetUtilization(
         { orchestrator_id: 'orch-1', period: 'daily' },
-        0.42,
+        0.42
       );
 
       const val = await daemonMetrics.budgetUtilization.get();
       const found = val.values.find(
-        (v) =>
-          v.labels.orchestrator_id === 'orch-1' && v.labels.period === 'daily',
+        v =>
+          v.labels.orchestrator_id === 'orch-1' && v.labels.period === 'daily'
       );
       expect(found?.value).toBe(0.42);
     });
@@ -327,10 +318,10 @@ describe('enhanced agent metrics', () => {
     const spawned = await agentMetrics.spawned.get();
     const running = await agentMetrics.running.get();
     expect(
-      spawned.values.find((v) => v.labels.orchestrator_id === 'orch-1')?.value,
+      spawned.values.find(v => v.labels.orchestrator_id === 'orch-1')?.value
     ).toBe(1);
     expect(
-      running.values.find((v) => v.labels.orchestrator_id === 'orch-1')?.value,
+      running.values.find(v => v.labels.orchestrator_id === 'orch-1')?.value
     ).toBe(1);
   });
 
@@ -343,14 +334,14 @@ describe('enhanced agent metrics', () => {
     const duration = await agentMetrics.duration.get();
 
     expect(
-      completed.values.find((v) => v.labels.exit_reason === 'success')?.value,
+      completed.values.find(v => v.labels.exit_reason === 'success')?.value
     ).toBe(1);
     expect(
-      running.values.find((v) => v.labels.orchestrator_id === 'orch-1')?.value,
+      running.values.find(v => v.labels.orchestrator_id === 'orch-1')?.value
     ).toBe(0);
 
     const durationSum = duration.values.find(
-      (v) => v.metricName === 'wundr_agent_duration_seconds_sum',
+      v => v.metricName === 'wundr_agent_duration_seconds_sum'
     );
     expect(durationSum?.value).toBe(45.5);
   });
@@ -361,7 +352,7 @@ describe('enhanced agent metrics', () => {
 
     const failed = await agentMetrics.failed.get();
     expect(
-      failed.values.find((v) => v.labels.error_type === 'crash')?.value,
+      failed.values.find(v => v.labels.error_type === 'crash')?.value
     ).toBe(1);
   });
 });
@@ -384,7 +375,7 @@ describe('channel metrics', () => {
 
     const val = await channelMetrics.messagesSent.get();
     const found = val.values.find(
-      (v) => v.labels.channel === 'slack' && v.labels.message_type === 'text',
+      v => v.labels.channel === 'slack' && v.labels.message_type === 'text'
     );
     expect(found?.value).toBe(2);
   });
@@ -394,9 +385,7 @@ describe('channel metrics', () => {
 
     const val = await channelMetrics.messagesReceived.get();
     const found = val.values.find(
-      (v) =>
-        v.labels.channel === 'discord' &&
-        v.labels.message_type === 'command',
+      v => v.labels.channel === 'discord' && v.labels.message_type === 'command'
     );
     expect(found?.value).toBe(1);
   });
@@ -406,9 +395,9 @@ describe('channel metrics', () => {
 
     const val = await channelMetrics.messageLatency.get();
     const sum = val.values.find(
-      (v) =>
+      v =>
         v.metricName === 'wundr_channel_message_latency_seconds_sum' &&
-        v.labels.channel === 'telegram',
+        v.labels.channel === 'telegram'
     );
     expect(sum?.value).toBeCloseTo(0.123);
   });
@@ -418,9 +407,9 @@ describe('channel metrics', () => {
 
     const val = await channelMetrics.errors.get();
     const found = val.values.find(
-      (v) =>
+      v =>
         v.labels.channel === 'webhook' &&
-        v.labels.error_type === 'connection_refused',
+        v.labels.error_type === 'connection_refused'
     );
     expect(found?.value).toBe(1);
   });
@@ -443,10 +432,10 @@ describe('plugin metrics', () => {
 
     const total = await pluginMetrics.executionTotal.get();
     const success = total.values.find(
-      (v) => v.labels.plugin_name === 'my-plugin' && v.labels.status === 'success',
+      v => v.labels.plugin_name === 'my-plugin' && v.labels.status === 'success'
     );
     const error = total.values.find(
-      (v) => v.labels.plugin_name === 'my-plugin' && v.labels.status === 'error',
+      v => v.labels.plugin_name === 'my-plugin' && v.labels.status === 'error'
     );
     expect(success?.value).toBe(1);
     expect(error?.value).toBe(1);
@@ -457,9 +446,9 @@ describe('plugin metrics', () => {
 
     const val = await pluginMetrics.errors.get();
     const found = val.values.find(
-      (v) =>
+      v =>
         v.labels.plugin_name === 'auth-plugin' &&
-        v.labels.error_type === 'permission_denied',
+        v.labels.error_type === 'permission_denied'
     );
     expect(found?.value).toBe(1);
   });
@@ -481,10 +470,10 @@ describe('enhanced tool metrics', () => {
 
     const total = await toolMetrics.executionTotal.get();
     const success = total.values.find(
-      (v) => v.labels.tool_name === 'bash' && v.labels.status === 'success',
+      v => v.labels.tool_name === 'bash' && v.labels.status === 'success'
     );
     const timeout = total.values.find(
-      (v) => v.labels.tool_name === 'bash' && v.labels.status === 'timeout',
+      v => v.labels.tool_name === 'bash' && v.labels.status === 'timeout'
     );
     expect(success?.value).toBe(1);
     expect(timeout?.value).toBe(1);
@@ -523,8 +512,8 @@ describe('WebSocket metrics', () => {
     recordWsConnection('api-key');
 
     const val = await wsMetrics.connectionsTotal.get();
-    const jwt = val.values.find((v) => v.labels.auth_method === 'jwt');
-    const apiKey = val.values.find((v) => v.labels.auth_method === 'api-key');
+    const jwt = val.values.find(v => v.labels.auth_method === 'jwt');
+    const apiKey = val.values.find(v => v.labels.auth_method === 'api-key');
     expect(jwt?.value).toBe(2);
     expect(apiKey?.value).toBe(1);
   });
@@ -534,14 +523,14 @@ describe('WebSocket metrics', () => {
 
     const msgs = await wsMetrics.messagesReceived.get();
     expect(
-      msgs.values.find((v) => v.labels.message_type === 'subscribe')?.value,
+      msgs.values.find(v => v.labels.message_type === 'subscribe')?.value
     ).toBe(1);
 
     const size = await wsMetrics.messageSize.get();
     const sum = size.values.find(
-      (v) =>
+      v =>
         v.metricName === 'wundr_ws_message_size_bytes_sum' &&
-        v.labels.direction === 'inbound',
+        v.labels.direction === 'inbound'
     );
     expect(sum?.value).toBe(256);
   });
@@ -551,7 +540,7 @@ describe('WebSocket metrics', () => {
 
     const msgs = await wsMetrics.messagesSent.get();
     expect(
-      msgs.values.find((v) => v.labels.message_type === 'response')?.value,
+      msgs.values.find(v => v.labels.message_type === 'response')?.value
     ).toBe(1);
   });
 });
@@ -582,25 +571,28 @@ describe('model routing metrics', () => {
     const requests = await modelMetrics.requests.get();
     expect(
       requests.values.find(
-        (v) =>
+        v =>
           v.labels.provider === 'anthropic' &&
-          v.labels.model === 'claude-3-opus',
-      )?.value,
+          v.labels.model === 'claude-3-opus'
+      )?.value
     ).toBe(1);
 
     const tokens = await modelMetrics.requestTokens.get();
     const prompt = tokens.values.find(
-      (v) => v.labels.token_type === 'prompt' && v.labels.model === 'claude-3-opus',
+      v =>
+        v.labels.token_type === 'prompt' && v.labels.model === 'claude-3-opus'
     );
     const completion = tokens.values.find(
-      (v) => v.labels.token_type === 'completion' && v.labels.model === 'claude-3-opus',
+      v =>
+        v.labels.token_type === 'completion' &&
+        v.labels.model === 'claude-3-opus'
     );
     expect(prompt?.value).toBe(1000);
     expect(completion?.value).toBe(500);
 
     const cost = await modelMetrics.cost.get();
     expect(
-      cost.values.find((v) => v.labels.model === 'claude-3-opus')?.value,
+      cost.values.find(v => v.labels.model === 'claude-3-opus')?.value
     ).toBeCloseTo(0.03);
   });
 
@@ -614,7 +606,7 @@ describe('model routing metrics', () => {
 
     const errors = await modelMetrics.errors.get();
     const found = errors.values.find(
-      (v) => v.labels.error_type === 'rate_limit' && v.labels.model === 'gpt-4',
+      v => v.labels.error_type === 'rate_limit' && v.labels.model === 'gpt-4'
     );
     expect(found?.value).toBe(1);
   });
@@ -643,12 +635,12 @@ describe('memory system metrics', () => {
     });
 
     const searches = await memoryMetrics.searches.get();
-    expect(
-      searches.values.find((v) => v.labels.tier === 'semantic')?.value,
-    ).toBe(1);
+    expect(searches.values.find(v => v.labels.tier === 'semantic')?.value).toBe(
+      1
+    );
 
     const hits = await memoryMetrics.cacheHits.get();
-    expect(hits.values.find((v) => v.labels.tier === 'semantic')?.value).toBe(1);
+    expect(hits.values.find(v => v.labels.tier === 'semantic')?.value).toBe(1);
   });
 
   it('should record search with cache miss', async () => {
@@ -659,7 +651,9 @@ describe('memory system metrics', () => {
     });
 
     const misses = await memoryMetrics.cacheMisses.get();
-    expect(misses.values.find((v) => v.labels.tier === 'episodic')?.value).toBe(1);
+    expect(misses.values.find(v => v.labels.tier === 'episodic')?.value).toBe(
+      1
+    );
   });
 
   it('should record compaction', async () => {
@@ -670,7 +664,7 @@ describe('memory system metrics', () => {
 
     const compactions = await memoryMetrics.compactions.get();
     expect(
-      compactions.values.find((v) => v.labels.tier === 'episodic')?.value,
+      compactions.values.find(v => v.labels.tier === 'episodic')?.value
     ).toBe(1);
   });
 });
@@ -757,9 +751,9 @@ describe('request summary metrics', () => {
 
     const val = await requestSummaryMetrics.requestDuration.get();
     const sumEntry = val.values.find(
-      (v) =>
+      v =>
         v.metricName === 'wundr_request_duration_summary_seconds_sum' &&
-        v.labels.method === 'POST',
+        v.labels.method === 'POST'
     );
     expect(sumEntry?.value).toBeCloseTo(3.5);
   });
@@ -769,9 +763,9 @@ describe('request summary metrics', () => {
 
     const val = await requestSummaryMetrics.tokenUsageSummary.get();
     const sumEntry = val.values.find(
-      (v) =>
+      v =>
         v.metricName === 'wundr_token_usage_summary_sum' &&
-        v.labels.provider === 'anthropic',
+        v.labels.provider === 'anthropic'
     );
     expect(sumEntry?.value).toBe(1500);
   });

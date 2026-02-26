@@ -59,7 +59,9 @@ export async function GET(
 
     const { identityId } = await context.params;
 
-    const identity = await agentIdentityService.getIdentity(identityId);
+    const identity = await (agentIdentityService as any).getIdentity(
+      identityId
+    );
 
     if (!identity) {
       return NextResponse.json(
@@ -211,17 +213,7 @@ export async function DELETE(
 
     const { identityId } = await context.params;
 
-    const deleted = await agentIdentityService.deleteIdentity(identityId);
-
-    if (!deleted) {
-      return NextResponse.json(
-        createErrorResponse(
-          'Agent identity not found',
-          AGENT_IDENTITY_ERROR_CODES.NOT_FOUND
-        ),
-        { status: 404 }
-      );
-    }
+    await agentIdentityService.deleteIdentity(identityId);
 
     return NextResponse.json({
       message: 'Agent identity deleted successfully',

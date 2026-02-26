@@ -72,7 +72,12 @@ export const PRIORITY_WEIGHTS: Record<TaskPriority, number> = {
 // Zod Schemas
 // =============================================================================
 
-export const TaskStatusSchema = z.enum(['pending', 'in_progress', 'completed', 'deleted']);
+export const TaskStatusSchema = z.enum([
+  'pending',
+  'in_progress',
+  'completed',
+  'deleted',
+]);
 export const TaskPrioritySchema = z.enum(['low', 'medium', 'high', 'critical']);
 
 /**
@@ -132,7 +137,9 @@ export const UpdateTaskInputSchema = z.object({
 export const TaskQuerySchema = z.object({
   status: z.union([TaskStatusSchema, z.array(TaskStatusSchema)]).optional(),
   owner: z.string().optional(),
-  priority: z.union([TaskPrioritySchema, z.array(TaskPrioritySchema)]).optional(),
+  priority: z
+    .union([TaskPrioritySchema, z.array(TaskPrioritySchema)])
+    .optional(),
   isBlocked: z.boolean().optional(),
   hasOwner: z.boolean().optional(),
   limit: z.number().int().positive().max(1000).optional(),
@@ -287,7 +294,11 @@ export class TaskError extends Error {
   readonly code: TaskErrorCode;
   readonly details?: Record<string, unknown>;
 
-  constructor(code: TaskErrorCode, message: string, details?: Record<string, unknown>) {
+  constructor(
+    code: TaskErrorCode,
+    message: string,
+    details?: Record<string, unknown>
+  ) {
     super(message);
     this.name = 'TaskError';
     this.code = code;
@@ -300,7 +311,9 @@ export class TaskError extends Error {
  */
 export class TaskNotFoundError extends TaskError {
   constructor(taskId: string) {
-    super(TaskErrorCode.TASK_NOT_FOUND, `Task not found: ${taskId}`, { taskId });
+    super(TaskErrorCode.TASK_NOT_FOUND, `Task not found: ${taskId}`, {
+      taskId,
+    });
     this.name = 'TaskNotFoundError';
   }
 }
@@ -313,7 +326,7 @@ export class CircularDependencyError extends TaskError {
     super(
       TaskErrorCode.CIRCULAR_DEPENDENCY,
       `Circular dependency detected: ${cycle.join(' -> ')}`,
-      { cycle },
+      { cycle }
     );
     this.name = 'CircularDependencyError';
   }
@@ -327,7 +340,7 @@ export class InvalidTransitionError extends TaskError {
     super(
       TaskErrorCode.INVALID_TRANSITION,
       `Invalid status transition for task ${taskId}: ${from} -> ${to}`,
-      { taskId, from, to },
+      { taskId, from, to }
     );
     this.name = 'InvalidTransitionError';
   }
@@ -341,7 +354,7 @@ export class TaskBlockedError extends TaskError {
     super(
       TaskErrorCode.TASK_BLOCKED,
       `Task ${taskId} is blocked by: ${blockedBy.join(', ')}`,
-      { taskId, blockedBy },
+      { taskId, blockedBy }
     );
     this.name = 'TaskBlockedError';
   }
@@ -362,7 +375,9 @@ export class TaskStoreError extends TaskError {
  */
 export class DuplicateTaskError extends TaskError {
   constructor(taskId: string) {
-    super(TaskErrorCode.DUPLICATE_TASK, `Task already exists: ${taskId}`, { taskId });
+    super(TaskErrorCode.DUPLICATE_TASK, `Task already exists: ${taskId}`, {
+      taskId,
+    });
     this.name = 'DuplicateTaskError';
   }
 }
@@ -388,7 +403,10 @@ export interface ITaskStore {
   get(id: string): Promise<ManagedTask | null>;
 
   /** Update a task and return the updated record, or null if not found */
-  update(id: string, updates: Partial<ManagedTask>): Promise<ManagedTask | null>;
+  update(
+    id: string,
+    updates: Partial<ManagedTask>
+  ): Promise<ManagedTask | null>;
 
   /** Hard-delete a task from the store. Returns true if deleted. */
   delete(id: string): Promise<boolean>;
@@ -446,7 +464,10 @@ export function toLegacyTask(managed: ManagedTask): {
   updatedAt: Date;
   metadata?: Record<string, unknown>;
 } {
-  const statusMap: Record<TaskStatus, 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled'> = {
+  const statusMap: Record<
+    TaskStatus,
+    'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled'
+  > = {
     pending: 'pending',
     in_progress: 'in_progress',
     completed: 'completed',

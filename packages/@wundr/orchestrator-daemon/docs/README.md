@@ -4,7 +4,8 @@ WebSocket server and Neolith backend integration for Orchestrator (Virtual Princ
 
 ## Overview
 
-The Orchestrator Daemon package provides a robust WebSocket server infrastructure for real-time communication between Orchestrator daemon clients and the Neolith backend. It includes:
+The Orchestrator Daemon package provides a robust WebSocket server infrastructure for real-time
+communication between Orchestrator daemon clients and the Neolith backend. It includes:
 
 - **WebSocket Server** - Production-ready WebSocket server with authentication
 - **Connection Management** - Connection lifecycle, authentication, and session tracking

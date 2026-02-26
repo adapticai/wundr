@@ -110,7 +110,7 @@ export interface DaemonStatusProvider {
 export function createProbe(
   name: string,
   checkFn: () => Promise<boolean>,
-  timeoutMs: number = 5000,
+  timeoutMs: number = 5000
 ): HealthCheckProbe {
   return async (): Promise<ComponentHealth> => {
     const start = Date.now();
@@ -118,8 +118,8 @@ export function createProbe(
     try {
       const result = await Promise.race([
         checkFn(),
-        new Promise<'timeout'>((resolve) =>
-          setTimeout(() => resolve('timeout'), timeoutMs),
+        new Promise<'timeout'>(resolve =>
+          setTimeout(() => resolve('timeout'), timeoutMs)
         ),
       ]);
 
@@ -163,7 +163,7 @@ export function createProbe(
  */
 export function createSubsystemProbe(
   name: string,
-  getStatus: () => { status: string; lastCheck: Date; errors?: string[] },
+  getStatus: () => { status: string; lastCheck: Date; errors?: string[] }
 ): HealthCheckProbe {
   return async (): Promise<ComponentHealth> => {
     try {
@@ -223,8 +223,7 @@ function collectProcessMetrics(startTime: number): HealthMetricsSnapshot {
     activeSessions: 0, // Filled by caller
     queuedTasks: 0, // Filled by caller
     memoryUsageMB: Math.round((memUsage.rss / 1024 / 1024) * 100) / 100,
-    memoryHeapUsedMB:
-      Math.round((memUsage.heapUsed / 1024 / 1024) * 100) / 100,
+    memoryHeapUsedMB: Math.round((memUsage.heapUsed / 1024 / 1024) * 100) / 100,
     memoryHeapTotalMB:
       Math.round((memUsage.heapTotal / 1024 / 1024) * 100) / 100,
     cpuUsagePercent,
@@ -276,8 +275,11 @@ export class HealthChecker {
 
   constructor(config?: HealthCheckConfig) {
     this.config = {
-      enabled: config?.enabled ?? (process.env['HEALTH_CHECK_ENABLED'] !== 'false'),
-      timeoutMs: config?.timeoutMs ?? parseInt(process.env['HEALTH_CHECK_TIMEOUT'] ?? '5000', 10),
+      enabled:
+        config?.enabled ?? process.env['HEALTH_CHECK_ENABLED'] !== 'false',
+      timeoutMs:
+        config?.timeoutMs ??
+        parseInt(process.env['HEALTH_CHECK_TIMEOUT'] ?? '5000', 10),
       version: config?.version ?? '1.0.6',
       startTime: config?.startTime ?? Date.now(),
     };
@@ -345,16 +347,16 @@ export class HealthChecker {
 
     for (const [name, probe] of this.probes) {
       probePromises.push(
-        this.executeProbe(name, probe).then((result) => {
+        this.executeProbe(name, probe).then(result => {
           componentResults[name] = result;
-        }),
+        })
       );
     }
 
     await Promise.all(probePromises);
 
     // Determine aggregate status
-    const statuses = Object.values(componentResults).map((c) => c.status);
+    const statuses = Object.values(componentResults).map(c => c.status);
     const aggregateStatus = this.computeAggregateStatus(statuses);
 
     // Collect process metrics
@@ -431,13 +433,13 @@ export class HealthChecker {
    */
   private async executeProbe(
     name: string,
-    probe: HealthCheckProbe,
+    probe: HealthCheckProbe
   ): Promise<ComponentHealth> {
     try {
       const result = await Promise.race<ComponentHealth | 'timeout'>([
         probe(),
-        new Promise<'timeout'>((resolve) =>
-          setTimeout(() => resolve('timeout'), this.config.timeoutMs),
+        new Promise<'timeout'>(resolve =>
+          setTimeout(() => resolve('timeout'), this.config.timeoutMs)
         ),
       ]);
 
@@ -471,27 +473,27 @@ export class HealthChecker {
    */
   private computeAggregateStatus(statuses: HealthStatus[]): HealthStatus {
     if (statuses.length === 0) {
-return 'healthy';
-}
+      return 'healthy';
+    }
 
     let hasUnhealthy = false;
     let hasDegraded = false;
 
     for (const status of statuses) {
       if (status === 'unhealthy') {
-hasUnhealthy = true;
-}
+        hasUnhealthy = true;
+      }
       if (status === 'degraded') {
-hasDegraded = true;
-}
+        hasDegraded = true;
+      }
     }
 
     if (hasUnhealthy) {
-return 'unhealthy';
-}
+      return 'unhealthy';
+    }
     if (hasDegraded) {
-return 'degraded';
-}
+      return 'degraded';
+    }
     return 'healthy';
   }
 
@@ -537,8 +539,6 @@ export function healthStatusToHttpCode(status: HealthStatus): number {
 /**
  * Create a HealthChecker with sensible defaults.
  */
-export function createHealthChecker(
-  config?: HealthCheckConfig,
-): HealthChecker {
+export function createHealthChecker(config?: HealthCheckConfig): HealthChecker {
   return new HealthChecker(config);
 }

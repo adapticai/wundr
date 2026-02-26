@@ -186,7 +186,9 @@ describe('Authenticator', () => {
 
     it('should reject invalid API key', () => {
       const req = createMockIncomingMessage({
-        headers: { 'x-api-key': 'invalid-key-that-is-long-enough-for-the-minimum' },
+        headers: {
+          'x-api-key': 'invalid-key-that-is-long-enough-for-the-minimum',
+        },
       });
 
       const result = auth.authenticateConnection(req);
@@ -204,7 +206,7 @@ describe('Authenticator', () => {
             { key: TEST_API_KEY, clientId: 'alpha', scopes: [] },
             { key: secondKey, clientId: 'bravo', scopes: ['read'] },
           ],
-        }),
+        })
       );
 
       const req = createMockIncomingMessage({
@@ -306,7 +308,9 @@ describe('Authenticator', () => {
 
   describe('loopback bypass', () => {
     it('should allow unauthenticated connections from 127.0.0.1 when enabled', () => {
-      const auth = new Authenticator(createMockAuthConfig({ allowLoopback: true }));
+      const auth = new Authenticator(
+        createMockAuthConfig({ allowLoopback: true })
+      );
 
       const req = createMockIncomingMessage({ remoteAddress: '127.0.0.1' });
 
@@ -318,7 +322,9 @@ describe('Authenticator', () => {
     });
 
     it('should allow unauthenticated connections from ::1 (IPv6 loopback)', () => {
-      const auth = new Authenticator(createMockAuthConfig({ allowLoopback: true }));
+      const auth = new Authenticator(
+        createMockAuthConfig({ allowLoopback: true })
+      );
 
       const req = createMockIncomingMessage({ remoteAddress: '::1' });
 
@@ -328,16 +334,22 @@ describe('Authenticator', () => {
     });
 
     it('should allow connections from IPv4-mapped loopback (::ffff:127.0.0.1)', () => {
-      const auth = new Authenticator(createMockAuthConfig({ allowLoopback: true }));
+      const auth = new Authenticator(
+        createMockAuthConfig({ allowLoopback: true })
+      );
 
-      const req = createMockIncomingMessage({ remoteAddress: '::ffff:127.0.0.1' });
+      const req = createMockIncomingMessage({
+        remoteAddress: '::ffff:127.0.0.1',
+      });
 
       const result = auth.authenticateConnection(req);
       expect(result.ok).toBe(true);
     });
 
     it('should reject loopback when allowLoopback is false', () => {
-      const auth = new Authenticator(createMockAuthConfig({ allowLoopback: false }));
+      const auth = new Authenticator(
+        createMockAuthConfig({ allowLoopback: false })
+      );
 
       const req = createMockIncomingMessage({ remoteAddress: '127.0.0.1' });
 
@@ -346,7 +358,9 @@ describe('Authenticator', () => {
     });
 
     it('should not treat external IPs as loopback', () => {
-      const auth = new Authenticator(createMockAuthConfig({ allowLoopback: true }));
+      const auth = new Authenticator(
+        createMockAuthConfig({ allowLoopback: true })
+      );
 
       const req = createMockIncomingMessage({ remoteAddress: '192.168.1.100' });
 

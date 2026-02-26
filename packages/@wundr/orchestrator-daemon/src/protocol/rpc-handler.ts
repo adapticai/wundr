@@ -14,7 +14,6 @@
  *   - Streaming response context fields
  */
 
-
 import { RpcDescribeParamsSchema } from './method-registry';
 import {
   type ErrorShape,
@@ -71,7 +70,7 @@ export interface HandlerContext {
 /** Signature for a single method handler. */
 export type MethodHandler = (
   params: unknown,
-  context: HandlerContext,
+  context: HandlerContext
 ) => void | Promise<void>;
 
 /** A registry of method handlers keyed by method name. */
@@ -83,7 +82,7 @@ export type MethodHandlerMap = Partial<Record<string, MethodHandler>>;
 
 function formatZodError(error: ZodError): string {
   return error.issues
-    .map((issue) => {
+    .map(issue => {
       const path = issue.path.length > 0 ? issue.path.join('.') : '(root)';
       return `${path}: ${issue.message}`;
     })
@@ -124,7 +123,10 @@ export class RpcHandler {
   private onRequestComplete?: (metrics: RequestMetrics) => void;
   private rateLimiter?: RateLimiter;
   private methodRegistry?: MethodRegistry;
-  private pendingRequests = new Map<string, { timer: ReturnType<typeof setTimeout>; method: string }>();
+  private pendingRequests = new Map<
+    string,
+    { timer: ReturnType<typeof setTimeout>; method: string }
+  >();
 
   constructor(options?: RpcHandlerOptions) {
     this.requestTimeoutMs = options?.requestTimeoutMs ?? 30_000;
@@ -195,7 +197,7 @@ export class RpcHandler {
    */
   async handleRequest(
     request: RequestFrame,
-    context: HandlerContext,
+    context: HandlerContext
   ): Promise<void> {
     const { method, params, id: requestId } = request;
     const startedAt = Date.now();
@@ -204,10 +206,14 @@ export class RpcHandler {
     const originalRespond = context.respond;
     let responded = false;
 
-    const respondWithMetrics = (ok: boolean, payload?: unknown, error?: ErrorShape) => {
+    const respondWithMetrics = (
+      ok: boolean,
+      payload?: unknown,
+      error?: ErrorShape
+    ) => {
       if (responded) {
-return;
-}
+        return;
+      }
       responded = true;
 
       // Clear the timeout timer for this request
@@ -243,20 +249,25 @@ return;
 
     // 1. Check that the method exists in the protocol
     if (!isKnownMethod(method)) {
-      respondWithMetrics(false, undefined, errorShape(
-        ErrorCodes.INVALID_REQUEST,
-        `unknown method: ${method}`,
-      ));
+      respondWithMetrics(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INVALID_REQUEST, `unknown method: ${method}`)
+      );
       return;
     }
 
     // 2. Authorize
     const requiredScopes = METHOD_SCOPE_MAP[method] ?? [];
     if (!hasRequiredScopes(context.scopes, requiredScopes)) {
-      respondWithMetrics(false, undefined, errorShape(
-        ErrorCodes.FORBIDDEN,
-        `insufficient scope for ${method}; requires one of: ${requiredScopes.join(', ')}`,
-      ));
+      respondWithMetrics(
+        false,
+        undefined,
+        errorShape(
+          ErrorCodes.FORBIDDEN,
+          `insufficient scope for ${method}; requires one of: ${requiredScopes.join(', ')}`
+        )
+      );
       return;
     }
 
@@ -264,15 +275,19 @@ return;
     if (this.rateLimiter) {
       const rlResult = this.rateLimiter.consume(context.connectionId, method);
       if (!rlResult.allowed) {
-        respondWithMetrics(false, undefined, errorShape(
-          ErrorCodes.RATE_LIMITED,
-          `rate limit exceeded for ${method}`,
-          {
-            retryable: true,
-            retryAfterMs: rlResult.retryAfterMs,
-            details: { remaining: rlResult.remaining },
-          },
-        ));
+        respondWithMetrics(
+          false,
+          undefined,
+          errorShape(
+            ErrorCodes.RATE_LIMITED,
+            `rate limit exceeded for ${method}`,
+            {
+              retryable: true,
+              retryAfterMs: rlResult.retryAfterMs,
+              details: { remaining: rlResult.remaining },
+            }
+          )
+        );
         return;
       }
     }
@@ -284,10 +299,14 @@ return;
     if (schema) {
       const result = schema.safeParse(params ?? {});
       if (!result.success) {
-        respondWithMetrics(false, undefined, errorShape(
-          ErrorCodes.INVALID_REQUEST,
-          `invalid params for ${method}: ${formatZodError(result.error)}`,
-        ));
+        respondWithMetrics(
+          false,
+          undefined,
+          errorShape(
+            ErrorCodes.INVALID_REQUEST,
+            `invalid params for ${method}: ${formatZodError(result.error)}`
+          )
+        );
         return;
       }
       validatedParams = result.data;
@@ -296,21 +315,29 @@ return;
     // 4. Find and invoke handler
     const handler = this.handlers[method];
     if (!handler) {
-      respondWithMetrics(false, undefined, errorShape(
-        ErrorCodes.UNAVAILABLE,
-        `no handler registered for ${method}`,
-      ));
+      respondWithMetrics(
+        false,
+        undefined,
+        errorShape(
+          ErrorCodes.UNAVAILABLE,
+          `no handler registered for ${method}`
+        )
+      );
       return;
     }
 
     // Set up request timeout
     const timer = setTimeout(() => {
       if (!responded) {
-        respondWithMetrics(false, undefined, errorShape(
-          ErrorCodes.TIMEOUT,
-          `request timed out after ${this.requestTimeoutMs}ms`,
-          { retryable: true },
-        ));
+        respondWithMetrics(
+          false,
+          undefined,
+          errorShape(
+            ErrorCodes.TIMEOUT,
+            `request timed out after ${this.requestTimeoutMs}ms`,
+            { retryable: true }
+          )
+        );
       }
     }, this.requestTimeoutMs);
 
@@ -320,10 +347,11 @@ return;
       await handler(validatedParams, metricsContext);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      respondWithMetrics(false, undefined, errorShape(
-        ErrorCodes.INTERNAL,
-        `handler error: ${message}`,
-      ));
+      respondWithMetrics(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INTERNAL, `handler error: ${message}`)
+      );
     }
   }
 
@@ -333,7 +361,7 @@ return;
    */
   static createResponder(
     requestId: string,
-    send: (frame: ResponseFrame) => void,
+    send: (frame: ResponseFrame) => void
   ): (ok: boolean, payload?: unknown, error?: ErrorShape) => void {
     let responded = false;
 
@@ -396,11 +424,14 @@ function isKnownMethod(method: string): method is ProtocolMethod {
  * protocol and always registered.
  */
 export function createSubscriptionHandlers(
-  subscriptions: SubscriptionManager,
+  subscriptions: SubscriptionManager
 ): MethodHandlerMap {
   return {
-    'subscribe': (params: unknown, ctx: HandlerContext) => {
-      const p = params as { events: string[]; filter?: Record<string, unknown> };
+    subscribe: (params: unknown, ctx: HandlerContext) => {
+      const p = params as {
+        events: string[];
+        filter?: Record<string, unknown>;
+      };
       const sub = subscriptions.subscribe(ctx.connectionId, p.events, p.filter);
       ctx.respond(true, {
         subscriptionId: sub.id,
@@ -408,14 +439,18 @@ export function createSubscriptionHandlers(
       });
     },
 
-    'unsubscribe': (params: unknown, ctx: HandlerContext) => {
+    unsubscribe: (params: unknown, ctx: HandlerContext) => {
       const p = params as { subscriptionId: string };
       const removed = subscriptions.unsubscribe(p.subscriptionId);
       if (!removed) {
-        ctx.respond(false, undefined, errorShape(
-          ErrorCodes.NOT_FOUND,
-          `subscription not found: ${p.subscriptionId}`,
-        ));
+        ctx.respond(
+          false,
+          undefined,
+          errorShape(
+            ErrorCodes.NOT_FOUND,
+            `subscription not found: ${p.subscriptionId}`
+          )
+        );
         return;
       }
       ctx.respond(true, { ok: true });
@@ -444,7 +479,7 @@ export function createHealthPingHandler(): MethodHandlerMap {
  * (`rpc.discover` and `rpc.describe`).
  */
 export function createDiscoveryHandlers(
-  registry: MethodRegistry,
+  registry: MethodRegistry
 ): MethodHandlerMap {
   return {
     'rpc.discover': (_params: unknown, ctx: HandlerContext) => {
@@ -455,19 +490,27 @@ export function createDiscoveryHandlers(
     'rpc.describe': (params: unknown, ctx: HandlerContext) => {
       const parsed = RpcDescribeParamsSchema.safeParse(params);
       if (!parsed.success) {
-        ctx.respond(false, undefined, errorShape(
-          ErrorCodes.INVALID_REQUEST,
-          'invalid params: method field is required',
-        ));
+        ctx.respond(
+          false,
+          undefined,
+          errorShape(
+            ErrorCodes.INVALID_REQUEST,
+            'invalid params: method field is required'
+          )
+        );
         return;
       }
 
       const descriptor = registry.describeMethod(parsed.data.method);
       if (!descriptor) {
-        ctx.respond(false, undefined, errorShape(
-          ErrorCodes.NOT_FOUND,
-          `method not found: ${parsed.data.method}`,
-        ));
+        ctx.respond(
+          false,
+          undefined,
+          errorShape(
+            ErrorCodes.NOT_FOUND,
+            `method not found: ${parsed.data.method}`
+          )
+        );
         return;
       }
 

@@ -49,8 +49,16 @@ export interface ScheduledTask {
 
 export interface SchedulerEventMap {
   'task:triggered': (event: { task: ScheduledTask; firedAt: Date }) => void;
-  'task:completed': (event: { taskId: string; firedAt: Date; durationMs: number }) => void;
-  'task:failed': (event: { taskId: string; firedAt: Date; error: unknown }) => void;
+  'task:completed': (event: {
+    taskId: string;
+    firedAt: Date;
+    durationMs: number;
+  }) => void;
+  'task:failed': (event: {
+    taskId: string;
+    firedAt: Date;
+    error: unknown;
+  }) => void;
   'scheduler:started': () => void;
   'scheduler:stopped': () => void;
 }
@@ -95,7 +103,7 @@ function parseField(raw: string, min: number, max: number): CronField {
   }
 
   // List: 1,2,3 or single value 5
-  const parts = raw.split(',').map((p) => {
+  const parts = raw.split(',').map(p => {
     const n = parseInt(p.trim(), 10);
     if (isNaN(n) || n < min || n > max) {
       throw new Error(`Cron field value ${p} out of range [${min},${max}]`);
@@ -114,7 +122,7 @@ function parseCronExpression(expr: string): ParsedCron {
   const parts = expr.trim().split(/\s+/);
   if (parts.length !== 5) {
     throw new Error(
-      `Invalid cron expression "${expr}": expected 5 fields (minute hour dayOfMonth month dayOfWeek)`,
+      `Invalid cron expression "${expr}": expected 5 fields (minute hour dayOfMonth month dayOfWeek)`
     );
   }
 
@@ -247,7 +255,7 @@ export class CronScheduler extends EventEmitter<SchedulerEventMap> {
    * Return a copy of all registered tasks.
    */
   getSchedule(): ScheduledTask[] {
-    return Array.from(this.tasks.values()).map((t) => ({ ...t }));
+    return Array.from(this.tasks.values()).map(t => ({ ...t }));
   }
 
   /**
@@ -277,7 +285,7 @@ export class CronScheduler extends EventEmitter<SchedulerEventMap> {
 
     runs.sort((a, b) => a.firedAt.getTime() - b.firedAt.getTime());
 
-    return runs.slice(0, count).map((r) => ({
+    return runs.slice(0, count).map(r => ({
       taskId: r.task.id,
       taskName: r.task.name,
       firedAt: r.firedAt,
@@ -300,7 +308,8 @@ export class CronScheduler extends EventEmitter<SchedulerEventMap> {
     // Align to the next minute boundary for predictable firing
     const now = new Date();
     const msUntilNextMinute =
-      POLL_INTERVAL_MS - ((now.getSeconds() * 1000 + now.getMilliseconds()) % POLL_INTERVAL_MS);
+      POLL_INTERVAL_MS -
+      ((now.getSeconds() * 1000 + now.getMilliseconds()) % POLL_INTERVAL_MS);
 
     const beginPolling = (): void => {
       this.lastPollMinute = -1;
@@ -384,9 +393,17 @@ export class CronScheduler extends EventEmitter<SchedulerEventMap> {
     setImmediate(() => {
       try {
         const durationMs = Date.now() - startMs;
-        this.emit('task:completed', { taskId: task.id, firedAt: firedAtCopy, durationMs });
+        this.emit('task:completed', {
+          taskId: task.id,
+          firedAt: firedAtCopy,
+          durationMs,
+        });
       } catch (error) {
-        this.emit('task:failed', { taskId: task.id, firedAt: firedAtCopy, error });
+        this.emit('task:failed', {
+          taskId: task.id,
+          firedAt: firedAtCopy,
+          error,
+        });
       }
     });
   }

@@ -75,7 +75,11 @@ describe('DefaultToolRegistry', () => {
 
   describe('unregister', () => {
     it('should remove both handler and description', () => {
-      registry.register('temp', vi.fn(async () => 'x'), makeDescription('temp'));
+      registry.register(
+        'temp',
+        vi.fn(async () => 'x'),
+        makeDescription('temp')
+      );
       expect(registry.has('temp')).toBe(true);
 
       registry.unregister('temp');
@@ -96,7 +100,7 @@ describe('DefaultToolRegistry', () => {
 
   describe('execute', () => {
     it('should call the registered handler and return its result', async () => {
-      const handler: ToolHandler = vi.fn(async (args) => `Hello ${args.value}`);
+      const handler: ToolHandler = vi.fn(async args => `Hello ${args.value}`);
       registry.register('greet', handler);
 
       const result = await registry.execute('greet', { value: 'World' });
@@ -107,7 +111,7 @@ describe('DefaultToolRegistry', () => {
 
     it('should throw when executing an unregistered tool', async () => {
       await expect(registry.execute('missing', {})).rejects.toThrow(
-        /No handler registered for tool: "missing"/,
+        /No handler registered for tool: "missing"/
       );
     });
 
@@ -118,7 +122,7 @@ describe('DefaultToolRegistry', () => {
       registry.register('fail', failing);
 
       await expect(registry.execute('fail', {})).rejects.toThrow(
-        /Tool "fail" execution failed: disk full/,
+        /Tool "fail" execution failed: disk full/
       );
     });
 
@@ -129,7 +133,7 @@ describe('DefaultToolRegistry', () => {
       registry.register('fail-str', failing);
 
       await expect(registry.execute('fail-str', {})).rejects.toThrow(
-        /Tool "fail-str" execution failed: string error/,
+        /Tool "fail-str" execution failed: string error/
       );
     });
   });
@@ -140,8 +144,15 @@ describe('DefaultToolRegistry', () => {
 
   describe('listTools', () => {
     it('should return only tools that have a description', () => {
-      registry.register('with-desc', vi.fn(async () => null), makeDescription('with-desc'));
-      registry.register('no-desc', vi.fn(async () => null));
+      registry.register(
+        'with-desc',
+        vi.fn(async () => null),
+        makeDescription('with-desc')
+      );
+      registry.register(
+        'no-desc',
+        vi.fn(async () => null)
+      );
 
       const tools = registry.listTools();
       expect(tools).toHaveLength(1);
@@ -151,23 +162,34 @@ describe('DefaultToolRegistry', () => {
 
   describe('toToolDefinitions', () => {
     it('should convert descriptions to ToolDefinition format', () => {
-      registry.register('alpha', vi.fn(async () => null), makeDescription('alpha'));
-      registry.register('beta', vi.fn(async () => null), makeDescription('beta'));
+      registry.register(
+        'alpha',
+        vi.fn(async () => null),
+        makeDescription('alpha')
+      );
+      registry.register(
+        'beta',
+        vi.fn(async () => null),
+        makeDescription('beta')
+      );
 
       const defs = registry.toToolDefinitions();
 
       expect(defs).toHaveLength(2);
       expect(defs[0]).toEqual(
-        expect.objectContaining({ name: 'alpha', description: 'A test tool' }),
+        expect.objectContaining({ name: 'alpha', description: 'A test tool' })
       );
       expect(defs[1]).toEqual(
-        expect.objectContaining({ name: 'beta', description: 'A test tool' }),
+        expect.objectContaining({ name: 'beta', description: 'A test tool' })
       );
       expect(defs[0]).toHaveProperty('inputSchema');
     });
 
     it('should skip tools without descriptions', () => {
-      registry.register('hidden', vi.fn(async () => null));
+      registry.register(
+        'hidden',
+        vi.fn(async () => null)
+      );
 
       expect(registry.toToolDefinitions()).toHaveLength(0);
     });

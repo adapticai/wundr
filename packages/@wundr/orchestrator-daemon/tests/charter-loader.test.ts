@@ -119,12 +119,16 @@ describe('Charter Loader', () => {
       };
 
       // Save partial charter
-      await fs.writeFile(filePath, `
+      await fs.writeFile(
+        filePath,
+        `
 name: custom-orchestrator
 tier: 2
 resourceLimits:
   maxSessions: 20
-      `.trim(), 'utf-8');
+      `.trim(),
+        'utf-8'
+      );
 
       const charter = await loadCharter(filePath, { useEnvOverrides: false });
 
@@ -167,10 +171,14 @@ resourceLimits:
 
     it('should handle file + env overrides together', async () => {
       const filePath = path.join(tempDir, 'combined.yaml');
-      await fs.writeFile(filePath, `
+      await fs.writeFile(
+        filePath,
+        `
 name: file-orchestrator
 tier: 2
-      `.trim(), 'utf-8');
+      `.trim(),
+        'utf-8'
+      );
 
       const originalEnv = { ...process.env };
 

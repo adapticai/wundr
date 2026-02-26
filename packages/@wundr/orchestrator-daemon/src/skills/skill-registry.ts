@@ -83,7 +83,7 @@ export interface SkillRegistryEvents {
 }
 
 type EventListener<K extends keyof SkillRegistryEvents> = (
-  data: SkillRegistryEvents[K],
+  data: SkillRegistryEvents[K]
 ) => void;
 
 /**
@@ -143,7 +143,7 @@ export class SkillRegistry {
    */
   on<K extends keyof SkillRegistryEvents>(
     event: K,
-    listener: EventListener<K>,
+    listener: EventListener<K>
   ): () => void {
     const key = event as string;
     if (!this.listeners.has(key)) {
@@ -151,19 +151,19 @@ export class SkillRegistry {
     }
     this.listeners.get(key)!.add(listener);
     return () => {
- this.listeners.get(key)?.delete(listener); 
-};
+      this.listeners.get(key)?.delete(listener);
+    };
   }
 
   private emit<K extends keyof SkillRegistryEvents>(
     event: K,
-    data: SkillRegistryEvents[K],
+    data: SkillRegistryEvents[K]
   ): void {
     const key = event as string;
     const set = this.listeners.get(key);
     if (!set) {
-return;
-}
+      return;
+    }
     for (const listener of set) {
       try {
         listener(data);
@@ -202,7 +202,7 @@ return;
       this.workspaceDir,
       this.config,
       this.managedSkillsDir,
-      this.bundledSkillsDir,
+      this.bundledSkillsDir
     );
 
     // Step 3: Security scan
@@ -217,7 +217,7 @@ return;
           const summary = await scanSkillComplete(
             entry.skill.baseDir,
             entry.skill.body,
-            entry.skill.filePath,
+            entry.skill.filePath
           );
           this.scanResults.set(entry.skill.name, summary);
 
@@ -228,14 +228,14 @@ return;
             });
             console.warn(
               `[SkillRegistry] Skill "${entry.skill.name}" blocked by security scan:\n` +
-              formatScanReport(summary),
+                formatScanReport(summary)
             );
             continue;
           }
         } catch (err) {
           console.warn(
             `[SkillRegistry] Security scan failed for "${entry.skill.name}":`,
-            err,
+            err
           );
           // If scan itself fails, still allow the skill unless configured otherwise
         }
@@ -287,7 +287,7 @@ return;
    */
   async setWorkspaceDir(
     workspaceDir: string,
-    eligibility?: SkillEligibilityContext,
+    eligibility?: SkillEligibilityContext
   ): Promise<void> {
     this.workspaceDir = workspaceDir;
     if (this.watcher) {
@@ -301,7 +301,7 @@ return;
    */
   async updateConfig(
     config: SkillsConfig,
-    eligibility?: SkillEligibilityContext,
+    eligibility?: SkillEligibilityContext
   ): Promise<void> {
     this.config = config;
     if (this.watcher) {
@@ -320,8 +320,8 @@ return;
    */
   startWatching(): void {
     if (this.watcher?.isRunning()) {
-return;
-}
+      return;
+    }
 
     this.watcher = new SkillWatcher({
       workspaceDir: this.workspaceDir,
@@ -330,7 +330,7 @@ return;
       bundledSkillsDir: this.bundledSkillsDir,
     });
 
-    this.watcher.onChange((event) => {
+    this.watcher.onChange(event => {
       this.emit('fileChanged', {
         filePath: event.filePath,
         skillName: event.skillName,
@@ -516,13 +516,15 @@ return;
 
     // Apply name filter if provided
     if (filterNames && filterNames.length > 0) {
-      const normalized = new Set(filterNames.map(n => n.trim()).filter(Boolean));
+      const normalized = new Set(
+        filterNames.map(n => n.trim()).filter(Boolean)
+      );
       entries = entries.filter(e => normalized.has(e.skill.name));
     }
 
     // Exclude skills that disable model invocation from the prompt
     const promptEntries = entries.filter(
-      e => !e.invocation.disableModelInvocation,
+      e => !e.invocation.disableModelInvocation
     );
     const resolvedSkills = promptEntries.map(e => e.skill);
     const prompt = formatSkillsForPrompt(resolvedSkills);
@@ -566,8 +568,9 @@ return;
     }
 
     const specs: SkillCommandSpec[] = [];
-    const entries = Array.from(this.entries.values())
-      .filter(e => e.invocation.userInvocable);
+    const entries = Array.from(this.entries.values()).filter(
+      e => e.invocation.userInvocable
+    );
 
     for (const entry of entries) {
       const rawName = entry.skill.name;
@@ -576,9 +579,11 @@ return;
       used.add(unique.toLowerCase());
 
       const rawDescription = entry.skill.description.trim() || rawName;
-      const description = rawDescription.length > SKILL_COMMAND_DESCRIPTION_MAX_LENGTH
-        ? rawDescription.slice(0, SKILL_COMMAND_DESCRIPTION_MAX_LENGTH - 1) + '...'
-        : rawDescription;
+      const description =
+        rawDescription.length > SKILL_COMMAND_DESCRIPTION_MAX_LENGTH
+          ? rawDescription.slice(0, SKILL_COMMAND_DESCRIPTION_MAX_LENGTH - 1) +
+            '...'
+          : rawDescription;
 
       specs.push({
         name: unique,
@@ -656,9 +661,11 @@ return;
 function filterSkillEntries(
   entries: SkillEntry[],
   config?: SkillsConfig,
-  eligibility?: SkillEligibilityContext,
+  eligibility?: SkillEligibilityContext
 ): SkillEntry[] {
-  return entries.filter(entry => shouldIncludeSkill(entry, config, eligibility));
+  return entries.filter(entry =>
+    shouldIncludeSkill(entry, config, eligibility)
+  );
 }
 
 /**
@@ -667,20 +674,27 @@ function filterSkillEntries(
 function shouldIncludeSkill(
   entry: SkillEntry,
   config?: SkillsConfig,
-  eligibility?: SkillEligibilityContext,
+  eligibility?: SkillEligibilityContext
 ): boolean {
   const skillKey = entry.metadata?.skillKey ?? entry.skill.name;
 
   // Check per-skill config override
   const skillConfig = resolveSkillConfig(config, skillKey);
   if (skillConfig?.enabled === false) {
-return false;
-}
+    return false;
+  }
 
   // Check bundled allowlist
   const allowBundled = config?.allowBundled;
-  if (allowBundled && allowBundled.length > 0 && entry.skill.source === 'bundled') {
-    if (!allowBundled.includes(skillKey) && !allowBundled.includes(entry.skill.name)) {
+  if (
+    allowBundled &&
+    allowBundled.length > 0 &&
+    entry.skill.source === 'bundled'
+  ) {
+    if (
+      !allowBundled.includes(skillKey) &&
+      !allowBundled.includes(entry.skill.name)
+    ) {
       return false;
     }
   }
@@ -690,15 +704,18 @@ return false;
   if (osList.length > 0) {
     const currentPlatform = process.platform;
     const remotePlatforms = eligibility?.remote?.platforms ?? [];
-    if (!osList.includes(currentPlatform) && !remotePlatforms.some(p => osList.includes(p))) {
+    if (
+      !osList.includes(currentPlatform) &&
+      !remotePlatforms.some(p => osList.includes(p))
+    ) {
       return false;
     }
   }
 
   // Skills marked as "always" bypass requirement checks
   if (entry.metadata?.always === true) {
-return true;
-}
+    return true;
+  }
 
   // Check required binaries (all must be present)
   const requiredBins = entry.metadata?.requires?.bins ?? [];
@@ -713,11 +730,12 @@ return true;
   // Check anyBins (at least one must be present)
   const requiredAnyBins = entry.metadata?.requires?.anyBins ?? [];
   if (requiredAnyBins.length > 0) {
-    const anyFound = requiredAnyBins.some(bin => hasBinary(bin))
-      || eligibility?.remote?.hasAnyBin?.(requiredAnyBins);
+    const anyFound =
+      requiredAnyBins.some(bin => hasBinary(bin)) ||
+      eligibility?.remote?.hasAnyBin?.(requiredAnyBins);
     if (!anyFound) {
-return false;
-}
+      return false;
+    }
   }
 
   // Check required environment variables
@@ -725,14 +743,14 @@ return false;
   if (requiredEnv.length > 0) {
     for (const envName of requiredEnv) {
       if (process.env[envName]) {
-continue;
-}
+        continue;
+      }
       if (skillConfig?.env?.[envName]) {
-continue;
-}
+        continue;
+      }
       if (skillConfig?.apiKey && entry.metadata?.primaryEnv === envName) {
-continue;
-}
+        continue;
+      }
       return false;
     }
   }
@@ -742,8 +760,8 @@ continue;
   if (requiredConfig.length > 0) {
     for (const configPath of requiredConfig) {
       if (!isConfigPathTruthy(config, configPath)) {
-return false;
-}
+        return false;
+      }
     }
   }
 
@@ -756,35 +774,35 @@ return false;
 
 function resolveSkillConfig(
   config: SkillsConfig | undefined,
-  skillKey: string,
+  skillKey: string
 ): SkillConfigEntry | undefined {
   return config?.entries?.[skillKey];
 }
 
 function isConfigPathTruthy(
   config: SkillsConfig | undefined,
-  pathStr: string,
+  pathStr: string
 ): boolean {
   const parts = pathStr.split('.').filter(Boolean);
   let current: unknown = config;
   for (const part of parts) {
     if (typeof current !== 'object' || current === null) {
-return false;
-}
+      return false;
+    }
     current = (current as Record<string, unknown>)[part];
   }
   if (current === undefined || current === null) {
-return false;
-}
+    return false;
+  }
   if (typeof current === 'boolean') {
-return current;
-}
+    return current;
+  }
   if (typeof current === 'number') {
-return current !== 0;
-}
+    return current !== 0;
+  }
   if (typeof current === 'string') {
-return current.trim().length > 0;
-}
+    return current.trim().length > 0;
+  }
   return true;
 }
 
@@ -809,22 +827,24 @@ function sanitizeSkillCommandName(raw: string): string {
     .replace(/[^a-z0-9_]+/g, '_')
     .replace(/_+/g, '_')
     .replace(/^_+|_+$/g, '');
-  return normalized.slice(0, SKILL_COMMAND_MAX_LENGTH) || SKILL_COMMAND_FALLBACK;
+  return (
+    normalized.slice(0, SKILL_COMMAND_MAX_LENGTH) || SKILL_COMMAND_FALLBACK
+  );
 }
 
 function resolveUniqueCommandName(base: string, used: Set<string>): string {
   const normalizedBase = base.toLowerCase();
   if (!used.has(normalizedBase)) {
-return base;
-}
+    return base;
+  }
 
   for (let index = 2; index < 1000; index++) {
     const suffix = `_${index}`;
     const maxBaseLength = Math.max(1, SKILL_COMMAND_MAX_LENGTH - suffix.length);
     const candidate = `${base.slice(0, maxBaseLength)}${suffix}`;
     if (!used.has(candidate.toLowerCase())) {
-return candidate;
-}
+      return candidate;
+    }
   }
 
   return `${base.slice(0, Math.max(1, SKILL_COMMAND_MAX_LENGTH - 2))}_x`;

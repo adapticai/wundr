@@ -35,20 +35,20 @@ function safeEqual(a: string, b: string): boolean {
 
 function isLoopbackAddress(ip: string | undefined): boolean {
   if (!ip) {
-return false;
-}
+    return false;
+  }
   if (ip === '127.0.0.1') {
-return true;
-}
+    return true;
+  }
   if (ip.startsWith('127.')) {
-return true;
-}
+    return true;
+  }
   if (ip === '::1') {
-return true;
-}
+    return true;
+  }
   if (ip.startsWith('::ffff:127.')) {
-return true;
-}
+    return true;
+  }
   return false;
 }
 
@@ -58,8 +58,8 @@ return true;
 function extractBearerToken(req: IncomingMessage): string | undefined {
   const header = req.headers['authorization'];
   if (typeof header !== 'string') {
-return undefined;
-}
+    return undefined;
+  }
   const parts = header.split(' ');
   if (parts.length === 2 && parts[0]!.toLowerCase() === 'bearer') {
     return parts[1];
@@ -79,9 +79,15 @@ function extractApiKey(req: IncomingMessage): string | undefined {
  * Extract auth credentials from query string (for WebSocket upgrade
  * requests where custom headers are difficult to set from browsers).
  */
-function extractQueryAuth(req: IncomingMessage): { token?: string; apiKey?: string } {
+function extractQueryAuth(req: IncomingMessage): {
+  token?: string;
+  apiKey?: string;
+} {
   try {
-    const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
+    const url = new URL(
+      req.url ?? '/',
+      `http://${req.headers.host ?? 'localhost'}`
+    );
     return {
       token: url.searchParams.get('token') ?? undefined,
       apiKey: url.searchParams.get('apiKey') ?? undefined,
@@ -145,10 +151,7 @@ export class Authenticator {
     const apiKey = apiKeyHeader ?? queryAuth.apiKey;
 
     // 2. JWT auth
-    if (
-      token &&
-      (this.config.mode === 'jwt' || this.config.mode === 'both')
-    ) {
+    if (token && (this.config.mode === 'jwt' || this.config.mode === 'both')) {
       return this.authenticateJwt(token);
     }
 
@@ -176,10 +179,16 @@ export class Authenticator {
    * expire mid-session).
    */
   authenticateMessage(auth: { token?: string; apiKey?: string }): AuthResult {
-    if (auth.token && (this.config.mode === 'jwt' || this.config.mode === 'both')) {
+    if (
+      auth.token &&
+      (this.config.mode === 'jwt' || this.config.mode === 'both')
+    ) {
       return this.authenticateJwt(auth.token);
     }
-    if (auth.apiKey && (this.config.mode === 'api-key' || this.config.mode === 'both')) {
+    if (
+      auth.apiKey &&
+      (this.config.mode === 'api-key' || this.config.mode === 'both')
+    ) {
       return this.authenticateApiKey(auth.apiKey);
     }
     return { ok: false, reason: 'message_credentials_missing' };
@@ -194,7 +203,7 @@ export class Authenticator {
       token,
       this.config.jwtSecret,
       this.config.jwtIssuer,
-      this.config.jwtAudience,
+      this.config.jwtAudience
     );
 
     if (!result.ok) {

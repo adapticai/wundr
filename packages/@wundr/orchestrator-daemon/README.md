@@ -1,6 +1,8 @@
 # @wundr.io/orchestrator-daemon
 
-> Machine-level supervisor daemon for orchestrating Claude Code and Claude Flow sessions with real-time WebSocket communication, distributed session management, and MemGPT-inspired tiered memory architecture.
+> Machine-level supervisor daemon for orchestrating Claude Code and Claude Flow sessions with
+> real-time WebSocket communication, distributed session management, and MemGPT-inspired tiered
+> memory architecture.
 
 [![Version](https://img.shields.io/badge/version-1.0.6-blue.svg)](https://www.npmjs.com/package/@wundr.io/orchestrator-daemon)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org)
@@ -8,9 +10,11 @@
 
 ## Overview
 
-The Orchestrator Daemon is a production-ready, enterprise-grade daemon for managing AI agent sessions at scale. It provides:
+The Orchestrator Daemon is a production-ready, enterprise-grade daemon for managing AI agent
+sessions at scale. It provides:
 
-- **WebSocket Server** - Real-time bidirectional communication with clients (Neolith, CLI tools, web apps)
+- **WebSocket Server** - Real-time bidirectional communication with clients (Neolith, CLI tools, web
+  apps)
 - **Session Management** - Spawn, monitor, and orchestrate multiple Claude Code/Flow sessions
 - **Tiered Memory Architecture** - MemGPT-inspired three-tier memory (scratchpad/episodic/semantic)
 - **Distributed Features** - Federation, load balancing, session migration across daemon nodes
@@ -179,6 +183,7 @@ curl http://127.0.0.1:9090/metrics
 ```
 
 You should see:
+
 ```json
 {
   "status": "healthy",
@@ -192,123 +197,123 @@ All environment variables with descriptions:
 
 ### Core Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OPENAI_API_KEY` | *required* | OpenAI API key for AI-powered orchestration |
-| `OPENAI_MODEL` | `gpt-4o-mini` | OpenAI model (gpt-4-turbo, gpt-4, gpt-3.5-turbo) |
-| `OPENAI_ORG_ID` | - | OpenAI organization ID (optional) |
-| `OPENAI_BASE_URL` | - | Custom OpenAI endpoint URL (optional) |
+| Variable          | Default       | Description                                      |
+| ----------------- | ------------- | ------------------------------------------------ |
+| `OPENAI_API_KEY`  | _required_    | OpenAI API key for AI-powered orchestration      |
+| `OPENAI_MODEL`    | `gpt-4o-mini` | OpenAI model (gpt-4-turbo, gpt-4, gpt-3.5-turbo) |
+| `OPENAI_ORG_ID`   | -             | OpenAI organization ID (optional)                |
+| `OPENAI_BASE_URL` | -             | Custom OpenAI endpoint URL (optional)            |
 
 ### Alternative AI Provider
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ANTHROPIC_API_KEY` | - | Anthropic API key for Claude models |
-| `ANTHROPIC_MODEL` | `claude-3-sonnet-20240229` | Claude model to use |
+| Variable            | Default                    | Description                         |
+| ------------------- | -------------------------- | ----------------------------------- |
+| `ANTHROPIC_API_KEY` | -                          | Anthropic API key for Claude models |
+| `ANTHROPIC_MODEL`   | `claude-3-sonnet-20240229` | Claude model to use                 |
 
 ### Server Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DAEMON_PORT` | `8787` | WebSocket server port |
-| `DAEMON_HOST` | `127.0.0.1` | Host address (use `0.0.0.0` for all interfaces) |
-| `DAEMON_MAX_SESSIONS` | `100` | Maximum concurrent sessions |
-| `DAEMON_VERBOSE` | `false` | Enable verbose logging |
-| `DAEMON_NAME` | `orchestrator-daemon` | Daemon identifier |
+| Variable              | Default               | Description                                     |
+| --------------------- | --------------------- | ----------------------------------------------- |
+| `DAEMON_PORT`         | `8787`                | WebSocket server port                           |
+| `DAEMON_HOST`         | `127.0.0.1`           | Host address (use `0.0.0.0` for all interfaces) |
+| `DAEMON_MAX_SESSIONS` | `100`                 | Maximum concurrent sessions                     |
+| `DAEMON_VERBOSE`      | `false`               | Enable verbose logging                          |
+| `DAEMON_NAME`         | `orchestrator-daemon` | Daemon identifier                               |
 
 ### Health & Heartbeat
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DAEMON_HEARTBEAT_INTERVAL` | `30000` | Health check interval (ms) |
+| Variable                       | Default | Description                        |
+| ------------------------------ | ------- | ---------------------------------- |
+| `DAEMON_HEARTBEAT_INTERVAL`    | `30000` | Health check interval (ms)         |
 | `DAEMON_HEALTH_CHECK_INTERVAL` | `60000` | Overall health check interval (ms) |
-| `DAEMON_SHUTDOWN_TIMEOUT` | `10000` | Graceful shutdown timeout (ms) |
+| `DAEMON_SHUTDOWN_TIMEOUT`      | `10000` | Graceful shutdown timeout (ms)     |
 
 ### Redis (Distributed Features)
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `REDIS_URL` | - | Redis connection URL |
-| `REDIS_PASSWORD` | - | Redis password (if auth enabled) |
-| `REDIS_DB` | `0` | Redis database number |
-| `REDIS_CONNECT_TIMEOUT` | `5000` | Connection timeout (ms) |
+| Variable                | Default | Description                      |
+| ----------------------- | ------- | -------------------------------- |
+| `REDIS_URL`             | -       | Redis connection URL             |
+| `REDIS_PASSWORD`        | -       | Redis password (if auth enabled) |
+| `REDIS_DB`              | `0`     | Redis database number            |
+| `REDIS_CONNECT_TIMEOUT` | `5000`  | Connection timeout (ms)          |
 
 ### PostgreSQL (Persistent Storage)
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DATABASE_URL` | - | PostgreSQL connection URL |
-| `DATABASE_POOL_SIZE` | `10` | Connection pool size |
-| `DATABASE_CONNECT_TIMEOUT` | `5000` | Connection timeout (ms) |
+| Variable                   | Default | Description               |
+| -------------------------- | ------- | ------------------------- |
+| `DATABASE_URL`             | -       | PostgreSQL connection URL |
+| `DATABASE_POOL_SIZE`       | `10`    | Connection pool size      |
+| `DATABASE_CONNECT_TIMEOUT` | `5000`  | Connection timeout (ms)   |
 
 ### Distributed Orchestration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `CLUSTER_NAME` | `orchestrator-cluster` | Cluster name for daemon federation |
-| `LOAD_BALANCING_STRATEGY` | `least-loaded` | Strategy: round-robin, least-loaded, weighted, hash-based |
-| `REBALANCE_INTERVAL` | `300000` | Session rebalancing interval (ms) |
-| `MIGRATION_TIMEOUT` | `30000` | Session migration timeout (ms) |
+| Variable                  | Default                | Description                                               |
+| ------------------------- | ---------------------- | --------------------------------------------------------- |
+| `CLUSTER_NAME`            | `orchestrator-cluster` | Cluster name for daemon federation                        |
+| `LOAD_BALANCING_STRATEGY` | `least-loaded`         | Strategy: round-robin, least-loaded, weighted, hash-based |
+| `REBALANCE_INTERVAL`      | `300000`               | Session rebalancing interval (ms)                         |
+| `MIGRATION_TIMEOUT`       | `30000`                | Session migration timeout (ms)                            |
 
 ### Neolith Integration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `NEOLITH_API_URL` | `http://localhost:3000` | Neolith API server URL |
-| `NEOLITH_API_KEY` | - | Neolith API key (vp_...) |
-| `NEOLITH_API_SECRET` | - | Neolith API secret |
+| Variable             | Default                 | Description               |
+| -------------------- | ----------------------- | ------------------------- |
+| `NEOLITH_API_URL`    | `http://localhost:3000` | Neolith API server URL    |
+| `NEOLITH_API_KEY`    | -                       | Neolith API key (vp\_...) |
+| `NEOLITH_API_SECRET` | -                       | Neolith API secret        |
 
 ### Logging
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `LOG_LEVEL` | `info` | Log level: debug, info, warn, error |
-| `LOG_FORMAT` | `json` | Log format: json, text |
-| `LOG_FILE` | - | Log file path (logs to stdout if not set) |
-| `LOG_ROTATION_ENABLED` | `true` | Enable log file rotation |
-| `LOG_MAX_SIZE` | `10` | Max log file size (MB) before rotation |
-| `LOG_MAX_FILES` | `5` | Number of rotated log files to keep |
+| Variable               | Default | Description                               |
+| ---------------------- | ------- | ----------------------------------------- |
+| `LOG_LEVEL`            | `info`  | Log level: debug, info, warn, error       |
+| `LOG_FORMAT`           | `json`  | Log format: json, text                    |
+| `LOG_FILE`             | -       | Log file path (logs to stdout if not set) |
+| `LOG_ROTATION_ENABLED` | `true`  | Enable log file rotation                  |
+| `LOG_MAX_SIZE`         | `10`    | Max log file size (MB) before rotation    |
+| `LOG_MAX_FILES`        | `5`     | Number of rotated log files to keep       |
 
 ### Security
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DAEMON_JWT_SECRET` | *required* | JWT secret (CHANGE IN PRODUCTION!) |
-| `DAEMON_JWT_EXPIRATION` | `24h` | JWT token expiration time |
-| `DAEMON_CORS_ENABLED` | `false` | Enable CORS |
-| `DAEMON_CORS_ORIGINS` | `http://localhost:3000` | Allowed CORS origins (comma-separated) |
-| `DAEMON_RATE_LIMIT_ENABLED` | `true` | Enable rate limiting |
-| `DAEMON_RATE_LIMIT_MAX` | `100` | Max requests per window |
-| `DAEMON_RATE_LIMIT_WINDOW` | `60000` | Rate limit window (ms) |
+| Variable                    | Default                 | Description                            |
+| --------------------------- | ----------------------- | -------------------------------------- |
+| `DAEMON_JWT_SECRET`         | _required_              | JWT secret (CHANGE IN PRODUCTION!)     |
+| `DAEMON_JWT_EXPIRATION`     | `24h`                   | JWT token expiration time              |
+| `DAEMON_CORS_ENABLED`       | `false`                 | Enable CORS                            |
+| `DAEMON_CORS_ORIGINS`       | `http://localhost:3000` | Allowed CORS origins (comma-separated) |
+| `DAEMON_RATE_LIMIT_ENABLED` | `true`                  | Enable rate limiting                   |
+| `DAEMON_RATE_LIMIT_MAX`     | `100`                   | Max requests per window                |
+| `DAEMON_RATE_LIMIT_WINDOW`  | `60000`                 | Rate limit window (ms)                 |
 
 ### Monitoring
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `METRICS_ENABLED` | `true` | Enable Prometheus metrics endpoint |
-| `METRICS_PORT` | `9090` | Prometheus metrics port |
-| `METRICS_PATH` | `/metrics` | Metrics endpoint path |
-| `HEALTH_CHECK_ENABLED` | `true` | Enable health check endpoint |
-| `HEALTH_CHECK_PATH` | `/health` | Health check endpoint path |
+| Variable               | Default    | Description                        |
+| ---------------------- | ---------- | ---------------------------------- |
+| `METRICS_ENABLED`      | `true`     | Enable Prometheus metrics endpoint |
+| `METRICS_PORT`         | `9090`     | Prometheus metrics port            |
+| `METRICS_PATH`         | `/metrics` | Metrics endpoint path              |
+| `HEALTH_CHECK_ENABLED` | `true`     | Enable health check endpoint       |
+| `HEALTH_CHECK_PATH`    | `/health`  | Health check endpoint path         |
 
 ### Memory Management
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DAEMON_MAX_HEAP_MB` | `2048` | Maximum heap memory (MB) |
-| `DAEMON_MAX_CONTEXT_TOKENS` | `128000` | Max context tokens per session |
-| `MEMORY_COMPACTION_ENABLED` | `true` | Enable memory compaction |
-| `MEMORY_COMPACTION_THRESHOLD` | `0.8` | Memory compaction threshold (0.0-1.0) |
+| Variable                      | Default  | Description                           |
+| ----------------------------- | -------- | ------------------------------------- |
+| `DAEMON_MAX_HEAP_MB`          | `2048`   | Maximum heap memory (MB)              |
+| `DAEMON_MAX_CONTEXT_TOKENS`   | `128000` | Max context tokens per session        |
+| `MEMORY_COMPACTION_ENABLED`   | `true`   | Enable memory compaction              |
+| `MEMORY_COMPACTION_THRESHOLD` | `0.8`    | Memory compaction threshold (0.0-1.0) |
 
 ### Token Budget
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `TOKEN_BUDGET_DAILY` | `1000000` | Daily token budget |
-| `TOKEN_BUDGET_WEEKLY` | `5000000` | Weekly token budget |
-| `TOKEN_BUDGET_MONTHLY` | `20000000` | Monthly token budget |
-| `TOKEN_BUDGET_ALERTS_ENABLED` | `true` | Enable budget alerts |
-| `TOKEN_BUDGET_ALERT_THRESHOLD` | `0.8` | Alert threshold (80% = 0.8) |
+| Variable                       | Default    | Description                 |
+| ------------------------------ | ---------- | --------------------------- |
+| `TOKEN_BUDGET_DAILY`           | `1000000`  | Daily token budget          |
+| `TOKEN_BUDGET_WEEKLY`          | `5000000`  | Weekly token budget         |
+| `TOKEN_BUDGET_MONTHLY`         | `20000000` | Monthly token budget        |
+| `TOKEN_BUDGET_ALERTS_ENABLED`  | `true`     | Enable budget alerts        |
+| `TOKEN_BUDGET_ALERT_THRESHOLD` | `0.8`      | Alert threshold (80% = 0.8) |
 
 ## WebSocket API
 
@@ -325,7 +330,7 @@ ws.on('open', () => {
   console.log('Connected to orchestrator daemon');
 });
 
-ws.on('message', (data) => {
+ws.on('message', data => {
   const message = JSON.parse(data.toString());
   console.log('Received:', message);
 });
@@ -340,22 +345,24 @@ ws.on('message', (data) => {
 Create a new agent session:
 
 ```typescript
-ws.send(JSON.stringify({
-  type: 'spawn_session',
-  payload: {
-    orchestratorId: 'orchestrator-1',
-    task: {
-      id: 'task-123',
-      type: 'code',
-      description: 'Implement authentication system',
-      priority: 'high',
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+ws.send(
+  JSON.stringify({
+    type: 'spawn_session',
+    payload: {
+      orchestratorId: 'orchestrator-1',
+      task: {
+        id: 'task-123',
+        type: 'code',
+        description: 'Implement authentication system',
+        priority: 'high',
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      sessionType: 'claude-code', // or 'claude-flow'
     },
-    sessionType: 'claude-code', // or 'claude-flow'
-  },
-}));
+  })
+);
 ```
 
 **2. Execute Task**
@@ -363,19 +370,21 @@ ws.send(JSON.stringify({
 Execute a task in an existing session:
 
 ```typescript
-ws.send(JSON.stringify({
-  type: 'execute_task',
-  payload: {
-    sessionId: 'session_abc123',
-    task: {
-      id: 'task-456',
-      type: 'test',
-      description: 'Run integration tests',
-      priority: 'medium',
-      status: 'pending',
+ws.send(
+  JSON.stringify({
+    type: 'execute_task',
+    payload: {
+      sessionId: 'session_abc123',
+      task: {
+        id: 'task-456',
+        type: 'test',
+        description: 'Run integration tests',
+        priority: 'medium',
+        status: 'pending',
+      },
     },
-  },
-}));
+  })
+);
 ```
 
 **3. Get Session Status**
@@ -383,12 +392,14 @@ ws.send(JSON.stringify({
 Query session status:
 
 ```typescript
-ws.send(JSON.stringify({
-  type: 'session_status',
-  payload: {
-    sessionId: 'session_abc123',
-  },
-}));
+ws.send(
+  JSON.stringify({
+    type: 'session_status',
+    payload: {
+      sessionId: 'session_abc123',
+    },
+  })
+);
 ```
 
 **4. Get Daemon Status**
@@ -396,9 +407,11 @@ ws.send(JSON.stringify({
 Get overall daemon status:
 
 ```typescript
-ws.send(JSON.stringify({
-  type: 'daemon_status',
-}));
+ws.send(
+  JSON.stringify({
+    type: 'daemon_status',
+  })
+);
 ```
 
 **5. Stop Session**
@@ -406,12 +419,14 @@ ws.send(JSON.stringify({
 Terminate a running session:
 
 ```typescript
-ws.send(JSON.stringify({
-  type: 'stop_session',
-  payload: {
-    sessionId: 'session_abc123',
-  },
-}));
+ws.send(
+  JSON.stringify({
+    type: 'stop_session',
+    payload: {
+      sessionId: 'session_abc123',
+    },
+  })
+);
 ```
 
 **6. Health Check**
@@ -419,9 +434,11 @@ ws.send(JSON.stringify({
 Ping the server:
 
 ```typescript
-ws.send(JSON.stringify({
-  type: 'health_check',
-}));
+ws.send(
+  JSON.stringify({
+    type: 'health_check',
+  })
+);
 ```
 
 **7. Ping/Pong**
@@ -429,9 +446,11 @@ ws.send(JSON.stringify({
 Keep connection alive:
 
 ```typescript
-ws.send(JSON.stringify({
-  type: 'ping',
-}));
+ws.send(
+  JSON.stringify({
+    type: 'ping',
+  })
+);
 ```
 
 #### Server → Client Responses
@@ -633,12 +652,12 @@ class OrchestratorClient {
       this.sendHealthCheck();
     });
 
-    this.ws.on('message', (data) => {
+    this.ws.on('message', data => {
       const msg = JSON.parse(data.toString());
       this.handleMessage(msg);
     });
 
-    this.ws.on('error', (error) => {
+    this.ws.on('error', error => {
       console.error('WebSocket error:', error);
     });
 
@@ -671,14 +690,16 @@ class OrchestratorClient {
   }
 
   spawnSession(task: any) {
-    this.ws.send(JSON.stringify({
-      type: 'spawn_session',
-      payload: {
-        orchestratorId: 'my-orchestrator',
-        task,
-        sessionType: 'claude-code',
-      },
-    }));
+    this.ws.send(
+      JSON.stringify({
+        type: 'spawn_session',
+        payload: {
+          orchestratorId: 'my-orchestrator',
+          task,
+          sessionType: 'claude-code',
+        },
+      })
+    );
   }
 
   getDaemonStatus() {
@@ -888,12 +909,12 @@ socket.on('connect', () => {
 });
 
 // Listen for AI streaming responses
-socket.on('stream_chunk', (chunk) => {
+socket.on('stream_chunk', chunk => {
   console.log('AI response:', chunk.data.chunk);
 });
 
 // Listen for task completion
-socket.on('task_completed', (data) => {
+socket.on('task_completed', data => {
   console.log('Task completed:', data.taskId);
 });
 ```
@@ -1073,6 +1094,7 @@ const daemon = new OrchestratorDaemon({
 **Error:** `EADDRINUSE: address already in use :::8787`
 
 **Solution:**
+
 ```bash
 # Find process using port 8787
 lsof -i :8787
@@ -1089,6 +1111,7 @@ DAEMON_PORT=9090 orchestrator-daemon
 **Error:** `Error connecting to Redis: ECONNREFUSED`
 
 **Solution:**
+
 ```bash
 # Start Redis
 redis-server
@@ -1105,6 +1128,7 @@ unset REDIS_URL
 **Error:** `OpenAI API key is required`
 
 **Solution:**
+
 ```bash
 # Set in environment
 export OPENAI_API_KEY=sk-your-api-key
@@ -1118,6 +1142,7 @@ echo "OPENAI_API_KEY=sk-your-api-key" >> .env
 **Error:** Client cannot connect to WebSocket
 
 **Solution:**
+
 - Check daemon is running: `curl http://127.0.0.1:8787/health`
 - Check firewall settings
 - Verify correct host/port in client
@@ -1128,6 +1153,7 @@ echo "OPENAI_API_KEY=sk-your-api-key" >> .env
 **Error:** `JavaScript heap out of memory`
 
 **Solution:**
+
 ```bash
 # Increase Node.js heap size
 export NODE_OPTIONS="--max-old-space-size=4096"
@@ -1141,6 +1167,7 @@ DAEMON_MAX_HEAP_MB=4096
 **Error:** `Failed to spawn session: Max sessions reached`
 
 **Solution:**
+
 ```bash
 # Increase max sessions
 DAEMON_MAX_SESSIONS=200 orchestrator-daemon
@@ -1154,6 +1181,7 @@ curl -X POST http://127.0.0.1:8787/api/sessions/cleanup
 **Error:** `Token budget exceeded for period`
 
 **Solution:**
+
 - Adjust budgets in `.env`:
   ```bash
   TOKEN_BUDGET_DAILY=2000000
@@ -1166,6 +1194,7 @@ curl -X POST http://127.0.0.1:8787/api/sessions/cleanup
 **Error:** `Error connecting to database`
 
 **Solution:**
+
 ```bash
 # Check PostgreSQL is running
 docker-compose ps postgres
@@ -1225,16 +1254,19 @@ tail -f /var/log/orchestrator-daemon.log
 If experiencing slow performance:
 
 1. **Check resource usage:**
+
    ```bash
    curl http://127.0.0.1:9090/metrics | grep process_
    ```
 
 2. **Reduce max sessions:**
+
    ```bash
    DAEMON_MAX_SESSIONS=50 orchestrator-daemon
    ```
 
 3. **Enable memory compaction:**
+
    ```bash
    MEMORY_COMPACTION_ENABLED=true
    MEMORY_COMPACTION_THRESHOLD=0.7

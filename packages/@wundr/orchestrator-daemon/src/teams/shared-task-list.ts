@@ -19,7 +19,11 @@ import { EventEmitter } from 'eventemitter3';
 // Types
 // ---------------------------------------------------------------------------
 
-export type SharedTaskStatus = 'pending' | 'in_progress' | 'completed' | 'blocked';
+export type SharedTaskStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'completed'
+  | 'blocked';
 
 export type SharedTaskPriority = 'low' | 'medium' | 'high' | 'critical';
 
@@ -81,7 +85,7 @@ export class TaskListError extends Error {
   constructor(
     public readonly code: string,
     message: string,
-    public readonly details?: Record<string, unknown>,
+    public readonly details?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'TaskListError';
@@ -126,8 +130,8 @@ class AsyncMutex {
         reject(
           new TaskListError(
             TaskListErrorCode.LOCK_TIMEOUT,
-            `Failed to acquire lock within ${timeoutMs}ms`,
-          ),
+            `Failed to acquire lock within ${timeoutMs}ms`
+          )
         );
       }, timeoutMs);
 
@@ -210,7 +214,7 @@ export class SharedTaskList extends EventEmitter<SharedTaskListEvents> {
         throw new TaskListError(
           TaskListErrorCode.DEPENDENCY_NOT_FOUND,
           `Dependency task not found: ${depId}`,
-          { dependencyId: depId },
+          { dependencyId: depId }
         );
       }
     }
@@ -283,8 +287,8 @@ export class SharedTaskList extends EventEmitter<SharedTaskListEvents> {
     result.sort((a, b) => {
       const pDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
       if (pDiff !== 0) {
-return pDiff;
-}
+        return pDiff;
+      }
       return a.createdAt.getTime() - b.createdAt.getTime();
     });
 
@@ -295,31 +299,34 @@ return pDiff;
    * Update a task's mutable fields.
    * Does NOT allow direct status changes to 'completed' -- use completeTask() instead.
    */
-  async updateTask(taskId: string, input: UpdateTaskInput): Promise<SharedTask> {
+  async updateTask(
+    taskId: string,
+    input: UpdateTaskInput
+  ): Promise<SharedTask> {
     await this.mutex.acquire();
     try {
       const task = this.tasks.get(taskId);
       if (!task) {
         throw new TaskListError(
           TaskListErrorCode.TASK_NOT_FOUND,
-          `Task not found: ${taskId}`,
+          `Task not found: ${taskId}`
         );
       }
 
       const previousStatus = task.status;
 
       if (input.title !== undefined) {
-task.title = input.title;
-}
+        task.title = input.title;
+      }
       if (input.description !== undefined) {
-task.description = input.description;
-}
+        task.description = input.description;
+      }
       if (input.priority !== undefined) {
-task.priority = input.priority;
-}
+        task.priority = input.priority;
+      }
       if (input.assigneeId !== undefined) {
-task.assigneeId = input.assigneeId;
-}
+        task.assigneeId = input.assigneeId;
+      }
       if (input.metadata !== undefined) {
         task.metadata = { ...task.metadata, ...input.metadata };
       }
@@ -354,7 +361,7 @@ task.assigneeId = input.assigneeId;
       if (!task) {
         throw new TaskListError(
           TaskListErrorCode.TASK_NOT_FOUND,
-          `Task not found: ${taskId}`,
+          `Task not found: ${taskId}`
         );
       }
 
@@ -362,7 +369,7 @@ task.assigneeId = input.assigneeId;
         throw new TaskListError(
           TaskListErrorCode.TASK_BLOCKED,
           `Task ${taskId} is blocked by unresolved dependencies`,
-          { dependencies: task.dependencies },
+          { dependencies: task.dependencies }
         );
       }
 
@@ -370,14 +377,14 @@ task.assigneeId = input.assigneeId;
         throw new TaskListError(
           TaskListErrorCode.TASK_ALREADY_CLAIMED,
           `Task ${taskId} is already claimed by ${task.assigneeId}`,
-          { currentAssignee: task.assigneeId },
+          { currentAssignee: task.assigneeId }
         );
       }
 
       if (task.status === 'completed') {
         throw new TaskListError(
           TaskListErrorCode.INVALID_STATUS_TRANSITION,
-          `Task ${taskId} is already completed`,
+          `Task ${taskId} is already completed`
         );
       }
 
@@ -404,14 +411,14 @@ task.assigneeId = input.assigneeId;
     if (!task) {
       throw new TaskListError(
         TaskListErrorCode.TASK_NOT_FOUND,
-        `Task not found: ${taskId}`,
+        `Task not found: ${taskId}`
       );
     }
 
     if (task.status !== 'in_progress') {
       throw new TaskListError(
         TaskListErrorCode.TASK_NOT_IN_PROGRESS,
-        `Task ${taskId} is not in progress (current status: ${task.status})`,
+        `Task ${taskId} is not in progress (current status: ${task.status})`
       );
     }
 
@@ -433,7 +440,7 @@ task.assigneeId = input.assigneeId;
         throw new TaskListError(
           TaskListErrorCode.COMPLETION_REJECTED,
           hookResult.feedback ?? 'Task completion rejected by hook',
-          { feedback: hookResult.feedback },
+          { feedback: hookResult.feedback }
         );
       }
     }
@@ -445,7 +452,7 @@ task.assigneeId = input.assigneeId;
       if (task.status !== 'in_progress') {
         throw new TaskListError(
           TaskListErrorCode.TASK_NOT_IN_PROGRESS,
-          `Task ${taskId} status changed during hook execution`,
+          `Task ${taskId} status changed during hook execution`
         );
       }
 
@@ -475,14 +482,14 @@ task.assigneeId = input.assigneeId;
       if (!task) {
         throw new TaskListError(
           TaskListErrorCode.TASK_NOT_FOUND,
-          `Task not found: ${taskId}`,
+          `Task not found: ${taskId}`
         );
       }
 
       if (task.status !== 'in_progress') {
         throw new TaskListError(
           TaskListErrorCode.INVALID_STATUS_TRANSITION,
-          `Cannot release task ${taskId} (status: ${task.status})`,
+          `Cannot release task ${taskId} (status: ${task.status})`
         );
       }
 
@@ -509,11 +516,11 @@ task.assigneeId = input.assigneeId;
   getClaimableTasks(teammateId?: string): SharedTask[] {
     return Array.from(this.tasks.values()).filter(task => {
       if (task.status !== 'pending') {
-return false;
-}
+        return false;
+      }
       if (task.assigneeId !== null && task.assigneeId !== teammateId) {
-return false;
-}
+        return false;
+      }
       return true;
     });
   }
@@ -523,7 +530,7 @@ return false;
    */
   getTasksForTeammate(teammateId: string): SharedTask[] {
     return Array.from(this.tasks.values()).filter(
-      task => task.assigneeId === teammateId,
+      task => task.assigneeId === teammateId
     );
   }
 
@@ -606,11 +613,11 @@ return false;
   private resolveDependencies(completedTaskId: string): void {
     for (const task of this.tasks.values()) {
       if (task.status !== 'blocked') {
-continue;
-}
+        continue;
+      }
       if (!task.dependencies.includes(completedTaskId)) {
-continue;
-}
+        continue;
+      }
 
       // Check if ALL dependencies are now completed
       const allDepsCompleted = task.dependencies.every(depId => {
@@ -631,7 +638,7 @@ continue;
    */
   private validateStatusTransition(
     from: SharedTaskStatus,
-    to: SharedTaskStatus,
+    to: SharedTaskStatus
   ): void {
     const allowed: Record<SharedTaskStatus, SharedTaskStatus[]> = {
       pending: ['in_progress', 'blocked'],
@@ -644,7 +651,7 @@ continue;
       throw new TaskListError(
         TaskListErrorCode.INVALID_STATUS_TRANSITION,
         `Cannot transition from '${from}' to '${to}'`,
-        { from, to },
+        { from, to }
       );
     }
   }

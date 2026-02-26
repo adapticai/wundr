@@ -78,11 +78,11 @@ function compileToolPattern(pattern: string): CompiledPattern {
 
 function matchesToolPattern(name: string, pattern: CompiledPattern): boolean {
   if (pattern.kind === 'all') {
-return true;
-}
+    return true;
+  }
   if (pattern.kind === 'exact') {
-return name === pattern.value;
-}
+    return name === pattern.value;
+  }
   return minimatch(name, pattern.value);
 }
 
@@ -151,7 +151,9 @@ export class PermissionGuard {
     this.auditLog.push(entry);
     if (this.auditLog.length > this.maxAuditEntries) {
       // Drop oldest 10%
-      this.auditLog = this.auditLog.slice(Math.floor(this.maxAuditEntries * 0.1));
+      this.auditLog = this.auditLog.slice(
+        Math.floor(this.maxAuditEntries * 0.1)
+      );
     }
     for (const listener of this.auditListeners) {
       try {
@@ -166,7 +168,7 @@ export class PermissionGuard {
     domain: PermissionDomain,
     target: string,
     decision: PermissionDecision,
-    reason: string,
+    reason: string
   ): PermissionCheckResult {
     const entry: AuditEntry = {
       timestamp: Date.now(),
@@ -239,7 +241,7 @@ export class PermissionGuard {
         domain,
         targetPath,
         'deny',
-        'Path contains ".." traversal',
+        'Path contains ".." traversal'
       );
     }
 
@@ -248,15 +250,35 @@ export class PermissionGuard {
       // No read patterns declared -- only allow plugin's own directory
       const resolved = this.resolveTargetPath(targetPath);
       if (resolved.startsWith(this.pluginRoot)) {
-        return this.makeResult(domain, targetPath, 'allow', 'Within plugin root (default)');
+        return this.makeResult(
+          domain,
+          targetPath,
+          'allow',
+          'Within plugin root (default)'
+        );
       }
-      return this.makeResult(domain, targetPath, 'deny', 'No filesystem.read permissions declared');
+      return this.makeResult(
+        domain,
+        targetPath,
+        'deny',
+        'No filesystem.read permissions declared'
+      );
     }
 
     if (this.pathMatchesPatterns(targetPath, patterns)) {
-      return this.makeResult(domain, targetPath, 'allow', 'Matches declared read pattern');
+      return this.makeResult(
+        domain,
+        targetPath,
+        'allow',
+        'Matches declared read pattern'
+      );
     }
-    return this.makeResult(domain, targetPath, 'deny', 'Does not match any declared read pattern');
+    return this.makeResult(
+      domain,
+      targetPath,
+      'deny',
+      'Does not match any declared read pattern'
+    );
   }
 
   /**
@@ -270,19 +292,34 @@ export class PermissionGuard {
         domain,
         targetPath,
         'deny',
-        'Path contains ".." traversal',
+        'Path contains ".." traversal'
       );
     }
 
     const patterns = this.permissions.filesystem.write;
     if (patterns.length === 0) {
-      return this.makeResult(domain, targetPath, 'deny', 'No filesystem.write permissions declared');
+      return this.makeResult(
+        domain,
+        targetPath,
+        'deny',
+        'No filesystem.write permissions declared'
+      );
     }
 
     if (this.pathMatchesPatterns(targetPath, patterns)) {
-      return this.makeResult(domain, targetPath, 'allow', 'Matches declared write pattern');
+      return this.makeResult(
+        domain,
+        targetPath,
+        'allow',
+        'Matches declared write pattern'
+      );
     }
-    return this.makeResult(domain, targetPath, 'deny', 'Does not match any declared write pattern');
+    return this.makeResult(
+      domain,
+      targetPath,
+      'deny',
+      'Does not match any declared write pattern'
+    );
   }
 
   // -----------------------------------------------------------------------
@@ -297,26 +334,40 @@ export class PermissionGuard {
     const target = port ? `${host}:${port}` : host;
 
     const normalizedHost = host.toLowerCase().trim();
-    const allowedHosts = this.permissions.network.hosts.map(h => h.toLowerCase().trim());
+    const allowedHosts = this.permissions.network.hosts.map(h =>
+      h.toLowerCase().trim()
+    );
     const allowedPorts = this.permissions.network.ports;
 
     // Localhost is always allowed for local development
-    if (normalizedHost === 'localhost' || normalizedHost === '127.0.0.1' || normalizedHost === '::1') {
-      return this.makeResult(domain, target, 'allow', 'Localhost always allowed');
+    if (
+      normalizedHost === 'localhost' ||
+      normalizedHost === '127.0.0.1' ||
+      normalizedHost === '::1'
+    ) {
+      return this.makeResult(
+        domain,
+        target,
+        'allow',
+        'Localhost always allowed'
+      );
     }
 
     // Check host
     const hostAllowed = allowedHosts.some(allowed => {
       if (allowed === '*') {
-return true;
-}
+        return true;
+      }
       if (allowed === normalizedHost) {
-return true;
-}
+        return true;
+      }
       // Wildcard subdomain: *.example.com matches foo.example.com
-      if (allowed.startsWith('*.') && normalizedHost.endsWith(allowed.slice(1))) {
-return true;
-}
+      if (
+        allowed.startsWith('*.') &&
+        normalizedHost.endsWith(allowed.slice(1))
+      ) {
+        return true;
+      }
       return false;
     });
 
@@ -325,7 +376,7 @@ return true;
         domain,
         target,
         'deny',
-        `Host "${normalizedHost}" not in declared permissions.network.hosts`,
+        `Host "${normalizedHost}" not in declared permissions.network.hosts`
       );
     }
 
@@ -335,11 +386,16 @@ return true;
         domain,
         target,
         'deny',
-        `Port ${port} not in declared permissions.network.ports`,
+        `Port ${port} not in declared permissions.network.ports`
       );
     }
 
-    return this.makeResult(domain, target, 'allow', 'Host and port match declared permissions');
+    return this.makeResult(
+      domain,
+      target,
+      'allow',
+      'Host and port match declared permissions'
+    );
   }
 
   // -----------------------------------------------------------------------
@@ -359,31 +415,36 @@ return true;
         domain,
         executable,
         'deny',
-        'No process execution permissions declared',
+        'No process execution permissions declared'
       );
     }
 
     const isAllowed = allowed.some(a => {
       if (a === '*') {
-return true;
-}
+        return true;
+      }
       if (a === basename) {
-return true;
-}
+        return true;
+      }
       if (a === executable) {
-return true;
-}
+        return true;
+      }
       return false;
     });
 
     if (isAllowed) {
-      return this.makeResult(domain, executable, 'allow', 'Executable in declared allow list');
+      return this.makeResult(
+        domain,
+        executable,
+        'allow',
+        'Executable in declared allow list'
+      );
     }
     return this.makeResult(
       domain,
       executable,
       'deny',
-      `"${basename}" not in declared permissions.process.allowed`,
+      `"${basename}" not in declared permissions.process.allowed`
     );
   }
 
@@ -399,31 +460,41 @@ return true;
     const allowed = this.permissions.env.read;
 
     if (allowed.length === 0) {
-      return this.makeResult(domain, varName, 'deny', 'No env.read permissions declared');
+      return this.makeResult(
+        domain,
+        varName,
+        'deny',
+        'No env.read permissions declared'
+      );
     }
 
     const isAllowed = allowed.some(a => {
       if (a === '*') {
-return true;
-}
+        return true;
+      }
       if (a === varName) {
-return true;
-}
+        return true;
+      }
       // Prefix match: PLUGIN_* matches PLUGIN_KEY, PLUGIN_SECRET
       if (a.endsWith('*') && varName.startsWith(a.slice(0, -1))) {
-return true;
-}
+        return true;
+      }
       return false;
     });
 
     if (isAllowed) {
-      return this.makeResult(domain, varName, 'allow', 'Env var in declared read list');
+      return this.makeResult(
+        domain,
+        varName,
+        'allow',
+        'Env var in declared read list'
+      );
     }
     return this.makeResult(
       domain,
       varName,
       'deny',
-      `"${varName}" not in declared permissions.env.read`,
+      `"${varName}" not in declared permissions.env.read`
     );
   }
 
@@ -435,30 +506,40 @@ return true;
     const allowed = this.permissions.env.write;
 
     if (allowed.length === 0) {
-      return this.makeResult(domain, varName, 'deny', 'No env.write permissions declared');
+      return this.makeResult(
+        domain,
+        varName,
+        'deny',
+        'No env.write permissions declared'
+      );
     }
 
     const isAllowed = allowed.some(a => {
       if (a === '*') {
-return true;
-}
+        return true;
+      }
       if (a === varName) {
-return true;
-}
+        return true;
+      }
       if (a.endsWith('*') && varName.startsWith(a.slice(0, -1))) {
-return true;
-}
+        return true;
+      }
       return false;
     });
 
     if (isAllowed) {
-      return this.makeResult(domain, varName, 'allow', 'Env var in declared write list');
+      return this.makeResult(
+        domain,
+        varName,
+        'allow',
+        'Env var in declared write list'
+      );
     }
     return this.makeResult(
       domain,
       varName,
       'deny',
-      `"${varName}" not in declared permissions.env.write`,
+      `"${varName}" not in declared permissions.env.write`
     );
   }
 
@@ -480,7 +561,7 @@ return true;
           domain,
           toolName,
           'deny',
-          `Tool "${toolName}" matches deny pattern`,
+          `Tool "${toolName}" matches deny pattern`
         );
       }
     }
@@ -491,7 +572,7 @@ return true;
         domain,
         toolName,
         'deny',
-        'No mcpTools.allow permissions declared',
+        'No mcpTools.allow permissions declared'
       );
     }
 
@@ -501,7 +582,7 @@ return true;
           domain,
           toolName,
           'allow',
-          `Tool "${toolName}" matches allow pattern`,
+          `Tool "${toolName}" matches allow pattern`
         );
       }
     }
@@ -510,7 +591,7 @@ return true;
       domain,
       toolName,
       'deny',
-      `Tool "${toolName}" does not match any allow pattern`,
+      `Tool "${toolName}" does not match any allow pattern`
     );
   }
 
@@ -577,26 +658,31 @@ return true;
   /**
    * Return audit statistics.
    */
-  getAuditStats(): { total: number; allowed: number; denied: number; byDomain: Record<string, { allowed: number; denied: number }> } {
+  getAuditStats(): {
+    total: number;
+    allowed: number;
+    denied: number;
+    byDomain: Record<string, { allowed: number; denied: number }>;
+  } {
     let allowed = 0;
     let denied = 0;
     const byDomain: Record<string, { allowed: number; denied: number }> = {};
 
     for (const entry of this.auditLog) {
       if (entry.decision === 'allow') {
-allowed++;
-} else {
-denied++;
-}
+        allowed++;
+      } else {
+        denied++;
+      }
 
       if (!byDomain[entry.domain]) {
         byDomain[entry.domain] = { allowed: 0, denied: 0 };
       }
       if (entry.decision === 'allow') {
-byDomain[entry.domain]!.allowed++;
-} else {
-byDomain[entry.domain]!.denied++;
-}
+        byDomain[entry.domain]!.allowed++;
+      } else {
+        byDomain[entry.domain]!.denied++;
+      }
     }
 
     return { total: this.auditLog.length, allowed, denied, byDomain };
@@ -615,7 +701,7 @@ export class PermissionDeniedError extends Error {
 
   constructor(result: PermissionCheckResult) {
     super(
-      `Plugin "${result.pluginName}" denied ${result.domain} access to "${result.target}": ${result.reason}`,
+      `Plugin "${result.pluginName}" denied ${result.domain} access to "${result.target}": ${result.reason}`
     );
     this.name = 'PermissionDeniedError';
     this.domain = result.domain;
@@ -661,7 +747,9 @@ export function createPermissionGuard(params: {
  * the permission guard. This is injected into VM and Worker contexts
  * instead of the real `fs` module.
  */
-export function buildSandboxedFsProxy(guard: PermissionGuard): Record<string, (...args: any[]) => any> {
+export function buildSandboxedFsProxy(
+  guard: PermissionGuard
+): Record<string, (...args: any[]) => any> {
   return {
     readFile: async (filePath: string, ...rest: any[]) => {
       guard.requireFilesystemRead(filePath);
@@ -711,7 +799,9 @@ export function buildSandboxedFsProxy(guard: PermissionGuard): Record<string, (.
 /**
  * Build a sandboxed environment variable proxy.
  */
-export function buildSandboxedEnvProxy(guard: PermissionGuard): Record<string, string | undefined> {
+export function buildSandboxedEnvProxy(
+  guard: PermissionGuard
+): Record<string, string | undefined> {
   return new Proxy({} as Record<string, string | undefined>, {
     get(_target, prop: string) {
       const result = guard.checkEnvRead(prop);

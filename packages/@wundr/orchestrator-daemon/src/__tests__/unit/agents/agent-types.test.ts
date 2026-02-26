@@ -68,7 +68,7 @@ describe('AgentTypeSchema', () => {
     'swarm-coordinator',
   ];
 
-  it.each(validTypes)('accepts valid agent type "%s"', (value) => {
+  it.each(validTypes)('accepts valid agent type "%s"', value => {
     const result = AgentTypeSchema.safeParse(value);
     expect(result.success).toBe(true);
     if (result.success) {
@@ -101,7 +101,7 @@ describe('AgentTypeSchema', () => {
 // =============================================================================
 
 describe('AgentTierSchema', () => {
-  it.each([0, 1, 2, 3])('accepts valid tier %d', (value) => {
+  it.each([0, 1, 2, 3])('accepts valid tier %d', value => {
     const result = AgentTierSchema.safeParse(value);
     expect(result.success).toBe(true);
     if (result.success) {
@@ -134,9 +134,14 @@ describe('AgentTierSchema', () => {
 // =============================================================================
 
 describe('AgentPrioritySchema', () => {
-  const validPriorities: AgentPriority[] = ['critical', 'high', 'medium', 'low'];
+  const validPriorities: AgentPriority[] = [
+    'critical',
+    'high',
+    'medium',
+    'low',
+  ];
 
-  it.each(validPriorities)('accepts valid priority "%s"', (value) => {
+  it.each(validPriorities)('accepts valid priority "%s"', value => {
     const result = AgentPrioritySchema.safeParse(value);
     expect(result.success).toBe(true);
   });
@@ -158,7 +163,7 @@ describe('AgentPrioritySchema', () => {
 describe('ModelPreferenceSchema', () => {
   const validModels: ModelPreference[] = ['opus', 'sonnet', 'haiku'];
 
-  it.each(validModels)('accepts valid model "%s"', (value) => {
+  it.each(validModels)('accepts valid model "%s"', value => {
     const result = ModelPreferenceSchema.safeParse(value);
     expect(result.success).toBe(true);
   });
@@ -180,7 +185,7 @@ describe('ModelPreferenceSchema', () => {
 describe('PermissionModeSchema', () => {
   const validModes: PermissionMode[] = ['acceptEdits', 'ask', 'deny'];
 
-  it.each(validModes)('accepts valid permission mode "%s"', (value) => {
+  it.each(validModes)('accepts valid permission mode "%s"', value => {
     const result = PermissionModeSchema.safeParse(value);
     expect(result.success).toBe(true);
   });
@@ -202,7 +207,7 @@ describe('PermissionModeSchema', () => {
 describe('CleanupModeSchema', () => {
   const validModes: CleanupMode[] = ['delete', 'keep'];
 
-  it.each(validModes)('accepts valid cleanup mode "%s"', (value) => {
+  it.each(validModes)('accepts valid cleanup mode "%s"', value => {
     expect(CleanupModeSchema.safeParse(value).success).toBe(true);
   });
 
@@ -229,7 +234,7 @@ describe('RunStatusSchema', () => {
     'cancelled',
   ];
 
-  it.each(validStatuses)('accepts valid status "%s"', (value) => {
+  it.each(validStatuses)('accepts valid status "%s"', value => {
     expect(RunStatusSchema.safeParse(value).success).toBe(true);
   });
 
@@ -250,7 +255,7 @@ describe('RunStatusSchema', () => {
 describe('MemoryScopeSchema', () => {
   const validScopes: MemoryScope[] = ['user', 'project', 'local', 'global'];
 
-  it.each(validScopes)('accepts valid memory scope "%s"', (value) => {
+  it.each(validScopes)('accepts valid memory scope "%s"', value => {
     const result = MemoryScopeSchema.safeParse(value);
     expect(result.success).toBe(true);
     if (result.success) {
@@ -288,7 +293,7 @@ describe('SynthesisStrategySchema', () => {
     'chain',
   ];
 
-  it.each(validStrategies)('accepts valid strategy "%s"', (value) => {
+  it.each(validStrategies)('accepts valid strategy "%s"', value => {
     expect(SynthesisStrategySchema.safeParse(value).success).toBe(true);
   });
 
@@ -313,7 +318,7 @@ describe('SpawnModeSchema', () => {
     'tmux-session',
   ];
 
-  it.each(validModes)('accepts valid spawn mode "%s"', (value) => {
+  it.each(validModes)('accepts valid spawn mode "%s"', value => {
     expect(SpawnModeSchema.safeParse(value).success).toBe(true);
   });
 
@@ -416,20 +421,20 @@ describe('EscalationTriggersSchema', () => {
   });
 
   it('accepts confidence boundary values', () => {
-    expect(
-      EscalationTriggersSchema.safeParse({ confidence: 0 }).success,
-    ).toBe(true);
-    expect(
-      EscalationTriggersSchema.safeParse({ confidence: 1 }).success,
-    ).toBe(true);
+    expect(EscalationTriggersSchema.safeParse({ confidence: 0 }).success).toBe(
+      true
+    );
+    expect(EscalationTriggersSchema.safeParse({ confidence: 1 }).success).toBe(
+      true
+    );
   });
 
   it('rejects confidence values outside [0,1]', () => {
     expect(
-      EscalationTriggersSchema.safeParse({ confidence: -0.1 }).success,
+      EscalationTriggersSchema.safeParse({ confidence: -0.1 }).success
     ).toBe(false);
     expect(
-      EscalationTriggersSchema.safeParse({ confidence: 1.1 }).success,
+      EscalationTriggersSchema.safeParse({ confidence: 1.1 }).success
     ).toBe(false);
   });
 
@@ -500,7 +505,7 @@ describe('EscalationProtocolSchema', () => {
 
   it('accepts partial protocol', () => {
     expect(
-      EscalationProtocolSchema.safeParse({ automatic: ['restart'] }).success,
+      EscalationProtocolSchema.safeParse({ automatic: ['restart'] }).success
     ).toBe(true);
   });
 
@@ -653,11 +658,11 @@ describe('AgentMetadataSchema', () => {
   it('validates worktreeRequirement enum values', () => {
     expect(
       AgentMetadataSchema.safeParse({ name: 'a', worktreeRequirement: 'read' })
-        .success,
+        .success
     ).toBe(true);
     expect(
       AgentMetadataSchema.safeParse({ name: 'a', worktreeRequirement: 'write' })
-        .success,
+        .success
     ).toBe(true);
   });
 
@@ -774,9 +779,9 @@ describe('DEFAULT_RESOURCE_LIMITS', () => {
 
   it('has the expected per-tier limits', () => {
     const perTier = DEFAULT_RESOURCE_LIMITS.maxConcurrentPerTier;
-    expect(perTier[0]).toBe(2);  // Tier 0: evaluators
-    expect(perTier[1]).toBe(3);  // Tier 1: orchestrators
-    expect(perTier[2]).toBe(5);  // Tier 2: session managers
+    expect(perTier[0]).toBe(2); // Tier 0: evaluators
+    expect(perTier[1]).toBe(3); // Tier 1: orchestrators
+    expect(perTier[2]).toBe(5); // Tier 2: session managers
     expect(perTier[3]).toBe(10); // Tier 3: specialists
   });
 
@@ -788,13 +793,13 @@ describe('DEFAULT_RESOURCE_LIMITS', () => {
   });
 
   it('has expected timeout defaults', () => {
-    expect(DEFAULT_RESOURCE_LIMITS.defaultTimeoutMs).toBe(300_000);    // 5 min
-    expect(DEFAULT_RESOURCE_LIMITS.maxTimeoutMs).toBe(3_600_000);       // 1 hour
+    expect(DEFAULT_RESOURCE_LIMITS.defaultTimeoutMs).toBe(300_000); // 5 min
+    expect(DEFAULT_RESOURCE_LIMITS.maxTimeoutMs).toBe(3_600_000); // 1 hour
   });
 
   it('default timeout does not exceed max timeout', () => {
     expect(DEFAULT_RESOURCE_LIMITS.defaultTimeoutMs).toBeLessThanOrEqual(
-      DEFAULT_RESOURCE_LIMITS.maxTimeoutMs,
+      DEFAULT_RESOURCE_LIMITS.maxTimeoutMs
     );
   });
 

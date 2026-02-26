@@ -83,7 +83,7 @@ export interface TaskCompletedHookContext {
  * Should return exit code and optional feedback message.
  */
 export type HookHandlerFn = (
-  context: TeammateIdleHookContext | TaskCompletedHookContext,
+  context: TeammateIdleHookContext | TaskCompletedHookContext
 ) => Promise<{ exitCode: HookExitCode; feedback?: string }>;
 
 export interface TeamHooksEvents {
@@ -128,8 +128,8 @@ export class TeamHooks extends EventEmitter<TeamHooksEvents> {
   removeHook(teamId: string, hookType: HookType): boolean {
     const teamHooks = this.hooks.get(teamId);
     if (!teamHooks) {
-return false;
-}
+      return false;
+    }
 
     const removed = teamHooks.delete(hookType);
     if (removed) {
@@ -149,8 +149,8 @@ return false;
   getRegisteredHooks(teamId: string): HookConfig[] {
     const teamHooks = this.hooks.get(teamId);
     if (!teamHooks) {
-return [];
-}
+      return [];
+    }
     return Array.from(teamHooks.values());
   }
 
@@ -160,8 +160,8 @@ return [];
   hasHook(teamId: string, hookType: HookType): boolean {
     const teamHooks = this.hooks.get(teamId);
     if (!teamHooks) {
-return false;
-}
+      return false;
+    }
     const config = teamHooks.get(hookType);
     return config !== undefined && config.enabled;
   }
@@ -184,7 +184,7 @@ return false;
    *          { keepWorking: false } otherwise.
    */
   async executeTeammateIdleHook(
-    context: TeammateIdleHookContext,
+    context: TeammateIdleHookContext
   ): Promise<{ keepWorking: boolean; feedback?: string }> {
     const config = this.getHookConfig(context.teamId, 'TeammateIdle');
     if (!config) {
@@ -192,12 +192,18 @@ return false;
     }
 
     const envVars = this.buildTeammateIdleEnv(context);
-    const result = await this.executeHook(context.teamId, config, envVars, context);
+    const result = await this.executeHook(
+      context.teamId,
+      config,
+      envVars,
+      context
+    );
 
     this.emit('hook:executed', context.teamId, 'TeammateIdle', result);
 
     if (result.exitCode === 2) {
-      const feedback = result.stdout.trim() || 'Continue working on remaining tasks.';
+      const feedback =
+        result.stdout.trim() || 'Continue working on remaining tasks.';
       return { keepWorking: true, feedback };
     }
 
@@ -216,7 +222,7 @@ return false;
    *          { allowed: false, feedback } if hook rejects (exit code 2).
    */
   async executeTaskCompletedHook(
-    context: TaskCompletedHookContext,
+    context: TaskCompletedHookContext
   ): Promise<{ allowed: boolean; feedback?: string }> {
     const config = this.getHookConfig(context.teamId, 'TaskCompleted');
     if (!config) {
@@ -224,12 +230,19 @@ return false;
     }
 
     const envVars = this.buildTaskCompletedEnv(context);
-    const result = await this.executeHook(context.teamId, config, envVars, context);
+    const result = await this.executeHook(
+      context.teamId,
+      config,
+      envVars,
+      context
+    );
 
     this.emit('hook:executed', context.teamId, 'TaskCompleted', result);
 
     if (result.exitCode === 2) {
-      const feedback = result.stdout.trim() || 'Task completion rejected. Please review and retry.';
+      const feedback =
+        result.stdout.trim() ||
+        'Task completion rejected. Please review and retry.';
       return { allowed: false, feedback };
     }
 
@@ -283,13 +296,13 @@ return false;
   private getHookConfig(teamId: string, hookType: HookType): HookConfig | null {
     const teamHooks = this.hooks.get(teamId);
     if (!teamHooks) {
-return null;
-}
+      return null;
+    }
 
     const config = teamHooks.get(hookType);
     if (!config || !config.enabled) {
-return null;
-}
+      return null;
+    }
 
     return config;
   }
@@ -301,7 +314,7 @@ return null;
     teamId: string,
     config: HookConfig,
     envVars: Record<string, string>,
-    context: TeammateIdleHookContext | TaskCompletedHookContext,
+    context: TeammateIdleHookContext | TaskCompletedHookContext
   ): Promise<HookResult> {
     try {
       if (config.mode === 'function' && config.handler) {
@@ -339,7 +352,7 @@ return null;
    */
   private async executeInProcessHook(
     config: HookConfig,
-    context: TeammateIdleHookContext | TaskCompletedHookContext,
+    context: TeammateIdleHookContext | TaskCompletedHookContext
   ): Promise<HookResult> {
     const startTime = Date.now();
 
@@ -361,7 +374,8 @@ return null;
         timedOut: false,
       };
     } catch (error) {
-      const isTimeout = error instanceof Error && error.message === 'Hook timed out';
+      const isTimeout =
+        error instanceof Error && error.message === 'Hook timed out';
       return {
         exitCode: 1,
         stdout: '',
@@ -378,7 +392,7 @@ return null;
    */
   private executeCommandHook(
     config: HookConfig,
-    envVars: Record<string, string>,
+    envVars: Record<string, string>
   ): Promise<HookResult> {
     return new Promise<HookResult>(resolve => {
       const startTime = Date.now();
@@ -413,8 +427,8 @@ return null;
 
       const finish = (exitCode: number) => {
         if (settled) {
-return;
-}
+          return;
+        }
         settled = true;
         clearTimeout(timeoutHandle);
 
@@ -445,7 +459,9 @@ return;
   // Environment Variable Builders
   // -------------------------------------------------------------------------
 
-  private buildTeammateIdleEnv(context: TeammateIdleHookContext): Record<string, string> {
+  private buildTeammateIdleEnv(
+    context: TeammateIdleHookContext
+  ): Record<string, string> {
     return {
       WUNDR_HOOK_TYPE: 'TeammateIdle',
       WUNDR_TEAM_ID: context.teamId,
@@ -457,7 +473,9 @@ return;
     };
   }
 
-  private buildTaskCompletedEnv(context: TaskCompletedHookContext): Record<string, string> {
+  private buildTaskCompletedEnv(
+    context: TaskCompletedHookContext
+  ): Record<string, string> {
     return {
       WUNDR_HOOK_TYPE: 'TaskCompleted',
       WUNDR_TEAM_ID: context.teamId,

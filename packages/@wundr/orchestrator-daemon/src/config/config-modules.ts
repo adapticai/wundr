@@ -56,7 +56,7 @@ export interface ConfigModuleRegistry {
   notifyChange: (
     changedPaths: string[],
     newConfig: WundrConfig,
-    oldConfig: WundrConfig,
+    oldConfig: WundrConfig
   ) => Promise<string[]>;
   /** Get modules that require restart for given changed paths */
   getRestartRequired: (changedPaths: string[]) => string[];
@@ -86,10 +86,7 @@ function getNestedValue(obj: unknown, dotPath: string): unknown {
 }
 
 function pathMatchesModule(changedPath: string, modulePath: string): boolean {
-  return (
-    changedPath === modulePath ||
-    changedPath.startsWith(`${modulePath}.`)
-  );
+  return changedPath === modulePath || changedPath.startsWith(`${modulePath}.`);
 }
 
 // =============================================================================
@@ -98,7 +95,7 @@ function pathMatchesModule(changedPath: string, modulePath: string): boolean {
 
 function createConfigModule<T>(
   definition: ConfigModuleDefinition<T>,
-  getRootConfig: () => WundrConfig,
+  getRootConfig: () => WundrConfig
 ): ConfigModule<T> {
   const configPath = definition.configPath ?? definition.id;
   let cached: { value: T; rootRef: WundrConfig } | null = null;
@@ -145,7 +142,7 @@ function createConfigModule<T>(
         return { ok: true };
       }
       const message = result.error.errors
-        .map((e) => `${e.path.join('.')}: ${e.message}`)
+        .map(e => `${e.path.join('.')}: ${e.message}`)
         .join('; ');
       return { ok: false, error: message };
     },
@@ -163,24 +160,23 @@ function createConfigModule<T>(
  * caching, validation, and change notification.
  */
 export function createConfigModuleRegistry(
-  initialConfig: WundrConfig,
+  initialConfig: WundrConfig
 ): ConfigModuleRegistry {
   let rootConfig = initialConfig;
   const modules = new Map<string, ConfigModule<unknown>>();
   const definitions = new Map<string, ConfigModuleDefinition<unknown>>();
 
-  function register<T>(
-    definition: ConfigModuleDefinition<T>,
-  ): ConfigModule<T> {
+  function register<T>(definition: ConfigModuleDefinition<T>): ConfigModule<T> {
     if (modules.has(definition.id)) {
-      throw new Error(
-        `Config module "${definition.id}" is already registered`,
-      );
+      throw new Error(`Config module "${definition.id}" is already registered`);
     }
 
     const module = createConfigModule(definition, () => rootConfig);
     modules.set(definition.id, module as ConfigModule<unknown>);
-    definitions.set(definition.id, definition as ConfigModuleDefinition<unknown>);
+    definitions.set(
+      definition.id,
+      definition as ConfigModuleDefinition<unknown>
+    );
 
     return module;
   }
@@ -204,25 +200,23 @@ export function createConfigModuleRegistry(
   async function notifyChange(
     changedPaths: string[],
     newConfig: WundrConfig,
-    oldConfig: WundrConfig,
+    oldConfig: WundrConfig
   ): Promise<string[]> {
     const handled: string[] = [];
 
     for (const [id, def] of definitions) {
       const modulePath = def.configPath ?? id;
-      const affected = changedPaths.some((p) =>
-        pathMatchesModule(p, modulePath),
-      );
+      const affected = changedPaths.some(p => pathMatchesModule(p, modulePath));
 
       if (!affected) {
-continue;
-}
+        continue;
+      }
       if (def.requiresRestart) {
-continue;
-}
+        continue;
+      }
       if (!def.onReload) {
-continue;
-}
+        continue;
+      }
 
       const prevValue = getNestedValue(oldConfig, modulePath);
       const nextValue = getNestedValue(newConfig, modulePath);
@@ -233,7 +227,7 @@ continue;
       } catch (err) {
         // Log but don't fail other modules
         console.error(
-          `Config module "${id}" reload handler failed: ${String(err)}`,
+          `Config module "${id}" reload handler failed: ${String(err)}`
         );
       }
     }
@@ -246,13 +240,11 @@ continue;
 
     for (const [id, def] of definitions) {
       if (!def.requiresRestart) {
-continue;
-}
+        continue;
+      }
 
       const modulePath = def.configPath ?? id;
-      const affected = changedPaths.some((p) =>
-        pathMatchesModule(p, modulePath),
-      );
+      const affected = changedPaths.some(p => pathMatchesModule(p, modulePath));
 
       if (affected) {
         result.push(id);
@@ -377,9 +369,7 @@ export const BUILTIN_MODULE_DEFINITIONS: ConfigModuleDefinition<unknown>[] = [
 /**
  * Register all built-in module definitions with a registry.
  */
-export function registerBuiltinModules(
-  registry: ConfigModuleRegistry,
-): void {
+export function registerBuiltinModules(registry: ConfigModuleRegistry): void {
   for (const def of BUILTIN_MODULE_DEFINITIONS) {
     registry.register(def);
   }

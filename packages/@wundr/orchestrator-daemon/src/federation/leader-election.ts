@@ -65,7 +65,7 @@ export interface ElectionEvents {
   'election:started': (term: number) => void;
   'election:won': (term: number) => void;
   'election:lost': (term: number, winnerId: string) => void;
-  'error': (error: Error, context: string) => void;
+  error: (error: Error, context: string) => void;
 }
 
 /**
@@ -83,7 +83,12 @@ export interface ElectionStore {
    * Set a key with a TTL (overwrite). Used by the leader to refresh.
    * Returns true only if the current value matches expectedValue.
    */
-  setIfMatch(key: string, value: string, ttlMs: number, expectedValue: string): Promise<boolean>;
+  setIfMatch(
+    key: string,
+    value: string,
+    ttlMs: number,
+    expectedValue: string
+  ): Promise<boolean>;
 
   /**
    * Get the current value of a key.
@@ -110,8 +115,8 @@ export class InMemoryElectionStore implements ElectionStore {
   async setNX(key: string, value: string, ttlMs: number): Promise<boolean> {
     this.cleanup();
     if (this.data.has(key)) {
-return false;
-}
+      return false;
+    }
     this.data.set(key, { value, expiresAt: Date.now() + ttlMs });
     return true;
   }
@@ -120,13 +125,13 @@ return false;
     key: string,
     value: string,
     ttlMs: number,
-    expectedValue: string,
+    expectedValue: string
   ): Promise<boolean> {
     this.cleanup();
     const entry = this.data.get(key);
     if (!entry || entry.value !== expectedValue) {
-return false;
-}
+      return false;
+    }
     this.data.set(key, { value, expiresAt: Date.now() + ttlMs });
     return true;
   }
@@ -140,8 +145,8 @@ return false;
     this.cleanup();
     const entry = this.data.get(key);
     if (!entry || entry.value !== expectedValue) {
-return false;
-}
+      return false;
+    }
     this.data.delete(key);
     return true;
   }
@@ -201,7 +206,7 @@ export class LeaderElection extends EventEmitter<ElectionEvents> {
   constructor(
     nodeId: string,
     config: Partial<ElectionConfig> = {},
-    store?: ElectionStore,
+    store?: ElectionStore
   ) {
     super();
     this.nodeId = nodeId;
@@ -209,7 +214,7 @@ export class LeaderElection extends EventEmitter<ElectionEvents> {
     this.store = store ?? new InMemoryElectionStore();
     this.logger = new Logger(
       'LeaderElection',
-      this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO,
+      this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO
     );
 
     this.state = {
@@ -232,8 +237,8 @@ export class LeaderElection extends EventEmitter<ElectionEvents> {
    */
   async start(): Promise<void> {
     if (this.running) {
-return;
-}
+      return;
+    }
     this.running = true;
 
     this.logger.info(`Starting leader election for node ${this.nodeId}`);
@@ -266,8 +271,8 @@ return;
    */
   async stop(): Promise<void> {
     if (!this.running) {
-return;
-}
+      return;
+    }
     this.running = false;
 
     this.logger.info('Stopping leader election');
@@ -343,14 +348,14 @@ return;
     term: number;
   } | null> {
     if (!this.store.isConnected()) {
-return null;
-}
+      return null;
+    }
 
     try {
       const leaseValue = await this.store.get(this.leaseKey());
       if (!leaseValue) {
-return null;
-}
+        return null;
+      }
 
       const parsed = JSON.parse(leaseValue);
       return { leaderId: parsed.leaderId, term: parsed.term };
@@ -388,7 +393,7 @@ return null;
     const acquired = await this.store.setNX(
       this.leaseKey(),
       leaseValue,
-      this.config.leaseTimeout,
+      this.config.leaseTimeout
     );
 
     if (acquired) {
@@ -406,9 +411,12 @@ return null;
       const existing = await this.discoverLeader();
       if (existing) {
         this.state.leaderId = existing.leaderId;
-        this.state.currentTerm = Math.max(this.state.currentTerm, existing.term);
+        this.state.currentTerm = Math.max(
+          this.state.currentTerm,
+          existing.term
+        );
         this.logger.info(
-          `Lost election for term ${newTerm}; leader is ${existing.leaderId}`,
+          `Lost election for term ${newTerm}; leader is ${existing.leaderId}`
         );
         this.emit('election:lost', newTerm, existing.leaderId);
       }
@@ -487,7 +495,7 @@ return null;
       const acquired = await this.store.setNX(
         this.leaseKey(),
         leaseValue,
-        this.config.leaseTimeout,
+        this.config.leaseTimeout
       );
 
       if (!acquired) {
@@ -519,7 +527,7 @@ return null;
         this.leaseKey(),
         newLeaseValue,
         this.config.leaseTimeout,
-        currentLease,
+        currentLease
       );
 
       if (!refreshed) {
@@ -548,13 +556,11 @@ return null;
 
     this.electionTimer = setTimeout(async () => {
       if (!this.running) {
-return;
-}
+        return;
+      }
 
       if (this.state.role === 'follower') {
-        this.logger.info(
-          `Election timeout (${timeout}ms); starting election`,
-        );
+        this.logger.info(`Election timeout (${timeout}ms); starting election`);
         await this.tryBecomeLeader();
       }
     }, timeout);
@@ -618,8 +624,8 @@ return;
   private transitionTo(newRole: ElectionRole): void {
     const oldRole = this.state.role;
     if (oldRole === newRole) {
-return;
-}
+      return;
+    }
 
     this.state.role = newRole;
     this.logger.info(`Role transition: ${oldRole} -> ${newRole}`);
@@ -628,8 +634,8 @@ return;
 
   private advanceTerm(newTerm: number): void {
     if (newTerm <= this.state.currentTerm) {
-return;
-}
+      return;
+    }
 
     const oldTerm = this.state.currentTerm;
     this.state.currentTerm = newTerm;

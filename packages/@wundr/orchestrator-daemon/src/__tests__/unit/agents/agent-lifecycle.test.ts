@@ -22,9 +22,7 @@ import * as fs from 'fs';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { AgentLifecycleManager } from '../../../agents/agent-lifecycle';
-import {
-  REGISTRY_VERSION,
-} from '../../../agents/agent-types';
+import { REGISTRY_VERSION } from '../../../agents/agent-types';
 
 import type { AgentLifecycleOptions } from '../../../agents/agent-lifecycle';
 import type { AgentRegistry } from '../../../agents/agent-registry';
@@ -56,7 +54,7 @@ vi.mock('fs', () => {
 // =============================================================================
 
 function makeDefinition(
-  overrides: Partial<AgentDefinition> & { id: string } = { id: 'test-agent' },
+  overrides: Partial<AgentDefinition> & { id: string } = { id: 'test-agent' }
 ): AgentDefinition {
   return {
     id: overrides.id,
@@ -82,10 +80,12 @@ function makeDefinition(
 }
 
 function makeMockRegistry(
-  definitions: Map<string, AgentDefinition> = new Map(),
+  definitions: Map<string, AgentDefinition> = new Map()
 ): AgentRegistry {
   return {
-    get: vi.fn((agentId: string) => definitions.get(agentId.toLowerCase().trim())),
+    get: vi.fn((agentId: string) =>
+      definitions.get(agentId.toLowerCase().trim())
+    ),
     resolveMemoryScope: vi.fn((_agentId: string) => 'local'),
     resolvePermissionChain: vi.fn((agentId: string) => [agentId]),
   } as unknown as AgentRegistry;
@@ -103,11 +103,17 @@ function makeSpawnParams(overrides: Record<string, unknown> = {}) {
 
 function createManager(
   overrides: Partial<AgentLifecycleOptions> = {},
-  definitions?: Map<string, AgentDefinition>,
-): { manager: AgentLifecycleManager; registry: AgentRegistry; logger: ReturnType<typeof vi.fn> } {
-  const defs = definitions ?? new Map<string, AgentDefinition>([
-    ['test-agent', makeDefinition({ id: 'test-agent' })],
-  ]);
+  definitions?: Map<string, AgentDefinition>
+): {
+  manager: AgentLifecycleManager;
+  registry: AgentRegistry;
+  logger: ReturnType<typeof vi.fn>;
+} {
+  const defs =
+    definitions ??
+    new Map<string, AgentDefinition>([
+      ['test-agent', makeDefinition({ id: 'test-agent' })],
+    ]);
   const registry = makeMockRegistry(defs);
   const logger = vi.fn();
 
@@ -181,7 +187,7 @@ describe('AgentLifecycleManager', () => {
     it('should throw if agent definition not found', () => {
       const { manager } = createManager();
       expect(() =>
-        manager.spawn(makeSpawnParams({ agentId: 'nonexistent' })),
+        manager.spawn(makeSpawnParams({ agentId: 'nonexistent' }))
       ).toThrow('Agent "nonexistent" not found in registry');
     });
 
@@ -190,7 +196,9 @@ describe('AgentLifecycleManager', () => {
         resourceLimits: { maxConcurrentAgents: 1 },
       });
       manager.spawn(makeSpawnParams());
-      expect(() => manager.spawn(makeSpawnParams())).toThrow('resource limits exceeded');
+      expect(() => manager.spawn(makeSpawnParams())).toThrow(
+        'resource limits exceeded'
+      );
     });
 
     it('should throw if per-type concurrent limit is reached', () => {
@@ -198,13 +206,19 @@ describe('AgentLifecycleManager', () => {
         resourceLimits: { maxConcurrentPerType: 1 },
       });
       manager.spawn(makeSpawnParams());
-      expect(() => manager.spawn(makeSpawnParams())).toThrow('resource limits exceeded');
+      expect(() => manager.spawn(makeSpawnParams())).toThrow(
+        'resource limits exceeded'
+      );
     });
 
     it('should throw if per-agent maxInstances limit is reached', () => {
       const def = makeDefinition({
         id: 'test-agent',
-        metadata: { name: 'test-agent', type: 'developer', maxInstances: 1 } as AgentDefinition['metadata'],
+        metadata: {
+          name: 'test-agent',
+          type: 'developer',
+          maxInstances: 1,
+        } as AgentDefinition['metadata'],
       });
       const defs = new Map([['test-agent', def]]);
       const { manager } = createManager({}, defs);
@@ -229,9 +243,11 @@ describe('AgentLifecycleManager', () => {
       ]);
       const { manager } = createManager({}, defs);
 
-      const parentRecord = manager.spawn(makeSpawnParams({ agentId: 'parent-agent' }));
+      const parentRecord = manager.spawn(
+        makeSpawnParams({ agentId: 'parent-agent' })
+      );
       expect(() =>
-        manager.spawn(makeSpawnParams({ parentRunId: parentRecord.runId })),
+        manager.spawn(makeSpawnParams({ parentRunId: parentRecord.runId }))
       ).toThrow('not allowed to spawn sub-agents');
     });
 
@@ -266,11 +282,11 @@ describe('AgentLifecycleManager', () => {
         makeSpawnParams({
           agentId: 'parent-agent',
           toolRestrictions: { allowed: ['read', 'write'] },
-        }),
+        })
       );
 
       const childRecord = manager.spawn(
-        makeSpawnParams({ parentRunId: parentRecord.runId }),
+        makeSpawnParams({ parentRunId: parentRecord.runId })
       );
 
       expect(childRecord.effectiveToolRestrictions).toEqual({
@@ -280,10 +296,9 @@ describe('AgentLifecycleManager', () => {
 
     it('should resolve permission chain IDs', () => {
       const { manager, registry } = createManager();
-      (registry.resolvePermissionChain as ReturnType<typeof vi.fn>).mockReturnValue([
-        'root-agent',
-        'test-agent',
-      ]);
+      (
+        registry.resolvePermissionChain as ReturnType<typeof vi.fn>
+      ).mockReturnValue(['root-agent', 'test-agent']);
 
       const record = manager.spawn(makeSpawnParams());
       expect(record.permissionChainIds).toEqual(['root-agent', 'test-agent']);
@@ -306,7 +321,9 @@ describe('AgentLifecycleManager', () => {
 
     it('should set label and optional fields', () => {
       const { manager } = createManager();
-      const record = manager.spawn(makeSpawnParams({ label: 'important task' }));
+      const record = manager.spawn(
+        makeSpawnParams({ label: 'important task' })
+      );
       expect(record.label).toBe('important task');
     });
   });
@@ -321,7 +338,12 @@ describe('AgentLifecycleManager', () => {
       // Use a very large heartbeat interval to prevent auto health checks
       // from killing the agent during advanceTimersByTime
       const { manager } = createManager({
-        heartbeat: { intervalMs: 999_999, missedThreshold: 3, autoRestart: false, maxRestarts: 0 },
+        heartbeat: {
+          intervalMs: 999_999,
+          missedThreshold: 3,
+          autoRestart: false,
+          maxRestarts: 0,
+        },
       });
       const record = manager.spawn(makeSpawnParams());
       const spawnTime = record.lastHeartbeat!;
@@ -421,7 +443,12 @@ describe('AgentLifecycleManager', () => {
 
     it('should not flag agents that have recent heartbeats', () => {
       const { manager } = createManager({
-        heartbeat: { intervalMs: 1000, missedThreshold: 3, autoRestart: false, maxRestarts: 0 },
+        heartbeat: {
+          intervalMs: 1000,
+          missedThreshold: 3,
+          autoRestart: false,
+          maxRestarts: 0,
+        },
       });
       const record = manager.spawn(makeSpawnParams());
 
@@ -444,7 +471,12 @@ describe('AgentLifecycleManager', () => {
 
     it('should update missedHeartbeats count as time elapses', () => {
       const { manager } = createManager({
-        heartbeat: { intervalMs: 1000, missedThreshold: 10, autoRestart: false, maxRestarts: 0 },
+        heartbeat: {
+          intervalMs: 1000,
+          missedThreshold: 10,
+          autoRestart: false,
+          maxRestarts: 0,
+        },
       });
       const record = manager.spawn(makeSpawnParams());
 
@@ -461,7 +493,12 @@ describe('AgentLifecycleManager', () => {
       const onAgentDead = vi.fn();
       const { manager } = createManager({
         onAgentDead,
-        heartbeat: { intervalMs: 1000, missedThreshold: 3, autoRestart: false, maxRestarts: 0 },
+        heartbeat: {
+          intervalMs: 1000,
+          missedThreshold: 3,
+          autoRestart: false,
+          maxRestarts: 0,
+        },
       });
       const record = manager.spawn(makeSpawnParams());
 
@@ -645,7 +682,7 @@ describe('AgentLifecycleManager', () => {
 
       expect(fs.writeFileSync).toHaveBeenCalled();
       const written = JSON.parse(
-        vi.mocked(fs.writeFileSync).mock.calls[0][1] as string,
+        vi.mocked(fs.writeFileSync).mock.calls[0][1] as string
       ) as PersistedAgentRegistry;
       expect(written.agentStates).toBeDefined();
       expect(written.agentStates!['my-agent'].agentId).toBe('my-agent');
@@ -733,7 +770,11 @@ describe('AgentLifecycleManager', () => {
     it('should return true when under the per-agent limit', () => {
       const def = makeDefinition({
         id: 'test-agent',
-        metadata: { name: 'test-agent', type: 'developer', maxInstances: 3 } as AgentDefinition['metadata'],
+        metadata: {
+          name: 'test-agent',
+          type: 'developer',
+          maxInstances: 3,
+        } as AgentDefinition['metadata'],
       });
       const defs = new Map([['test-agent', def]]);
       const { manager } = createManager({}, defs);
@@ -745,7 +786,11 @@ describe('AgentLifecycleManager', () => {
     it('should return false when at the per-agent limit', () => {
       const def = makeDefinition({
         id: 'test-agent',
-        metadata: { name: 'test-agent', type: 'developer', maxInstances: 1 } as AgentDefinition['metadata'],
+        metadata: {
+          name: 'test-agent',
+          type: 'developer',
+          maxInstances: 1,
+        } as AgentDefinition['metadata'],
       });
       const defs = new Map([['test-agent', def]]);
       const { manager } = createManager({}, defs);
@@ -757,14 +802,20 @@ describe('AgentLifecycleManager', () => {
     it('should use maxConcurrentPerAgent from resource limits as fallback', () => {
       const def = makeDefinition({
         id: 'test-agent',
-        metadata: { name: 'test-agent', type: 'developer' } as AgentDefinition['metadata'],
+        metadata: {
+          name: 'test-agent',
+          type: 'developer',
+        } as AgentDefinition['metadata'],
       });
       const defs = new Map([['test-agent', def]]);
-      const { manager } = createManager({
-        resourceLimits: {
-          maxConcurrentPerAgent: { 'test-agent': 1 },
+      const { manager } = createManager(
+        {
+          resourceLimits: {
+            maxConcurrentPerAgent: { 'test-agent': 1 },
+          },
         },
-      }, defs);
+        defs
+      );
 
       manager.spawn(makeSpawnParams());
       expect(manager.canSpawnAgent('test-agent')).toBe(false);
@@ -810,7 +861,10 @@ describe('AgentLifecycleManager', () => {
     it('should return only runs with the given parentRunId', () => {
       const parentDef = makeDefinition({
         id: 'parent-agent',
-        metadata: { name: 'parent-agent', type: 'coordinator' } as AgentDefinition['metadata'],
+        metadata: {
+          name: 'parent-agent',
+          type: 'coordinator',
+        } as AgentDefinition['metadata'],
       });
       const childDef = makeDefinition({ id: 'test-agent' });
       const defs = new Map([
@@ -819,9 +873,15 @@ describe('AgentLifecycleManager', () => {
       ]);
       const { manager } = createManager({}, defs);
 
-      const parent = manager.spawn(makeSpawnParams({ agentId: 'parent-agent' }));
-      const child1 = manager.spawn(makeSpawnParams({ parentRunId: parent.runId }));
-      const child2 = manager.spawn(makeSpawnParams({ parentRunId: parent.runId }));
+      const parent = manager.spawn(
+        makeSpawnParams({ agentId: 'parent-agent' })
+      );
+      const child1 = manager.spawn(
+        makeSpawnParams({ parentRunId: parent.runId })
+      );
+      const child2 = manager.spawn(
+        makeSpawnParams({ parentRunId: parent.runId })
+      );
       // Unrelated agent
       manager.spawn(makeSpawnParams({ agentId: 'parent-agent' }));
 
@@ -878,7 +938,12 @@ describe('AgentLifecycleManager', () => {
       // Use a very large heartbeat interval so the internal health checker
       // does not auto-fire and mark the agent as dead during timer advancement
       const { manager } = createManager({
-        heartbeat: { intervalMs: 999_999, missedThreshold: 999, autoRestart: false, maxRestarts: 0 },
+        heartbeat: {
+          intervalMs: 999_999,
+          missedThreshold: 999,
+          autoRestart: false,
+          maxRestarts: 0,
+        },
       });
 
       const record = manager.spawn(makeSpawnParams());
@@ -932,7 +997,7 @@ describe('AgentLifecycleManager', () => {
 
       expect(fs.writeFileSync).toHaveBeenCalled();
       const written = JSON.parse(
-        vi.mocked(fs.writeFileSync).mock.calls[0][1] as string,
+        vi.mocked(fs.writeFileSync).mock.calls[0][1] as string
       ) as PersistedAgentRegistry;
 
       expect(written.version).toBe(REGISTRY_VERSION);
@@ -949,7 +1014,7 @@ describe('AgentLifecycleManager', () => {
       manager.persist();
 
       const written = JSON.parse(
-        vi.mocked(fs.writeFileSync).mock.calls[0][1] as string,
+        vi.mocked(fs.writeFileSync).mock.calls[0][1] as string
       ) as PersistedAgentRegistry;
       expect(written.agentStates).toBeUndefined();
     });
@@ -960,10 +1025,9 @@ describe('AgentLifecycleManager', () => {
 
       manager.persist();
 
-      expect(fs.mkdirSync).toHaveBeenCalledWith(
-        expect.any(String),
-        { recursive: true },
-      );
+      expect(fs.mkdirSync).toHaveBeenCalledWith(expect.any(String), {
+        recursive: true,
+      });
     });
 
     it('should restore from V2 format', () => {
@@ -1051,7 +1115,7 @@ describe('AgentLifecycleManager', () => {
       // Should have persisted the migrated V2 format
       expect(fs.writeFileSync).toHaveBeenCalled();
       expect(logger).toHaveBeenCalledWith(
-        expect.stringContaining('Migrated persistence from V1 to V2'),
+        expect.stringContaining('Migrated persistence from V1 to V2')
       );
     });
 
@@ -1087,13 +1151,15 @@ describe('AgentLifecycleManager', () => {
       const unknownVersionData = { version: 99, runs: {} };
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify(unknownVersionData));
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        JSON.stringify(unknownVersionData)
+      );
 
       const { manager, logger } = createManager();
       manager.restore();
 
       expect(logger).toHaveBeenCalledWith(
-        expect.stringContaining('Unknown persistence version'),
+        expect.stringContaining('Unknown persistence version')
       );
     });
 
@@ -1106,7 +1172,7 @@ describe('AgentLifecycleManager', () => {
       manager.restore();
 
       expect(logger).toHaveBeenCalledWith(
-        expect.stringContaining('Restore failed'),
+        expect.stringContaining('Restore failed')
       );
     });
 
@@ -1120,7 +1186,7 @@ describe('AgentLifecycleManager', () => {
       manager.persist();
 
       expect(logger).toHaveBeenCalledWith(
-        expect.stringContaining('Persist failed'),
+        expect.stringContaining('Persist failed')
       );
     });
   });
@@ -1160,7 +1226,10 @@ describe('AgentLifecycleManager', () => {
         const { manager } = createManager();
         const [run1, run2] = setupSynthesisRuns(manager);
 
-        const result = manager.synthesizeOutputs([run1.runId, run2.runId], 'merge');
+        const result = manager.synthesizeOutputs(
+          [run1.runId, run2.runId],
+          'merge'
+        );
 
         expect(result.strategy).toBe('merge');
         expect(result.confidence).toBe(1);
@@ -1182,7 +1251,10 @@ describe('AgentLifecycleManager', () => {
         const { manager } = createManager();
         const [run1, run2] = setupSynthesisRuns(manager);
 
-        const result = manager.synthesizeOutputs([run1.runId, run2.runId], 'vote');
+        const result = manager.synthesizeOutputs(
+          [run1.runId, run2.runId],
+          'vote'
+        );
 
         expect(result.strategy).toBe('vote');
         const output = result.synthesizedOutput as {
@@ -1210,12 +1282,18 @@ describe('AgentLifecycleManager', () => {
         vi.advanceTimersByTime(500);
         manager.markCompleted(run2.runId, { status: 'ok' });
 
-        const result = manager.synthesizeOutputs([run1.runId, run2.runId], 'best_pick');
+        const result = manager.synthesizeOutputs(
+          [run1.runId, run2.runId],
+          'best_pick'
+        );
 
         expect(result.strategy).toBe('best_pick');
         expect(result.confidence).toBe(1);
 
-        const output = result.synthesizedOutput as { agentId: string; output?: string };
+        const output = result.synthesizedOutput as {
+          agentId: string;
+          output?: string;
+        };
         expect(output.agentId).toBe('test-agent');
         vi.useRealTimers();
       });
@@ -1246,7 +1324,10 @@ describe('AgentLifecycleManager', () => {
         vi.advanceTimersByTime(100);
         manager.markCompleted(run2.runId, { status: 'ok' });
 
-        const result = manager.synthesizeOutputs([run1.runId, run2.runId], 'chain');
+        const result = manager.synthesizeOutputs(
+          [run1.runId, run2.runId],
+          'chain'
+        );
 
         expect(result.strategy).toBe('chain');
         const output = result.synthesizedOutput as {
@@ -1266,7 +1347,10 @@ describe('AgentLifecycleManager', () => {
         const { manager } = createManager();
         const [run1, run2] = setupSynthesisRuns(manager);
 
-        const result = manager.synthesizeOutputs([run1.runId, run2.runId], 'consensus');
+        const result = manager.synthesizeOutputs(
+          [run1.runId, run2.runId],
+          'consensus'
+        );
 
         expect(result.strategy).toBe('consensus');
         const output = result.synthesizedOutput as { totalAgents: number };
@@ -1277,7 +1361,10 @@ describe('AgentLifecycleManager', () => {
         const { manager } = createManager();
         const [run1, run2] = setupSynthesisRuns(manager);
 
-        const result = manager.synthesizeOutputs([run1.runId, run2.runId], 'weighted_average');
+        const result = manager.synthesizeOutputs(
+          [run1.runId, run2.runId],
+          'weighted_average'
+        );
 
         expect(result.strategy).toBe('weighted_average');
         const output = result.synthesizedOutput as { totalAgents: number };
@@ -1461,7 +1548,12 @@ describe('AgentLifecycleManager', () => {
     it('should report unhealthy agents past the missed threshold', () => {
       vi.useFakeTimers();
       const { manager } = createManager({
-        heartbeat: { intervalMs: 1000, missedThreshold: 3, autoRestart: true, maxRestarts: 2 },
+        heartbeat: {
+          intervalMs: 1000,
+          missedThreshold: 3,
+          autoRestart: true,
+          maxRestarts: 2,
+        },
       });
       manager.spawn(makeSpawnParams());
 
@@ -1545,7 +1637,7 @@ describe('AgentLifecycleManager', () => {
 
       expect(fs.writeFileSync).toHaveBeenCalled();
       expect(logger).toHaveBeenCalledWith(
-        expect.stringContaining('Shutdown complete'),
+        expect.stringContaining('Shutdown complete')
       );
     });
   });
@@ -1577,7 +1669,7 @@ describe('AgentLifecycleManager', () => {
         record.runId,
         'sender-agent',
         'run-sender',
-        'Hello there',
+        'Hello there'
       );
 
       expect(msg.id).toBeDefined();
@@ -1604,7 +1696,7 @@ describe('AgentLifecycleManager', () => {
     it('should throw when sending to non-existent run', () => {
       const { manager } = createManager();
       expect(() =>
-        manager.sendMessage('nonexistent', 'a', 'r', 'content'),
+        manager.sendMessage('nonexistent', 'a', 'r', 'content')
       ).toThrow('Run "nonexistent" not found');
     });
   });
@@ -1718,14 +1810,21 @@ describe('AgentLifecycleManager', () => {
     it('should respect per-tier limits', () => {
       const def = makeDefinition({
         id: 'test-agent',
-        metadata: { name: 'test-agent', type: 'developer', tier: 0 } as AgentDefinition['metadata'],
+        metadata: {
+          name: 'test-agent',
+          type: 'developer',
+          tier: 0,
+        } as AgentDefinition['metadata'],
       });
       const defs = new Map([['test-agent', def]]);
-      const { manager } = createManager({
-        resourceLimits: {
-          maxConcurrentPerTier: { 0: 1, 1: 3, 2: 5, 3: 10 },
+      const { manager } = createManager(
+        {
+          resourceLimits: {
+            maxConcurrentPerTier: { 0: 1, 1: 3, 2: 5, 3: 10 },
+          },
         },
-      }, defs);
+        defs
+      );
 
       expect(manager.canSpawnAtTier(0)).toBe(true);
 
@@ -1742,7 +1841,10 @@ describe('AgentLifecycleManager', () => {
     it('should return all runs for a specific agent ID', () => {
       const parentDef = makeDefinition({
         id: 'parent-agent',
-        metadata: { name: 'parent-agent', type: 'coordinator' } as AgentDefinition['metadata'],
+        metadata: {
+          name: 'parent-agent',
+          type: 'coordinator',
+        } as AgentDefinition['metadata'],
       });
       const childDef = makeDefinition({ id: 'test-agent' });
       const defs = new Map([

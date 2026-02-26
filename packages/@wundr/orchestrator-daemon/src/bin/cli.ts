@@ -154,7 +154,10 @@ function loadConfigFile(configPath: string): Partial<DaemonConfig> {
 
     return config;
   } catch (error) {
-    console.error('Error: Failed to load config file:', error instanceof Error ? error.message : error);
+    console.error(
+      'Error: Failed to load config file:',
+      error instanceof Error ? error.message : error
+    );
     process.exit(1);
   }
 }
@@ -245,13 +248,23 @@ function validateConfig(config: DaemonConfig): boolean {
 function printBanner(config: DaemonConfig): void {
   const border = '═'.repeat(60);
   console.log(`\n╔${border}╗`);
-  console.log('║' + ' '.repeat(15) + 'ORCHESTRATOR DAEMON' + ' '.repeat(26) + '║');
+  console.log(
+    '║' + ' '.repeat(15) + 'ORCHESTRATOR DAEMON' + ' '.repeat(26) + '║'
+  );
   console.log(`╠${border}╣`);
   console.log(`║  Version: 1.0.6${' '.repeat(43)}║`);
-  console.log(`║  Host: ${config.host}${' '.repeat(60 - 9 - config.host.length)}║`);
-  console.log(`║  Port: ${config.port}${' '.repeat(60 - 9 - config.port.toString().length)}║`);
-  console.log(`║  Max Sessions: ${config.maxSessions}${' '.repeat(60 - 17 - config.maxSessions.toString().length)}║`);
-  console.log(`║  Verbose: ${config.verbose ? 'enabled' : 'disabled'}${' '.repeat(60 - 12 - (config.verbose ? 7 : 8))}║`);
+  console.log(
+    `║  Host: ${config.host}${' '.repeat(60 - 9 - config.host.length)}║`
+  );
+  console.log(
+    `║  Port: ${config.port}${' '.repeat(60 - 9 - config.port.toString().length)}║`
+  );
+  console.log(
+    `║  Max Sessions: ${config.maxSessions}${' '.repeat(60 - 17 - config.maxSessions.toString().length)}║`
+  );
+  console.log(
+    `║  Verbose: ${config.verbose ? 'enabled' : 'disabled'}${' '.repeat(60 - 12 - (config.verbose ? 7 : 8))}║`
+  );
   console.log(`╚${border}╝\n`);
 }
 
@@ -355,7 +368,7 @@ export async function main(): Promise<void> {
   process.on('SIGINT', () => shutdown('SIGINT'));
 
   // Handle uncaught errors
-  process.on('uncaughtException', (error) => {
+  process.on('uncaughtException', error => {
     console.error('Uncaught exception:', error);
     shutdown('uncaughtException');
   });
@@ -383,7 +396,7 @@ export async function main(): Promise<void> {
 
 // Run if executed directly
 if (require.main === module) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
   });

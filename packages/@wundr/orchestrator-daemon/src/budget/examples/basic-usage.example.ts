@@ -5,15 +5,9 @@
  * token usage reporter and cost calculator.
  */
 
-import {
-  UsageReporter,
-  getCostCalculator,
-} from '../index';
+import { UsageReporter, getCostCalculator } from '../index';
 
-import type {
-  TokenUsageRecord,
-  ReportParams,
-  BudgetStatus} from '../index';
+import type { TokenUsageRecord, ReportParams, BudgetStatus } from '../index';
 
 /**
  * Example 1: Basic Setup and Usage Recording
@@ -99,18 +93,24 @@ async function example2_generateReport() {
   console.log('Report Summary:');
   console.log(`  Total tokens: ${report.summary.totalTokens.toLocaleString()}`);
   console.log(`  Total sessions: ${report.summary.uniqueSessions}`);
-  console.log(`  Avg tokens/session: ${Math.round(report.summary.averageTokensPerSession)}`);
+  console.log(
+    `  Avg tokens/session: ${Math.round(report.summary.averageTokensPerSession)}`
+  );
 
   console.log('\nCost Estimate:');
   console.log(`  Total cost: $${report.costEstimate.totalCost.toFixed(2)}`);
-  console.log(`  Projected monthly: $${report.costEstimate.projection?.projectedCost.toFixed(2)}`);
+  console.log(
+    `  Projected monthly: $${report.costEstimate.projection?.projectedCost.toFixed(2)}`
+  );
 
   console.log('\nTop Models:');
   report.breakdown
-    .filter((b) => b.type === 'model')
+    .filter(b => b.type === 'model')
     .slice(0, 3)
-    .forEach((item) => {
-      console.log(`  ${item.key}: ${item.percentage.toFixed(1)}% ($${item.cost?.toFixed(2)})`);
+    .forEach(item => {
+      console.log(
+        `  ${item.key}: ${item.percentage.toFixed(1)}% ($${item.cost?.toFixed(2)})`
+      );
     });
 
   reporter.shutdown();
@@ -135,7 +135,9 @@ async function example3_budgetMonitoring() {
 
   // Set up event listeners
   reporter.on('budget-warning', (status: BudgetStatus) => {
-    console.log(`⚠️  WARNING: ${status.orchestratorId} at ${status.percentage.toFixed(1)}% of budget`);
+    console.log(
+      `⚠️  WARNING: ${status.orchestratorId} at ${status.percentage.toFixed(1)}% of budget`
+    );
   });
 
   reporter.on('budget-exceeded', (status: BudgetStatus) => {
@@ -159,8 +161,14 @@ async function example3_budgetMonitoring() {
     totalTokens: 60000,
   });
 
-  let status = await reporter.getBudgetStatus(orchestratorId, 'daily', dailyLimit);
-  console.log(`Status after 60% usage: ${status.status} (${status.percentage.toFixed(1)}%)`);
+  let status = await reporter.getBudgetStatus(
+    orchestratorId,
+    'daily',
+    dailyLimit
+  );
+  console.log(
+    `Status after 60% usage: ${status.status} (${status.percentage.toFixed(1)}%)`
+  );
 
   // Use another 20% - should trigger warning
   await reporter.recordUsage({
@@ -279,8 +287,10 @@ async function example5_customPricing() {
 
   // List all available pricing
   console.log('\nAll Available Models:');
-  calculator.getAllPricing().forEach((pricing) => {
-    console.log(`  ${pricing.modelId} (${pricing.provider}): $${pricing.inputTokenCost}/$${pricing.outputTokenCost} per 1M tokens`);
+  calculator.getAllPricing().forEach(pricing => {
+    console.log(
+      `  ${pricing.modelId} (${pricing.provider}): $${pricing.inputTokenCost}/$${pricing.outputTokenCost} per 1M tokens`
+    );
   });
 
   reporter.shutdown();

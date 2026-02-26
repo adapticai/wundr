@@ -48,7 +48,8 @@ const MAX_TOOL_FAILURES = 8;
 const MAX_TOOL_FAILURE_CHARS = 240;
 
 /** Placeholder for hard-cleared tool results */
-const HARD_CLEAR_PLACEHOLDER = '[Tool result content cleared during context pruning]';
+const HARD_CLEAR_PLACEHOLDER =
+  '[Tool result content cleared during context pruning]';
 
 // =============================================================================
 // Model Context Window Presets
@@ -132,10 +133,10 @@ export interface ContentBlock {
  * Higher importance = more likely to be preserved verbatim.
  */
 export type MessageImportance =
-  | 'critical'    // Never compacted: system prompts, user instructions
-  | 'high'        // Preserved when possible: key decisions, tool results with errors
-  | 'normal'      // Standard messages: regular conversation turns
-  | 'low';        // First to compact: verbose tool output, thinking blocks
+  | 'critical' // Never compacted: system prompts, user instructions
+  | 'high' // Preserved when possible: key decisions, tool results with errors
+  | 'normal' // Standard messages: regular conversation turns
+  | 'low'; // First to compact: verbose tool output, thinking blocks
 
 /**
  * Per-model compaction threshold configuration.
@@ -414,7 +415,9 @@ export function estimateMessageTokens(message: ConversationMessage): number {
 /**
  * Estimate total token count for a list of messages.
  */
-export function estimateMessagesTokens(messages: ConversationMessage[]): number {
+export function estimateMessagesTokens(
+  messages: ConversationMessage[]
+): number {
   let total = 0;
   for (const msg of messages) {
     total += estimateMessageTokens(msg);
@@ -432,7 +435,7 @@ export function estimateMessagesTokens(messages: ConversationMessage[]): number 
  */
 export function resolveContextWindowTokens(
   modelId?: string,
-  explicitOverride?: number,
+  explicitOverride?: number
 ): number {
   if (
     typeof explicitOverride === 'number' &&
@@ -473,7 +476,7 @@ export function resolveContextWindowTokens(
  * verbose tool output is the first to go.
  */
 export function classifyMessageImportance(
-  message: ConversationMessage,
+  message: ConversationMessage
 ): MessageImportance {
   // System messages are always critical
   if (message.role === 'system') {
@@ -521,7 +524,7 @@ function normalizeParts(parts: number, messageCount: number): number {
  */
 export function splitMessagesByTokenShare(
   messages: ConversationMessage[],
-  parts: number = DEFAULT_PARTS,
+  parts: number = DEFAULT_PARTS
 ): ConversationMessage[][] {
   if (messages.length === 0) {
     return [];
@@ -568,7 +571,7 @@ export function splitMessagesByTokenShare(
  */
 export function chunkMessagesByMaxTokens(
   messages: ConversationMessage[],
-  maxTokens: number,
+  maxTokens: number
 ): ConversationMessage[][] {
   if (messages.length === 0) {
     return [];
@@ -614,7 +617,7 @@ export function chunkMessagesByMaxTokens(
  */
 export function computeAdaptiveChunkRatio(
   messages: ConversationMessage[],
-  contextWindow: number,
+  contextWindow: number
 ): number {
   if (messages.length === 0) {
     return BASE_CHUNK_RATIO;
@@ -629,7 +632,7 @@ export function computeAdaptiveChunkRatio(
   if (avgRatio > 0.1) {
     const reduction = Math.min(
       avgRatio * 2,
-      BASE_CHUNK_RATIO - MIN_CHUNK_RATIO,
+      BASE_CHUNK_RATIO - MIN_CHUNK_RATIO
     );
     return Math.max(MIN_CHUNK_RATIO, BASE_CHUNK_RATIO - reduction);
   }
@@ -644,7 +647,7 @@ export function computeAdaptiveChunkRatio(
  */
 export function isOversizedForSummary(
   message: ConversationMessage,
-  contextWindow: number,
+  contextWindow: number
 ): boolean {
   const tokens = estimateMessageTokens(message) * SAFETY_MARGIN;
   return tokens > contextWindow * 0.5;
@@ -659,7 +662,9 @@ export function isOversizedForSummary(
  * These are included in the compaction metadata so important errors
  * are not lost during summarization.
  */
-function collectToolFailures(messages: ConversationMessage[]): ToolFailureInfo[] {
+function collectToolFailures(
+  messages: ConversationMessage[]
+): ToolFailureInfo[] {
   const failures: ToolFailureInfo[] = [];
   const seen = new Set<string>();
 
@@ -691,7 +696,7 @@ function collectToolFailures(messages: ConversationMessage[]): ToolFailureInfo[]
 }
 
 function extractToolFailureMeta(
-  details: Record<string, unknown> | undefined,
+  details: Record<string, unknown> | undefined
 ): string | undefined {
   if (!details) {
     return undefined;
@@ -700,7 +705,10 @@ function extractToolFailureMeta(
   if (typeof details['status'] === 'string') {
     parts.push(`status=${details['status']}`);
   }
-  if (typeof details['exitCode'] === 'number' && Number.isFinite(details['exitCode'])) {
+  if (
+    typeof details['exitCode'] === 'number' &&
+    Number.isFinite(details['exitCode'])
+  ) {
     parts.push(`exitCode=${details['exitCode']}`);
   }
   return parts.length > 0 ? parts.join(' ') : undefined;
@@ -713,7 +721,7 @@ function formatToolFailuresSection(failures: ToolFailureInfo[]): string {
   if (failures.length === 0) {
     return '';
   }
-  const lines = failures.slice(0, MAX_TOOL_FAILURES).map((f) => {
+  const lines = failures.slice(0, MAX_TOOL_FAILURES).map(f => {
     const meta = f.meta ? ` (${f.meta})` : '';
     return `- ${f.toolName}${meta}: ${f.summary}`;
   });
@@ -739,7 +747,7 @@ function formatToolFailuresSection(failures: ToolFailureInfo[]): string {
 export function pruneToolResults(
   messages: ConversationMessage[],
   config: ContextPruningConfig,
-  contextWindowTokens: number,
+  contextWindowTokens: number
 ): { messages: ConversationMessage[]; prunedCount: number } {
   if (!config.enabled || messages.length === 0) {
     return { messages, prunedCount: 0 };
@@ -751,14 +759,18 @@ export function pruneToolResults(
   }
 
   // Find the cutoff: protect the last N assistant messages from pruning
-  const cutoffIndex = findAssistantCutoffIndex(messages, config.keepLastAssistants);
+  const cutoffIndex = findAssistantCutoffIndex(
+    messages,
+    config.keepLastAssistants
+  );
   if (cutoffIndex === null) {
     return { messages, prunedCount: 0 };
   }
 
   // Protect everything before the first user message (initial context/identity)
   const firstUserIndex = findFirstUserIndex(messages);
-  const pruneStartIndex = firstUserIndex === null ? messages.length : firstUserIndex;
+  const pruneStartIndex =
+    firstUserIndex === null ? messages.length : firstUserIndex;
 
   let totalChars = estimateContextChars(messages);
   let ratio = totalChars / charWindow;
@@ -775,18 +787,18 @@ export function pruneToolResults(
   for (let i = pruneStartIndex; i < cutoffIndex; i++) {
     const msg = messages[i];
     if (msg.role !== 'tool_result') {
-continue;
-}
+      continue;
+    }
     if (!isToolPrunable(msg, config)) {
-continue;
-}
+      continue;
+    }
 
     prunableIndices.push(i);
 
     const trimmed = softTrimMessage(msg, config);
     if (!trimmed) {
-continue;
-}
+      continue;
+    }
 
     const beforeChars = msg.content.length;
     const afterChars = trimmed.content.length;
@@ -815,13 +827,13 @@ continue;
     if (prunableToolChars >= config.minPrunableChars) {
       for (const i of prunableIndices) {
         if (ratio < config.hardClearRatio) {
-break;
-}
+          break;
+        }
 
         const msg = (result ?? messages)[i];
         if (msg.role !== 'tool_result') {
-continue;
-}
+          continue;
+        }
 
         const beforeChars = msg.content.length;
         const cleared: ConversationMessage = {
@@ -846,12 +858,15 @@ continue;
 
 function isToolPrunable(
   msg: ConversationMessage,
-  config: ContextPruningConfig,
+  config: ContextPruningConfig
 ): boolean {
   const toolName = msg.toolName ?? '';
 
   // Protected tools are never pruned
-  if (config.protectedTools.length > 0 && config.protectedTools.includes(toolName)) {
+  if (
+    config.protectedTools.length > 0 &&
+    config.protectedTools.includes(toolName)
+  ) {
     return false;
   }
 
@@ -866,7 +881,7 @@ function isToolPrunable(
 
 function softTrimMessage(
   msg: ConversationMessage,
-  config: ContextPruningConfig,
+  config: ContextPruningConfig
 ): ConversationMessage | null {
   if (msg.content.length <= config.softTrimMaxChars) {
     return null;
@@ -888,7 +903,7 @@ function softTrimMessage(
 
 function findAssistantCutoffIndex(
   messages: ConversationMessage[],
-  keepLastAssistants: number,
+  keepLastAssistants: number
 ): number | null {
   if (keepLastAssistants <= 0) {
     return messages.length;
@@ -923,8 +938,8 @@ function estimateContextChars(messages: ConversationMessage[]): number {
     if (msg.contentBlocks) {
       for (const block of msg.contentBlocks) {
         if (block.text) {
-total += block.text.length;
-}
+          total += block.text.length;
+        }
       }
     }
   }
@@ -969,14 +984,17 @@ export function pruneHistoryForContextShare(params: {
   const maxHistoryShare = params.maxHistoryShare ?? 0.5;
   const budgetTokens = Math.max(
     1,
-    Math.floor(params.maxContextTokens * maxHistoryShare),
+    Math.floor(params.maxContextTokens * maxHistoryShare)
   );
 
   let keptMessages = params.messages;
   const allDropped: ConversationMessage[] = [];
   let droppedChunks = 0;
   let droppedTokens = 0;
-  const parts = normalizeParts(params.parts ?? DEFAULT_PARTS, keptMessages.length);
+  const parts = normalizeParts(
+    params.parts ?? DEFAULT_PARTS,
+    keptMessages.length
+  );
 
   while (
     keptMessages.length > 0 &&
@@ -1016,7 +1034,7 @@ export function pruneHistoryForContextShare(params: {
  * Ported from OpenClaw's `repairToolUseResultPairing`.
  */
 function repairOrphanedToolResults(
-  messages: ConversationMessage[],
+  messages: ConversationMessage[]
 ): ConversationMessage[] {
   // Collect all tool call IDs from assistant messages
   const toolCallIds = new Set<string>();
@@ -1031,7 +1049,7 @@ function repairOrphanedToolResults(
   }
 
   // Filter out tool_result messages whose toolCallId is not in the set
-  return messages.filter((msg) => {
+  return messages.filter(msg => {
     if (msg.role !== 'tool_result' || !msg.toolCallId) {
       return true;
     }
@@ -1063,7 +1081,8 @@ async function summarizeWithFallback(params: {
   previousSummary?: string;
   signal?: AbortSignal;
 }): Promise<string> {
-  const { messages, summarize, contextWindow, maxChunkTokens, instructions } = params;
+  const { messages, summarize, contextWindow, maxChunkTokens, instructions } =
+    params;
 
   if (messages.length === 0) {
     return params.previousSummary ?? DEFAULT_SUMMARY_FALLBACK;
@@ -1100,7 +1119,7 @@ async function summarizeWithFallback(params: {
     if (isOversizedForSummary(msg, contextWindow)) {
       const tokens = estimateMessageTokens(msg);
       oversizedNotes.push(
-        `[Large ${msg.role} (~${Math.round(tokens / 1000)}K tokens) omitted from summary]`,
+        `[Large ${msg.role} (~${Math.round(tokens / 1000)}K tokens) omitted from summary]`
       );
     } else {
       smallMessages.push(msg);
@@ -1180,7 +1199,7 @@ async function summarizeInStages(params: {
   }
 
   const splits = splitMessagesByTokenShare(messages, parts).filter(
-    (chunk) => chunk.length > 0,
+    chunk => chunk.length > 0
   );
   if (splits.length <= 1) {
     return summarizeWithFallback(params);
@@ -1194,7 +1213,7 @@ async function summarizeInStages(params: {
         ...params,
         messages: chunk,
         previousSummary: undefined,
-      }),
+      })
     );
   }
 
@@ -1204,11 +1223,11 @@ async function summarizeInStages(params: {
 
   // Merge partial summaries into a single cohesive summary
   const summaryMessages: ConversationMessage[] = partialSummaries.map(
-    (summary) => ({
+    summary => ({
       role: 'user' as MessageRole,
       content: summary,
       timestamp: Date.now(),
-    }),
+    })
   );
 
   const mergeInstructions = params.instructions
@@ -1319,7 +1338,7 @@ export class ContextCompactor {
    */
   resolveThreshold(
     modelId?: string,
-    contextWindowOverride?: number,
+    contextWindowOverride?: number
   ): {
     contextWindowTokens: number;
     triggerTokens: number;
@@ -1328,7 +1347,7 @@ export class ContextCompactor {
   } {
     const contextWindowTokens = resolveContextWindowTokens(
       modelId,
-      contextWindowOverride,
+      contextWindowOverride
     );
 
     // Check per-model overrides
@@ -1359,7 +1378,7 @@ export class ContextCompactor {
   shouldCompact(
     messages: ConversationMessage[],
     modelId?: string,
-    contextWindowOverride?: number,
+    contextWindowOverride?: number
   ): boolean {
     if (!this.config.enabled) {
       return false;
@@ -1379,7 +1398,7 @@ export class ContextCompactor {
   shouldRunMemoryFlush(
     messages: ConversationMessage[],
     modelId?: string,
-    contextWindowOverride?: number,
+    contextWindowOverride?: number
   ): boolean {
     if (!this.config.memoryFlush.enabled) {
       return false;
@@ -1390,7 +1409,9 @@ export class ContextCompactor {
     const flushThreshold =
       threshold.triggerTokens - this.config.memoryFlush.softThresholdTokens;
 
-    return totalTokens >= flushThreshold && totalTokens < threshold.triggerTokens;
+    return (
+      totalTokens >= flushThreshold && totalTokens < threshold.triggerTokens
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -1419,14 +1440,14 @@ export class ContextCompactor {
     const startTime = Date.now();
     const threshold = this.resolveThreshold(
       params.modelId,
-      params.contextWindowOverride,
+      params.contextWindowOverride
     );
     const tokensBefore = estimateMessagesTokens(params.messages);
 
     this.logger.info(
       `Starting compaction for session ${params.sessionId}: ` +
         `${tokensBefore} tokens, ${params.messages.length} messages, ` +
-        `window=${threshold.contextWindowTokens}, trigger=${threshold.triggerTokens}`,
+        `window=${threshold.contextWindowTokens}, trigger=${threshold.triggerTokens}`
     );
 
     // Step 1: Fire pre-compact hooks
@@ -1439,7 +1460,7 @@ export class ContextCompactor {
 
     if (hookResult.skipCompaction) {
       this.logger.info(
-        `Compaction skipped for session ${params.sessionId} (pre-compact hook)`,
+        `Compaction skipped for session ${params.sessionId} (pre-compact hook)`
       );
       return {
         compacted: false,
@@ -1474,33 +1495,28 @@ export class ContextCompactor {
       const pruneResult = pruneToolResults(
         workingMessages,
         this.config.pruning,
-        threshold.contextWindowTokens,
+        threshold.contextWindowTokens
       );
       if (pruneResult.messages !== workingMessages) {
         workingMessages = pruneResult.messages;
         pruningApplied = true;
         prunedToolResults = pruneResult.prunedCount;
         this.logger.info(
-          `Context pruning applied: ${prunedToolResults} tool results pruned`,
+          `Context pruning applied: ${prunedToolResults} tool results pruned`
         );
       }
     }
 
     // Step 3: Determine split point (preserve recent messages, summarize older)
-    const {
-      messagesToSummarize,
-      messagesToPreserve,
-      preservedMessageIds,
-    } = this.splitForCompaction(
-      workingMessages,
-      threshold,
-      hookResult.preserveMessageIndices,
-    );
+    const { messagesToSummarize, messagesToPreserve, preservedMessageIds } =
+      this.splitForCompaction(
+        workingMessages,
+        threshold,
+        hookResult.preserveMessageIndices
+      );
 
     if (messagesToSummarize.length === 0) {
-      this.logger.info(
-        `Nothing to summarize for session ${params.sessionId}`,
-      );
+      this.logger.info(`Nothing to summarize for session ${params.sessionId}`);
       return {
         compacted: false,
         summary: '',
@@ -1537,11 +1553,11 @@ export class ContextCompactor {
     if (summarize) {
       const adaptiveRatio = computeAdaptiveChunkRatio(
         messagesToSummarize,
-        threshold.contextWindowTokens,
+        threshold.contextWindowTokens
       );
       const maxChunkTokens = Math.max(
         1,
-        Math.floor(threshold.contextWindowTokens * adaptiveRatio),
+        Math.floor(threshold.contextWindowTokens * adaptiveRatio)
       );
 
       const instructions =
@@ -1567,11 +1583,10 @@ export class ContextCompactor {
         });
         summarizationPasses = this.config.summarizationPasses;
       } catch (error) {
-        const errorMsg =
-          error instanceof Error ? error.message : String(error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
         this.logger.warn(
           `Summarization failed for session ${params.sessionId}: ${errorMsg}. ` +
-            'Falling back to truncation.',
+            'Falling back to truncation.'
         );
         summary =
           'Summary unavailable due to context limits. Older messages were truncated.' +
@@ -1612,7 +1627,7 @@ export class ContextCompactor {
       `Compaction complete for session ${params.sessionId}: ` +
         `${tokensBefore} -> ${tokensAfter} tokens ` +
         `(${((tokensAfter / tokensBefore) * 100).toFixed(1)}%), ` +
-        `${params.messages.length} -> ${resultMessages.length} messages`,
+        `${params.messages.length} -> ${resultMessages.length} messages`
     );
 
     return {
@@ -1666,7 +1681,7 @@ export class ContextCompactor {
    * Find a matching model threshold configuration.
    */
   private findModelThreshold(
-    modelId?: string,
+    modelId?: string
   ): ModelCompactionThreshold | undefined {
     if (!modelId || this.config.modelThresholds.length === 0) {
       return undefined;
@@ -1684,9 +1699,7 @@ export class ContextCompactor {
 
       // Wildcard match (simple glob: * matches any sequence)
       if (pattern.includes('*')) {
-        const regex = new RegExp(
-          '^' + pattern.replace(/\*/g, '.*') + '$',
-        );
+        const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
         if (regex.test(normalized)) {
           return threshold;
         }
@@ -1717,7 +1730,7 @@ export class ContextCompactor {
       maxHistoryShare: number;
       reserveTokens: number;
     },
-    hookPreserveIndices: number[],
+    hookPreserveIndices: number[]
   ): {
     messagesToSummarize: ConversationMessage[];
     messagesToPreserve: ConversationMessage[];
@@ -1740,7 +1753,7 @@ export class ContextCompactor {
         messagesToSummarize: [],
         messagesToPreserve: messages,
         preservedMessageIds: messages
-          .map((m) => m.id)
+          .map(m => m.id)
           .filter((id): id is string => id !== undefined),
       };
     }
@@ -1752,8 +1765,8 @@ export class ContextCompactor {
       Math.floor(
         threshold.contextWindowTokens * threshold.maxHistoryShare -
           systemTokens -
-          threshold.reserveTokens,
-      ),
+          threshold.reserveTokens
+      )
     );
 
     // Find the split point: keep as many recent messages as fit in the budget
@@ -1772,7 +1785,7 @@ export class ContextCompactor {
     // Ensure we don't split in the middle of a tool_call/tool_result pair
     preserveFromIndex = this.adjustSplitForToolPairing(
       nonSystemMessages,
-      preserveFromIndex,
+      preserveFromIndex
     );
 
     // Build sets from hook-specified indices
@@ -1791,7 +1804,7 @@ export class ContextCompactor {
     }
 
     const preservedMessageIds = messagesToPreserve
-      .map((m) => m.id)
+      .map(m => m.id)
       .filter((id): id is string => id !== undefined);
 
     return { messagesToSummarize, messagesToPreserve, preservedMessageIds };
@@ -1804,7 +1817,7 @@ export class ContextCompactor {
    */
   private adjustSplitForToolPairing(
     messages: ConversationMessage[],
-    splitIndex: number,
+    splitIndex: number
   ): number {
     if (splitIndex <= 0 || splitIndex >= messages.length) {
       return splitIndex;
@@ -1819,9 +1832,9 @@ export class ContextCompactor {
         const msg = messages[i];
         if (msg.role === 'assistant' && msg.contentBlocks) {
           const hasToolCall = msg.contentBlocks.some(
-            (b) =>
+            b =>
               b.type === 'tool_call' &&
-              b.toolCallId === firstPreserved.toolCallId,
+              b.toolCallId === firstPreserved.toolCallId
           );
           if (hasToolCall) {
             return i;
@@ -1829,8 +1842,8 @@ export class ContextCompactor {
         }
         // Don't walk back too far
         if (msg.role === 'user') {
-break;
-}
+          break;
+        }
       }
     }
 
@@ -1864,7 +1877,7 @@ break;
           }
           if (result.preserveMessageIndices.length > 0) {
             merged.preserveMessageIndices.push(
-              ...result.preserveMessageIndices,
+              ...result.preserveMessageIndices
             );
           }
           if (result.strategy) {
@@ -1872,10 +1885,9 @@ break;
           }
         }
       } catch (error) {
-        const errorMsg =
-          error instanceof Error ? error.message : String(error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
         this.logger.warn(
-          `Pre-compact hook failed for session ${params.sessionId}: ${errorMsg}`,
+          `Pre-compact hook failed for session ${params.sessionId}: ${errorMsg}`
         );
       }
     }
@@ -1911,9 +1923,7 @@ break;
       tokensBefore: params.tokensBefore,
       tokensAfter: params.tokensAfter,
       compressionRatio:
-        params.tokensBefore > 0
-          ? params.tokensAfter / params.tokensBefore
-          : 1,
+        params.tokensBefore > 0 ? params.tokensAfter / params.tokensBefore : 1,
       messagesBefore: params.messagesBefore,
       messagesAfter: params.messagesAfter,
       messagesSummarized: params.messagesSummarized,
@@ -1952,7 +1962,7 @@ break;
  * ```
  */
 export function createContextCompactor(
-  config?: Partial<ContextCompactorConfig>,
+  config?: Partial<ContextCompactorConfig>
 ): ContextCompactor {
   return new ContextCompactor(config);
 }

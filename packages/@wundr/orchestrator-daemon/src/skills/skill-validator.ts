@@ -43,7 +43,7 @@ const MAX_BODY_LENGTH = 100_000; // 100KB
 export function validateSkill(
   entry: SkillEntry,
   config?: SkillsConfig,
-  registeredNames?: Set<string>,
+  registeredNames?: Set<string>
 ): SkillValidationResult {
   const issues: SkillValidationIssue[] = [];
   const skill = entry.skill;
@@ -93,38 +93,38 @@ export function validateSkill(
  */
 export function validateAllSkills(
   entries: SkillEntry[],
-  config?: SkillsConfig,
+  config?: SkillsConfig
 ): SkillValidationResult[] {
   const registeredNames = new Set(entries.map(e => e.skill.name));
 
-  return entries.map(entry =>
-    validateSkill(entry, config, registeredNames),
-  );
+  return entries.map(entry => validateSkill(entry, config, registeredNames));
 }
 
 /**
  * Format validation results into a human-readable report.
  */
-export function formatValidationReport(results: SkillValidationResult[]): string {
+export function formatValidationReport(
+  results: SkillValidationResult[]
+): string {
   const lines: string[] = [];
   const failCount = results.filter(r => !r.valid).length;
-  const warnCount = results.filter(r =>
-    r.valid && r.issues.some(i => i.severity === 'warning'),
+  const warnCount = results.filter(
+    r => r.valid && r.issues.some(i => i.severity === 'warning')
   ).length;
 
   lines.push(`Skill Validation: ${results.length} skills checked`);
   lines.push(`  Passed: ${results.length - failCount}`);
   if (failCount > 0) {
-lines.push(`  Failed: ${failCount}`);
-}
+    lines.push(`  Failed: ${failCount}`);
+  }
   if (warnCount > 0) {
-lines.push(`  Warnings: ${warnCount}`);
-}
+    lines.push(`  Warnings: ${warnCount}`);
+  }
 
   for (const result of results) {
     if (result.issues.length === 0) {
-continue;
-}
+      continue;
+    }
 
     lines.push('');
     const status = result.valid ? 'WARN' : 'FAIL';
@@ -149,59 +149,88 @@ function addIssue(
   severity: SkillValidationSeverity,
   rule: string,
   message: string,
-  field?: string,
+  field?: string
 ): void {
   issues.push({ rule, severity, message, field });
 }
 
 function validateName(skill: Skill, issues: SkillValidationIssue[]): void {
   if (!skill.name) {
-    addIssue(issues, 'error', 'name-required', 'Skill name is required', 'name');
+    addIssue(
+      issues,
+      'error',
+      'name-required',
+      'Skill name is required',
+      'name'
+    );
     return;
   }
 
   if (skill.name.length > MAX_SKILL_NAME_LENGTH) {
     addIssue(
-      issues, 'warning', 'name-too-long',
+      issues,
+      'warning',
+      'name-too-long',
       `Skill name exceeds ${MAX_SKILL_NAME_LENGTH} characters`,
-      'name',
+      'name'
     );
   }
 
   if (!SKILL_NAME_PATTERN.test(skill.name)) {
     addIssue(
-      issues, 'warning', 'name-format',
+      issues,
+      'warning',
+      'name-format',
       'Skill name should use lowercase alphanumeric characters and hyphens',
-      'name',
+      'name'
     );
   }
 }
 
-function validateDescription(skill: Skill, issues: SkillValidationIssue[]): void {
+function validateDescription(
+  skill: Skill,
+  issues: SkillValidationIssue[]
+): void {
   if (!skill.description) {
-    addIssue(issues, 'error', 'description-required', 'Skill description is required', 'description');
+    addIssue(
+      issues,
+      'error',
+      'description-required',
+      'Skill description is required',
+      'description'
+    );
     return;
   }
 
   if (skill.description.length > MAX_DESCRIPTION_LENGTH) {
     addIssue(
-      issues, 'warning', 'description-too-long',
+      issues,
+      'warning',
+      'description-too-long',
       `Description exceeds ${MAX_DESCRIPTION_LENGTH} characters`,
-      'description',
+      'description'
     );
   }
 }
 
 function validateBody(skill: Skill, issues: SkillValidationIssue[]): void {
   if (!skill.body || skill.body.trim().length === 0) {
-    addIssue(issues, 'warning', 'body-empty', 'Skill body (instructions) is empty', 'body');
+    addIssue(
+      issues,
+      'warning',
+      'body-empty',
+      'Skill body (instructions) is empty',
+      'body'
+    );
   }
 
   if (skill.body && skill.body.length > MAX_BODY_LENGTH) {
     addIssue(
-      issues, 'warning', 'body-too-large',
+      issues,
+      'warning',
+      'body-too-large',
       `Skill body exceeds ${MAX_BODY_LENGTH} characters`,
-      'body',
+      'body'
     );
   }
 }
@@ -209,12 +238,12 @@ function validateBody(skill: Skill, issues: SkillValidationIssue[]): void {
 function validateTools(
   skill: Skill,
   config: SkillsConfig | undefined,
-  issues: SkillValidationIssue[],
+  issues: SkillValidationIssue[]
 ): void {
   const availableTools = config?.availableTools;
   if (!availableTools || availableTools.length === 0) {
-return;
-}
+    return;
+  }
 
   const toolSet = new Set(availableTools);
 
@@ -223,9 +252,11 @@ return;
   for (const tool of requiredTools) {
     if (!toolSet.has(tool)) {
       addIssue(
-        issues, 'warning', 'tool-unavailable',
+        issues,
+        'warning',
+        'tool-unavailable',
         `Required tool "${tool}" is not in the available tools list`,
-        'tools',
+        'tools'
       );
     }
   }
@@ -235,9 +266,11 @@ return;
   for (const tool of allowedTools) {
     if (!toolSet.has(tool)) {
       addIssue(
-        issues, 'info', 'allowed-tool-unavailable',
+        issues,
+        'info',
+        'allowed-tool-unavailable',
         `Allowed tool "${tool}" is not in the available tools list`,
-        'allowedTools',
+        'allowedTools'
       );
     }
   }
@@ -246,23 +279,25 @@ return;
 function validateModel(
   skill: Skill,
   config: SkillsConfig | undefined,
-  issues: SkillValidationIssue[],
+  issues: SkillValidationIssue[]
 ): void {
   const model = skill.frontmatter.model;
   if (!model) {
-return;
-}
+    return;
+  }
 
   const availableModels = config?.availableModels;
   if (!availableModels || availableModels.length === 0) {
-return;
-}
+    return;
+  }
 
   if (!availableModels.includes(model)) {
     addIssue(
-      issues, 'warning', 'model-unavailable',
+      issues,
+      'warning',
+      'model-unavailable',
       `Model "${model}" is not in the available models list`,
-      'model',
+      'model'
     );
   }
 }
@@ -270,30 +305,34 @@ return;
 function validateDependencies(
   skill: Skill,
   registeredNames: Set<string> | undefined,
-  issues: SkillValidationIssue[],
+  issues: SkillValidationIssue[]
 ): void {
   const deps = skill.frontmatter.dependencies;
   if (!deps || deps.length === 0) {
-return;
-}
+    return;
+  }
   if (!registeredNames) {
-return;
-}
+    return;
+  }
 
   for (const dep of deps) {
     if (!registeredNames.has(dep)) {
       addIssue(
-        issues, 'warning', 'dependency-missing',
+        issues,
+        'warning',
+        'dependency-missing',
         `Dependency "${dep}" is not a registered skill`,
-        'dependencies',
+        'dependencies'
       );
     }
 
     if (dep === skill.name) {
       addIssue(
-        issues, 'error', 'self-dependency',
+        issues,
+        'error',
+        'self-dependency',
         'Skill cannot depend on itself',
-        'dependencies',
+        'dependencies'
       );
     }
   }
@@ -303,19 +342,26 @@ function validateContext(skill: Skill, issues: SkillValidationIssue[]): void {
   const context = skill.frontmatter.context;
   if (context && context !== 'inline' && context !== 'fork') {
     addIssue(
-      issues, 'error', 'invalid-context',
+      issues,
+      'error',
+      'invalid-context',
       `Invalid context "${context}": must be "inline" or "fork"`,
-      'context',
+      'context'
     );
   }
 }
 
-function validateFileExists(skill: Skill, issues: SkillValidationIssue[]): void {
+function validateFileExists(
+  skill: Skill,
+  issues: SkillValidationIssue[]
+): void {
   if (!fs.existsSync(skill.filePath)) {
     addIssue(
-      issues, 'error', 'file-missing',
+      issues,
+      'error',
+      'file-missing',
       `Skill file does not exist: ${skill.filePath}`,
-      'filePath',
+      'filePath'
     );
   }
 }
@@ -323,16 +369,18 @@ function validateFileExists(skill: Skill, issues: SkillValidationIssue[]): void 
 function validateVersion(skill: Skill, issues: SkillValidationIssue[]): void {
   const version = skill.frontmatter.version;
   if (!version) {
-return;
-}
+    return;
+  }
 
   // Simple semver check (major.minor.patch with optional pre-release)
   const semverPattern = /^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/;
   if (!semverPattern.test(version)) {
     addIssue(
-      issues, 'info', 'version-format',
+      issues,
+      'info',
+      'version-format',
       `Version "${version}" does not follow semver format (x.y.z)`,
-      'version',
+      'version'
     );
   }
 }

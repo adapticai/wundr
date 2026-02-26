@@ -66,8 +66,8 @@ export class SkillAnalytics {
    */
   record(entry: SkillUsageEntry): void {
     if (!this.enabled) {
-return;
-}
+      return;
+    }
 
     this.entries.push(entry);
 
@@ -99,8 +99,8 @@ return;
   getSummary(skillName: string): SkillAnalyticsSummary | undefined {
     const skillEntries = this.entries.filter(e => e.skillName === skillName);
     if (skillEntries.length === 0) {
-return undefined;
-}
+      return undefined;
+    }
 
     return buildSummary(skillName, skillEntries);
   }
@@ -166,8 +166,8 @@ return undefined;
     for (const entry of this.entries) {
       uniqueSkills.add(entry.skillName);
       if (entry.sessionId) {
-uniqueSessions.add(entry.sessionId);
-}
+        uniqueSessions.add(entry.sessionId);
+      }
       totalDuration += entry.durationMs;
       if (entry.success) {
         successCount++;
@@ -180,9 +180,10 @@ uniqueSessions.add(entry.sessionId);
       totalExecutions: this.entries.length,
       totalSuccess: successCount,
       totalFailures: failureCount,
-      avgDurationMs: this.entries.length > 0
-        ? Math.round(totalDuration / this.entries.length)
-        : 0,
+      avgDurationMs:
+        this.entries.length > 0
+          ? Math.round(totalDuration / this.entries.length)
+          : 0,
       uniqueSkills: uniqueSkills.size,
       uniqueSessions: uniqueSessions.size,
     };
@@ -193,7 +194,7 @@ uniqueSessions.add(entry.sessionId);
    */
   getEntriesInRange(startMs: number, endMs: number): SkillUsageEntry[] {
     return this.entries.filter(
-      e => e.timestamp >= startMs && e.timestamp <= endMs,
+      e => e.timestamp >= startMs && e.timestamp <= endMs
     );
   }
 
@@ -257,9 +258,11 @@ uniqueSessions.add(entry.sessionId);
       '=====================',
       '',
       `Total Executions: ${metrics.totalExecutions}`,
-      `Success Rate: ${metrics.totalExecutions > 0
-        ? Math.round((metrics.totalSuccess / metrics.totalExecutions) * 100)
-        : 0}%`,
+      `Success Rate: ${
+        metrics.totalExecutions > 0
+          ? Math.round((metrics.totalSuccess / metrics.totalExecutions) * 100)
+          : 0
+      }%`,
       `Average Duration: ${metrics.avgDurationMs}ms`,
       `Unique Skills Used: ${metrics.uniqueSkills}`,
       `Unique Sessions: ${metrics.uniqueSessions}`,
@@ -268,12 +271,13 @@ uniqueSessions.add(entry.sessionId);
     if (top.length > 0) {
       lines.push('', 'Top Skills:');
       for (const summary of top) {
-        const rate = summary.totalExecutions > 0
-          ? Math.round((summary.successCount / summary.totalExecutions) * 100)
-          : 0;
+        const rate =
+          summary.totalExecutions > 0
+            ? Math.round((summary.successCount / summary.totalExecutions) * 100)
+            : 0;
         lines.push(
           `  ${summary.skillName}: ${summary.totalExecutions} executions` +
-          ` (${rate}% success, avg ${summary.avgDurationMs}ms)`,
+            ` (${rate}% success, avg ${summary.avgDurationMs}ms)`
         );
       }
     }
@@ -288,7 +292,7 @@ uniqueSessions.add(entry.sessionId);
 
 function buildSummary(
   skillName: string,
-  entries: SkillUsageEntry[],
+  entries: SkillUsageEntry[]
 ): SkillAnalyticsSummary {
   let totalDuration = 0;
   let successCount = 0;
@@ -304,11 +308,11 @@ function buildSummary(
       failureCount++;
     }
     if (entry.timestamp < firstAt) {
-firstAt = entry.timestamp;
-}
+      firstAt = entry.timestamp;
+    }
     if (entry.timestamp > lastAt) {
-lastAt = entry.timestamp;
-}
+      lastAt = entry.timestamp;
+    }
   }
 
   return {
@@ -316,7 +320,8 @@ lastAt = entry.timestamp;
     totalExecutions: entries.length,
     successCount,
     failureCount,
-    avgDurationMs: entries.length > 0 ? Math.round(totalDuration / entries.length) : 0,
+    avgDurationMs:
+      entries.length > 0 ? Math.round(totalDuration / entries.length) : 0,
     lastExecutedAt: lastAt,
     firstExecutedAt: firstAt === Infinity ? 0 : firstAt,
   };

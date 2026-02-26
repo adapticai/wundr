@@ -142,7 +142,7 @@ export interface HealthMonitorEvents {
   'failover:completed': (plan: FailoverPlan) => void;
   'failover:failed': (plan: FailoverPlan, error: string) => void;
   'check:completed': (results: Map<string, NodeHealthState>) => void;
-  'error': (error: Error, context: string) => void;
+  error: (error: Error, context: string) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -231,20 +231,23 @@ export class HealthMonitor extends EventEmitter<HealthMonitorEvents> {
       liveness?: ProbeFunction;
       readiness?: ProbeFunction;
       startup?: ProbeFunction;
-    },
+    }
   ) {
     super();
     this.config = {
       checks: { ...DEFAULT_CONFIG.checks, ...config.checks },
       probes: { ...DEFAULT_CONFIG.probes, ...config.probes },
       failover: { ...DEFAULT_CONFIG.failover, ...config.failover },
-      circuitBreaker: { ...DEFAULT_CONFIG.circuitBreaker, ...config.circuitBreaker },
+      circuitBreaker: {
+        ...DEFAULT_CONFIG.circuitBreaker,
+        ...config.circuitBreaker,
+      },
       nodeId: config.nodeId ?? DEFAULT_CONFIG.nodeId,
       verbose: config.verbose ?? DEFAULT_CONFIG.verbose,
     };
     this.logger = new Logger(
       'HealthMonitor',
-      this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO,
+      this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO
     );
 
     const defaultProbe = createDefaultProbe();
@@ -262,8 +265,8 @@ export class HealthMonitor extends EventEmitter<HealthMonitorEvents> {
    */
   start(): void {
     if (this.running) {
-return;
-}
+      return;
+    }
     this.running = true;
 
     this.checkTimer = setInterval(async () => {
@@ -282,8 +285,8 @@ return;
    */
   stop(): void {
     if (!this.running) {
-return;
-}
+      return;
+    }
     this.running = false;
 
     if (this.checkTimer) {
@@ -303,8 +306,8 @@ return;
    */
   registerNode(nodeId: string): void {
     if (this.healthStates.has(nodeId)) {
-return;
-}
+      return;
+    }
 
     const now = new Date();
 
@@ -354,7 +357,7 @@ return;
     const nodes = this.getMonitoredNodes();
     const results = new Map<string, NodeHealthState>();
 
-    const checkPromises = nodes.map(async (nodeId) => {
+    const checkPromises = nodes.map(async nodeId => {
       const state = await this.checkNode(nodeId);
       if (state) {
         results.set(nodeId, state);
@@ -373,8 +376,8 @@ return;
   async checkNode(nodeId: string): Promise<NodeHealthState | null> {
     const state = this.healthStates.get(nodeId);
     if (!state) {
-return null;
-}
+      return null;
+    }
 
     // Skip if circuit breaker is open (unless it is time for half-open)
     if (this.config.circuitBreaker.enabled) {
@@ -420,21 +423,21 @@ return null;
     if (this.config.probes.liveness) {
       state.liveness = await this.runProbeWithTimeout(
         this.livenessProbe,
-        syntheticNode,
+        syntheticNode
       );
     }
 
     if (this.config.probes.readiness) {
       state.readiness = await this.runProbeWithTimeout(
         this.readinessProbe,
-        syntheticNode,
+        syntheticNode
       );
     }
 
     if (this.config.probes.startup) {
       state.startup = await this.runProbeWithTimeout(
         this.startupProbe,
-        syntheticNode,
+        syntheticNode
       );
     }
 
@@ -442,9 +445,7 @@ return null;
     state.lastResponseTime = Date.now() - startTime;
 
     // Determine overall health
-    const isHealthy =
-      state.liveness.success &&
-      state.readiness.success;
+    const isHealthy = state.liveness.success && state.readiness.success;
 
     if (isHealthy) {
       state.consecutiveFailures = 0;
@@ -518,7 +519,10 @@ return null;
     }
 
     if (this.config.probes.readiness) {
-      state.readiness = await this.runProbeWithTimeout(this.readinessProbe, node);
+      state.readiness = await this.runProbeWithTimeout(
+        this.readinessProbe,
+        node
+      );
     }
 
     if (this.config.probes.startup) {
@@ -533,7 +537,10 @@ return null;
     if (isHealthy) {
       state.consecutiveFailures = 0;
       state.consecutiveSuccesses++;
-      if (!state.healthy && state.consecutiveSuccesses >= this.config.checks.successThreshold) {
+      if (
+        !state.healthy &&
+        state.consecutiveSuccesses >= this.config.checks.successThreshold
+      ) {
         state.healthy = true;
         this.emit('node:healthy', node.id, state);
         this.emit('node:recovered', node.id);
@@ -541,7 +548,10 @@ return null;
     } else {
       state.consecutiveSuccesses = 0;
       state.consecutiveFailures++;
-      if (state.consecutiveFailures >= this.config.checks.failureThreshold && state.healthy) {
+      if (
+        state.consecutiveFailures >= this.config.checks.failureThreshold &&
+        state.healthy
+      ) {
         state.healthy = false;
         this.emit('node:unhealthy', node.id, state);
       }
@@ -551,8 +561,8 @@ return null;
       this.recordCircuitBreakerOutcome(node.id, isHealthy);
       const cb = this.circuitBreakers.get(node.id);
       if (cb) {
-state.circuitBreaker = cb.state;
-}
+        state.circuitBreaker = cb.state;
+      }
     }
 
     return state;
@@ -567,13 +577,13 @@ state.circuitBreaker = cb.state;
    */
   isNodeAvailable(nodeId: string): boolean {
     if (!this.config.circuitBreaker.enabled) {
-return true;
-}
+      return true;
+    }
 
     const cb = this.circuitBreakers.get(nodeId);
     if (!cb) {
-return true;
-}
+      return true;
+    }
 
     switch (cb.state) {
       case 'closed':
@@ -590,7 +600,9 @@ return true;
       }
 
       case 'half-open':
-        return cb.halfOpenAttempts < this.config.circuitBreaker.halfOpenRequests;
+        return (
+          cb.halfOpenAttempts < this.config.circuitBreaker.halfOpenRequests
+        );
     }
   }
 
@@ -599,8 +611,8 @@ return true;
    */
   recordRequestOutcome(nodeId: string, success: boolean): void {
     if (!this.config.circuitBreaker.enabled) {
-return;
-}
+      return;
+    }
     this.recordCircuitBreakerOutcome(nodeId, success);
   }
 
@@ -614,8 +626,8 @@ return;
   private recordCircuitBreakerOutcome(nodeId: string, success: boolean): void {
     const cb = this.circuitBreakers.get(nodeId);
     if (!cb) {
-return;
-}
+      return;
+    }
 
     const now = Date.now();
 
@@ -631,7 +643,9 @@ return;
 
       if (cb.state === 'half-open') {
         cb.halfOpenAttempts++;
-        if (cb.halfOpenAttempts >= this.config.circuitBreaker.halfOpenRequests) {
+        if (
+          cb.halfOpenAttempts >= this.config.circuitBreaker.halfOpenRequests
+        ) {
           // All half-open attempts succeeded; close the circuit
           this.transitionCircuitBreaker(nodeId, 'closed');
         }
@@ -647,11 +661,15 @@ return;
       }
 
       // Check error rate in the window
-      if (cb.outcomes.length >= 5) { // Minimum sample size
+      if (cb.outcomes.length >= 5) {
+        // Minimum sample size
         const failures = cb.outcomes.filter(([, s]) => !s).length;
         const errorRate = failures / cb.outcomes.length;
 
-        if (errorRate >= this.config.circuitBreaker.threshold && cb.state === 'closed') {
+        if (
+          errorRate >= this.config.circuitBreaker.threshold &&
+          cb.state === 'closed'
+        ) {
           this.transitionCircuitBreaker(nodeId, 'open');
         }
       }
@@ -660,12 +678,12 @@ return;
 
   private transitionCircuitBreaker(
     nodeId: string,
-    newState: CircuitBreakerState,
+    newState: CircuitBreakerState
   ): void {
     const cb = this.circuitBreakers.get(nodeId);
     if (!cb || cb.state === newState) {
-return;
-}
+      return;
+    }
 
     const oldState = cb.state;
     cb.state = newState;
@@ -682,7 +700,7 @@ return;
     }
 
     this.logger.info(
-      `Circuit breaker for ${nodeId}: ${oldState} -> ${newState}`,
+      `Circuit breaker for ${nodeId}: ${oldState} -> ${newState}`
     );
 
     switch (newState) {
@@ -734,12 +752,12 @@ return;
   updateFailoverPlan(
     nodeId: string,
     sessions: string[],
-    targetAssignments: Map<string, string>,
+    targetAssignments: Map<string, string>
   ): void {
     const plan = this.failoverPlans.get(nodeId);
     if (!plan) {
-return;
-}
+      return;
+    }
 
     plan.sessions = sessions;
     plan.targetNodes = targetAssignments;
@@ -749,11 +767,15 @@ return;
   /**
    * Record a migration result for the failover plan.
    */
-  recordMigrationResult(nodeId: string, sessionId: string, success: boolean): void {
+  recordMigrationResult(
+    nodeId: string,
+    sessionId: string,
+    success: boolean
+  ): void {
     const plan = this.failoverPlans.get(nodeId);
     if (!plan) {
-return;
-}
+      return;
+    }
 
     if (success) {
       plan.migrationsCompleted++;
@@ -769,7 +791,11 @@ return;
         this.emit('failover:completed', plan);
       } else {
         plan.status = 'failed';
-        this.emit('failover:failed', plan, `${plan.migrationsFailed} migrations failed`);
+        this.emit(
+          'failover:failed',
+          plan,
+          `${plan.migrationsFailed} migrations failed`
+        );
       }
       this.failoverPlans.delete(nodeId);
     }
@@ -813,7 +839,7 @@ return;
 
   private async runProbeWithTimeout(
     probe: ProbeFunction,
-    node: ClusterNode,
+    node: ClusterNode
   ): Promise<ProbeResult> {
     const startTime = Date.now();
 
@@ -838,7 +864,7 @@ return;
   }
 
   private createTimeout(ms: number): Promise<ProbeResult> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       setTimeout(() => {
         resolve({
           success: false,

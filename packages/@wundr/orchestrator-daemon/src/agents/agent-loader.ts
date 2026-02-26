@@ -62,7 +62,7 @@ const FRONTMATTER_REGEX = /^---\s*\n([\s\S]*?)\n---\s*\n?([\s\S]*)$/;
  * Handles nested objects, arrays, multiline strings, and quoted values.
  */
 function parseFrontmatter(
-  content: string,
+  content: string
 ): { metadata: Record<string, unknown>; body: string } | null {
   const match = content.match(FRONTMATTER_REGEX);
   if (!match) {
@@ -177,7 +177,7 @@ function parseSimpleYaml(yaml: string): Record<string, unknown> {
 
 function collectMultilineString(
   lines: string[],
-  startIndex: number,
+  startIndex: number
 ): { value: string; nextIndex: number } {
   const parts: string[] = [];
   let i = startIndex;
@@ -211,7 +211,7 @@ function collectMultilineString(
 
 function collectBlockArray(
   lines: string[],
-  startIndex: number,
+  startIndex: number
 ): { value: unknown[]; nextIndex: number } {
   const items: unknown[] = [];
   let i = startIndex;
@@ -235,7 +235,11 @@ function collectBlockArray(
       const value = trimmed.slice(2).trim();
 
       // Check if this array item starts a nested object
-      if (value.includes(':') && !value.startsWith("'") && !value.startsWith('"')) {
+      if (
+        value.includes(':') &&
+        !value.startsWith("'") &&
+        !value.startsWith('"')
+      ) {
         // Could be a nested object in the array
         const colonIdx = value.indexOf(':');
         const objKey = value.slice(0, colonIdx).trim();
@@ -275,7 +279,7 @@ function collectBlockArray(
 
 function collectNestedObject(
   lines: string[],
-  startIndex: number,
+  startIndex: number
 ): { value: Record<string, unknown>; nextIndex: number } {
   const obj: Record<string, unknown> = {};
   let i = startIndex;
@@ -377,18 +381,18 @@ function parseScalar(value: string): unknown {
   // Booleans
   const lower = value.toLowerCase();
   if (lower === 'true' || lower === 'yes') {
-return true;
-}
+    return true;
+  }
   if (lower === 'false' || lower === 'no') {
-return false;
-}
+    return false;
+  }
 
   // Numbers
   if (/^-?\d+(\.\d+)?$/.test(value)) {
     const num = Number(value);
     if (Number.isFinite(num)) {
-return num;
-}
+      return num;
+    }
   }
 
   return value;
@@ -583,9 +587,7 @@ export class AgentLoader {
     const parsed = parseFrontmatter(content);
     if (!parsed) {
       if (this.logWarnings) {
-        this.logger(
-          `[AgentLoader] No frontmatter found in ${filePath}`,
-        );
+        this.logger(`[AgentLoader] No frontmatter found in ${filePath}`);
       }
       return null;
     }
@@ -593,7 +595,7 @@ export class AgentLoader {
     if (!parsed.metadata.name) {
       if (this.logWarnings) {
         this.logger(
-          `[AgentLoader] Missing 'name' in frontmatter of ${filePath}`,
+          `[AgentLoader] Missing 'name' in frontmatter of ${filePath}`
         );
       }
       return null;
@@ -613,7 +615,7 @@ export class AgentLoader {
    */
   private resolveInheritance(
     parsed: ParsedAgentFile,
-    allParsed: Map<string, ParsedAgentFile>,
+    allParsed: Map<string, ParsedAgentFile>
   ): ParsedAgentFile {
     const extendsRef = parsed.metadata.extends;
     if (typeof extendsRef !== 'string' || !extendsRef.trim()) {
@@ -629,7 +631,7 @@ export class AgentLoader {
     if (!parent) {
       if (this.logWarnings) {
         this.logger(
-          `[AgentLoader] Cannot resolve extends "${extendsRef}" for ${parsed.filePath}`,
+          `[AgentLoader] Cannot resolve extends "${extendsRef}" for ${parsed.filePath}`
         );
       }
       return parsed;
@@ -641,7 +643,7 @@ export class AgentLoader {
     // Deep merge: child overrides parent, arrays are concatenated for capabilities
     const mergedMetadata = this.mergeMetadata(
       resolvedParent.metadata,
-      parsed.metadata,
+      parsed.metadata
     );
 
     return {
@@ -659,7 +661,7 @@ export class AgentLoader {
    */
   private mergeMetadata(
     parent: Record<string, unknown>,
-    child: Record<string, unknown>,
+    child: Record<string, unknown>
   ): Record<string, unknown> {
     const merged: Record<string, unknown> = { ...parent };
 
@@ -675,17 +677,13 @@ export class AgentLoader {
           ? parent.capabilities
           : [];
         const childCaps = Array.isArray(value) ? value : [];
-        merged.capabilities = [
-          ...new Set([...parentCaps, ...childCaps]),
-        ];
+        merged.capabilities = [...new Set([...parentCaps, ...childCaps])];
         continue;
       }
 
       if (key === 'tools') {
         // Concatenate and deduplicate tools
-        const parentTools = Array.isArray(parent.tools)
-          ? parent.tools
-          : [];
+        const parentTools = Array.isArray(parent.tools) ? parent.tools : [];
         const childTools = Array.isArray(value) ? value : [];
         merged.tools = [...new Set([...parentTools, ...childTools])];
         continue;
@@ -718,7 +716,7 @@ export class AgentLoader {
    */
   private buildDefinition(
     parsed: ParsedAgentFile,
-    relativePath: string,
+    relativePath: string
   ): AgentDefinition | null {
     // Validate metadata against schema (passthrough mode: allow extra fields)
     const validation = AgentMetadataSchema.safeParse(parsed.metadata);
@@ -732,7 +730,7 @@ export class AgentLoader {
           .map(issue => `${issue.path.join('.')}: ${issue.message}`)
           .join('; ');
         this.logger(
-          `[AgentLoader] Validation warnings for ${relativePath}: ${issues}`,
+          `[AgentLoader] Validation warnings for ${relativePath}: ${issues}`
         );
       }
       // Fail-soft: use raw metadata with just the name requirement
@@ -781,9 +779,7 @@ export class AgentLoader {
 /**
  * Creates an AgentLoader for the standard .claude/agents/ directory.
  */
-export function createAgentLoader(
-  projectRoot: string,
-): AgentLoader {
+export function createAgentLoader(projectRoot: string): AgentLoader {
   return new AgentLoader({
     agentsDir: path.join(projectRoot, '.claude', 'agents'),
   });

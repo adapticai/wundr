@@ -102,7 +102,10 @@ export class OrchestratorConnection extends EventEmitter {
         this._handleIncomingMessage(message);
       } catch (error) {
         this._errors++;
-        this.emit('error', error instanceof Error ? error : new Error(String(error)));
+        this.emit(
+          'error',
+          error instanceof Error ? error : new Error(String(error))
+        );
       }
     });
 
@@ -212,7 +215,12 @@ export class OrchestratorConnection extends EventEmitter {
     this._heartbeatTimer = setInterval(() => {
       if (!this.isHealthy()) {
         this._status = 'degraded';
-        this.emit('error', new Error(`No heartbeat received from ${this.id} for ${this._heartbeatTimeout}ms`));
+        this.emit(
+          'error',
+          new Error(
+            `No heartbeat received from ${this.id} for ${this._heartbeatTimeout}ms`
+          )
+        );
       }
 
       // Send WebSocket ping
@@ -268,13 +276,15 @@ export class OrchestratorConnection extends EventEmitter {
    * Check if orchestrator has all required capabilities
    */
   public checkCapability(required: OrchestratorCapability[]): boolean {
-    return required.every((cap) => this.capabilities.includes(cap));
+    return required.every(cap => this.capabilities.includes(cap));
   }
 
   /**
    * Accept a delegated task
    */
-  public async acceptDelegation(request: DelegationRequest): Promise<DelegationResponse> {
+  public async acceptDelegation(
+    request: DelegationRequest
+  ): Promise<DelegationResponse> {
     // Check if connection is healthy
     if (!this.isHealthy()) {
       return {
@@ -321,7 +331,7 @@ export class OrchestratorConnection extends EventEmitter {
 
       try {
         const serialized = this._serializeMessage(message);
-        this.socket.send(serialized, (error) => {
+        this.socket.send(serialized, error => {
           if (error) {
             this._errors++;
             reject(error);
@@ -392,12 +402,15 @@ export class OrchestratorConnection extends EventEmitter {
    * Gracefully disconnect from orchestrator
    */
   public async disconnect(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       this._stopHeartbeatMonitor();
 
       // Send any queued messages before closing
       const sendQueued = async () => {
-        while (this._messageQueue.length > 0 && this.socket.readyState === WebSocket.OPEN) {
+        while (
+          this._messageQueue.length > 0 &&
+          this.socket.readyState === WebSocket.OPEN
+        ) {
           const message = this._messageQueue.shift();
           if (message) {
             try {
@@ -420,7 +433,7 @@ export class OrchestratorConnection extends EventEmitter {
             resolve();
           }, 100);
         })
-        .catch((error) => {
+        .catch(error => {
           console.error('Error during disconnect:', error);
           this.socket.close(1000, 'Graceful disconnect');
           this.removeAllListeners();

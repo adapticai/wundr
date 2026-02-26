@@ -1,10 +1,12 @@
 # Distributed Session Management
 
-This module provides distributed session management capabilities for the Orchestrator Daemon, enabling multiple daemon instances to work together in a cluster.
+This module provides distributed session management capabilities for the Orchestrator Daemon,
+enabling multiple daemon instances to work together in a cluster.
 
 ## DaemonNode Class
 
-The `DaemonNode` class represents a single daemon instance in a distributed cluster. It handles inter-node communication, session spawning, and health monitoring.
+The `DaemonNode` class represents a single daemon instance in a distributed cluster. It handles
+inter-node communication, session spawning, and health monitoring.
 
 ### Features
 

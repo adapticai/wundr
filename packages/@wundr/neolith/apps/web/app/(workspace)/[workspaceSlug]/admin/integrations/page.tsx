@@ -93,7 +93,7 @@ const INTEGRATION_PROVIDERS = [
     name: 'GitHub',
     description: 'Integrate with GitHub repositories for issue tracking',
     icon: '🐙',
-    color: 'bg-gray-900',
+    color: 'bg-foreground',
     oauthEnabled: true,
   },
   {

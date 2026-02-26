@@ -144,7 +144,9 @@ const NOOP_LOGGER = {
   debug: vi.fn(),
 };
 
-function baseConfig(overrides: Partial<SlackChannelConfig> = {}): SlackChannelConfig {
+function baseConfig(
+  overrides: Partial<SlackChannelConfig> = {}
+): SlackChannelConfig {
   return {
     enabled: true,
     userToken: 'xoxp-test',
@@ -160,7 +162,7 @@ function baseConfig(overrides: Partial<SlackChannelConfig> = {}): SlackChannelCo
  * Returns both the adapter and the mock agent.
  */
 async function connectedAdapter(
-  configOverrides: Partial<SlackChannelConfig> = {},
+  configOverrides: Partial<SlackChannelConfig> = {}
 ): Promise<{ adapter: SlackChannelAdapter; agent: MockAgent }> {
   const adapter = new SlackChannelAdapter(NOOP_LOGGER);
   latestMockAgent = createMockAgent();
@@ -235,8 +237,10 @@ describe('SlackChannelAdapter', () => {
     it('should throw if required tokens are missing', async () => {
       const adapter = new SlackChannelAdapter(NOOP_LOGGER);
       await expect(
-        adapter.connect({ enabled: true } as SlackChannelConfig),
-      ).rejects.toThrow('Slack adapter requires userToken, botToken, appToken, and signingSecret.');
+        adapter.connect({ enabled: true } as SlackChannelConfig)
+      ).rejects.toThrow(
+        'Slack adapter requires userToken, botToken, appToken, and signingSecret.'
+      );
     });
 
     it('should emit "connected" event on successful connect', async () => {
@@ -246,7 +250,7 @@ describe('SlackChannelAdapter', () => {
       adapter.on('connected', spy);
       await adapter.connect(baseConfig());
       expect(spy).toHaveBeenCalledWith(
-        expect.objectContaining({ channelId: 'slack', accountId: 'T_TEAM' }),
+        expect.objectContaining({ channelId: 'slack', accountId: 'T_TEAM' })
       );
     });
 
@@ -263,7 +267,7 @@ describe('SlackChannelAdapter', () => {
       adapter.on('disconnected', spy);
       await adapter.disconnect();
       expect(spy).toHaveBeenCalledWith(
-        expect.objectContaining({ channelId: 'slack' }),
+        expect.objectContaining({ channelId: 'slack' })
       );
     });
 
@@ -293,7 +297,9 @@ describe('SlackChannelAdapter', () => {
       latestMockAgent = createMockAgent();
       latestMockAgent.start.mockRejectedValue(new Error('Socket error'));
 
-      await expect(adapter.connect(baseConfig())).rejects.toThrow('Socket error');
+      await expect(adapter.connect(baseConfig())).rejects.toThrow(
+        'Socket error'
+      );
       expect(adapter.isConnected()).toBe(false);
     });
   });
@@ -316,7 +322,7 @@ describe('SlackChannelAdapter', () => {
       expect(agent.sendMessage).toHaveBeenCalledWith(
         'C_GENERAL',
         'Hello, world!',
-        { threadTs: undefined },
+        { threadTs: undefined }
       );
     });
 
@@ -332,14 +338,14 @@ describe('SlackChannelAdapter', () => {
       expect(agent.sendMessage).toHaveBeenCalledWith(
         'C_GENERAL',
         'Thread reply',
-        { threadTs: '1700000000.000001' },
+        { threadTs: '1700000000.000001' }
       );
     });
 
     it('should throw when not connected', async () => {
       const adapter = new SlackChannelAdapter(NOOP_LOGGER);
       await expect(
-        adapter.sendMessage({ to: 'C_GENERAL', text: 'hello' }),
+        adapter.sendMessage({ to: 'C_GENERAL', text: 'hello' })
       ).rejects.toThrow('Slack adapter is not connected');
     });
 
@@ -406,7 +412,7 @@ describe('SlackChannelAdapter', () => {
       expect(agent.sendMessage).toHaveBeenCalledWith(
         'C_GENERAL',
         'fallback',
-        expect.objectContaining({ blocks }),
+        expect.objectContaining({ blocks })
       );
     });
 
@@ -431,14 +437,14 @@ describe('SlackChannelAdapter', () => {
       const result = await adapter.editMessage(
         'C_GENERAL',
         '1700000000.000100',
-        'Updated text',
+        'Updated text'
       );
 
       expect(result.ok).toBe(true);
       expect(agent.editMessage).toHaveBeenCalledWith(
         'C_GENERAL',
         '1700000000.000100',
-        'Updated text',
+        'Updated text'
       );
     });
 
@@ -458,7 +464,7 @@ describe('SlackChannelAdapter', () => {
 
       const success = await adapter.deleteMessage(
         'C_GENERAL',
-        '1700000000.000100',
+        '1700000000.000100'
       );
 
       expect(success).toBe(true);
@@ -485,14 +491,14 @@ describe('SlackChannelAdapter', () => {
       const result = await adapter.replyToThread(
         'C_GENERAL',
         '1700000000.000001',
-        { to: 'C_GENERAL', text: 'Thread reply' },
+        { to: 'C_GENERAL', text: 'Thread reply' }
       );
 
       expect(result.ok).toBe(true);
       expect(agent.replyToThread).toHaveBeenCalledWith(
         'C_GENERAL',
         '1700000000.000001',
-        'Thread reply',
+        'Thread reply'
       );
     });
 
@@ -500,11 +506,10 @@ describe('SlackChannelAdapter', () => {
       const { adapter, agent } = await connectedAdapter();
       agent.replyToThread.mockRejectedValue(new Error('thread_not_found'));
 
-      const result = await adapter.replyToThread(
-        'C_GENERAL',
-        'ts',
-        { to: 'C_GENERAL', text: 'reply' },
-      );
+      const result = await adapter.replyToThread('C_GENERAL', 'ts', {
+        to: 'C_GENERAL',
+        text: 'reply',
+      });
 
       expect(result.ok).toBe(false);
       expect(result.error).toBe('thread_not_found');
@@ -544,7 +549,7 @@ describe('SlackChannelAdapter', () => {
       const ctx = adapter.getThreadContext(
         'C_GENERAL',
         '1700000000.000001',
-        'channel',
+        'channel'
       );
 
       expect(ctx.currentChannelId).toBe('C_GENERAL');
@@ -568,19 +573,23 @@ describe('SlackChannelAdapter', () => {
       expect(agent.addReaction).toHaveBeenCalledWith(
         'C_GENERAL',
         '1700000000.000100',
-        'eyes',
+        'eyes'
       );
     });
 
     it('should remove a reaction', async () => {
       const { adapter, agent } = await connectedAdapter();
 
-      await adapter.removeReaction('C_GENERAL', '1700000000.000100', 'thumbsup');
+      await adapter.removeReaction(
+        'C_GENERAL',
+        '1700000000.000100',
+        'thumbsup'
+      );
 
       expect(agent.removeReaction).toHaveBeenCalledWith(
         'C_GENERAL',
         '1700000000.000100',
-        'thumbsup',
+        'thumbsup'
       );
     });
   });
@@ -595,7 +604,7 @@ describe('SlackChannelAdapter', () => {
         'C_GENERAL',
         '1700000000.000100',
         'direct',
-        false,
+        false
       );
       expect(result).toBe(false);
     });
@@ -609,7 +618,7 @@ describe('SlackChannelAdapter', () => {
         'C_GENERAL',
         '1700000000.000100',
         'channel',
-        true,
+        true
       );
       expect(result).toBe(false);
     });
@@ -623,7 +632,7 @@ describe('SlackChannelAdapter', () => {
         'C_GENERAL',
         '1700000000.000100',
         'channel',
-        false,
+        false
       );
       expect(result).toBe(true);
     });
@@ -637,7 +646,7 @@ describe('SlackChannelAdapter', () => {
         'D_DM',
         '1700000000.000100',
         'direct',
-        false,
+        false
       );
       expect(directResult).toBe(true);
 
@@ -645,7 +654,7 @@ describe('SlackChannelAdapter', () => {
         'C_GENERAL',
         '1700000000.000200',
         'channel',
-        false,
+        false
       );
       expect(channelResult).toBe(false);
     });
@@ -656,16 +665,16 @@ describe('SlackChannelAdapter', () => {
       });
 
       expect(
-        await adapter.ackReaction('C_GENERAL', 'ts1', 'channel', false),
+        await adapter.ackReaction('C_GENERAL', 'ts1', 'channel', false)
       ).toBe(true);
 
-      expect(
-        await adapter.ackReaction('G_GROUP', 'ts2', 'group', false),
-      ).toBe(true);
+      expect(await adapter.ackReaction('G_GROUP', 'ts2', 'group', false)).toBe(
+        true
+      );
 
-      expect(
-        await adapter.ackReaction('D_DM', 'ts3', 'direct', false),
-      ).toBe(false);
+      expect(await adapter.ackReaction('D_DM', 'ts3', 'direct', false)).toBe(
+        false
+      );
     });
 
     it('should ack only group/channel with mentions when scope is "group-mentions"', async () => {
@@ -675,18 +684,18 @@ describe('SlackChannelAdapter', () => {
 
       // Mentions self -> ack.
       expect(
-        await adapter.ackReaction('C_GENERAL', 'ts1', 'channel', true),
+        await adapter.ackReaction('C_GENERAL', 'ts1', 'channel', true)
       ).toBe(true);
 
       // No mention -> no ack.
       expect(
-        await adapter.ackReaction('C_GENERAL', 'ts2', 'channel', false),
+        await adapter.ackReaction('C_GENERAL', 'ts2', 'channel', false)
       ).toBe(false);
 
       // Direct message -> no ack regardless of mention.
-      expect(
-        await adapter.ackReaction('D_DM', 'ts3', 'direct', true),
-      ).toBe(false);
+      expect(await adapter.ackReaction('D_DM', 'ts3', 'direct', true)).toBe(
+        false
+      );
     });
 
     it('should use custom ack emoji from config', async () => {
@@ -696,7 +705,11 @@ describe('SlackChannelAdapter', () => {
       });
 
       await adapter.ackReaction('C_GENERAL', 'ts1', 'channel', false);
-      expect(agent.addReaction).toHaveBeenCalledWith('C_GENERAL', 'ts1', 'wave');
+      expect(agent.addReaction).toHaveBeenCalledWith(
+        'C_GENERAL',
+        'ts1',
+        'wave'
+      );
     });
 
     it('should default to "eyes" emoji', async () => {
@@ -705,7 +718,11 @@ describe('SlackChannelAdapter', () => {
       });
 
       await adapter.ackReaction('C_GENERAL', 'ts1', 'channel', false);
-      expect(agent.addReaction).toHaveBeenCalledWith('C_GENERAL', 'ts1', 'eyes');
+      expect(agent.addReaction).toHaveBeenCalledWith(
+        'C_GENERAL',
+        'ts1',
+        'eyes'
+      );
     });
 
     it('should return false if addReaction throws (best-effort)', async () => {
@@ -719,7 +736,7 @@ describe('SlackChannelAdapter', () => {
         'C_GENERAL',
         'ts1',
         'channel',
-        false,
+        false
       );
       expect(result).toBe(false);
     });
@@ -736,7 +753,7 @@ describe('SlackChannelAdapter', () => {
         'C_GENERAL',
         'ts1',
         'channel',
-        false,
+        false
       );
       adapter.scheduleAckRemoval('C_GENERAL', 'ts1', ackPromise);
 
@@ -746,7 +763,7 @@ describe('SlackChannelAdapter', () => {
         expect(agent.removeReaction).toHaveBeenCalledWith(
           'C_GENERAL',
           'ts1',
-          'eyes',
+          'eyes'
         );
       });
     });
@@ -761,13 +778,13 @@ describe('SlackChannelAdapter', () => {
         'C_GENERAL',
         'ts1',
         'channel',
-        false,
+        false
       );
       adapter.scheduleAckRemoval('C_GENERAL', 'ts1', ackPromise);
       await ackPromise;
 
       // Give a tick for any promises to settle.
-      await new Promise((r) => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 50));
 
       expect(agent.removeReaction).not.toHaveBeenCalled();
     });
@@ -839,7 +856,7 @@ describe('SlackChannelAdapter', () => {
         buf,
         'data.txt',
         ['C_GENERAL'],
-        expect.objectContaining({ title: 'data.txt' }),
+        expect.objectContaining({ title: 'data.txt' })
       );
     });
 
@@ -856,7 +873,7 @@ describe('SlackChannelAdapter', () => {
       expect(agent.uploadFile).toHaveBeenCalledWith(
         '/tmp/test.txt',
         ['C_GENERAL'],
-        expect.objectContaining({ title: 'test.txt' }),
+        expect.objectContaining({ title: 'test.txt' })
       );
     });
 
@@ -912,12 +929,12 @@ describe('SlackChannelAdapter', () => {
       const { adapter, agent } = await connectedAdapter();
 
       const buffer = await adapter.downloadMedia(
-        'https://files.slack.com/file.txt',
+        'https://files.slack.com/file.txt'
       );
 
       expect(buffer.toString()).toBe('hello');
       expect(agent.downloadFile).toHaveBeenCalledWith(
-        'https://files.slack.com/file.txt',
+        'https://files.slack.com/file.txt'
       );
     });
   });
@@ -953,7 +970,7 @@ describe('SlackChannelAdapter', () => {
           userId: 'U_ALICE',
           channelId: 'C_GENERAL',
           triggerId: 'TRIG1',
-        }),
+        })
       );
     });
 
@@ -1007,7 +1024,7 @@ describe('SlackChannelAdapter', () => {
           channelId: 'C_GENERAL',
           responseUrl: 'https://hooks.slack.com/commands/reply',
         },
-        'Here is help!',
+        'Here is help!'
       );
 
       expect(result.ok).toBe(true);
@@ -1016,7 +1033,7 @@ describe('SlackChannelAdapter', () => {
         expect.objectContaining({
           method: 'POST',
           body: expect.stringContaining('ephemeral'),
-        }),
+        })
       );
     });
 
@@ -1030,7 +1047,7 @@ describe('SlackChannelAdapter', () => {
           userId: 'U_ALICE',
           channelId: 'C_GENERAL',
         },
-        'Fallback response',
+        'Fallback response'
       );
 
       expect(result.ok).toBe(true);
@@ -1049,7 +1066,7 @@ describe('SlackChannelAdapter', () => {
           channelId: 'C_GENERAL',
           responseUrl: 'https://hooks.slack.com/commands/reply',
         },
-        'Response text',
+        'Response text'
       );
 
       expect(result.ok).toBe(false);
@@ -1072,7 +1089,7 @@ describe('SlackChannelAdapter', () => {
           channelId: 'C_GENERAL',
           responseUrl: 'https://hooks.slack.com/commands/reply',
         },
-        'Response text',
+        'Response text'
       );
 
       expect(result.ok).toBe(false);
@@ -1115,7 +1132,7 @@ describe('SlackChannelAdapter', () => {
           value: 'approved',
           userId: 'U_ALICE',
           channelId: 'C_GENERAL',
-        }),
+        })
       );
     });
 
@@ -1141,7 +1158,7 @@ describe('SlackChannelAdapter', () => {
         expect.objectContaining({
           actionId: 'menu_select',
           value: 'option_1',
-        }),
+        })
       );
     });
   });
@@ -1161,7 +1178,7 @@ describe('SlackChannelAdapter', () => {
           raw: {},
         },
         'Action acknowledged',
-        { replaceOriginal: true },
+        { replaceOriginal: true }
       );
 
       expect(result.ok).toBe(true);
@@ -1169,7 +1186,7 @@ describe('SlackChannelAdapter', () => {
         'https://hooks.slack.com/actions/reply',
         expect.objectContaining({
           body: expect.stringContaining('"replace_original":true'),
-        }),
+        })
       );
     });
 
@@ -1184,7 +1201,7 @@ describe('SlackChannelAdapter', () => {
           channelId: 'C_GENERAL',
           raw: {},
         },
-        'Fallback message',
+        'Fallback message'
       );
 
       expect(result.ok).toBe(true);
@@ -1201,7 +1218,7 @@ describe('SlackChannelAdapter', () => {
           userId: 'U_ALICE',
           raw: {},
         },
-        'text',
+        'text'
       );
 
       expect(result.ok).toBe(false);
@@ -1213,7 +1230,10 @@ describe('SlackChannelAdapter', () => {
     it('should open a modal and return the view ID', async () => {
       const { adapter, agent } = await connectedAdapter();
 
-      const view = { type: 'modal', title: { type: 'plain_text', text: 'Test' } };
+      const view = {
+        type: 'modal',
+        title: { type: 'plain_text', text: 'Test' },
+      };
       const result = await adapter.openModal('TRIG1', view);
 
       expect(result.ok).toBe(true);
@@ -1267,7 +1287,7 @@ describe('SlackChannelAdapter', () => {
       const { adapter } = await connectedAdapter();
 
       const result = await adapter.resolveUserMentions(
-        'Hello <@U_ALICE>, check this out',
+        'Hello <@U_ALICE>, check this out'
       );
 
       expect(result).toBe('Hello @Alice Smith, check this out');
@@ -1304,7 +1324,7 @@ describe('SlackChannelAdapter', () => {
           { text: 'Approve', actionId: 'approve', style: 'primary' },
           { text: 'Reject', actionId: 'reject', value: 'no', style: 'danger' },
         ],
-        'actions_1',
+        'actions_1'
       );
 
       expect(block.type).toBe('actions');
@@ -1335,7 +1355,7 @@ describe('SlackChannelAdapter', () => {
     it('contextBlock should produce mrkdwn elements', () => {
       const block = SlackChannelAdapter.contextBlock(
         ['_italic_', '*bold*'],
-        'ctx_1',
+        'ctx_1'
       );
 
       expect(block.type).toBe('context');
@@ -1476,7 +1496,7 @@ describe('SlackChannelAdapter', () => {
       await vi.advanceTimersByTimeAsync(2000);
 
       const unrecoverable = errorSpy.mock.calls.find(
-        (c: any[]) => c[0]?.recoverable === false,
+        (c: any[]) => c[0]?.recoverable === false
       );
       expect(unrecoverable).toBeDefined();
 
@@ -1495,7 +1515,7 @@ describe('SlackChannelAdapter', () => {
         expect.objectContaining({
           channelId: 'slack',
           recoverable: true,
-        }),
+        })
       );
     });
   });
@@ -1608,7 +1628,7 @@ describe('SlackChannelAdapter', () => {
         expect.objectContaining({
           conversationId: 'C_GENERAL',
           messageId: '1700000001.000100',
-        }),
+        })
       );
     });
 
@@ -1629,7 +1649,7 @@ describe('SlackChannelAdapter', () => {
         expect.objectContaining({
           conversationId: 'C_GENERAL',
           messageId: '1700000001.000100',
-        }),
+        })
       );
     });
 
@@ -1663,7 +1683,7 @@ describe('SlackChannelAdapter', () => {
       expect(msg.content.attachments[0].mimeType).toBe('image/png');
       expect(msg.content.attachments[0].sizeBytes).toBe(12345);
       expect(msg.content.attachments[0].url).toBe(
-        'https://files.slack.com/photo.png',
+        'https://files.slack.com/photo.png'
       );
     });
 
@@ -1735,7 +1755,7 @@ describe('SlackChannelAdapter', () => {
           conversationId: 'C_GENERAL',
           userId: 'U_ALICE',
           emoji: 'thumbsup',
-        }),
+        })
       );
     });
 
@@ -1755,7 +1775,7 @@ describe('SlackChannelAdapter', () => {
       expect(spy).toHaveBeenCalledWith(
         expect.objectContaining({
           emoji: 'eyes',
-        }),
+        })
       );
     });
 
@@ -1795,7 +1815,7 @@ describe('SlackChannelAdapter', () => {
         expect.objectContaining({
           userId: 'U_NEW',
           conversationId: 'C_GENERAL',
-        }),
+        })
       );
     });
 
@@ -1814,7 +1834,7 @@ describe('SlackChannelAdapter', () => {
         expect.objectContaining({
           userId: 'U_OLD',
           conversationId: 'C_GENERAL',
-        }),
+        })
       );
     });
   });

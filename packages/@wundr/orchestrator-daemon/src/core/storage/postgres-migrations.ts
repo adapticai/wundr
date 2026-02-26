@@ -171,19 +171,21 @@ export async function runMigrations(pool: Pool): Promise<void> {
     `INSERT INTO daemon_schema_migrations (version, name)
      VALUES ($1, $2)
      ON CONFLICT (version) DO NOTHING`,
-    [MIGRATIONS[0]!.version, MIGRATIONS[0]!.name],
+    [MIGRATIONS[0]!.version, MIGRATIONS[0]!.name]
   );
 
   // Fetch already-applied versions
   const { rows } = await pool.query<{ version: number }>(
-    'SELECT version FROM daemon_schema_migrations ORDER BY version ASC',
+    'SELECT version FROM daemon_schema_migrations ORDER BY version ASC'
   );
-  const appliedVersions = new Set(rows.map((r) => r.version));
+  const appliedVersions = new Set(rows.map(r => r.version));
 
   // Apply pending migrations in order
   for (const migration of MIGRATIONS.slice(1)) {
     if (appliedVersions.has(migration.version)) {
-      logger.debug(`Migration ${migration.version} (${migration.name}) already applied, skipping`);
+      logger.debug(
+        `Migration ${migration.version} (${migration.name}) already applied, skipping`
+      );
       continue;
     }
 
@@ -195,14 +197,14 @@ export async function runMigrations(pool: Pool): Promise<void> {
       await client.query(migration.up);
       await client.query(
         `INSERT INTO daemon_schema_migrations (version, name) VALUES ($1, $2)`,
-        [migration.version, migration.name],
+        [migration.version, migration.name]
       );
       await client.query('COMMIT');
       logger.info(`Migration ${migration.version} applied successfully`);
     } catch (err) {
       await client.query('ROLLBACK').catch(() => undefined);
       throw new Error(
-        `Migration ${migration.version} (${migration.name}) failed: ${err instanceof Error ? err.message : String(err)}`,
+        `Migration ${migration.version} (${migration.name}) failed: ${err instanceof Error ? err.message : String(err)}`
       );
     } finally {
       client.release();
@@ -217,15 +219,17 @@ export async function runMigrations(pool: Pool): Promise<void> {
  * Useful for diagnostics and health checks.
  */
 export async function getAppliedMigrations(
-  pool: Pool,
+  pool: Pool
 ): Promise<Array<{ version: number; name: string; appliedAt: Date }>> {
   const { rows } = await pool.query<{
     version: number;
     name: string;
     applied_at: Date;
-  }>('SELECT version, name, applied_at FROM daemon_schema_migrations ORDER BY version ASC');
+  }>(
+    'SELECT version, name, applied_at FROM daemon_schema_migrations ORDER BY version ASC'
+  );
 
-  return rows.map((r) => ({
+  return rows.map(r => ({
     version: r.version,
     name: r.name,
     appliedAt: r.applied_at,

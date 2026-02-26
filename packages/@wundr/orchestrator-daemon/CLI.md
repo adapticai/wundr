@@ -1,6 +1,7 @@
 # Orchestrator Daemon CLI
 
-Command-line interface for the Orchestrator Daemon with proper argument parsing, configuration validation, and graceful shutdown handling.
+Command-line interface for the Orchestrator Daemon with proper argument parsing, configuration
+validation, and graceful shutdown handling.
 
 ## Installation
 
@@ -16,25 +17,25 @@ orchestrator-daemon [OPTIONS]
 
 ## Command-Line Options
 
-| Option | Short | Description | Default |
-|--------|-------|-------------|---------|
-| `--port` | `-p` | Server port | `8787` |
-| `--host` | `-h` | Server host | `127.0.0.1` |
-| `--verbose` | `-v` | Enable verbose logging | `false` |
-| `--config` | `-c` | Path to config file (JSON) | - |
-| `--max-sessions` | - | Maximum concurrent sessions | `100` |
-| `--help` | - | Show help message | - |
+| Option           | Short | Description                 | Default     |
+| ---------------- | ----- | --------------------------- | ----------- |
+| `--port`         | `-p`  | Server port                 | `8787`      |
+| `--host`         | `-h`  | Server host                 | `127.0.0.1` |
+| `--verbose`      | `-v`  | Enable verbose logging      | `false`     |
+| `--config`       | `-c`  | Path to config file (JSON)  | -           |
+| `--max-sessions` | -     | Maximum concurrent sessions | `100`       |
+| `--help`         | -     | Show help message           | -           |
 
 ## Environment Variables
 
 The daemon supports the following environment variables:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `ORCHESTRATOR_DAEMON_PORT` | Server port | `8787` |
-| `ORCHESTRATOR_DAEMON_HOST` | Server host | `127.0.0.1` |
-| `ORCHESTRATOR_MAX_SESSIONS` | Maximum sessions | `100` |
-| `ORCHESTRATOR_VERBOSE` | Enable verbose mode | `false` |
+| Variable                    | Description         | Default     |
+| --------------------------- | ------------------- | ----------- |
+| `ORCHESTRATOR_DAEMON_PORT`  | Server port         | `8787`      |
+| `ORCHESTRATOR_DAEMON_HOST`  | Server host         | `127.0.0.1` |
+| `ORCHESTRATOR_MAX_SESSIONS` | Maximum sessions    | `100`       |
+| `ORCHESTRATOR_VERBOSE`      | Enable verbose mode | `false`     |
 
 ### Loading Environment Variables
 
@@ -90,6 +91,7 @@ orchestrator-daemon
 ```
 
 Output:
+
 ```
 ╔════════════════════════════════════════════════════════════╗
 ║               ORCHESTRATOR DAEMON                          ║
@@ -260,7 +262,8 @@ websocat ws://127.0.0.1:8787
 
 ## Health Checks
 
-The daemon performs periodic health checks (default: every 30 seconds) and logs system status when verbose mode is enabled.
+The daemon performs periodic health checks (default: every 30 seconds) and logs system status when
+verbose mode is enabled.
 
 ## Troubleshooting
 
@@ -300,5 +303,6 @@ MIT
 ## Support
 
 For issues and questions:
+
 - GitHub: https://github.com/adapticai/wundr
 - Documentation: https://wundr.io

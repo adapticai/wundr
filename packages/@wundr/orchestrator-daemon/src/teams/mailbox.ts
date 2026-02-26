@@ -75,8 +75,16 @@ export interface MailboxEvents {
   'message:delivered': (message: TeamMessage) => void;
   'message:read': (messageId: string, memberId: string) => void;
   'teammate:idle': (teamId: string, memberId: string) => void;
-  'teammate:joined': (teamId: string, memberId: string, memberName: string) => void;
-  'teammate:shutdown': (teamId: string, memberId: string, reason: string) => void;
+  'teammate:joined': (
+    teamId: string,
+    memberId: string,
+    memberName: string
+  ) => void;
+  'teammate:shutdown': (
+    teamId: string,
+    memberId: string,
+    reason: string
+  ) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -87,7 +95,7 @@ export class MailboxError extends Error {
   constructor(
     public readonly code: string,
     message: string,
-    public readonly details?: Record<string, unknown>,
+    public readonly details?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'MailboxError';
@@ -208,7 +216,7 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
     if (fromId === input.toId) {
       throw new MailboxError(
         MailboxErrorCode.SELF_MESSAGE,
-        'Cannot send a message to yourself',
+        'Cannot send a message to yourself'
       );
     }
 
@@ -219,7 +227,7 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
       input.type ?? 'direct',
       input.priority ?? 'normal',
       input.metadata ?? {},
-      input.ttlMs,
+      input.ttlMs
     );
 
     // Deliver to recipient's inbox
@@ -233,13 +241,17 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
   /**
    * Broadcast a message to all team members except the sender.
    */
-  broadcast(fromId: string, content: string, options?: BroadcastOptions): TeamMessage[] {
+  broadcast(
+    fromId: string,
+    content: string,
+    options?: BroadcastOptions
+  ): TeamMessage[] {
     this.validateMember(fromId, 'sender');
 
     if (this.memberIds.size < 2) {
       throw new MailboxError(
         MailboxErrorCode.EMPTY_TEAM,
-        'Cannot broadcast to an empty team',
+        'Cannot broadcast to an empty team'
       );
     }
 
@@ -250,8 +262,8 @@ export class Mailbox extends EventEmitter<MailboxEvents> {
 
     for (const memberId of this.memberIds) {
       if (excludeIds.has(memberId)) {
-continue;
-}
+        continue;
+      }
 
       const message = this.createMessage(
         fromId,
@@ -260,7 +272,7 @@ continue;
         options?.type ?? 'broadcast',
         options?.priority ?? 'normal',
         options?.metadata ?? {},
-        options?.ttlMs,
+        options?.ttlMs
       );
 
       this.deliverToInbox(memberId, message);
@@ -278,7 +290,11 @@ continue;
   /**
    * Send a system notification message (not from a specific user).
    */
-  sendSystemMessage(toId: string, content: string, metadata?: Record<string, unknown>): TeamMessage {
+  sendSystemMessage(
+    toId: string,
+    content: string,
+    metadata?: Record<string, unknown>
+  ): TeamMessage {
     this.validateMember(toId, 'recipient');
 
     const message = this.createMessage(
@@ -287,7 +303,7 @@ continue;
       content,
       'system',
       'normal',
-      metadata ?? {},
+      metadata ?? {}
     );
 
     this.deliverToInbox(toId, message);
@@ -309,8 +325,8 @@ continue;
     const now = Date.now();
 
     // Exclude expired messages
-    let result = inbox.filter(m =>
-      m.expiresAt === null || m.expiresAt.getTime() > now,
+    let result = inbox.filter(
+      m => m.expiresAt === null || m.expiresAt.getTime() > now
     );
 
     if (filter) {
@@ -358,7 +374,7 @@ continue;
     if (!message) {
       throw new MailboxError(
         MailboxErrorCode.MESSAGE_NOT_FOUND,
-        `Message not found: ${messageId}`,
+        `Message not found: ${messageId}`
       );
     }
 
@@ -396,7 +412,7 @@ continue;
   async notifyIdle(
     memberId: string,
     completedTaskIds: string[],
-    remainingTasks: number,
+    remainingTasks: number
   ): Promise<void> {
     const memberName = this.memberNames.get(memberId) ?? memberId;
 
@@ -440,11 +456,15 @@ continue;
   notifyTeammateJoined(memberId: string, memberName: string): void {
     // Broadcast to the team that a new teammate joined
     if (this.memberIds.size > 1) {
-      this.broadcast('__system__', `Teammate "${memberName}" has joined the team.`, {
-        type: 'system',
-        metadata: { event: 'teammate_joined', memberId },
-        excludeIds: [memberId],
-      });
+      this.broadcast(
+        '__system__',
+        `Teammate "${memberName}" has joined the team.`,
+        {
+          type: 'system',
+          metadata: { event: 'teammate_joined', memberId },
+          excludeIds: [memberId],
+        }
+      );
     }
 
     this.emit('teammate:joined', this.teamId, memberId, memberName);
@@ -457,11 +477,15 @@ continue;
     const memberName = this.memberNames.get(memberId) ?? memberId;
 
     if (this.leadId && this.leadId !== memberId) {
-      this.sendSystemMessage(this.leadId, `Teammate "${memberName}" has shut down. Reason: ${reason}`, {
-        event: 'teammate_shutdown',
-        memberId,
-        reason,
-      });
+      this.sendSystemMessage(
+        this.leadId,
+        `Teammate "${memberName}" has shut down. Reason: ${reason}`,
+        {
+          event: 'teammate_shutdown',
+          memberId,
+          reason,
+        }
+      );
     }
 
     this.emit('teammate:shutdown', this.teamId, memberId, reason);
@@ -516,8 +540,8 @@ continue;
     // Purge from inboxes
     for (const [memberId, inbox] of this.inboxes) {
       const before = inbox.length;
-      const filtered = inbox.filter(m =>
-        m.expiresAt === null || m.expiresAt.getTime() > now,
+      const filtered = inbox.filter(
+        m => m.expiresAt === null || m.expiresAt.getTime() > now
       );
       purgedCount += before - filtered.length;
       this.inboxes.set(memberId, filtered);
@@ -556,7 +580,7 @@ continue;
     type: MessageType,
     priority: MessagePriority,
     metadata: Record<string, unknown>,
-    ttlMs?: number,
+    ttlMs?: number
   ): TeamMessage {
     const messageId = `msg_${this.teamId}_${this.nextMessageNumber++}`;
     const now = new Date();
@@ -595,14 +619,14 @@ continue;
   private validateMember(memberId: string, role: string): void {
     // Allow __system__ as a pseudo-member
     if (memberId === '__system__') {
-return;
-}
+      return;
+    }
 
     if (!this.memberIds.has(memberId)) {
       throw new MailboxError(
         MailboxErrorCode.MEMBER_NOT_FOUND,
         `${role} member not found: ${memberId}`,
-        { memberId },
+        { memberId }
       );
     }
   }

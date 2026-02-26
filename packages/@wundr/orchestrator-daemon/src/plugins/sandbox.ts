@@ -51,7 +51,7 @@ import { Logger } from '../utils/logger';
 
 import type { PluginIpcBus, IpcHandler } from './plugin-ipc';
 import type { PluginManifest, PluginTrustLevel } from './plugin-manifest';
-import type { PluginMetrics} from './sandbox-metrics';
+import type { PluginMetrics } from './sandbox-metrics';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -79,7 +79,11 @@ export type PluginHandle = {
   /** Send an IPC event from this plugin. */
   sendIpcEvent?(channel: string, payload: unknown): Promise<void>;
   /** Send an IPC request from this plugin. */
-  sendIpcRequest?(to: string, channel: string, payload: unknown): Promise<unknown>;
+  sendIpcRequest?(
+    to: string,
+    channel: string,
+    payload: unknown
+  ): Promise<unknown>;
 };
 
 export type SandboxConfig = {
@@ -196,8 +200,8 @@ class ConcurrencyGuard {
     this.active--;
     const next = this.queue.shift();
     if (next) {
-next();
-}
+      next();
+    }
   }
 
   get pending(): number {
@@ -223,7 +227,7 @@ async function instrumentedCall(
   guard: ConcurrencyGuard,
   timeoutMs: number,
   pluginName: string,
-  method: string,
+  method: string
 ): Promise<unknown> {
   await guard.acquire();
   const start = Date.now();
@@ -238,8 +242,8 @@ async function instrumentedCall(
           isTimeout = true;
           reject(
             new Error(
-              `Call to "${method}" on plugin "${pluginName}" timed out after ${timeoutMs}ms`,
-            ),
+              `Call to "${method}" on plugin "${pluginName}" timed out after ${timeoutMs}ms`
+            )
           );
         }, timeoutMs);
       }),
@@ -247,8 +251,8 @@ async function instrumentedCall(
     return result;
   } catch (err) {
     if (!isTimeout) {
-isError = true;
-}
+      isError = true;
+    }
     throw err;
   } finally {
     const duration = Date.now() - start;
@@ -263,7 +267,7 @@ isError = true;
 
 function buildIpcMethods(
   pluginName: string,
-  ipcBus: PluginIpcBus | undefined,
+  ipcBus: PluginIpcBus | undefined
 ): Pick<PluginHandle, 'subscribeIpc' | 'sendIpcEvent' | 'sendIpcRequest'> {
   if (!ipcBus) {
     return {};
@@ -276,7 +280,11 @@ function buildIpcMethods(
     async sendIpcEvent(channel: string, payload: unknown): Promise<void> {
       return ipcBus.sendEvent(pluginName, channel, payload);
     },
-    async sendIpcRequest(to: string, channel: string, payload: unknown): Promise<unknown> {
+    async sendIpcRequest(
+      to: string,
+      channel: string,
+      payload: unknown
+    ): Promise<unknown> {
       return ipcBus.sendRequest(pluginName, to, channel, payload);
     },
   };
@@ -351,11 +359,16 @@ function createVmContext(params: {
   // Sandboxed console (logs are tagged with plugin name)
   const pluginName = params.manifest.name;
   sandboxGlobals['console'] = {
-    log: (...args: unknown[]) => params.logger.info(`[plugin:${pluginName}]`, ...args),
-    info: (...args: unknown[]) => params.logger.info(`[plugin:${pluginName}]`, ...args),
-    warn: (...args: unknown[]) => params.logger.warn(`[plugin:${pluginName}]`, ...args),
-    error: (...args: unknown[]) => params.logger.error(`[plugin:${pluginName}]`, ...args),
-    debug: (...args: unknown[]) => params.logger.debug(`[plugin:${pluginName}]`, ...args),
+    log: (...args: unknown[]) =>
+      params.logger.info(`[plugin:${pluginName}]`, ...args),
+    info: (...args: unknown[]) =>
+      params.logger.info(`[plugin:${pluginName}]`, ...args),
+    warn: (...args: unknown[]) =>
+      params.logger.warn(`[plugin:${pluginName}]`, ...args),
+    error: (...args: unknown[]) =>
+      params.logger.error(`[plugin:${pluginName}]`, ...args),
+    debug: (...args: unknown[]) =>
+      params.logger.debug(`[plugin:${pluginName}]`, ...args),
   };
 
   // Sandboxed filesystem API (permission-checked)
@@ -365,7 +378,10 @@ function createVmContext(params: {
   sandboxGlobals['__wundr_env'] = buildSandboxedEnvProxy(params.guard);
 
   // Network guard: provide a fetch-like function that checks permissions
-  sandboxGlobals['__wundr_fetch'] = buildSandboxedFetch(params.guard, params.config);
+  sandboxGlobals['__wundr_fetch'] = buildSandboxedFetch(
+    params.guard,
+    params.config
+  );
 
   // Plugin metadata
   sandboxGlobals['__wundr_plugin'] = {
@@ -389,7 +405,7 @@ function createVmContext(params: {
  */
 function buildSandboxedFetch(
   guard: PermissionGuard,
-  config: SandboxConfig,
+  config: SandboxConfig
 ): (url: string, options?: Record<string, unknown>) => Promise<unknown> {
   return async (url: string, _options?: Record<string, unknown>) => {
     let parsedUrl: URL;
@@ -407,19 +423,22 @@ function buildSandboxedFetch(
     if (config.networkAllowlist.length > 0) {
       const hostAllowed = config.networkAllowlist.some(allowed => {
         if (allowed === '*') {
-return true;
-}
+          return true;
+        }
         if (allowed === parsedUrl.hostname) {
-return true;
-}
-        if (allowed.startsWith('*.') && parsedUrl.hostname.endsWith(allowed.slice(1))) {
-return true;
-}
+          return true;
+        }
+        if (
+          allowed.startsWith('*.') &&
+          parsedUrl.hostname.endsWith(allowed.slice(1))
+        ) {
+          return true;
+        }
         return false;
       });
       if (!hostAllowed) {
         throw new Error(
-          `Network access to "${parsedUrl.hostname}" blocked by sandbox network allowlist`,
+          `Network access to "${parsedUrl.hostname}" blocked by sandbox network allowlist`
         );
       }
     }
@@ -446,7 +465,9 @@ async function createVmHandle(params: {
   });
 
   const metrics = globalMetricsRegistry.getOrCreate(params.manifest.name, 'vm');
-  const concurrencyGuard = new ConcurrencyGuard(params.config.maxConcurrentCalls);
+  const concurrencyGuard = new ConcurrencyGuard(
+    params.config.maxConcurrentCalls
+  );
 
   const context = createVmContext({
     manifest: params.manifest,
@@ -473,8 +494,7 @@ async function createVmHandle(params: {
   });
 
   // Extract the plugin object from module.exports or exports.default
-  const pluginObj =
-    (exports['default'] as Record<string, unknown>) ?? exports;
+  const pluginObj = (exports['default'] as Record<string, unknown>) ?? exports;
 
   let alive = true;
   const ipcMethods = buildIpcMethods(params.manifest.name, params.ipcBus);
@@ -488,23 +508,29 @@ async function createVmHandle(params: {
 
     async call(method: string, ...args: unknown[]): Promise<unknown> {
       if (!alive) {
-throw new Error(`Plugin "${params.manifest.name}" sandbox is destroyed`);
-}
+        throw new Error(
+          `Plugin "${params.manifest.name}" sandbox is destroyed`
+        );
+      }
       const fn = (pluginObj as any)[method];
       if (typeof fn !== 'function') {
-        throw new Error(`Plugin "${params.manifest.name}" has no method "${method}"`);
+        throw new Error(
+          `Plugin "${params.manifest.name}" has no method "${method}"`
+        );
       }
 
       return instrumentedCall(
         async () => {
           const callScript = new vm.Script(
             '__wundr_result = __wundr_call_fn.apply(__wundr_call_this, __wundr_call_args)',
-            { filename: `${params.manifest.name}:call:${method}` },
+            { filename: `${params.manifest.name}:call:${method}` }
           );
           context['__wundr_call_fn'] = fn;
           context['__wundr_call_this'] = pluginObj;
           context['__wundr_call_args'] = args;
-          callScript.runInContext(context, { timeout: params.config.vmCallTimeoutMs });
+          callScript.runInContext(context, {
+            timeout: params.config.vmCallTimeoutMs,
+          });
           const result = context['__wundr_result'];
           if (result && typeof (result as any).then === 'function') {
             return await (result as Promise<unknown>);
@@ -515,7 +541,7 @@ throw new Error(`Plugin "${params.manifest.name}" sandbox is destroyed`);
         concurrencyGuard,
         params.config.callTimeoutMs,
         params.manifest.name,
-        method,
+        method
       );
     },
 
@@ -648,8 +674,13 @@ async function createWorkerHandle(params: {
     pluginRoot: params.pluginDir,
   });
 
-  const metrics = globalMetricsRegistry.getOrCreate(params.manifest.name, 'worker');
-  const concurrencyGuard = new ConcurrencyGuard(params.config.maxConcurrentCalls);
+  const metrics = globalMetricsRegistry.getOrCreate(
+    params.manifest.name,
+    'worker'
+  );
+  const concurrencyGuard = new ConcurrencyGuard(
+    params.config.maxConcurrentCalls
+  );
 
   const entryPoint = path.join(params.pluginDir, params.manifest.entryPoint);
   const bootstrapCode = buildWorkerBootstrap(entryPoint, params.manifest.name);
@@ -659,13 +690,15 @@ async function createWorkerHandle(params: {
   const tmpDir = os.tmpdir();
   const bootstrapPath = path.join(
     tmpDir,
-    `wundr-plugin-worker-${params.manifest.name.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}.cjs`,
+    `wundr-plugin-worker-${params.manifest.name.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}.cjs`
   );
   await fs.writeFile(bootstrapPath, bootstrapCode, 'utf-8');
 
   // Compute environment restrictions: only pass through env vars the
   // plugin is allowed to read, plus PATH for node resolution.
-  const allowedEnv: Record<string, string> = { PATH: process.env['PATH'] ?? '' };
+  const allowedEnv: Record<string, string> = {
+    PATH: process.env['PATH'] ?? '',
+  };
   for (const varName of params.manifest.permissions.env.read) {
     if (varName === '*') {
       // If wildcard, pass everything (rare but allowed)
@@ -710,8 +743,8 @@ async function createWorkerHandle(params: {
     const timeout = setTimeout(() => {
       reject(
         new Error(
-          `Worker for plugin "${params.manifest.name}" failed to start within timeout`,
-        ),
+          `Worker for plugin "${params.manifest.name}" failed to start within timeout`
+        )
       );
     }, 10_000);
 
@@ -723,7 +756,7 @@ async function createWorkerHandle(params: {
       }
     };
     worker.on('message', onMessage);
-    worker.on('error', (err) => {
+    worker.on('error', err => {
       clearTimeout(timeout);
       reject(err);
     });
@@ -734,13 +767,13 @@ async function createWorkerHandle(params: {
   if (params.config.workerHealthCheckIntervalMs > 0) {
     healthCheckTimer = setInterval(() => {
       if (!alive) {
-return;
-}
+        return;
+      }
       worker.postMessage({ type: 'healthCheck' });
     }, params.config.workerHealthCheckIntervalMs);
     if (healthCheckTimer.unref) {
-healthCheckTimer.unref();
-}
+      healthCheckTimer.unref();
+    }
   }
 
   // Process worker messages
@@ -748,8 +781,8 @@ healthCheckTimer.unref();
     if (msg.type === 'result' || msg.type === 'error') {
       const pending = pendingCalls.get(msg.id);
       if (!pending) {
-return;
-}
+        return;
+      }
       pendingCalls.delete(msg.id);
       clearTimeout(pending.timer);
       if (msg.type === 'result') {
@@ -765,7 +798,7 @@ return;
 
     if (msg.type === 'crash') {
       params.logger.error(
-        `Plugin "${params.manifest.name}" worker crashed: ${msg.message}`,
+        `Plugin "${params.manifest.name}" worker crashed: ${msg.message}`
       );
       // The worker is about to exit; crash isolation means we just mark
       // this handle as dead. Other plugins continue running.
@@ -773,16 +806,16 @@ return;
 
     if (msg.type === 'unhandledRejection') {
       params.logger.warn(
-        `Plugin "${params.manifest.name}" unhandled rejection: ${msg.message}`,
+        `Plugin "${params.manifest.name}" unhandled rejection: ${msg.message}`
       );
     }
   });
 
-  worker.on('exit', (code) => {
+  worker.on('exit', code => {
     alive = false;
     if (healthCheckTimer) {
-clearInterval(healthCheckTimer);
-}
+      clearInterval(healthCheckTimer);
+    }
 
     // Reject all pending calls
     for (const [, pending] of pendingCalls) {
@@ -799,7 +832,7 @@ clearInterval(healthCheckTimer);
     }
 
     params.logger.info(
-      `Plugin "${params.manifest.name}" worker exited (code=${code})`,
+      `Plugin "${params.manifest.name}" worker exited (code=${code})`
     );
   });
 
@@ -814,8 +847,10 @@ clearInterval(healthCheckTimer);
 
     async call(method: string, ...args: unknown[]): Promise<unknown> {
       if (!alive) {
-throw new Error(`Plugin "${params.manifest.name}" worker is terminated`);
-}
+        throw new Error(
+          `Plugin "${params.manifest.name}" worker is terminated`
+        );
+      }
 
       return instrumentedCall(
         () => {
@@ -825,8 +860,8 @@ throw new Error(`Plugin "${params.manifest.name}" worker is terminated`);
               pendingCalls.delete(id);
               reject(
                 new Error(
-                  `Call to "${method}" timed out after ${params.config.callTimeoutMs}ms`,
-                ),
+                  `Call to "${method}" timed out after ${params.config.callTimeoutMs}ms`
+                )
               );
             }, params.config.callTimeoutMs);
 
@@ -838,29 +873,29 @@ throw new Error(`Plugin "${params.manifest.name}" worker is terminated`);
         concurrencyGuard,
         params.config.callTimeoutMs,
         params.manifest.name,
-        method,
+        method
       );
     },
 
     async destroy(): Promise<void> {
       if (!alive) {
-return;
-}
+        return;
+      }
       alive = false;
       if (healthCheckTimer) {
-clearInterval(healthCheckTimer);
-}
+        clearInterval(healthCheckTimer);
+      }
 
       worker.postMessage({ type: 'shutdown' });
       // Give the worker a chance to exit gracefully
-      await new Promise<void>((resolve) => {
+      await new Promise<void>(resolve => {
         const forceKill = setTimeout(() => {
           worker.terminate();
           resolve();
         }, params.config.shutdownTimeoutMs);
         if (forceKill.unref) {
-forceKill.unref();
-}
+          forceKill.unref();
+        }
         worker.on('exit', () => {
           clearTimeout(forceKill);
           resolve();
@@ -909,41 +944,64 @@ async function createDockerHandle(params: {
     pluginRoot: params.pluginDir,
   });
 
-  const metrics = globalMetricsRegistry.getOrCreate(params.manifest.name, 'docker');
-  const concurrencyGuard = new ConcurrencyGuard(params.config.maxConcurrentCalls);
+  const metrics = globalMetricsRegistry.getOrCreate(
+    params.manifest.name,
+    'docker'
+  );
+  const concurrencyGuard = new ConcurrencyGuard(
+    params.config.maxConcurrentCalls
+  );
 
   const containerName = `${params.config.dockerContainerPrefix}${params.manifest.name.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`;
 
   // Determine network mode. If the plugin declares network hosts, use
   // bridge networking with DNS. Otherwise, use 'none' for full isolation.
-  const hasNetworkPerms =
-    params.manifest.permissions.network.hosts.length > 0;
+  const hasNetworkPerms = params.manifest.permissions.network.hosts.length > 0;
   const networkMode = hasNetworkPerms ? 'bridge' : params.config.dockerNetwork;
 
   // Build docker create args with production security hardening
   const createArgs = [
     'create',
-    '--name', containerName,
-    '--label', 'wundr.plugin=1',
-    '--label', `wundr.plugin.name=${params.manifest.name}`,
-    '--label', `wundr.plugin.version=${params.manifest.version}`,
+    '--name',
+    containerName,
+    '--label',
+    'wundr.plugin=1',
+    '--label',
+    `wundr.plugin.name=${params.manifest.name}`,
+    '--label',
+    `wundr.plugin.version=${params.manifest.version}`,
     '--read-only',
-    '--tmpfs', '/tmp:rw,noexec,nosuid,size=64m',
-    '--tmpfs', '/var/tmp:rw,noexec,nosuid,size=32m',
-    '--network', networkMode,
-    '--cap-drop', 'ALL',
-    '--security-opt', 'no-new-privileges',
-    '--pids-limit', String(params.config.dockerPidLimit),
-    '--memory', params.config.dockerMemoryLimit,
-    '--memory-swap', params.config.dockerMemoryLimit, // No swap
-    '--cpus', String(params.config.dockerCpuLimit),
-    '--ulimit', 'nofile=256:512',
-    '--ulimit', 'nproc=64:128',
-    '-v', `${path.resolve(params.pluginDir)}:/plugin:ro`,
-    '--workdir', '/plugin',
-    '--restart', 'no',
+    '--tmpfs',
+    '/tmp:rw,noexec,nosuid,size=64m',
+    '--tmpfs',
+    '/var/tmp:rw,noexec,nosuid,size=32m',
+    '--network',
+    networkMode,
+    '--cap-drop',
+    'ALL',
+    '--security-opt',
+    'no-new-privileges',
+    '--pids-limit',
+    String(params.config.dockerPidLimit),
+    '--memory',
+    params.config.dockerMemoryLimit,
+    '--memory-swap',
+    params.config.dockerMemoryLimit, // No swap
+    '--cpus',
+    String(params.config.dockerCpuLimit),
+    '--ulimit',
+    'nofile=256:512',
+    '--ulimit',
+    'nproc=64:128',
+    '-v',
+    `${path.resolve(params.pluginDir)}:/plugin:ro`,
+    '--workdir',
+    '/plugin',
+    '--restart',
+    'no',
     params.config.dockerImage,
-    'node', '-e',
+    'node',
+    '-e',
     // Long-running process that accepts JSON-RPC commands on stdin
     buildDockerEntrypoint(params.manifest.entryPoint),
   ];
@@ -957,7 +1015,7 @@ async function createDockerHandle(params: {
     await execFileAsync('docker', ['exec', containerName, 'node', '--version']);
   } catch {
     params.logger.warn(
-      `Node.js not found in Docker image ${params.config.dockerImage}. Plugin calls may fail.`,
+      `Node.js not found in Docker image ${params.config.dockerImage}. Plugin calls may fail.`
     );
   }
 
@@ -969,13 +1027,17 @@ async function createDockerHandle(params: {
   healthTimer = setInterval(async () => {
     if (!alive) {
       if (healthTimer) {
-clearInterval(healthTimer);
-}
+        clearInterval(healthTimer);
+      }
       return;
     }
     try {
       const { stdout } = await execFileAsync('docker', [
-        'stats', '--no-stream', '--format', '{{.MemUsage}}', containerName,
+        'stats',
+        '--no-stream',
+        '--format',
+        '{{.MemUsage}}',
+        containerName,
       ]);
       // Parse memory usage (e.g., "12.5MiB / 512MiB")
       const memMatch = stdout.match(/([\d.]+)\s*(KiB|MiB|GiB)/);
@@ -984,12 +1046,12 @@ clearInterval(healthTimer);
         const unit = memMatch[2]!;
         let bytes = value;
         if (unit === 'KiB') {
-bytes *= 1024;
-} else if (unit === 'MiB') {
-bytes *= 1024 * 1024;
-} else if (unit === 'GiB') {
-bytes *= 1024 * 1024 * 1024;
-}
+          bytes *= 1024;
+        } else if (unit === 'MiB') {
+          bytes *= 1024 * 1024;
+        } else if (unit === 'GiB') {
+          bytes *= 1024 * 1024 * 1024;
+        }
         metrics.updateResourceUsage(Math.round(bytes));
       }
     } catch {
@@ -997,8 +1059,8 @@ bytes *= 1024 * 1024 * 1024;
     }
   }, params.config.workerHealthCheckIntervalMs);
   if (healthTimer.unref) {
-healthTimer.unref();
-}
+    healthTimer.unref();
+  }
 
   return {
     name: params.manifest.name,
@@ -1009,8 +1071,10 @@ healthTimer.unref();
 
     async call(method: string, ...args: unknown[]): Promise<unknown> {
       if (!alive) {
-throw new Error(`Plugin "${params.manifest.name}" container is stopped`);
-}
+        throw new Error(
+          `Plugin "${params.manifest.name}" container is stopped`
+        );
+      }
 
       return instrumentedCall(
         async () => {
@@ -1027,25 +1091,25 @@ throw new Error(`Plugin "${params.manifest.name}" container is stopped`);
           const { stdout, stderr } = await execFileAsync(
             'docker',
             ['exec', containerName, 'node', '-e', invokeScript],
-            { timeout: params.config.callTimeoutMs },
+            { timeout: params.config.callTimeoutMs }
           );
 
           if (stderr && stderr.trim()) {
             params.logger.warn(
-              `[plugin:${params.manifest.name}:docker:stderr] ${stderr.trim()}`,
+              `[plugin:${params.manifest.name}:docker:stderr] ${stderr.trim()}`
             );
           }
 
           try {
             const result = JSON.parse(stdout);
             if (result.ok) {
-return result.value;
-}
+              return result.value;
+            }
             throw new Error(result.error || 'Unknown plugin error');
           } catch (parseErr) {
             if (parseErr instanceof SyntaxError) {
               throw new Error(
-                `Invalid response from plugin container: ${stdout.slice(0, 200)}`,
+                `Invalid response from plugin container: ${stdout.slice(0, 200)}`
               );
             }
             throw parseErr;
@@ -1055,18 +1119,18 @@ return result.value;
         concurrencyGuard,
         params.config.callTimeoutMs,
         params.manifest.name,
-        method,
+        method
       );
     },
 
     async destroy(): Promise<void> {
       if (!alive) {
-return;
-}
+        return;
+      }
       alive = false;
       if (healthTimer) {
-clearInterval(healthTimer);
-}
+        clearInterval(healthTimer);
+      }
 
       if (params.ipcBus) {
         params.ipcBus.unsubscribeAll(params.manifest.name);
@@ -1076,7 +1140,8 @@ clearInterval(healthTimer);
         // Graceful stop with timeout, then force remove
         await execFileAsync('docker', [
           'stop',
-          '-t', String(params.config.dockerStopTimeoutSec),
+          '-t',
+          String(params.config.dockerStopTimeoutSec),
           containerName,
         ]);
       } catch {
@@ -1129,8 +1194,13 @@ async function createInProcessHandle(params: {
     pluginRoot: params.pluginDir,
   });
 
-  const metrics = globalMetricsRegistry.getOrCreate(params.manifest.name, 'none');
-  const concurrencyGuard = new ConcurrencyGuard(params.config.maxConcurrentCalls);
+  const metrics = globalMetricsRegistry.getOrCreate(
+    params.manifest.name,
+    'none'
+  );
+  const concurrencyGuard = new ConcurrencyGuard(
+    params.config.maxConcurrentCalls
+  );
 
   const entryPath = path.join(params.pluginDir, params.manifest.entryPoint);
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -1149,11 +1219,13 @@ async function createInProcessHandle(params: {
 
     async call(method: string, ...args: unknown[]): Promise<unknown> {
       if (!alive) {
-throw new Error(`Plugin "${params.manifest.name}" is unloaded`);
-}
+        throw new Error(`Plugin "${params.manifest.name}" is unloaded`);
+      }
       const fn = (plugin as any)[method];
       if (typeof fn !== 'function') {
-        throw new Error(`Plugin "${params.manifest.name}" has no method "${method}"`);
+        throw new Error(
+          `Plugin "${params.manifest.name}" has no method "${method}"`
+        );
       }
 
       return instrumentedCall(
@@ -1162,7 +1234,7 @@ throw new Error(`Plugin "${params.manifest.name}" is unloaded`);
         concurrencyGuard,
         params.config.callTimeoutMs,
         params.manifest.name,
-        method,
+        method
       );
     },
 
@@ -1203,10 +1275,11 @@ export async function createSandboxedPlugin(params: {
 }): Promise<PluginHandle> {
   const config: SandboxConfig = { ...DEFAULT_SANDBOX_CONFIG, ...params.config };
   const logger = params.logger ?? new Logger('PluginSandbox');
-  const tier = params.tierOverride ?? tierForTrustLevel(params.manifest.trustLevel);
+  const tier =
+    params.tierOverride ?? tierForTrustLevel(params.manifest.trustLevel);
 
   logger.info(
-    `Creating sandbox for plugin "${params.manifest.name}" (trust=${params.manifest.trustLevel}, tier=${tier})`,
+    `Creating sandbox for plugin "${params.manifest.name}" (trust=${params.manifest.trustLevel}, tier=${tier})`
   );
 
   switch (tier) {
@@ -1255,6 +1328,8 @@ export async function createSandboxedPlugin(params: {
  * Destroy all handles in a collection (convenience for shutdown).
  * Uses Promise.allSettled so one failure does not block others.
  */
-export async function destroyAllHandles(handles: PluginHandle[]): Promise<void> {
+export async function destroyAllHandles(
+  handles: PluginHandle[]
+): Promise<void> {
   await Promise.allSettled(handles.map(h => h.destroy()));
 }

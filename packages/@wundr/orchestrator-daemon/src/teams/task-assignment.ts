@@ -16,7 +16,10 @@ import { EventEmitter } from 'eventemitter3';
 // Types
 // ---------------------------------------------------------------------------
 
-export type AssignmentStrategy = 'round-robin' | 'capability-based' | 'load-balanced';
+export type AssignmentStrategy =
+  | 'round-robin'
+  | 'capability-based'
+  | 'load-balanced';
 
 export interface TeammateCapabilities {
   readonly memberId: string;
@@ -62,7 +65,7 @@ export class AssignmentError extends Error {
   constructor(
     public readonly code: string,
     message: string,
-    public readonly details?: Record<string, unknown>,
+    public readonly details?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'AssignmentError';
@@ -90,7 +93,8 @@ export class TaskAssigner extends EventEmitter<TaskAssignmentEvents> {
   /**
    * Registered capabilities per team member.
    */
-  private readonly memberCapabilities: Map<string, TeammateCapabilities> = new Map();
+  private readonly memberCapabilities: Map<string, TeammateCapabilities> =
+    new Map();
 
   /**
    * Default max concurrent tasks per member if not specified.
@@ -159,7 +163,7 @@ export class TaskAssigner extends EventEmitter<TaskAssignmentEvents> {
    */
   selectAssignee(
     task: AssignableTask,
-    candidates: AssignmentCandidate[],
+    candidates: AssignmentCandidate[]
   ): AssignmentDecision | null {
     if (candidates.length === 0) {
       this.emit('assignment:no-candidate', task.id, 'No candidates available');
@@ -174,7 +178,11 @@ export class TaskAssigner extends EventEmitter<TaskAssignmentEvents> {
     });
 
     if (available.length === 0) {
-      this.emit('assignment:no-candidate', task.id, 'All candidates at capacity');
+      this.emit(
+        'assignment:no-candidate',
+        task.id,
+        'All candidates at capacity'
+      );
       return null;
     }
 
@@ -195,7 +203,11 @@ export class TaskAssigner extends EventEmitter<TaskAssignmentEvents> {
     if (decision) {
       this.emit('assignment:decided', decision);
     } else {
-      this.emit('assignment:no-candidate', task.id, `Strategy '${this.strategy}' found no match`);
+      this.emit(
+        'assignment:no-candidate',
+        task.id,
+        `Strategy '${this.strategy}' found no match`
+      );
     }
 
     return decision;
@@ -207,7 +219,7 @@ export class TaskAssigner extends EventEmitter<TaskAssignmentEvents> {
    */
   selectAssignees(
     tasks: AssignableTask[],
-    candidates: AssignmentCandidate[],
+    candidates: AssignmentCandidate[]
   ): AssignmentDecision[] {
     const decisions: AssignmentDecision[] = [];
 
@@ -220,7 +232,9 @@ export class TaskAssigner extends EventEmitter<TaskAssignmentEvents> {
         decisions.push(decision);
 
         // Update the working candidate's active count
-        const candidate = workingCandidates.find(c => c.memberId === decision.assigneeId);
+        const candidate = workingCandidates.find(
+          c => c.memberId === decision.assigneeId
+        );
         if (candidate) {
           (candidate as { activeTaskCount: number }).activeTaskCount += 1;
         }
@@ -254,7 +268,7 @@ export class TaskAssigner extends EventEmitter<TaskAssignmentEvents> {
    */
   private assignRoundRobin(
     task: AssignableTask,
-    candidates: AssignmentCandidate[],
+    candidates: AssignmentCandidate[]
   ): AssignmentDecision {
     const index = this.roundRobinIndex % candidates.length;
     const selected = candidates[index];
@@ -278,9 +292,10 @@ export class TaskAssigner extends EventEmitter<TaskAssignmentEvents> {
    */
   private assignByCapability(
     task: AssignableTask,
-    candidates: AssignmentCandidate[],
+    candidates: AssignmentCandidate[]
   ): AssignmentDecision | null {
-    const requiredCapabilities = (task.metadata['requiredCapabilities'] as string[] | undefined) ?? [];
+    const requiredCapabilities =
+      (task.metadata['requiredCapabilities'] as string[] | undefined) ?? [];
 
     if (requiredCapabilities.length === 0) {
       // No capability requirements -- fall back to load-balanced
@@ -293,7 +308,7 @@ export class TaskAssigner extends EventEmitter<TaskAssignmentEvents> {
       const memberCaps = caps?.capabilities ?? candidate.capabilities;
 
       const matchCount = requiredCapabilities.filter(req =>
-        memberCaps.some(cap => cap.toLowerCase() === req.toLowerCase()),
+        memberCaps.some(cap => cap.toLowerCase() === req.toLowerCase())
       ).length;
 
       const matchRatio = matchCount / requiredCapabilities.length;
@@ -330,14 +345,14 @@ export class TaskAssigner extends EventEmitter<TaskAssignmentEvents> {
    */
   private assignLoadBalanced(
     task: AssignableTask,
-    candidates: AssignmentCandidate[],
+    candidates: AssignmentCandidate[]
   ): AssignmentDecision {
     // Sort by active task count ascending, then by max concurrent descending
     const sorted = [...candidates].sort((a, b) => {
       const loadDiff = a.activeTaskCount - b.activeTaskCount;
       if (loadDiff !== 0) {
-return loadDiff;
-}
+        return loadDiff;
+      }
 
       // Prefer members with higher capacity as tie-breaker
       const capA = this.memberCapabilities.get(a.memberId);
@@ -352,9 +367,8 @@ return loadDiff;
     // Score: inverse of load ratio (0 tasks = 1.0, at capacity = 0.0)
     const caps = this.memberCapabilities.get(selected.memberId);
     const maxConcurrent = caps?.maxConcurrent ?? selected.maxConcurrent;
-    const score = maxConcurrent > 0
-      ? 1 - (selected.activeTaskCount / maxConcurrent)
-      : 0;
+    const score =
+      maxConcurrent > 0 ? 1 - selected.activeTaskCount / maxConcurrent : 0;
 
     return {
       taskId: task.id,

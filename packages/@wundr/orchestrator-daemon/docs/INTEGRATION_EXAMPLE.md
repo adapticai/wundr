@@ -1,6 +1,7 @@
 # Neolith Backend Integration Example
 
-This document provides a complete example of integrating the Orchestrator Daemon WebSocket server with the Neolith backend.
+This document provides a complete example of integrating the Orchestrator Daemon WebSocket server
+with the Neolith backend.
 
 ## Complete Server Implementation
 
@@ -200,7 +201,7 @@ export class OrchestratorDaemonClient extends EventEmitter {
       }
     });
 
-    this.ws.on('error', (error) => {
+    this.ws.on('error', error => {
       this.emit('error', error);
     });
   }
@@ -362,18 +363,14 @@ const client = new OrchestratorDaemonClient({
   orchestratorId: 'vp_456',
 });
 
-client.on('authenticated', (payload) => {
+client.on('authenticated', payload => {
   console.log('Authenticated with session:', payload.sessionId);
 
   // Subscribe to events
-  client.subscribe([
-    'message.received',
-    'presence.updated',
-    'vp.mentioned',
-  ]);
+  client.subscribe(['message.received', 'presence.updated', 'vp.mentioned']);
 });
 
-client.on('event', (payload) => {
+client.on('event', payload => {
   console.log('Event received:', payload.eventType, payload.data);
 
   // Handle event
@@ -387,7 +384,7 @@ client.on('event', (payload) => {
   }
 });
 
-client.on('error', (error) => {
+client.on('error', error => {
   console.error('WebSocket error:', error);
 });
 
@@ -477,14 +474,14 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: neolith
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
 
@@ -496,7 +493,7 @@ services:
       DAEMON_JWT_SECRET: ${DAEMON_JWT_SECRET}
       PORT: 3000
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
       - postgres
       - redis
@@ -546,7 +543,7 @@ wsServer.on('connection:closed', () => {
   wsConnections.dec({ state: 'authenticated' });
 });
 
-wsServer.on('event:routed', (eventId) => {
+wsServer.on('event:routed', eventId => {
   wsEvents.inc({ type: 'routed', status: 'success' });
 });
 
@@ -591,23 +588,25 @@ describe('WebSocket Integration', () => {
     });
   });
 
-  test('should handle full connection lifecycle', (done) => {
+  test('should handle full connection lifecycle', done => {
     const ws = new WebSocket('ws://localhost:8080/daemon/ws');
 
     ws.on('open', () => {
-      ws.send(JSON.stringify({
-        type: 'auth',
-        id: crypto.randomUUID(),
-        timestamp: new Date().toISOString(),
-        payload: {
-          accessToken: 'test-token',
-          daemonId: 'test-daemon',
-          orchestratorId: 'test-vp',
-        },
-      }));
+      ws.send(
+        JSON.stringify({
+          type: 'auth',
+          id: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          payload: {
+            accessToken: 'test-token',
+            daemonId: 'test-daemon',
+            orchestratorId: 'test-vp',
+          },
+        })
+      );
     });
 
-    ws.on('message', (data) => {
+    ws.on('message', data => {
       const message = JSON.parse(data.toString());
 
       if (message.type === 'auth_success') {

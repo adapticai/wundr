@@ -68,7 +68,13 @@ export interface BacklogItem {
 export interface SessionState {
   id: string;
   sessionManagerId: string;
-  state: 'initializing' | 'running' | 'paused' | 'completed' | 'failed' | 'terminated';
+  state:
+    | 'initializing'
+    | 'running'
+    | 'paused'
+    | 'completed'
+    | 'failed'
+    | 'terminated';
   config: Record<string, unknown>;
   startedAt: Date;
   updatedAt: Date;
@@ -108,7 +114,7 @@ export interface HealthCheckResult {
 export class PostgresAdapterError extends Error {
   constructor(
     message: string,
-    public readonly cause?: unknown,
+    public readonly cause?: unknown
   ) {
     super(message);
     this.name = 'PostgresAdapterError';
@@ -230,11 +236,15 @@ export class PostgresAdapter {
     this.ensurePool();
 
     const [tasksResult, sessionsResult, memoryResult] = await Promise.all([
-      this.pool!.query<{ count: string }>('SELECT COUNT(*) AS count FROM daemon_tasks'),
       this.pool!.query<{ count: string }>(
-        "SELECT COUNT(*) AS count FROM daemon_sessions WHERE state IN ('initializing','running','paused')",
+        'SELECT COUNT(*) AS count FROM daemon_tasks'
       ),
-      this.pool!.query<{ count: string }>('SELECT COUNT(*) AS count FROM daemon_memory'),
+      this.pool!.query<{ count: string }>(
+        "SELECT COUNT(*) AS count FROM daemon_sessions WHERE state IN ('initializing','running','paused')"
+      ),
+      this.pool!.query<{ count: string }>(
+        'SELECT COUNT(*) AS count FROM daemon_memory'
+      ),
     ]);
 
     return {
@@ -257,8 +267,8 @@ export class PostgresAdapter {
     const { rows } = await this.withRetry(() =>
       this.pool!.query<TaskRow>(
         { name: 'get_task', text: 'SELECT * FROM daemon_tasks WHERE id = $1' },
-        [id],
-      ),
+        [id]
+      )
     );
 
     return rows[0] ? rowToTask(rows[0]) : null;
@@ -268,7 +278,9 @@ export class PostgresAdapter {
     this.ensurePool();
 
     const { sql, params } = buildTaskQuery(filter);
-    const { rows } = await this.withRetry(() => this.pool!.query<TaskRow>(sql, params));
+    const { rows } = await this.withRetry(() =>
+      this.pool!.query<TaskRow>(sql, params)
+    );
     return rows.map(rowToTask);
   }
 
@@ -301,18 +313,23 @@ export class PostgresAdapter {
           JSON.stringify(task.metadata),
           task.createdAt,
           task.updatedAt,
-        ],
-      ),
+        ]
+      )
     );
 
     const row = rows[0];
     if (!row) {
-      throw new PostgresAdapterError(`createTask: no row returned for id ${task.id}`);
+      throw new PostgresAdapterError(
+        `createTask: no row returned for id ${task.id}`
+      );
     }
     return rowToTask(row);
   }
 
-  async updateTask(id: string, updates: Partial<ManagedTask>): Promise<ManagedTask | null> {
+  async updateTask(
+    id: string,
+    updates: Partial<ManagedTask>
+  ): Promise<ManagedTask | null> {
     this.ensurePool();
 
     const existing = await this.getTask(id);
@@ -361,8 +378,8 @@ export class PostgresAdapter {
           JSON.stringify(merged.blockedBy),
           JSON.stringify(merged.metadata),
           merged.updatedAt,
-        ],
-      ),
+        ]
+      )
     );
 
     return rows[0] ? rowToTask(rows[0]) : null;
@@ -372,9 +389,10 @@ export class PostgresAdapter {
     this.ensurePool();
 
     const { rowCount } = await this.withRetry(() =>
-      this.pool!.query({ name: 'delete_task', text: 'DELETE FROM daemon_tasks WHERE id = $1' }, [
-        id,
-      ]),
+      this.pool!.query(
+        { name: 'delete_task', text: 'DELETE FROM daemon_tasks WHERE id = $1' },
+        [id]
+      )
     );
 
     return (rowCount ?? 0) > 0;
@@ -397,8 +415,8 @@ export class PostgresAdapter {
             ORDER BY position ASC, added_at ASC
           `,
         },
-        [orchestratorId],
-      ),
+        [orchestratorId]
+      )
     );
 
     return rows.map(rowToBacklogItem);
@@ -407,7 +425,7 @@ export class PostgresAdapter {
   async addToBacklog(
     orchestratorId: string,
     taskId: string,
-    position?: number,
+    position?: number
   ): Promise<BacklogItem> {
     this.ensurePool();
 
@@ -416,9 +434,10 @@ export class PostgresAdapter {
     if (resolvedPosition === undefined) {
       const { rows } = await this.pool!.query<{ max: string | null }>(
         'SELECT MAX(position) AS max FROM daemon_backlog_items WHERE orchestrator_id = $1',
-        [orchestratorId],
+        [orchestratorId]
       );
-      resolvedPosition = rows[0]?.max !== null ? parseInt(rows[0]?.max ?? '0', 10) + 1 : 0;
+      resolvedPosition =
+        rows[0]?.max !== null ? parseInt(rows[0]?.max ?? '0', 10) + 1 : 0;
     }
 
     const { rows } = await this.withRetry(() =>
@@ -433,8 +452,8 @@ export class PostgresAdapter {
             RETURNING *
           `,
         },
-        [taskId, orchestratorId, resolvedPosition],
-      ),
+        [taskId, orchestratorId, resolvedPosition]
+      )
     );
 
     const row = rows[0];
@@ -444,7 +463,10 @@ export class PostgresAdapter {
     return rowToBacklogItem(row);
   }
 
-  async removeFromBacklog(orchestratorId: string, taskId: string): Promise<boolean> {
+  async removeFromBacklog(
+    orchestratorId: string,
+    taskId: string
+  ): Promise<boolean> {
     this.ensurePool();
 
     const { rowCount } = await this.withRetry(() =>
@@ -453,8 +475,8 @@ export class PostgresAdapter {
           name: 'remove_from_backlog',
           text: 'DELETE FROM daemon_backlog_items WHERE orchestrator_id = $1 AND task_id = $2',
         },
-        [orchestratorId, taskId],
-      ),
+        [orchestratorId, taskId]
+      )
     );
 
     return (rowCount ?? 0) > 0;
@@ -469,16 +491,19 @@ export class PostgresAdapter {
 
     const { rows } = await this.withRetry(() =>
       this.pool!.query<SessionRow>(
-        { name: 'get_session', text: 'SELECT * FROM daemon_sessions WHERE id = $1' },
-        [id],
-      ),
+        {
+          name: 'get_session',
+          text: 'SELECT * FROM daemon_sessions WHERE id = $1',
+        },
+        [id]
+      )
     );
 
     return rows[0] ? rowToSession(rows[0]) : null;
   }
 
   async saveSessionState(
-    session: Omit<SessionState, 'id'> & { id?: string },
+    session: Omit<SessionState, 'id'> & { id?: string }
   ): Promise<SessionState> {
     this.ensurePool();
 
@@ -510,8 +535,8 @@ export class PostgresAdapter {
           session.startedAt,
           session.updatedAt ?? new Date(),
           session.completedAt ?? null,
-        ],
-      ),
+        ]
+      )
     );
 
     const row = rows[0];
@@ -525,16 +550,14 @@ export class PostgresAdapter {
     this.ensurePool();
 
     const { rows } = await this.withRetry(() =>
-      this.pool!.query<SessionRow>(
-        {
-          name: 'list_active_sessions',
-          text: `
+      this.pool!.query<SessionRow>({
+        name: 'list_active_sessions',
+        text: `
             SELECT * FROM daemon_sessions
             WHERE state IN ('initializing','running','paused')
             ORDER BY started_at DESC
           `,
-        },
-      ),
+      })
     );
 
     return rows.map(rowToSession);
@@ -545,7 +568,10 @@ export class PostgresAdapter {
   // -------------------------------------------------------------------------
 
   async storeMemory(
-    record: Omit<MemoryRecord, 'id' | 'createdAt'> & { id?: string; createdAt?: Date },
+    record: Omit<MemoryRecord, 'id' | 'createdAt'> & {
+      id?: string;
+      createdAt?: Date;
+    }
   ): Promise<MemoryRecord> {
     this.ensurePool();
 
@@ -579,8 +605,8 @@ export class PostgresAdapter {
           record.importance,
           record.createdAt ?? null,
           record.expiresAt ?? null,
-        ],
-      ),
+        ]
+      )
     );
 
     const row = rows[0];
@@ -595,9 +621,12 @@ export class PostgresAdapter {
 
     const { rows } = await this.withRetry(() =>
       this.pool!.query<MemoryRow>(
-        { name: 'retrieve_memory', text: 'SELECT * FROM daemon_memory WHERE id = $1' },
-        [id],
-      ),
+        {
+          name: 'retrieve_memory',
+          text: 'SELECT * FROM daemon_memory WHERE id = $1',
+        },
+        [id]
+      )
     );
 
     return rows[0] ? rowToMemory(rows[0]) : null;
@@ -615,7 +644,7 @@ export class PostgresAdapter {
       type?: MemoryRecord['type'];
       limit?: number;
       minImportance?: number;
-    },
+    }
   ): Promise<MemoryRecord[]> {
     this.ensurePool();
 
@@ -652,7 +681,9 @@ export class PostgresAdapter {
       LIMIT ${limit}
     `;
 
-    const { rows } = await this.withRetry(() => this.pool!.query<MemoryRow>(sql, params));
+    const { rows } = await this.withRetry(() =>
+      this.pool!.query<MemoryRow>(sql, params)
+    );
     return rows.map(rowToMemory);
   }
 
@@ -666,7 +697,7 @@ export class PostgresAdapter {
    * automatically.
    */
   async withTransaction<T>(
-    callback: (client: PoolClient) => Promise<T>,
+    callback: (client: PoolClient) => Promise<T>
   ): Promise<T> {
     this.ensurePool();
 
@@ -691,7 +722,7 @@ export class PostgresAdapter {
   private ensurePool(): void {
     if (!this.pool || !this.connected) {
       throw new PostgresAdapterError(
-        'PostgresAdapter is not connected. Call connect() first.',
+        'PostgresAdapter is not connected. Call connect() first.'
       );
     }
   }
@@ -702,7 +733,13 @@ export class PostgresAdapter {
    * (40001 serialization failure, 40P01 deadlock detected).
    */
   private async withRetry<T>(fn: () => Promise<T>): Promise<T> {
-    const retryable = new Set(['40001', '40P01', 'ECONNREFUSED', 'ETIMEDOUT', 'ECONNRESET']);
+    const retryable = new Set([
+      '40001',
+      '40P01',
+      'ECONNREFUSED',
+      'ETIMEDOUT',
+      'ECONNRESET',
+    ]);
 
     let lastErr: unknown;
     for (let attempt = 0; attempt <= this.config.maxRetries; attempt++) {
@@ -722,7 +759,7 @@ export class PostgresAdapter {
 
         const delay = this.config.retryBaseDelayMs * Math.pow(2, attempt);
         this.logger.warn(
-          `Transient error (${code}), retrying in ${delay}ms (attempt ${attempt + 1}/${this.config.maxRetries})`,
+          `Transient error (${code}), retrying in ${delay}ms (attempt ${attempt + 1}/${this.config.maxRetries})`
         );
         await sleep(delay);
       }
@@ -730,7 +767,7 @@ export class PostgresAdapter {
 
     throw new PostgresAdapterError(
       `Operation failed after ${this.config.maxRetries} retries`,
-      lastErr,
+      lastErr
     );
   }
 }
@@ -844,9 +881,15 @@ function rowToMemory(row: MemoryRow): MemoryRecord {
 // Query builder for tasks
 // ---------------------------------------------------------------------------
 
-function buildTaskQuery(filter?: TaskQuery): { sql: string; params: unknown[] } {
+function buildTaskQuery(filter?: TaskQuery): {
+  sql: string;
+  params: unknown[];
+} {
   if (!filter) {
-    return { sql: 'SELECT * FROM daemon_tasks ORDER BY created_at ASC', params: [] };
+    return {
+      sql: 'SELECT * FROM daemon_tasks ORDER BY created_at ASC',
+      params: [],
+    };
   }
 
   const conditions: string[] = [];
@@ -954,7 +997,9 @@ function parseJsonObject(value: unknown): Record<string, unknown> {
   if (typeof value === 'string') {
     try {
       const parsed = JSON.parse(value);
-      return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
+      return parsed !== null &&
+        typeof parsed === 'object' &&
+        !Array.isArray(parsed)
         ? (parsed as Record<string, unknown>)
         : {};
     } catch {
@@ -965,5 +1010,5 @@ function parseJsonObject(value: unknown): Record<string, unknown> {
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

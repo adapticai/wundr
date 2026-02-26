@@ -69,7 +69,9 @@ export class WsTestClient {
       }
 
       const timer = setTimeout(() => {
-        reject(new Error(`Connection timeout after ${this.options.connectTimeout}ms`));
+        reject(
+          new Error(`Connection timeout after ${this.options.connectTimeout}ms`)
+        );
       }, this.options.connectTimeout);
 
       this.ws = new WebSocket(`ws://${host}:${port}`, { headers });
@@ -79,7 +81,7 @@ export class WsTestClient {
         resolve();
       });
 
-      this.ws.on('error', (err) => {
+      this.ws.on('error', err => {
         clearTimeout(timer);
         reject(err);
       });
@@ -107,7 +109,9 @@ export class WsTestClient {
         // Reject all pending waiters
         for (const waiter of this.messageWaiters) {
           clearTimeout(waiter.timeout);
-          waiter.reject(new Error('WebSocket closed while waiting for message'));
+          waiter.reject(
+            new Error('WebSocket closed while waiting for message')
+          );
         }
         this.messageWaiters = [];
       });
@@ -159,15 +163,12 @@ export class WsTestClient {
    * @param timeout - Override the default message timeout.
    * @returns The matched response.
    */
-  waitForMessage(
-    type?: string,
-    timeout?: number,
-  ): Promise<WSResponse> {
+  waitForMessage(type?: string, timeout?: number): Promise<WSResponse> {
     const ms = timeout ?? this.options.messageTimeout;
 
     // Check if we already have a matching message
     if (type) {
-      const idx = this.receivedMessages.findIndex((m) => m.type === type);
+      const idx = this.receivedMessages.findIndex(m => m.type === type);
       if (idx !== -1) {
         return Promise.resolve(this.receivedMessages.splice(idx, 1)[0]!);
       }
@@ -177,14 +178,14 @@ export class WsTestClient {
 
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
-        const idx = this.messageWaiters.findIndex((w) => w.timeout === timer);
+        const idx = this.messageWaiters.findIndex(w => w.timeout === timer);
         if (idx !== -1) {
-this.messageWaiters.splice(idx, 1);
-}
+          this.messageWaiters.splice(idx, 1);
+        }
         reject(
           new Error(
-            `Timeout waiting for message${type ? ` of type "${type}"` : ''} after ${ms}ms`,
-          ),
+            `Timeout waiting for message${type ? ` of type "${type}"` : ''} after ${ms}ms`
+          )
         );
       }, ms);
 
@@ -197,7 +198,7 @@ this.messageWaiters.splice(idx, 1);
    */
   async waitForMessages(
     count: number,
-    timeout?: number,
+    timeout?: number
   ): Promise<WSResponse[]> {
     const results: WSResponse[] = [];
     for (let i = 0; i < count; i++) {

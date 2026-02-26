@@ -1,6 +1,7 @@
 # Orchestrator Charter
 
-The Orchestrator Charter defines the identity, capabilities, responsibilities, resource limits, and operational settings for an orchestrator instance.
+The Orchestrator Charter defines the identity, capabilities, responsibilities, resource limits, and
+operational settings for an orchestrator instance.
 
 ## Overview
 
@@ -18,7 +19,11 @@ A charter is a YAML configuration file that governs how an orchestrator behaves.
 ### Loading a Charter
 
 ```typescript
-import { loadCharter, loadCharterFromFile, getDefaultCharter } from '@wundr.io/orchestrator-daemon/charter';
+import {
+  loadCharter,
+  loadCharterFromFile,
+  getDefaultCharter,
+} from '@wundr.io/orchestrator-daemon/charter';
 
 // Load with defaults
 const charter = await loadCharter();
@@ -88,9 +93,9 @@ role: Tier1-Orchestrator
 tier: 1
 
 identity:
-  name: "Wundr Orchestrator"
-  description: "AI orchestrator for managing development tasks and workflows"
-  personality: "Professional, efficient, and helpful"
+  name: 'Wundr Orchestrator'
+  description: 'AI orchestrator for managing development tasks and workflows'
+  personality: 'Professional, efficient, and helpful'
 
 capabilities:
   - task_analysis
@@ -116,21 +121,21 @@ resourceLimits:
 
 safetyHeuristics:
   autoApprove:
-    - "Read file operations"
-    - "Code analysis"
-    - "Documentation generation"
+    - 'Read file operations'
+    - 'Code analysis'
+    - 'Documentation generation'
   requireConfirmation:
-    - "File modifications"
-    - "Database operations"
+    - 'File modifications'
+    - 'Database operations'
   alwaysReject:
-    - "rm -rf /"
-    - "Destructive operations without backup"
+    - 'rm -rf /'
+    - 'Destructive operations without backup'
   escalate:
-    - "Production deployments"
-    - "Security-sensitive operations"
+    - 'Production deployments'
+    - 'Security-sensitive operations'
 
 operationalSettings:
-  defaultModel: "gpt-4o-mini"
+  defaultModel: 'gpt-4o-mini'
   temperature: 0.7
   maxRetries: 3
   timeoutMs: 300000
@@ -147,25 +152,26 @@ tier: 2
 resourceLimits:
   maxSessions: 20
 operationalSettings:
-  defaultModel: "gpt-4o"
+  defaultModel: 'gpt-4o'
 ```
 
-When loaded with `loadCharter('./custom-charter.yaml')`, this will merge with the defaults, keeping all other values.
+When loaded with `loadCharter('./custom-charter.yaml')`, this will merge with the defaults, keeping
+all other values.
 
 ## Environment Variable Overrides
 
 The charter loader supports environment variable overrides for common settings:
 
-| Environment Variable | Charter Field | Type |
-|---------------------|---------------|------|
-| `ORCHESTRATOR_NAME` | `name` | string |
-| `ORCHESTRATOR_TIER` | `tier` | number (1-3) |
-| `ORCHESTRATOR_MAX_SESSIONS` | `resourceLimits.maxSessions` | number |
-| `ORCHESTRATOR_MAX_TOKENS` | `resourceLimits.maxTokensPerSession` | number |
-| `ORCHESTRATOR_MAX_CONCURRENT` | `resourceLimits.maxConcurrentTasks` | number |
-| `ORCHESTRATOR_MODEL` | `operationalSettings.defaultModel` | string |
-| `ORCHESTRATOR_TEMPERATURE` | `operationalSettings.temperature` | number (0-2) |
-| `ORCHESTRATOR_TIMEOUT_MS` | `operationalSettings.timeoutMs` | number |
+| Environment Variable          | Charter Field                        | Type         |
+| ----------------------------- | ------------------------------------ | ------------ |
+| `ORCHESTRATOR_NAME`           | `name`                               | string       |
+| `ORCHESTRATOR_TIER`           | `tier`                               | number (1-3) |
+| `ORCHESTRATOR_MAX_SESSIONS`   | `resourceLimits.maxSessions`         | number       |
+| `ORCHESTRATOR_MAX_TOKENS`     | `resourceLimits.maxTokensPerSession` | number       |
+| `ORCHESTRATOR_MAX_CONCURRENT` | `resourceLimits.maxConcurrentTasks`  | number       |
+| `ORCHESTRATOR_MODEL`          | `operationalSettings.defaultModel`   | string       |
+| `ORCHESTRATOR_TEMPERATURE`    | `operationalSettings.temperature`    | number (0-2) |
+| `ORCHESTRATOR_TIMEOUT_MS`     | `operationalSettings.timeoutMs`      | number       |
 
 ### Example
 
@@ -219,6 +225,7 @@ try {
 ## Default Template
 
 A default charter template is available at:
+
 ```
 packages/@wundr/orchestrator-daemon/templates/orchestrator-charter.yaml
 ```
@@ -244,6 +251,7 @@ You can copy this template as a starting point for your custom charters.
 Load a charter with defaults, file overrides, and environment overrides.
 
 **Parameters:**
+
 - `filePath` (optional): Path to charter YAML file
 - `options.useEnvOverrides` (optional): Enable environment variable overrides (default: true)
 
@@ -254,6 +262,7 @@ Load a charter with defaults, file overrides, and environment overrides.
 Load and validate a complete charter from a file.
 
 **Parameters:**
+
 - `filePath`: Path to charter YAML file
 
 **Returns:** A validated `Charter` object
@@ -269,6 +278,7 @@ Get the default charter configuration.
 Validate a charter object against the schema.
 
 **Parameters:**
+
 - `charter`: Charter object to validate
 
 **Returns:** The validated `Charter` object
@@ -280,6 +290,7 @@ Validate a charter object against the schema.
 Save a charter to a YAML file.
 
 **Parameters:**
+
 - `charter`: Charter object to save
 - `filePath`: Path where the charter should be saved
 

@@ -34,11 +34,7 @@ export type NodeStatus =
   | 'suspect'
   | 'dead';
 
-export type NodeRole =
-  | 'leader'
-  | 'follower'
-  | 'candidate'
-  | 'observer';
+export type NodeRole = 'leader' | 'follower' | 'candidate' | 'observer';
 
 export interface ClusterNode {
   id: string;
@@ -208,16 +204,13 @@ export class NodeRegistry extends EventEmitter<NodeRegistryEvents> {
   /** Whether the registry has been initialized */
   private initialized = false;
 
-  constructor(
-    config: Partial<NodeRegistryConfig> = {},
-    store?: RegistryStore,
-  ) {
+  constructor(config: Partial<NodeRegistryConfig> = {}, store?: RegistryStore) {
     super();
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.store = store ?? new InMemoryRegistryStore();
     this.logger = new Logger(
       'NodeRegistry',
-      this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO,
+      this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO
     );
   }
 
@@ -250,7 +243,9 @@ export class NodeRegistry extends EventEmitter<NodeRegistryEvents> {
 
     this.initialized = true;
     this.emit('self:registered', self);
-    this.logger.info(`NodeRegistry initialized. Self: ${this.selfId} (gen ${this.selfGeneration})`);
+    this.logger.info(
+      `NodeRegistry initialized. Self: ${this.selfId} (gen ${this.selfGeneration})`
+    );
 
     return self;
   }
@@ -315,13 +310,13 @@ export class NodeRegistry extends EventEmitter<NodeRegistryEvents> {
    */
   async updateSelfLoad(load: Partial<NodeLoadSnapshot>): Promise<void> {
     if (!this.selfId) {
-return;
-}
+      return;
+    }
 
     const self = this.nodes.get(this.selfId);
     if (!self) {
-return;
-}
+      return;
+    }
 
     self.load = {
       ...self.load,
@@ -337,11 +332,14 @@ return;
   /**
    * Record that we have received a heartbeat or gossip from a peer.
    */
-  async touchNode(nodeId: string, load?: Partial<NodeLoadSnapshot>): Promise<void> {
+  async touchNode(
+    nodeId: string,
+    load?: Partial<NodeLoadSnapshot>
+  ): Promise<void> {
     const node = this.nodes.get(nodeId);
     if (!node) {
-return;
-}
+      return;
+    }
 
     const wasSuspect = node.status === 'suspect';
 
@@ -365,8 +363,8 @@ return;
   async drainNode(nodeId: string): Promise<void> {
     const node = this.nodes.get(nodeId);
     if (!node) {
-return;
-}
+      return;
+    }
 
     node.status = 'draining';
     await this.persistNode(node);
@@ -380,8 +378,8 @@ return;
   async updateNodeRole(nodeId: string, role: NodeRole): Promise<void> {
     const node = this.nodes.get(nodeId);
     if (!node) {
-return;
-}
+      return;
+    }
 
     node.role = role;
     await this.persistNode(node);
@@ -410,28 +408,26 @@ return;
 
   getActiveNodes(): ClusterNode[] {
     return Array.from(this.nodes.values()).filter(
-      (n) => n.status === 'active' || n.status === 'joining',
+      n => n.status === 'active' || n.status === 'joining'
     );
   }
 
   getHealthyNodes(): ClusterNode[] {
-    return Array.from(this.nodes.values()).filter(
-      (n) => n.status === 'active',
-    );
+    return Array.from(this.nodes.values()).filter(n => n.status === 'active');
   }
 
   getNodesByCapability(capability: NodeCapability): ClusterNode[] {
-    return this.getActiveNodes().filter((n) =>
-      n.capabilities.includes(capability),
+    return this.getActiveNodes().filter(n =>
+      n.capabilities.includes(capability)
     );
   }
 
   getNodesByRegion(region: string): ClusterNode[] {
-    return this.getActiveNodes().filter((n) => n.region === region);
+    return this.getActiveNodes().filter(n => n.region === region);
   }
 
   getLeader(): ClusterNode | undefined {
-    return Array.from(this.nodes.values()).find((n) => n.role === 'leader');
+    return Array.from(this.nodes.values()).find(n => n.role === 'leader');
   }
 
   getClusterSize(): number {
@@ -460,22 +456,24 @@ return;
 
     for (const memberId of memberIds) {
       if (memberId === this.selfId) {
-continue;
-}
+        continue;
+      }
       if (this.nodes.has(memberId)) {
-continue;
-}
+        continue;
+      }
 
       const raw = await this.store.get(this.nodeKey(memberId));
       if (!raw) {
-continue;
-}
+        continue;
+      }
 
       try {
         const node = this.deserializeNode(raw);
         this.nodes.set(node.id, node);
         discovered.push(node);
-        this.logger.debug(`Discovered peer: ${node.id} (${node.host}:${node.port})`);
+        this.logger.debug(
+          `Discovered peer: ${node.id} (${node.host}:${node.port})`
+        );
       } catch (error) {
         this.logger.warn(`Failed to deserialize node ${memberId}:`, error);
       }
@@ -496,8 +494,8 @@ continue;
 
     for (const peerNode of peerNodes) {
       if (peerNode.id === this.selfId) {
-continue;
-}
+        continue;
+      }
 
       const existing = this.nodes.get(peerNode.id);
 
@@ -538,7 +536,7 @@ continue;
     status: NodeStatus;
     lastSeen: number;
   }> {
-    return Array.from(this.nodes.values()).map((n) => ({
+    return Array.from(this.nodes.values()).map(n => ({
       id: n.id,
       generation: n.generation,
       status: n.status,
@@ -561,14 +559,14 @@ continue;
 
     for (const node of this.nodes.values()) {
       if (node.id === this.selfId) {
-continue;
-}
+        continue;
+      }
 
       const elapsed = now - node.lastSeen.getTime();
 
       if (elapsed > this.config.deadTimeout && node.status !== 'dead') {
         this.logger.warn(
-          `Node ${node.id} declared dead (last seen ${elapsed}ms ago)`,
+          `Node ${node.id} declared dead (last seen ${elapsed}ms ago)`
         );
         node.status = 'dead';
         this.emit('node:dead', node.id, node.lastSeen);
@@ -578,7 +576,7 @@ continue;
         node.status === 'active'
       ) {
         this.logger.warn(
-          `Node ${node.id} is suspect (last seen ${elapsed}ms ago)`,
+          `Node ${node.id} is suspect (last seen ${elapsed}ms ago)`
         );
         node.status = 'suspect';
         this.emit('node:suspect', node.id, node.lastSeen);
@@ -592,8 +590,8 @@ continue;
 
   private async persistNode(node: ClusterNode): Promise<void> {
     if (!this.store.isConnected()) {
-return;
-}
+      return;
+    }
 
     try {
       await this.store.set(this.nodeKey(node.id), this.serializeNode(node));

@@ -83,7 +83,7 @@ interface LoadBalancerEvents {
   'node:overloaded': (nodeId: string, load: number) => void;
   'strategy:changed': (
     oldStrategy: LoadBalancingStrategy,
-    newStrategy: LoadBalancingStrategy,
+    newStrategy: LoadBalancingStrategy
   ) => void;
   'selection:failed': (options: NodeSelectionOptions, reason: string) => void;
 }
@@ -187,7 +187,9 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
 
     // Check for overload condition
     if (nodeLoad.currentLoad > 0.9) {
-      this.logger.warn(`Node ${nodeId} is overloaded: ${(load * 100).toFixed(1)}%`);
+      this.logger.warn(
+        `Node ${nodeId} is overloaded: ${(load * 100).toFixed(1)}%`
+      );
       this.emit('node:overloaded', nodeId, nodeLoad.currentLoad);
     }
   }
@@ -252,7 +254,9 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
     }
 
     const oldStrategy = this.strategy;
-    this.logger.info(`Changing load balancing strategy: ${oldStrategy} -> ${strategy}`);
+    this.logger.info(
+      `Changing load balancing strategy: ${oldStrategy} -> ${strategy}`
+    );
 
     this.strategy = strategy;
     this.roundRobinIndex = 0; // Reset round-robin counter
@@ -284,7 +288,9 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
           load.currentLoad < loadThreshold &&
           !excludeNodes.includes(affinityNodeId)
         ) {
-          this.logger.debug(`Using session affinity for ${sessionAffinity} -> ${affinityNodeId}`);
+          this.logger.debug(
+            `Using session affinity for ${sessionAffinity} -> ${affinityNodeId}`
+          );
           return node;
         }
       }
@@ -294,7 +300,7 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
     const eligibleNodes = this.getEligibleNodes(
       requiredCapabilities,
       loadThreshold,
-      excludeNodes,
+      excludeNodes
     );
 
     if (eligibleNodes.length === 0) {
@@ -302,7 +308,7 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
       this.emit(
         'selection:failed',
         options,
-        'No eligible nodes meet the selection criteria',
+        'No eligible nodes meet the selection criteria'
       );
       return null;
     }
@@ -310,7 +316,9 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
     // Apply region preference
     let candidateNodes = eligibleNodes;
     if (preferredRegion) {
-      const regionalNodes = eligibleNodes.filter((n) => n.region === preferredRegion);
+      const regionalNodes = eligibleNodes.filter(
+        n => n.region === preferredRegion
+      );
       if (regionalNodes.length > 0) {
         candidateNodes = regionalNodes;
       }
@@ -330,7 +338,10 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
         selectedNode = this.selectWeighted(candidateNodes);
         break;
       case 'capability-aware':
-        selectedNode = this.selectCapabilityAware(candidateNodes, requiredCapabilities);
+        selectedNode = this.selectCapabilityAware(
+          candidateNodes,
+          requiredCapabilities
+        );
         break;
       default:
         this.logger.error(`Unknown strategy: ${this.strategy}`);
@@ -343,7 +354,7 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
 
     if (selectedNode) {
       this.logger.debug(
-        `Selected node ${selectedNode.id} using ${this.strategy} strategy`,
+        `Selected node ${selectedNode.id} using ${this.strategy} strategy`
       );
     }
 
@@ -356,7 +367,7 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
   private getEligibleNodes(
     requiredCapabilities: string[],
     loadThreshold: number,
-    excludeNodes: string[],
+    excludeNodes: string[]
   ): LoadBalancerNode[] {
     const eligible: LoadBalancerNode[] = [];
     const allNodes = Array.from(this.nodes.values());
@@ -380,8 +391,8 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
 
       // Check capabilities
       if (requiredCapabilities.length > 0) {
-        const hasAllCapabilities = requiredCapabilities.every((cap) =>
-          node.capabilities.includes(cap),
+        const hasAllCapabilities = requiredCapabilities.every(cap =>
+          node.capabilities.includes(cap)
         );
         if (!hasAllCapabilities) {
           continue;
@@ -411,7 +422,9 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
   /**
    * Least connections selection
    */
-  private selectLeastConnections(nodes: LoadBalancerNode[]): LoadBalancerNode | null {
+  private selectLeastConnections(
+    nodes: LoadBalancerNode[]
+  ): LoadBalancerNode | null {
     if (nodes.length === 0) {
       return null;
     }
@@ -492,7 +505,7 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
     if (scores.length > 0) {
       const winner = scores[0];
       this.logger.debug(
-        `Weighted selection: ${winner.nodeId} (score: ${winner.score.toFixed(1)}, ${winner.reasons.join(', ')})`,
+        `Weighted selection: ${winner.nodeId} (score: ${winner.score.toFixed(1)}, ${winner.reasons.join(', ')})`
       );
       return this.nodes.get(winner.nodeId) || null;
     }
@@ -505,7 +518,7 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
    */
   private selectCapabilityAware(
     nodes: LoadBalancerNode[],
-    requiredCapabilities: string[],
+    requiredCapabilities: string[]
   ): LoadBalancerNode | null {
     if (nodes.length === 0) {
       return null;
@@ -523,8 +536,8 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
       let score = 0;
 
       // Factor 1: Capability match (exact vs extras)
-      const exactMatch = requiredCapabilities.every((cap) =>
-        node.capabilities.includes(cap),
+      const exactMatch = requiredCapabilities.every(cap =>
+        node.capabilities.includes(cap)
       );
       if (exactMatch) {
         score += 50;
@@ -532,7 +545,8 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
       }
 
       // Penalize nodes with many extra capabilities (more specialized = better)
-      const extraCapabilities = node.capabilities.length - requiredCapabilities.length;
+      const extraCapabilities =
+        node.capabilities.length - requiredCapabilities.length;
       const specialization = Math.max(0, 20 - extraCapabilities);
       score += specialization;
       reasons.push(`specialization: ${specialization}`);
@@ -555,7 +569,7 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
     if (scores.length > 0) {
       const winner = scores[0];
       this.logger.debug(
-        `Capability-aware selection: ${winner.nodeId} (score: ${winner.score.toFixed(1)}, ${winner.reasons.join(', ')})`,
+        `Capability-aware selection: ${winner.nodeId} (score: ${winner.score.toFixed(1)}, ${winner.reasons.join(', ')})`
       );
       return this.nodes.get(winner.nodeId) || null;
     }
@@ -604,8 +618,11 @@ export class LoadBalancer extends EventEmitter<LoadBalancerEvents> {
     const nodes = Array.from(this.nodes.values());
     const loads = Array.from(this.nodeLoads.values());
 
-    const healthyNodes = loads.filter((l) => l.healthy).length;
-    const totalConnections = loads.reduce((sum, l) => sum + l.activeConnections, 0);
+    const healthyNodes = loads.filter(l => l.healthy).length;
+    const totalConnections = loads.reduce(
+      (sum, l) => sum + l.activeConnections,
+      0
+    );
     const averageLoad =
       loads.length > 0
         ? loads.reduce((sum, l) => sum + l.currentLoad, 0) / loads.length

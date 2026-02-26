@@ -15,7 +15,10 @@
 // -- Existing modules --
 export { OrchestratorFederation } from './coordinator';
 export { OrchestratorConnection } from './connection';
-export type { OrchestratorConnectionConfig, OrchestratorConnectionEvents } from './connection';
+export type {
+  OrchestratorConnectionConfig,
+  OrchestratorConnectionEvents,
+} from './connection';
 
 export { FederationRegistry } from './registry';
 export type {

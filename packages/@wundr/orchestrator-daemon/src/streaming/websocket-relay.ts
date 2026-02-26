@@ -11,7 +11,6 @@
  * - Graceful handling of disconnected clients
  */
 
-
 import { Logger } from '../utils/logger';
 
 import type {
@@ -97,7 +96,7 @@ export class WebSocketStreamRelay {
 
   constructor(
     wsServer: OrchestratorWebSocketServer,
-    config?: Partial<WebSocketRelayConfig>,
+    config?: Partial<WebSocketRelayConfig>
   ) {
     this.logger = new Logger('WebSocketStreamRelay');
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -117,7 +116,7 @@ export class WebSocketStreamRelay {
    */
   async relay(
     sessionId: string,
-    events: AsyncIterable<StreamEvent>,
+    events: AsyncIterable<StreamEvent>
   ): Promise<void> {
     const state: SessionRelayState = {
       textBuffer: '',
@@ -136,7 +135,7 @@ export class WebSocketStreamRelay {
         // Check if any clients are still subscribed
         if (this.wsServer.getSessionClientCount(sessionId) === 0) {
           this.logger.debug(
-            `No clients subscribed to session ${sessionId}, stopping relay`,
+            `No clients subscribed to session ${sessionId}, stopping relay`
           );
           break;
         }
@@ -144,10 +143,7 @@ export class WebSocketStreamRelay {
         await this.handleEvent(sessionId, state, event);
       }
     } catch (error) {
-      this.logger.error(
-        `Relay error for session ${sessionId}:`,
-        error,
-      );
+      this.logger.error(`Relay error for session ${sessionId}:`, error);
     } finally {
       // Flush remaining buffer
       this.flushTextBuffer(sessionId, state);
@@ -168,7 +164,7 @@ export class WebSocketStreamRelay {
   private async handleEvent(
     sessionId: string,
     state: SessionRelayState,
-    event: StreamEvent,
+    event: StreamEvent
   ): Promise<void> {
     switch (event.type) {
       case 'stream_start':
@@ -190,9 +186,14 @@ export class WebSocketStreamRelay {
         this.flushTextBuffer(sessionId, state);
         this.flushThinkingBuffer(sessionId, state);
 
-        this.wsServer.notifyToolExecution(sessionId, event.toolName, 'started', {
-          toolInput: { toolId: event.toolId },
-        });
+        this.wsServer.notifyToolExecution(
+          sessionId,
+          event.toolName,
+          'started',
+          {
+            toolInput: { toolId: event.toolId },
+          }
+        );
         break;
 
       case 'tool_use_delta':
@@ -204,9 +205,14 @@ export class WebSocketStreamRelay {
         break;
 
       case 'tool_use_end':
-        this.wsServer.notifyToolExecution(sessionId, event.toolName, 'completed', {
-          result: { arguments: event.arguments },
-        });
+        this.wsServer.notifyToolExecution(
+          sessionId,
+          event.toolName,
+          'completed',
+          {
+            result: { arguments: event.arguments },
+          }
+        );
         break;
 
       case 'content_block_stop':
@@ -239,14 +245,12 @@ export class WebSocketStreamRelay {
 
         if (!event.recoverable) {
           this.logger.error(
-            `Non-recoverable stream error for session ${sessionId}: ${errorMsg}`,
+            `Non-recoverable stream error for session ${sessionId}: ${errorMsg}`
           );
         } else {
           this.logger.warn(
             `Recoverable stream error for session ${sessionId}: ${errorMsg}` +
-              (event.retryAfter
-                ? ` (retry after ${event.retryAfter}ms)`
-                : ''),
+              (event.retryAfter ? ` (retry after ${event.retryAfter}ms)` : '')
           );
         }
         break;
@@ -267,7 +271,7 @@ export class WebSocketStreamRelay {
   private async handleTextDelta(
     sessionId: string,
     state: SessionRelayState,
-    event: TextDeltaEvent,
+    event: TextDeltaEvent
   ): Promise<void> {
     state.textBuffer += event.text;
     state.textBlockIndex = event.blockIndex;
@@ -299,7 +303,7 @@ export class WebSocketStreamRelay {
   private async handleThinkingDelta(
     sessionId: string,
     state: SessionRelayState,
-    event: ThinkingDeltaEvent,
+    event: ThinkingDeltaEvent
   ): Promise<void> {
     state.thinkingBuffer += event.text;
     state.thinkingBlockIndex = event.blockIndex;
@@ -326,8 +330,8 @@ export class WebSocketStreamRelay {
 
   private flushTextBuffer(sessionId: string, state: SessionRelayState): void {
     if (state.textBuffer.length === 0) {
-return;
-}
+      return;
+    }
 
     const text = state.textBuffer;
     state.textBuffer = '';
@@ -346,11 +350,11 @@ return;
 
   private flushThinkingBuffer(
     sessionId: string,
-    state: SessionRelayState,
+    state: SessionRelayState
   ): void {
     if (state.thinkingBuffer.length === 0) {
-return;
-}
+      return;
+    }
 
     const text = state.thinkingBuffer;
     state.thinkingBuffer = '';
@@ -385,7 +389,7 @@ return;
     if (clientCount > 10) {
       // Yield to the event loop when there are many subscribers,
       // giving the kernel TCP send buffers time to drain.
-      await new Promise<void>((resolve) => {
+      await new Promise<void>(resolve => {
         setTimeout(resolve, 1);
       });
     }

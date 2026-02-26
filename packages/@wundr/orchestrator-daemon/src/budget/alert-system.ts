@@ -5,10 +5,7 @@
  * are exceeded. Supports alert escalation, rate limiting, and auto-pause.
  */
 
-import {
-  AlertChannel,
-  AlertLevel,
-} from './alert-types';
+import { AlertChannel, AlertLevel } from './alert-types';
 
 import type {
   Alert,
@@ -22,7 +19,8 @@ import type {
   InAppPayload,
   SlackPayload,
   SMSPayload,
-  WebhookPayload} from './alert-types';
+  WebhookPayload,
+} from './alert-types';
 
 /**
  * Usage statistics for budget monitoring
@@ -81,7 +79,7 @@ export class BudgetAlertSystem {
    */
   async checkAndAlert(
     orchestratorId: string,
-    usage: UsageStats,
+    usage: UsageStats
   ): Promise<Alert[]> {
     const config = this.configs.get(orchestratorId);
     if (!config || !config.enabled) {
@@ -103,7 +101,7 @@ export class BudgetAlertSystem {
           orchestratorId,
           threshold,
           usage,
-          config,
+          config
         );
 
         // Send alert through configured channels
@@ -148,18 +146,13 @@ export class BudgetAlertSystem {
   /**
    * Get alert history for an orchestrator
    */
-  async getAlertHistory(
-    orchestratorId: string,
-    limit = 100,
-  ): Promise<Alert[]> {
+  async getAlertHistory(orchestratorId: string, limit = 100): Promise<Alert[]> {
     const allAlerts = Array.from(this.alerts.values()).filter(
-      (alert) => alert.orchestratorId === orchestratorId,
+      alert => alert.orchestratorId === orchestratorId
     );
 
     // Sort by creation time, newest first
-    allAlerts.sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-    );
+    allAlerts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     return allAlerts.slice(0, limit);
   }
@@ -167,31 +160,27 @@ export class BudgetAlertSystem {
   /**
    * Get alert history with advanced filtering
    */
-  async getFilteredAlertHistory(
-    filter: AlertHistoryFilter,
-  ): Promise<Alert[]> {
+  async getFilteredAlertHistory(filter: AlertHistoryFilter): Promise<Alert[]> {
     let results = Array.from(this.alerts.values());
 
     // Apply filters
     if (filter.orchestratorId) {
-      results = results.filter(
-        (a) => a.orchestratorId === filter.orchestratorId,
-      );
+      results = results.filter(a => a.orchestratorId === filter.orchestratorId);
     }
 
     if (filter.level) {
-      results = results.filter((a) => a.level === filter.level);
+      results = results.filter(a => a.level === filter.level);
     }
 
     if (filter.acknowledged !== undefined) {
-      results = results.filter((a) => a.acknowledged === filter.acknowledged);
+      results = results.filter(a => a.acknowledged === filter.acknowledged);
     }
 
     if (filter.dateRange) {
       results = results.filter(
-        (a) =>
+        a =>
           a.createdAt >= filter.dateRange!.start &&
-          a.createdAt <= filter.dateRange!.end,
+          a.createdAt <= filter.dateRange!.end
       );
     }
 
@@ -234,10 +223,7 @@ export class BudgetAlertSystem {
   /**
    * Enable or disable auto-pause for an orchestrator
    */
-  async setAutoPause(
-    orchestratorId: string,
-    enabled: boolean,
-  ): Promise<void> {
+  async setAutoPause(orchestratorId: string, enabled: boolean): Promise<void> {
     this.autoPauseEnabled.set(orchestratorId, enabled);
   }
 
@@ -246,16 +232,16 @@ export class BudgetAlertSystem {
    */
   async getAlertStats(
     orchestratorId: string,
-    timeRange?: { start: Date; end: Date },
+    timeRange?: { start: Date; end: Date }
   ): Promise<AlertStats> {
     let alerts = Array.from(this.alerts.values()).filter(
-      (a) => a.orchestratorId === orchestratorId,
+      a => a.orchestratorId === orchestratorId
     );
 
     // Apply time range filter
     if (timeRange) {
       alerts = alerts.filter(
-        (a) => a.createdAt >= timeRange.start && a.createdAt <= timeRange.end,
+        a => a.createdAt >= timeRange.start && a.createdAt <= timeRange.end
       );
     }
 
@@ -320,9 +306,12 @@ export class BudgetAlertSystem {
   /**
    * Clear old alerts (cleanup)
    */
-  async clearOldAlerts(orchestratorId: string, olderThan: Date): Promise<number> {
+  async clearOldAlerts(
+    orchestratorId: string,
+    olderThan: Date
+  ): Promise<number> {
     const alertsToDelete = Array.from(this.alerts.values()).filter(
-      (a) => a.orchestratorId === orchestratorId && a.createdAt < olderThan,
+      a => a.orchestratorId === orchestratorId && a.createdAt < olderThan
     );
 
     for (const alert of alertsToDelete) {
@@ -362,7 +351,7 @@ export class BudgetAlertSystem {
     orchestratorId: string,
     threshold: BudgetThreshold,
     usage: UsageStats,
-    config: AlertConfig,
+    config: AlertConfig
   ): Promise<Alert> {
     const alertId = `alert-${orchestratorId}-${++this.alertCounter}-${Date.now()}`;
 
@@ -391,7 +380,7 @@ export class BudgetAlertSystem {
 
   private generateAlertTitle(
     threshold: BudgetThreshold,
-    usage: UsageStats,
+    usage: UsageStats
   ): string {
     const level = threshold.level.toUpperCase();
     return `[${level}] Budget Alert: ${usage.percentageUsed.toFixed(1)}% Used`;
@@ -400,7 +389,7 @@ export class BudgetAlertSystem {
   private generateAlertMessage(
     threshold: BudgetThreshold,
     usage: UsageStats,
-    _config: AlertConfig,
+    _config: AlertConfig
   ): string {
     if (threshold.messageTemplate) {
       return this.interpolateTemplate(threshold.messageTemplate, {
@@ -418,7 +407,7 @@ export class BudgetAlertSystem {
 
   private interpolateTemplate(
     template: string,
-    vars: Record<string, number>,
+    vars: Record<string, number>
   ): string {
     return template.replace(/\{(\w+)\}/g, (_, key) => {
       return vars[key]?.toString() || '';
@@ -427,7 +416,7 @@ export class BudgetAlertSystem {
 
   private async deliverAlert(
     alert: Alert,
-    config: AlertConfig,
+    config: AlertConfig
   ): Promise<AlertDeliveryResult> {
     const results: AlertDeliveryResult['results'] = [];
 
@@ -462,8 +451,8 @@ export class BudgetAlertSystem {
       }
     }
 
-    const succeeded = results.filter((r) => r.success).length;
-    const failed = results.filter((r) => !r.success).length;
+    const succeeded = results.filter(r => r.success).length;
+    const failed = results.filter(r => !r.success).length;
 
     return {
       alertId: alert.id,
@@ -478,7 +467,7 @@ export class BudgetAlertSystem {
   private async sendToChannel(
     alert: Alert,
     channelConfig: ChannelConfig,
-    config: AlertConfig,
+    config: AlertConfig
   ): Promise<void> {
     switch (channelConfig.type) {
       case AlertChannel.WEBHOOK:
@@ -504,7 +493,7 @@ export class BudgetAlertSystem {
   private async sendWebhook(
     alert: Alert,
     channelConfig: ChannelConfig,
-    config: AlertConfig,
+    config: AlertConfig
   ): Promise<void> {
     const webhookConfig = channelConfig.config as any;
     const payload: WebhookPayload = {
@@ -524,7 +513,7 @@ export class BudgetAlertSystem {
   private async sendEmail(
     alert: Alert,
     channelConfig: ChannelConfig,
-    config: AlertConfig,
+    config: AlertConfig
   ): Promise<void> {
     const emailConfig = channelConfig.config as any;
     const payload: EmailPayload = {
@@ -534,13 +523,16 @@ export class BudgetAlertSystem {
       alert,
     };
 
-    console.log(`[EMAIL] Sending to ${emailConfig.recipients.join(', ')}:`, payload);
+    console.log(
+      `[EMAIL] Sending to ${emailConfig.recipients.join(', ')}:`,
+      payload
+    );
   }
 
   private async sendSlack(
     alert: Alert,
     channelConfig: ChannelConfig,
-    _config: AlertConfig,
+    _config: AlertConfig
   ): Promise<void> {
     const slackConfig = channelConfig.config as any;
     const payload: SlackPayload = {
@@ -584,7 +576,7 @@ export class BudgetAlertSystem {
   private async sendInApp(
     alert: Alert,
     channelConfig: ChannelConfig,
-    _config: AlertConfig,
+    _config: AlertConfig
   ): Promise<void> {
     const inAppConfig = channelConfig.config as any;
     const payload: InAppPayload = {
@@ -607,13 +599,16 @@ export class BudgetAlertSystem {
       desktop: inAppConfig.desktopNotification || false,
     };
 
-    console.log(`[IN-APP] Sending to users ${inAppConfig.userIds.join(', ')}:`, payload);
+    console.log(
+      `[IN-APP] Sending to users ${inAppConfig.userIds.join(', ')}:`,
+      payload
+    );
   }
 
   private async sendSMS(
     alert: Alert,
     channelConfig: ChannelConfig,
-    _config: AlertConfig,
+    _config: AlertConfig
   ): Promise<void> {
     const smsConfig = channelConfig.config as any;
     const payload: SMSPayload = {
@@ -621,7 +616,10 @@ export class BudgetAlertSystem {
       body: `Budget Alert: ${alert.currentUsage.percentageUsed.toFixed(1)}% used. Level: ${alert.level.toUpperCase()}`,
     };
 
-    console.log(`[SMS] Sending to ${smsConfig.phoneNumbers.join(', ')}:`, payload);
+    console.log(
+      `[SMS] Sending to ${smsConfig.phoneNumbers.join(', ')}:`,
+      payload
+    );
   }
 
   private generateEmailHTML(alert: Alert, _config: AlertConfig): string {
@@ -700,7 +698,7 @@ Level: ${alert.level.toUpperCase()}
   private isRateLimited(
     orchestratorId: string,
     threshold: BudgetThreshold,
-    config: AlertConfig,
+    config: AlertConfig
   ): boolean {
     const rateLimitMap = this.rateLimits.get(orchestratorId);
     if (!rateLimitMap) {
@@ -726,7 +724,7 @@ Level: ${alert.level.toUpperCase()}
 
   private updateRateLimit(
     orchestratorId: string,
-    threshold: BudgetThreshold,
+    threshold: BudgetThreshold
   ): void {
     let rateLimitMap = this.rateLimits.get(orchestratorId);
     if (!rateLimitMap) {
@@ -746,8 +744,8 @@ Level: ${alert.level.toUpperCase()}
     } else {
       const config = this.configs.get(orchestratorId);
       if (!config) {
-return;
-}
+        return;
+      }
 
       const windowElapsed = now - entry.lastAlertTime;
 

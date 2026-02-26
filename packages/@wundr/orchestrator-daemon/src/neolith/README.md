@@ -65,7 +65,8 @@ Configuration options:
 - `apiSecret` (required): API secret for authentication
 - `retryAttempts` (optional): Number of retry attempts for failed requests (default: 3)
 - `retryDelay` (optional): Initial delay between retries in ms (default: 1000)
-- `tokenRefreshBuffer` (optional): Time before token expiry to refresh in ms (default: 300000 / 5 minutes)
+- `tokenRefreshBuffer` (optional): Time before token expiry to refresh in ms (default: 300000 / 5
+  minutes)
 
 ### Authentication
 
@@ -74,12 +75,15 @@ Configuration options:
 Authenticate with the Neolith API and obtain JWT tokens.
 
 **Parameters:**
+
 - `scopes` (optional): Array of permission scopes to request
 
 **Returns:**
+
 - Authentication response with tokens and orchestrator info
 
 **Example:**
+
 ```typescript
 const auth = await client.authenticate(['messages:read', 'messages:write']);
 console.log('Authenticated as:', auth.orchestrator.user.name);
@@ -90,6 +94,7 @@ console.log('Authenticated as:', auth.orchestrator.user.name);
 Manually refresh the access token. Usually called automatically when needed.
 
 **Returns:**
+
 - New access token and expiry time
 
 #### `isAuthenticated(): boolean`
@@ -97,6 +102,7 @@ Manually refresh the access token. Usually called automatically when needed.
 Check if the client is currently authenticated.
 
 **Returns:**
+
 - `true` if authenticated, `false` otherwise
 
 #### `clearAuth(): void`
@@ -110,11 +116,13 @@ Clear authentication state (tokens, session ID).
 Send a heartbeat to indicate the daemon is alive and optionally include metrics.
 
 **Parameters:**
+
 - `options.sessionId` (optional): Session ID (defaults to current session)
 - `options.status` (optional): Status - 'active', 'idle', or 'busy' (default: 'active')
 - `options.metrics` (optional): Performance metrics object
 
 **Metrics fields:**
+
 - `memoryUsageMB`: Memory usage in megabytes
 - `cpuUsagePercent`: CPU usage percentage
 - `activeConnections`: Number of active connections
@@ -125,9 +133,11 @@ Send a heartbeat to indicate the daemon is alive and optionally include metrics.
 - `queueDepth`: Number of tasks in queue
 
 **Returns:**
+
 - Server response with timing information
 
 **Example:**
+
 ```typescript
 await client.sendHeartbeat({
   status: 'active',
@@ -147,15 +157,18 @@ await client.sendHeartbeat({
 Retrieve messages from a channel.
 
 **Parameters:**
+
 - `channelId` (required): The channel ID to fetch messages from
 - `options.limit` (optional): Maximum number of messages to return (max: 100)
 - `options.before` (optional): Message ID to fetch messages before
 - `options.after` (optional): Message ID to fetch messages after
 
 **Returns:**
+
 - Array of messages with author information
 
 **Example:**
+
 ```typescript
 const { messages } = await client.getMessages('chan_123', {
   limit: 50,
@@ -172,6 +185,7 @@ messages.forEach(msg => {
 Send a message to a channel.
 
 **Parameters:**
+
 - `channelId` (required): The channel ID to send the message to
 - `content` (required): The message content
 - `options.threadId` (optional): Parent message ID for threaded replies
@@ -179,9 +193,11 @@ Send a message to a channel.
 - `options.metadata` (optional): Custom metadata object
 
 **Returns:**
+
 - Message ID of the created message
 
 **Example:**
+
 ```typescript
 // Simple message
 const { messageId } = await client.sendMessage('chan_123', 'Hello!');
@@ -203,13 +219,16 @@ await client.sendMessage('chan_123', 'Reply message', {
 Update the orchestrator's operational status.
 
 **Parameters:**
+
 - `status` (required): New status - 'active', 'paused', or 'error'
 - `options.message` (optional): Human-readable status message
 
 **Returns:**
+
 - Success confirmation
 
 **Example:**
+
 ```typescript
 await client.updateStatus('active', {
   message: 'Processing incoming requests',
@@ -228,9 +247,12 @@ await client.updateStatus('paused', {
 Retrieve the full orchestrator configuration.
 
 **Returns:**
-- Complete configuration object including orchestrator details, capabilities, and operational settings
+
+- Complete configuration object including orchestrator details, capabilities, and operational
+  settings
 
 **Example:**
+
 ```typescript
 const config = await client.getConfig();
 console.log('Role:', config.orchestrator.role);
@@ -242,7 +264,8 @@ console.log('Scopes:', config.scopes);
 
 ### Automatic Token Refresh
 
-The client automatically refreshes access tokens before they expire. You can configure the refresh buffer:
+The client automatically refreshes access tokens before they expire. You can configure the refresh
+buffer:
 
 ```typescript
 const client = new NeolithApiClient({
@@ -272,7 +295,9 @@ const client = new NeolithApiClient({
 Set up a periodic heartbeat to keep the orchestrator online:
 
 ```typescript
-const client = new NeolithApiClient({ /* config */ });
+const client = new NeolithApiClient({
+  /* config */
+});
 await client.authenticate();
 
 const config = await client.getConfig();
@@ -341,6 +366,7 @@ See the [usage examples](./examples/usage-example.ts) for comprehensive examples
 - Full daemon integration
 
 Run examples:
+
 ```bash
 ts-node src/neolith/examples/usage-example.ts basic
 ts-node src/neolith/examples/usage-example.ts heartbeat

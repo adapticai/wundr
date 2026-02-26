@@ -16,8 +16,8 @@ import { Logger } from '../utils/logger';
 import type {
   ParsedMemoryFile,
   MemoryEntry,
-
-  MemoryFileManager} from './memory-file-manager';
+  MemoryFileManager,
+} from './memory-file-manager';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -38,7 +38,11 @@ export interface MemoryLink {
   /** Similarity score that triggered the link */
   similarity: number;
   /** How the link was detected */
-  reason: 'keyword-overlap' | 'error-fix-pair' | 'same-topic' | 'explicit-reference';
+  reason:
+    | 'keyword-overlap'
+    | 'error-fix-pair'
+    | 'same-topic'
+    | 'explicit-reference';
 }
 
 /**
@@ -87,7 +91,7 @@ export class MemoryLinker {
 
   constructor(
     fileManager: MemoryFileManager,
-    config?: Partial<MemoryLinkerConfig>,
+    config?: Partial<MemoryLinkerConfig>
   ) {
     this.fileManager = fileManager;
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -164,22 +168,22 @@ export class MemoryLinker {
         file,
         link.sourceSection,
         link.sourceText,
-        this.buildLinkId(link.targetSection, link.targetText),
+        this.buildLinkId(link.targetSection, link.targetText)
       );
 
       const targetUpdated = this.addLinkToEntry(
         file,
         link.targetSection,
         link.targetText,
-        this.buildLinkId(link.sourceSection, link.sourceText),
+        this.buildLinkId(link.sourceSection, link.sourceText)
       );
 
       if (sourceUpdated) {
-updatedCount++;
-}
+        updatedCount++;
+      }
       if (targetUpdated) {
-updatedCount++;
-}
+        updatedCount++;
+      }
     }
 
     return updatedCount;
@@ -200,7 +204,7 @@ updatedCount++;
     if (updatedEntries > 0) {
       await this.fileManager.write(filePath, file);
       logger.info(
-        `Linked ${links.length} pairs, updated ${updatedEntries} entries in ${filePath}`,
+        `Linked ${links.length} pairs, updated ${updatedEntries} entries in ${filePath}`
       );
     }
 
@@ -219,7 +223,7 @@ updatedCount++;
    */
   getLinkedEntries(
     file: ParsedMemoryFile,
-    entryText: string,
+    entryText: string
   ): Array<{ entry: MemoryEntry; section: string }> {
     const result = this.fileManager.findEntry(file, entryText);
     if (!result || !result.entry.metadata?.links) {
@@ -260,7 +264,7 @@ updatedCount++;
    * Flatten all entries from a file into a flat list with section info.
    */
   private flattenEntries(
-    file: ParsedMemoryFile,
+    file: ParsedMemoryFile
   ): Array<{ entry: MemoryEntry; section: string }> {
     const result: Array<{ entry: MemoryEntry; section: string }> = [];
     for (const section of file.sections) {
@@ -301,7 +305,7 @@ updatedCount++;
    */
   private detectErrorToolLink(
     a: { entry: MemoryEntry; section: string },
-    b: { entry: MemoryEntry; section: string },
+    b: { entry: MemoryEntry; section: string }
   ): MemoryLink | null {
     let errorEntry: { entry: MemoryEntry; section: string } | null = null;
     let toolEntry: { entry: MemoryEntry; section: string } | null = null;
@@ -323,7 +327,7 @@ updatedCount++;
     const toolTokens = this.tokenize(toolEntry.entry.text);
 
     const hasToolMention = toolTokens.some(
-      token => token.length > 3 && errorLower.includes(token),
+      token => token.length > 3 && errorLower.includes(token)
     );
 
     if (!hasToolMention) {
@@ -345,7 +349,7 @@ updatedCount++;
    */
   private detectExplicitReference(
     a: { entry: MemoryEntry; section: string },
-    b: { entry: MemoryEntry; section: string },
+    b: { entry: MemoryEntry; section: string }
   ): MemoryLink | null {
     const backtickTermsA = this.extractBacktickTerms(a.entry.text);
     const backtickTermsB = this.extractBacktickTerms(b.entry.text);
@@ -389,7 +393,9 @@ updatedCount++;
     if (!matches) {
       return [];
     }
-    return matches.map(m => m.replace(/`/g, '').trim()).filter(m => m.length > 2);
+    return matches
+      .map(m => m.replace(/`/g, '').trim())
+      .filter(m => m.length > 2);
   }
 
   // -------------------------------------------------------------------------
@@ -426,10 +432,10 @@ updatedCount++;
     file: ParsedMemoryFile,
     sectionTitle: string,
     entryText: string,
-    linkId: string,
+    linkId: string
   ): boolean {
     const section = file.sections.find(
-      s => s.title.toLowerCase() === sectionTitle.toLowerCase(),
+      s => s.title.toLowerCase() === sectionTitle.toLowerCase()
     );
     if (!section) {
       return false;
@@ -437,7 +443,7 @@ updatedCount++;
 
     const normalized = this.fileManager.normalizeEntry(entryText);
     const entry = section.entries.find(
-      e => this.fileManager.normalizeEntry(e.text) === normalized,
+      e => this.fileManager.normalizeEntry(e.text) === normalized
     );
     if (!entry) {
       return false;
@@ -486,12 +492,56 @@ updatedCount++;
    */
   private tokenize(text: string): string[] {
     const stopWords = new Set([
-      'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been',
-      'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
-      'would', 'could', 'should', 'may', 'might', 'shall', 'can',
-      'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from',
-      'it', 'its', 'this', 'that', 'and', 'or', 'but', 'not', 'if',
-      'then', 'else', 'when', 'up', 'out', 'so', 'no', 'as',
+      'a',
+      'an',
+      'the',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'being',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'shall',
+      'can',
+      'to',
+      'of',
+      'in',
+      'for',
+      'on',
+      'with',
+      'at',
+      'by',
+      'from',
+      'it',
+      'its',
+      'this',
+      'that',
+      'and',
+      'or',
+      'but',
+      'not',
+      'if',
+      'then',
+      'else',
+      'when',
+      'up',
+      'out',
+      'so',
+      'no',
+      'as',
     ]);
 
     return text

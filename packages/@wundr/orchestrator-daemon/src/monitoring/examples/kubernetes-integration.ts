@@ -5,7 +5,11 @@
  * with liveness and readiness probes.
  */
 
-import { createMetricsServer, metricsRegistry, MetricsCollector } from '../index';
+import {
+  createMetricsServer,
+  metricsRegistry,
+  MetricsCollector,
+} from '../index';
 
 /**
  * Application state management
@@ -136,7 +140,6 @@ async function main() {
         process.exit(0);
       });
     });
-
   } catch (error) {
     console.error('Failed to start application:', error);
     process.exit(1);

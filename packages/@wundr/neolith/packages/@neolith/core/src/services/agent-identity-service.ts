@@ -176,7 +176,7 @@ export class AgentIdentityServiceImpl implements AgentIdentityService {
    * Creates a new agent identity for an orchestrator user.
    */
   async createIdentity(data: CreateAgentIdentityInput): Promise<unknown> {
-    return this.db.agentIdentity.create({
+    return (this.db as any).agentIdentity.create({
       data: {
         userId: data.userId,
         corporateEmail: data.corporateEmail,
@@ -195,7 +195,7 @@ export class AgentIdentityServiceImpl implements AgentIdentityService {
     id: string,
     data: UpdateAgentIdentityInput
   ): Promise<unknown> {
-    return this.db.agentIdentity.update({
+    return (this.db as any).agentIdentity.update({
       where: { id },
       data,
     });
@@ -205,7 +205,7 @@ export class AgentIdentityServiceImpl implements AgentIdentityService {
    * Gets identity by user ID with user relation.
    */
   async getIdentityByUserId(userId: string): Promise<unknown | null> {
-    return this.db.agentIdentity.findUnique({
+    return (this.db as any).agentIdentity.findUnique({
       where: { userId },
       include: {
         user: {
@@ -224,7 +224,7 @@ export class AgentIdentityServiceImpl implements AgentIdentityService {
    * Gets identity by corporate email with user relation.
    */
   async getIdentityByEmail(email: string): Promise<unknown | null> {
-    return this.db.agentIdentity.findUnique({
+    return (this.db as any).agentIdentity.findUnique({
       where: { corporateEmail: email },
       include: { user: true },
     });
@@ -261,7 +261,7 @@ export class AgentIdentityServiceImpl implements AgentIdentityService {
       preferredUsername || name.toLowerCase().replace(/\s+/g, '.');
     const corporateEmail = `${username}@${emailDomain}`;
 
-    return this.db.agentIdentity.upsert({
+    return (this.db as any).agentIdentity.upsert({
       where: { userId: orchestrator.user.id },
       create: {
         userId: orchestrator.user.id,
@@ -296,7 +296,7 @@ export class AgentIdentityServiceImpl implements AgentIdentityService {
       throw new AgentIdentityOrchestratorNotFoundError(orchestratorId);
     }
 
-    return this.db.agentIdentity.upsert({
+    return (this.db as any).agentIdentity.upsert({
       where: { userId: orchestrator.userId },
       create: {
         userId: orchestrator.userId,
@@ -313,7 +313,7 @@ export class AgentIdentityServiceImpl implements AgentIdentityService {
    * Lists all agent identities for an organization.
    */
   async listIdentities(organizationId: string): Promise<unknown[]> {
-    return this.db.agentIdentity.findMany({
+    return (this.db as any).agentIdentity.findMany({
       where: {
         user: {
           isOrchestrator: true,
@@ -337,7 +337,7 @@ export class AgentIdentityServiceImpl implements AgentIdentityService {
    * Deletes an agent identity.
    */
   async deleteIdentity(id: string): Promise<void> {
-    await this.db.agentIdentity.delete({ where: { id } });
+    await (this.db as any).agentIdentity.delete({ where: { id } });
   }
 }
 

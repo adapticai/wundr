@@ -123,13 +123,23 @@ For more information, visit: https://wundr.io
 function printBanner(config) {
   const border = '═'.repeat(60);
   console.log(`\n╔${border}╗`);
-  console.log('║' + ' '.repeat(15) + 'ORCHESTRATOR DAEMON' + ' '.repeat(26) + '║');
+  console.log(
+    '║' + ' '.repeat(15) + 'ORCHESTRATOR DAEMON' + ' '.repeat(26) + '║'
+  );
   console.log(`╠${border}╣`);
   console.log(`║  Version: 1.0.6${' '.repeat(43)}║`);
-  console.log(`║  Host: ${config.host}${' '.repeat(60 - 9 - config.host.length)}║`);
-  console.log(`║  Port: ${config.port}${' '.repeat(60 - 9 - config.port.toString().length)}║`);
-  console.log(`║  Max Sessions: ${config.maxSessions}${' '.repeat(60 - 17 - config.maxSessions.toString().length)}║`);
-  console.log(`║  Verbose: ${config.verbose ? 'enabled' : 'disabled'}${' '.repeat(60 - 12 - (config.verbose ? 7 : 8))}║`);
+  console.log(
+    `║  Host: ${config.host}${' '.repeat(60 - 9 - config.host.length)}║`
+  );
+  console.log(
+    `║  Port: ${config.port}${' '.repeat(60 - 9 - config.port.toString().length)}║`
+  );
+  console.log(
+    `║  Max Sessions: ${config.maxSessions}${' '.repeat(60 - 17 - config.maxSessions.toString().length)}║`
+  );
+  console.log(
+    `║  Verbose: ${config.verbose ? 'enabled' : 'disabled'}${' '.repeat(60 - 12 - (config.verbose ? 7 : 8))}║`
+  );
   console.log(`╚${border}╝\n`);
 }
 

@@ -10,12 +10,16 @@
 
 import { EventEmitter } from 'eventemitter3';
 
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-export type ProviderKind = 'anthropic' | 'openai' | 'google' | 'local' | 'custom';
+export type ProviderKind =
+  | 'anthropic'
+  | 'openai'
+  | 'google'
+  | 'local'
+  | 'custom';
 
 export interface ModelPricing {
   /** Cost per 1M input tokens in USD */
@@ -60,17 +64,20 @@ export interface ModelRef {
 }
 
 export interface ProviderRegistryConfig {
-  providers?: Record<string, {
-    baseUrl?: string;
-    defaultModel?: string;
-    models?: Array<{
-      id: string;
-      name?: string;
-      contextWindow?: number;
-      maxOutputTokens?: number;
-      pricing?: ModelPricing;
-    }>;
-  }>;
+  providers?: Record<
+    string,
+    {
+      baseUrl?: string;
+      defaultModel?: string;
+      models?: Array<{
+        id: string;
+        name?: string;
+        contextWindow?: number;
+        maxOutputTokens?: number;
+        pricing?: ModelPricing;
+      }>;
+    }
+  >;
   allowlist?: Record<string, { alias?: string }>;
 }
 
@@ -127,7 +134,12 @@ const BUILTIN_MODELS: ModelEntry[] = [
     provider: 'openai',
     contextWindow: 200_000,
     maxOutputTokens: 100_000,
-    capabilities: { ...DEFAULT_CAPABILITIES, reasoning: true, vision: true, jsonMode: true },
+    capabilities: {
+      ...DEFAULT_CAPABILITIES,
+      reasoning: true,
+      vision: true,
+      jsonMode: true,
+    },
     pricing: { input: 10.0, output: 40.0 },
     aliases: ['o3'],
   },
@@ -178,7 +190,12 @@ const BUILTIN_MODELS: ModelEntry[] = [
     provider: 'google',
     contextWindow: 2_000_000,
     maxOutputTokens: 8_192,
-    capabilities: { ...DEFAULT_CAPABILITIES, reasoning: true, vision: true, jsonMode: true },
+    capabilities: {
+      ...DEFAULT_CAPABILITIES,
+      reasoning: true,
+      vision: true,
+      jsonMode: true,
+    },
     pricing: { input: 1.25, output: 10.0 },
     aliases: ['gemini-pro'],
   },
@@ -199,7 +216,11 @@ export function normalizeProviderId(provider: string): string {
   if (normalized === 'gemini' || normalized === 'google-ai') {
     return 'google';
   }
-  if (normalized === 'ollama' || normalized === 'llama' || normalized === 'llamacpp') {
+  if (
+    normalized === 'ollama' ||
+    normalized === 'llama' ||
+    normalized === 'llamacpp'
+  ) {
     return 'local';
   }
   return normalized;
@@ -209,7 +230,10 @@ export function normalizeProviderId(provider: string): string {
 // Model ref parsing (mirrors OpenClaw's parseModelRef)
 // ---------------------------------------------------------------------------
 
-export function parseModelRef(raw: string, defaultProvider: string): ModelRef | null {
+export function parseModelRef(
+  raw: string,
+  defaultProvider: string
+): ModelRef | null {
   const trimmed = raw.trim();
   if (!trimmed) {
     return null;
@@ -280,7 +304,9 @@ export class ProviderRegistry extends EventEmitter<ProviderRegistryEvents> {
   private applyConfig(config: ProviderRegistryConfig): void {
     // Register custom provider models
     if (config.providers) {
-      for (const [providerId, providerCfg] of Object.entries(config.providers)) {
+      for (const [providerId, providerCfg] of Object.entries(
+        config.providers
+      )) {
         const provider = normalizeProviderId(providerId);
         if (providerCfg.models) {
           for (const modelCfg of providerCfg.models) {
@@ -336,7 +362,9 @@ export class ProviderRegistry extends EventEmitter<ProviderRegistryEvents> {
    * Resolve a raw model string (e.g. "opus", "anthropic/claude-opus-4-6")
    * to a ModelEntry. Checks aliases first, then direct lookup.
    */
-  resolveModelRef(raw: string): { ref: ModelRef; entry: ModelEntry | null } | null {
+  resolveModelRef(
+    raw: string
+  ): { ref: ModelRef; entry: ModelEntry | null } | null {
     const trimmed = raw.trim();
     if (!trimmed) {
       return null;
@@ -381,7 +409,7 @@ export class ProviderRegistry extends EventEmitter<ProviderRegistryEvents> {
       return entries;
     }
     const normalized = normalizeProviderId(provider);
-    return entries.filter((e) => e.provider === normalized);
+    return entries.filter(e => e.provider === normalized);
   }
 
   /**
@@ -426,7 +454,10 @@ export class ProviderRegistry extends EventEmitter<ProviderRegistryEvents> {
   /**
    * Get the full capabilities object for a model.
    */
-  getModelCapabilities(provider: string, modelId: string): ModelCapabilities | null {
+  getModelCapabilities(
+    provider: string,
+    modelId: string
+  ): ModelCapabilities | null {
     const entry = this.findModel(provider, modelId);
     return entry?.capabilities ?? null;
   }
@@ -437,7 +468,7 @@ export class ProviderRegistry extends EventEmitter<ProviderRegistryEvents> {
   supportsCapability(
     provider: string,
     modelId: string,
-    capability: keyof ModelCapabilities,
+    capability: keyof ModelCapabilities
   ): boolean {
     const entry = this.findModel(provider, modelId);
     if (!entry) {

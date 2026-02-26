@@ -77,7 +77,11 @@ function createMinimalConfig(overrides?: {
 function createMockLogger(): ConfigWatcherLogger & {
   calls: { info: string[]; warn: string[]; error: string[] };
 } {
-  const calls = { info: [] as string[], warn: [] as string[], error: [] as string[] };
+  const calls = {
+    info: [] as string[],
+    warn: [] as string[],
+    error: [] as string[],
+  };
   return {
     calls,
     info: (msg: string) => calls.info.push(msg),
@@ -100,11 +104,11 @@ describe('resolveReloadSettings', () => {
 
   it.each(['off', 'hot', 'restart', 'hybrid'] as const)(
     'should accept valid mode "%s"',
-    (mode) => {
+    mode => {
       const config = createMinimalConfig({ daemon: { reload: { mode } } });
       const settings = resolveReloadSettings(config);
       expect(settings.mode).toBe(mode);
-    },
+    }
   );
 
   it('should fall back to hybrid for invalid mode string', () => {
@@ -246,8 +250,8 @@ describe('buildReloadPlan', () => {
 
   it('should combine hot and restart paths correctly', () => {
     const plan = buildReloadPlan([
-      'hooks.beforeSend',    // hot
-      'daemon.host',         // restart
+      'hooks.beforeSend', // hot
+      'daemon.host', // restart
       'monitoring.interval', // noop
     ]);
     expect(plan.restartDaemon).toBe(true);
@@ -319,9 +323,13 @@ describe('startConfigWatcher', () => {
     nextSnapshot?: Partial<ConfigSnapshot>;
     reloadMode?: string;
   }) {
-    const initialConfig = opts?.initialConfig ?? createMinimalConfig({
-      daemon: { reload: { mode: opts?.reloadMode ?? 'hybrid', debounceMs: 100 } },
-    });
+    const initialConfig =
+      opts?.initialConfig ??
+      createMinimalConfig({
+        daemon: {
+          reload: { mode: opts?.reloadMode ?? 'hybrid', debounceMs: 100 },
+        },
+      });
 
     const nextConfig = createMinimalConfig({
       daemon: { reload: { mode: 'hybrid', debounceMs: 100 } },
@@ -384,11 +392,11 @@ describe('startConfigWatcher', () => {
     // resolved and the mock's .on('change', ...) callback is registered.
     const deadline = Date.now() + 2000;
     while (!chokidarState.callbacks['change'] && Date.now() < deadline) {
-      await new Promise<void>((resolve) => setTimeout(resolve, 2));
+      await new Promise<void>(resolve => setTimeout(resolve, 2));
     }
     if (!chokidarState.callbacks['change']) {
       throw new Error(
-        'waitForWatcherInit: chokidar change callback was not registered within 2s',
+        'waitForWatcherInit: chokidar change callback was not registered within 2s'
       );
     }
     vi.useFakeTimers();
@@ -433,7 +441,7 @@ describe('startConfigWatcher', () => {
 
     expect(onHotReload).not.toHaveBeenCalled();
     expect(onRestart).not.toHaveBeenCalled();
-    expect(log.calls.warn.some((m) => m.includes('invalid config'))).toBe(true);
+    expect(log.calls.warn.some(m => m.includes('invalid config'))).toBe(true);
 
     await watcher.stop();
   });
@@ -462,7 +470,9 @@ describe('startConfigWatcher', () => {
 
   it('should call onRestart for restart-required changes in hybrid mode', async () => {
     const nextConfig = {
-      ...createMinimalConfig({ daemon: { reload: { mode: 'hybrid', debounceMs: 100 } } }),
+      ...createMinimalConfig({
+        daemon: { reload: { mode: 'hybrid', debounceMs: 100 } },
+      }),
       plugins: { newPlugin: {} },
     } as unknown as WundrConfig;
 

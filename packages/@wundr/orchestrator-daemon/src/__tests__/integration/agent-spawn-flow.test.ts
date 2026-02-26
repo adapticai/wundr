@@ -20,7 +20,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AgentLifecycleManager } from '../../agents/agent-lifecycle';
 import { createEmptyRegistry } from '../../agents/agent-registry';
 
-import type { AgentRegistry} from '../../agents/agent-registry';
+import type { AgentRegistry } from '../../agents/agent-registry';
 import type {
   AgentDefinition,
   AgentMetadata,
@@ -38,7 +38,7 @@ function makeTmpDir(): string {
 
 function buildAgent(
   id: string,
-  overrides: Partial<AgentMetadata> = {},
+  overrides: Partial<AgentMetadata> = {}
 ): AgentDefinition {
   return {
     id,
@@ -215,7 +215,10 @@ describe('Agent Spawn Flow Integration', () => {
 
       // Resolve child permissions with parent context
       const parentPerms = registry.resolvePermissions('lead-architect');
-      const childPerms = registry.resolvePermissions('eng-code-surgeon', parentPerms);
+      const childPerms = registry.resolvePermissions(
+        'eng-code-surgeon',
+        parentPerms
+      );
 
       // Child should be at least as restrictive as parent
       expect(childPerms.permissionMode).toBe('ask'); // 'ask' is more restrictive than 'acceptEdits'
@@ -238,7 +241,10 @@ describe('Agent Spawn Flow Integration', () => {
       registry.register(child);
 
       const parentPerms = registry.resolvePermissions('parent-agent');
-      const childPerms = registry.resolvePermissions('child-agent', parentPerms);
+      const childPerms = registry.resolvePermissions(
+        'child-agent',
+        parentPerms
+      );
 
       // Permission mode: parent 'ask' (1) vs child 'acceptEdits' (2) -> intersection = 'ask'
       expect(childPerms.permissionMode).toBe('ask');
@@ -316,13 +322,22 @@ describe('Agent Spawn Flow Integration', () => {
   // -------------------------------------------------------------------------
 
   describe('tool restriction resolution', () => {
-    const allTools = ['read_file', 'write_file', 'bash_execute', 'web_search', 'mcp__db__query'];
+    const allTools = [
+      'read_file',
+      'write_file',
+      'bash_execute',
+      'web_search',
+      'mcp__db__query',
+    ];
 
     it('returns all tools when no restrictions exist', () => {
       const agent = buildAgent('unrestricted-agent');
       registry.register(agent);
 
-      const effective = registry.resolveEffectiveTools('unrestricted-agent', allTools);
+      const effective = registry.resolveEffectiveTools(
+        'unrestricted-agent',
+        allTools
+      );
       expect(effective).toEqual(allTools);
     });
 
@@ -334,7 +349,10 @@ describe('Agent Spawn Flow Integration', () => {
       });
       registry.register(agent);
 
-      const effective = registry.resolveEffectiveTools('restricted-agent', allTools);
+      const effective = registry.resolveEffectiveTools(
+        'restricted-agent',
+        allTools
+      );
       expect(effective).toEqual(['read_file', 'web_search']);
     });
 
@@ -365,7 +383,7 @@ describe('Agent Spawn Flow Integration', () => {
       const effective = registry.resolveEffectiveTools(
         'child-allow',
         allTools,
-        parentRestrictions,
+        parentRestrictions
       );
 
       // Intersection: read_file, bash_execute
@@ -387,7 +405,7 @@ describe('Agent Spawn Flow Integration', () => {
       const effective = registry.resolveEffectiveTools(
         'deny-union',
         allTools,
-        parentRestrictions,
+        parentRestrictions
       );
 
       // Both bash_execute and mcp__db__query should be removed
@@ -543,9 +561,27 @@ describe('Agent Spawn Flow Integration', () => {
 
   describe('registry queries', () => {
     beforeEach(() => {
-      registry.register(buildAgent('dev-a', { type: 'developer', tier: 2 as AgentTier, capabilities: ['code', 'review'] }));
-      registry.register(buildAgent('dev-b', { type: 'developer', tier: 3 as AgentTier, capabilities: ['code'] }));
-      registry.register(buildAgent('res-a', { type: 'researcher', tier: 2 as AgentTier, capabilities: ['research'] }));
+      registry.register(
+        buildAgent('dev-a', {
+          type: 'developer',
+          tier: 2 as AgentTier,
+          capabilities: ['code', 'review'],
+        })
+      );
+      registry.register(
+        buildAgent('dev-b', {
+          type: 'developer',
+          tier: 3 as AgentTier,
+          capabilities: ['code'],
+        })
+      );
+      registry.register(
+        buildAgent('res-a', {
+          type: 'researcher',
+          tier: 2 as AgentTier,
+          capabilities: ['research'],
+        })
+      );
     });
 
     it('finds spawn candidates by type', () => {
@@ -554,7 +590,9 @@ describe('Agent Spawn Flow Integration', () => {
     });
 
     it('filters spawn candidates by tier', () => {
-      const candidates = registry.findSpawnCandidates('developer', { maxTier: 2 as AgentTier });
+      const candidates = registry.findSpawnCandidates('developer', {
+        maxTier: 2 as AgentTier,
+      });
       expect(candidates).toHaveLength(1);
       expect(candidates[0].id).toBe('dev-a');
     });

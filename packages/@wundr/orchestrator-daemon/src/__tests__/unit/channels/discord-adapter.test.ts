@@ -52,7 +52,9 @@ const mockLogin = vi.fn().mockResolvedValue('token');
 const mockDestroy = vi.fn();
 const mockRestPut = vi.fn().mockResolvedValue(undefined);
 
-function createMockChannel(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+function createMockChannel(
+  overrides: Record<string, unknown> = {}
+): Record<string, unknown> {
   return {
     id: 'ch-1',
     type: 0,
@@ -79,7 +81,9 @@ function createMockChannel(overrides: Record<string, unknown> = {}): Record<stri
   };
 }
 
-function createMockMessage(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+function createMockMessage(
+  overrides: Record<string, unknown> = {}
+): Record<string, unknown> {
   return {
     id: 'msg-1',
     content: 'hello world',
@@ -122,8 +126,8 @@ vi.mock('discord.js', () => {
 
     on(event: string, handler: (...args: unknown[]) => void) {
       if (!clientEventHandlers[event]) {
-clientEventHandlers[event] = [];
-}
+        clientEventHandlers[event] = [];
+      }
       clientEventHandlers[event]!.push(handler);
     }
   }
@@ -156,7 +160,9 @@ clientEventHandlers[event] = [];
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeConfig(overrides: Partial<DiscordChannelConfig> = {}): DiscordChannelConfig {
+function makeConfig(
+  overrides: Partial<DiscordChannelConfig> = {}
+): DiscordChannelConfig {
   return {
     enabled: true,
     botToken: 'test-bot-token',
@@ -179,8 +185,8 @@ function emitClientEvent(event: string, ...args: unknown[]) {
   const handlers = clientEventHandlers[event];
   if (handlers) {
     for (const h of handlers) {
-h(...args);
-}
+      h(...args);
+    }
   }
 }
 
@@ -264,7 +270,7 @@ describe('DiscordChannelAdapter', () => {
       const config = makeConfig({ botToken: '' });
 
       await expect(adapter.connect(config)).rejects.toThrow(
-        'Discord adapter requires botToken.',
+        'Discord adapter requires botToken.'
       );
       expect(adapter.isConnected()).toBe(false);
     });
@@ -290,7 +296,7 @@ describe('DiscordChannelAdapter', () => {
         expect.objectContaining({
           channelId: 'discord',
           accountId: 'bot-user-1',
-        }),
+        })
       );
     });
 
@@ -304,7 +310,7 @@ describe('DiscordChannelAdapter', () => {
       expect(adapter.isConnected()).toBe(false);
       expect(mockDestroy).toHaveBeenCalled();
       expect(handler).toHaveBeenCalledWith(
-        expect.objectContaining({ channelId: 'discord' }),
+        expect.objectContaining({ channelId: 'discord' })
       );
     });
 
@@ -315,23 +321,23 @@ describe('DiscordChannelAdapter', () => {
     it('should log error if destroy throws during disconnect', async () => {
       await adapter.connect(makeConfig());
       mockDestroy.mockImplementation(() => {
- throw new Error('destroy boom'); 
-});
+        throw new Error('destroy boom');
+      });
 
       await adapter.disconnect();
 
       expect(adapter.isConnected()).toBe(false);
       expect(logger.error).toHaveBeenCalledWith(
-        expect.stringContaining('destroy boom'),
+        expect.stringContaining('destroy boom')
       );
     });
 
     it('should set lastError when connect fails', async () => {
       mockLogin.mockRejectedValueOnce(new Error('auth failed'));
 
-      await expect(
-        adapter.connect(makeConfig()),
-      ).rejects.toThrow('auth failed');
+      await expect(adapter.connect(makeConfig())).rejects.toThrow(
+        'auth failed'
+      );
 
       const health = await adapter.healthCheck();
       expect(health.healthy).toBe(false);
@@ -420,27 +426,37 @@ describe('DiscordChannelAdapter', () => {
       await adapter.sendMessage(msg);
 
       // First call should have embeds
-      const firstCallArgs = mockSend.mock.calls[0]?.[0] as Record<string, unknown>;
+      const firstCallArgs = mockSend.mock.calls[0]?.[0] as Record<
+        string,
+        unknown
+      >;
       expect(firstCallArgs?.['embeds']).toEqual(embeds);
 
       // Second call should not
       if (mockSend.mock.calls.length > 1) {
-        const secondCallArgs = mockSend.mock.calls[1]?.[0] as Record<string, unknown>;
+        const secondCallArgs = mockSend.mock.calls[1]?.[0] as Record<
+          string,
+          unknown
+        >;
         expect(secondCallArgs?.['embeds']).toBeUndefined();
       }
     });
 
     it('should attach components only to the first chunk', async () => {
       const longText = 'C'.repeat(3500);
-      const components = [{
-        type: 1 as const,
-        components: [{
-          type: 2 as const,
-          style: 1 as const,
-          label: 'Click me',
-          custom_id: 'btn-1',
-        }],
-      }];
+      const components = [
+        {
+          type: 1 as const,
+          components: [
+            {
+              type: 2 as const,
+              style: 1 as const,
+              label: 'Click me',
+              custom_id: 'btn-1',
+            },
+          ],
+        },
+      ];
 
       const msg: DiscordOutboundMessage = {
         to: 'ch-1',
@@ -450,7 +466,10 @@ describe('DiscordChannelAdapter', () => {
 
       await adapter.sendMessage(msg);
 
-      const firstCallArgs = mockSend.mock.calls[0]?.[0] as Record<string, unknown>;
+      const firstCallArgs = mockSend.mock.calls[0]?.[0] as Record<
+        string,
+        unknown
+      >;
       expect(firstCallArgs?.['components']).toEqual(components);
     });
 
@@ -490,7 +509,7 @@ describe('DiscordChannelAdapter', () => {
       await adapter.disconnect();
 
       await expect(
-        adapter.sendMessage({ to: 'ch-1', text: 'Hi' }),
+        adapter.sendMessage({ to: 'ch-1', text: 'Hi' })
       ).rejects.toThrow('not connected');
     });
   });
@@ -520,7 +539,9 @@ describe('DiscordChannelAdapter', () => {
     });
 
     it('should split text exceeding line limit', () => {
-      const lines = Array.from({ length: 30 }, (_, i) => `line ${i}`).join('\n');
+      const lines = Array.from({ length: 30 }, (_, i) => `line ${i}`).join(
+        '\n'
+      );
       const chunks = DiscordChannelAdapter.chunkText(lines, 99999, 10);
       expect(chunks.length).toBeGreaterThanOrEqual(2);
     });
@@ -559,7 +580,7 @@ describe('DiscordChannelAdapter', () => {
     it('should strip user mentions', () => {
       const name = DiscordChannelAdapter.sanitizeThreadName(
         'Hey <@123456> what is up',
-        'fallback',
+        'fallback'
       );
       expect(name).toBe('Hey what is up');
     });
@@ -567,7 +588,7 @@ describe('DiscordChannelAdapter', () => {
     it('should strip role mentions', () => {
       const name = DiscordChannelAdapter.sanitizeThreadName(
         'Ping <@&99999>!',
-        'fallback',
+        'fallback'
       );
       expect(name).toBe('Ping !');
     });
@@ -575,16 +596,13 @@ describe('DiscordChannelAdapter', () => {
     it('should strip channel mentions', () => {
       const name = DiscordChannelAdapter.sanitizeThreadName(
         'See <#111222>',
-        'fallback',
+        'fallback'
       );
       expect(name).toBe('See');
     });
 
     it('should use fallback when cleaned name is empty', () => {
-      const name = DiscordChannelAdapter.sanitizeThreadName(
-        '<@123>',
-        'msg-42',
-      );
+      const name = DiscordChannelAdapter.sanitizeThreadName('<@123>', 'msg-42');
       expect(name).toBe('Thread msg-42');
     });
 
@@ -634,12 +652,12 @@ describe('DiscordChannelAdapter', () => {
       const result = await adapter.createThread(
         'ch-1',
         'msg-2',
-        'Hey <@123> help me',
+        'Hey <@123> help me'
       );
 
       expect(result.ok).toBe(true);
       expect(mockMsg.startThread).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'Hey help me' }),
+        expect.objectContaining({ name: 'Hey help me' })
       );
     });
 
@@ -812,7 +830,9 @@ describe('DiscordChannelAdapter', () => {
       expect(result.ok).toBe(true);
       const sentArgs = mockSend.mock.calls[0]?.[0] as Record<string, unknown>;
       expect(sentArgs?.['embeds']).toHaveLength(1);
-      expect((sentArgs?.['embeds'] as Array<Record<string, unknown>>)?.[0]?.['title']).toBe('Build Status');
+      expect(
+        (sentArgs?.['embeds'] as Array<Record<string, unknown>>)?.[0]?.['title']
+      ).toBe('Build Status');
     });
 
     it('should send multiple embeds', async () => {
@@ -846,7 +866,12 @@ describe('DiscordChannelAdapter', () => {
           name: 'config',
           description: 'Configure settings',
           options: [
-            { name: 'key', description: 'Setting key', type: 3, required: true },
+            {
+              name: 'key',
+              description: 'Setting key',
+              type: 3,
+              required: true,
+            },
           ],
         },
       ];
@@ -861,7 +886,7 @@ describe('DiscordChannelAdapter', () => {
             expect.objectContaining({ name: 'ask' }),
             expect.objectContaining({ name: 'config' }),
           ]),
-        }),
+        })
       );
     });
 
@@ -878,11 +903,11 @@ describe('DiscordChannelAdapter', () => {
 
       expect(mockRestPut).toHaveBeenCalledWith(
         '/applications/app-id-1/guilds/guild-A/commands',
-        expect.any(Object),
+        expect.any(Object)
       );
       expect(mockRestPut).toHaveBeenCalledWith(
         '/applications/app-id-1/guilds/guild-B/commands',
-        expect.any(Object),
+        expect.any(Object)
       );
     });
 
@@ -905,7 +930,7 @@ describe('DiscordChannelAdapter', () => {
       await adapter.connect(config);
 
       expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('missing client or applicationId'),
+        expect.stringContaining('missing client or applicationId')
       );
     });
   });
@@ -951,7 +976,7 @@ describe('DiscordChannelAdapter', () => {
           userId: 'user-1',
           channelId: 'ch-1',
           options: { query: 'What is vitest?' },
-        }),
+        })
       );
     });
 
@@ -978,7 +1003,7 @@ describe('DiscordChannelAdapter', () => {
           type: 'button',
           customId: 'confirm-btn',
           userId: 'user-2',
-        }),
+        })
       );
     });
 
@@ -1004,7 +1029,7 @@ describe('DiscordChannelAdapter', () => {
         expect.objectContaining({
           type: 'select_menu',
           customId: 'color-select',
-        }),
+        })
       );
     });
 
@@ -1050,7 +1075,7 @@ describe('DiscordChannelAdapter', () => {
       await vi.advanceTimersByTimeAsync(10);
 
       expect(logger.error).toHaveBeenCalledWith(
-        expect.stringContaining('handler boom'),
+        expect.stringContaining('handler boom')
       );
     });
 
@@ -1154,7 +1179,7 @@ describe('DiscordChannelAdapter', () => {
       emitClientEvent('shardDisconnect', { code: 1006 }, 0);
 
       expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('shard 0 disconnected'),
+        expect.stringContaining('shard 0 disconnected')
       );
     });
 
@@ -1164,7 +1189,7 @@ describe('DiscordChannelAdapter', () => {
 
       expect(adapter.isConnected()).toBe(false);
       expect(logger.error).toHaveBeenCalledWith(
-        expect.stringContaining('Non-resumable close code 4004'),
+        expect.stringContaining('Non-resumable close code 4004')
       );
     });
 
@@ -1174,7 +1199,7 @@ describe('DiscordChannelAdapter', () => {
 
       expect(adapter.isConnected()).toBe(true);
       expect(logger.info).toHaveBeenCalledWith(
-        expect.stringContaining('resumed'),
+        expect.stringContaining('resumed')
       );
     });
 
@@ -1196,7 +1221,7 @@ describe('DiscordChannelAdapter', () => {
         expect.objectContaining({
           channelId: 'discord',
           recoverable: true,
-        }),
+        })
       );
     });
 
@@ -1441,7 +1466,11 @@ describe('DiscordChannelAdapter', () => {
       };
       mockMessageFetch.mockResolvedValue(mockMsg);
 
-      const result = await adapter.editMessage('ch-1', 'msg-edit', 'Updated text');
+      const result = await adapter.editMessage(
+        'ch-1',
+        'msg-edit',
+        'Updated text'
+      );
 
       expect(result.ok).toBe(true);
       expect(mockMsg.edit).toHaveBeenCalledWith('Updated text');
@@ -1514,7 +1543,7 @@ describe('DiscordChannelAdapter', () => {
             text: 'hello world',
             mentionsSelf: false,
           }),
-        }),
+        })
       );
     });
 
@@ -1590,7 +1619,11 @@ describe('DiscordChannelAdapter', () => {
       adapter.on('message', handler);
 
       const msg = createMockMessage({
-        channel: { id: 'thread-ch', isThread: () => true, isDMBased: () => false },
+        channel: {
+          id: 'thread-ch',
+          isThread: () => true,
+          isDMBased: () => false,
+        },
       });
       emitClientEvent('messageCreate', msg);
 
@@ -1616,13 +1649,16 @@ describe('DiscordChannelAdapter', () => {
       adapter.on('message', handler);
 
       const attachments = new Map([
-        ['att-1', {
-          name: 'photo.png',
-          contentType: 'image/png',
-          size: 12345,
-          url: 'https://cdn.example.com/photo.png',
-          proxyURL: 'https://proxy.example.com/photo.png',
-        }],
+        [
+          'att-1',
+          {
+            name: 'photo.png',
+            contentType: 'image/png',
+            size: 12345,
+            url: 'https://cdn.example.com/photo.png',
+            proxyURL: 'https://proxy.example.com/photo.png',
+          },
+        ],
       ]);
 
       const msg = createMockMessage({ attachments });
@@ -1639,7 +1675,7 @@ describe('DiscordChannelAdapter', () => {
           mimeType: 'image/png',
           sizeBytes: 12345,
           url: 'https://cdn.example.com/photo.png',
-        }),
+        })
       );
     });
 
@@ -1647,20 +1683,24 @@ describe('DiscordChannelAdapter', () => {
       const handler = vi.fn();
       adapter.on('message_edited', handler);
 
-      emitClientEvent('messageUpdate', {}, {
-        id: 'msg-edited',
-        channel: { id: 'ch-1' },
-        content: 'edited content',
-        author: { id: 'user-1', username: 'user' },
-        mentions: { users: new Map() },
-        attachments: new Map(),
-      });
+      emitClientEvent(
+        'messageUpdate',
+        {},
+        {
+          id: 'msg-edited',
+          channel: { id: 'ch-1' },
+          content: 'edited content',
+          author: { id: 'user-1', username: 'user' },
+          mentions: { users: new Map() },
+          attachments: new Map(),
+        }
+      );
 
       expect(handler).toHaveBeenCalledWith(
         expect.objectContaining({
           conversationId: 'ch-1',
           messageId: 'msg-edited',
-        }),
+        })
       );
     });
 
@@ -1677,7 +1717,7 @@ describe('DiscordChannelAdapter', () => {
         expect.objectContaining({
           conversationId: 'ch-1',
           messageId: 'msg-deleted',
-        }),
+        })
       );
     });
 
@@ -1685,17 +1725,21 @@ describe('DiscordChannelAdapter', () => {
       const handler = vi.fn();
       adapter.on('reaction_added', handler);
 
-      emitClientEvent('messageReactionAdd', {
-        message: { id: 'msg-r', channelId: 'ch-1' },
-        emoji: { name: '\u{1F44D}' },
-      }, { id: 'user-1' });
+      emitClientEvent(
+        'messageReactionAdd',
+        {
+          message: { id: 'msg-r', channelId: 'ch-1' },
+          emoji: { name: '\u{1F44D}' },
+        },
+        { id: 'user-1' }
+      );
 
       expect(handler).toHaveBeenCalledWith(
         expect.objectContaining({
           messageId: 'msg-r',
           emoji: '\u{1F44D}',
           userId: 'user-1',
-        }),
+        })
       );
     });
 
@@ -1712,7 +1756,7 @@ describe('DiscordChannelAdapter', () => {
         expect.objectContaining({
           conversationId: 'ch-1',
           userId: 'user-1',
-        }),
+        })
       );
     });
   });
@@ -1834,21 +1878,25 @@ describe('DiscordChannelAdapter', () => {
     });
 
     it('should resolve DM channel type', async () => {
-      mockChannelFetch.mockResolvedValue(createMockChannel({
-        isDMBased: () => true,
-      }));
+      mockChannelFetch.mockResolvedValue(
+        createMockChannel({
+          isDMBased: () => true,
+        })
+      );
 
       const result = await adapter.resolveChannelType('dm-ch');
       expect(result.chatType).toBe('direct');
     });
 
     it('should resolve thread channel type', async () => {
-      mockChannelFetch.mockResolvedValue(createMockChannel({
-        isDMBased: () => false,
-        isThread: () => true,
-        guildId: 'guild-1',
-        parentId: 'parent-ch',
-      }));
+      mockChannelFetch.mockResolvedValue(
+        createMockChannel({
+          isDMBased: () => false,
+          isThread: () => true,
+          guildId: 'guild-1',
+          parentId: 'parent-ch',
+        })
+      );
 
       const result = await adapter.resolveChannelType('thread-ch');
       expect(result.chatType).toBe('thread');
@@ -1895,7 +1943,7 @@ describe('DiscordChannelAdapter', () => {
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           files: [{ attachment: buf, name: 'hello.txt' }],
-        }),
+        })
       );
     });
 
@@ -1923,11 +1971,15 @@ describe('DiscordChannelAdapter', () => {
 
     it('should include text with media', async () => {
       const buf = Buffer.from('data');
-      await adapter.sendMedia('ch-1', {
-        source: 'buffer',
-        buffer: buf,
-        filename: 'data.bin',
-      }, { text: 'Here is the file' });
+      await adapter.sendMedia(
+        'ch-1',
+        {
+          source: 'buffer',
+          buffer: buf,
+          filename: 'data.bin',
+        },
+        { text: 'Here is the file' }
+      );
 
       const sentArgs = mockSend.mock.calls[0]?.[0] as Record<string, unknown>;
       expect(sentArgs?.['content']).toBe('Here is the file');
@@ -2060,9 +2112,7 @@ describe('DiscordChannelAdapter', () => {
       const result = await adapter.sendMessage({
         to: 'ch-1',
         text: 'Here is a file',
-        attachments: [
-          { source: 'buffer', buffer: buf, filename: 'data.bin' },
-        ],
+        attachments: [{ source: 'buffer', buffer: buf, filename: 'data.bin' }],
       });
 
       expect(result.ok).toBe(true);
@@ -2093,7 +2143,11 @@ describe('DiscordChannelAdapter', () => {
         to: 'ch-1',
         text: 'File from URL',
         attachments: [
-          { source: 'url', location: 'https://example.com/f.zip', filename: 'f.zip' },
+          {
+            source: 'url',
+            location: 'https://example.com/f.zip',
+            filename: 'f.zip',
+          },
         ],
       });
 

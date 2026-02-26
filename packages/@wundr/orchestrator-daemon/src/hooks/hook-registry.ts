@@ -60,30 +60,40 @@ export class HookRegistry implements IHookRegistry {
       throw new Error('[HookRegistry] Hook registration must have an id');
     }
     if (!registration.event) {
-      throw new Error(`[HookRegistry] Hook "${registration.id}" must have an event`);
+      throw new Error(
+        `[HookRegistry] Hook "${registration.id}" must have an event`
+      );
     }
     if (!registration.type && !registration.handler) {
       throw new Error(
-        `[HookRegistry] Hook "${registration.id}" must have a type (command/prompt/agent) or a handler function`,
+        `[HookRegistry] Hook "${registration.id}" must have a type (command/prompt/agent) or a handler function`
       );
     }
 
     // Validate type-specific fields
-    if (registration.type === 'command' && !registration.command && !registration.handler) {
+    if (
+      registration.type === 'command' &&
+      !registration.command &&
+      !registration.handler
+    ) {
       throw new Error(
-        `[HookRegistry] Hook "${registration.id}" of type "command" must have a command string or handler`,
+        `[HookRegistry] Hook "${registration.id}" of type "command" must have a command string or handler`
       );
     }
-    if (registration.type === 'prompt' && !registration.promptTemplate && !registration.handler) {
+    if (
+      registration.type === 'prompt' &&
+      !registration.promptTemplate &&
+      !registration.handler
+    ) {
       throw new Error(
-        `[HookRegistry] Hook "${registration.id}" of type "prompt" must have a promptTemplate or handler`,
+        `[HookRegistry] Hook "${registration.id}" of type "prompt" must have a promptTemplate or handler`
       );
     }
 
     // Warn on replacement
     if (this.hooks.has(registration.id)) {
       this.logger.warn(
-        `[HookRegistry] Replacing existing hook "${registration.id}"`,
+        `[HookRegistry] Replacing existing hook "${registration.id}"`
       );
       this.removeFromEventIndex(registration.id);
     }
@@ -119,7 +129,7 @@ export class HookRegistry implements IHookRegistry {
 
     this.logger.debug(
       `[HookRegistry] Registered hook "${normalized.id}" for event "${normalized.event}" ` +
-        `(type=${normalized.type || 'handler'}, priority=${normalized.priority}, source=${normalized.source})`,
+        `(type=${normalized.type || 'handler'}, priority=${normalized.priority}, source=${normalized.source})`
     );
   }
 
@@ -147,7 +157,9 @@ export class HookRegistry implements IHookRegistry {
   /**
    * Get all enabled registrations for an event, sorted by priority (higher first).
    */
-  getHooksForEvent<E extends HookEventName>(event: E): Array<HookRegistration<E>> {
+  getHooksForEvent<E extends HookEventName>(
+    event: E
+  ): Array<HookRegistration<E>> {
     const hookIds = this.eventIndex.get(event);
     if (!hookIds || hookIds.size === 0) {
       return [];
@@ -196,7 +208,7 @@ export class HookRegistry implements IHookRegistry {
 
     registration.enabled = enabled;
     this.logger.debug(
-      `[HookRegistry] Hook "${hookId}" ${enabled ? 'enabled' : 'disabled'}`,
+      `[HookRegistry] Hook "${hookId}" ${enabled ? 'enabled' : 'disabled'}`
     );
     return true;
   }
@@ -224,7 +236,9 @@ export class HookRegistry implements IHookRegistry {
    */
   loadFromConfig(config: HooksConfig): void {
     if (config.enabled === false) {
-      this.logger.info('[HookRegistry] Hooks config has enabled=false; skipping load');
+      this.logger.info(
+        '[HookRegistry] Hooks config has enabled=false; skipping load'
+      );
       return;
     }
 
@@ -245,7 +259,7 @@ export class HookRegistry implements IHookRegistry {
         } catch (err) {
           errorCount++;
           this.logger.error(
-            `[HookRegistry] Failed to load hook from config: ${err instanceof Error ? err.message : String(err)}`,
+            `[HookRegistry] Failed to load hook from config: ${err instanceof Error ? err.message : String(err)}`
           );
         }
       }
@@ -258,7 +272,7 @@ export class HookRegistry implements IHookRegistry {
 
     this.logger.info(
       `[HookRegistry] Loaded ${loadedCount} hooks from config` +
-        (errorCount > 0 ? ` (${errorCount} errors)` : ''),
+        (errorCount > 0 ? ` (${errorCount} errors)` : '')
     );
   }
 
@@ -281,7 +295,7 @@ export class HookRegistry implements IHookRegistry {
         }
         if (!matched) {
           this.logger.debug(
-            `[HookRegistry] Override for "${hookId}" did not match any registered hook`,
+            `[HookRegistry] Override for "${hookId}" did not match any registered hook`
           );
         }
         continue;
@@ -295,7 +309,7 @@ export class HookRegistry implements IHookRegistry {
    */
   private applyOverride(
     registration: HookRegistration,
-    override: HookOverrideConfig,
+    override: HookOverrideConfig
   ): void {
     if (override.enabled !== undefined) {
       registration.enabled = override.enabled;
@@ -313,7 +327,7 @@ export class HookRegistry implements IHookRegistry {
       };
     }
     this.logger.debug(
-      `[HookRegistry] Applied override to hook "${registration.id}"`,
+      `[HookRegistry] Applied override to hook "${registration.id}"`
     );
   }
 

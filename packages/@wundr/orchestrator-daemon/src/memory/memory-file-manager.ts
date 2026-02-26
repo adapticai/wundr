@@ -320,17 +320,14 @@ export class MemoryFileManager {
   async write(
     filePath: string,
     file: ParsedMemoryFile,
-    options?: { createVersion?: boolean; versionReason?: string },
+    options?: { createVersion?: boolean; versionReason?: string }
   ): Promise<void> {
     const absPath = path.resolve(filePath);
     await this.ensureDir(absPath);
 
     // Create version snapshot before overwriting (if requested and file exists)
     if (options?.createVersion) {
-      await this.createVersion(
-        absPath,
-        options.versionReason ?? 'auto-save',
-      );
+      await this.createVersion(absPath, options.versionReason ?? 'auto-save');
     }
 
     const content = this.serializeFile(file);
@@ -340,14 +337,14 @@ export class MemoryFileManager {
     if (sizeBytes > this.config.maxTotalSizeBytes) {
       logger.warn(
         `Memory file ${absPath} exceeds size limit ` +
-        `(${sizeBytes} > ${this.config.maxTotalSizeBytes}). ` +
-        'Consider consolidation.',
+          `(${sizeBytes} > ${this.config.maxTotalSizeBytes}). ` +
+          'Consider consolidation.'
       );
     }
 
     await fs.writeFile(absPath, content, 'utf-8');
     logger.debug(
-      `Wrote memory file: ${absPath} (${content.split('\n').length} lines)`,
+      `Wrote memory file: ${absPath} (${content.split('\n').length} lines)`
     );
   }
 
@@ -387,7 +384,7 @@ export class MemoryFileManager {
     filePath: string,
     sectionTitle: string,
     entryText: string,
-    metadata?: EntryMetadata,
+    metadata?: EntryMetadata
   ): Promise<boolean> {
     // Redact secrets before storing
     if (this.containsSecret(entryText)) {
@@ -399,7 +396,7 @@ export class MemoryFileManager {
 
     // Find or create section
     let section = file.sections.find(
-      s => s.title.toLowerCase() === sectionTitle.toLowerCase(),
+      s => s.title.toLowerCase() === sectionTitle.toLowerCase()
     );
 
     if (!section) {
@@ -415,7 +412,7 @@ export class MemoryFileManager {
     // Check for duplicates
     const normalized = this.normalizeEntry(entryText);
     const isDuplicate = section.entries.some(
-      e => this.normalizeEntry(e.text) === normalized,
+      e => this.normalizeEntry(e.text) === normalized
     );
 
     if (isDuplicate) {
@@ -427,7 +424,7 @@ export class MemoryFileManager {
     const isSemDupe = this.isSemanticDuplicate(entryText, section.entries);
     if (isSemDupe) {
       logger.debug(
-        `Skipped semantically similar entry: "${entryText.slice(0, 60)}..."`,
+        `Skipped semantically similar entry: "${entryText.slice(0, 60)}..."`
       );
       return false;
     }
@@ -458,11 +455,11 @@ export class MemoryFileManager {
   async remove(
     filePath: string,
     sectionTitle: string,
-    entryText: string,
+    entryText: string
   ): Promise<boolean> {
     const file = await this.read(filePath);
     const section = file.sections.find(
-      s => s.title.toLowerCase() === sectionTitle.toLowerCase(),
+      s => s.title.toLowerCase() === sectionTitle.toLowerCase()
     );
 
     if (!section) {
@@ -472,7 +469,7 @@ export class MemoryFileManager {
     const normalized = this.normalizeEntry(entryText);
     const before = section.entries.length;
     section.entries = section.entries.filter(
-      e => this.normalizeEntry(e.text) !== normalized,
+      e => this.normalizeEntry(e.text) !== normalized
     );
 
     if (section.entries.length === before) {
@@ -498,7 +495,7 @@ export class MemoryFileManager {
     filePath: string,
     sectionTitle: string,
     oldEntryText: string,
-    newEntryText: string,
+    newEntryText: string
   ): Promise<boolean> {
     if (this.containsSecret(newEntryText)) {
       logger.warn('Blocked memory entry update containing potential secret');
@@ -507,7 +504,7 @@ export class MemoryFileManager {
 
     const file = await this.read(filePath);
     const section = file.sections.find(
-      s => s.title.toLowerCase() === sectionTitle.toLowerCase(),
+      s => s.title.toLowerCase() === sectionTitle.toLowerCase()
     );
 
     if (!section) {
@@ -516,7 +513,7 @@ export class MemoryFileManager {
 
     const normalizedOld = this.normalizeEntry(oldEntryText);
     const entry = section.entries.find(
-      e => this.normalizeEntry(e.text) === normalizedOld,
+      e => this.normalizeEntry(e.text) === normalizedOld
     );
 
     if (!entry) {
@@ -579,7 +576,7 @@ export class MemoryFileManager {
       // Calculate how many entries to keep inline
       const keepCount = Math.max(
         2,
-        Math.floor(this.config.overflowThreshold * 0.6),
+        Math.floor(this.config.overflowThreshold * 0.6)
       );
       const toMove = section.entries.slice(keepCount);
 
@@ -594,7 +591,7 @@ export class MemoryFileManager {
 
       const overflowFile = await this.read(overflowPath);
       let overflowSection = overflowFile.sections.find(
-        s => s.title.toLowerCase() === section.title.toLowerCase(),
+        s => s.title.toLowerCase() === section.title.toLowerCase()
       );
 
       if (!overflowSection) {
@@ -611,7 +608,7 @@ export class MemoryFileManager {
       for (const entry of toMove) {
         const normalized = this.normalizeEntry(entry.text);
         const exists = overflowSection.entries.some(
-          e => this.normalizeEntry(e.text) === normalized,
+          e => this.normalizeEntry(e.text) === normalized
         );
         if (!exists) {
           overflowSection.entries.push(entry);
@@ -623,9 +620,7 @@ export class MemoryFileManager {
       overflowFiles.push(overflowPath);
 
       // Remove moved entries from main file
-      const sectionInFile = file.sections.find(
-        s => s.title === section.title,
-      );
+      const sectionInFile = file.sections.find(s => s.title === section.title);
       if (sectionInFile) {
         sectionInFile.entries = sectionInFile.entries.slice(0, keepCount);
       }
@@ -696,7 +691,7 @@ export class MemoryFileManager {
 
     const versionPath = path.join(
       versionsDir,
-      `${path.basename(absPath, '.md')}_v${nextVersion}.json`,
+      `${path.basename(absPath, '.md')}_v${nextVersion}.json`
     );
     await fs.writeFile(versionPath, JSON.stringify(version, null, 2), 'utf-8');
 
@@ -704,12 +699,12 @@ export class MemoryFileManager {
     if (versions.length >= this.config.maxVersions) {
       const toPrune = versions.slice(
         0,
-        versions.length - this.config.maxVersions + 1,
+        versions.length - this.config.maxVersions + 1
       );
       for (const v of toPrune) {
         const prunePath = path.join(
           versionsDir,
-          `${path.basename(absPath, '.md')}_v${v.version}.json`,
+          `${path.basename(absPath, '.md')}_v${v.version}.json`
         );
         try {
           await fs.unlink(prunePath);
@@ -719,9 +714,7 @@ export class MemoryFileManager {
       }
     }
 
-    logger.debug(
-      `Created version ${nextVersion} of ${absPath}: ${reason}`,
-    );
+    logger.debug(`Created version ${nextVersion} of ${absPath}: ${reason}`);
     return true;
   }
 
@@ -746,10 +739,7 @@ export class MemoryFileManager {
         continue;
       }
       try {
-        const raw = await fs.readFile(
-          path.join(versionsDir, entry),
-          'utf-8',
-        );
+        const raw = await fs.readFile(path.join(versionsDir, entry), 'utf-8');
         const version = JSON.parse(raw) as MemoryVersion;
         versions.push(version);
       } catch {
@@ -768,9 +758,7 @@ export class MemoryFileManager {
     const target = versions.find(v => v.version === targetVersion);
 
     if (!target) {
-      logger.warn(
-        `Version ${targetVersion} not found for ${filePath}`,
-      );
+      logger.warn(`Version ${targetVersion} not found for ${filePath}`);
       return false;
     }
 
@@ -780,9 +768,7 @@ export class MemoryFileManager {
     const absPath = path.resolve(filePath);
     await fs.writeFile(absPath, target.content, 'utf-8');
 
-    logger.info(
-      `Rolled back ${filePath} to version ${targetVersion}`,
-    );
+    logger.info(`Rolled back ${filePath} to version ${targetVersion}`);
     return true;
   }
 
@@ -868,7 +854,7 @@ export class MemoryFileManager {
   isSemanticDuplicate(
     newText: string,
     existingEntries: MemoryEntry[],
-    threshold = 0.75,
+    threshold = 0.75
   ): boolean {
     const newTokens = this.tokenize(newText);
     if (newTokens.length === 0) {
@@ -895,12 +881,56 @@ export class MemoryFileManager {
    */
   private tokenize(text: string): string[] {
     const stopWords = new Set([
-      'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been',
-      'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
-      'would', 'could', 'should', 'may', 'might', 'shall', 'can',
-      'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from',
-      'it', 'its', 'this', 'that', 'and', 'or', 'but', 'not', 'if',
-      'then', 'else', 'when', 'up', 'out', 'so', 'no', 'as',
+      'a',
+      'an',
+      'the',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'being',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'shall',
+      'can',
+      'to',
+      'of',
+      'in',
+      'for',
+      'on',
+      'with',
+      'at',
+      'by',
+      'from',
+      'it',
+      'its',
+      'this',
+      'that',
+      'and',
+      'or',
+      'but',
+      'not',
+      'if',
+      'then',
+      'else',
+      'when',
+      'up',
+      'out',
+      'so',
+      'no',
+      'as',
     ]);
 
     return text
@@ -977,7 +1007,7 @@ export class MemoryFileManager {
    */
   findEntry(
     file: ParsedMemoryFile,
-    entryText: string,
+    entryText: string
   ): { section: MemorySection; entry: MemoryEntry } | null {
     const normalized = this.normalizeEntry(entryText);
     for (const section of file.sections) {
@@ -1008,11 +1038,7 @@ export class MemoryFileManager {
    * Normalize entry text for comparison (lowercase, trim, collapse whitespace).
    */
   normalizeEntry(text: string): string {
-    return text
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, ' ')
-      .replace(/[`'"]/g, '');
+    return text.toLowerCase().trim().replace(/\s+/g, ' ').replace(/[`'"]/g, '');
   }
 
   // -------------------------------------------------------------------------
@@ -1038,8 +1064,8 @@ export class MemoryFileManager {
     for (const pair of pairs) {
       const [key, value] = pair.split('=').map(s => s.trim());
       if (!key || !value) {
-continue;
-}
+        continue;
+      }
 
       switch (key) {
         case 'confidence':
@@ -1130,10 +1156,10 @@ continue;
     file: ParsedMemoryFile,
     topicTitle: string,
     overflowPath: string,
-    parentDir: string,
+    parentDir: string
   ): void {
     let linksSection = file.sections.find(
-      s => s.title.toLowerCase() === 'links',
+      s => s.title.toLowerCase() === 'links'
     );
 
     if (!linksSection) {
@@ -1150,7 +1176,7 @@ continue;
     const linkText = `[${topicTitle}](${relativePath})`;
     const normalized = this.normalizeEntry(linkText);
     const exists = linksSection.entries.some(
-      e => this.normalizeEntry(e.text) === normalized,
+      e => this.normalizeEntry(e.text) === normalized
     );
 
     if (!exists) {

@@ -16,7 +16,7 @@ export interface McpToolRegistry {
   executeTool(
     toolId: string,
     operation: string,
-    params: any,
+    params: any
   ): Promise<{ success: boolean; message: string; data?: any; error?: any }>;
   getTool?(toolId: string): any;
   listTools?(): string[];
@@ -51,9 +51,7 @@ export class ToolExecutor {
    */
   async executeToolCall(toolCall: ToolCall): Promise<ToolExecutionResult> {
     const startTime = Date.now();
-    this.logger.info(
-      `Executing tool: ${toolCall.name} (id: ${toolCall.id})`,
-    );
+    this.logger.info(`Executing tool: ${toolCall.name} (id: ${toolCall.id})`);
 
     try {
       // Parse tool arguments
@@ -68,14 +66,14 @@ export class ToolExecutor {
       const mcpResult = await this.mcpRegistry.executeTool(
         toolCall.name,
         operation,
-        params,
+        params
       );
 
       const executionTime = Date.now() - startTime;
 
       if (mcpResult.success) {
         this.logger.info(
-          `Tool ${toolCall.name} completed successfully in ${executionTime}ms`,
+          `Tool ${toolCall.name} completed successfully in ${executionTime}ms`
         );
 
         return {
@@ -86,9 +84,7 @@ export class ToolExecutor {
           executionTime,
         };
       } else {
-        this.logger.warn(
-          `Tool ${toolCall.name} failed: ${mcpResult.message}`,
-        );
+        this.logger.warn(`Tool ${toolCall.name} failed: ${mcpResult.message}`);
 
         return {
           toolCallId: toolCall.id,
@@ -106,7 +102,7 @@ export class ToolExecutor {
 
       this.logger.error(
         `Tool ${toolCall.name} execution error: ${errorMessage}`,
-        error,
+        error
       );
 
       return {
@@ -124,17 +120,17 @@ export class ToolExecutor {
    * Execute multiple tool calls in parallel
    */
   async executeToolCalls(
-    toolCalls: ToolCall[],
+    toolCalls: ToolCall[]
   ): Promise<ToolExecutionResult[]> {
     this.logger.info(`Executing ${toolCalls.length} tool calls in parallel`);
 
     const results = await Promise.all(
-      toolCalls.map((toolCall) => this.executeToolCall(toolCall)),
+      toolCalls.map(toolCall => this.executeToolCall(toolCall))
     );
 
-    const successCount = results.filter((r) => r.success).length;
+    const successCount = results.filter(r => r.success).length;
     this.logger.info(
-      `Tool execution completed: ${successCount}/${toolCalls.length} successful`,
+      `Tool execution completed: ${successCount}/${toolCalls.length} successful`
     );
 
     return results;
@@ -144,7 +140,7 @@ export class ToolExecutor {
    * Convert tool execution results to LLM messages
    */
   convertResultsToMessages(results: ToolExecutionResult[]): Message[] {
-    return results.map((result) => {
+    return results.map(result => {
       const content = result.success
         ? this.formatSuccessResult(result)
         : this.formatErrorResult(result);
@@ -183,7 +179,7 @@ export class ToolExecutor {
         executionTime: result.executionTime,
       },
       null,
-      2,
+      2
     );
   }
 

@@ -209,7 +209,14 @@ export interface OutboundAttachment {
 /**
  * Supported media categories for classification and policy enforcement.
  */
-export type MediaCategory = 'image' | 'video' | 'audio' | 'document' | 'archive' | 'executable' | 'unknown';
+export type MediaCategory =
+  | 'image'
+  | 'video'
+  | 'audio'
+  | 'document'
+  | 'archive'
+  | 'executable'
+  | 'unknown';
 
 /**
  * Result of scanning a file for malware / policy violations.
@@ -251,7 +258,12 @@ export type MediaProgressCallback = (event: MediaProgressEvent) => void;
 /**
  * Channel-specific format adaptation target.
  */
-export type ChannelFormatTarget = 'slack' | 'discord' | 'telegram' | 'plain' | (string & {});
+export type ChannelFormatTarget =
+  | 'slack'
+  | 'discord'
+  | 'telegram'
+  | 'plain'
+  | (string & {});
 
 /**
  * Result of converting markdown content to a channel-native format.
@@ -304,7 +316,7 @@ export interface ImageResizerProvider {
   resize(
     buffer: Buffer,
     mimeType: string,
-    options: ImageResizeOptions,
+    options: ImageResizeOptions
   ): Promise<{ buffer: Buffer; mimeType: string } | null>;
 }
 
@@ -673,7 +685,7 @@ export interface ChannelEventMap {
 
 /** Type-safe event handler. */
 export type ChannelEventHandler<E extends ChannelEventType> = (
-  event: ChannelEventMap[E],
+  event: ChannelEventMap[E]
 ) => void | Promise<void>;
 
 // ---------------------------------------------------------------------------
@@ -762,7 +774,7 @@ export interface ChannelPlugin {
   editMessage?(
     conversationId: string,
     messageId: string,
-    newText: string,
+    newText: string
   ): Promise<DeliveryResult>;
 
   /**
@@ -778,7 +790,7 @@ export interface ChannelPlugin {
    */
   on<E extends ChannelEventType>(
     event: E,
-    handler: ChannelEventHandler<E>,
+    handler: ChannelEventHandler<E>
   ): () => void;
 
   // -- Threading ----------------------------------------------------------
@@ -790,7 +802,7 @@ export interface ChannelPlugin {
   replyToThread?(
     conversationId: string,
     threadId: string,
-    message: OutboundMessage,
+    message: OutboundMessage
   ): Promise<DeliveryResult>;
 
   // -- Reactions ----------------------------------------------------------
@@ -801,7 +813,7 @@ export interface ChannelPlugin {
   addReaction?(
     conversationId: string,
     messageId: string,
-    emoji: string,
+    emoji: string
   ): Promise<void>;
 
   /**
@@ -810,7 +822,7 @@ export interface ChannelPlugin {
   removeReaction?(
     conversationId: string,
     messageId: string,
-    emoji: string,
+    emoji: string
   ): Promise<void>;
 
   // -- Typing Indicators --------------------------------------------------
@@ -830,7 +842,7 @@ export interface ChannelPlugin {
   sendMedia?(
     conversationId: string,
     attachment: OutboundAttachment,
-    options?: { text?: string; threadId?: string },
+    options?: { text?: string; threadId?: string }
   ): Promise<DeliveryResult>;
 
   /**
@@ -847,7 +859,7 @@ export interface ChannelPlugin {
    */
   validateSender?(
     senderId: string,
-    chatType: ChatType,
+    chatType: ChatType
   ): Promise<SenderValidation>;
 
   /**
@@ -905,7 +917,7 @@ export abstract class BaseChannelAdapter implements ChannelPlugin {
 
   on<E extends ChannelEventType>(
     event: E,
-    handler: ChannelEventHandler<E>,
+    handler: ChannelEventHandler<E>
   ): () => void {
     if (!this.handlers.has(event)) {
       this.handlers.set(event, new Set());
@@ -924,7 +936,7 @@ export abstract class BaseChannelAdapter implements ChannelPlugin {
    */
   protected emit<E extends ChannelEventType>(
     event: E,
-    payload: ChannelEventMap[E],
+    payload: ChannelEventMap[E]
   ): void {
     const handlers = this.handlers.get(event);
     if (!handlers || handlers.size === 0) {
@@ -934,15 +946,15 @@ export abstract class BaseChannelAdapter implements ChannelPlugin {
       try {
         const result = handler(payload);
         if (result instanceof Promise) {
-          result.catch((err) => {
+          result.catch(err => {
             this.logger.error(
-              `Error in ${event} handler: ${err instanceof Error ? err.message : String(err)}`,
+              `Error in ${event} handler: ${err instanceof Error ? err.message : String(err)}`
             );
           });
         }
       } catch (err) {
         this.logger.error(
-          `Error in ${event} handler: ${err instanceof Error ? err.message : String(err)}`,
+          `Error in ${event} handler: ${err instanceof Error ? err.message : String(err)}`
         );
       }
     }

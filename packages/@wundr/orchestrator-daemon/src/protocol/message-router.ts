@@ -79,7 +79,7 @@ import { type EventSink, SubscriptionManager } from './subscription-manager';
 
 /** Callback to authenticate an auth.connect request. */
 export type AuthenticateFunc = (
-  params: AuthConnectParams,
+  params: AuthConnectParams
 ) => Promise<AuthResult> | AuthResult;
 
 export interface AuthResult {
@@ -143,7 +143,7 @@ export type BinaryFrameHandler = (
   correlationId: string,
   metadata: Record<string, unknown>,
   payload: Buffer,
-  flags: number,
+  flags: number
 ) => void | Promise<void>;
 
 // ---------------------------------------------------------------------------
@@ -178,8 +178,12 @@ interface ConnectionState {
 
 export class MessageRouter {
   private config: Required<
-    Pick<MessageRouterConfig, 'serverVersion' | 'heartbeatIntervalMs' | 'heartbeatTimeoutMs'>
-  > & MessageRouterConfig;
+    Pick<
+      MessageRouterConfig,
+      'serverVersion' | 'heartbeatIntervalMs' | 'heartbeatTimeoutMs'
+    >
+  > &
+    MessageRouterConfig;
 
   private connections = new Map<string, ConnectionState>();
   private rpcHandler: RpcHandler;
@@ -194,11 +198,19 @@ export class MessageRouter {
     this.config = {
       ...config,
       serverCapabilities: config.serverCapabilities ?? [
-        'streaming', 'binary', 'tool-approval', 'teams',
-        'compression', 'batching', 'jsonrpc2', 'discovery',
+        'streaming',
+        'binary',
+        'tool-approval',
+        'teams',
+        'compression',
+        'batching',
+        'jsonrpc2',
+        'discovery',
       ],
-      heartbeatIntervalMs: config.heartbeatIntervalMs ?? DEFAULT_HEARTBEAT_INTERVAL_MS,
-      heartbeatTimeoutMs: config.heartbeatTimeoutMs ?? DEFAULT_HEARTBEAT_TIMEOUT_MS,
+      heartbeatIntervalMs:
+        config.heartbeatIntervalMs ?? DEFAULT_HEARTBEAT_INTERVAL_MS,
+      heartbeatTimeoutMs:
+        config.heartbeatTimeoutMs ?? DEFAULT_HEARTBEAT_TIMEOUT_MS,
     };
 
     this.log = config.logger ?? {
@@ -215,7 +227,9 @@ export class MessageRouter {
 
     // Rate limiter
     const enableRL = config.enableRateLimiting !== false;
-    this.rateLimiter = enableRL ? new RateLimiter(config.rateLimitConfig) : null;
+    this.rateLimiter = enableRL
+      ? new RateLimiter(config.rateLimitConfig)
+      : null;
 
     // RPC handler
     this.rpcHandler = new RpcHandler({
@@ -225,9 +239,13 @@ export class MessageRouter {
     });
 
     // Register built-in handlers
-    this.rpcHandler.registerHandlers(createSubscriptionHandlers(this.subscriptions));
+    this.rpcHandler.registerHandlers(
+      createSubscriptionHandlers(this.subscriptions)
+    );
     this.rpcHandler.registerHandlers(createHealthPingHandler());
-    this.rpcHandler.registerHandlers(createDiscoveryHandlers(this.methodRegistry));
+    this.rpcHandler.registerHandlers(
+      createDiscoveryHandlers(this.methodRegistry)
+    );
   }
 
   // -----------------------------------------------------------------------
@@ -336,7 +354,12 @@ export class MessageRouter {
 
     // Size check
     if (!this.codec.isWithinSizeLimit(Buffer.byteLength(data, 'utf-8'))) {
-      this.sendError(state, 'invalid', ErrorCodes.INVALID_REQUEST, 'message exceeds size limit');
+      this.sendError(
+        state,
+        'invalid',
+        ErrorCodes.INVALID_REQUEST,
+        'message exceeds size limit'
+      );
       return;
     }
 
@@ -350,7 +373,12 @@ export class MessageRouter {
         this.sendJsonRpcError(state, null, -32700, 'parse error');
         return;
       }
-      this.sendError(state, 'invalid', ErrorCodes.INVALID_REQUEST, 'malformed JSON');
+      this.sendError(
+        state,
+        'invalid',
+        ErrorCodes.INVALID_REQUEST,
+        'malformed JSON'
+      );
       return;
     }
 
@@ -363,12 +391,20 @@ export class MessageRouter {
     // Auto-detect format on first message
     if (state.detectedFormat === null) {
       state.detectedFormat = detectFormat(parsed);
-      if (state.detectedFormat === 'jsonrpc2' && this.config.allowJsonRpc !== false) {
+      if (
+        state.detectedFormat === 'jsonrpc2' &&
+        this.config.allowJsonRpc !== false
+      ) {
         state.jsonRpcMode = true;
         this.log.debug(`connection ${connectionId} using JSON-RPC 2.0 format`);
-      } else if (state.detectedFormat === 'v1' && this.config.allowV1Fallback !== false) {
+      } else if (
+        state.detectedFormat === 'v1' &&
+        this.config.allowV1Fallback !== false
+      ) {
         state.v1Adapter = new V1Adapter();
-        this.log.debug(`connection ${connectionId} using v1 protocol (upgrade adapter active)`);
+        this.log.debug(
+          `connection ${connectionId} using v1 protocol (upgrade adapter active)`
+        );
       }
     }
 
@@ -406,13 +442,17 @@ export class MessageRouter {
 
     // Decode binary header
     if (data.length < BINARY_HEADER_FIXED_SIZE) {
-      this.log.warn(`binary frame too short from ${connectionId}: ${data.length} bytes`);
+      this.log.warn(
+        `binary frame too short from ${connectionId}: ${data.length} bytes`
+      );
       return;
     }
 
     const version = data.readUInt8(0);
     if (version !== BINARY_HEADER_VERSION) {
-      this.log.warn(`unsupported binary version from ${connectionId}: ${version}`);
+      this.log.warn(
+        `unsupported binary version from ${connectionId}: ${version}`
+      );
       return;
     }
 
@@ -438,7 +478,9 @@ export class MessageRouter {
     let metadata: Record<string, unknown> = {};
     if (metaLen > 0) {
       try {
-        const metaJson = data.subarray(BINARY_HEADER_FIXED_SIZE, metaEnd).toString('utf-8');
+        const metaJson = data
+          .subarray(BINARY_HEADER_FIXED_SIZE, metaEnd)
+          .toString('utf-8');
         const metaParsed = JSON.parse(metaJson);
         const metaResult = BinaryMetadataSchema.safeParse(metaParsed);
         metadata = metaResult.success ? metaResult.data : metaParsed;
@@ -452,13 +494,21 @@ export class MessageRouter {
 
     if (this.binaryHandler) {
       try {
-        await this.binaryHandler(connectionId, correlationUuid, metadata, payload, flags);
+        await this.binaryHandler(
+          connectionId,
+          correlationUuid,
+          metadata,
+          payload,
+          flags
+        );
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
         this.log.error(`binary handler error for ${connectionId}: ${msg}`);
       }
     } else {
-      this.log.warn(`no binary handler registered; dropping binary frame from ${connectionId}`);
+      this.log.warn(
+        `no binary handler registered; dropping binary frame from ${connectionId}`
+      );
     }
   }
 
@@ -476,7 +526,11 @@ export class MessageRouter {
   /**
    * Emit an event to a specific connection.
    */
-  emitEventToConnection(connectionId: string, event: string, payload?: unknown): void {
+  emitEventToConnection(
+    connectionId: string,
+    event: string,
+    payload?: unknown
+  ): void {
     this.subscriptions.emitToConnection(connectionId, event, payload);
   }
 
@@ -552,12 +606,20 @@ export class MessageRouter {
   // Private -- batch handling
   // -----------------------------------------------------------------------
 
-  private async handleBatch(state: ConnectionState, items: unknown[]): Promise<void> {
+  private async handleBatch(
+    state: ConnectionState,
+    items: unknown[]
+  ): Promise<void> {
     if (items.length === 0) {
       if (state.jsonRpcMode) {
         this.sendJsonRpcError(state, null, -32600, 'empty batch');
       } else {
-        this.sendError(state, 'invalid', ErrorCodes.INVALID_REQUEST, 'empty batch');
+        this.sendError(
+          state,
+          'invalid',
+          ErrorCodes.INVALID_REQUEST,
+          'empty batch'
+        );
       }
       return;
     }
@@ -566,7 +628,12 @@ export class MessageRouter {
       if (state.jsonRpcMode) {
         this.sendJsonRpcError(state, null, -32600, 'batch too large (max 50)');
       } else {
-        this.sendError(state, 'invalid', ErrorCodes.INVALID_REQUEST, 'batch too large (max 50)');
+        this.sendError(
+          state,
+          'invalid',
+          ErrorCodes.INVALID_REQUEST,
+          'batch too large (max 50)'
+        );
       }
       return;
     }
@@ -587,7 +654,10 @@ export class MessageRouter {
   // Private -- JSON-RPC 2.0 handling
   // -----------------------------------------------------------------------
 
-  private async handleJsonRpcMessage(state: ConnectionState, parsed: unknown): Promise<void> {
+  private async handleJsonRpcMessage(
+    state: ConnectionState,
+    parsed: unknown
+  ): Promise<void> {
     const result = jsonRpcToNative(parsed);
 
     switch (result.type) {
@@ -603,9 +673,19 @@ export class MessageRouter {
         if (!state.authenticated) {
           await this.handlePreAuth(state, frame);
         } else if (frame.method === 'auth.connect') {
-          this.sendJsonRpcError(state, obj.id as string | number, -32600, 'already authenticated');
+          this.sendJsonRpcError(
+            state,
+            obj.id as string | number,
+            -32600,
+            'already authenticated'
+          );
         } else if (frame.method === 'auth.logout') {
-          this.sendJsonRpcResponse(state, frame.id, { type: 'res', id: frame.id, ok: true, payload: { ok: true } });
+          this.sendJsonRpcResponse(state, frame.id, {
+            type: 'res',
+            id: frame.id,
+            ok: true,
+            payload: { ok: true },
+          });
           state.transport.close(1000, 'logout');
         } else {
           await this.dispatchRequest(state, frame);
@@ -626,12 +706,20 @@ export class MessageRouter {
   // Private -- v1 protocol handling
   // -----------------------------------------------------------------------
 
-  private async handleV1Message(state: ConnectionState, data: string): Promise<void> {
+  private async handleV1Message(
+    state: ConnectionState,
+    data: string
+  ): Promise<void> {
     const adapter = state.v1Adapter!;
     const frame = adapter.inbound(data);
 
     if (!frame) {
-      this.sendError(state, 'invalid', ErrorCodes.INVALID_REQUEST, 'invalid v1 message format');
+      this.sendError(
+        state,
+        'invalid',
+        ErrorCodes.INVALID_REQUEST,
+        'invalid v1 message format'
+      );
       return;
     }
 
@@ -646,7 +734,10 @@ export class MessageRouter {
   // Private -- native v2 handling
   // -----------------------------------------------------------------------
 
-  private async handleNativeMessage(state: ConnectionState, parsed: unknown): Promise<void> {
+  private async handleNativeMessage(
+    state: ConnectionState,
+    parsed: unknown
+  ): Promise<void> {
     // Pre-auth: only accept auth.connect
     if (!state.authenticated) {
       const frameResult = RequestFrameSchema.safeParse(parsed);
@@ -665,7 +756,12 @@ export class MessageRouter {
         parsed && typeof parsed === 'object' && 'id' in parsed
           ? String((parsed as Record<string, unknown>).id)
           : 'invalid';
-      this.sendError(state, id, ErrorCodes.INVALID_REQUEST, 'invalid request frame');
+      this.sendError(
+        state,
+        id,
+        ErrorCodes.INVALID_REQUEST,
+        'invalid request frame'
+      );
       return;
     }
 
@@ -673,7 +769,12 @@ export class MessageRouter {
 
     // Disallow auth.connect after already authenticated
     if (request.method === 'auth.connect') {
-      this.sendError(state, request.id, ErrorCodes.INVALID_REQUEST, 'already authenticated');
+      this.sendError(
+        state,
+        request.id,
+        ErrorCodes.INVALID_REQUEST,
+        'already authenticated'
+      );
       return;
     }
 
@@ -693,10 +794,10 @@ export class MessageRouter {
 
   private async dispatchRequest(
     state: ConnectionState,
-    request: { type: 'req'; id: string; method: string; params?: unknown },
+    request: { type: 'req'; id: string; method: string; params?: unknown }
   ): Promise<void> {
     // Build respond function with format-aware serialization
-    const respond = RpcHandler.createResponder(request.id, (frame) => {
+    const respond = RpcHandler.createResponder(request.id, frame => {
       this.sendResponseFrame(state, frame);
     });
 
@@ -730,7 +831,7 @@ export class MessageRouter {
 
   private async handlePreAuth(
     state: ConnectionState,
-    frame: { type: 'req'; id: string; method: string; params?: unknown },
+    frame: { type: 'req'; id: string; method: string; params?: unknown }
   ): Promise<void> {
     // Must be auth.connect
     if (frame.method !== 'auth.connect') {
@@ -738,7 +839,7 @@ export class MessageRouter {
         state,
         frame.id,
         ErrorCodes.INVALID_REQUEST,
-        'first request must be auth.connect',
+        'first request must be auth.connect'
       );
       state.transport.close(1008, 'handshake failed');
       return;
@@ -751,7 +852,7 @@ export class MessageRouter {
         state,
         frame.id,
         ErrorCodes.INVALID_REQUEST,
-        `invalid auth.connect params: ${paramsResult.error.issues.map((i) => i.message).join('; ')}`,
+        `invalid auth.connect params: ${paramsResult.error.issues.map(i => i.message).join('; ')}`
       );
       state.transport.close(1008, 'invalid connect params');
       return;
@@ -766,7 +867,7 @@ export class MessageRouter {
         state,
         frame.id,
         ErrorCodes.PROTOCOL_MISMATCH,
-        `protocol mismatch: server supports v${PROTOCOL_VERSION}, client requires v${params.minProtocol}-${params.maxProtocol}`,
+        `protocol mismatch: server supports v${PROTOCOL_VERSION}, client requires v${params.minProtocol}-${params.maxProtocol}`
       );
       state.transport.close(1002, 'protocol mismatch');
       return;
@@ -784,7 +885,12 @@ export class MessageRouter {
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       this.log.error(`auth error for ${state.connectionId}: ${msg}`);
-      this.sendError(state, frame.id, ErrorCodes.INTERNAL, 'authentication error');
+      this.sendError(
+        state,
+        frame.id,
+        ErrorCodes.INTERNAL,
+        'authentication error'
+      );
       state.transport.close(1011, 'auth error');
       return;
     }
@@ -794,7 +900,7 @@ export class MessageRouter {
         state,
         frame.id,
         ErrorCodes.UNAUTHORIZED,
-        authResult.error ?? 'unauthorized',
+        authResult.error ?? 'unauthorized'
       );
       state.transport.close(1008, 'unauthorized');
       return;
@@ -850,8 +956,12 @@ export class MessageRouter {
 
     this.log.info(
       `connection authenticated: ${state.connectionId} client=${params.client.id} scopes=[${scopes.join(',')}]` +
-      (state.jsonRpcMode ? ' format=jsonrpc2' : state.v1Adapter ? ' format=v1-compat' : ' format=v2') +
-      (state.compressionEnabled ? ' compression=on' : ''),
+        (state.jsonRpcMode
+          ? ' format=jsonrpc2'
+          : state.v1Adapter
+            ? ' format=v1-compat'
+            : ' format=v2') +
+        (state.compressionEnabled ? ' compression=on' : '')
     );
   }
 
@@ -919,7 +1029,10 @@ export class MessageRouter {
   /**
    * Send a response frame, respecting the client's protocol format.
    */
-  private sendResponseFrame(state: ConnectionState, frame: ResponseFrame): void {
+  private sendResponseFrame(
+    state: ConnectionState,
+    frame: ResponseFrame
+  ): void {
     if (!state.transport.isOpen()) {
       return;
     }
@@ -964,7 +1077,10 @@ export class MessageRouter {
     }
   }
 
-  private sendFrame(state: ConnectionState, frame: ResponseFrame | EventFrame): void {
+  private sendFrame(
+    state: ConnectionState,
+    frame: ResponseFrame | EventFrame
+  ): void {
     if (frame.type === 'res') {
       this.sendResponseFrame(state, frame);
     } else {
@@ -977,7 +1093,7 @@ export class MessageRouter {
     requestId: string,
     ok: boolean,
     payload?: unknown,
-    error?: ErrorShape,
+    error?: ErrorShape
   ): void {
     this.sendResponseFrame(state, {
       type: 'res',
@@ -992,20 +1108,26 @@ export class MessageRouter {
     state: ConnectionState,
     requestId: string,
     code: string,
-    message: string,
+    message: string
   ): void {
-    this.sendResponse(state, requestId, false, undefined, errorShape(code as any, message));
+    this.sendResponse(
+      state,
+      requestId,
+      false,
+      undefined,
+      errorShape(code as any, message)
+    );
   }
 
   private sendJsonRpcError(
     state: ConnectionState,
     id: string | number | null,
     code: number,
-    message: string,
+    message: string
   ): void {
     if (!state.transport.isOpen()) {
-return;
-}
+      return;
+    }
     try {
       const errorResp = jsonRpcErrorResponse(id, code, message);
       state.transport.sendText(JSON.stringify(errorResp));
@@ -1017,7 +1139,7 @@ return;
   private sendJsonRpcResponse(
     state: ConnectionState,
     requestId: string,
-    frame: ResponseFrame,
+    frame: ResponseFrame
   ): void {
     this.sendResponseFrame(state, frame);
   }

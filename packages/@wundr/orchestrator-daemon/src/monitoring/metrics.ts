@@ -12,7 +12,13 @@
  * existing /metrics endpoint serves everything without changes.
  */
 
-import { Counter, Gauge, Histogram, Summary, register as defaultRegister } from 'prom-client';
+import {
+  Counter,
+  Gauge,
+  Histogram,
+  Summary,
+  register as defaultRegister,
+} from 'prom-client';
 
 import type {
   DaemonMetrics,
@@ -26,7 +32,7 @@ import type {
   ErrorLabels,
   BudgetLabels,
 } from './types';
-import type { Registry} from 'prom-client';
+import type { Registry } from 'prom-client';
 
 // ===========================================================================
 // Legacy Metrics (orchestrator_* prefix) -- unchanged for backward compat
@@ -556,8 +562,8 @@ let eventLoopLagTimer: NodeJS.Timeout | null = null;
 
 export function startSystemMetricsCollection(intervalMs: number = 15000): void {
   if (systemMetricsTimer) {
-return;
-}
+    return;
+  }
 
   const collectSystemMetrics = () => {
     const mem = process.memoryUsage();
@@ -656,7 +662,7 @@ export class MetricsRegistry implements IMetricsRegistry {
    * @returns The requested metric or undefined if not found
    */
   getMetric(
-    name: keyof DaemonMetrics,
+    name: keyof DaemonMetrics
   ): Counter<string> | Gauge<string> | Histogram<string> | undefined {
     return daemonMetrics[name];
   }
@@ -683,7 +689,10 @@ export class MetricsRegistry implements IMetricsRegistry {
 // Helper Functions (legacy -- unchanged)
 // ===========================================================================
 
-export const recordSessionActive = (labels: SessionLabels, value: number): void => {
+export const recordSessionActive = (
+  labels: SessionLabels,
+  value: number
+): void => {
   daemonMetrics.sessionsActive.set(labels, value);
 };
 
@@ -691,7 +700,10 @@ export const recordTokensUsed = (labels: TokenLabels, value: number): void => {
   daemonMetrics.tokensUsed.inc(labels, value);
 };
 
-export const recordMessageLatency = (labels: LatencyLabels, value: number): void => {
+export const recordMessageLatency = (
+  labels: LatencyLabels,
+  value: number
+): void => {
   daemonMetrics.messageLatency.observe(labels, value);
 };
 
@@ -711,7 +723,10 @@ export const recordError = (labels: ErrorLabels): void => {
   daemonMetrics.errorCount.inc(labels, 1);
 };
 
-export const recordBudgetUtilization = (labels: BudgetLabels, value: number): void => {
+export const recordBudgetUtilization = (
+  labels: BudgetLabels,
+  value: number
+): void => {
   daemonMetrics.budgetUtilization.set(labels, value);
 };
 
@@ -724,10 +739,16 @@ export const recordBudgetUtilization = (labels: BudgetLabels, value: number): vo
  */
 export function recordAgentSpawned(
   orchestratorId: string,
-  sessionType: string,
+  sessionType: string
 ): void {
-  agentMetrics.spawned.inc({ orchestrator_id: orchestratorId, session_type: sessionType });
-  agentMetrics.running.inc({ orchestrator_id: orchestratorId, session_type: sessionType });
+  agentMetrics.spawned.inc({
+    orchestrator_id: orchestratorId,
+    session_type: sessionType,
+  });
+  agentMetrics.running.inc({
+    orchestrator_id: orchestratorId,
+    session_type: sessionType,
+  });
 }
 
 /**
@@ -737,18 +758,21 @@ export function recordAgentCompleted(
   orchestratorId: string,
   sessionType: string,
   exitReason: string = 'success',
-  durationSeconds?: number,
+  durationSeconds?: number
 ): void {
   agentMetrics.completed.inc({
     orchestrator_id: orchestratorId,
     session_type: sessionType,
     exit_reason: exitReason,
   });
-  agentMetrics.running.dec({ orchestrator_id: orchestratorId, session_type: sessionType });
+  agentMetrics.running.dec({
+    orchestrator_id: orchestratorId,
+    session_type: sessionType,
+  });
   if (durationSeconds !== undefined) {
     agentMetrics.duration.observe(
       { orchestrator_id: orchestratorId, session_type: sessionType },
-      durationSeconds,
+      durationSeconds
     );
   }
 }
@@ -760,18 +784,21 @@ export function recordAgentFailed(
   orchestratorId: string,
   sessionType: string,
   errorType: string = 'unknown',
-  durationSeconds?: number,
+  durationSeconds?: number
 ): void {
   agentMetrics.failed.inc({
     orchestrator_id: orchestratorId,
     session_type: sessionType,
     error_type: errorType,
   });
-  agentMetrics.running.dec({ orchestrator_id: orchestratorId, session_type: sessionType });
+  agentMetrics.running.dec({
+    orchestrator_id: orchestratorId,
+    session_type: sessionType,
+  });
   if (durationSeconds !== undefined) {
     agentMetrics.duration.observe(
       { orchestrator_id: orchestratorId, session_type: sessionType },
-      durationSeconds,
+      durationSeconds
     );
   }
 }
@@ -797,13 +824,13 @@ export function recordModelRequest(params: {
   if (params.promptTokens) {
     modelMetrics.requestTokens.inc(
       { provider, model, token_type: 'prompt' },
-      params.promptTokens,
+      params.promptTokens
     );
   }
   if (params.completionTokens) {
     modelMetrics.requestTokens.inc(
       { provider, model, token_type: 'completion' },
-      params.completionTokens,
+      params.completionTokens
     );
   }
   if (params.costDollars) {
@@ -832,7 +859,10 @@ export function recordWsDisconnection(): void {
 /**
  * Record an inbound WebSocket message.
  */
-export function recordWsMessageReceived(messageType: string, sizeBytes?: number): void {
+export function recordWsMessageReceived(
+  messageType: string,
+  sizeBytes?: number
+): void {
   wsMetrics.messagesReceived.inc({ message_type: messageType });
   if (sizeBytes !== undefined) {
     wsMetrics.messageSize.observe({ direction: 'inbound' }, sizeBytes);
@@ -842,7 +872,10 @@ export function recordWsMessageReceived(messageType: string, sizeBytes?: number)
 /**
  * Record an outbound WebSocket message.
  */
-export function recordWsMessageSent(messageType: string, sizeBytes?: number): void {
+export function recordWsMessageSent(
+  messageType: string,
+  sizeBytes?: number
+): void {
   wsMetrics.messagesSent.inc({ message_type: messageType });
   if (sizeBytes !== undefined) {
     wsMetrics.messageSize.observe({ direction: 'outbound' }, sizeBytes);
@@ -855,10 +888,13 @@ export function recordWsMessageSent(messageType: string, sizeBytes?: number): vo
 export function recordToolExecution(
   toolName: string,
   status: 'success' | 'error' | 'timeout',
-  durationSeconds: number,
+  durationSeconds: number
 ): void {
   toolMetrics.executionTotal.inc({ tool_name: toolName, status });
-  toolMetrics.executionDuration.observe({ tool_name: toolName, status }, durationSeconds);
+  toolMetrics.executionDuration.observe(
+    { tool_name: toolName, status },
+    durationSeconds
+  );
 }
 
 /**
@@ -877,7 +913,10 @@ export function recordMemoryOperation(params: {
       orchestrator_id: params.orchestratorId ?? '',
     });
     if (params.durationSeconds !== undefined) {
-      memoryMetrics.searchLatency.observe({ tier: params.tier }, params.durationSeconds);
+      memoryMetrics.searchLatency.observe(
+        { tier: params.tier },
+        params.durationSeconds
+      );
     }
     if (params.cacheHit === true) {
       memoryMetrics.cacheHits.inc({ tier: params.tier });
@@ -885,7 +924,10 @@ export function recordMemoryOperation(params: {
       memoryMetrics.cacheMisses.inc({ tier: params.tier });
     }
   } else if (params.operation === 'compact') {
-    memoryMetrics.compactions.inc({ tier: params.tier, strategy: 'summarize-and-archive' });
+    memoryMetrics.compactions.inc({
+      tier: params.tier,
+      strategy: 'summarize-and-archive',
+    });
   }
 }
 
@@ -894,7 +936,7 @@ export function recordMemoryOperation(params: {
  */
 export function recordChannelMessageSent(
   channel: string,
-  messageType: string = 'default',
+  messageType: string = 'default'
 ): void {
   channelMetrics.messagesSent.inc({ channel, message_type: messageType });
 }
@@ -904,7 +946,7 @@ export function recordChannelMessageSent(
  */
 export function recordChannelMessageReceived(
   channel: string,
-  messageType: string = 'default',
+  messageType: string = 'default'
 ): void {
   channelMetrics.messagesReceived.inc({ channel, message_type: messageType });
 }
@@ -914,7 +956,7 @@ export function recordChannelMessageReceived(
  */
 export function recordChannelLatency(
   channel: string,
-  durationSeconds: number,
+  durationSeconds: number
 ): void {
   channelMetrics.messageLatency.observe({ channel }, durationSeconds);
 }
@@ -922,10 +964,7 @@ export function recordChannelLatency(
 /**
  * Record a channel error.
  */
-export function recordChannelError(
-  channel: string,
-  errorType: string,
-): void {
+export function recordChannelError(channel: string, errorType: string): void {
   channelMetrics.errors.inc({ channel, error_type: errorType });
 }
 
@@ -936,12 +975,12 @@ export function recordPluginExecution(
   pluginName: string,
   hook: string,
   status: 'success' | 'error' | 'timeout',
-  durationSeconds: number,
+  durationSeconds: number
 ): void {
   pluginMetrics.executionTotal.inc({ plugin_name: pluginName, hook, status });
   pluginMetrics.executionDuration.observe(
     { plugin_name: pluginName, hook, status },
-    durationSeconds,
+    durationSeconds
   );
 }
 
@@ -951,7 +990,7 @@ export function recordPluginExecution(
 export function recordPluginError(
   pluginName: string,
   hook: string,
-  errorType: string,
+  errorType: string
 ): void {
   pluginMetrics.errors.inc({
     plugin_name: pluginName,
@@ -966,11 +1005,11 @@ export function recordPluginError(
 export function recordRequestDuration(
   method: string,
   endpoint: string,
-  durationSeconds: number,
+  durationSeconds: number
 ): void {
   requestSummaryMetrics.requestDuration.observe(
     { method, endpoint },
-    durationSeconds,
+    durationSeconds
   );
 }
 
@@ -980,11 +1019,11 @@ export function recordRequestDuration(
 export function recordTokenUsageSummary(
   provider: string,
   model: string,
-  tokenCount: number,
+  tokenCount: number
 ): void {
   requestSummaryMetrics.tokenUsageSummary.observe(
     { provider, model },
-    tokenCount,
+    tokenCount
   );
 }
 

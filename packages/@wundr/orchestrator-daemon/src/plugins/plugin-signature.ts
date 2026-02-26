@@ -62,7 +62,9 @@ export type TrustedPublicKey = {
 
 const SIGNATURE_FILENAME = 'wundr-plugin.sig';
 
-async function readSignatureFile(pluginDir: string): Promise<SignatureFile | null> {
+async function readSignatureFile(
+  pluginDir: string
+): Promise<SignatureFile | null> {
   const sigPath = path.join(pluginDir, SIGNATURE_FILENAME);
   try {
     const content = await fs.readFile(sigPath, 'utf-8');
@@ -116,7 +118,7 @@ async function computeManifestHash(pluginDir: string): Promise<string> {
 export async function verifyPluginSignature(
   pluginDir: string,
   trustedKeys: TrustedPublicKey[],
-  logger?: Logger,
+  logger?: Logger
 ): Promise<SignatureVerificationResult> {
   const log = logger ?? new Logger('PluginSignature');
 
@@ -153,12 +155,13 @@ export async function verifyPluginSignature(
 
   if (computedHash !== sigFile.signedHash) {
     log.warn(
-      `Signature hash mismatch for plugin in ${pluginDir}: expected ${computedHash}, got ${sigFile.signedHash}`,
+      `Signature hash mismatch for plugin in ${pluginDir}: expected ${computedHash}, got ${sigFile.signedHash}`
     );
     return {
       valid: false,
       trusted: false,
-      reason: 'Signed hash does not match computed manifest hash (possible tampering)',
+      reason:
+        'Signed hash does not match computed manifest hash (possible tampering)',
     };
   }
 
@@ -201,19 +204,20 @@ export async function verifyPluginSignature(
   const matchingKey = trustedKeys.find(k => k.key === sigFile.publicKey);
   if (!matchingKey) {
     log.info(
-      `Valid signature for plugin in ${pluginDir}, but public key ${sigFile.publicKey.slice(0, 16)}... is not in the trusted set`,
+      `Valid signature for plugin in ${pluginDir}, but public key ${sigFile.publicKey.slice(0, 16)}... is not in the trusted set`
     );
     return {
       valid: true,
       trusted: false,
-      reason: 'Signature is valid but the signing key is not in the trusted key set',
+      reason:
+        'Signature is valid but the signing key is not in the trusted key set',
       publicKey: sigFile.publicKey,
       signedAt: sigFile.timestamp,
     };
   }
 
   log.info(
-    `Verified signature for plugin in ${pluginDir} (key: ${matchingKey.label})`,
+    `Verified signature for plugin in ${pluginDir} (key: ${matchingKey.label})`
   );
 
   return {
@@ -272,7 +276,7 @@ export class TrustedKeyStore {
    */
   async verifyPlugin(
     pluginDir: string,
-    logger?: Logger,
+    logger?: Logger
   ): Promise<SignatureVerificationResult> {
     return verifyPluginSignature(pluginDir, this.keys, logger);
   }

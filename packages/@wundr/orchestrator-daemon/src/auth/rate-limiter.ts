@@ -58,7 +58,7 @@ export class RateLimiter {
 
     // Prune timestamps outside the window.
     const windowStart = now - this.config.windowMs;
-    bucket.timestamps = bucket.timestamps.filter((t) => t > windowStart);
+    bucket.timestamps = bucket.timestamps.filter(t => t > windowStart);
 
     if (bucket.timestamps.length >= this.config.maxMessages) {
       this.logger.warn(`Rate limit exceeded for client: ${clientId}`);
@@ -79,7 +79,7 @@ export class RateLimiter {
     }
     const now = Date.now();
     const windowStart = now - this.config.windowMs;
-    const recent = bucket.timestamps.filter((t) => t > windowStart).length;
+    const recent = bucket.timestamps.filter(t => t > windowStart).length;
     return Math.max(0, this.config.maxMessages - recent);
   }
 
@@ -141,7 +141,7 @@ export class RateLimiter {
     const windowStart = now - this.config.windowMs;
 
     for (const [clientId, bucket] of this.buckets.entries()) {
-      bucket.timestamps = bucket.timestamps.filter((t) => t > windowStart);
+      bucket.timestamps = bucket.timestamps.filter(t => t > windowStart);
       if (bucket.connections === 0 && bucket.timestamps.length === 0) {
         this.buckets.delete(clientId);
       }

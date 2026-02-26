@@ -70,7 +70,11 @@ export class PluginMetrics {
   /**
    * Record a completed call with its duration and outcome.
    */
-  recordCall(durationMs: number, error: boolean = false, timeout: boolean = false): void {
+  recordCall(
+    durationMs: number,
+    error: boolean = false,
+    timeout: boolean = false
+  ): void {
     this.callCount++;
     this.totalCallDurationMs += durationMs;
     this.lastCallAt = Date.now();
@@ -80,11 +84,11 @@ export class PluginMetrics {
     }
 
     if (error) {
-this.callErrors++;
-}
+      this.callErrors++;
+    }
     if (timeout) {
-this.callTimeouts++;
-}
+      this.callTimeouts++;
+    }
   }
 
   /**
@@ -113,11 +117,11 @@ this.callTimeouts++;
    */
   updateResourceUsage(memoryBytes?: number, cpuMs?: number): void {
     if (memoryBytes !== undefined) {
-this.memoryUsageBytes = memoryBytes;
-}
+      this.memoryUsageBytes = memoryBytes;
+    }
     if (cpuMs !== undefined) {
-this.cpuTimeMs = cpuMs;
-}
+      this.cpuTimeMs = cpuMs;
+    }
   }
 
   /**
@@ -128,21 +132,24 @@ this.cpuTimeMs = cpuMs;
       this.recordCall(
         payload.callDurationMs,
         payload.callError ?? false,
-        payload.callTimeout ?? false,
+        payload.callTimeout ?? false
       );
     }
-    if (payload.memoryUsageBytes !== undefined || payload.cpuTimeMs !== undefined) {
+    if (
+      payload.memoryUsageBytes !== undefined ||
+      payload.cpuTimeMs !== undefined
+    ) {
       this.updateResourceUsage(payload.memoryUsageBytes, payload.cpuTimeMs);
     }
     if (payload.messageReceived) {
-this.messagesReceived++;
-}
+      this.messagesReceived++;
+    }
     if (payload.messageSent) {
-this.messagesSent++;
-}
+      this.messagesSent++;
+    }
     if (payload.restart) {
-this.restartCount++;
-}
+      this.restartCount++;
+    }
   }
 
   /**

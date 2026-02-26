@@ -108,7 +108,7 @@ export const PluginManifestSchema = z.object({
     .max(214)
     .regex(
       /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/,
-      'Plugin name must be a valid npm package name',
+      'Plugin name must be a valid npm package name'
     ),
 
   /** Semver version string. */
@@ -142,7 +142,12 @@ export const PluginManifestSchema = z.object({
   dependencies: PluginDependencies.default({}),
 
   /** Author name or object. */
-  author: z.union([z.string(), z.object({ name: z.string(), email: z.string().optional() })]).optional(),
+  author: z
+    .union([
+      z.string(),
+      z.object({ name: z.string(), email: z.string().optional() }),
+    ])
+    .optional(),
 
   /** SPDX license identifier. */
   license: z.string().optional(),
@@ -197,7 +202,16 @@ export const DEFAULT_SYSTEM_POLICY: SystemPluginPolicy = {
   maxTrustLevel: 'community',
   deniedPaths: ['/etc', '/sys', '/proc', '/dev', '/boot', '/root'],
   deniedHosts: [],
-  deniedProcesses: ['rm', 'dd', 'mkfs', 'fdisk', 'mount', 'umount', 'shutdown', 'reboot'],
+  deniedProcesses: [
+    'rm',
+    'dd',
+    'mkfs',
+    'fdisk',
+    'mount',
+    'umount',
+    'shutdown',
+    'reboot',
+  ],
   deniedEnvVars: [],
   deniedMcpTools: [],
   requireIntegrity: false,
@@ -215,13 +229,16 @@ const TRUST_LEVEL_ORDER: Record<PluginTrustLevel, number> = {
   trusted: 3,
 };
 
-export function compareTrustLevels(a: PluginTrustLevel, b: PluginTrustLevel): number {
+export function compareTrustLevels(
+  a: PluginTrustLevel,
+  b: PluginTrustLevel
+): number {
   return TRUST_LEVEL_ORDER[a] - TRUST_LEVEL_ORDER[b];
 }
 
 export function effectiveTrustLevel(
   declared: PluginTrustLevel,
-  maxAllowed: PluginTrustLevel,
+  maxAllowed: PluginTrustLevel
 ): PluginTrustLevel {
   if (TRUST_LEVEL_ORDER[declared] > TRUST_LEVEL_ORDER[maxAllowed]) {
     return maxAllowed;
@@ -239,7 +256,7 @@ export function effectiveTrustLevel(
  */
 export function validateManifest(
   raw: unknown,
-  systemPolicy: SystemPluginPolicy = DEFAULT_SYSTEM_POLICY,
+  systemPolicy: SystemPluginPolicy = DEFAULT_SYSTEM_POLICY
 ): ManifestValidationResult {
   const errors: ManifestValidationError[] = [];
   const warnings: string[] = [];
@@ -260,10 +277,13 @@ export function validateManifest(
   const manifest = parsed.data;
 
   // Step 2: Trust level enforcement
-  const effective = effectiveTrustLevel(manifest.trustLevel, systemPolicy.maxTrustLevel);
+  const effective = effectiveTrustLevel(
+    manifest.trustLevel,
+    systemPolicy.maxTrustLevel
+  );
   if (effective !== manifest.trustLevel) {
     warnings.push(
-      `Trust level downgraded from "${manifest.trustLevel}" to "${effective}" by system policy`,
+      `Trust level downgraded from "${manifest.trustLevel}" to "${effective}" by system policy`
     );
     manifest.trustLevel = effective;
   }
@@ -374,7 +394,7 @@ const MANIFEST_FILENAME = 'wundr-plugin.json';
  */
 export async function loadManifest(
   pluginDir: string,
-  systemPolicy?: SystemPluginPolicy,
+  systemPolicy?: SystemPluginPolicy
 ): Promise<ManifestValidationResult> {
   const manifestPath = path.join(pluginDir, MANIFEST_FILENAME);
 
@@ -384,7 +404,9 @@ export async function loadManifest(
     raw = JSON.parse(content);
   } catch (err) {
     const message =
-      err instanceof Error && 'code' in err && (err as NodeJS.ErrnoException).code === 'ENOENT'
+      err instanceof Error &&
+      'code' in err &&
+      (err as NodeJS.ErrnoException).code === 'ENOENT'
         ? `Manifest file not found: ${manifestPath}`
         : `Failed to read manifest: ${err instanceof Error ? err.message : String(err)}`;
     return {
@@ -415,7 +437,7 @@ export async function computeFileIntegrity(filePath: string): Promise<string> {
  */
 export async function verifyPluginIntegrity(
   pluginDir: string,
-  manifest: PluginManifest,
+  manifest: PluginManifest
 ): Promise<{ valid: boolean; expected?: string; actual?: string }> {
   if (!manifest.integrity) {
     return { valid: true }; // No integrity constraint declared

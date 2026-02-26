@@ -569,9 +569,14 @@ export class SecurityGate {
     state: ExecApprovalState,
     command: string,
     decision: 'allow-once' | 'allow-always' | 'deny',
-    addToAllowlistOnAlways?: boolean,
+    addToAllowlistOnAlways?: boolean
   ): void {
-    this.execGate.recordDecision(state, command, decision, addToAllowlistOnAlways);
+    this.execGate.recordDecision(
+      state,
+      command,
+      decision,
+      addToAllowlistOnAlways
+    );
   }
 
   /**
@@ -582,7 +587,7 @@ export class SecurityGate {
    */
   sanitizeEnv(
     env: Record<string, string>,
-    overrides?: Partial<EnvSanitizerConfig>,
+    overrides?: Partial<EnvSanitizerConfig>
   ): EnvSanitizeResult {
     return sanitizeEnvVars(env, { ...this.envSanitizerConfig, ...overrides });
   }
@@ -595,7 +600,7 @@ export class SecurityGate {
    */
   buildSubprocessEnv(
     overrides?: Record<string, string> | null,
-    extra?: { sessionId?: string; agentId?: string; cwd?: string },
+    extra?: { sessionId?: string; agentId?: string; cwd?: string }
   ): EnvSanitizeResult {
     return buildSafeEnv(overrides, {
       ...this.envSanitizerConfig,

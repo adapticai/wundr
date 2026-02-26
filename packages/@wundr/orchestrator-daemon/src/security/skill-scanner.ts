@@ -142,7 +142,8 @@ const LINE_RULES: LineRule[] = [
     ruleId: 'reverse-shell',
     severity: 'critical',
     message: 'Possible reverse shell pattern detected',
-    pattern: /(?:\/bin\/(?:ba)?sh\s+-i|nc\s+-e\s+\/bin|bash\s+-c\s+['"].*\/dev\/tcp)/,
+    pattern:
+      /(?:\/bin\/(?:ba)?sh\s+-i|nc\s+-e\s+\/bin|bash\s+-c\s+['"].*\/dev\/tcp)/,
   },
   // --- Critical: Process self-termination ---
   {
@@ -167,21 +168,24 @@ const LINE_RULES: LineRule[] = [
     ruleId: 'dynamic-url-request',
     severity: 'warn',
     message: 'HTTP request with dynamically constructed URL',
-    pattern: /(?:fetch|axios\.(?:get|post|put|delete)|http\.request)\s*\(\s*(?:`[^`]*\$\{|[^"'`\s]+\s*\+)/,
+    pattern:
+      /(?:fetch|axios\.(?:get|post|put|delete)|http\.request)\s*\(\s*(?:`[^`]*\$\{|[^"'`\s]+\s*\+)/,
   },
   // --- Warn: File write to system paths ---
   {
     ruleId: 'system-path-write',
     severity: 'warn',
     message: 'File write targeting system directory',
-    pattern: /(?:writeFile|writeFileSync|appendFile|appendFileSync)\s*\(\s*['"]\/(?:etc|usr|var|tmp|bin|sbin)\//,
+    pattern:
+      /(?:writeFile|writeFileSync|appendFile|appendFileSync)\s*\(\s*['"]\/(?:etc|usr|var|tmp|bin|sbin)\//,
   },
   // --- Warn: Prototype pollution ---
   {
     ruleId: 'prototype-pollution',
     severity: 'warn',
     message: 'Potential prototype pollution pattern',
-    pattern: /\[['"]__proto__['"]\]|\[['"]constructor['"]\]\s*\[['"]prototype['"]\]/,
+    pattern:
+      /\[['"]__proto__['"]\]|\[['"]constructor['"]\]\s*\[['"]prototype['"]\]/,
   },
   // --- Warn: Dynamic require with variable ---
   {
@@ -203,18 +207,22 @@ const LINE_RULES: LineRule[] = [
     ruleId: 'security-todo',
     severity: 'info',
     message: 'Security-related TODO/FIXME comment',
-    pattern: /\/\/.*(?:TODO|FIXME|HACK|XXX).*(?:security|auth|token|secret|password|credential)/i,
+    pattern:
+      /\/\/.*(?:TODO|FIXME|HACK|XXX).*(?:security|auth|token|secret|password|credential)/i,
   },
 ];
 
-const STANDARD_PORTS = new Set([80, 443, 8080, 8443, 3000, 3001, 5000, 8787, 9090]);
+const STANDARD_PORTS = new Set([
+  80, 443, 8080, 8443, 3000, 3001, 5000, 8787, 9090,
+]);
 
 const SOURCE_RULES: SourceRule[] = [
   // --- Warn: Data exfiltration (file read + network send) ---
   {
     ruleId: 'potential-exfiltration',
     severity: 'warn',
-    message: 'File read combined with network send -- possible data exfiltration',
+    message:
+      'File read combined with network send -- possible data exfiltration',
     pattern: /readFileSync|readFile/,
     requiresContext: /\bfetch\b|\bpost\b|http\.request|axios/i,
   },
@@ -229,14 +237,16 @@ const SOURCE_RULES: SourceRule[] = [
   {
     ruleId: 'obfuscated-base64',
     severity: 'warn',
-    message: 'Large base64 payload with decode call detected (possible obfuscation)',
+    message:
+      'Large base64 payload with decode call detected (possible obfuscation)',
     pattern: /(?:atob|Buffer\.from)\s*\(\s*["'][A-Za-z0-9+/=]{200,}["']/,
   },
   // --- Critical: Environment harvesting + network ---
   {
     ruleId: 'env-harvesting',
     severity: 'critical',
-    message: 'Environment variable access combined with network send -- possible credential harvesting',
+    message:
+      'Environment variable access combined with network send -- possible credential harvesting',
     pattern: /process\.env/,
     requiresContext: /\bfetch\b|\bpost\b|http\.request|axios/i,
   },
@@ -244,7 +254,8 @@ const SOURCE_RULES: SourceRule[] = [
   {
     ruleId: 'dns-rebinding',
     severity: 'warn',
-    message: 'Possible DNS rebinding pattern: IP address in Host header check bypass',
+    message:
+      'Possible DNS rebinding pattern: IP address in Host header check bypass',
     pattern: /Host.*(?:127\.0\.0\.1|localhost|0\.0\.0\.0)/i,
     requiresContext: /(?:createServer|listen|express|koa|fastify)/,
   },
@@ -252,9 +263,11 @@ const SOURCE_RULES: SourceRule[] = [
   {
     ruleId: 'keylogger-pattern',
     severity: 'warn',
-    message: 'Possible keylogger pattern: keypress/keydown event with data send',
+    message:
+      'Possible keylogger pattern: keypress/keydown event with data send',
     pattern: /(?:keypress|keydown|keyup)\s*[,)]/,
-    requiresContext: /\bfetch\b|\bpost\b|http\.request|XMLHttpRequest|WebSocket/i,
+    requiresContext:
+      /\bfetch\b|\bpost\b|http\.request|XMLHttpRequest|WebSocket/i,
   },
   // --- Warn: Clipboard access ---
   {
@@ -270,7 +283,9 @@ const SOURCE_RULES: SourceRule[] = [
     severity: 'warn',
     message: 'Network activity in what may be a package install script',
     pattern: /(?:preinstall|postinstall|install)\b/,
-    requiresContext: new RegExp(`\\bfetch\\b|\\bcurl\\b|\\bwget\\b|http\\.request|${SUBPROCESS_MODULE}`),
+    requiresContext: new RegExp(
+      `\\bfetch\\b|\\bcurl\\b|\\bwget\\b|http\\.request|${SUBPROCESS_MODULE}`
+    ),
   },
   // --- Info: Self-modifying code ---
   {
@@ -296,7 +311,10 @@ function truncateEvidence(evidence: string, maxLen = 120): string {
  * Scan a source string for malicious patterns.
  * Returns an array of findings with file path, line number, and evidence.
  */
-export function scanSource(source: string, filePath: string): SkillScanFinding[] {
+export function scanSource(
+  source: string,
+  filePath: string
+): SkillScanFinding[] {
   const findings: SkillScanFinding[] = [];
   const lines = source.split('\n');
   const matchedLineRules = new Set<string>();
@@ -388,7 +406,9 @@ export function scanSource(source: string, filePath: string): SkillScanFinding[]
 // Directory scanner
 // ---------------------------------------------------------------------------
 
-function normalizeScanOptions(opts?: SkillScanOptions): Required<SkillScanOptions> {
+function normalizeScanOptions(
+  opts?: SkillScanOptions
+): Required<SkillScanOptions> {
   return {
     includeFiles: opts?.includeFiles ?? [],
     maxFiles: Math.max(1, opts?.maxFiles ?? DEFAULT_MAX_SCAN_FILES),
@@ -400,10 +420,16 @@ function isPathInside(basePath: string, candidatePath: string): boolean {
   const base = path.resolve(basePath);
   const candidate = path.resolve(candidatePath);
   const rel = path.relative(base, candidate);
-  return rel === '' || (!rel.startsWith(`..${path.sep}`) && rel !== '..' && !path.isAbsolute(rel));
+  return (
+    rel === '' ||
+    (!rel.startsWith(`..${path.sep}`) && rel !== '..' && !path.isAbsolute(rel))
+  );
 }
 
-async function walkDirWithLimit(dirPath: string, maxFiles: number): Promise<string[]> {
+async function walkDirWithLimit(
+  dirPath: string,
+  maxFiles: number
+): Promise<string[]> {
   const files: string[] = [];
   const stack: string[] = [dirPath];
 
@@ -416,7 +442,10 @@ async function walkDirWithLimit(dirPath: string, maxFiles: number): Promise<stri
     // eslint-disable-next-line @typescript-eslint/consistent-type-imports
     let entries: import('fs').Dirent[];
     try {
-      entries = await fs.readdir(currentDir, { withFileTypes: true, encoding: 'utf-8' });
+      entries = await fs.readdir(currentDir, {
+        withFileTypes: true,
+        encoding: 'utf-8',
+      });
     } catch {
       continue;
     }
@@ -485,7 +514,10 @@ async function resolveForcedFiles(params: {
   return out;
 }
 
-async function collectScannableFiles(dirPath: string, opts: Required<SkillScanOptions>) {
+async function collectScannableFiles(
+  dirPath: string,
+  opts: Required<SkillScanOptions>
+) {
   const forcedFiles = await resolveForcedFiles({
     rootDir: dirPath,
     includeFiles: opts.includeFiles,
@@ -495,7 +527,7 @@ async function collectScannableFiles(dirPath: string, opts: Required<SkillScanOp
   }
 
   const walkedFiles = await walkDirWithLimit(dirPath, opts.maxFiles);
-  const seen = new Set(forcedFiles.map((f) => path.resolve(f)));
+  const seen = new Set(forcedFiles.map(f => path.resolve(f)));
   const out = [...forcedFiles];
   for (const walkedFile of walkedFiles) {
     if (out.length >= opts.maxFiles) {
@@ -511,7 +543,10 @@ async function collectScannableFiles(dirPath: string, opts: Required<SkillScanOp
   return out;
 }
 
-async function readScannableSource(filePath: string, maxFileBytes: number): Promise<string | null> {
+async function readScannableSource(
+  filePath: string,
+  maxFileBytes: number
+): Promise<string | null> {
   let st: Awaited<ReturnType<typeof fs.stat>> | null = null;
   try {
     st = await fs.stat(filePath);
@@ -539,7 +574,7 @@ async function readScannableSource(filePath: string, maxFileBytes: number): Prom
  */
 export async function scanDirectory(
   dirPath: string,
-  opts?: SkillScanOptions,
+  opts?: SkillScanOptions
 ): Promise<SkillScanFinding[]> {
   const scanOptions = normalizeScanOptions(opts);
   const files = await collectScannableFiles(dirPath, scanOptions);
@@ -562,7 +597,7 @@ export async function scanDirectory(
  */
 export async function scanDirectoryWithSummary(
   dirPath: string,
-  opts?: SkillScanOptions,
+  opts?: SkillScanOptions
 ): Promise<SkillScanSummary> {
   const scanOptions = normalizeScanOptions(opts);
   const files = await collectScannableFiles(dirPath, scanOptions);
@@ -581,9 +616,9 @@ export async function scanDirectoryWithSummary(
 
   return {
     scannedFiles,
-    critical: allFindings.filter((f) => f.severity === 'critical').length,
-    warn: allFindings.filter((f) => f.severity === 'warn').length,
-    info: allFindings.filter((f) => f.severity === 'info').length,
+    critical: allFindings.filter(f => f.severity === 'critical').length,
+    warn: allFindings.filter(f => f.severity === 'warn').length,
+    info: allFindings.filter(f => f.severity === 'info').length,
     findings: allFindings,
   };
 }
@@ -591,13 +626,16 @@ export async function scanDirectoryWithSummary(
 /**
  * Convenience: scan a single source string (e.g., for on-the-fly tool registration).
  */
-export function scanSourceString(source: string, label = 'inline'): SkillScanSummary {
+export function scanSourceString(
+  source: string,
+  label = 'inline'
+): SkillScanSummary {
   const findings = scanSource(source, label);
   return {
     scannedFiles: 1,
-    critical: findings.filter((f) => f.severity === 'critical').length,
-    warn: findings.filter((f) => f.severity === 'warn').length,
-    info: findings.filter((f) => f.severity === 'info').length,
+    critical: findings.filter(f => f.severity === 'critical').length,
+    warn: findings.filter(f => f.severity === 'warn').length,
+    info: findings.filter(f => f.severity === 'info').length,
     findings,
   };
 }

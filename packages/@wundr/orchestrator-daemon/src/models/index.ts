@@ -63,11 +63,7 @@ export type {
 } from './auth-profiles';
 
 // -- Streaming --
-export {
-  StreamingAdapter,
-  formatSSE,
-  formatWSMessage,
-} from './streaming';
+export { StreamingAdapter, formatSSE, formatWSMessage } from './streaming';
 
 export type {
   StreamEvent,
@@ -100,9 +96,7 @@ export type {
 } from './token-counter';
 
 // -- Provider Health (circuit breaker, latency tracking, concurrency) --
-export {
-  ProviderHealthTracker,
-} from './provider-health';
+export { ProviderHealthTracker } from './provider-health';
 
 export type {
   CircuitState,
@@ -111,9 +105,7 @@ export type {
 } from './provider-health';
 
 // -- Token Budget (per-session budget enforcement) --
-export {
-  TokenBudgetManager,
-} from './token-budget';
+export { TokenBudgetManager } from './token-budget';
 
 export type {
   BudgetWindowKind,
@@ -131,7 +123,4 @@ export {
   DEFAULT_RETRY_CONFIG,
 } from './retry';
 
-export type {
-  RetryConfig,
-  RetryResult,
-} from './retry';
+export type { RetryConfig, RetryResult } from './retry';

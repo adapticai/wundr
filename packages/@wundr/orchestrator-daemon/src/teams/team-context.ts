@@ -90,7 +90,10 @@ export interface TeamSettingsConfig {
   /** Default max concurrent tasks per teammate. */
   readonly defaultMaxConcurrentTasks: number;
   /** Default task assignment strategy. */
-  readonly defaultAssignmentStrategy: 'round-robin' | 'capability-based' | 'load-balanced';
+  readonly defaultAssignmentStrategy:
+    | 'round-robin'
+    | 'capability-based'
+    | 'load-balanced';
   /** Auto-assign pending tasks when a teammate becomes idle. */
   readonly autoAssignOnIdle: boolean;
   /** Auto-cleanup team when all tasks are completed. */
@@ -110,8 +113,18 @@ export interface TeamSettingsConfig {
 }
 
 export interface TeamContextEvents {
-  'context:set': (teamId: string, key: string, value: unknown, setBy: string) => void;
-  'context:updated': (teamId: string, key: string, value: unknown, updatedBy: string) => void;
+  'context:set': (
+    teamId: string,
+    key: string,
+    value: unknown,
+    setBy: string
+  ) => void;
+  'context:updated': (
+    teamId: string,
+    key: string,
+    value: unknown,
+    updatedBy: string
+  ) => void;
   'context:deleted': (teamId: string, key: string) => void;
   'context:cleared': (teamId: string) => void;
   'progress:updated': (progress: TeamProgress) => void;
@@ -129,7 +142,7 @@ export class TeamContextError extends Error {
   constructor(
     public readonly code: string,
     message: string,
-    public readonly details?: Record<string, unknown>,
+    public readonly details?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'TeamContextError';
@@ -171,12 +184,14 @@ export class TeamContext extends EventEmitter<TeamContextEvents> {
   /**
    * Shared context store per team: teamId -> key -> entry.
    */
-  private readonly stores: Map<string, Map<string, SharedContextEntry>> = new Map();
+  private readonly stores: Map<string, Map<string, SharedContextEntry>> =
+    new Map();
 
   /**
    * Task results per team: teamId -> taskId -> result.
    */
-  private readonly taskResults: Map<string, Map<string, TaskResult>> = new Map();
+  private readonly taskResults: Map<string, Map<string, TaskResult>> =
+    new Map();
 
   /**
    * Team start times for progress calculation.
@@ -191,10 +206,13 @@ export class TeamContext extends EventEmitter<TeamContextEvents> {
   /**
    * Cleanup tracking: teamId -> { startedAt, timeoutHandle }.
    */
-  private readonly cleanupTracking: Map<string, {
-    startedAt: Date;
-    timeoutHandle: ReturnType<typeof setTimeout>;
-  }> = new Map();
+  private readonly cleanupTracking: Map<
+    string,
+    {
+      startedAt: Date;
+      timeoutHandle: ReturnType<typeof setTimeout>;
+    }
+  > = new Map();
 
   /**
    * Settings per team (or global defaults).
@@ -222,8 +240,8 @@ export class TeamContext extends EventEmitter<TeamContextEvents> {
     if (teamId) {
       const teamSpecific = this.teamSettings.get(teamId);
       if (teamSpecific) {
-return teamSpecific;
-}
+        return teamSpecific;
+      }
     }
     return this.globalSettings;
   }
@@ -231,7 +249,10 @@ return teamSpecific;
   /**
    * Set team-specific settings (merged with global defaults).
    */
-  setTeamSettings(teamId: string, settings: Partial<TeamSettingsConfig>): TeamSettingsConfig {
+  setTeamSettings(
+    teamId: string,
+    settings: Partial<TeamSettingsConfig>
+  ): TeamSettingsConfig {
     const merged: TeamSettingsConfig = {
       ...this.globalSettings,
       ...settings,
@@ -322,7 +343,7 @@ return teamSpecific;
       if (store.size >= settings.maxContextEntries) {
         throw new TeamContextError(
           TeamContextErrorCode.MAX_ENTRIES_REACHED,
-          `Shared context for team ${teamId} has reached maximum ${settings.maxContextEntries} entries`,
+          `Shared context for team ${teamId} has reached maximum ${settings.maxContextEntries} entries`
         );
       }
 
@@ -345,16 +366,20 @@ return teamSpecific;
    * Get a value from the shared context.
    * Records the access in the entry's access log.
    */
-  get<T = unknown>(teamId: string, key: string, memberId?: string): T | undefined {
+  get<T = unknown>(
+    teamId: string,
+    key: string,
+    memberId?: string
+  ): T | undefined {
     const store = this.stores.get(teamId);
     if (!store) {
-return undefined;
-}
+      return undefined;
+    }
 
     const entry = store.get(key);
     if (!entry) {
-return undefined;
-}
+      return undefined;
+    }
 
     if (memberId) {
       entry.accessLog.set(memberId, new Date());
@@ -377,8 +402,8 @@ return undefined;
   delete(teamId: string, key: string): boolean {
     const store = this.stores.get(teamId);
     if (!store) {
-return false;
-}
+      return false;
+    }
 
     const deleted = store.delete(key);
     if (deleted) {
@@ -393,8 +418,8 @@ return false;
   keys(teamId: string): string[] {
     const store = this.stores.get(teamId);
     if (!store) {
-return [];
-}
+      return [];
+    }
     return Array.from(store.keys());
   }
 
@@ -404,8 +429,8 @@ return [];
   getAll(teamId: string): Record<string, unknown> {
     const store = this.stores.get(teamId);
     if (!store) {
-return {};
-}
+      return {};
+    }
 
     const result: Record<string, unknown> = {};
     for (const [key, entry] of store) {
@@ -417,23 +442,28 @@ return {};
   /**
    * Get metadata for a shared context entry (everything except the value).
    */
-  getEntryMetadata(teamId: string, key: string): {
-    key: string;
-    setBy: string;
-    setAt: Date;
-    updatedBy: string;
-    updatedAt: Date;
-    accessLog: Map<string, Date>;
-  } | undefined {
+  getEntryMetadata(
+    teamId: string,
+    key: string
+  ):
+    | {
+        key: string;
+        setBy: string;
+        setAt: Date;
+        updatedBy: string;
+        updatedAt: Date;
+        accessLog: Map<string, Date>;
+      }
+    | undefined {
     const store = this.stores.get(teamId);
     if (!store) {
-return undefined;
-}
+      return undefined;
+    }
 
     const entry = store.get(key);
     if (!entry) {
-return undefined;
-}
+      return undefined;
+    }
 
     return {
       key: entry.key,
@@ -462,8 +492,8 @@ return undefined;
   recordTaskResult(teamId: string, result: TaskResult): void {
     const results = this.taskResults.get(teamId);
     if (!results) {
-return;
-}
+      return;
+    }
 
     results.set(result.taskId, result);
 
@@ -489,8 +519,8 @@ return;
   getTaskResults(teamId: string): TaskResult[] {
     const results = this.taskResults.get(teamId);
     if (!results) {
-return [];
-}
+      return [];
+    }
     return Array.from(results.values());
   }
 
@@ -516,26 +546,30 @@ return [];
       blocked: number;
     },
     activeTeammates: number,
-    totalTeammates: number,
+    totalTeammates: number
   ): TeamProgress {
     const startedAt = this.teamStartTimes.get(teamId) ?? new Date();
     const now = new Date();
     const elapsedMs = now.getTime() - startedAt.getTime();
 
-    const percentComplete = taskStats.total > 0
-      ? Math.round((taskStats.completed / taskStats.total) * 100)
-      : 0;
+    const percentComplete =
+      taskStats.total > 0
+        ? Math.round((taskStats.completed / taskStats.total) * 100)
+        : 0;
 
     // Estimate completion based on average task duration
     const durations = this.taskDurations.get(teamId) ?? [];
-    const avgTaskDurationMs = durations.length > 0
-      ? durations.reduce((sum, d) => sum + d, 0) / durations.length
-      : 0;
+    const avgTaskDurationMs =
+      durations.length > 0
+        ? durations.reduce((sum, d) => sum + d, 0) / durations.length
+        : 0;
 
     let estimatedCompletion: Date | null = null;
     if (avgTaskDurationMs > 0 && activeTeammates > 0) {
-      const remainingTasks = taskStats.pending + taskStats.inProgress + taskStats.blocked;
-      const estimatedRemainingMs = (remainingTasks * avgTaskDurationMs) / activeTeammates;
+      const remainingTasks =
+        taskStats.pending + taskStats.inProgress + taskStats.blocked;
+      const estimatedRemainingMs =
+        (remainingTasks * avgTaskDurationMs) / activeTeammates;
       estimatedCompletion = new Date(now.getTime() + estimatedRemainingMs);
     }
 
@@ -573,7 +607,10 @@ return [];
   aggregateResults(
     teamId: string,
     teamName: string,
-    memberInfo: Map<string, { name: string; tasksCompleted: number; tasksFailed: number }>,
+    memberInfo: Map<
+      string,
+      { name: string; tasksCompleted: number; tasksFailed: number }
+    >
   ): TeamResult {
     const results = this.getTaskResults(teamId);
     const startedAt = this.teamStartTimes.get(teamId) ?? new Date();
@@ -596,7 +633,10 @@ return [];
     const memberContributions: MemberContribution[] = [];
     for (const [memberId, info] of memberInfo) {
       const memberResults = results.filter(r => r.completedBy === memberId);
-      const totalDuration = memberResults.reduce((sum, r) => sum + r.durationMs, 0);
+      const totalDuration = memberResults.reduce(
+        (sum, r) => sum + r.durationMs,
+        0
+      );
       const taskCount = memberResults.length;
 
       memberContributions.push({
@@ -641,7 +681,7 @@ return [];
     if (this.cleanupTracking.has(teamId)) {
       throw new TeamContextError(
         TeamContextErrorCode.CLEANUP_IN_PROGRESS,
-        `Cleanup already in progress for team ${teamId}`,
+        `Cleanup already in progress for team ${teamId}`
       );
     }
 
@@ -669,8 +709,8 @@ return [];
   completeCleanup(teamId: string): void {
     const tracking = this.cleanupTracking.get(teamId);
     if (!tracking) {
-return;
-}
+      return;
+    }
 
     clearTimeout(tracking.timeoutHandle);
     const durationMs = Date.now() - tracking.startedAt.getTime();
@@ -708,7 +748,7 @@ return;
     if (!store) {
       throw new TeamContextError(
         TeamContextErrorCode.TEAM_NOT_REGISTERED,
-        `Team ${teamId} is not registered for context tracking`,
+        `Team ${teamId} is not registered for context tracking`
       );
     }
     return store;

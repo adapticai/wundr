@@ -44,7 +44,11 @@ export interface ToolRegistry {
   readonly tools: Map<string, ToolHandler>;
 
   /** Register a new handler, optionally with a description used for LLM prompting. */
-  register(name: string, handler: ToolHandler, description?: ToolDescription): void;
+  register(
+    name: string,
+    handler: ToolHandler,
+    description?: ToolDescription
+  ): void;
 
   /** Remove a registered tool by name. */
   unregister(name: string): void;
@@ -103,7 +107,11 @@ export class DefaultToolRegistry implements ToolRegistry {
    * @param handler - Async function that receives parsed arguments and returns a result.
    * @param description - Optional metadata used when building LLM tool definitions.
    */
-  register(name: string, handler: ToolHandler, description?: ToolDescription): void {
+  register(
+    name: string,
+    handler: ToolHandler,
+    description?: ToolDescription
+  ): void {
     this.tools.set(name, handler);
     if (description) {
       this.descriptions.set(name, description);
@@ -138,7 +146,7 @@ export class DefaultToolRegistry implements ToolRegistry {
     if (!handler) {
       throw new Error(
         `[DefaultToolRegistry] No handler registered for tool: "${name}". ` +
-        `Available tools: ${Array.from(this.tools.keys()).join(', ') || '(none)'}`,
+          `Available tools: ${Array.from(this.tools.keys()).join(', ') || '(none)'}`
       );
     }
 
@@ -146,7 +154,9 @@ export class DefaultToolRegistry implements ToolRegistry {
       return await handler(args);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`[DefaultToolRegistry] Tool "${name}" execution failed: ${message}`);
+      throw new Error(
+        `[DefaultToolRegistry] Tool "${name}" execution failed: ${message}`
+      );
     }
   }
 

@@ -78,7 +78,10 @@ async function verifyTools() {
     command: 'echo "MCP Tools Work!"',
   });
 
-  if (execResult.success && execResult.data?.stdout.includes('MCP Tools Work')) {
+  if (
+    execResult.success &&
+    execResult.data?.stdout.includes('MCP Tools Work')
+  ) {
     console.log(`  ✅ Execute successful: ${execResult.data?.stdout}\n`);
     passed++;
   } else {
@@ -136,7 +139,9 @@ async function verifyTools() {
   });
 
   if (customResult.success && customResult.data?.doubled === 42) {
-    console.log(`  ✅ Custom tool works: 21 * 2 = ${customResult.data?.doubled}\n`);
+    console.log(
+      `  ✅ Custom tool works: 21 * 2 = ${customResult.data?.doubled}\n`
+    );
     passed++;
   } else {
     console.log('  ❌ Custom tool failed\n');
@@ -165,8 +170,8 @@ async function verifyTools() {
 // Run verification
 if (require.main === module) {
   verifyTools()
-    .then((code) => process.exit(code))
-    .catch((error) => {
+    .then(code => process.exit(code))
+    .catch(error => {
       console.error('❌ Verification error:', error);
       process.exit(1);
     });

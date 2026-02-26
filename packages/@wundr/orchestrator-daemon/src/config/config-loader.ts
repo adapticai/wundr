@@ -135,9 +135,10 @@ export function registerMigration(migration: ConfigMigration): void {
  * Apply all applicable migrations to a config object.
  * Returns the migrated config and a list of applied migration descriptions.
  */
-export function applyMigrations(
-  config: unknown,
-): { config: unknown; applied: string[] } {
+export function applyMigrations(config: unknown): {
+  config: unknown;
+  applied: string[];
+} {
   if (!config || typeof config !== 'object') {
     return { config, applied: [] };
   }
@@ -153,7 +154,7 @@ export function applyMigrations(
       current = migration.migrate(current);
       version = migration.toVersion;
       applied.push(
-        `v${migration.fromVersion} -> v${migration.toVersion}: ${migration.description}`,
+        `v${migration.fromVersion} -> v${migration.toVersion}: ${migration.description}`
       );
     }
   }
@@ -161,7 +162,10 @@ export function applyMigrations(
   // Stamp the current version
   if (applied.length > 0 && current && typeof current === 'object') {
     const c = current as Record<string, unknown>;
-    c.meta = { ...(c.meta as Record<string, unknown> ?? {}), $version: CURRENT_CONFIG_VERSION };
+    c.meta = {
+      ...((c.meta as Record<string, unknown>) ?? {}),
+      $version: CURRENT_CONFIG_VERSION,
+    };
   }
 
   return { config: current, applied };
@@ -173,7 +177,7 @@ export function applyMigrations(
 
 function resolveStateDir(
   env: NodeJS.ProcessEnv,
-  homedir: () => string,
+  homedir: () => string
 ): string {
   if (env.WUNDR_STATE_DIR?.trim()) {
     return env.WUNDR_STATE_DIR.trim();
@@ -181,10 +185,7 @@ function resolveStateDir(
   return path.join(homedir(), DEFAULT_STATE_DIR_NAME);
 }
 
-function resolveConfigPath(
-  env: NodeJS.ProcessEnv,
-  stateDir: string,
-): string {
+function resolveConfigPath(env: NodeJS.ProcessEnv, stateDir: string): string {
   if (env.WUNDR_CONFIG_PATH?.trim()) {
     return env.WUNDR_CONFIG_PATH.trim();
   }
@@ -193,7 +194,7 @@ function resolveConfigPath(
 
 function resolveConfigCandidates(
   env: NodeJS.ProcessEnv,
-  homedir: () => string,
+  homedir: () => string
 ): string[] {
   const stateDir = resolveStateDir(env, homedir);
   const candidates: string[] = [resolveConfigPath(env, stateDir)];
@@ -212,7 +213,10 @@ function resolveConfigCandidates(
 // =============================================================================
 
 function hashConfigRaw(raw: string | null): string {
-  return crypto.createHash('sha256').update(raw ?? '').digest('hex');
+  return crypto
+    .createHash('sha256')
+    .update(raw ?? '')
+    .digest('hex');
 }
 
 export function resolveConfigSnapshotHash(snapshot: {
@@ -235,29 +239,32 @@ export function resolveConfigSnapshotHash(snapshot: {
 // Env-Based Config Building (backward compat)
 // =============================================================================
 
-function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
+function parseBoolean(
+  value: string | undefined,
+  defaultValue: boolean
+): boolean {
   if (!value) {
-return defaultValue;
-}
+    return defaultValue;
+  }
   return value.toLowerCase() === 'true' || value === '1';
 }
 
 function parseNumber(value: string | undefined, defaultValue: number): number {
   if (!value) {
-return defaultValue;
-}
+    return defaultValue;
+  }
   const parsed = parseInt(value, 10);
   return isNaN(parsed) ? defaultValue : parsed;
 }
 
 function parseArray(value: string | undefined): string[] {
   if (!value) {
-return [];
-}
+    return [];
+  }
   return value
     .split(',')
-    .map((v) => v.trim())
-    .filter((v) => v.length > 0);
+    .map(v => v.trim())
+    .filter(v => v.length > 0);
 }
 
 /**
@@ -378,7 +385,11 @@ function buildConfigFromEnv(env: NodeJS.ProcessEnv): Record<string, unknown> {
   }
 
   // Token Budget
-  if (env.TOKEN_BUDGET_DAILY || env.TOKEN_BUDGET_WEEKLY || env.TOKEN_BUDGET_MONTHLY) {
+  if (
+    env.TOKEN_BUDGET_DAILY ||
+    env.TOKEN_BUDGET_WEEKLY ||
+    env.TOKEN_BUDGET_MONTHLY
+  ) {
     raw.tokenBudget = {
       daily: parseNumber(env.TOKEN_BUDGET_DAILY, 1000000),
       weekly: parseNumber(env.TOKEN_BUDGET_WEEKLY, 5000000),
@@ -460,7 +471,7 @@ function buildConfigFromEnv(env: NodeJS.ProcessEnv): Record<string, unknown> {
 
 async function rotateConfigBackups(
   configPath: string,
-  ioFs: typeof fs.promises,
+  ioFs: typeof fs.promises
 ): Promise<void> {
   if (CONFIG_BACKUP_COUNT <= 1) {
     return;
@@ -481,9 +492,9 @@ async function rotateConfigBackups(
 // Config IO Factory
 // =============================================================================
 
-function normalizeDeps(overrides: ConfigLoadOptions = {}): Required<
-  Omit<ConfigLoadOptions, 'configPath'> & { configPath: string }
-> {
+function normalizeDeps(
+  overrides: ConfigLoadOptions = {}
+): Required<Omit<ConfigLoadOptions, 'configPath'> & { configPath: string }> {
   const env = overrides.env ?? process.env;
   const homedir = overrides.homedir ?? os.homedir;
   const ioFs = overrides.fs ?? fs;
@@ -495,7 +506,7 @@ function normalizeDeps(overrides: ConfigLoadOptions = {}): Required<
   if (!configPath) {
     const candidates = resolveConfigCandidates(env, homedir);
     configPath =
-      candidates.find((c) => ioFs.existsSync(c)) ??
+      candidates.find(c => ioFs.existsSync(c)) ??
       resolveConfigPath(env, resolveStateDir(env, homedir));
   }
 
@@ -528,8 +539,8 @@ export function createConfigIO(overrides: ConfigLoadOptions = {}) {
 
         // Resolve $include directives
         const resolver: IncludeResolver = {
-          readFile: (p) => deps.fs.readFileSync(p, 'utf-8'),
-          parseJson: (r) => deps.jsonParser.parse(r),
+          readFile: p => deps.fs.readFileSync(p, 'utf-8'),
+          parseJson: r => deps.jsonParser.parse(r),
         };
         const resolved = resolveConfigIncludes(parsed, configPath, resolver);
 
@@ -551,12 +562,12 @@ export function createConfigIO(overrides: ConfigLoadOptions = {}) {
       const result = validateConfig(merged);
       if (!result.ok) {
         const details = result.issues
-          .map((iss) => `- ${iss.path}: ${iss.message}`)
+          .map(iss => `- ${iss.path}: ${iss.message}`)
           .join('\n');
         deps.logger.error(`Invalid config at ${configPath}:\n${details}`);
         const error = new Error(
           `Configuration validation failed:\n${details}\n\n` +
-            'Please check your config file or environment variables.',
+            'Please check your config file or environment variables.'
         );
         (error as { code?: string }).code = 'INVALID_CONFIG';
         throw error;
@@ -564,7 +575,7 @@ export function createConfigIO(overrides: ConfigLoadOptions = {}) {
 
       if (result.warnings.length > 0) {
         const details = result.warnings
-          .map((w) => `- ${w.path}: ${w.message}`)
+          .map(w => `- ${w.path}: ${w.message}`)
           .join('\n');
         deps.logger.warn(`Config warnings:\n${details}`);
       }
@@ -638,8 +649,8 @@ export function createConfigIO(overrides: ConfigLoadOptions = {}) {
       let resolved: unknown;
       try {
         const resolver: IncludeResolver = {
-          readFile: (p) => deps.fs.readFileSync(p, 'utf-8'),
-          parseJson: (r) => deps.jsonParser.parse(r),
+          readFile: p => deps.fs.readFileSync(p, 'utf-8'),
+          parseJson: r => deps.jsonParser.parse(r),
         };
         resolved = resolveConfigIncludes(parsed, configPath, resolver);
       } catch (includeErr) {
@@ -748,13 +759,13 @@ export function createConfigIO(overrides: ConfigLoadOptions = {}) {
       const issue = result.issues[0];
       const pathLabel = issue?.path || '<root>';
       throw new Error(
-        `Config validation failed: ${pathLabel}: ${issue?.message ?? 'invalid'}`,
+        `Config validation failed: ${pathLabel}: ${issue?.message ?? 'invalid'}`
       );
     }
 
     if (result.warnings.length > 0) {
       const details = result.warnings
-        .map((w) => `- ${w.path}: ${w.message}`)
+        .map(w => `- ${w.path}: ${w.message}`)
         .join('\n');
       deps.logger.warn(`Config warnings:\n${details}`);
     }
@@ -777,7 +788,7 @@ export function createConfigIO(overrides: ConfigLoadOptions = {}) {
     // Atomic write via temp file
     const tmp = path.join(
       dir,
-      `${path.basename(configPath)}.${process.pid}.${crypto.randomUUID()}.tmp`,
+      `${path.basename(configPath)}.${process.pid}.${crypto.randomUUID()}.tmp`
     );
 
     await deps.fs.promises.writeFile(tmp, json, {
@@ -894,7 +905,7 @@ export function loadConfig(opts?: ConfigLoadOptions): WundrConfig {
  * Read a config snapshot (no caching).
  */
 export async function readConfigSnapshot(
-  opts?: ConfigLoadOptions,
+  opts?: ConfigLoadOptions
 ): Promise<ConfigSnapshot> {
   return createConfigIO(opts).readConfigSnapshot();
 }
@@ -904,7 +915,7 @@ export async function readConfigSnapshot(
  */
 export async function writeConfig(
   cfg: WundrConfig,
-  opts?: ConfigLoadOptions,
+  opts?: ConfigLoadOptions
 ): Promise<void> {
   clearConfigCache();
   return createConfigIO(opts).writeConfig(cfg);
@@ -939,7 +950,7 @@ export function resetConfig(): void {
  * Useful for early startup validation before loading the full config.
  */
 export function validateRequiredEnv(
-  env: NodeJS.ProcessEnv = process.env,
+  env: NodeJS.ProcessEnv = process.env
 ): void {
   const required = ['OPENAI_API_KEY'];
   const missing: string[] = [];
@@ -954,7 +965,7 @@ export function validateRequiredEnv(
     throw new Error(
       `Missing required environment variables:\n  - ${missing.join('\n  - ')}\n\n` +
         'Please set these in your environment or create a .env file.\n' +
-        'See .env.example for reference.',
+        'See .env.example for reference.'
     );
   }
 }

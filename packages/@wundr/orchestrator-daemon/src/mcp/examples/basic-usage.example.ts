@@ -83,9 +83,13 @@ async function commandExecutionExample() {
   console.log(lsResult.data?.stdout);
 
   // Try a dangerous command (will be blocked)
-  const dangerousResult = await registry.executeTool('bash_execute', 'execute', {
-    command: 'rm -rf /',
-  });
+  const dangerousResult = await registry.executeTool(
+    'bash_execute',
+    'execute',
+    {
+      command: 'rm -rf /',
+    }
+  );
 
   console.log('\nDangerous command blocked:', !dangerousResult.success);
   console.log('Error:', dangerousResult.error);
@@ -134,12 +138,12 @@ function toolDiscoveryExample() {
   // List all available tools
   const tools = registry.listTools();
   console.log(`Available tools (${tools.length}):`);
-  tools.forEach((toolId) => {
+  tools.forEach(toolId => {
     const tool = registry.getTool(toolId);
     console.log(`\n  ${toolId}:`);
     console.log(`    Description: ${tool?.description}`);
     console.log(
-      `    Required params: ${tool?.inputSchema.required?.join(', ') || 'none'}`,
+      `    Required params: ${tool?.inputSchema.required?.join(', ') || 'none'}`
     );
   });
 }
@@ -192,7 +196,7 @@ async function customToolExample() {
     {
       text: 'hello world',
       operation: 'uppercase',
-    },
+    }
   );
 
   console.log('Uppercase:', uppercaseResult.data?.result);
@@ -203,7 +207,7 @@ async function customToolExample() {
     {
       text: 'hello world',
       operation: 'reverse',
-    },
+    }
   );
 
   console.log('Reverse:', reverseResult.data?.result);
@@ -214,7 +218,7 @@ async function customToolExample() {
     {
       text: 'hello world',
       operation: 'length',
-    },
+    }
   );
 
   console.log('Length:', lengthResult.data?.result);
@@ -240,7 +244,7 @@ async function errorHandlingExample() {
   const unknownTool = await registry.executeTool(
     'unknown_tool',
     'operation',
-    {},
+    {}
   );
 
   console.log('\nUnknown tool - Success:', unknownTool.success);
@@ -272,16 +276,16 @@ async function batchOperationsExample() {
 
   console.log('Creating files...');
   const writeResults = await Promise.all(
-    files.map((file) =>
+    files.map(file =>
       registry.executeTool('file_write', 'write', {
         path: `./temp/batch/${file.name}`,
         content: file.content,
         createDirectories: true,
-      }),
-    ),
+      })
+    )
   );
 
-  const successCount = writeResults.filter((r) => r.success).length;
+  const successCount = writeResults.filter(r => r.success).length;
   console.log(`Created ${successCount}/${files.length} files`);
 
   // List all created files

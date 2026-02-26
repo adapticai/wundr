@@ -38,7 +38,7 @@ export class ConfigIncludeError extends Error {
   constructor(
     message: string,
     public readonly includePath: string,
-    public readonly cause?: Error,
+    public readonly cause?: Error
   ) {
     super(message);
     this.name = 'ConfigIncludeError';
@@ -49,7 +49,7 @@ export class CircularIncludeError extends ConfigIncludeError {
   constructor(public readonly chain: string[]) {
     super(
       `Circular include detected: ${chain.join(' -> ')}`,
-      chain[chain.length - 1],
+      chain[chain.length - 1]
     );
     this.name = 'CircularIncludeError';
   }
@@ -58,9 +58,11 @@ export class CircularIncludeError extends ConfigIncludeError {
 export class MissingEnvVarError extends Error {
   constructor(
     public readonly varName: string,
-    public readonly configPath: string,
+    public readonly configPath: string
   ) {
-    super(`Missing env var "${varName}" referenced at config path: ${configPath}`);
+    super(
+      `Missing env var "${varName}" referenced at config path: ${configPath}`
+    );
     this.name = 'MissingEnvVarError';
   }
 }
@@ -150,7 +152,7 @@ function mergeArrayPrepend(target: unknown[], source: unknown[]): unknown[] {
 function mergeArrayByKey(
   target: unknown[],
   source: unknown[],
-  mergeKey: string,
+  mergeKey: string
 ): unknown[] {
   const result = [...target];
   const indexMap = new Map<unknown, number>();
@@ -179,7 +181,7 @@ function mergeArrayByKey(
         'concat',
         {},
         'id',
-        '',
+        ''
       );
     } else {
       result.push(sourceItem);
@@ -194,7 +196,7 @@ function applyArrayStrategy(
   target: unknown[],
   source: unknown[],
   strategy: ArrayMergeStrategy,
-  mergeKey: string,
+  mergeKey: string
 ): unknown[] {
   switch (strategy) {
     case 'concat':
@@ -219,7 +221,7 @@ function applyArrayStrategy(
 function resolveArrayStrategy(
   currentPath: string,
   defaultStrategy: ArrayMergeStrategy,
-  byPath: Record<string, ArrayMergeStrategy>,
+  byPath: Record<string, ArrayMergeStrategy>
 ): ArrayMergeStrategy {
   if (currentPath && currentPath in byPath) {
     return byPath[currentPath];
@@ -233,13 +235,13 @@ function deepMergeInternal(
   arrayStrategy: ArrayMergeStrategy,
   arrayStrategyByPath: Record<string, ArrayMergeStrategy>,
   arrayMergeKey: string,
-  currentPath: string,
+  currentPath: string
 ): unknown {
   if (Array.isArray(target) && Array.isArray(source)) {
     const strategy = resolveArrayStrategy(
       currentPath,
       arrayStrategy,
-      arrayStrategyByPath,
+      arrayStrategyByPath
     );
     return applyArrayStrategy(target, source, strategy, arrayMergeKey);
   }
@@ -247,16 +249,17 @@ function deepMergeInternal(
     const result: Record<string, unknown> = { ...target };
     for (const key of Object.keys(source)) {
       const childPath = currentPath ? `${currentPath}.${key}` : key;
-      result[key] = key in result
-        ? deepMergeInternal(
-            result[key],
-            source[key],
-            arrayStrategy,
-            arrayStrategyByPath,
-            arrayMergeKey,
-            childPath,
-          )
-        : source[key];
+      result[key] =
+        key in result
+          ? deepMergeInternal(
+              result[key],
+              source[key],
+              arrayStrategy,
+              arrayStrategyByPath,
+              arrayMergeKey,
+              childPath
+            )
+          : source[key];
     }
     return result;
   }
@@ -281,7 +284,7 @@ function deepMergeInternal(
 export function deepMerge(
   target: unknown,
   source: unknown,
-  options?: DeepMergeOptions,
+  options?: DeepMergeOptions
 ): unknown {
   const arrayStrategy = options?.arrayStrategy ?? 'concat';
   const arrayStrategyByPath = options?.arrayStrategyByPath ?? {};
@@ -293,7 +296,7 @@ export function deepMerge(
     arrayStrategy,
     arrayStrategyByPath,
     arrayMergeKey,
-    '',
+    ''
   );
 }
 
@@ -304,7 +307,7 @@ export function deepMerge(
 export function mergeConfigSection<T extends Record<string, unknown>>(
   base: T | undefined,
   patch: Partial<T>,
-  options: { unsetOnUndefined?: Array<keyof T> } = {},
+  options: { unsetOnUndefined?: Array<keyof T> } = {}
 ): T {
   const next: Record<string, unknown> = { ...(base ?? {}) };
   for (const [key, value] of Object.entries(patch) as [keyof T, T[keyof T]][]) {
@@ -329,14 +332,14 @@ class IncludeProcessor {
 
   constructor(
     private basePath: string,
-    private resolver: IncludeResolver,
+    private resolver: IncludeResolver
   ) {
     this.visited.add(path.normalize(basePath));
   }
 
   process(obj: unknown): unknown {
     if (Array.isArray(obj)) {
-      return obj.map((item) => this.process(item));
+      return obj.map(item => this.process(item));
     }
 
     if (!isPlainObject(obj)) {
@@ -360,7 +363,7 @@ class IncludeProcessor {
 
   private processInclude(obj: Record<string, unknown>): unknown {
     const includeValue = obj[INCLUDE_KEY];
-    const otherKeys = Object.keys(obj).filter((k) => k !== INCLUDE_KEY);
+    const otherKeys = Object.keys(obj).filter(k => k !== INCLUDE_KEY);
     const included = this.resolveInclude(includeValue);
 
     if (otherKeys.length === 0) {
@@ -370,7 +373,7 @@ class IncludeProcessor {
     if (!isPlainObject(included)) {
       throw new ConfigIncludeError(
         'Sibling keys require included content to be an object',
-        typeof includeValue === 'string' ? includeValue : INCLUDE_KEY,
+        typeof includeValue === 'string' ? includeValue : INCLUDE_KEY
       );
     }
 
@@ -391,7 +394,7 @@ class IncludeProcessor {
         if (typeof item !== 'string') {
           throw new ConfigIncludeError(
             `Invalid $include array item: expected string, got ${typeof item}`,
-            String(item),
+            String(item)
           );
         }
         return deepMerge(merged, this.loadFile(item));
@@ -400,7 +403,7 @@ class IncludeProcessor {
 
     throw new ConfigIncludeError(
       `Invalid $include value: expected string or array of strings, got ${typeof value}`,
-      String(value),
+      String(value)
     );
   }
 
@@ -433,7 +436,7 @@ class IncludeProcessor {
     if (this.depth >= MAX_INCLUDE_DEPTH) {
       throw new ConfigIncludeError(
         `Maximum include depth (${MAX_INCLUDE_DEPTH}) exceeded at: ${includePath}`,
-        includePath,
+        includePath
       );
     }
   }
@@ -445,19 +448,23 @@ class IncludeProcessor {
       throw new ConfigIncludeError(
         `Failed to read include file: ${includePath} (resolved: ${resolvedPath})`,
         includePath,
-        err instanceof Error ? err : undefined,
+        err instanceof Error ? err : undefined
       );
     }
   }
 
-  private parseFile(includePath: string, resolvedPath: string, raw: string): unknown {
+  private parseFile(
+    includePath: string,
+    resolvedPath: string,
+    raw: string
+  ): unknown {
     try {
       return this.resolver.parseJson(raw);
     } catch (err) {
       throw new ConfigIncludeError(
         `Failed to parse include file: ${includePath} (resolved: ${resolvedPath})`,
         includePath,
-        err instanceof Error ? err : undefined,
+        err instanceof Error ? err : undefined
       );
     }
   }
@@ -475,8 +482,8 @@ class IncludeProcessor {
 // =============================================================================
 
 const defaultResolver: IncludeResolver = {
-  readFile: (p) => fs.readFileSync(p, 'utf-8'),
-  parseJson: (raw) => JSON.parse(raw),
+  readFile: p => fs.readFileSync(p, 'utf-8'),
+  parseJson: raw => JSON.parse(raw),
 };
 
 /**
@@ -488,7 +495,7 @@ const defaultResolver: IncludeResolver = {
 export function resolveConfigIncludes(
   obj: unknown,
   configPath: string,
-  resolver: IncludeResolver = defaultResolver,
+  resolver: IncludeResolver = defaultResolver
 ): unknown {
   return new IncludeProcessor(configPath, resolver).process(obj);
 }
@@ -500,7 +507,7 @@ export function resolveConfigIncludes(
 function substituteString(
   value: string,
   env: NodeJS.ProcessEnv,
-  configPath: string,
+  configPath: string
 ): string {
   if (!value.includes('$')) {
     return value;
@@ -560,7 +567,7 @@ function substituteString(
 function substituteAny(
   value: unknown,
   env: NodeJS.ProcessEnv,
-  configPath: string,
+  configPath: string
 ): unknown {
   if (typeof value === 'string') {
     return substituteString(value, env, configPath);
@@ -568,7 +575,7 @@ function substituteAny(
 
   if (Array.isArray(value)) {
     return value.map((item, index) =>
-      substituteAny(item, env, `${configPath}[${index}]`),
+      substituteAny(item, env, `${configPath}[${index}]`)
     );
   }
 
@@ -593,7 +600,7 @@ function substituteAny(
  */
 export function resolveEnvVars(
   obj: unknown,
-  env: NodeJS.ProcessEnv = process.env,
+  env: NodeJS.ProcessEnv = process.env
 ): unknown {
   return substituteAny(obj, env, '');
 }
@@ -639,7 +646,7 @@ export function resetOverrides(): void {
  */
 export function setOverride(
   dotPath: string,
-  value: unknown,
+  value: unknown
 ): { ok: boolean; error?: string } {
   const parts = dotPath.split('.').filter(Boolean);
   if (parts.length === 0) {
@@ -661,7 +668,10 @@ export function setOverride(
 /**
  * Remove a runtime override at a dot-separated path.
  */
-export function unsetOverride(dotPath: string): { ok: boolean; removed: boolean } {
+export function unsetOverride(dotPath: string): {
+  ok: boolean;
+  removed: boolean;
+} {
   const parts = dotPath.split('.').filter(Boolean);
   if (parts.length === 0) {
     return { ok: false, removed: false };
@@ -703,7 +713,7 @@ export function applyOverrides<T>(config: T): T {
 export function diffConfigPaths(
   prev: unknown,
   next: unknown,
-  prefix = '',
+  prefix = ''
 ): string[] {
   if (prev === next) {
     return [];

@@ -18,7 +18,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { ProviderHealthTracker } from '../../../models/provider-health';
 
-
 describe('ProviderHealthTracker', () => {
   let tracker: ProviderHealthTracker;
 
@@ -356,7 +355,7 @@ describe('ProviderHealthTracker', () => {
 
       const snapshots = tracker.getAllSnapshots();
       expect(snapshots).toHaveLength(3);
-      const names = snapshots.map((s) => s.provider);
+      const names = snapshots.map(s => s.provider);
       expect(names).toContain('openai');
       expect(names).toContain('anthropic');
       expect(names).toContain('google');

@@ -6,7 +6,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { FederationRegistry } from '../registry';
 
-import type { RegistryOrchestratorMetadata, FederationRegistryConfig } from '../registry-types';
+import type {
+  RegistryOrchestratorMetadata,
+  FederationRegistryConfig,
+} from '../registry-types';
 
 /**
  * In-memory Redis mock that supports the subset of commands used by
@@ -27,8 +30,8 @@ function createMockRedisClient() {
     }),
     on: vi.fn((event: string, cb: (...args: unknown[]) => unknown) => {
       if (!handlers[event]) {
-handlers[event] = [];
-}
+        handlers[event] = [];
+      }
       handlers[event].push(cb);
     }),
     set: vi.fn(async (key: string, value: string) => {
@@ -43,8 +46,8 @@ handlers[event] = [];
     }),
     sAdd: vi.fn(async (key: string, member: string) => {
       if (!sets.has(key)) {
-sets.set(key, new Set());
-}
+        sets.set(key, new Set());
+      }
       const s = sets.get(key)!;
       const isNew = !s.has(member);
       s.add(member);
@@ -53,8 +56,8 @@ sets.set(key, new Set());
     sRem: vi.fn(async (key: string, member: string) => {
       const s = sets.get(key);
       if (!s) {
-return 0;
-}
+        return 0;
+      }
       const had = s.has(member) ? 1 : 0;
       s.delete(member);
       return had;
@@ -65,17 +68,17 @@ return 0;
     }),
     sInter: vi.fn(async (keys: string[]) => {
       if (keys.length === 0) {
-return [];
-}
+        return [];
+      }
       const first = sets.get(keys[0]);
       if (!first) {
-return [];
-}
+        return [];
+      }
       const result = [...first].filter(member =>
         keys.every(k => {
           const s = sets.get(k);
           return s ? s.has(member) : false;
-        }),
+        })
       );
       return result;
     }),
@@ -165,7 +168,7 @@ describe('FederationRegistry', () => {
       };
 
       await expect(registry.registerOrchestrator(metadata)).rejects.toThrow(
-        'Redis not connected',
+        'Redis not connected'
       );
     });
   });
@@ -248,9 +251,12 @@ describe('FederationRegistry', () => {
       await registry.registerOrchestrator(metadata);
 
       const statusChangePromise = new Promise(resolve => {
-        registry.once('orchestrator:status_changed', (id, oldStatus, newStatus) => {
-          resolve({ id, oldStatus, newStatus });
-        });
+        registry.once(
+          'orchestrator:status_changed',
+          (id, oldStatus, newStatus) => {
+            resolve({ id, oldStatus, newStatus });
+          }
+        );
       });
 
       await registry.updateHeartbeat('orch-1');
@@ -299,12 +305,16 @@ describe('FederationRegistry', () => {
       await registry.registerOrchestrator(metadata1);
       await registry.registerOrchestrator(metadata2);
 
-      const orchestrators = await registry.getOrchestratorsByCapability(['text-generation']);
+      const orchestrators = await registry.getOrchestratorsByCapability([
+        'text-generation',
+      ]);
       expect(orchestrators).toHaveLength(2);
     });
 
     it('should return empty array for non-existent capability', async () => {
-      const orchestrators = await registry.getOrchestratorsByCapability(['non-existent']);
+      const orchestrators = await registry.getOrchestratorsByCapability([
+        'non-existent',
+      ]);
       expect(orchestrators).toHaveLength(0);
     });
   });
@@ -344,7 +354,8 @@ describe('FederationRegistry', () => {
       await registry.registerOrchestrator(metadata1);
       await registry.registerOrchestrator(metadata2);
 
-      const orchestrators = await registry.getOrchestratorsByRegion('us-east-1');
+      const orchestrators =
+        await registry.getOrchestratorsByRegion('us-east-1');
       expect(orchestrators).toHaveLength(1);
       expect(orchestrators[0].id).toBe('orch-1');
     });
@@ -449,7 +460,7 @@ describe('FederationRegistry', () => {
           tokensUsed: 100000,
           tokenLimit: 1000000,
           tier: 'production',
-        status: 'online',
+          status: 'online',
           lastHeartbeat: new Date(),
           registeredAt: new Date(),
         },
@@ -463,7 +474,7 @@ describe('FederationRegistry', () => {
           tokensUsed: 400000,
           tokenLimit: 500000,
           tier: 'production',
-        status: 'busy',
+          status: 'busy',
           lastHeartbeat: new Date(),
           registeredAt: new Date(),
         },
@@ -477,7 +488,7 @@ describe('FederationRegistry', () => {
           tokensUsed: 50000,
           tokenLimit: 2000000,
           tier: 'production',
-        status: 'online',
+          status: 'online',
           lastHeartbeat: new Date(),
           registeredAt: new Date(),
         },
@@ -580,9 +591,12 @@ describe('FederationRegistry', () => {
       await registry.registerOrchestrator(metadata);
 
       const statusChangePromise = new Promise(resolve => {
-        registry.once('orchestrator:status_changed', (id, oldStatus, newStatus) => {
-          resolve({ id, oldStatus, newStatus });
-        });
+        registry.once(
+          'orchestrator:status_changed',
+          (id, oldStatus, newStatus) => {
+            resolve({ id, oldStatus, newStatus });
+          }
+        );
       });
 
       await registry.updateStatus('orch-1', 'draining');

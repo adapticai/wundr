@@ -10,11 +10,7 @@ import { HOOK_EVENT_GROUPS } from './hook-types';
 
 import type { HookEngine } from './hook-engine';
 import type { HookRegistry } from './hook-registry';
-import type {
-  HookEventName,
-  HookSnapshot,
-} from './hook-types';
-
+import type { HookEventName, HookSnapshot } from './hook-types';
 
 // =============================================================================
 // Status Types
@@ -106,7 +102,7 @@ export interface HookGroupedView {
  */
 export function generateHookStatus(
   registry: HookRegistry,
-  engine?: HookEngine,
+  engine?: HookEngine
 ): HookSystemStatus {
   const allHooks = registry.getAllHooks();
   const diagnostics = runHealthChecks(registry);
@@ -143,7 +139,7 @@ export function generateHookStatus(
   }
 
   // Build hook details
-  const hooks = allHooks.map((hook) => ({
+  const hooks = allHooks.map(hook => ({
     id: hook.id,
     name: hook.name,
     event: hook.event,
@@ -159,7 +155,7 @@ export function generateHookStatus(
     hasAgentConfig: !!hook.agentConfig,
   }));
 
-  const hasErrors = diagnostics.some((d) => d.level === 'error');
+  const hasErrors = diagnostics.some(d => d.level === 'error');
 
   return {
     healthy: !hasErrors,
@@ -242,7 +238,12 @@ function runHealthChecks(registry: HookRegistry): HookDiagnostic[] {
     seenIds.add(hook.id);
 
     // Check for missing execution mechanism
-    if (!hook.handler && !hook.command && !hook.promptTemplate && !hook.agentConfig) {
+    if (
+      !hook.handler &&
+      !hook.command &&
+      !hook.promptTemplate &&
+      !hook.agentConfig
+    ) {
       diagnostics.push({
         level: 'error',
         message: `Hook "${hook.id}" has no execution mechanism (handler, command, prompt, or agent config)`,
@@ -298,9 +299,19 @@ function runHealthChecks(registry: HookRegistry): HookDiagnostic[] {
 
   // Check for events with no hooks
   const allEvents: HookEventName[] = [
-    'SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PermissionRequest',
-    'PostToolUse', 'PostToolUseFailure', 'Notification', 'SubagentStart',
-    'SubagentStop', 'Stop', 'TeammateIdle', 'TaskCompleted', 'PreCompact',
+    'SessionStart',
+    'UserPromptSubmit',
+    'PreToolUse',
+    'PermissionRequest',
+    'PostToolUse',
+    'PostToolUseFailure',
+    'Notification',
+    'SubagentStart',
+    'SubagentStop',
+    'Stop',
+    'TeammateIdle',
+    'TaskCompleted',
+    'PreCompact',
     'SessionEnd',
   ];
 
@@ -327,33 +338,33 @@ function runHealthChecks(registry: HookRegistry): HookDiagnostic[] {
  */
 export function compareSnapshots(
   before: HookSnapshot,
-  after: HookSnapshot,
+  after: HookSnapshot
 ): {
   added: string[];
   removed: string[];
   changed: string[];
 } {
-  const beforeNames = new Set(before.hooks.map((h) => h.name));
-  const afterNames = new Set(after.hooks.map((h) => h.name));
+  const beforeNames = new Set(before.hooks.map(h => h.name));
+  const afterNames = new Set(after.hooks.map(h => h.name));
 
-  const added = [...afterNames].filter((name) => !beforeNames.has(name));
-  const removed = [...beforeNames].filter((name) => !afterNames.has(name));
+  const added = [...afterNames].filter(name => !beforeNames.has(name));
+  const removed = [...beforeNames].filter(name => !afterNames.has(name));
 
   const changed: string[] = [];
   for (const afterHook of after.hooks) {
     if (!beforeNames.has(afterHook.name)) {
-continue;
-}
-    const beforeHook = before.hooks.find((h) => h.name === afterHook.name);
+      continue;
+    }
+    const beforeHook = before.hooks.find(h => h.name === afterHook.name);
     if (!beforeHook) {
-continue;
-}
+      continue;
+    }
 
     const beforeEvents = new Set(beforeHook.events);
     const afterEvents = new Set(afterHook.events);
     const eventsChanged =
       beforeEvents.size !== afterEvents.size ||
-      [...beforeEvents].some((e) => !afterEvents.has(e));
+      [...beforeEvents].some(e => !afterEvents.has(e));
 
     if (eventsChanged) {
       changed.push(afterHook.name);
@@ -413,7 +424,12 @@ export function formatHookStatus(status: HookSystemStatus): string {
     lines.push('');
     lines.push('Diagnostics:');
     for (const diag of status.diagnostics) {
-      const prefix = diag.level === 'error' ? 'ERROR' : diag.level === 'warn' ? 'WARN' : 'INFO';
+      const prefix =
+        diag.level === 'error'
+          ? 'ERROR'
+          : diag.level === 'warn'
+            ? 'WARN'
+            : 'INFO';
       const hookSuffix = diag.hookId ? ` [${diag.hookId}]` : '';
       lines.push(`  [${prefix}]${hookSuffix} ${diag.message}`);
     }

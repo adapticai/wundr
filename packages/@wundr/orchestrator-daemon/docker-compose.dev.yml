@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Redis for development - same as production
@@ -50,7 +50,7 @@ services:
     ports:
       - "8787:8787"
       - "9090:9090"
-      - "9229:9229"  # Node.js debugger port
+      - "9229:9229" # Node.js debugger port
     environment:
       # Development environment
       NODE_ENV: development
@@ -103,7 +103,8 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8787/health || exit 1"]
+      test:
+        ["CMD-SHELL", "wget -q --spider http://localhost:8787/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -133,7 +134,7 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@orchestrator.local
       PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
       - "5050:80"
     volumes:

@@ -69,9 +69,7 @@ const authFixtures = {
     jwtIssuer: 'wundr-orchestrator',
     jwtAudience: 'wundr-daemon',
     jwtExpiresInSeconds: 3600,
-    apiKeys: [
-      { key: AUTH_API_KEY_1, clientId: 'alpha', scopes: [] },
-    ],
+    apiKeys: [{ key: AUTH_API_KEY_1, clientId: 'alpha', scopes: [] }],
     allowLoopback: false,
     rateLimitMaxMessages: 100,
     rateLimitWindowMs: 60_000,
@@ -99,13 +97,11 @@ const authFixtures = {
     jwtIssuer: 'wundr-orchestrator',
     jwtAudience: 'wundr-daemon',
     jwtExpiresInSeconds: 3600,
-    apiKeys: [
-      { key: AUTH_API_KEY_1, clientId: 'alpha', scopes: [] },
-    ],
+    apiKeys: [{ key: AUTH_API_KEY_1, clientId: 'alpha', scopes: [] }],
     allowLoopback: false,
-    rateLimitMaxMessages: 5,       // very low for testing
-    rateLimitWindowMs: 10_000,     // 10s window
-    maxConnectionsPerClient: 2,    // low concurrency
+    rateLimitMaxMessages: 5, // very low for testing
+    rateLimitWindowMs: 10_000, // 10s window
+    maxConnectionsPerClient: 2, // low concurrency
   }),
 } as const;
 

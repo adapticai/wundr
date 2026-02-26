@@ -147,8 +147,8 @@ function formatJson(entry: LogEntry): string {
 
 function serializeError(err: unknown): LogEntry['error'] | undefined {
   if (!err) {
-return undefined;
-}
+    return undefined;
+  }
 
   if (err instanceof Error) {
     return {
@@ -205,19 +205,21 @@ export class StructuredLogger {
   constructor(
     component: string,
     config?: StructuredLoggerConfig,
-    context?: LogContext,
+    context?: LogContext
   ) {
     this.component = component;
     this.context = Object.freeze({ ...(context || {}) });
 
-    const resolvedLevel = config?.level
-      ?? (process.env['LOG_LEVEL'] as LogLevel | undefined)
-      ?? 'info';
+    const resolvedLevel =
+      config?.level ??
+      (process.env['LOG_LEVEL'] as LogLevel | undefined) ??
+      'info';
     this.level = LOG_LEVEL_VALUES[resolvedLevel] ?? LOG_LEVEL_VALUES.info;
 
-    this.format = config?.format
-      ?? (process.env['LOG_FORMAT'] as LogFormat | undefined)
-      ?? 'json';
+    this.format =
+      config?.format ??
+      (process.env['LOG_FORMAT'] as LogFormat | undefined) ??
+      'json';
 
     this.writer = config?.writer ?? new ConsoleLogWriter();
   }
@@ -235,7 +237,7 @@ export class StructuredLogger {
     return new StructuredLogger(
       this.component,
       { level: this.resolvedLevel(), format: this.format, writer: this.writer },
-      merged,
+      merged
     );
   }
 
@@ -262,7 +264,7 @@ export class StructuredLogger {
     return new StructuredLogger(
       this.component,
       { level, format: this.format, writer: this.writer },
-      { ...this.context },
+      { ...this.context }
     );
   }
 
@@ -278,7 +280,7 @@ export class StructuredLogger {
    */
   startTimer(
     message: string,
-    level: LogLevel = 'info',
+    level: LogLevel = 'info'
   ): (metadata?: Record<string, unknown>) => number {
     const start = performance.now();
     return (metadata?: Record<string, unknown>) => {
@@ -299,8 +301,8 @@ export class StructuredLogger {
 
   private log(level: LogLevel, message: string, args: unknown[]): void {
     if (LOG_LEVEL_VALUES[level] < this.level) {
-return;
-}
+      return;
+    }
 
     // Separate error objects from metadata objects in the args list.
     let errorObj: LogEntry['error'] | undefined;
@@ -310,14 +312,22 @@ return;
     for (const arg of args) {
       if (arg instanceof Error) {
         errorObj = serializeError(arg);
-      } else if (typeof arg === 'object' && arg !== null && !Array.isArray(arg)) {
+      } else if (
+        typeof arg === 'object' &&
+        arg !== null &&
+        !Array.isArray(arg)
+      ) {
         const obj = arg as Record<string, unknown>;
         if ('duration' in obj && typeof obj['duration'] === 'number') {
           duration = obj['duration'] as number;
           // Copy remaining keys to metadata
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { duration: _d, ...rest } = obj;
-          metadata = metadata ? { ...metadata, ...rest } : (Object.keys(rest).length > 0 ? rest : undefined);
+          metadata = metadata
+            ? { ...metadata, ...rest }
+            : Object.keys(rest).length > 0
+              ? rest
+              : undefined;
         } else {
           metadata = metadata ? { ...metadata, ...obj } : obj;
         }
@@ -333,33 +343,33 @@ return;
 
     // Attach context fields
     if (this.context.traceId) {
-entry.traceId = this.context.traceId;
-}
+      entry.traceId = this.context.traceId;
+    }
     if (this.context.spanId) {
-entry.spanId = this.context.spanId;
-}
+      entry.spanId = this.context.spanId;
+    }
     if (this.context.parentSpanId) {
-entry.parentSpanId = this.context.parentSpanId;
-}
+      entry.parentSpanId = this.context.parentSpanId;
+    }
     if (this.context.sessionId) {
-entry.sessionId = this.context.sessionId as string;
-}
+      entry.sessionId = this.context.sessionId as string;
+    }
     if (this.context.orchestratorId) {
-entry.orchestratorId = this.context.orchestratorId as string;
-}
+      entry.orchestratorId = this.context.orchestratorId as string;
+    }
     if (this.context.correlationId) {
-entry.correlationId = this.context.correlationId as string;
-}
+      entry.correlationId = this.context.correlationId as string;
+    }
 
     if (duration !== undefined) {
-entry.duration = duration;
-}
+      entry.duration = duration;
+    }
     if (errorObj) {
-entry.error = errorObj;
-}
+      entry.error = errorObj;
+    }
     if (metadata && Object.keys(metadata).length > 0) {
-entry.metadata = metadata;
-}
+      entry.metadata = metadata;
+    }
 
     const raw = this.format === 'json' ? formatJson(entry) : formatText(entry);
     this.writer.write(entry, raw);
@@ -388,18 +398,18 @@ export class InMemoryLogWriter implements LogWriter {
   }
 
   findByLevel(level: LogLevel): LogEntry[] {
-    return this.entries.filter((e) => e.level === level);
+    return this.entries.filter(e => e.level === level);
   }
 
   findByComponent(component: string): LogEntry[] {
-    return this.entries.filter((e) => e.component === component);
+    return this.entries.filter(e => e.component === component);
   }
 
   findByMessage(pattern: string | RegExp): LogEntry[] {
-    return this.entries.filter((e) =>
+    return this.entries.filter(e =>
       typeof pattern === 'string'
         ? e.message.includes(pattern)
-        : pattern.test(e.message),
+        : pattern.test(e.message)
     );
   }
 }
@@ -432,7 +442,8 @@ export class LogLevelRegistry {
 
   private globalLevel: LogLevel | null = null;
   private componentLevels: Map<string, LogLevel> = new Map();
-  private listeners: Set<(component: string, level: LogLevel) => void> = new Set();
+  private listeners: Set<(component: string, level: LogLevel) => void> =
+    new Set();
 
   private constructor() {}
 
@@ -498,7 +509,7 @@ export class LogLevelRegistry {
    * Subscribe to level changes. Returns an unsubscribe function.
    */
   onLevelChange(
-    listener: (component: string, level: LogLevel) => void,
+    listener: (component: string, level: LogLevel) => void
   ): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
@@ -507,7 +518,10 @@ export class LogLevelRegistry {
   /**
    * Get a snapshot of all current overrides for debugging.
    */
-  getSnapshot(): { globalLevel: LogLevel | null; componentLevels: Record<string, LogLevel> } {
+  getSnapshot(): {
+    globalLevel: LogLevel | null;
+    componentLevels: Record<string, LogLevel>;
+  } {
     return {
       globalLevel: this.globalLevel,
       componentLevels: Object.fromEntries(this.componentLevels),
@@ -535,7 +549,7 @@ export class LogLevelRegistry {
 export function createLogger(
   component: string,
   config?: StructuredLoggerConfig,
-  context?: LogContext,
+  context?: LogContext
 ): StructuredLogger {
   return new StructuredLogger(component, config, context);
 }
@@ -546,7 +560,7 @@ export function createLogger(
  */
 export function createChildLogger(
   parent: StructuredLogger,
-  context: LogContext,
+  context: LogContext
 ): StructuredLogger {
   return parent.child(context);
 }

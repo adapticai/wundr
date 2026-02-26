@@ -78,7 +78,7 @@ class OrchestratorWorkload {
     this.collector.recordTokenUsage(
       this.orchestratorId,
       'claude-sonnet-4',
-      tokens,
+      tokens
     );
 
     // Simulate tool invocations
@@ -89,7 +89,7 @@ class OrchestratorWorkload {
     this.collector.recordToolInvocation(
       this.orchestratorId,
       tool,
-      success ? 'success' : 'error',
+      success ? 'success' : 'error'
     );
 
     // Occasionally record errors
@@ -106,7 +106,7 @@ class OrchestratorWorkload {
     this.collector.updateBudgetUtilization(
       this.orchestratorId,
       'daily',
-      budgetPercent,
+      budgetPercent
     );
 
     // Occasionally record delegations
@@ -115,13 +115,13 @@ class OrchestratorWorkload {
       this.collector.recordDelegation(
         this.orchestratorId,
         'orch-federation',
-        delegateSuccess ? 'success' : 'error',
+        delegateSuccess ? 'success' : 'error'
       );
     }
 
     console.log(
       `[${this.orchestratorId}] Processed message in ${durationMs}ms, ` +
-      `used ${tokens} tokens, invoked ${tool} (${success ? 'success' : 'error'})`,
+        `used ${tokens} tokens, invoked ${tool} (${success ? 'success' : 'error'})`
     );
   }
 }
@@ -248,10 +248,14 @@ class MonitoringStack {
     console.log('  curl http://localhost:9090/ready | jq');
     console.log('');
     console.log('  # Filter specific metric');
-    console.log('  curl -s http://localhost:9090/metrics | grep orchestrator_sessions');
+    console.log(
+      '  curl -s http://localhost:9090/metrics | grep orchestrator_sessions'
+    );
     console.log('');
     console.log('  # Watch metrics update (requires watch command)');
-    console.log('  watch -n 2 "curl -s http://localhost:9090/metrics | grep sessions_active"');
+    console.log(
+      '  watch -n 2 "curl -s http://localhost:9090/metrics | grep sessions_active"'
+    );
     console.log('');
     console.log('━'.repeat(70));
     console.log('');
@@ -275,11 +279,16 @@ class MonitoringStack {
       console.log(`  Tokens:         ${stats.totalTokens.toLocaleString()}`);
       console.log(`  Avg Latency:    ${stats.avgLatency.toFixed(2)}ms`);
       console.log(`  Tool Calls:     ${stats.toolInvocations}`);
-      console.log(`  Success Rate:   ${
-        stats.toolInvocations > 0
-          ? ((stats.successfulToolCalls / stats.toolInvocations) * 100).toFixed(1)
-          : 0
-      }%`);
+      console.log(
+        `  Success Rate:   ${
+          stats.toolInvocations > 0
+            ? (
+                (stats.successfulToolCalls / stats.toolInvocations) *
+                100
+              ).toFixed(1)
+            : 0
+        }%`
+      );
       console.log(`  Delegations:    ${stats.delegations}`);
     }
 
@@ -308,7 +317,6 @@ async function main() {
 
     process.on('SIGINT', shutdown);
     process.on('SIGTERM', shutdown);
-
   } catch (error) {
     console.error('Failed to start monitoring stack:', error);
     process.exit(1);

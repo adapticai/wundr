@@ -32,7 +32,7 @@ export const ROLES: readonly Role[] = ['admin', 'user', 'readonly'] as const;
  * An empty array means "all types are allowed" (unrestricted).
  */
 export const ROLE_PERMISSIONS: Record<Role, readonly string[]> = {
-  admin: [],  // unrestricted
+  admin: [], // unrestricted
   user: [
     'ping',
     'health_check',
@@ -84,18 +84,20 @@ export const AuthConfigSchema = z.object({
    * Allowed API keys.  Each key maps to a client identifier so logs can
    * attribute actions to a specific caller.
    */
-  apiKeys: z.array(
-    z.object({
-      /** The raw API key value (stored hashed at rest in production). */
-      key: z.string().min(32, 'API key must be at least 32 characters'),
-      /** Human-readable label for the holder of this key. */
-      clientId: z.string(),
-      /** Optional list of scopes this key is allowed. Empty = all. */
-      scopes: z.array(z.string()).default([]),
-      /** Optional role override for this API key. Default: 'user'. */
-      role: z.enum(['admin', 'user', 'readonly']).default('user'),
-    }),
-  ).default([]),
+  apiKeys: z
+    .array(
+      z.object({
+        /** The raw API key value (stored hashed at rest in production). */
+        key: z.string().min(32, 'API key must be at least 32 characters'),
+        /** Human-readable label for the holder of this key. */
+        clientId: z.string(),
+        /** Optional list of scopes this key is allowed. Empty = all. */
+        scopes: z.array(z.string()).default([]),
+        /** Optional role override for this API key. Default: 'user'. */
+        role: z.enum(['admin', 'user', 'readonly']).default('user'),
+      })
+    )
+    .default([]),
 
   /** Whether to allow unauthenticated connections from loopback addresses. */
   allowLoopback: z.boolean().default(false),
@@ -189,10 +191,12 @@ export interface AuthResult {
  * authenticated at upgrade time may omit it if the server policy allows.
  */
 export const AuthenticatedMessageSchema = z.object({
-  auth: z.object({
-    token: z.string().optional(),
-    apiKey: z.string().optional(),
-  }).optional(),
+  auth: z
+    .object({
+      token: z.string().optional(),
+      apiKey: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type AuthenticatedMessage = z.infer<typeof AuthenticatedMessageSchema>;
@@ -245,5 +249,5 @@ export type TokenRefreshRequest = z.infer<typeof TokenRefreshRequestSchema>;
 export interface TokenRefreshResponse {
   type: 'token_refresh_response';
   token: string;
-  expiresAt: string;  // ISO 8601
+  expiresAt: string; // ISO 8601
 }

@@ -514,7 +514,9 @@ const CATEGORIZED_PATTERNS: CategorizedPattern[] = [
 /**
  * Flat list of default pattern source strings (for backward compat).
  */
-const DEFAULT_REDACT_PATTERNS: string[] = CATEGORIZED_PATTERNS.map((p) => p.source);
+const DEFAULT_REDACT_PATTERNS: string[] = CATEGORIZED_PATTERNS.map(
+  p => p.source
+);
 
 /**
  * Map from compiled pattern source back to its category name.
@@ -601,7 +603,7 @@ const SENSITIVE_KEY_PATTERNS: RegExp[] = [
  * Returns true if a config object key name indicates a sensitive value.
  */
 export function isSensitiveKey(key: string): boolean {
-  return SENSITIVE_KEY_PATTERNS.some((pattern) => pattern.test(key));
+  return SENSITIVE_KEY_PATTERNS.some(pattern => pattern.test(key));
 }
 
 // ---------------------------------------------------------------------------
@@ -712,7 +714,7 @@ function resolvePatterns(value?: string[]): RegExp[] {
   }
   const allSources = [
     ...DEFAULT_REDACT_PATTERNS,
-    ...customPatterns.map((p) => p.source),
+    ...customPatterns.map(p => p.source),
   ];
   compiledDefaultCache = allSources
     .map(parsePattern)
@@ -759,7 +761,12 @@ function redactKeyBlock(block: string): string {
  *   postgres://admin:s3cret@db.host:5432/mydb
  *   -> postgres://admin:***@db.host:5432/mydb
  */
-function redactDbUrl(match: string, scheme: string, user: string, _pass: string): string {
+function redactDbUrl(
+  match: string,
+  scheme: string,
+  user: string,
+  _pass: string
+): string {
   return `${scheme}${user}:***@`;
 }
 
@@ -833,7 +840,7 @@ function redactMatch(fullMatch: string, groups: string[]): string {
   // non-empty group.
   const token =
     groups
-      .filter((value) => typeof value === 'string' && value.length > 0)
+      .filter(value => typeof value === 'string' && value.length > 0)
       .at(-1) ?? fullMatch;
 
   const masked = maskToken(token);
@@ -853,7 +860,11 @@ function redactMatch(fullMatch: string, groups: string[]): string {
  * Apply all compiled patterns to a string, replacing matches with
  * their redacted equivalents.
  */
-function redactText(text: string, patterns: RegExp[], trackStats: boolean): string {
+function redactText(
+  text: string,
+  patterns: RegExp[],
+  trackStats: boolean
+): string {
   let result = text;
 
   for (const pattern of patterns) {
@@ -872,7 +883,10 @@ function redactText(text: string, patterns: RegExp[], trackStats: boolean): stri
       continue;
     }
 
-    if (pattern.source.includes('redis(?:s)?:\\/\\/') && pattern.source.includes(':([^@]+)@')) {
+    if (
+      pattern.source.includes('redis(?:s)?:\\/\\/') &&
+      pattern.source.includes(':([^@]+)@')
+    ) {
       let hitCount = 0;
       result = result.replace(pattern, (...args: string[]) => {
         hitCount++;
@@ -918,11 +932,11 @@ function redactText(text: string, patterns: RegExp[], trackStats: boolean): stri
  */
 function normalizeMode(value?: string): RedactSensitiveMode {
   if (value === 'off') {
-return 'off';
-}
+    return 'off';
+  }
   if (value === 'all') {
-return 'all';
-}
+    return 'all';
+  }
   return DEFAULT_REDACT_MODE;
 }
 
@@ -945,7 +959,10 @@ return 'all';
  * // => 'OPENAI_API_KEY=sk-pro...mnop'
  * ```
  */
-export function redactSensitiveText(text: string, options?: RedactOptions): string {
+export function redactSensitiveText(
+  text: string,
+  options?: RedactOptions
+): string {
   if (!text) {
     return text;
   }
@@ -1082,7 +1099,17 @@ function redactRawText(raw: string, config: unknown): string {
 
   result = result.replace(
     keyValuePattern,
-    (match, prefix, keyExpr, _keyQuote, keyQuoted, keyBare, sep, valQuote, val) => {
+    (
+      match,
+      prefix,
+      keyExpr,
+      _keyQuote,
+      keyQuoted,
+      keyBare,
+      sep,
+      valQuote,
+      val
+    ) => {
       const key = (keyQuoted ?? keyBare) as string | undefined;
       if (!key || !isSensitiveKey(key)) {
         return match;
@@ -1091,7 +1118,7 @@ function redactRawText(raw: string, config: unknown): string {
         return match;
       }
       return `${prefix}${keyExpr}${sep}${valQuote}${REDACTED_SENTINEL}${valQuote}`;
-    },
+    }
   );
 
   return result;
@@ -1106,7 +1133,7 @@ function redactRawText(raw: string, config: unknown): string {
  */
 export function redactConfigSnapshot(
   config: Record<string, unknown>,
-  raw?: string | null,
+  raw?: string | null
 ): { config: Record<string, unknown>; raw: string | null } {
   const redactedConfig = redactConfigObject(config);
   const redactedRaw = raw ? redactRawText(raw, config) : null;
@@ -1140,7 +1167,10 @@ export function redactConfigSnapshot(
  * // => { openai: { apiKey: 'sk-real-key', model: 'gpt-4o' } }
  * ```
  */
-export function restoreRedactedValues(incoming: unknown, original: unknown): unknown {
+export function restoreRedactedValues(
+  incoming: unknown,
+  original: unknown
+): unknown {
   if (incoming === null || incoming === undefined) {
     return incoming;
   }
@@ -1161,11 +1191,13 @@ export function restoreRedactedValues(incoming: unknown, original: unknown): unk
 
   const result: Record<string, unknown> = {};
 
-  for (const [key, value] of Object.entries(incoming as Record<string, unknown>)) {
+  for (const [key, value] of Object.entries(
+    incoming as Record<string, unknown>
+  )) {
     if (isSensitiveKey(key) && value === REDACTED_SENTINEL) {
       if (!(key in orig)) {
         throw new Error(
-          `config write rejected: "${key}" is redacted; set an explicit value instead of ${REDACTED_SENTINEL}`,
+          `config write rejected: "${key}" is redacted; set an explicit value instead of ${REDACTED_SENTINEL}`
         );
       }
       result[key] = orig[key];
@@ -1194,7 +1226,10 @@ export function restoreRedactedValues(incoming: unknown, original: unknown): unk
  * @param opts  - Optional: `len` controls the hex prefix length (default 12).
  * @returns       A string like `sha256:a1b2c3d4e5f6` or `"-"` for empty input.
  */
-export function redactIdentifier(value: string | undefined, opts?: { len?: number }): string {
+export function redactIdentifier(
+  value: string | undefined,
+  opts?: { len?: number }
+): string {
   const trimmed = value?.trim();
   if (!trimmed) {
     return '-';
@@ -1202,7 +1237,11 @@ export function redactIdentifier(value: string | undefined, opts?: { len?: numbe
 
   const len = opts?.len ?? 12;
   const safeLen = Number.isFinite(len) ? Math.max(1, Math.floor(len)) : 12;
-  const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, safeLen);
+  const hash = crypto
+    .createHash('sha256')
+    .update(trimmed)
+    .digest('hex')
+    .slice(0, safeLen);
 
   return `sha256:${hash}`;
 }
@@ -1272,7 +1311,7 @@ function redactPayloadValue(value: unknown, options?: RedactOptions): unknown {
   }
 
   if (Array.isArray(value)) {
-    return value.map((item) => redactPayloadValue(item, options));
+    return value.map(item => redactPayloadValue(item, options));
   }
 
   const result: Record<string, unknown> = {};
@@ -1402,7 +1441,11 @@ export class RedactingLogger {
   private name: string;
   private redactOptions: RedactOptions;
 
-  constructor(name: string, level: LogLevel = LogLevel.INFO, redactOptions?: RedactOptions) {
+  constructor(
+    name: string,
+    level: LogLevel = LogLevel.INFO,
+    redactOptions?: RedactOptions
+  ) {
     this.name = name;
     this.level = level;
     this.redactOptions = redactOptions ?? { mode: 'tools' };
@@ -1417,7 +1460,7 @@ export class RedactingLogger {
       console.debug(
         `[${this.timestamp()}] [DEBUG] [${this.name}]`,
         this.redact(message),
-        ...this.redactArgs(args),
+        ...this.redactArgs(args)
       );
     }
   }
@@ -1427,7 +1470,7 @@ export class RedactingLogger {
       console.info(
         `[${this.timestamp()}] [INFO] [${this.name}]`,
         this.redact(message),
-        ...this.redactArgs(args),
+        ...this.redactArgs(args)
       );
     }
   }
@@ -1437,7 +1480,7 @@ export class RedactingLogger {
       console.warn(
         `[${this.timestamp()}] [WARN] [${this.name}]`,
         this.redact(message),
-        ...this.redactArgs(args),
+        ...this.redactArgs(args)
       );
     }
   }
@@ -1447,7 +1490,7 @@ export class RedactingLogger {
       console.error(
         `[${this.timestamp()}] [ERROR] [${this.name}]`,
         this.redact(message),
-        ...this.redactArgs(args),
+        ...this.redactArgs(args)
       );
     }
   }
@@ -1461,13 +1504,16 @@ export class RedactingLogger {
   }
 
   private redactArgs(args: unknown[]): unknown[] {
-    return args.map((arg) => {
+    return args.map(arg => {
       if (typeof arg === 'string') {
         return redactSensitiveText(arg, this.redactOptions);
       }
       if (arg instanceof Error) {
         // Redact the error message but preserve the stack for debugging
-        const redactedMessage = redactSensitiveText(arg.message, this.redactOptions);
+        const redactedMessage = redactSensitiveText(
+          arg.message,
+          this.redactOptions
+        );
         if (redactedMessage === arg.message) {
           return arg;
         }
@@ -1503,7 +1549,7 @@ export class RedactingLogger {
 export function createRedactingLogger(
   name: string,
   level?: LogLevel,
-  options?: RedactOptions,
+  options?: RedactOptions
 ): RedactingLogger {
   return new RedactingLogger(name, level ?? LogLevel.INFO, options);
 }

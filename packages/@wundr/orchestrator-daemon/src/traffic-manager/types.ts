@@ -7,7 +7,11 @@
  * @packageDocumentation
  */
 
-import type { ChannelId, NormalizedMessage, ChatType } from '../channels/types.js';
+import type {
+  ChannelId,
+  NormalizedMessage,
+  ChatType,
+} from '../channels/types.js';
 
 /** Priority levels for inbound messages. Higher values indicate more urgency. */
 export enum MessagePriority {
@@ -138,7 +142,10 @@ export interface TrafficMetrics {
 
 /** Type-safe event map for TrafficManager event emitters. */
 export interface TrafficManagerEventMap {
-  'message:routed': { envelope: InboundMessageEnvelope; decision: RoutingDecision };
+  'message:routed': {
+    envelope: InboundMessageEnvelope;
+    decision: RoutingDecision;
+  };
   'message:escalated': {
     envelope: InboundMessageEnvelope;
     fromAgentId: string;

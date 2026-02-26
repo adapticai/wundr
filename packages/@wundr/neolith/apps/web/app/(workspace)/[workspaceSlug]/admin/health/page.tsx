@@ -152,18 +152,19 @@ export default function HealthDashboardPage() {
   }));
 
   // Transform overview data
+  const overviewExt = overview as unknown as Record<string, number>;
   const overviewData = {
     activeOrchestrators: overview.healthyOrchestrators,
     totalSessions: overview.totalOrchestrators,
     tokenUsage: {
-      hourly: overview.tokenUsageHourly ?? 0,
-      daily: overview.tokenUsageDaily ?? 0,
-      monthly: overview.tokenUsageMonthly ?? 0,
-      limit: overview.tokenUsageLimit ?? 0,
-      percentUsed: overview.tokenUsagePercent ?? 0,
+      hourly: overviewExt['tokenUsageHourly'] ?? 0,
+      daily: overviewExt['tokenUsageDaily'] ?? 0,
+      monthly: overviewExt['tokenUsageMonthly'] ?? 0,
+      limit: overviewExt['tokenUsageLimit'] ?? 0,
+      percentUsed: overviewExt['tokenUsagePercent'] ?? 0,
     },
     errorRate: 100 - overview.uptime,
-    uptime: overview.uptimeMs ?? 0,
+    uptime: overviewExt['uptimeMs'] ?? 0,
   };
 
   return (

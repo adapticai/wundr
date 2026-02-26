@@ -19,7 +19,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { TokenBudgetManager } from '../../../models/token-budget';
 
-
 describe('TokenBudgetManager', () => {
   let manager: TokenBudgetManager;
 
@@ -158,7 +157,7 @@ describe('TokenBudgetManager', () => {
       manager = new TokenBudgetManager({
         defaultBudget: {
           maxTotalTokens: 10_000_000, // High token limit so cost triggers first
-          maxCostUsd: 0.50,
+          maxCostUsd: 0.5,
           window: 'lifetime',
         },
       });
@@ -172,7 +171,7 @@ describe('TokenBudgetManager', () => {
         sessionId: 'session-1',
         inputTokens: 1_000,
         outputTokens: 500,
-        costUsd: 0.50,
+        costUsd: 0.5,
       });
 
       const check = manager.checkBudget('session-1');
@@ -186,13 +185,13 @@ describe('TokenBudgetManager', () => {
         sessionId: 'session-1',
         inputTokens: 500,
         outputTokens: 200,
-        costUsd: 0.30,
+        costUsd: 0.3,
       });
 
       const check = manager.checkBudget('session-1');
       expect(check.allowed).toBe(true);
       // remainingCostUsd = 0.50 - 0.30 = 0.20
-      expect(check.remainingCostUsd).toBeCloseTo(0.20, 4);
+      expect(check.remainingCostUsd).toBeCloseTo(0.2, 4);
     });
   });
 
@@ -507,9 +506,24 @@ describe('TokenBudgetManager', () => {
     });
 
     it('should increment requestCount on each recording', () => {
-      manager.recordUsage({ sessionId: 's1', inputTokens: 10, outputTokens: 5, costUsd: 0.001 });
-      manager.recordUsage({ sessionId: 's1', inputTokens: 10, outputTokens: 5, costUsd: 0.001 });
-      manager.recordUsage({ sessionId: 's1', inputTokens: 10, outputTokens: 5, costUsd: 0.001 });
+      manager.recordUsage({
+        sessionId: 's1',
+        inputTokens: 10,
+        outputTokens: 5,
+        costUsd: 0.001,
+      });
+      manager.recordUsage({
+        sessionId: 's1',
+        inputTokens: 10,
+        outputTokens: 5,
+        costUsd: 0.001,
+      });
+      manager.recordUsage({
+        sessionId: 's1',
+        inputTokens: 10,
+        outputTokens: 5,
+        costUsd: 0.001,
+      });
 
       const usage = manager.getUsage('s1');
       expect(usage!.requestCount).toBe(3);
@@ -589,8 +603,18 @@ describe('TokenBudgetManager', () => {
       });
 
       manager.setSessionBudget('session-1', { maxTotalTokens: 500 });
-      manager.recordUsage({ sessionId: 'session-1', inputTokens: 100, outputTokens: 50, costUsd: 0.01 });
-      manager.recordUsage({ sessionId: 'session-2', inputTokens: 200, outputTokens: 100, costUsd: 0.02 });
+      manager.recordUsage({
+        sessionId: 'session-1',
+        inputTokens: 100,
+        outputTokens: 50,
+        costUsd: 0.01,
+      });
+      manager.recordUsage({
+        sessionId: 'session-2',
+        inputTokens: 200,
+        outputTokens: 100,
+        costUsd: 0.02,
+      });
 
       manager.clear();
 

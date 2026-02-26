@@ -30,7 +30,7 @@ export const DEFAULT_SCHEDULES: ScheduledTask[] = [
   {
     id: 'default:proactive-scan',
     name: 'Proactive Scan',
-    cronExpression: '*/15 * * * *',   // Every 15 minutes
+    cronExpression: '*/15 * * * *', // Every 15 minutes
     taskType: 'PROACTIVE_SCAN',
     config: {},
     enabled: true,
@@ -39,7 +39,7 @@ export const DEFAULT_SCHEDULES: ScheduledTask[] = [
   {
     id: 'default:charter-sync',
     name: 'Charter Sync',
-    cronExpression: '*/30 * * * *',   // Every 30 minutes
+    cronExpression: '*/30 * * * *', // Every 30 minutes
     taskType: 'CHARTER_SYNC',
     config: {},
     enabled: true,
@@ -48,7 +48,7 @@ export const DEFAULT_SCHEDULES: ScheduledTask[] = [
   {
     id: 'default:backlog-review',
     name: 'Backlog Review',
-    cronExpression: '0 * * * *',      // Every hour, on the hour
+    cronExpression: '0 * * * *', // Every hour, on the hour
     taskType: 'BACKLOG_REVIEW',
     config: {},
     enabled: true,
@@ -57,7 +57,7 @@ export const DEFAULT_SCHEDULES: ScheduledTask[] = [
   {
     id: 'default:status-report',
     name: 'Status Report',
-    cronExpression: '0 */6 * * *',    // Every 6 hours
+    cronExpression: '0 */6 * * *', // Every 6 hours
     taskType: 'STATUS_REPORT',
     config: {},
     enabled: true,
@@ -66,7 +66,7 @@ export const DEFAULT_SCHEDULES: ScheduledTask[] = [
   {
     id: 'default:maintenance',
     name: 'Daily Maintenance',
-    cronExpression: '0 0 * * *',      // Daily at midnight
+    cronExpression: '0 0 * * *', // Daily at midnight
     taskType: 'MAINTENANCE',
     config: {},
     enabled: true,
@@ -75,7 +75,7 @@ export const DEFAULT_SCHEDULES: ScheduledTask[] = [
   {
     id: 'default:memory-cleanup',
     name: 'Memory Cleanup',
-    cronExpression: '0 3 * * *',      // Daily at 3am
+    cronExpression: '0 3 * * *', // Daily at 3am
     taskType: 'MEMORY_CLEANUP',
     config: {},
     enabled: true,

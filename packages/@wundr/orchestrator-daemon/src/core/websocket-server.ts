@@ -12,7 +12,12 @@ import { Logger } from '../utils/logger';
 
 import type { AuthenticatedWebSocket } from '../auth/middleware';
 import type { AuthConfig, ClientIdentity } from '../auth/types';
-import type { WSMessage, WSResponse, StreamChunk, ToolCallInfo } from '../types';
+import type {
+  WSMessage,
+  WSResponse,
+  StreamChunk,
+  ToolCallInfo,
+} from '../types';
 
 export class OrchestratorWebSocketServer extends EventEmitter {
   private logger: Logger;
@@ -45,7 +50,12 @@ export class OrchestratorWebSocketServer extends EventEmitter {
         this.httpServer = http.createServer((req, res) => {
           if (req.url === '/health') {
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ status: 'healthy', timestamp: new Date().toISOString() }));
+            res.end(
+              JSON.stringify({
+                status: 'healthy',
+                timestamp: new Date().toISOString(),
+              })
+            );
           } else {
             res.writeHead(404);
             res.end('Not Found');
@@ -68,10 +78,10 @@ export class OrchestratorWebSocketServer extends EventEmitter {
               const identity = ws.__identity;
               if (identity) {
                 this.logger.info(
-                  `Authenticated connection: client=${identity.clientId} method=${identity.method}`,
+                  `Authenticated connection: client=${identity.clientId} method=${identity.method}`
                 );
               }
-            },
+            }
           );
           this.logger.info('WebSocket auth middleware enabled');
         } else {
@@ -98,11 +108,13 @@ export class OrchestratorWebSocketServer extends EventEmitter {
 
         // Start listening
         this.httpServer.listen(this.port, this.host, () => {
-          this.logger.info(`WebSocket server started on ${this.host}:${this.port}`);
+          this.logger.info(
+            `WebSocket server started on ${this.host}:${this.port}`
+          );
           resolve();
         });
 
-        this.httpServer.on('error', (error) => {
+        this.httpServer.on('error', error => {
           this.logger.error('HTTP server error:', error);
           reject(error);
         });
@@ -117,7 +129,7 @@ export class OrchestratorWebSocketServer extends EventEmitter {
    * Stop the WebSocket server
    */
   async stop(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       this.logger.info('Stopping WebSocket server...');
 
       // Tear down auth middleware
@@ -127,7 +139,7 @@ export class OrchestratorWebSocketServer extends EventEmitter {
       }
 
       // Close all client connections
-      this.clients.forEach((client) => {
+      this.clients.forEach(client => {
         client.close(1000, 'Server shutting down');
       });
       this.clients.clear();
@@ -166,7 +178,7 @@ export class OrchestratorWebSocketServer extends EventEmitter {
         if (this.authMiddleware) {
           const validated = this.authMiddleware.validateMessage(
             ws as AuthenticatedWebSocket,
-            data,
+            data
           );
           if (!validated) {
             // Message was rejected; error already sent to client.
@@ -188,7 +200,7 @@ export class OrchestratorWebSocketServer extends EventEmitter {
       this.logger.debug('WebSocket connection closed');
       this.clients.delete(ws);
       // Remove from all session subscriptions
-      this.sessionClients.forEach((clients) => {
+      this.sessionClients.forEach(clients => {
         clients.delete(ws);
       });
     });
@@ -197,7 +209,7 @@ export class OrchestratorWebSocketServer extends EventEmitter {
       this.logger.error('WebSocket connection error:', error);
       this.clients.delete(ws);
       // Remove from all session subscriptions
-      this.sessionClients.forEach((clients) => {
+      this.sessionClients.forEach(clients => {
         clients.delete(ws);
       });
     });
@@ -228,7 +240,10 @@ export class OrchestratorWebSocketServer extends EventEmitter {
         break;
 
       case 'session_status':
-        this.emit('session_status', { ws, sessionId: message.payload.sessionId });
+        this.emit('session_status', {
+          ws,
+          sessionId: message.payload.sessionId,
+        });
         break;
 
       case 'daemon_status':
@@ -275,7 +290,7 @@ export class OrchestratorWebSocketServer extends EventEmitter {
    */
   broadcast(message: WSResponse): void {
     const payload = JSON.stringify(message);
-    this.clients.forEach((client) => {
+    this.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(payload);
       }
@@ -318,7 +333,7 @@ export class OrchestratorWebSocketServer extends EventEmitter {
     }
 
     const payload = JSON.stringify(message);
-    clients.forEach((client) => {
+    clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(payload);
       }
@@ -328,7 +343,11 @@ export class OrchestratorWebSocketServer extends EventEmitter {
   /**
    * Stream a chunk of data to clients subscribed to a session
    */
-  streamToClient(sessionId: string, chunk: string, metadata?: StreamChunk['metadata']): void {
+  streamToClient(
+    sessionId: string,
+    chunk: string,
+    metadata?: StreamChunk['metadata']
+  ): void {
     const streamChunk: StreamChunk = {
       sessionId,
       chunk,
@@ -344,7 +363,10 @@ export class OrchestratorWebSocketServer extends EventEmitter {
   /**
    * Notify clients that streaming is starting
    */
-  notifyStreamStart(sessionId: string, metadata?: Record<string, unknown>): void {
+  notifyStreamStart(
+    sessionId: string,
+    metadata?: Record<string, unknown>
+  ): void {
     this.broadcastToSession(sessionId, {
       type: 'stream_start',
       sessionId,
@@ -374,7 +396,7 @@ export class OrchestratorWebSocketServer extends EventEmitter {
       toolInput?: Record<string, unknown>;
       result?: unknown;
       error?: string;
-    },
+    }
   ): void {
     const toolCallInfo: ToolCallInfo = {
       sessionId,
@@ -386,7 +408,8 @@ export class OrchestratorWebSocketServer extends EventEmitter {
       timestamp: new Date(),
     };
 
-    const messageType = status === 'started' ? 'tool_call_start' : 'tool_call_result';
+    const messageType =
+      status === 'started' ? 'tool_call_start' : 'tool_call_result';
     this.broadcastToSession(sessionId, {
       type: messageType,
       data: toolCallInfo,
@@ -407,7 +430,11 @@ export class OrchestratorWebSocketServer extends EventEmitter {
   /**
    * Notify clients that a task has completed
    */
-  notifyTaskCompleted(sessionId: string, taskId: string, result?: unknown): void {
+  notifyTaskCompleted(
+    sessionId: string,
+    taskId: string,
+    result?: unknown
+  ): void {
     this.broadcastToSession(sessionId, {
       type: 'task_completed',
       sessionId,
@@ -455,8 +482,8 @@ export class OrchestratorWebSocketServer extends EventEmitter {
    */
   getClientIdentity(ws: WebSocket): ClientIdentity | undefined {
     if (!this.authMiddleware) {
-return undefined;
-}
+      return undefined;
+    }
     return this.authMiddleware.getIdentity(ws as AuthenticatedWebSocket);
   }
 

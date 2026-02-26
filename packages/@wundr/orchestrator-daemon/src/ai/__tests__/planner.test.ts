@@ -18,7 +18,10 @@ function createMockReasoningEngine(): ReasoningEngine & {
   reason: ReturnType<typeof vi.fn>;
 } {
   return {
-    reason: vi.fn<[string, Record<string, unknown>?], Promise<ReasoningResult>>(),
+    reason: vi.fn<
+      [string, Record<string, unknown>?],
+      Promise<ReasoningResult>
+    >(),
     planTask: vi.fn(),
     evaluateAction: vi.fn(),
     summarize: vi.fn(),
@@ -68,7 +71,7 @@ function makePlan(steps: PlanStep[], goal = 'Test goal'): TaskPlan {
 function makeStep(
   id: string,
   status: PlanStep['status'],
-  dependencies: string[] = [],
+  dependencies: string[] = []
 ): PlanStep {
   return {
     id,
@@ -100,9 +103,9 @@ describe('Planner', () => {
       mockEngine.reason.mockResolvedValueOnce(
         makeReasoningResult(
           '1. Fetch market data [depends: none] [capability: market-data]\n' +
-          '2. Calculate allocation [depends: 1] [capability: none]\n' +
-          '3. Execute trades [depends: 2] [capability: order-execution]',
-        ),
+            '2. Calculate allocation [depends: 1] [capability: none]\n' +
+            '3. Execute trades [depends: 2] [capability: order-execution]'
+        )
       );
 
       const plan = await planner.createPlan('Rebalance portfolio');
@@ -121,7 +124,7 @@ describe('Planner', () => {
 
     it('should pass constraints to the reasoning engine', async () => {
       mockEngine.reason.mockResolvedValueOnce(
-        makeReasoningResult('1. Single step [depends: none]'),
+        makeReasoningResult('1. Single step [depends: none]')
       );
 
       await planner.createPlan('Simple task', {
@@ -139,7 +142,7 @@ describe('Planner', () => {
 
     it('should create a fallback step when LLM returns unparseable text', async () => {
       mockEngine.reason.mockResolvedValueOnce(
-        makeReasoningResult('Just do the thing, no numbered steps here.'),
+        makeReasoningResult('Just do the thing, no numbered steps here.')
       );
 
       const plan = await planner.createPlan('Vague goal');
@@ -156,20 +159,23 @@ describe('Planner', () => {
 
   describe('refinePlan', () => {
     it('should produce a new plan incorporating feedback', async () => {
-      const originalPlan = makePlan([
-        makeStep('s1', 'completed'),
-        makeStep('s2', 'pending', ['s1']),
-      ], 'Original goal');
+      const originalPlan = makePlan(
+        [makeStep('s1', 'completed'), makeStep('s2', 'pending', ['s1'])],
+        'Original goal'
+      );
 
       mockEngine.reason.mockResolvedValueOnce(
         makeReasoningResult(
           '1. Fetch data (already done) [depends: none]\n' +
-          '2. Validate data [depends: 1]\n' +
-          '3. Process data [depends: 2]',
-        ),
+            '2. Validate data [depends: 1]\n' +
+            '3. Process data [depends: 2]'
+        )
       );
 
-      const refined = await planner.refinePlan(originalPlan, 'Add a validation step');
+      const refined = await planner.refinePlan(
+        originalPlan,
+        'Add a validation step'
+      );
 
       expect(refined.id).not.toBe(originalPlan.id);
       expect(refined.goal).toBe('Original goal');

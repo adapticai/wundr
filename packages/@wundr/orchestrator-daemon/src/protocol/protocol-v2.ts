@@ -69,7 +69,7 @@ export type ErrorShape = z.infer<typeof ErrorShapeSchema>;
 export function errorShape(
   code: ErrorCode,
   message: string,
-  opts?: { details?: unknown; retryable?: boolean; retryAfterMs?: number },
+  opts?: { details?: unknown; retryable?: boolean; retryAfterMs?: number }
 ): ErrorShape {
   return {
     code,
@@ -232,10 +232,12 @@ export const HelloPayloadSchema = z.object({
     heartbeatTimeoutMs: z.number().int().positive(),
     maxBufferedBytes: z.number().int().positive(),
   }),
-  auth: z.object({
-    scopes: z.array(ScopeSchema),
-    expiresAtMs: z.number().int().nonnegative().optional(),
-  }).optional(),
+  auth: z
+    .object({
+      scopes: z.array(ScopeSchema),
+      expiresAtMs: z.number().int().nonnegative().optional(),
+    })
+    .optional(),
 });
 
 export type HelloPayload = z.infer<typeof HelloPayloadSchema>;
@@ -290,9 +292,16 @@ export const SessionStopParamsSchema = z.object({
 export type SessionStopParams = z.infer<typeof SessionStopParamsSchema>;
 
 export const SessionListParamsSchema = z.object({
-  status: z.enum([
-    'initializing', 'running', 'paused', 'completed', 'failed', 'terminated',
-  ]).optional(),
+  status: z
+    .enum([
+      'initializing',
+      'running',
+      'paused',
+      'completed',
+      'failed',
+      'terminated',
+    ])
+    .optional(),
   limit: z.number().int().positive().max(200).default(50),
   offset: z.number().int().nonnegative().default(0),
 });
@@ -335,7 +344,13 @@ export type PromptCancelParams = z.infer<typeof PromptCancelParamsSchema>;
 // Stream events (server -> client)
 // ---------------------------------------------------------------------------
 
-export const StreamChunkTypeSchema = z.enum(['text', 'thinking', 'tool_use', 'code', 'error']);
+export const StreamChunkTypeSchema = z.enum([
+  'text',
+  'thinking',
+  'tool_use',
+  'code',
+  'error',
+]);
 
 export const StreamStartPayloadSchema = z.object({
   sessionId: z.string().min(1),
@@ -359,10 +374,12 @@ export type StreamChunkPayload = z.infer<typeof StreamChunkPayloadSchema>;
 export const StreamEndPayloadSchema = z.object({
   sessionId: z.string().min(1),
   promptId: z.string().min(1),
-  usage: z.object({
-    inputTokens: z.number().int().nonnegative(),
-    outputTokens: z.number().int().nonnegative(),
-  }).optional(),
+  usage: z
+    .object({
+      inputTokens: z.number().int().nonnegative(),
+      outputTokens: z.number().int().nonnegative(),
+    })
+    .optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 
@@ -457,14 +474,23 @@ export type AgentStatusParams = z.infer<typeof AgentStatusParamsSchema>;
 
 export const AgentStatusPayloadSchema = z.object({
   agentId: z.string().min(1),
-  status: z.enum(['initializing', 'running', 'paused', 'completed', 'failed', 'stopped']),
+  status: z.enum([
+    'initializing',
+    'running',
+    'paused',
+    'completed',
+    'failed',
+    'stopped',
+  ]),
   sessionId: z.string().optional(),
   task: z.string().optional(),
-  metrics: z.object({
-    tokensUsed: z.number().int().nonnegative(),
-    durationMs: z.number().int().nonnegative(),
-    tasksCompleted: z.number().int().nonnegative(),
-  }).optional(),
+  metrics: z
+    .object({
+      tokensUsed: z.number().int().nonnegative(),
+      durationMs: z.number().int().nonnegative(),
+      tasksCompleted: z.number().int().nonnegative(),
+    })
+    .optional(),
   updatedAt: z.string().datetime().optional(),
 });
 
@@ -485,12 +511,18 @@ export type AgentStopParams = z.infer<typeof AgentStopParamsSchema>;
 export const TeamCreateParamsSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
-  agents: z.array(z.object({
-    agentType: z.string().min(1),
-    role: z.string().min(1),
-    config: z.record(z.unknown()).optional(),
-  })).min(1),
-  coordinationStrategy: z.enum(['sequential', 'parallel', 'round-robin', 'custom']).default('parallel'),
+  agents: z
+    .array(
+      z.object({
+        agentType: z.string().min(1),
+        role: z.string().min(1),
+        config: z.record(z.unknown()).optional(),
+      })
+    )
+    .min(1),
+  coordinationStrategy: z
+    .enum(['sequential', 'parallel', 'round-robin', 'custom'])
+    .default('parallel'),
   task: z.object({
     description: z.string().min(1),
     priority: z.enum(['low', 'medium', 'high', 'critical']).default('medium'),
@@ -508,7 +540,14 @@ export type TeamStatusParams = z.infer<typeof TeamStatusParamsSchema>;
 export const TeamStatusPayloadSchema = z.object({
   teamId: z.string().min(1),
   name: z.string().min(1),
-  status: z.enum(['forming', 'active', 'paused', 'completed', 'failed', 'dissolved']),
+  status: z.enum([
+    'forming',
+    'active',
+    'paused',
+    'completed',
+    'failed',
+    'dissolved',
+  ]),
   agents: z.array(AgentStatusPayloadSchema),
   progress: z.number().min(0).max(1).optional(),
   updatedAt: z.string().datetime().optional(),
@@ -551,7 +590,9 @@ export const MemoryStoreParamsSchema = z.object({
   content: z.string().min(1),
   tier: z.enum(['scratchpad', 'episodic', 'semantic']),
   sessionId: z.string().optional(),
-  type: z.enum(['interaction', 'observation', 'decision', 'knowledge']).default('observation'),
+  type: z
+    .enum(['interaction', 'observation', 'decision', 'knowledge'])
+    .default('observation'),
   metadata: z.record(z.unknown()).optional(),
 });
 
@@ -605,17 +646,21 @@ export const HealthStatusPayloadSchema = z.object({
   uptime: z.number().int().nonnegative(),
   activeSessions: z.number().int().nonnegative(),
   connectedClients: z.number().int().nonnegative(),
-  subsystems: z.record(z.object({
-    status: z.enum(['running', 'degraded', 'error', 'stopped']),
-    lastCheckAt: z.string().datetime().optional(),
-    errors: z.array(z.string()).optional(),
-  })),
-  metrics: z.object({
-    totalSessionsSpawned: z.number().int().nonnegative(),
-    totalTokensUsed: z.number().int().nonnegative(),
-    averageResponseTimeMs: z.number().nonnegative(),
-    successRate: z.number().min(0).max(1),
-  }).optional(),
+  subsystems: z.record(
+    z.object({
+      status: z.enum(['running', 'degraded', 'error', 'stopped']),
+      lastCheckAt: z.string().datetime().optional(),
+      errors: z.array(z.string()).optional(),
+    })
+  ),
+  metrics: z
+    .object({
+      totalSessionsSpawned: z.number().int().nonnegative(),
+      totalTokensUsed: z.number().int().nonnegative(),
+      averageResponseTimeMs: z.number().nonnegative(),
+      successRate: z.number().min(0).max(1),
+    })
+    .optional(),
 });
 
 export type HealthStatusPayload = z.infer<typeof HealthStatusPayloadSchema>;
@@ -779,8 +824,8 @@ export const METHOD_SCOPE_MAP: Record<string, Scope[]> = {
   'team.dissolve': [Scopes.TEAMS],
 
   // Subscriptions
-  'subscribe': [Scopes.READ],
-  'unsubscribe': [Scopes.READ],
+  subscribe: [Scopes.READ],
+  unsubscribe: [Scopes.READ],
 
   // Discovery (no scope required -- publicly available)
   'rpc.discover': [],
@@ -792,7 +837,13 @@ export const METHOD_SCOPE_MAP: Record<string, Scope[]> = {
 // ---------------------------------------------------------------------------
 
 const SCOPE_HIERARCHY: Record<Scope, Scope[]> = {
-  [Scopes.ADMIN]: [Scopes.ADMIN, Scopes.WRITE, Scopes.READ, Scopes.APPROVE, Scopes.TEAMS],
+  [Scopes.ADMIN]: [
+    Scopes.ADMIN,
+    Scopes.WRITE,
+    Scopes.READ,
+    Scopes.APPROVE,
+    Scopes.TEAMS,
+  ],
   [Scopes.WRITE]: [Scopes.WRITE, Scopes.READ],
   [Scopes.READ]: [Scopes.READ],
   [Scopes.APPROVE]: [Scopes.APPROVE],
@@ -816,12 +867,15 @@ export function expandScopes(granted: Scope[]): Set<Scope> {
 }
 
 /** Check whether a set of granted scopes satisfies the required scopes for a method. */
-export function hasRequiredScopes(granted: Scope[], required: Scope[]): boolean {
+export function hasRequiredScopes(
+  granted: Scope[],
+  required: Scope[]
+): boolean {
   if (required.length === 0) {
     return true;
   }
   const effective = expandScopes(granted);
-  return required.some((scope) => effective.has(scope));
+  return required.some(scope => effective.has(scope));
 }
 
 // ---------------------------------------------------------------------------
@@ -854,8 +908,8 @@ export const METHOD_PARAM_SCHEMAS: Partial<Record<string, z.ZodType>> = {
   'config.get': ConfigGetParamsSchema,
   'config.set': ConfigSetParamsSchema,
   'health.ping': HealthPingParamsSchema,
-  'subscribe': SubscribeParamsSchema,
-  'unsubscribe': UnsubscribeParamsSchema,
+  subscribe: SubscribeParamsSchema,
+  unsubscribe: UnsubscribeParamsSchema,
 };
 
 // ---------------------------------------------------------------------------
@@ -887,7 +941,14 @@ export const EVENT_PAYLOAD_SCHEMAS: Partial<Record<string, z.ZodType>> = {
   'health.heartbeat': HeartbeatPayloadSchema,
   'session.status': z.object({
     sessionId: z.string().min(1),
-    status: z.enum(['initializing', 'running', 'paused', 'completed', 'failed', 'terminated']),
+    status: z.enum([
+      'initializing',
+      'running',
+      'paused',
+      'completed',
+      'failed',
+      'terminated',
+    ]),
     metadata: z.record(z.unknown()).optional(),
   }),
   'session.created': z.object({
@@ -933,7 +994,7 @@ export function parseFrame(data: string): ParseFrameResult {
   if (!result.success) {
     return {
       ok: false,
-      error: `invalid frame: ${result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')}`,
+      error: `invalid frame: ${result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ')}`,
       requestId: maybeId,
     };
   }
@@ -955,7 +1016,7 @@ export function errorResponse(
   id: string,
   code: ErrorCode,
   message: string,
-  opts?: { details?: unknown; retryable?: boolean; retryAfterMs?: number },
+  opts?: { details?: unknown; retryable?: boolean; retryAfterMs?: number }
 ): ResponseFrame {
   return {
     type: 'res',
@@ -969,7 +1030,7 @@ export function errorResponse(
 export function eventFrame(
   event: string,
   payload?: unknown,
-  opts?: { seq?: number; subscriptionId?: string },
+  opts?: { seq?: number; subscriptionId?: string }
 ): EventFrame {
   return {
     type: 'event',

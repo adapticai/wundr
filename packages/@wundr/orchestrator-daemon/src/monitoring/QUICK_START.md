@@ -5,17 +5,14 @@
 ### 1. Import and Initialize
 
 ```typescript
-import {
-  createMetricsServer,
-  metricsRegistry
-} from '@wundr.io/orchestrator-daemon/monitoring';
+import { createMetricsServer, metricsRegistry } from '@wundr.io/orchestrator-daemon/monitoring';
 
 // Register metrics
 metricsRegistry.register();
 
 // Create server
 const server = createMetricsServer(metricsRegistry, {
-  port: 9090
+  port: 9090,
 });
 
 // Start server
@@ -35,8 +32,8 @@ const server = createMetricsServer(metricsRegistry, {
       } catch {
         return false;
       }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -88,7 +85,7 @@ const server = createMetricsServer(metricsRegistry, {
     redis: checkRedis,
     database: checkDatabase,
     federationRegistry: checkFederation,
-  }
+  },
 });
 ```
 
@@ -109,19 +106,19 @@ readinessProbe:
 
 ### Endpoints
 
-| Endpoint | Method | Returns |
-|----------|--------|---------|
-| /metrics | GET | Prometheus metrics (text) |
-| /health  | GET | Health status (JSON) |
-| /ready   | GET | Readiness status (JSON) |
+| Endpoint | Method | Returns                   |
+| -------- | ------ | ------------------------- |
+| /metrics | GET    | Prometheus metrics (text) |
+| /health  | GET    | Health status (JSON)      |
+| /ready   | GET    | Readiness status (JSON)   |
 
 ### Status Codes
 
-| Code | Meaning |
-|------|---------|
-| 200 | Success |
-| 405 | Method not allowed |
-| 503 | Service unavailable |
+| Code | Meaning             |
+| ---- | ------------------- |
+| 200  | Success             |
+| 405  | Method not allowed  |
+| 503  | Service unavailable |
 
 ### Methods
 
@@ -137,7 +134,8 @@ server.setReady(true);
 server.setReady(false);
 
 // Check if running
-if (server.isRunning()) { }
+if (server.isRunning()) {
+}
 ```
 
 ## Configuration Defaults
@@ -180,6 +178,7 @@ kill -9 <PID>
 ### Health checks fail
 
 Add error handling:
+
 ```typescript
 healthChecks: {
   redis: async () => {
@@ -190,7 +189,7 @@ healthChecks: {
       console.error('Redis check failed:', error);
       return false;
     }
-  }
+  };
 }
 ```
 

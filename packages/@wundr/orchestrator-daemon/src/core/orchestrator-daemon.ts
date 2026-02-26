@@ -9,16 +9,17 @@ import * as path from 'path';
 import { EventEmitter } from 'eventemitter3';
 import YAML from 'yaml';
 
-import {
-  DaemonConfigSchema,
-  OrchestratorCharterSchema,
-} from '../types';
+import { DaemonConfigSchema, OrchestratorCharterSchema } from '../types';
 import { OrchestratorWebSocketServer } from './websocket-server';
 import { AgentRegistry } from '../agents';
 import { AuthConfigSchema } from '../auth/types';
 import { ChannelRegistry } from '../channels';
 import { startConfigWatcher } from '../config';
-import { createHookRegistry, createHookEngine, registerBuiltInHooks } from '../hooks';
+import {
+  createHookRegistry,
+  createHookEngine,
+  registerBuiltInHooks,
+} from '../hooks';
 import { createOpenAIClient } from '../llm';
 import { McpToolRegistryImpl } from '../mcp/tool-registry';
 import { MemoryManager } from '../memory/memory-manager';
@@ -34,7 +35,7 @@ import { Logger, LogLevel } from '../utils/logger';
 
 import type { AuthConfig } from '../auth/types';
 import type { ConfigWatcher } from '../config';
-import type { HookRegistry, HookEngine} from '../hooks';
+import type { HookRegistry, HookEngine } from '../hooks';
 import type { McpToolRegistry } from '../session/tool-executor';
 import type {
   DaemonConfig,
@@ -45,7 +46,8 @@ import type {
   Session,
   MemoryConfig,
   SpawnSessionPayload,
-  ExecuteTaskPayload} from '../types';
+  ExecuteTaskPayload,
+} from '../types';
 import type { LLMClient } from '../types/llm';
 import type { WebSocket } from 'ws';
 
@@ -90,7 +92,10 @@ export class OrchestratorDaemon extends EventEmitter {
 
     this.config = DaemonConfigSchema.parse(runtimeConfig);
 
-    this.logger = new Logger('OrchestratorDaemon', this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO);
+    this.logger = new Logger(
+      'OrchestratorDaemon',
+      this.config.verbose ? LogLevel.DEBUG : LogLevel.INFO
+    );
 
     // Initialize metrics
     this.metrics = {
@@ -106,7 +111,11 @@ export class OrchestratorDaemon extends EventEmitter {
     const authConfig = this.resolveAuthConfig();
 
     // Initialize WebSocket server
-    this.wsServer = new OrchestratorWebSocketServer(this.config.port, this.config.host, authConfig ?? undefined);
+    this.wsServer = new OrchestratorWebSocketServer(
+      this.config.port,
+      this.config.host,
+      authConfig ?? undefined
+    );
 
     // Initialize memory manager with default config
     const defaultMemoryConfig: MemoryConfig = {
@@ -150,7 +159,9 @@ export class OrchestratorDaemon extends EventEmitter {
     const openaiModel = process.env['OPENAI_MODEL'] || 'gpt-5-mini';
 
     if (!openaiApiKey) {
-      this.logger.warn('OPENAI_API_KEY not set. LLM features will be unavailable.');
+      this.logger.warn(
+        'OPENAI_API_KEY not set. LLM features will be unavailable.'
+      );
     }
 
     this.llmClient = createOpenAIClient({
@@ -169,13 +180,16 @@ export class OrchestratorDaemon extends EventEmitter {
       this.memoryManager,
       this.config.maxSessions,
       this.llmClient,
-      this.mcpRegistry,
+      this.mcpRegistry
     );
 
     // Listen for token usage updates from session manager
-    this.sessionManager.on('session:token_usage', ({ tokensUsed }: { tokensUsed: number }) => {
-      this.metrics.totalTokensUsed += tokensUsed;
-    });
+    this.sessionManager.on(
+      'session:token_usage',
+      ({ tokensUsed }: { tokensUsed: number }) => {
+        this.metrics.totalTokensUsed += tokensUsed;
+      }
+    );
 
     // -----------------------------------------------------------------------
     // Wave 3 subsystem initialization
@@ -223,7 +237,10 @@ export class OrchestratorDaemon extends EventEmitter {
     // Model router (alternative LLM routing with failover)
     this.modelRouter = new ModelRouter({
       primary: process.env['OPENAI_MODEL'] || 'openai/gpt-5-mini',
-      clientFactory: (_provider: string, cfg: { apiKey: string; baseUrl?: string }) =>
+      clientFactory: (
+        _provider: string,
+        cfg: { apiKey: string; baseUrl?: string }
+      ) =>
         createOpenAIClient({
           apiKey: cfg.apiKey || openaiApiKey,
           defaultModel: openaiModel,
@@ -306,13 +323,18 @@ export class OrchestratorDaemon extends EventEmitter {
         await this.agentRegistry.loadFromDirectory();
         this.logger.info('Agent definitions loaded successfully');
       } catch (error) {
-        this.logger.warn('Failed to load agent definitions, continuing without:', error);
+        this.logger.warn(
+          'Failed to load agent definitions, continuing without:',
+          error
+        );
       }
 
       // Load plugins
       try {
         const pluginResult = await this.pluginManager.loadAll();
-        this.logger.info(`Plugins loaded: ${pluginResult.loaded.length} succeeded, ${pluginResult.failed.length} failed`);
+        this.logger.info(
+          `Plugins loaded: ${pluginResult.loaded.length} succeeded, ${pluginResult.failed.length} failed`
+        );
       } catch (error) {
         this.logger.warn('Failed to load plugins, continuing without:', error);
       }
@@ -321,15 +343,21 @@ export class OrchestratorDaemon extends EventEmitter {
       try {
         const configDir = path.join(os.homedir(), 'orchestrator-daemon');
         const configFilePath = path.join(configDir, 'wundr.yaml');
-        const { generateDefaultConfig, readConfigSnapshot } = await import('../config');
+        const { generateDefaultConfig, readConfigSnapshot } =
+          await import('../config');
         this.configWatcher = startConfigWatcher({
           initialConfig: generateDefaultConfig(),
-          readSnapshot: () => readConfigSnapshot({ configPath: configFilePath }),
+          readSnapshot: () =>
+            readConfigSnapshot({ configPath: configFilePath }),
           onHotReload: async (plan, _nextConfig) => {
-            this.logger.info('Config hot-reloaded', { changedPaths: plan.changedPaths });
+            this.logger.info('Config hot-reloaded', {
+              changedPaths: plan.changedPaths,
+            });
           },
           onRestart: (plan, _nextConfig) => {
-            this.logger.warn('Config change requires daemon restart', { restartReasons: plan.restartReasons });
+            this.logger.warn('Config change requires daemon restart', {
+              restartReasons: plan.restartReasons,
+            });
           },
           watchPath: configFilePath,
           log: {
@@ -340,7 +368,10 @@ export class OrchestratorDaemon extends EventEmitter {
         });
         this.logger.info('Config watcher started');
       } catch (error) {
-        this.logger.warn('Failed to start config watcher, continuing without:', error);
+        this.logger.warn(
+          'Failed to start config watcher, continuing without:',
+          error
+        );
       }
 
       this.status = 'running';
@@ -381,7 +412,7 @@ export class OrchestratorDaemon extends EventEmitter {
     // Stop all active sessions
     const activeSessions = this.sessionManager.getActiveSessions();
     await Promise.all(
-      activeSessions.map((session) => this.sessionManager.stopSession(session.id)),
+      activeSessions.map(session => this.sessionManager.stopSession(session.id))
     );
 
     // -----------------------------------------------------------------------
@@ -430,7 +461,10 @@ export class OrchestratorDaemon extends EventEmitter {
     this.logger.info(`Spawning session for task: ${task.id}`);
 
     try {
-      const session = await this.sessionManager.spawnSession(orchestratorId, task);
+      const session = await this.sessionManager.spawnSession(
+        orchestratorId,
+        task
+      );
 
       this.metrics.totalSessionsSpawned++;
       this.metrics.activeSessions = this.sessionManager.getActiveSessionCount();
@@ -446,7 +480,11 @@ export class OrchestratorDaemon extends EventEmitter {
   /**
    * Execute a task on an existing session
    */
-  async executeTask(sessionId: string, task: string, context?: Record<string, unknown>): Promise<void> {
+  async executeTask(
+    sessionId: string,
+    task: string,
+    context?: Record<string, unknown>
+  ): Promise<void> {
     this.logger.info(`Executing task on session: ${sessionId}`);
 
     try {
@@ -456,7 +494,9 @@ export class OrchestratorDaemon extends EventEmitter {
       }
 
       if (session.status !== 'running') {
-        throw new Error(`Session ${sessionId} is not running (status: ${session.status})`);
+        throw new Error(
+          `Session ${sessionId} is not running (status: ${session.status})`
+        );
       }
 
       // Update the session's task description
@@ -475,7 +515,10 @@ export class OrchestratorDaemon extends EventEmitter {
       // Delegate to session manager's executor
       await this.sessionManager.executeTask(sessionId);
     } catch (error) {
-      this.logger.error(`Failed to execute task on session ${sessionId}:`, error);
+      this.logger.error(
+        `Failed to execute task on session ${sessionId}:`,
+        error
+      );
       throw error;
     }
   }
@@ -564,8 +607,14 @@ export class OrchestratorDaemon extends EventEmitter {
    */
   private async loadCharter(): Promise<void> {
     try {
-      const orchestratorDaemonDir = path.join(os.homedir(), 'orchestrator-daemon');
-      const charterPath = path.join(orchestratorDaemonDir, 'orchestrator-charter.yaml');
+      const orchestratorDaemonDir = path.join(
+        os.homedir(),
+        'orchestrator-daemon'
+      );
+      const charterPath = path.join(
+        orchestratorDaemonDir,
+        'orchestrator-charter.yaml'
+      );
 
       const charterContent = await fs.readFile(charterPath, 'utf-8');
       const charterData = YAML.parse(charterContent);
@@ -573,7 +622,10 @@ export class OrchestratorDaemon extends EventEmitter {
       this.charter = OrchestratorCharterSchema.parse(charterData);
       this.logger.info('Orchestrator charter loaded successfully');
     } catch (error) {
-      this.logger.warn('Failed to load orchestrator charter, using defaults:', error);
+      this.logger.warn(
+        'Failed to load orchestrator charter, using defaults:',
+        error
+      );
       // Continue without charter - use defaults
     }
   }
@@ -583,85 +635,119 @@ export class OrchestratorDaemon extends EventEmitter {
    */
   private setupEventHandlers(): void {
     // WebSocket server events
-    this.wsServer.on('spawn_session', async ({ ws, payload }: { ws: unknown; payload: SpawnSessionPayload | { task: string; model?: string } }) => {
-      try {
-        // Handle both object-based and simple string-based task payloads
-        const taskPayload = typeof payload.task === 'string'
-          ? { description: payload.task, type: 'general' as const, priority: 'medium' as const }
-          : payload.task;
-
-        const task: Task = {
-          id: `task_${Date.now()}`,
-          description: taskPayload.description,
-          type: taskPayload.type || 'general',
-          priority: taskPayload.priority || 'medium',
-          metadata: 'metadata' in taskPayload ? taskPayload.metadata : undefined,
-          status: 'pending',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-
-        const orchestratorId = 'orchestratorId' in payload ? payload.orchestratorId : 'default';
-        const session = await this.spawnSession(orchestratorId, task);
-
-        this.wsServer.send(ws as WebSocket, {
-          type: 'session_spawned',
-          session,
-        });
-
-        // Auto-execute the task after spawning
+    this.wsServer.on(
+      'spawn_session',
+      async ({
+        ws,
+        payload,
+      }: {
+        ws: unknown;
+        payload: SpawnSessionPayload | { task: string; model?: string };
+      }) => {
         try {
-          await this.executeTask(session.id, task.description);
-        } catch (error) {
-          this.logger.error(`Failed to execute task on newly spawned session ${session.id}:`, error);
-        }
-      } catch (error) {
-        this.wsServer.sendError(ws as WebSocket, error instanceof Error ? error.message : 'Unknown error');
-      }
-    });
+          // Handle both object-based and simple string-based task payloads
+          const taskPayload =
+            typeof payload.task === 'string'
+              ? {
+                  description: payload.task,
+                  type: 'general' as const,
+                  priority: 'medium' as const,
+                }
+              : payload.task;
 
-    this.wsServer.on('execute_task', async ({ ws, payload }: { ws: unknown; payload: ExecuteTaskPayload }) => {
-      try {
-        const { sessionId, task, context } = payload;
+          const task: Task = {
+            id: `task_${Date.now()}`,
+            description: taskPayload.description,
+            type: taskPayload.type || 'general',
+            priority: taskPayload.priority || 'medium',
+            metadata:
+              'metadata' in taskPayload ? taskPayload.metadata : undefined,
+            status: 'pending',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
 
-        this.wsServer.send(ws as WebSocket, {
-          type: 'task_executing',
-          sessionId,
-          taskId: task,
-        });
-
-        try {
-          await this.executeTask(sessionId, task, context);
+          const orchestratorId =
+            'orchestratorId' in payload ? payload.orchestratorId : 'default';
+          const session = await this.spawnSession(orchestratorId, task);
 
           this.wsServer.send(ws as WebSocket, {
-            type: 'task_completed',
+            type: 'session_spawned',
+            session,
+          });
+
+          // Auto-execute the task after spawning
+          try {
+            await this.executeTask(session.id, task.description);
+          } catch (error) {
+            this.logger.error(
+              `Failed to execute task on newly spawned session ${session.id}:`,
+              error
+            );
+          }
+        } catch (error) {
+          this.wsServer.sendError(
+            ws as WebSocket,
+            error instanceof Error ? error.message : 'Unknown error'
+          );
+        }
+      }
+    );
+
+    this.wsServer.on(
+      'execute_task',
+      async ({ ws, payload }: { ws: unknown; payload: ExecuteTaskPayload }) => {
+        try {
+          const { sessionId, task, context } = payload;
+
+          this.wsServer.send(ws as WebSocket, {
+            type: 'task_executing',
             sessionId,
             taskId: task,
           });
-        } catch (error) {
-          this.wsServer.send(ws as WebSocket, {
-            type: 'task_failed',
-            sessionId,
-            taskId: task,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          });
-        }
-      } catch (error) {
-        this.wsServer.sendError(ws as WebSocket, error instanceof Error ? error.message : 'Unknown error');
-      }
-    });
 
-    this.wsServer.on('session_status', ({ ws, sessionId }: { ws: unknown; sessionId: string }) => {
-      const session = this.sessionManager.getSession(sessionId);
-      if (session) {
-        this.wsServer.send(ws as WebSocket, {
-          type: 'session_status_update',
-          session,
-        });
-      } else {
-        this.wsServer.sendError(ws as WebSocket, `Session not found: ${sessionId}`);
+          try {
+            await this.executeTask(sessionId, task, context);
+
+            this.wsServer.send(ws as WebSocket, {
+              type: 'task_completed',
+              sessionId,
+              taskId: task,
+            });
+          } catch (error) {
+            this.wsServer.send(ws as WebSocket, {
+              type: 'task_failed',
+              sessionId,
+              taskId: task,
+              error: error instanceof Error ? error.message : 'Unknown error',
+            });
+          }
+        } catch (error) {
+          this.wsServer.sendError(
+            ws as WebSocket,
+            error instanceof Error ? error.message : 'Unknown error'
+          );
+        }
       }
-    });
+    );
+
+    this.wsServer.on(
+      'session_status',
+      ({ ws, sessionId }: { ws: unknown; sessionId: string }) => {
+        const session = this.sessionManager.getSession(sessionId);
+        if (session) {
+          this.wsServer.send(ws as WebSocket, {
+            type: 'session_status_update',
+            session,
+          });
+        } else {
+          this.wsServer.sendError(
+            ws as WebSocket,
+            `Session not found: ${sessionId}`
+          );
+        }
+      }
+    );
 
     this.wsServer.on('daemon_status', ({ ws }: { ws: unknown }) => {
       this.wsServer.send(ws as WebSocket, {
@@ -670,20 +756,26 @@ export class OrchestratorDaemon extends EventEmitter {
       });
     });
 
-    this.wsServer.on('stop_session', async ({ ws, sessionId }: { ws: unknown; sessionId: string }) => {
-      try {
-        await this.sessionManager.stopSession(sessionId);
-        const session = this.sessionManager.getSession(sessionId);
-        if (session) {
-          this.wsServer.send(ws as WebSocket, {
-            type: 'session_status_update',
-            session,
-          });
+    this.wsServer.on(
+      'stop_session',
+      async ({ ws, sessionId }: { ws: unknown; sessionId: string }) => {
+        try {
+          await this.sessionManager.stopSession(sessionId);
+          const session = this.sessionManager.getSession(sessionId);
+          if (session) {
+            this.wsServer.send(ws as WebSocket, {
+              type: 'session_status_update',
+              session,
+            });
+          }
+        } catch (error) {
+          this.wsServer.sendError(
+            ws as WebSocket,
+            error instanceof Error ? error.message : 'Unknown error'
+          );
         }
-      } catch (error) {
-        this.wsServer.sendError(ws as WebSocket, error instanceof Error ? error.message : 'Unknown error');
       }
-    });
+    );
 
     this.wsServer.on('list_sessions', ({ ws }: { ws: unknown }) => {
       const sessions = this.sessionManager.getAllSessions();
@@ -718,13 +810,17 @@ export class OrchestratorDaemon extends EventEmitter {
       });
     });
 
-    this.sessionManager.on('session:failed', ({ session }: { session: Session }) => {
-      this.metrics.activeSessions = this.sessionManager.getActiveSessionCount();
-      this.wsServer.broadcast({
-        type: 'session_status_update',
-        session,
-      });
-    });
+    this.sessionManager.on(
+      'session:failed',
+      ({ session }: { session: Session }) => {
+        this.metrics.activeSessions =
+          this.sessionManager.getActiveSessionCount();
+        this.wsServer.broadcast({
+          type: 'session_status_update',
+          session,
+        });
+      }
+    );
   }
 
   /**
@@ -772,18 +868,21 @@ export class OrchestratorDaemon extends EventEmitter {
     if (!jwtSecret) {
       this.logger.warn(
         'DAEMON_AUTH_JWT_SECRET not set -- WebSocket authentication is DISABLED. ' +
-        'Set this variable to enable authentication.',
+          'Set this variable to enable authentication.'
       );
       return null;
     }
 
-    let apiKeys: Array<{ key: string; clientId: string; scopes?: string[] }> = [];
+    let apiKeys: Array<{ key: string; clientId: string; scopes?: string[] }> =
+      [];
     const apiKeysJson = process.env['DAEMON_AUTH_API_KEYS'];
     if (apiKeysJson) {
       try {
         apiKeys = JSON.parse(apiKeysJson);
       } catch {
-        this.logger.error('Failed to parse DAEMON_AUTH_API_KEYS as JSON; ignoring.');
+        this.logger.error(
+          'Failed to parse DAEMON_AUTH_API_KEYS as JSON; ignoring.'
+        );
       }
     }
 
@@ -815,7 +914,9 @@ export class OrchestratorDaemon extends EventEmitter {
       return null;
     }
 
-    this.logger.info(`WebSocket auth configured: mode=${parsed.data.mode}, loopback=${parsed.data.allowLoopback}`);
+    this.logger.info(
+      `WebSocket auth configured: mode=${parsed.data.mode}, loopback=${parsed.data.allowLoopback}`
+    );
     return parsed.data;
   }
 }

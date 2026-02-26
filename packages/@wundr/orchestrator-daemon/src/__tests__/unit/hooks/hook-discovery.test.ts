@@ -22,7 +22,6 @@
  *  - formatHookStatus: human-readable output
  */
 
-
 import * as fs from 'fs';
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -56,7 +55,7 @@ import type {
 
 // Mock the fs module so that vi.spyOn can redefine properties like existsSync.
 // The auto-mock creates configurable descriptors; individual tests override as needed.
-vi.mock('fs', async (importOriginal) => {
+vi.mock('fs', async importOriginal => {
   // eslint-disable-next-line @typescript-eslint/consistent-type-imports
   const actual = await importOriginal<typeof import('fs')>();
   return { ...actual };
@@ -135,24 +134,15 @@ describe('parseFrontmatter', () => {
   });
 
   it('should skip comment lines inside frontmatter', () => {
-    const content = [
-      '---',
-      '# this is a comment',
-      'key: value',
-      '---',
-    ].join('\n');
+    const content = ['---', '# this is a comment', 'key: value', '---'].join(
+      '\n'
+    );
 
     expect(parseFrontmatter(content)).toEqual({ key: 'value' });
   });
 
   it('should skip blank lines inside frontmatter', () => {
-    const content = [
-      '---',
-      'a: 1',
-      '',
-      'b: 2',
-      '---',
-    ].join('\n');
+    const content = ['---', 'a: 1', '', 'b: 2', '---'].join('\n');
 
     expect(parseFrontmatter(content)).toEqual({ a: '1', b: '2' });
   });
@@ -170,12 +160,9 @@ describe('parseFrontmatter', () => {
   });
 
   it('should ignore lines without a colon', () => {
-    const content = [
-      '---',
-      'good: value',
-      'bad-line-no-colon',
-      '---',
-    ].join('\n');
+    const content = ['---', 'good: value', 'bad-line-no-colon', '---'].join(
+      '\n'
+    );
 
     expect(parseFrontmatter(content)).toEqual({ good: 'value' });
   });
@@ -202,12 +189,18 @@ describe('extractMetadata', () => {
   });
 
   it('should extract os platforms', () => {
-    const meta = extractMetadata({ events: 'SessionStart', os: 'darwin, linux' });
+    const meta = extractMetadata({
+      events: 'SessionStart',
+      os: 'darwin, linux',
+    });
     expect(meta.os).toEqual(['darwin', 'linux']);
   });
 
   it('should extract requires.bins', () => {
-    const meta = extractMetadata({ events: 'SessionStart', 'requires.bins': 'git, node' });
+    const meta = extractMetadata({
+      events: 'SessionStart',
+      'requires.bins': 'git, node',
+    });
     expect(meta.requires?.bins).toEqual(['git', 'node']);
   });
 
@@ -217,12 +210,18 @@ describe('extractMetadata', () => {
   });
 
   it('should extract requires.anyBins', () => {
-    const meta = extractMetadata({ events: 'SessionStart', 'requires.anyBins': 'npm, pnpm, yarn' });
+    const meta = extractMetadata({
+      events: 'SessionStart',
+      'requires.anyBins': 'npm, pnpm, yarn',
+    });
     expect(meta.requires?.anyBins).toEqual(['npm', 'pnpm', 'yarn']);
   });
 
   it('should extract requires.env', () => {
-    const meta = extractMetadata({ events: 'SessionStart', 'requires.env': 'API_KEY, SECRET' });
+    const meta = extractMetadata({
+      events: 'SessionStart',
+      'requires.env': 'API_KEY, SECRET',
+    });
     expect(meta.requires?.env).toEqual(['API_KEY', 'SECRET']);
   });
 
@@ -237,7 +236,10 @@ describe('extractMetadata', () => {
   });
 
   it('should extract hookKey', () => {
-    const meta = extractMetadata({ events: 'SessionStart', hookKey: 'my-custom-key' });
+    const meta = extractMetadata({
+      events: 'SessionStart',
+      hookKey: 'my-custom-key',
+    });
     expect(meta.hookKey).toBe('my-custom-key');
   });
 
@@ -257,12 +259,18 @@ describe('resolveInvocationPolicy', () => {
   });
 
   it('should return enabled: false when frontmatter says "false"', () => {
-    expect(resolveInvocationPolicy({ enabled: 'false' })).toEqual({ enabled: false });
+    expect(resolveInvocationPolicy({ enabled: 'false' })).toEqual({
+      enabled: false,
+    });
   });
 
   it('should return enabled: true for any value other than "false"', () => {
-    expect(resolveInvocationPolicy({ enabled: 'true' })).toEqual({ enabled: true });
-    expect(resolveInvocationPolicy({ enabled: 'yes' })).toEqual({ enabled: true });
+    expect(resolveInvocationPolicy({ enabled: 'true' })).toEqual({
+      enabled: true,
+    });
+    expect(resolveInvocationPolicy({ enabled: 'yes' })).toEqual({
+      enabled: true,
+    });
   });
 });
 
@@ -272,7 +280,9 @@ describe('resolveInvocationPolicy', () => {
 
 describe('resolveHookKey', () => {
   it('should use metadata.hookKey when available', () => {
-    const entry = makeEntry({ metadata: { events: ['SessionStart'], hookKey: 'my-key' } });
+    const entry = makeEntry({
+      metadata: { events: ['SessionStart'], hookKey: 'my-key' },
+    });
     expect(resolveHookKey('anything', entry)).toBe('my-key');
   });
 
@@ -303,24 +313,31 @@ describe('shouldIncludeHook', () => {
   });
 
   it('should exclude when config override sets enabled: false', () => {
-    const entry = makeEntry({ name: 'my-hook', metadata: { events: ['SessionStart'] } });
+    const entry = makeEntry({
+      name: 'my-hook',
+      metadata: { events: ['SessionStart'] },
+    });
     expect(
       shouldIncludeHook({
         entry,
         config: { hookOverrides: { 'my-hook': { enabled: false } } },
-      }),
+      })
     ).toBe(false);
   });
 
   it('should exclude when OS does not match', () => {
     Object.defineProperty(process, 'platform', { value: 'win32' });
-    const entry = makeEntry({ metadata: { events: ['SessionStart'], os: ['darwin', 'linux'] } });
+    const entry = makeEntry({
+      metadata: { events: ['SessionStart'], os: ['darwin', 'linux'] },
+    });
     expect(shouldIncludeHook({ entry })).toBe(false);
   });
 
   it('should include when OS matches', () => {
     Object.defineProperty(process, 'platform', { value: 'darwin' });
-    const entry = makeEntry({ metadata: { events: ['SessionStart'], os: ['darwin'] } });
+    const entry = makeEntry({
+      metadata: { events: ['SessionStart'], os: ['darwin'] },
+    });
     expect(shouldIncludeHook({ entry })).toBe(true);
   });
 
@@ -372,7 +389,9 @@ describe('shouldIncludeHook', () => {
   it('should use remote eligibility context for OS checks', () => {
     Object.defineProperty(process, 'platform', { value: 'win32' });
 
-    const entry = makeEntry({ metadata: { events: ['SessionStart'], os: ['linux'] } });
+    const entry = makeEntry({
+      metadata: { events: ['SessionStart'], os: ['linux'] },
+    });
 
     expect(
       shouldIncludeHook({
@@ -384,7 +403,7 @@ describe('shouldIncludeHook', () => {
             hasAnyBin: () => true,
           },
         },
-      }),
+      })
     ).toBe(true);
   });
 });
@@ -405,7 +424,10 @@ describe('loadHookEntriesFromDir', () => {
   it('should return an empty array when the directory does not exist', () => {
     vi.spyOn(fs, 'existsSync').mockReturnValue(false);
 
-    const entries = loadHookEntriesFromDir({ dir: '/nonexistent', source: 'directory' });
+    const entries = loadHookEntriesFromDir({
+      dir: '/nonexistent',
+      source: 'directory',
+    });
     expect(entries).toEqual([]);
   });
 
@@ -422,17 +444,17 @@ describe('loadHookEntriesFromDir', () => {
     vi.spyOn(fs, 'existsSync').mockImplementation((p: fs.PathLike) => {
       const s = String(p);
       if (s === '/hooks') {
-return true;
-}
+        return true;
+      }
       if (s === '/hooks/my-hook/HOOK.md') {
-return true;
-}
+        return true;
+      }
       if (s === '/hooks/my-hook/handler.ts') {
-return true;
-}
+        return true;
+      }
       if (s === '/hooks/my-hook/package.json') {
-return false;
-}
+        return false;
+      }
       return false;
     });
 
@@ -444,7 +466,7 @@ return false;
     // Mock readdirSync
     vi.spyOn(fs, 'readdirSync').mockImplementation(((
       dir: string,
-      _opts?: any,
+      _opts?: any
     ) => {
       if (dir === '/hooks') {
         return [{ name: 'my-hook', isDirectory: () => true }];
@@ -455,12 +477,15 @@ return false;
     // Mock readFileSync
     vi.spyOn(fs, 'readFileSync').mockImplementation(((p: string) => {
       if (p === '/hooks/my-hook/HOOK.md') {
-return hookMdContent;
-}
+        return hookMdContent;
+      }
       throw new Error('file not found');
     }) as any);
 
-    const entries = loadHookEntriesFromDir({ dir: '/hooks', source: 'directory' });
+    const entries = loadHookEntriesFromDir({
+      dir: '/hooks',
+      source: 'directory',
+    });
 
     expect(entries).toHaveLength(1);
     expect(entries[0].hook.name).toBe('test-hook');
@@ -472,14 +497,14 @@ return hookMdContent;
     vi.spyOn(fs, 'existsSync').mockImplementation((p: fs.PathLike) => {
       const s = String(p);
       if (s === '/hooks') {
-return true;
-}
+        return true;
+      }
       if (s === '/hooks/no-handler/HOOK.md') {
-return true;
-}
+        return true;
+      }
       if (s === '/hooks/no-handler/package.json') {
-return false;
-}
+        return false;
+      }
       // None of the handler candidates exist
       return false;
     });
@@ -490,7 +515,7 @@ return false;
 
     vi.spyOn(fs, 'readdirSync').mockImplementation(((
       dir: string,
-      _opts?: any,
+      _opts?: any
     ) => {
       if (dir === '/hooks') {
         return [{ name: 'no-handler', isDirectory: () => true }];
@@ -500,12 +525,15 @@ return false;
 
     vi.spyOn(fs, 'readFileSync').mockImplementation(((p: string) => {
       if (p === '/hooks/no-handler/HOOK.md') {
-return '---\nevents: SessionStart\n---\n';
-}
+        return '---\nevents: SessionStart\n---\n';
+      }
       throw new Error('file not found');
     }) as any);
 
-    const entries = loadHookEntriesFromDir({ dir: '/hooks', source: 'directory' });
+    const entries = loadHookEntriesFromDir({
+      dir: '/hooks',
+      source: 'directory',
+    });
     expect(entries).toEqual([]);
   });
 
@@ -517,14 +545,15 @@ return '---\nevents: SessionStart\n---\n';
 
     vi.spyOn(fs, 'readdirSync').mockImplementation(((
       _dir: string,
-      _opts?: any,
+      _opts?: any
     ) => {
-      return [
-        { name: 'a-file.txt', isDirectory: () => false },
-      ];
+      return [{ name: 'a-file.txt', isDirectory: () => false }];
     }) as any);
 
-    const entries = loadHookEntriesFromDir({ dir: '/hooks', source: 'directory' });
+    const entries = loadHookEntriesFromDir({
+      dir: '/hooks',
+      source: 'directory',
+    });
     expect(entries).toEqual([]);
   });
 });
@@ -536,7 +565,10 @@ return '---\nevents: SessionStart\n---\n';
 describe('buildHookSnapshot', () => {
   it('should create a snapshot from entries', () => {
     const entries = [
-      makeEntry({ name: 'hook-a', metadata: { events: ['SessionStart', 'SessionEnd'] } }),
+      makeEntry({
+        name: 'hook-a',
+        metadata: { events: ['SessionStart', 'SessionEnd'] },
+      }),
       makeEntry({ name: 'hook-b', metadata: { events: ['PreToolUse'] } }),
     ];
 
@@ -544,8 +576,14 @@ describe('buildHookSnapshot', () => {
 
     expect(snapshot.version).toBe(1);
     expect(snapshot.hooks).toHaveLength(2);
-    expect(snapshot.hooks[0]).toEqual({ name: 'hook-a', events: ['SessionStart', 'SessionEnd'] });
-    expect(snapshot.hooks[1]).toEqual({ name: 'hook-b', events: ['PreToolUse'] });
+    expect(snapshot.hooks[0]).toEqual({
+      name: 'hook-a',
+      events: ['SessionStart', 'SessionEnd'],
+    });
+    expect(snapshot.hooks[1]).toEqual({
+      name: 'hook-b',
+      events: ['PreToolUse'],
+    });
     expect(snapshot.resolvedHooks).toHaveLength(2);
   });
 
@@ -619,7 +657,7 @@ describe('generateHookStatus', () => {
     const status = generateHookStatus(registry);
 
     expect(status.healthy).toBe(false);
-    expect(status.diagnostics.some((d) => d.level === 'error')).toBe(true);
+    expect(status.diagnostics.some(d => d.level === 'error')).toBe(true);
   });
 
   it('should include engine stats when engine is provided', () => {
@@ -675,7 +713,7 @@ describe('generateHookStatus', () => {
 
     const status = generateHookStatus(registry);
     const diag = status.diagnostics.find(
-      (d) => d.hookId === 'zero-to' && d.level === 'warn',
+      d => d.hookId === 'zero-to' && d.level === 'warn'
     );
     expect(diag).toBeDefined();
     expect(diag?.message).toContain('non-positive timeout');
@@ -692,15 +730,16 @@ describe('generateHookStatus', () => {
 
     const status = generateHookStatus(registry);
     const diag = status.diagnostics.find(
-      (d) => d.hookId === 'extreme' && d.message.includes('unusually high priority'),
+      d =>
+        d.hookId === 'extreme' && d.message.includes('unusually high priority')
     );
     expect(diag).toBeDefined();
   });
 
   it('should report events with no registered hooks', () => {
     const status = generateHookStatus(registry);
-    const noHookDiags = status.diagnostics.filter(
-      (d) => d.message.startsWith('No hooks registered for event'),
+    const noHookDiags = status.diagnostics.filter(d =>
+      d.message.startsWith('No hooks registered for event')
     );
     // With zero hooks, all 14 events should be flagged
     expect(noHookDiags).toHaveLength(14);
@@ -772,7 +811,9 @@ describe('generateGroupedView', () => {
 
 describe('compareSnapshots', () => {
   it('should detect added hooks', () => {
-    const before: HookSnapshot = { hooks: [{ name: 'a', events: ['SessionStart'] }] };
+    const before: HookSnapshot = {
+      hooks: [{ name: 'a', events: ['SessionStart'] }],
+    };
     const after: HookSnapshot = {
       hooks: [
         { name: 'a', events: ['SessionStart'] },
@@ -794,7 +835,9 @@ describe('compareSnapshots', () => {
         { name: 'b', events: ['PostToolUse'] },
       ],
     };
-    const after: HookSnapshot = { hooks: [{ name: 'a', events: ['SessionStart'] }] };
+    const after: HookSnapshot = {
+      hooks: [{ name: 'a', events: ['SessionStart'] }],
+    };
 
     const diff = compareSnapshots(before, after);
 

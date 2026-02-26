@@ -89,7 +89,7 @@ describe('AuthMiddleware', () => {
         createMockAuthConfig({
           rateLimitMaxMessages: 2,
           rateLimitWindowMs: 60_000,
-        }),
+        })
       );
 
       const ws = new MockWebSocket() as unknown as AuthenticatedWebSocket;
@@ -106,7 +106,9 @@ describe('AuthMiddleware', () => {
       expect(result).toBeNull();
 
       const mockWs = ws as unknown as MockWebSocket;
-      const lastError = JSON.parse(mockWs.sentMessages[mockWs.sentMessages.length - 1]!);
+      const lastError = JSON.parse(
+        mockWs.sentMessages[mockWs.sentMessages.length - 1]!
+      );
       expect(lastError.error).toBe('rate_limit_exceeded');
     });
 
@@ -172,7 +174,9 @@ describe('AuthMiddleware', () => {
       expect(result).toBeNull();
 
       const mockWs = ws as unknown as MockWebSocket;
-      const lastError = JSON.parse(mockWs.sentMessages[mockWs.sentMessages.length - 1]!);
+      const lastError = JSON.parse(
+        mockWs.sentMessages[mockWs.sentMessages.length - 1]!
+      );
       expect(lastError.error).toBe('token_expired');
 
       // Should also close the socket
@@ -236,7 +240,7 @@ describe('AuthMiddleware', () => {
   describe('getRemainingMessages', () => {
     beforeEach(() => {
       middleware = new AuthMiddleware(
-        createMockAuthConfig({ rateLimitMaxMessages: 10 }),
+        createMockAuthConfig({ rateLimitMaxMessages: 10 })
       );
     });
 

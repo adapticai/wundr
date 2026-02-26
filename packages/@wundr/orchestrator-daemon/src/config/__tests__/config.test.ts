@@ -2,7 +2,12 @@
  * Configuration Loader Tests
  */
 
-import { loadConfig, validateRequiredEnv, resetConfig, getConfig } from '../index';
+import {
+  loadConfig,
+  validateRequiredEnv,
+  resetConfig,
+  getConfig,
+} from '../index';
 
 describe('Configuration Loader', () => {
   const originalEnv = process.env;
@@ -22,7 +27,9 @@ describe('Configuration Loader', () => {
     it('should throw error when OPENAI_API_KEY is missing', () => {
       delete process.env.OPENAI_API_KEY;
 
-      expect(() => validateRequiredEnv()).toThrow('Missing required environment variables');
+      expect(() => validateRequiredEnv()).toThrow(
+        'Missing required environment variables'
+      );
       expect(() => validateRequiredEnv()).toThrow('OPENAI_API_KEY');
     });
 
@@ -129,22 +136,31 @@ describe('Configuration Loader', () => {
 
     it('should load security configuration', () => {
       process.env.OPENAI_API_KEY = 'sk-test-key';
-      process.env.DAEMON_JWT_SECRET = 'this-is-a-very-secure-secret-that-is-at-least-32-characters';
+      process.env.DAEMON_JWT_SECRET =
+        'this-is-a-very-secure-secret-that-is-at-least-32-characters';
       process.env.DAEMON_CORS_ENABLED = 'true';
-      process.env.DAEMON_CORS_ORIGINS = 'http://localhost:3000,https://example.com';
+      process.env.DAEMON_CORS_ORIGINS =
+        'http://localhost:3000,https://example.com';
 
       const config = loadConfig();
 
-      expect(config.security.jwtSecret).toBe('this-is-a-very-secure-secret-that-is-at-least-32-characters');
+      expect(config.security.jwtSecret).toBe(
+        'this-is-a-very-secure-secret-that-is-at-least-32-characters'
+      );
       expect(config.security.cors.enabled).toBe(true);
-      expect(config.security.cors.origins).toEqual(['http://localhost:3000', 'https://example.com']);
+      expect(config.security.cors.origins).toEqual([
+        'http://localhost:3000',
+        'https://example.com',
+      ]);
     });
 
     it('should throw error for weak JWT secret', () => {
       process.env.OPENAI_API_KEY = 'sk-test-key';
       process.env.DAEMON_JWT_SECRET = 'weak';
 
-      expect(() => loadConfig()).toThrow('JWT secret must be at least 32 characters');
+      expect(() => loadConfig()).toThrow(
+        'JWT secret must be at least 32 characters'
+      );
     });
 
     it('should load monitoring configuration', () => {

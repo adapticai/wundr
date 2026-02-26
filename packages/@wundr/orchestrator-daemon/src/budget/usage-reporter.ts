@@ -7,7 +7,7 @@ import { EventEmitter } from 'eventemitter3';
 import { getCostCalculator } from './cost-calculator';
 import { UsageReporterConfigSchema } from './types';
 
-import type { CostCalculator} from './cost-calculator';
+import type { CostCalculator } from './cost-calculator';
 import type {
   TokenUsageRecord,
   ReportParams,
@@ -54,9 +54,12 @@ class InMemoryStorage implements UsageStorage {
     endTime: Date;
   }): Promise<TokenUsageRecord[]> {
     return this.records.filter(r => {
-      const matchesOrchestrator = !params.orchestratorId || r.orchestratorId === params.orchestratorId;
-      const matchesSession = !params.sessionId || r.sessionId === params.sessionId;
-      const inTimeRange = r.timestamp >= params.startTime && r.timestamp <= params.endTime;
+      const matchesOrchestrator =
+        !params.orchestratorId || r.orchestratorId === params.orchestratorId;
+      const matchesSession =
+        !params.sessionId || r.sessionId === params.sessionId;
+      const inTimeRange =
+        r.timestamp >= params.startTime && r.timestamp <= params.endTime;
       return matchesOrchestrator && matchesSession && inTimeRange;
     });
   }
@@ -90,7 +93,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
   constructor(
     config?: Partial<UsageReporterConfig>,
     storage?: UsageStorage,
-    costCalculator?: CostCalculator,
+    costCalculator?: CostCalculator
   ) {
     super();
     this.config = UsageReporterConfigSchema.parse(config || {});
@@ -158,7 +161,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
       records,
       this.config.defaultCurrency,
       true,
-      'monthly',
+      'monthly'
     );
 
     return {
@@ -189,7 +192,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
       records,
       params.currency || this.config.defaultCurrency,
       params.includeProjection || false,
-      'monthly',
+      'monthly'
     );
   }
 
@@ -224,7 +227,8 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
 
     // Detect spikes
     for (const window of windows) {
-      const deviation = Math.abs(window.totalTokens - stats.mean) / stats.stdDev;
+      const deviation =
+        Math.abs(window.totalTokens - stats.mean) / stats.stdDev;
 
       if (deviation > config.spikeThreshold) {
         const anomaly: Anomaly = {
@@ -233,12 +237,17 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
           sessionId: window.sessionId,
           timestamp: window.timestamp,
           type: 'spike',
-          severity: deviation > config.spikeThreshold * 2 ? 'critical' :
-                   deviation > config.spikeThreshold * 1.5 ? 'high' : 'medium',
+          severity:
+            deviation > config.spikeThreshold * 2
+              ? 'critical'
+              : deviation > config.spikeThreshold * 1.5
+                ? 'high'
+                : 'medium',
           description: `Token usage spike detected: ${window.totalTokens} tokens (${deviation.toFixed(1)} std devs from mean)`,
           actualValue: window.totalTokens,
           expectedValue: stats.mean,
-          deviationPercentage: ((window.totalTokens - stats.mean) / stats.mean) * 100,
+          deviationPercentage:
+            ((window.totalTokens - stats.mean) / stats.mean) * 100,
         };
         anomalies.push(anomaly);
       }
@@ -253,7 +262,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
   public async getBudgetStatus(
     orchestratorId: string,
     period: 'hourly' | 'daily' | 'monthly',
-    limit: number,
+    limit: number
   ): Promise<BudgetStatus> {
     const now = new Date();
     let startTime: Date;
@@ -261,7 +270,12 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
 
     switch (period) {
       case 'hourly':
-        startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
+        startTime = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+          now.getHours()
+        );
         resetAt = new Date(startTime.getTime() + 60 * 60 * 1000);
         break;
       case 'daily':
@@ -287,9 +301,15 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
     let status: BudgetStatus['status'];
     if (percentage >= 100) {
       status = 'exceeded';
-    } else if (percentage >= this.config.anomalyDetection.budgetCriticalThreshold * 100) {
+    } else if (
+      percentage >=
+      this.config.anomalyDetection.budgetCriticalThreshold * 100
+    ) {
       status = 'critical';
-    } else if (percentage >= this.config.anomalyDetection.budgetWarningThreshold * 100) {
+    } else if (
+      percentage >=
+      this.config.anomalyDetection.budgetWarningThreshold * 100
+    ) {
       status = 'warning';
     } else {
       status = 'healthy';
@@ -321,13 +341,18 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
    */
   private calculateSummary(records: TokenUsageRecord[]): UsageSummary {
     const totalInputTokens = records.reduce((sum, r) => sum + r.inputTokens, 0);
-    const totalOutputTokens = records.reduce((sum, r) => sum + r.outputTokens, 0);
+    const totalOutputTokens = records.reduce(
+      (sum, r) => sum + r.outputTokens,
+      0
+    );
     const totalTokens = records.reduce((sum, r) => sum + r.totalTokens, 0);
 
-    const uniqueOrchestrators = new Set(records.map(r => r.orchestratorId)).size;
+    const uniqueOrchestrators = new Set(records.map(r => r.orchestratorId))
+      .size;
     const uniqueSessions = new Set(records.map(r => r.sessionId)).size;
 
-    const averageTokensPerSession = uniqueSessions > 0 ? totalTokens / uniqueSessions : 0;
+    const averageTokensPerSession =
+      uniqueSessions > 0 ? totalTokens / uniqueSessions : 0;
 
     // Find peak usage
     let peakUsageTimestamp: Date | undefined;
@@ -357,7 +382,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
    */
   private calculateBreakdown(
     records: TokenUsageRecord[],
-    groupBy?: ('orchestrator' | 'session' | 'model' | 'tool')[],
+    groupBy?: ('orchestrator' | 'session' | 'model' | 'tool')[]
   ): UsageBreakdown[] {
     if (!groupBy || groupBy.length === 0) {
       groupBy = ['orchestrator', 'model'];
@@ -392,10 +417,20 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
       }
 
       for (const [key, groupRecords] of groups) {
-        const inputTokens = groupRecords.reduce((sum, r) => sum + r.inputTokens, 0);
-        const outputTokens = groupRecords.reduce((sum, r) => sum + r.outputTokens, 0);
-        const groupTotal = groupRecords.reduce((sum, r) => sum + r.totalTokens, 0);
-        const cost = this.costCalculator.calculateCostEstimate(groupRecords).totalCost;
+        const inputTokens = groupRecords.reduce(
+          (sum, r) => sum + r.inputTokens,
+          0
+        );
+        const outputTokens = groupRecords.reduce(
+          (sum, r) => sum + r.outputTokens,
+          0
+        );
+        const groupTotal = groupRecords.reduce(
+          (sum, r) => sum + r.totalTokens,
+          0
+        );
+        const cost =
+          this.costCalculator.calculateCostEstimate(groupRecords).totalCost;
 
         breakdowns.push({
           key,
@@ -419,12 +454,13 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
    */
   private groupByTimeWindows(
     records: TokenUsageRecord[],
-    windowSizeMs: number,
+    windowSizeMs: number
   ): UsageDataPoint[] {
     const windows = new Map<number, TokenUsageRecord[]>();
 
     for (const record of records) {
-      const windowStart = Math.floor(record.timestamp.getTime() / windowSizeMs) * windowSizeMs;
+      const windowStart =
+        Math.floor(record.timestamp.getTime() / windowSizeMs) * windowSizeMs;
       const existing = windows.get(windowStart) || [];
       existing.push(record);
       windows.set(windowStart, existing);
@@ -459,7 +495,8 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
 
     const sorted = [...values].sort((a, b) => a - b);
     const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
-    const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+    const variance =
+      values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
     const stdDev = Math.sqrt(variance);
 
     const median = sorted[Math.floor(sorted.length / 2)];
@@ -485,7 +522,7 @@ export class UsageReporter extends EventEmitter<UsageReporterEvents> {
     // Run cleanup daily
     this.cleanupInterval = setInterval(
       () => this.cleanupOldRecords(),
-      24 * 60 * 60 * 1000,
+      24 * 60 * 60 * 1000
     );
   }
 

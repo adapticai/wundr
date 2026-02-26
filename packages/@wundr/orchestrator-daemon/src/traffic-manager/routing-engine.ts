@@ -38,14 +38,15 @@ export class RoutingEngine extends EventEmitter<RoutingEngineEvents> {
   constructor(
     private readonly registry: AgentRegistry,
     private readonly analyzer: ContentAnalyzer,
-    private readonly config: TrafficManagerConfig,
+    private readonly config: TrafficManagerConfig
   ) {
     super();
   }
 
   route(envelope: InboundMessageEnvelope): RoutingDecision {
     const start = Date.now();
-    const analysis = envelope.analysis ?? this.analyzer.analyze(envelope.message);
+    const analysis =
+      envelope.analysis ?? this.analyzer.analyze(envelope.message);
     const originalPriority = analysis.urgency;
 
     const decision = this.resolve(envelope, analysis, originalPriority, start);
@@ -65,25 +66,31 @@ export class RoutingEngine extends EventEmitter<RoutingEngineEvents> {
     envelope: InboundMessageEnvelope,
     analysis: ContentAnalysis,
     originalPriority: MessagePriority,
-    start: number,
+    start: number
   ): RoutingDecision {
     const build = (
       agentId: string,
       confidence: number,
       matchedBy: RoutingDecision['matchedBy'],
       reasoning: string,
-      escalated = false,
+      escalated = false
     ): RoutingDecision => ({
       selectedAgentId: agentId,
       confidence,
       reasoning,
       matchedBy,
-      fallbackChain: this.buildFallbackChain(agentId, analysis.requiredDisciplines[0]),
+      fallbackChain: this.buildFallbackChain(
+        agentId,
+        analysis.requiredDisciplines[0]
+      ),
       routingLatencyMs: Date.now() - start,
       escalated,
       originalPriority,
       effectivePriority: escalated
-        ? Math.max(originalPriority, this.config.escalationThreshold) as MessagePriority
+        ? (Math.max(
+            originalPriority,
+            this.config.escalationThreshold
+          ) as MessagePriority)
         : originalPriority,
     });
 
@@ -91,9 +98,14 @@ export class RoutingEngine extends EventEmitter<RoutingEngineEvents> {
     for (const name of analysis.mentionedAgentNames) {
       const agent = this.registry
         .listAgents()
-        .find((a) => a.name.toLowerCase() === name.toLowerCase());
+        .find(a => a.name.toLowerCase() === name.toLowerCase());
       if (agent && agent.status === 'available') {
-        return build(agent.id, 1.0, 'direct_mention', `Directly mentioned: @${name}`);
+        return build(
+          agent.id,
+          1.0,
+          'direct_mention',
+          `Directly mentioned: @${name}`
+        );
       }
     }
 
@@ -101,48 +113,68 @@ export class RoutingEngine extends EventEmitter<RoutingEngineEvents> {
     if (analysis.isThreadContinuation && analysis.threadAgentId) {
       const agent = this.registry.getAgent(analysis.threadAgentId);
       if (agent && agent.status === 'available') {
-        return build(agent.id, 0.95, 'thread_continuity', `Continuing thread with ${agent.name}`);
+        return build(
+          agent.id,
+          0.95,
+          'thread_continuity',
+          `Continuing thread with ${agent.name}`
+        );
       }
     }
 
     // 3. Binding rules (sorted ascending by priority number = lower fires first)
     const sortedRules = [...this.config.routingRules]
-      .filter((r) => r.enabled)
+      .filter(r => r.enabled)
       .sort((a, b) => a.priority - b.priority);
 
     for (const rule of sortedRules) {
       if (this.matchesRule(rule, envelope, analysis)) {
         const agent = this.registry.getAgent(rule.targetAgentId);
         if (agent && agent.status === 'available') {
-          return build(agent.id, 0.9, 'binding_rule', `Matched rule "${rule.name}"`);
+          return build(
+            agent.id,
+            0.9,
+            'binding_rule',
+            `Matched rule "${rule.name}"`
+          );
         }
         // Try fallback agent from rule if primary is unavailable
         if (rule.fallbackAgentId) {
           const fallback = this.registry.getAgent(rule.fallbackAgentId);
           if (fallback && fallback.status === 'available') {
-            return build(fallback.id, 0.85, 'binding_rule', `Rule "${rule.name}" fallback agent`);
+            return build(
+              fallback.id,
+              0.85,
+              'binding_rule',
+              `Rule "${rule.name}" fallback agent`
+            );
           }
         }
       }
     }
 
     // 4. Discipline match
-    const disciplineMatch = this.bestDisciplineMatch(analysis.requiredDisciplines);
+    const disciplineMatch = this.bestDisciplineMatch(
+      analysis.requiredDisciplines
+    );
     if (disciplineMatch) {
       const confidence = disciplineMatch.status === 'available' ? 0.85 : 0.7;
       return build(
         disciplineMatch.id,
         confidence,
         'discipline_match',
-        `Best match for disciplines: ${analysis.requiredDisciplines.join(', ')}`,
+        `Best match for disciplines: ${analysis.requiredDisciplines.join(', ')}`
       );
     }
 
     // 5. Seniority escalation
-    if ((analysis.urgency as number) >= (this.config.escalationThreshold as number)) {
+    if (
+      (analysis.urgency as number) >=
+      (this.config.escalationThreshold as number)
+    ) {
       const senior = this.registry
         .findBySeniority('director')
-        .filter((a) => a.status === 'available')
+        .filter(a => a.status === 'available')
         .sort((a, b) => a.currentLoad - b.currentLoad)[0];
       if (senior) {
         return build(
@@ -150,7 +182,7 @@ export class RoutingEngine extends EventEmitter<RoutingEngineEvents> {
           0.8,
           'seniority_escalation',
           `Escalated due to urgency (${analysis.urgency}) >= threshold (${this.config.escalationThreshold})`,
-          true,
+          true
         );
       }
     }
@@ -159,9 +191,14 @@ export class RoutingEngine extends EventEmitter<RoutingEngineEvents> {
     const available = this.registry.listAvailable();
     if (available.length > 0) {
       const lowest = available.reduce((best, a) =>
-        a.currentLoad < best.currentLoad ? a : best,
+        a.currentLoad < best.currentLoad ? a : best
       );
-      return build(lowest.id, 0.5, 'load_balance', `Load balanced to ${lowest.name}`);
+      return build(
+        lowest.id,
+        0.5,
+        'load_balance',
+        `Load balanced to ${lowest.name}`
+      );
     }
 
     // 7. Fallback
@@ -169,14 +206,14 @@ export class RoutingEngine extends EventEmitter<RoutingEngineEvents> {
       this.config.defaultAgentId,
       0.3,
       'fallback',
-      'No suitable agent found, routing to default',
+      'No suitable agent found, routing to default'
     );
   }
 
   private matchesRule(
     rule: RoutingRule,
     envelope: InboundMessageEnvelope,
-    analysis: ContentAnalysis,
+    analysis: ContentAnalysis
   ): boolean {
     const { conditions } = rule;
 
@@ -193,25 +230,27 @@ export class RoutingEngine extends EventEmitter<RoutingEngineEvents> {
 
     if (conditions.contentKeywords && conditions.contentKeywords.length > 0) {
       const text = envelope.message.content.text.toLowerCase();
-      const hasKeyword = conditions.contentKeywords.some((kw) =>
-        text.includes(kw.toLowerCase()),
+      const hasKeyword = conditions.contentKeywords.some(kw =>
+        text.includes(kw.toLowerCase())
       );
       if (!hasKeyword) return false;
     }
 
     if (conditions.messageTypes && conditions.messageTypes.length > 0) {
-      if (!conditions.messageTypes.includes(envelope.message.chatType)) return false;
+      if (!conditions.messageTypes.includes(envelope.message.chatType))
+        return false;
     }
 
     if (conditions.minPriority !== undefined) {
-      if ((analysis.urgency as number) < (conditions.minPriority as number)) return false;
+      if ((analysis.urgency as number) < (conditions.minPriority as number))
+        return false;
     }
 
     return true;
   }
 
   private bestDisciplineMatch(
-    requiredDisciplines: readonly string[],
+    requiredDisciplines: readonly string[]
   ): AgentCapabilityProfile | null {
     if (requiredDisciplines.length === 0) return null;
 
@@ -225,25 +264,29 @@ export class RoutingEngine extends EventEmitter<RoutingEngineEvents> {
 
     // Prefer available agents, then sort by seniority weight * (1 - load)
     const weights = this.config.seniorityWeights;
-    return allCandidates
-      .sort((a, b) => {
+    return (
+      allCandidates.sort((a, b) => {
         const aAvail = a.status === 'available' ? 1 : 0;
         const bAvail = b.status === 'available' ? 1 : 0;
         if (aAvail !== bAvail) return bAvail - aAvail;
         const aScore = (weights[a.seniority] ?? 1) * (1 - a.currentLoad);
         const bScore = (weights[b.seniority] ?? 1) * (1 - b.currentLoad);
         return bScore - aScore;
-      })[0] ?? null;
+      })[0] ?? null
+    );
   }
 
-  private buildFallbackChain(primaryAgentId: string, discipline?: string): string[] {
+  private buildFallbackChain(
+    primaryAgentId: string,
+    discipline?: string
+  ): string[] {
     const chain: string[] = [];
 
     // Same discipline agents sorted by load (excluding primary)
     if (discipline) {
       const sameDiscipline = this.registry
         .findByDiscipline(discipline)
-        .filter((a) => a.id !== primaryAgentId && a.status === 'available')
+        .filter(a => a.id !== primaryAgentId && a.status === 'available')
         .sort((a, b) => a.currentLoad - b.currentLoad);
       for (const a of sameDiscipline) {
         if (chain.length >= 3) break;
@@ -255,7 +298,7 @@ export class RoutingEngine extends EventEmitter<RoutingEngineEvents> {
     if (chain.length < 3) {
       const others = this.registry
         .listAvailable()
-        .filter((a) => a.id !== primaryAgentId && !chain.includes(a.id))
+        .filter(a => a.id !== primaryAgentId && !chain.includes(a.id))
         .sort((a, b) => a.currentLoad - b.currentLoad);
       for (const a of others) {
         if (chain.length >= 3) break;
@@ -270,7 +313,7 @@ export class RoutingEngine extends EventEmitter<RoutingEngineEvents> {
 export function createRoutingEngine(
   registry: AgentRegistry,
   analyzer: ContentAnalyzer,
-  config: TrafficManagerConfig,
+  config: TrafficManagerConfig
 ): RoutingEngine {
   return new RoutingEngine(registry, analyzer, config);
 }

@@ -83,7 +83,7 @@ export class SkillExecutor {
    */
   async execute(
     skillName: string,
-    options: SkillExecutionOptions = {},
+    options: SkillExecutionOptions = {}
   ): Promise<SkillExecutionResult> {
     const startTime = Date.now();
 
@@ -122,9 +122,10 @@ export class SkillExecutor {
         const renderedPrompt = await this.renderPrompt(skill, options);
 
         // Combine dependency prompts with skill prompt
-        const fullPrompt = resolvedDeps.length > 0
-          ? [...resolvedDeps, renderedPrompt].join('\n\n')
-          : renderedPrompt;
+        const fullPrompt =
+          resolvedDeps.length > 0
+            ? [...resolvedDeps, renderedPrompt].join('\n\n')
+            : renderedPrompt;
 
         // Run after hook
         await this.runHook(skill, 'after', options);
@@ -135,7 +136,8 @@ export class SkillExecutor {
           executionContext,
           skillName: skill.name,
           durationMs: Date.now() - startTime,
-          resolvedDependencies: resolvedDeps.length > 0 ? resolvedDeps : undefined,
+          resolvedDependencies:
+            resolvedDeps.length > 0 ? resolvedDeps : undefined,
         };
       } finally {
         // Always restore environment
@@ -163,7 +165,7 @@ export class SkillExecutor {
    */
   async executeFork(
     skillName: string,
-    options: SkillExecutionOptions = {},
+    options: SkillExecutionOptions = {}
   ): Promise<SkillExecutionResult> {
     const entry = this.registry.getEntry(skillName);
     if (!entry) {
@@ -187,11 +189,15 @@ export class SkillExecutor {
     // For fork execution, we render the prompt and package it
     const result = await this.execute(skillName, options);
     if (!result.success) {
-return { ...result, executionContext: 'fork' };
-}
+      return { ...result, executionContext: 'fork' };
+    }
 
     // Wrap the rendered prompt in a fork-ready format
-    const forkPrompt = buildForkPrompt(entry.skill, result.renderedPrompt ?? '', options);
+    const forkPrompt = buildForkPrompt(
+      entry.skill,
+      result.renderedPrompt ?? '',
+      options
+    );
 
     return {
       ...result,
@@ -213,8 +219,8 @@ return { ...result, executionContext: 'fork' };
   getExecutionContext(skillName: string): 'inline' | 'fork' | undefined {
     const entry = this.registry.getEntry(skillName);
     if (!entry) {
-return undefined;
-}
+      return undefined;
+    }
     return entry.skill.frontmatter.context ?? 'inline';
   }
 
@@ -244,20 +250,20 @@ return undefined;
    */
   private resolveDependencyPrompts(
     skillName: string,
-    options: SkillExecutionOptions,
+    options: SkillExecutionOptions
   ): string[] {
     const entries = this.registry.getEntriesMap();
     const resolution = resolveDependencies(skillName, entries);
 
     if (!resolution.resolved && resolution.missing.length > 0) {
       console.warn(
-        `[SkillExecutor] Missing dependencies for "${skillName}": ${resolution.missing.join(', ')}`,
+        `[SkillExecutor] Missing dependencies for "${skillName}": ${resolution.missing.join(', ')}`
       );
     }
 
     if (resolution.cyclePath) {
       console.warn(
-        `[SkillExecutor] Dependency cycle detected: ${resolution.cyclePath.join(' -> ')}`,
+        `[SkillExecutor] Dependency cycle detected: ${resolution.cyclePath.join(' -> ')}`
       );
       return [];
     }
@@ -269,23 +275,23 @@ return undefined;
 
     for (const depName of resolution.order) {
       if (depName === skillName) {
-continue;
-}
+        continue;
+      }
       if (rendered.has(depName)) {
-continue;
-}
+        continue;
+      }
       if (depth >= MAX_DEPENDENCY_DEPTH) {
-break;
-}
+        break;
+      }
 
       const depEntry = this.registry.getEntry(depName);
       if (!depEntry) {
-continue;
-}
+        continue;
+      }
 
       const body = this.substituteArguments(depEntry.skill.body, options);
       depPrompts.push(
-        `<dependency-skill name="${depName}">\n${body}\n</dependency-skill>`,
+        `<dependency-skill name="${depName}">\n${body}\n</dependency-skill>`
       );
       rendered.add(depName);
       depth++;
@@ -308,7 +314,7 @@ continue;
    */
   private async renderPrompt(
     skill: Skill,
-    options: SkillExecutionOptions,
+    options: SkillExecutionOptions
   ): Promise<string> {
     let body = this.substituteArguments(skill.body, options);
 
@@ -328,7 +334,9 @@ continue;
       lines.push(`<!-- model: ${skill.frontmatter.model} -->`);
     }
     if (skill.frontmatter.allowedTools) {
-      lines.push(`<!-- allowed-tools: ${skill.frontmatter.allowedTools.join(', ')} -->`);
+      lines.push(
+        `<!-- allowed-tools: ${skill.frontmatter.allowedTools.join(', ')} -->`
+      );
     }
 
     const args = options.arguments?.trim() ?? '';
@@ -347,7 +355,10 @@ continue;
   /**
    * Substitute $ARGUMENTS in a body string.
    */
-  private substituteArguments(body: string, options: SkillExecutionOptions): string {
+  private substituteArguments(
+    body: string,
+    options: SkillExecutionOptions
+  ): string {
     const args = options.arguments?.trim() ?? '';
     return body.replace(/\$ARGUMENTS/g, args);
   }
@@ -362,7 +373,7 @@ continue;
    */
   private executeDynamicCommands(
     body: string,
-    options: SkillExecutionOptions,
+    options: SkillExecutionOptions
   ): { body: string; outputs: CommandExecutionResult[] } {
     const lines = body.split('\n');
     const outputs: CommandExecutionResult[] = [];
@@ -388,11 +399,13 @@ continue;
       // Security: check allowed prefixes
       if (allowedPrefixes.length > 0) {
         const commandBase = command.split(/\s+/)[0];
-        const allowed = allowedPrefixes.some(prefix =>
-          commandBase.startsWith(prefix) || commandBase === prefix,
+        const allowed = allowedPrefixes.some(
+          prefix => commandBase.startsWith(prefix) || commandBase === prefix
         );
         if (!allowed) {
-          resultLines.push(`<!-- command blocked (not in allowed prefixes): ${command} -->`);
+          resultLines.push(
+            `<!-- command blocked (not in allowed prefixes): ${command} -->`
+          );
           outputs.push({
             command,
             output: '',
@@ -413,7 +426,7 @@ continue;
         resultLines.push(result.output.trim());
       } else {
         resultLines.push(
-          `<!-- command failed (exit ${result.exitCode}): ${command} -->`,
+          `<!-- command failed (exit ${result.exitCode}): ${command} -->`
         );
         if (result.output.trim()) {
           resultLines.push(result.output.trim());
@@ -433,7 +446,7 @@ continue;
   private executeCommand(
     command: string,
     cwd: string,
-    timeoutMs: number,
+    timeoutMs: number
   ): CommandExecutionResult {
     const startTime = Date.now();
 
@@ -484,28 +497,31 @@ continue;
   private async runHook(
     skill: Skill,
     phase: 'before' | 'after',
-    options: SkillExecutionOptions,
+    options: SkillExecutionOptions
   ): Promise<void> {
     const hooks = skill.frontmatter.hooks;
     if (!hooks) {
-return;
-}
+      return;
+    }
 
     const command = phase === 'before' ? hooks.before : hooks.after;
     if (!command) {
-return;
-}
+      return;
+    }
 
     const cwd = options.workingDirectory ?? process.cwd();
     const timeoutMs = options.timeoutMs ?? DEFAULT_COMMAND_TIMEOUT_MS;
 
     // Substitute $ARGUMENTS in hook command
-    const resolvedCommand = command.replace(/\$ARGUMENTS/g, options.arguments?.trim() ?? '');
+    const resolvedCommand = command.replace(
+      /\$ARGUMENTS/g,
+      options.arguments?.trim() ?? ''
+    );
 
     const result = this.executeCommand(resolvedCommand, cwd, timeoutMs);
     if (result.exitCode !== 0) {
       console.warn(
-        `[SkillExecutor] ${phase} hook failed for "${skill.name}" (exit ${result.exitCode}): ${resolvedCommand}`,
+        `[SkillExecutor] ${phase} hook failed for "${skill.name}" (exit ${result.exitCode}): ${resolvedCommand}`
       );
     }
   }
@@ -520,7 +536,7 @@ return;
    */
   private applyEnvOverrides(
     entry: SkillEntry,
-    extraEnv?: Record<string, string>,
+    extraEnv?: Record<string, string>
   ): () => void {
     const updates: Array<{ key: string; prev: string | undefined }> = [];
 
@@ -531,8 +547,8 @@ return;
     if (skillConfig?.env) {
       for (const [envKey, envValue] of Object.entries(skillConfig.env)) {
         if (!envValue || process.env[envKey]) {
-continue;
-}
+          continue;
+        }
         updates.push({ key: envKey, prev: process.env[envKey] });
         process.env[envKey] = envValue;
       }
@@ -549,8 +565,8 @@ continue;
     if (extraEnv) {
       for (const [envKey, envValue] of Object.entries(extraEnv)) {
         if (!envValue) {
-continue;
-}
+          continue;
+        }
         updates.push({ key: envKey, prev: process.env[envKey] });
         process.env[envKey] = envValue;
       }
@@ -580,13 +596,15 @@ continue;
 function buildForkPrompt(
   skill: Skill,
   renderedBody: string,
-  options: SkillExecutionOptions,
+  options: SkillExecutionOptions
 ): string {
   const lines: string[] = [];
 
   lines.push('# Subagent Skill Execution');
   lines.push('');
-  lines.push(`You are executing the "${skill.name}" skill as an isolated subagent.`);
+  lines.push(
+    `You are executing the "${skill.name}" skill as an isolated subagent.`
+  );
   lines.push('Complete the task described below and return the results.');
   lines.push('');
 
@@ -600,7 +618,9 @@ function buildForkPrompt(
   if (options.workingDirectory) {
     lines.push('## Working Directory');
     lines.push('');
-    lines.push(`All operations should be performed in: ${options.workingDirectory}`);
+    lines.push(
+      `All operations should be performed in: ${options.workingDirectory}`
+    );
     lines.push('');
   }
 
@@ -626,14 +646,16 @@ function buildForkPrompt(
  * @param input - The raw user input string
  * @returns Parsed skill name and arguments, or undefined if not a skill command
  */
-export function parseSkillCommand(input: string): {
-  skillName: string;
-  arguments: string;
-} | undefined {
+export function parseSkillCommand(input: string):
+  | {
+      skillName: string;
+      arguments: string;
+    }
+  | undefined {
   const trimmed = input.trim();
   if (!trimmed.startsWith('/')) {
-return undefined;
-}
+    return undefined;
+  }
 
   const withoutSlash = trimmed.slice(1);
   const spaceIndex = withoutSlash.indexOf(' ');
@@ -666,22 +688,22 @@ return undefined;
 export function findMatchingSkill(
   query: string,
   registry: SkillRegistry,
-  threshold = 0.3,
+  threshold = 0.3
 ): string | undefined {
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/\s+/).filter(w => w.length > 2);
 
   if (queryWords.length === 0) {
-return undefined;
-}
+    return undefined;
+  }
 
   let bestScore = 0;
   let bestName: string | undefined;
 
   for (const entry of registry.getAllEntries()) {
     if (entry.invocation.disableModelInvocation) {
-continue;
-}
+      continue;
+    }
 
     const descLower = entry.skill.description.toLowerCase();
     const nameLower = entry.skill.name.toLowerCase();
@@ -695,11 +717,11 @@ continue;
     let matches = 0;
     for (const word of queryWords) {
       if (descLower.includes(word)) {
-matches++;
-}
+        matches++;
+      }
       if (nameLower.includes(word)) {
-matches += 2;
-} // Name matches weighted higher
+        matches += 2;
+      } // Name matches weighted higher
     }
 
     const score = matches / (queryWords.length * 2); // Normalize

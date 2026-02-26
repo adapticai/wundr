@@ -49,11 +49,11 @@ import type {
  * These are the documented platform limits as of 2026-02.
  */
 export const CHANNEL_MEDIA_LIMITS: Readonly<Record<string, number>> = {
-  slack: 1_073_741_824,    // 1 GB (Slack Business+)
-  discord: 26_214_400,     // 25 MB (free tier; Nitro = 500 MB)
-  telegram: 52_428_800,    // 50 MB (Bot API standard)
-  terminal: -1,            // Unsupported
-  websocket: -1,           // Use HTTP upload instead
+  slack: 1_073_741_824, // 1 GB (Slack Business+)
+  discord: 26_214_400, // 25 MB (free tier; Nitro = 500 MB)
+  telegram: 52_428_800, // 50 MB (Bot API standard)
+  terminal: -1, // Unsupported
+  websocket: -1, // Use HTTP upload instead
 };
 
 /**
@@ -64,14 +64,16 @@ const CHANNEL_TEXT_LIMITS: Readonly<Record<string, number>> = {
   slack: 4000,
   discord: 2000,
   telegram: 4096,
-  terminal: 0,      // unlimited
-  websocket: 0,     // unlimited
+  terminal: 0, // unlimited
+  websocket: 0, // unlimited
 };
 
 /**
  * Per-channel image dimension limits (width x height).
  */
-const CHANNEL_IMAGE_LIMITS: Readonly<Record<string, { maxWidth: number; maxHeight: number }>> = {
+const CHANNEL_IMAGE_LIMITS: Readonly<
+  Record<string, { maxWidth: number; maxHeight: number }>
+> = {
   slack: { maxWidth: 4096, maxHeight: 4096 },
   discord: { maxWidth: 4096, maxHeight: 4096 },
   telegram: { maxWidth: 5120, maxHeight: 5120 },
@@ -239,13 +241,56 @@ const EXTENSION_LANGUAGE_MAP: Readonly<Record<string, string>> = {
  * Extensions that are considered executable and blocked by default.
  */
 const EXECUTABLE_EXTENSIONS = new Set([
-  'exe', 'bat', 'cmd', 'com', 'scr', 'pif', 'msi', 'msp', 'mst',
-  'cpl', 'hta', 'inf', 'ins', 'isp', 'jse', 'lnk', 'reg', 'rgs',
-  'sct', 'shb', 'shs', 'vbe', 'vbs', 'wsc', 'wsf', 'wsh', 'ws',
-  'ps1', 'ps1xml', 'ps2', 'ps2xml', 'psc1', 'psc2',
-  'dll', 'sys', 'drv', 'ocx',
-  'app', 'action', 'command', 'workflow', 'sh', 'csh', 'ksh',
-  'elf', 'bin', 'run', 'apk', 'deb', 'rpm',
+  'exe',
+  'bat',
+  'cmd',
+  'com',
+  'scr',
+  'pif',
+  'msi',
+  'msp',
+  'mst',
+  'cpl',
+  'hta',
+  'inf',
+  'ins',
+  'isp',
+  'jse',
+  'lnk',
+  'reg',
+  'rgs',
+  'sct',
+  'shb',
+  'shs',
+  'vbe',
+  'vbs',
+  'wsc',
+  'wsf',
+  'wsh',
+  'ws',
+  'ps1',
+  'ps1xml',
+  'ps2',
+  'ps2xml',
+  'psc1',
+  'psc2',
+  'dll',
+  'sys',
+  'drv',
+  'ocx',
+  'app',
+  'action',
+  'command',
+  'workflow',
+  'sh',
+  'csh',
+  'ksh',
+  'elf',
+  'bin',
+  'run',
+  'apk',
+  'deb',
+  'rpm',
 ]);
 
 /**
@@ -272,20 +317,24 @@ const MAGIC_BYTES: ReadonlyArray<{
   offset: number;
   mimeType: string;
 }> = [
-  { bytes: [0xFF, 0xD8, 0xFF], offset: 0, mimeType: 'image/jpeg' },
-  { bytes: [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A], offset: 0, mimeType: 'image/png' },
+  { bytes: [0xff, 0xd8, 0xff], offset: 0, mimeType: 'image/jpeg' },
+  {
+    bytes: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
+    offset: 0,
+    mimeType: 'image/png',
+  },
   { bytes: [0x47, 0x49, 0x46, 0x38], offset: 0, mimeType: 'image/gif' },
   { bytes: [0x52, 0x49, 0x46, 0x46], offset: 0, mimeType: 'image/webp' }, // RIFF header; WebP has "WEBP" at offset 8
   { bytes: [0x25, 0x50, 0x44, 0x46], offset: 0, mimeType: 'application/pdf' },
-  { bytes: [0x50, 0x4B, 0x03, 0x04], offset: 0, mimeType: 'application/zip' },
-  { bytes: [0x1F, 0x8B], offset: 0, mimeType: 'application/gzip' },
-  { bytes: [0x42, 0x4D], offset: 0, mimeType: 'image/bmp' },
-  { bytes: [0x4D, 0x5A], offset: 0, mimeType: 'application/x-msdownload' },
-  { bytes: [0x7F, 0x45, 0x4C, 0x46], offset: 0, mimeType: 'application/x-elf' },
+  { bytes: [0x50, 0x4b, 0x03, 0x04], offset: 0, mimeType: 'application/zip' },
+  { bytes: [0x1f, 0x8b], offset: 0, mimeType: 'application/gzip' },
+  { bytes: [0x42, 0x4d], offset: 0, mimeType: 'image/bmp' },
+  { bytes: [0x4d, 0x5a], offset: 0, mimeType: 'application/x-msdownload' },
+  { bytes: [0x7f, 0x45, 0x4c, 0x46], offset: 0, mimeType: 'application/x-elf' },
   { bytes: [0x49, 0x44, 0x33], offset: 0, mimeType: 'audio/mpeg' },
   { bytes: [0x66, 0x74, 0x79, 0x70], offset: 4, mimeType: 'video/mp4' },
-  { bytes: [0x4F, 0x67, 0x67, 0x53], offset: 0, mimeType: 'audio/ogg' },
-  { bytes: [0x66, 0x4C, 0x61, 0x43], offset: 0, mimeType: 'audio/flac' },
+  { bytes: [0x4f, 0x67, 0x67, 0x53], offset: 0, mimeType: 'audio/ogg' },
+  { bytes: [0x66, 0x4c, 0x61, 0x43], offset: 0, mimeType: 'audio/flac' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -330,7 +379,10 @@ export interface ChannelMediaProfile {
   /** Maximum text message length in characters (0 = unlimited). */
   readonly maxTextLength: number;
   /** Image dimension limits. */
-  readonly imageLimits?: { readonly maxWidth: number; readonly maxHeight: number };
+  readonly imageLimits?: {
+    readonly maxWidth: number;
+    readonly maxHeight: number;
+  };
   /** Native format target for markdown conversion. */
   readonly formatTarget: ChannelFormatTarget;
   /** Whether the channel supports inline code blocks. */
@@ -407,12 +459,15 @@ export class InMemoryMediaCache implements MediaCacheProvider {
     this.maxEntries = maxEntries;
   }
 
-  async get(key: string, channelId: ChannelId): Promise<MediaCacheEntry | null> {
+  async get(
+    key: string,
+    channelId: ChannelId
+  ): Promise<MediaCacheEntry | null> {
     const compositeKey = `${channelId}:${key}`;
     const entry = this.store.get(compositeKey);
     if (!entry) {
-return null;
-}
+      return null;
+    }
     if (entry.expiresAt < new Date()) {
       this.store.delete(compositeKey);
       return null;
@@ -501,8 +556,7 @@ export class MediaPipeline {
       ...CHANNEL_MEDIA_LIMITS,
       ...(options?.channelLimits ?? {}),
     };
-    this.defaultMaxBytes =
-      options?.defaultMaxBytes ?? DEFAULT_MAX_MEDIA_BYTES;
+    this.defaultMaxBytes = options?.defaultMaxBytes ?? DEFAULT_MAX_MEDIA_BYTES;
     this.filePolicy = {
       mode: options?.filePolicy?.mode ?? 'denylist',
       extensions: options?.filePolicy?.extensions ?? EXECUTABLE_EXTENSIONS,
@@ -516,14 +570,10 @@ export class MediaPipeline {
     this.tempDir = options?.tempDir ?? os.tmpdir();
     this.cacheTtlMs = options?.cacheTtlMs ?? 24 * 60 * 60 * 1000;
     this.logger = options?.logger ?? {
-      info: (msg, ...args) =>
-        console.log(`[MediaPipeline] ${msg}`, ...args),
-      warn: (msg, ...args) =>
-        console.warn(`[MediaPipeline] ${msg}`, ...args),
-      error: (msg, ...args) =>
-        console.error(`[MediaPipeline] ${msg}`, ...args),
-      debug: (msg, ...args) =>
-        console.debug(`[MediaPipeline] ${msg}`, ...args),
+      info: (msg, ...args) => console.log(`[MediaPipeline] ${msg}`, ...args),
+      warn: (msg, ...args) => console.warn(`[MediaPipeline] ${msg}`, ...args),
+      error: (msg, ...args) => console.error(`[MediaPipeline] ${msg}`, ...args),
+      debug: (msg, ...args) => console.debug(`[MediaPipeline] ${msg}`, ...args),
     };
   }
 
@@ -563,7 +613,9 @@ export class MediaPipeline {
       imageLimits,
       formatTarget,
       supportsCodeBlocks: normalized !== 'terminal',
-      supportsLinkPreviews: ['slack', 'discord', 'telegram'].includes(normalized),
+      supportsLinkPreviews: ['slack', 'discord', 'telegram'].includes(
+        normalized
+      ),
     };
   }
 
@@ -611,8 +663,8 @@ export class MediaPipeline {
   resolveMimeType(filename: string): string | undefined {
     const ext = extractExtension(filename);
     if (!ext) {
-return undefined;
-}
+      return undefined;
+    }
     return EXTENSION_MIME_MAP[ext];
   }
 
@@ -624,8 +676,8 @@ return undefined;
     // Try magic bytes first.
     for (const magic of MAGIC_BYTES) {
       if (buffer.length < magic.offset + magic.bytes.length) {
-continue;
-}
+        continue;
+      }
       let match = true;
       for (let i = 0; i < magic.bytes.length; i++) {
         if (buffer[magic.offset + i] !== magic.bytes[i]) {
@@ -641,7 +693,7 @@ continue;
             buffer[8] === 0x57 && // W
             buffer[9] === 0x45 && // E
             buffer[10] === 0x42 && // B
-            buffer[11] === 0x50   // P
+            buffer[11] === 0x50 // P
           ) {
             return 'image/webp';
           }
@@ -658,21 +710,19 @@ continue;
   /**
    * Resolve the attachment type from a MIME type.
    */
-  resolveAttachmentType(
-    mimeType?: string,
-  ): NormalizedAttachment['type'] {
+  resolveAttachmentType(mimeType?: string): NormalizedAttachment['type'] {
     if (!mimeType) {
-return 'file';
-}
-    if (IMAGE_MIME_PREFIXES.some((p) => mimeType.startsWith(p))) {
-return 'image';
-}
-    if (VIDEO_MIME_PREFIXES.some((p) => mimeType.startsWith(p))) {
-return 'video';
-}
-    if (AUDIO_MIME_PREFIXES.some((p) => mimeType.startsWith(p))) {
-return 'audio';
-}
+      return 'file';
+    }
+    if (IMAGE_MIME_PREFIXES.some(p => mimeType.startsWith(p))) {
+      return 'image';
+    }
+    if (VIDEO_MIME_PREFIXES.some(p => mimeType.startsWith(p))) {
+      return 'video';
+    }
+    if (AUDIO_MIME_PREFIXES.some(p => mimeType.startsWith(p))) {
+      return 'audio';
+    }
     return 'file';
   }
 
@@ -682,24 +732,24 @@ return 'audio';
   classifyFile(mimeType: string | undefined, filename: string): MediaCategory {
     const ext = extractExtension(filename);
     if (ext && EXECUTABLE_EXTENSIONS.has(ext)) {
-return 'executable';
-}
+      return 'executable';
+    }
     if (mimeType && EXECUTABLE_MIME_TYPES.has(mimeType)) {
-return 'executable';
-}
+      return 'executable';
+    }
 
     if (!mimeType) {
-return 'unknown';
-}
+      return 'unknown';
+    }
     if (mimeType.startsWith('image/')) {
-return 'image';
-}
+      return 'image';
+    }
     if (mimeType.startsWith('video/')) {
-return 'video';
-}
+      return 'video';
+    }
     if (mimeType.startsWith('audio/')) {
-return 'audio';
-}
+      return 'audio';
+    }
     if (
       mimeType.startsWith('text/') ||
       mimeType === 'application/pdf' ||
@@ -733,8 +783,8 @@ return 'audio';
   resolveLanguage(filename: string): string | undefined {
     const ext = extractExtension(filename);
     if (!ext) {
-return undefined;
-}
+      return undefined;
+    }
     return EXTENSION_LANGUAGE_MAP[ext];
   }
 
@@ -747,7 +797,7 @@ return undefined;
    */
   checkFilePolicy(
     filename: string,
-    mimeType?: string,
+    mimeType?: string
   ): { allowed: boolean; reason?: string } {
     // Filename length check.
     if (filename.length > this.filePolicy.maxFilenameLength) {
@@ -832,7 +882,7 @@ return undefined;
    */
   validate(
     attachment: OutboundAttachment,
-    channelId: ChannelId,
+    channelId: ChannelId
   ): MediaValidationResult {
     const maxBytes = this.resolveMaxBytes(channelId);
 
@@ -904,7 +954,7 @@ return undefined;
    */
   validateForPlugin(
     attachment: OutboundAttachment,
-    plugin: ChannelPlugin,
+    plugin: ChannelPlugin
   ): MediaValidationResult {
     if (!plugin.capabilities.media) {
       return {
@@ -938,7 +988,7 @@ return undefined;
   async process(
     attachment: OutboundAttachment,
     channelId: ChannelId,
-    onProgress?: MediaProgressCallback,
+    onProgress?: MediaProgressCallback
   ): Promise<{
     attachment: OutboundAttachment;
     validation: MediaValidationResult;
@@ -1026,7 +1076,7 @@ return undefined;
       const cacheEntry = await this.cache.get(cacheKey, channelId);
       if (cacheEntry) {
         this.logger.debug(
-          `Cache hit for ${attachment.filename} -> ${channelId}:${cacheEntry.platformFileId}`,
+          `Cache hit for ${attachment.filename} -> ${channelId}:${cacheEntry.platformFileId}`
         );
         return {
           attachment: {
@@ -1085,7 +1135,7 @@ return undefined;
         processedBuffer = resized.buffer;
         processedMimeType = resized.mimeType;
         this.logger.debug(
-          `Resized ${attachment.filename}: ${formatBytes(buffer.byteLength)} -> ${formatBytes(processedBuffer.byteLength)}`,
+          `Resized ${attachment.filename}: ${formatBytes(buffer.byteLength)} -> ${formatBytes(processedBuffer.byteLength)}`
         );
       }
     }
@@ -1149,24 +1199,34 @@ return undefined;
   private async resolveBuffer(
     attachment: OutboundAttachment,
     channelId: ChannelId,
-    onProgress?: MediaProgressCallback,
+    onProgress?: MediaProgressCallback
   ): Promise<Buffer> {
     if (attachment.source === 'buffer' && attachment.buffer) {
       return attachment.buffer;
     }
 
     if (attachment.source === 'path' && attachment.location) {
-      return this.readFileBuffer(attachment.location, attachment.filename, channelId, onProgress);
+      return this.readFileBuffer(
+        attachment.location,
+        attachment.filename,
+        channelId,
+        onProgress
+      );
     }
 
     if (attachment.source === 'url' && attachment.location) {
-      return this.downloadBuffer(attachment.location, attachment.filename, channelId, onProgress);
+      return this.downloadBuffer(
+        attachment.location,
+        attachment.filename,
+        channelId,
+        onProgress
+      );
     }
 
     throw new Error(
       `Cannot resolve buffer for attachment "${attachment.filename}": ` +
-      `source="${attachment.source}", location=${attachment.location ? 'set' : 'unset'}, ` +
-      `buffer=${attachment.buffer ? 'set' : 'unset'}`,
+        `source="${attachment.source}", location=${attachment.location ? 'set' : 'unset'}, ` +
+        `buffer=${attachment.buffer ? 'set' : 'unset'}`
     );
   }
 
@@ -1177,7 +1237,7 @@ return undefined;
     filePath: string,
     filename: string,
     channelId: ChannelId,
-    onProgress?: MediaProgressCallback,
+    onProgress?: MediaProgressCallback
   ): Promise<Buffer> {
     const stat = await fs.promises.stat(filePath);
     const totalBytes = stat.size;
@@ -1213,27 +1273,47 @@ return undefined;
     url: string,
     filename: string,
     channelId: ChannelId,
-    onProgress?: MediaProgressCallback,
+    onProgress?: MediaProgressCallback
   ): Promise<Buffer> {
     // Dynamic import to allow the rest of the pipeline to work without network.
-    const protocol = url.startsWith('https') ? await import('https') : await import('http');
+    const protocol = url.startsWith('https')
+      ? await import('https')
+      : await import('http');
 
     return new Promise<Buffer>((resolve, reject) => {
-      const request = protocol.get(url, (response) => {
-        if (response.statusCode && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+      const request = protocol.get(url, response => {
+        if (
+          response.statusCode &&
+          response.statusCode >= 300 &&
+          response.statusCode < 400 &&
+          response.headers.location
+        ) {
           // Follow redirect.
-          this.downloadBuffer(response.headers.location, filename, channelId, onProgress)
+          this.downloadBuffer(
+            response.headers.location,
+            filename,
+            channelId,
+            onProgress
+          )
             .then(resolve)
             .catch(reject);
           return;
         }
 
-        if (response.statusCode && (response.statusCode < 200 || response.statusCode >= 300)) {
-          reject(new Error(`HTTP ${response.statusCode} downloading ${truncateUrl(url)}`));
+        if (
+          response.statusCode &&
+          (response.statusCode < 200 || response.statusCode >= 300)
+        ) {
+          reject(
+            new Error(
+              `HTTP ${response.statusCode} downloading ${truncateUrl(url)}`
+            )
+          );
           return;
         }
 
-        const totalBytes = parseInt(response.headers['content-length'] ?? '0', 10) || 0;
+        const totalBytes =
+          parseInt(response.headers['content-length'] ?? '0', 10) || 0;
         const chunks: Buffer[] = [];
         let bytesRead = 0;
 
@@ -1256,7 +1336,9 @@ return undefined;
 
       request.on('error', reject);
       request.setTimeout(30_000, () => {
-        request.destroy(new Error(`Download timed out for ${truncateUrl(url)}`));
+        request.destroy(
+          new Error(`Download timed out for ${truncateUrl(url)}`)
+        );
       });
     });
   }
@@ -1279,7 +1361,7 @@ return undefined;
     }
     throw new Error(
       `Cannot create read stream for source="${attachment.source}". ` +
-      'URL-sourced attachments must be resolved to a buffer first.',
+        'URL-sourced attachments must be resolved to a buffer first.'
     );
   }
 
@@ -1308,7 +1390,7 @@ return undefined;
       threadId?: string;
       onProgress?: MediaProgressCallback;
       cacheKey?: string;
-    },
+    }
   ): Promise<{
     ok: boolean;
     messageId?: string;
@@ -1317,14 +1399,14 @@ return undefined;
     const validation = this.validateForPlugin(attachment, plugin);
     if (!validation.valid) {
       this.logger.warn(
-        `Media validation failed for ${plugin.id}: ${validation.reason}`,
+        `Media validation failed for ${plugin.id}: ${validation.reason}`
       );
       return { ok: false, error: validation.reason };
     }
 
     if (!plugin.sendMedia) {
       this.logger.warn(
-        `Channel "${plugin.id}" declares media support but has no sendMedia method.`,
+        `Channel "${plugin.id}" declares media support but has no sendMedia method.`
       );
       return {
         ok: false,
@@ -1334,7 +1416,7 @@ return undefined;
 
     this.logger.debug(
       `Sending media to ${plugin.id}:${conversationId} ` +
-        `(${attachment.filename}, ${validation.mimeType ?? 'unknown'}, ${attachment.buffer ? formatBytes(attachment.buffer.byteLength) : 'stream'})`,
+        `(${attachment.filename}, ${validation.mimeType ?? 'unknown'}, ${attachment.buffer ? formatBytes(attachment.buffer.byteLength) : 'stream'})`
     );
 
     this.emitProgress(options?.onProgress, {
@@ -1346,11 +1428,10 @@ return undefined;
       filename: attachment.filename,
     });
 
-    const result = await plugin.sendMedia(
-      conversationId,
-      attachment,
-      { text: options?.text, threadId: options?.threadId },
-    );
+    const result = await plugin.sendMedia(conversationId, attachment, {
+      text: options?.text,
+      threadId: options?.threadId,
+    });
 
     this.emitProgress(options?.onProgress, {
       operation: 'upload',
@@ -1376,9 +1457,7 @@ return undefined;
         });
       }
     } else {
-      this.logger.error(
-        `Media send failed for ${plugin.id}: ${result.error}`,
-      );
+      this.logger.error(`Media send failed for ${plugin.id}: ${result.error}`);
     }
 
     return result;
@@ -1396,18 +1475,15 @@ return undefined;
    * @param url - The platform media URL.
    * @returns The raw media buffer.
    */
-  async download(
-    plugin: ChannelPlugin,
-    url: string,
-  ): Promise<Buffer> {
+  async download(plugin: ChannelPlugin, url: string): Promise<Buffer> {
     if (!plugin.downloadMedia) {
       throw new Error(
-        `Channel "${plugin.id}" does not implement downloadMedia.`,
+        `Channel "${plugin.id}" does not implement downloadMedia.`
       );
     }
 
     this.logger.debug(
-      `Downloading media via ${plugin.id}: ${truncateUrl(url)}`,
+      `Downloading media via ${plugin.id}: ${truncateUrl(url)}`
     );
 
     return plugin.downloadMedia(url);
@@ -1421,16 +1497,13 @@ return undefined;
    * Ensure an attachment has a resolved MIME type and type classification.
    * Returns a new attachment with resolved fields if they were missing.
    */
-  normalizeAttachment(
-    attachment: NormalizedAttachment,
-  ): NormalizedAttachment {
+  normalizeAttachment(attachment: NormalizedAttachment): NormalizedAttachment {
     if (attachment.mimeType && attachment.type !== 'file') {
       return attachment;
     }
 
     const mimeType =
-      attachment.mimeType ??
-      this.resolveMimeType(attachment.filename);
+      attachment.mimeType ?? this.resolveMimeType(attachment.filename);
     const type = this.resolveAttachmentType(mimeType);
 
     return {
@@ -1458,7 +1531,7 @@ return undefined;
   formatMarkdown(
     markdown: string,
     target: ChannelFormatTarget,
-    maxLength?: number,
+    maxLength?: number
   ): ChannelFormattedContent {
     const originalLength = markdown.length;
     let converted: string;
@@ -1515,7 +1588,7 @@ return undefined;
   formatCodeBlock(
     code: string,
     language: string | undefined,
-    target: ChannelFormatTarget,
+    target: ChannelFormatTarget
   ): string {
     const lang = language ?? '';
 
@@ -1543,7 +1616,7 @@ return undefined;
   formatFileAsCodeBlock(
     content: string,
     filename: string,
-    target: ChannelFormatTarget,
+    target: ChannelFormatTarget
   ): string {
     const language = this.resolveLanguage(filename);
     return this.formatCodeBlock(content, language, target);
@@ -1562,7 +1635,7 @@ return undefined;
     url: string,
     title: string | undefined,
     description: string | undefined,
-    target: ChannelFormatTarget,
+    target: ChannelFormatTarget
   ): string {
     switch (target) {
       case 'slack':
@@ -1573,8 +1646,10 @@ return undefined;
         return url;
       case 'telegram':
         if (title) {
-          return `<a href="${escapeHtml(url)}">${escapeHtml(title)}</a>` +
-            (description ? `\n${escapeHtml(description)}` : '');
+          return (
+            `<a href="${escapeHtml(url)}">${escapeHtml(title)}</a>` +
+            (description ? `\n${escapeHtml(description)}` : '')
+          );
         }
         return url;
       case 'plain':
@@ -1614,14 +1689,11 @@ return undefined;
    * Write a buffer to a temporary file and track it for cleanup.
    * Useful for adapters that require a file path instead of a buffer.
    */
-  async writeTempFile(
-    buffer: Buffer,
-    filename: string,
-  ): Promise<string> {
+  async writeTempFile(buffer: Buffer, filename: string): Promise<string> {
     const safeName = path.basename(filename).replace(/[^a-zA-Z0-9._-]/g, '_');
     const tempPath = path.join(
       this.tempDir,
-      `wundr-media-${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`,
+      `wundr-media-${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`
     );
     await fs.promises.writeFile(tempPath, buffer);
     this.tempFiles.add(tempPath);
@@ -1653,7 +1725,9 @@ return undefined;
 
     this.tempFiles.clear();
     if (cleaned > 0 || errors > 0) {
-      this.logger.debug(`Temp file cleanup: ${cleaned} cleaned, ${errors} errors`);
+      this.logger.debug(
+        `Temp file cleanup: ${cleaned} cleaned, ${errors} errors`
+      );
     }
     return { cleaned, errors };
   }
@@ -1683,16 +1757,16 @@ return undefined;
 
   private emitProgress(
     callback: MediaProgressCallback | undefined,
-    event: MediaProgressEvent,
+    event: MediaProgressEvent
   ): void {
     if (!callback) {
-return;
-}
+      return;
+    }
     try {
       callback(event);
     } catch (err) {
       this.logger.warn(
-        `Progress callback error: ${err instanceof Error ? err.message : String(err)}`,
+        `Progress callback error: ${err instanceof Error ? err.message : String(err)}`
       );
     }
   }
@@ -1718,14 +1792,14 @@ function markdownToSlackMrkdwn(md: string): string {
 
   // Code blocks: preserve them (Slack uses the same syntax).
   const codeBlocks: string[] = [];
-  result = result.replace(/```[\s\S]*?```/g, (match) => {
+  result = result.replace(/```[\s\S]*?```/g, match => {
     codeBlocks.push(match);
     return `\x00CB${codeBlocks.length - 1}\x00`;
   });
 
   // Inline code: preserve.
   const inlineCode: string[] = [];
-  result = result.replace(/`[^`]+`/g, (match) => {
+  result = result.replace(/`[^`]+`/g, match => {
     inlineCode.push(match);
     return `\x00IC${inlineCode.length - 1}\x00`;
   });
@@ -1783,7 +1857,7 @@ function markdownToDiscord(md: string): string {
 
   // Preserve code blocks.
   const codeBlocks: string[] = [];
-  result = result.replace(/```[\s\S]*?```/g, (match) => {
+  result = result.replace(/```[\s\S]*?```/g, match => {
     codeBlocks.push(match);
     return `\x00CB${codeBlocks.length - 1}\x00`;
   });
@@ -1818,7 +1892,7 @@ function markdownToTelegramHtml(md: string): string {
         return `<pre><code class="language-${escapeHtml(lang)}">${escaped}</code></pre>`;
       }
       return `<pre><code>${escaped}</code></pre>`;
-    },
+    }
   );
 
   // Inline code: `code` -> <code>code</code>
@@ -1831,7 +1905,7 @@ function markdownToTelegramHtml(md: string): string {
     /!\[([^\]]*)\]\(([^)]+)\)/g,
     (_match, alt: string, url: string) => {
       return `<a href="${escapeHtml(url)}">${escapeHtml(alt || url)}</a>`;
-    },
+    }
   );
 
   // Links: [text](url) -> <a href="url">text</a>
@@ -1839,7 +1913,7 @@ function markdownToTelegramHtml(md: string): string {
     /\[([^\]]+)\]\(([^)]+)\)/g,
     (_match, text: string, url: string) => {
       return `<a href="${escapeHtml(url)}">${escapeHtml(text)}</a>`;
-    },
+    }
   );
 
   // Headers: # text -> <b>text</b>
@@ -1862,13 +1936,10 @@ function markdownToTelegramHtml(md: string): string {
 
   // Blockquotes: > text -> <blockquote>text</blockquote>
   // Handle consecutive blockquote lines.
-  result = result.replace(
-    /(?:^> .+$\n?)+/gm,
-    (match) => {
-      const inner = match.replace(/^> /gm, '').trim();
-      return `<blockquote>${inner}</blockquote>`;
-    },
-  );
+  result = result.replace(/(?:^> .+$\n?)+/gm, match => {
+    const inner = match.replace(/^> /gm, '').trim();
+    return `<blockquote>${inner}</blockquote>`;
+  });
 
   return result;
 }
@@ -1886,7 +1957,10 @@ function stripMarkdown(md: string): string {
   result = result.replace(/`([^`]+)`/g, '$1');
 
   // Images -> alt text or URL.
-  result = result.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt: string, url: string) => alt || url);
+  result = result.replace(
+    /!\[([^\]]*)\]\(([^)]+)\)/g,
+    (_m, alt: string, url: string) => alt || url
+  );
 
   // Links -> text (url).
   result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)');
@@ -1997,21 +2071,21 @@ function extractExtension(filename: string): string | undefined {
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) {
-return `${bytes} B`;
-}
+    return `${bytes} B`;
+  }
   if (bytes < 1_048_576) {
-return `${(bytes / 1024).toFixed(1)} KB`;
-}
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
   if (bytes < 1_073_741_824) {
-return `${(bytes / 1_048_576).toFixed(1)} MB`;
-}
+    return `${(bytes / 1_048_576).toFixed(1)} MB`;
+  }
   return `${(bytes / 1_073_741_824).toFixed(2)} GB`;
 }
 
 function truncateUrl(url: string, maxLength = 80): string {
   if (url.length <= maxLength) {
-return url;
-}
+    return url;
+  }
   return url.slice(0, maxLength - 3) + '...';
 }
 

@@ -62,7 +62,7 @@ export class DependencyError extends Error {
   constructor(
     public readonly code: string,
     message: string,
-    public readonly details?: Record<string, unknown>,
+    public readonly details?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'DependencyError';
@@ -162,7 +162,7 @@ export class DependencyTracker extends EventEmitter<DependencyTrackerEvents> {
     if (taskId === dependsOnId) {
       throw new DependencyError(
         DependencyErrorCode.SELF_DEPENDENCY,
-        `Task cannot depend on itself: ${taskId}`,
+        `Task cannot depend on itself: ${taskId}`
       );
     }
 
@@ -179,7 +179,7 @@ export class DependencyTracker extends EventEmitter<DependencyTrackerEvents> {
     if (existing?.has(dependsOnId)) {
       throw new DependencyError(
         DependencyErrorCode.DUPLICATE_DEPENDENCY,
-        `Dependency already exists: ${taskId} -> ${dependsOnId}`,
+        `Dependency already exists: ${taskId} -> ${dependsOnId}`
       );
     }
 
@@ -191,7 +191,7 @@ export class DependencyTracker extends EventEmitter<DependencyTrackerEvents> {
       throw new DependencyError(
         DependencyErrorCode.CIRCULAR_DEPENDENCY,
         `Adding dependency ${taskId} -> ${dependsOnId} would create a cycle: ${cycle.cyclePath.join(' -> ')}`,
-        { cyclePath: cycle.cyclePath },
+        { cyclePath: cycle.cyclePath }
       );
     }
 
@@ -215,8 +215,8 @@ export class DependencyTracker extends EventEmitter<DependencyTrackerEvents> {
   removeDependency(taskId: string, dependsOnId: string): boolean {
     const deps = this.dependsOn.get(taskId);
     if (!deps?.has(dependsOnId)) {
-return false;
-}
+      return false;
+    }
 
     deps.delete(dependsOnId);
     this.blockedByMe.get(dependsOnId)?.delete(taskId);
@@ -235,8 +235,8 @@ return false;
 
     const blocking = this.blockedByMe.get(taskId);
     if (!blocking) {
-return unblockedTasks;
-}
+      return unblockedTasks;
+    }
 
     for (const blockedId of blocking) {
       this.emit('dependency:resolved', blockedId, taskId);
@@ -272,8 +272,8 @@ return unblockedTasks;
   getUnresolvedDependencies(taskId: string): string[] {
     const deps = this.dependsOn.get(taskId);
     if (!deps) {
-return [];
-}
+      return [];
+    }
     return Array.from(deps).filter(depId => !this.completedTasks.has(depId));
   }
 
@@ -291,8 +291,8 @@ return [];
     const blocked: string[] = [];
     for (const taskId of this.knownTasks) {
       if (this.completedTasks.has(taskId)) {
-continue;
-}
+        continue;
+      }
       if (this.getUnresolvedDependencies(taskId).length > 0) {
         blocked.push(taskId);
       }
@@ -307,8 +307,8 @@ continue;
     const ready: string[] = [];
     for (const taskId of this.knownTasks) {
       if (this.completedTasks.has(taskId)) {
-continue;
-}
+        continue;
+      }
       if (this.getUnresolvedDependencies(taskId).length === 0) {
         ready.push(taskId);
       }
@@ -327,8 +327,8 @@ continue;
     const visit = (id: string) => {
       const deps = this.dependsOn.get(id);
       if (!deps) {
-return;
-}
+        return;
+      }
 
       for (const depId of deps) {
         if (!visited.has(depId)) {
@@ -354,8 +354,8 @@ return;
     const visit = (id: string) => {
       const blocking = this.blockedByMe.get(id);
       if (!blocking) {
-return;
-}
+        return;
+      }
 
       for (const blockedId of blocking) {
         if (!visited.has(blockedId)) {
@@ -384,7 +384,12 @@ return;
 
     for (const taskId of this.knownTasks) {
       if (!visited.has(taskId)) {
-        const cycle = this.dfsDetectCycle(taskId, visited, recursionStack, parent);
+        const cycle = this.dfsDetectCycle(
+          taskId,
+          visited,
+          recursionStack,
+          parent
+        );
         if (cycle) {
           return { hasCycle: true, cyclePath: cycle };
         }
@@ -434,7 +439,9 @@ return;
     }
 
     // Tasks not in the ordered list are part of cycles
-    const cyclic = Array.from(this.knownTasks).filter(id => !ordered.includes(id));
+    const cyclic = Array.from(this.knownTasks).filter(
+      id => !ordered.includes(id)
+    );
 
     return { ordered, cyclic };
   }
@@ -464,8 +471,8 @@ return;
     for (const taskId of this.knownTasks) {
       const depth = this.getTransitiveDependencies(taskId).length;
       if (depth > maxDepth) {
-maxDepth = depth;
-}
+        maxDepth = depth;
+      }
     }
 
     return {
@@ -496,7 +503,10 @@ maxDepth = depth;
    * Check if adding taskId -> dependsOnId would create a cycle.
    * Uses BFS from dependsOnId to see if it can reach taskId.
    */
-  private wouldCreateCycle(taskId: string, dependsOnId: string): CycleDetectionResult {
+  private wouldCreateCycle(
+    taskId: string,
+    dependsOnId: string
+  ): CycleDetectionResult {
     // If dependsOnId can reach taskId via existing edges, adding the new edge creates a cycle
     const visited = new Set<string>();
     const queue: string[] = [dependsOnId];
@@ -514,8 +524,8 @@ maxDepth = depth;
       }
 
       if (visited.has(current)) {
-continue;
-}
+        continue;
+      }
       visited.add(current);
 
       const deps = this.dependsOn.get(current);
@@ -539,7 +549,7 @@ continue;
     taskId: string,
     visited: Set<string>,
     recursionStack: Set<string>,
-    parent: Map<string, string>,
+    parent: Map<string, string>
   ): string[] | null {
     visited.add(taskId);
     recursionStack.add(taskId);
@@ -549,10 +559,15 @@ continue;
       for (const depId of deps) {
         if (!visited.has(depId)) {
           parent.set(depId, taskId);
-          const cycle = this.dfsDetectCycle(depId, visited, recursionStack, parent);
+          const cycle = this.dfsDetectCycle(
+            depId,
+            visited,
+            recursionStack,
+            parent
+          );
           if (cycle) {
-return cycle;
-}
+            return cycle;
+          }
         } else if (recursionStack.has(depId)) {
           // Found a cycle -- reconstruct it
           const cyclePath: string[] = [depId];
@@ -577,7 +592,7 @@ return cycle;
   private reconstructPath(
     parent: Map<string, string>,
     from: string,
-    to: string,
+    to: string
   ): string[] {
     const path: string[] = [];
     let current: string | undefined = to;

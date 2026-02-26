@@ -7,7 +7,11 @@
 /**
  * Orchestrator status for registry
  */
-export type RegistryOrchestratorStatus = 'online' | 'offline' | 'busy' | 'draining';
+export type RegistryOrchestratorStatus =
+  | 'online'
+  | 'offline'
+  | 'busy'
+  | 'draining';
 
 /**
  * Orchestrator metadata for registry
@@ -65,7 +69,11 @@ export interface FederationRegistryConfig {
 export interface FederationRegistryEvents {
   'orchestrator:registered': (metadata: RegistryOrchestratorMetadata) => void;
   'orchestrator:deregistered': (id: string) => void;
-  'orchestrator:status_changed': (id: string, oldStatus: RegistryOrchestratorStatus, newStatus: RegistryOrchestratorStatus) => void;
+  'orchestrator:status_changed': (
+    id: string,
+    oldStatus: RegistryOrchestratorStatus,
+    newStatus: RegistryOrchestratorStatus
+  ) => void;
   'orchestrator:unhealthy': (id: string, lastHeartbeat: Date) => void;
   'orchestrator:stale': (id: string, lastHeartbeat: Date) => void;
   'heartbeat:received': (id: string, timestamp: Date) => void;

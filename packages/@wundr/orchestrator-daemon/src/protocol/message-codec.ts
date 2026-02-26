@@ -110,7 +110,7 @@ export class MessageCodec {
   encodeBatch(frames: ProtocolFrame[]): string {
     if (frames.length > this.maxBatchSize) {
       throw new Error(
-        `batch size ${frames.length} exceeds maximum of ${this.maxBatchSize}`,
+        `batch size ${frames.length} exceeds maximum of ${this.maxBatchSize}`
       );
     }
     if (frames.length === 0) {
@@ -131,7 +131,7 @@ export class MessageCodec {
    */
   encodeWithCompression(
     frame: ProtocolFrame,
-    algorithm?: CompressionAlgorithm,
+    algorithm?: CompressionAlgorithm
   ): EncodeResult {
     const json = JSON.stringify(frame);
     const originalSize = Buffer.byteLength(json, 'utf-8');
@@ -182,7 +182,9 @@ export class MessageCodec {
         return {
           frames: [],
           isBatch: true,
-          errors: [`batch size ${parsed.length} exceeds maximum of ${this.maxBatchSize}`],
+          errors: [
+            `batch size ${parsed.length} exceeds maximum of ${this.maxBatchSize}`,
+          ],
         };
       }
       return this.decodeBatchArray(parsed);
@@ -192,7 +194,7 @@ export class MessageCodec {
     const result = ProtocolFrameSchema.safeParse(parsed);
     if (!result.success) {
       const errorDetails = result.error.issues
-        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .map(i => `${i.path.join('.')}: ${i.message}`)
         .join('; ');
       return { frames: [], isBatch: false, errors: [errorDetails] };
     }
@@ -203,7 +205,10 @@ export class MessageCodec {
   /**
    * Decode a compressed message buffer.
    */
-  decodeCompressed(data: Buffer, algorithm?: CompressionAlgorithm): DecodeTextResult {
+  decodeCompressed(
+    data: Buffer,
+    algorithm?: CompressionAlgorithm
+  ): DecodeTextResult {
     const algo = algorithm ?? this.compressionAlgorithm;
     const decompressed = this.decompress(data, algo);
     return this.decodeText(decompressed.toString('utf-8'));
@@ -225,30 +230,33 @@ export class MessageCodec {
     correlationId: string,
     metadata: BinaryMetadata,
     payload: Buffer,
-    opts?: { compressed?: boolean; chunked?: boolean; final?: boolean },
+    opts?: { compressed?: boolean; chunked?: boolean; final?: boolean }
   ): Buffer {
     const metaJson = JSON.stringify(metadata);
     const metaBuffer = Buffer.from(metaJson, 'utf-8');
 
     let flags = 0;
     if (opts?.compressed) {
-flags |= BinaryFlags.COMPRESSED;
-}
+      flags |= BinaryFlags.COMPRESSED;
+    }
     if (opts?.chunked) {
-flags |= BinaryFlags.CHUNKED;
-}
+      flags |= BinaryFlags.CHUNKED;
+    }
     if (opts?.final) {
-flags |= BinaryFlags.FINAL;
-}
+      flags |= BinaryFlags.FINAL;
+    }
 
     // Parse UUID to 16 bytes
     const uuidHex = correlationId.replace(/-/g, '');
     const uuidBuffer = Buffer.from(uuidHex, 'hex');
     if (uuidBuffer.length !== 16) {
-      throw new Error(`invalid correlationId: expected 16 bytes, got ${uuidBuffer.length}`);
+      throw new Error(
+        `invalid correlationId: expected 16 bytes, got ${uuidBuffer.length}`
+      );
     }
 
-    const totalSize = BINARY_HEADER_FIXED_SIZE + metaBuffer.length + payload.length;
+    const totalSize =
+      BINARY_HEADER_FIXED_SIZE + metaBuffer.length + payload.length;
     this.enforceSize(totalSize, 'outbound binary frame');
 
     const result = Buffer.allocUnsafe(totalSize);
@@ -286,7 +294,7 @@ flags |= BinaryFlags.FINAL;
   decodeBinary(data: Buffer): DecodeBinaryResult {
     if (data.length < BINARY_HEADER_FIXED_SIZE) {
       throw new Error(
-        `binary frame too short: ${data.length} bytes, minimum ${BINARY_HEADER_FIXED_SIZE}`,
+        `binary frame too short: ${data.length} bytes, minimum ${BINARY_HEADER_FIXED_SIZE}`
       );
     }
 
@@ -309,12 +317,16 @@ flags |= BinaryFlags.FINAL;
     const metaEnd = BINARY_HEADER_FIXED_SIZE + metaLen;
 
     if (data.length < metaEnd) {
-      throw new Error(`binary frame metadata truncated: need ${metaEnd} bytes, got ${data.length}`);
+      throw new Error(
+        `binary frame metadata truncated: need ${metaEnd} bytes, got ${data.length}`
+      );
     }
 
     let metadata: BinaryMetadata = {};
     if (metaLen > 0) {
-      const metaJson = data.subarray(BINARY_HEADER_FIXED_SIZE, metaEnd).toString('utf-8');
+      const metaJson = data
+        .subarray(BINARY_HEADER_FIXED_SIZE, metaEnd)
+        .toString('utf-8');
       const parsed = JSON.parse(metaJson);
       const result = BinaryMetadataSchema.safeParse(parsed);
       metadata = result.success ? result.data : parsed;
@@ -394,7 +406,7 @@ flags |= BinaryFlags.FINAL;
   private enforceSize(sizeBytes: number, context: string): void {
     if (sizeBytes > this.maxMessageBytes) {
       throw new Error(
-        `${context} exceeds size limit: ${sizeBytes} bytes > ${this.maxMessageBytes} bytes`,
+        `${context} exceeds size limit: ${sizeBytes} bytes > ${this.maxMessageBytes} bytes`
       );
     }
   }
@@ -409,7 +421,7 @@ flags |= BinaryFlags.FINAL;
         frames.push(result.data);
       } else {
         const errorDetails = result.error.issues
-          .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+          .map(issue => `${issue.path.join('.')}: ${issue.message}`)
           .join('; ');
         errors.push(`batch[${i}]: ${errorDetails}`);
       }

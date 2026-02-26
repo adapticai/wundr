@@ -75,10 +75,7 @@ export type {
 // Metrics collector
 // ---------------------------------------------------------------------------
 
-export {
-  MetricsCollector,
-  createMetricsCollector,
-} from './collector';
+export { MetricsCollector, createMetricsCollector } from './collector';
 
 export type {
   CollectorConfig,
@@ -90,10 +87,7 @@ export type {
 // HTTP endpoint
 // ---------------------------------------------------------------------------
 
-export {
-  MetricsServer,
-  createMetricsServer,
-} from './endpoint';
+export { MetricsServer, createMetricsServer } from './endpoint';
 
 export type {
   HealthStatus as EndpointHealthStatus,
@@ -178,10 +172,7 @@ export type {
 // Alert thresholds
 // ---------------------------------------------------------------------------
 
-export {
-  AlertManager,
-  createAlertManager,
-} from './alerts';
+export { AlertManager, createAlertManager } from './alerts';
 
 export type {
   AlertSeverity,
@@ -196,10 +187,7 @@ export type {
 // Metric retention and rollup
 // ---------------------------------------------------------------------------
 
-export {
-  MetricRetentionStore,
-  createRetentionStore,
-} from './retention';
+export { MetricRetentionStore, createRetentionStore } from './retention';
 
 export type {
   DataPoint,

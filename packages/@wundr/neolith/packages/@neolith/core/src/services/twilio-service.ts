@@ -278,7 +278,7 @@ class TwilioServiceImpl implements ITwilioService {
   }
 
   async getMessageStatus(
-    messageSid: string
+    _messageSid: string
   ): Promise<MessageDeliveryStatus | null> {
     // Message status lookups go directly to the daemon's shared status endpoint
     // without an orchestrator scope since SIDs are globally unique.

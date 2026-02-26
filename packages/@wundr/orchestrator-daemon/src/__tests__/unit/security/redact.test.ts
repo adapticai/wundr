@@ -53,7 +53,8 @@ import {
  * Uses a deterministic character set so tests are reproducible.
  */
 function fakeChars(prefix: string, length: number): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = prefix;
   for (let i = result.length; i < length; i++) {
     result += chars[i % chars.length];
@@ -100,7 +101,8 @@ describe('Credential Redaction (security/redact)', () => {
       });
 
       it('should not redact when mode is off', () => {
-        const text = 'OPENAI_API_KEY=sk-proj-abcdefghijklmnopqrstuvwxyz1234567890';
+        const text =
+          'OPENAI_API_KEY=sk-proj-abcdefghijklmnopqrstuvwxyz1234567890';
         expect(redactSensitiveText(text, { mode: 'off' })).toBe(text);
       });
 
@@ -273,7 +275,8 @@ describe('Credential Redaction (security/redact)', () => {
       });
 
       it('should redact GCP service account private_key JSON fields', () => {
-        const text = '"private_key": "-----BEGIN RSA PRIVATE KEY-----\\nMIIE...base64data...\\n-----END RSA PRIVATE KEY-----"';
+        const text =
+          '"private_key": "-----BEGIN RSA PRIVATE KEY-----\\nMIIE...base64data...\\n-----END RSA PRIVATE KEY-----"';
         const result = redactSensitiveText(text);
         expect(result).not.toContain('MIIE...base64data...');
       });
@@ -285,7 +288,8 @@ describe('Credential Redaction (security/redact)', () => {
 
     describe('Azure credentials', () => {
       it('should redact Azure connection string AccountKey', () => {
-        const key = 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==';
+        const key =
+          'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==';
         const text = `AccountKey=${key}`;
         const result = redactSensitiveText(text);
         expect(result).not.toContain(key);
@@ -513,7 +517,8 @@ describe('Credential Redaction (security/redact)', () => {
 
     describe('ENV-style assignments', () => {
       it('should redact KEY=value assignments', () => {
-        const text = 'OPENAI_API_KEY=sk-proj-abcdefghijklmnopqrstuvwxyz1234567890';
+        const text =
+          'OPENAI_API_KEY=sk-proj-abcdefghijklmnopqrstuvwxyz1234567890';
         const result = redactSensitiveText(text);
         expect(result).not.toContain('abcdefghijklmnopqrstuvwxyz1234567890');
       });
@@ -555,10 +560,13 @@ describe('Credential Redaction (security/redact)', () => {
       });
 
       it('should redact "accessToken" JSON fields', () => {
-        const text = '{"accessToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"}';
+        const text =
+          '{"accessToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"}';
         const result = redactSensitiveText(text);
         // The JWT should be redacted
-        expect(result).not.toContain('dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U');
+        expect(result).not.toContain(
+          'dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'
+        );
       });
     });
 
@@ -575,7 +583,9 @@ describe('Credential Redaction (security/redact)', () => {
       });
 
       it('should redact Basic auth credentials', () => {
-        const encoded = Buffer.from('admin:secretpassword1234').toString('base64');
+        const encoded = Buffer.from('admin:secretpassword1234').toString(
+          'base64'
+        );
         const text = `Authorization: Basic ${encoded}`;
         const result = redactSensitiveText(text);
         expect(result).not.toContain(encoded);
@@ -723,7 +733,8 @@ describe('Credential Redaction (security/redact)', () => {
       });
 
       it('should redact MongoDB connection passwords', () => {
-        const text = 'mongodb+srv://appuser:M0ngoSecr3t@cluster0.example.net/production';
+        const text =
+          'mongodb+srv://appuser:M0ngoSecr3t@cluster0.example.net/production';
         const result = redactSensitiveText(text);
         expect(result).not.toContain('M0ngoSecr3t');
         expect(result).toContain('appuser');
@@ -743,9 +754,12 @@ describe('Credential Redaction (security/redact)', () => {
 
     describe('JWT token redaction', () => {
       it('should redact JWT tokens (three dot-separated base64url segments)', () => {
-        const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+        const jwt =
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
         const result = redactSensitiveText(`Bearer ${jwt}`);
-        expect(result).not.toContain('SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c');
+        expect(result).not.toContain(
+          'SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+        );
       });
     });
   });
@@ -806,7 +820,9 @@ describe('Credential Redaction (security/redact)', () => {
     });
 
     it('should redact base64 connection strings (Azure SharedAccessKey)', () => {
-      const key = Buffer.from('some-shared-access-key-value-1234567890').toString('base64');
+      const key = Buffer.from(
+        'some-shared-access-key-value-1234567890'
+      ).toString('base64');
       const text = `SharedAccessKey=${key}`;
       const result = redactSensitiveText(text);
       expect(result).not.toContain(key);
@@ -824,7 +840,10 @@ describe('Credential Redaction (security/redact)', () => {
 
     it('should register and apply a custom string pattern', () => {
       registerRedactPatterns([
-        { name: 'internal-key', pattern: String.raw`\b(intkey_[A-Za-z0-9]{20,})\b` },
+        {
+          name: 'internal-key',
+          pattern: String.raw`\b(intkey_[A-Za-z0-9]{20,})\b`,
+        },
       ]);
 
       const token = fakeChars('intkey_', 40);
@@ -864,9 +883,7 @@ describe('Credential Redaction (security/redact)', () => {
     });
 
     it('should not affect default patterns when clearing custom patterns', () => {
-      registerRedactPatterns([
-        { name: 'extra', pattern: 'extra_pattern' },
-      ]);
+      registerRedactPatterns([{ name: 'extra', pattern: 'extra_pattern' }]);
       clearCustomRedactPatterns();
 
       // Default GitHub pattern should still work
@@ -972,7 +989,9 @@ describe('Credential Redaction (security/redact)', () => {
       const stats = getRedactionStats();
       const after = new Date();
 
-      expect(stats.lastResetAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
+      expect(stats.lastResetAt.getTime()).toBeGreaterThanOrEqual(
+        before.getTime()
+      );
       expect(stats.lastResetAt.getTime()).toBeLessThanOrEqual(after.getTime());
     });
 
@@ -1029,14 +1048,18 @@ describe('Credential Redaction (security/redact)', () => {
       // Custom pattern that only matches MYPREFIX_ tokens
       const customPattern = String.raw`\b(MYPREFIX_[A-Z]{10,})\b`;
 
-      const result = redactSensitiveText(ghToken, { patterns: [customPattern] });
+      const result = redactSensitiveText(ghToken, {
+        patterns: [customPattern],
+      });
       // GitHub token should NOT be redacted since we overrode patterns
       expect(result).toContain(ghToken);
     });
 
     it('should ignore empty/invalid custom patterns gracefully', () => {
       const text = 'Normal text without secrets';
-      const result = redactSensitiveText(text, { patterns: ['', '   ', '[invalid('] });
+      const result = redactSensitiveText(text, {
+        patterns: ['', '   ', '[invalid('],
+      });
       expect(result).toBe(text);
     });
   });
@@ -1066,7 +1089,7 @@ describe('Credential Redaction (security/redact)', () => {
       'encryptionKey',
       'accessKey',
       'connectionString',
-    ])('should detect "%s" as sensitive', (key) => {
+    ])('should detect "%s" as sensitive', key => {
       expect(isSensitiveKey(key)).toBe(true);
     });
 
@@ -1079,7 +1102,7 @@ describe('Credential Redaction (security/redact)', () => {
       'region',
       'timeout',
       'maxRetries',
-    ])('should not detect "%s" as sensitive', (key) => {
+    ])('should not detect "%s" as sensitive', key => {
       expect(isSensitiveKey(key)).toBe(false);
     });
   });
@@ -1104,7 +1127,7 @@ describe('Credential Redaction (security/redact)', () => {
       'VAULT_TOKEN',
       'DOPPLER_TOKEN',
       'NPM_TOKEN',
-    ])('should detect "%s" as sensitive', (key) => {
+    ])('should detect "%s" as sensitive', key => {
       expect(isSensitiveEnvKey(key)).toBe(true);
     });
 
@@ -1114,15 +1137,12 @@ describe('Credential Redaction (security/redact)', () => {
       expect(isSensitiveEnvKey('CUSTOM_API_KEY')).toBe(true);
     });
 
-    it.each([
-      'HOME',
-      'PATH',
-      'NODE_ENV',
-      'PORT',
-      'LOG_LEVEL',
-    ])('should not detect "%s" as sensitive', (key) => {
-      expect(isSensitiveEnvKey(key)).toBe(false);
-    });
+    it.each(['HOME', 'PATH', 'NODE_ENV', 'PORT', 'LOG_LEVEL'])(
+      'should not detect "%s" as sensitive',
+      key => {
+        expect(isSensitiveEnvKey(key)).toBe(false);
+      }
+    );
   });
 
   // =========================================================================
@@ -1266,7 +1286,10 @@ describe('Credential Redaction (security/redact)', () => {
         openai: { apiKey: 'sk-real-key-abcdef', model: 'gpt-4' },
       };
 
-      const result = restoreRedactedValues(incoming, original) as typeof incoming;
+      const result = restoreRedactedValues(
+        incoming,
+        original
+      ) as typeof incoming;
 
       expect(result.openai.apiKey).toBe('sk-real-key-abcdef');
       expect(result.openai.model).toBe('gpt-4o');
@@ -1277,7 +1300,7 @@ describe('Credential Redaction (security/redact)', () => {
       const original = { newField: {} };
 
       expect(() => restoreRedactedValues(incoming, original)).toThrow(
-        /config write rejected/,
+        /config write rejected/
       );
     });
 
@@ -1285,7 +1308,10 @@ describe('Credential Redaction (security/redact)', () => {
       const incoming = { name: REDACTED_SENTINEL };
       const original = { name: 'test' };
 
-      const result = restoreRedactedValues(incoming, original) as typeof incoming;
+      const result = restoreRedactedValues(
+        incoming,
+        original
+      ) as typeof incoming;
       // 'name' is not a sensitive key, so sentinel stays as literal value
       expect(result.name).toBe(REDACTED_SENTINEL);
     });
@@ -1295,12 +1321,12 @@ describe('Credential Redaction (security/redact)', () => {
         { password: REDACTED_SENTINEL },
         { password: REDACTED_SENTINEL },
       ];
-      const original = [
-        { password: 'pass1' },
-        { password: 'pass2' },
-      ];
+      const original = [{ password: 'pass1' }, { password: 'pass2' }];
 
-      const result = restoreRedactedValues(incoming, original) as typeof incoming;
+      const result = restoreRedactedValues(
+        incoming,
+        original
+      ) as typeof incoming;
 
       expect(result[0].password).toBe('pass1');
       expect(result[1].password).toBe('pass2');
@@ -1316,7 +1342,10 @@ describe('Credential Redaction (security/redact)', () => {
 
     it('should handle missing original gracefully (non-sentinel values)', () => {
       const incoming = { name: 'test', count: 5 };
-      const result = restoreRedactedValues(incoming, undefined) as typeof incoming;
+      const result = restoreRedactedValues(
+        incoming,
+        undefined
+      ) as typeof incoming;
       expect(result.name).toBe('test');
       expect(result.count).toBe(5);
     });
@@ -1392,7 +1421,9 @@ describe('Credential Redaction (security/redact)', () => {
 
   describe('formatEnvValue', () => {
     it('should redact values for known sensitive env keys', () => {
-      expect(formatEnvValue('sk-real-key-abc', 'OPENAI_API_KEY')).toBe('<redacted>');
+      expect(formatEnvValue('sk-real-key-abc', 'OPENAI_API_KEY')).toBe(
+        '<redacted>'
+      );
       expect(formatEnvValue('ghp_abc123', 'GITHUB_TOKEN')).toBe('<redacted>');
     });
 
@@ -1443,7 +1474,9 @@ describe('Credential Redaction (security/redact)', () => {
 
       const result = redactWsPayload(payload);
 
-      expect(result.data.output).not.toContain('ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabc123');
+      expect(result.data.output).not.toContain(
+        'ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabc123'
+      );
     });
 
     it('should redact strings in arrays', () => {
@@ -1457,7 +1490,9 @@ describe('Credential Redaction (security/redact)', () => {
       const result = redactWsPayload(payload);
 
       expect(result.messages[0]).toBe('Normal message');
-      expect(result.messages[1]).not.toContain('ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabc123');
+      expect(result.messages[1]).not.toContain(
+        'ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabc123'
+      );
     });
 
     it('should preserve non-string/non-object values', () => {

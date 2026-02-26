@@ -70,7 +70,7 @@ export class StreamingResponse {
     requestId: string,
     method: string,
     sink: StreamSink,
-    streamId?: string,
+    streamId?: string
   ) {
     this.requestId = requestId;
     this.method = method;
@@ -209,11 +209,7 @@ export class StreamingResponse {
   /**
    * Terminate the stream with an error.
    */
-  error(
-    code: string,
-    message: string,
-    details?: unknown,
-  ): void {
+  error(code: string, message: string, details?: unknown): void {
     if (this.isFinalized) {
       return; // Idempotent
     }
@@ -290,7 +286,7 @@ export class StreamGuard {
     }
     this.stream.error(
       ErrorCodes.INTERNAL,
-      'stream abandoned: handler did not finalize the stream',
+      'stream abandoned: handler did not finalize the stream'
     );
   }
 
@@ -315,7 +311,7 @@ export function createStreamingResponse(
   method: string,
   sendEvent: (frame: EventFrame) => void,
   sendResponse: (frame: ResponseFrame) => void,
-  isOpen: () => boolean,
+  isOpen: () => boolean
 ): StreamingResponse {
   const sink: StreamSink = { sendEvent, sendResponse, isOpen };
   return new StreamingResponse(requestId, method, sink);

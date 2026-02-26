@@ -39,7 +39,7 @@ async function example() {
   console.log('\nExample 3: Message latency');
   collector.recordMessageLatency('orch-1', 150); // 150ms
   collector.recordMessageLatency('orch-1', 230); // 230ms
-  collector.recordMessageLatency('orch-2', 95);  // 95ms
+  collector.recordMessageLatency('orch-2', 95); // 95ms
 
   // Example 4: Use timer utility
   console.log('\nExample 4: Timer utility');
@@ -61,10 +61,9 @@ async function example() {
     return { status: 'completed' };
   }
 
-  const result = await collector.withMetrics(
-    processTask,
-    { orchestrator_id: 'orch-1' },
-  );
+  const result = await collector.withMetrics(processTask, {
+    orchestrator_id: 'orch-1',
+  });
   console.log('Task result:', result);
 
   // Example 6: Record tool invocations
@@ -105,7 +104,10 @@ async function example() {
   // Example 11: Export metrics in Prometheus format
   console.log('\nExample 11: Prometheus metrics export');
   const prometheusMetrics = await registry.collect();
-  console.log('Prometheus format (first 500 chars):', prometheusMetrics.substring(0, 500));
+  console.log(
+    'Prometheus format (first 500 chars):',
+    prometheusMetrics.substring(0, 500)
+  );
 
   // Cleanup
   console.log('\nCleaning up...');

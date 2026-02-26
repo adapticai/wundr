@@ -61,7 +61,8 @@ const TELEGRAM_RATE_LIMIT_PER_SECOND = 30;
 const TELEGRAM_TYPING_DURATION_SEC = 5;
 
 /** Regex matching Telegram "can't parse entities" errors. */
-const PARSE_ERR_RE = /can't parse entities|parse entities|find end of the entity/i;
+const PARSE_ERR_RE =
+  /can't parse entities|parse entities|find end of the entity/i;
 
 /** Regex matching Telegram "message thread not found" 400 errors. */
 const THREAD_NOT_FOUND_RE = /400:\s*Bad Request:\s*message thread not found/i;
@@ -76,7 +77,8 @@ const FORBIDDEN_RE = /403:\s*Forbidden/i;
 const EDIT_NOT_FOUND_RE = /400:\s*Bad Request:\s*message to edit not found/i;
 
 /** Regex matching Telegram "message to delete not found" errors. */
-const DELETE_NOT_FOUND_RE = /400:\s*Bad Request:\s*message to delete not found/i;
+const DELETE_NOT_FOUND_RE =
+  /400:\s*Bad Request:\s*message to delete not found/i;
 
 // ---------------------------------------------------------------------------
 // Telegram-Specific Configuration
@@ -200,7 +202,7 @@ class TokenBucketRateLimiter {
 
   constructor(
     private readonly maxTokens: number = TELEGRAM_RATE_LIMIT_PER_SECOND,
-    private readonly refillIntervalMs: number = 1000,
+    private readonly refillIntervalMs: number = 1000
   ) {
     this.tokens = maxTokens;
     this.lastRefill = Date.now();
@@ -212,7 +214,7 @@ class TokenBucketRateLimiter {
       this.tokens -= 1;
       return;
     }
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
       this.queue.push(resolve);
       this.scheduleRefill();
     });
@@ -225,7 +227,7 @@ class TokenBucketRateLimiter {
       const periods = Math.floor(elapsed / this.refillIntervalMs);
       this.tokens = Math.min(
         this.maxTokens,
-        this.tokens + periods * this.maxTokens,
+        this.tokens + periods * this.maxTokens
       );
       this.lastRefill += periods * this.refillIntervalMs;
       this.drainQueue();
@@ -237,16 +239,19 @@ class TokenBucketRateLimiter {
       this.tokens -= 1;
       const next = this.queue.shift();
       if (next) {
-next();
-}
+        next();
+      }
     }
   }
 
   private scheduleRefill(): void {
     const delay = this.refillIntervalMs - (Date.now() - this.lastRefill);
-    setTimeout(() => {
-      this.refill();
-    }, Math.max(0, delay));
+    setTimeout(
+      () => {
+        this.refill();
+      },
+      Math.max(0, delay)
+    );
   }
 }
 
@@ -260,7 +265,8 @@ export class TelegramChannelAdapter extends BaseChannelAdapter {
   readonly meta: ChannelMeta = {
     id: 'telegram',
     label: 'Telegram',
-    blurb: 'Telegram Bot API integration with groups, channels, topics, and threads.',
+    blurb:
+      'Telegram Bot API integration with groups, channels, topics, and threads.',
     aliases: ['tg'],
     order: 30,
   };
@@ -289,7 +295,8 @@ export class TelegramChannelAdapter extends BaseChannelAdapter {
   private readonly commandHandlers = new Map<string, Set<CommandHandler>>();
   private readonly callbackHandlers = new Set<CallbackQueryHandler>();
   private readonly seenCallbackQueryIds = new Map<string, number>();
-  private seenCallbackCleanupTimer: ReturnType<typeof setInterval> | null = null;
+  private seenCallbackCleanupTimer: ReturnType<typeof setInterval> | null =
+    null;
 
   constructor(logger?: ChannelLogger) {
     super(logger);
@@ -318,7 +325,7 @@ export class TelegramChannelAdapter extends BaseChannelAdapter {
       const BotConstructor = await loadBotConstructor();
 
       this.bot = new BotConstructor(
-        telegramConfig.botToken,
+        telegramConfig.botToken
       ) as unknown as TelegramBotLike;
 
       this.setupEventHandlers();
@@ -334,11 +341,11 @@ export class TelegramChannelAdapter extends BaseChannelAdapter {
       if (telegramConfig.mode === 'webhook' && telegramConfig.webhookUrl) {
         await this.bot.telegram.setWebhook(telegramConfig.webhookUrl, {
           secret_token: telegramConfig.webhookSecret,
-          allowed_updates: telegramConfig.allowedUpdates as string[] | undefined,
+          allowed_updates: telegramConfig.allowedUpdates as
+            | string[]
+            | undefined,
         });
-        this.logger.info(
-          `Telegram webhook set: ${telegramConfig.webhookUrl}`,
-        );
+        this.logger.info(`Telegram webhook set: ${telegramConfig.webhookUrl}`);
       } else {
         // Long polling (default).
         this.bot.launch({
@@ -359,7 +366,7 @@ export class TelegramChannelAdapter extends BaseChannelAdapter {
       this.config = config;
 
       this.logger.info(
-        `Telegram adapter connected (bot: @${this.selfUsername}, id: ${this.selfBotId}, mode: ${telegramConfig.mode ?? 'polling'}).`,
+        `Telegram adapter connected (bot: @${this.selfUsername}, id: ${this.selfBotId}, mode: ${telegramConfig.mode ?? 'polling'}).`
       );
 
       this.emit('connected', {
@@ -369,9 +376,7 @@ export class TelegramChannelAdapter extends BaseChannelAdapter {
     } catch (err) {
       this.lastError = err instanceof Error ? err.message : String(err);
       this.lastErrorAt = new Date();
-      this.logger.error(
-        `Telegram adapter connect failed: ${this.lastError}`,
-      );
+      this.logger.error(`Telegram adapter connect failed: ${this.lastError}`);
       throw err;
     }
   }
@@ -390,7 +395,7 @@ export class TelegramChannelAdapter extends BaseChannelAdapter {
       this.bot.stop('Orchestrator shutdown');
     } catch (err) {
       this.logger.error(
-        `Error during Telegram disconnect: ${err instanceof Error ? err.message : String(err)}`,
+        `Error during Telegram disconnect: ${err instanceof Error ? err.message : String(err)}`
       );
     }
 
@@ -463,8 +468,13 @@ export class TelegramChannelAdapter extends BaseChannelAdapter {
     const extMsg = message as TelegramOutboundMessage;
     const chatId = message.to;
     const parseMode = extMsg.parseMode ?? 'HTML';
-    const threadId = this.resolveThreadId(message.threadId, extMsg.topicThreadId);
-    const inlineKeyboard = this.buildInlineKeyboardMarkup(extMsg.inlineKeyboard);
+    const threadId = this.resolveThreadId(
+      message.threadId,
+      extMsg.topicThreadId
+    );
+    const inlineKeyboard = this.buildInlineKeyboardMarkup(
+      extMsg.inlineKeyboard
+    );
 
     // Split long messages to honor Telegram's 4096-char limit.
     const chunks = splitTelegramMessage(message.text, TELEGRAM_MAX_TEXT);
@@ -500,12 +510,12 @@ export class TelegramChannelAdapter extends BaseChannelAdapter {
         chatId,
         chunk,
         parseMode,
-        baseExtra,
+        baseExtra
       );
 
       if (!lastResult.ok) {
-break;
-}
+        break;
+      }
     }
 
     return lastResult;
@@ -520,7 +530,7 @@ break;
   async replyToThread(
     conversationId: string,
     threadId: string,
-    message: OutboundMessage,
+    message: OutboundMessage
   ): Promise<DeliveryResult> {
     return this.sendMessage({
       ...message,
@@ -532,7 +542,7 @@ break;
   async editMessage(
     conversationId: string,
     messageId: string,
-    newText: string,
+    newText: string
   ): Promise<DeliveryResult> {
     this.requireConnected();
 
@@ -543,7 +553,7 @@ break;
         parseInt(messageId, 10),
         undefined,
         newText,
-        { parse_mode: 'HTML' },
+        { parse_mode: 'HTML' }
       );
       return { ok: true, messageId, conversationId };
     } catch (err) {
@@ -556,7 +566,7 @@ break;
             conversationId,
             parseInt(messageId, 10),
             undefined,
-            newText,
+            newText
           );
           return { ok: true, messageId, conversationId };
         } catch (retryErr) {
@@ -570,7 +580,7 @@ break;
       // Gracefully handle "message to edit not found".
       if (EDIT_NOT_FOUND_RE.test(errMsg)) {
         this.logger.warn(
-          `Telegram editMessage: message ${messageId} not found in ${conversationId}.`,
+          `Telegram editMessage: message ${messageId} not found in ${conversationId}.`
         );
         return { ok: false, error: 'Message to edit not found.' };
       }
@@ -585,7 +595,7 @@ break;
   async editMessageKeyboard(
     conversationId: string,
     messageId: string,
-    inlineKeyboard?: readonly (readonly InlineButton[])[],
+    inlineKeyboard?: readonly (readonly InlineButton[])[]
   ): Promise<DeliveryResult> {
     this.requireConnected();
 
@@ -607,7 +617,7 @@ break;
 
   async deleteMessage(
     conversationId: string,
-    messageId: string,
+    messageId: string
   ): Promise<boolean> {
     this.requireConnected();
 
@@ -615,7 +625,7 @@ break;
       await this.rateLimiter.acquire();
       await this.bot!.telegram.deleteMessage(
         conversationId,
-        parseInt(messageId, 10),
+        parseInt(messageId, 10)
       );
       return true;
     } catch (err) {
@@ -624,13 +634,13 @@ break;
       // Gracefully handle already-deleted messages.
       if (DELETE_NOT_FOUND_RE.test(errMsg)) {
         this.logger.debug(
-          `Telegram deleteMessage: message ${messageId} already gone from ${conversationId}.`,
+          `Telegram deleteMessage: message ${messageId} already gone from ${conversationId}.`
         );
         return true;
       }
 
       this.logger.error(
-        `Failed to delete Telegram message ${messageId}: ${errMsg}`,
+        `Failed to delete Telegram message ${messageId}: ${errMsg}`
       );
       return false;
     }
@@ -648,8 +658,8 @@ break;
     let active = true;
     const sendAction = async () => {
       if (!active || !this.bot) {
-return;
-}
+        return;
+      }
       try {
         await this.bot.telegram.sendChatAction(conversationId, 'typing');
       } catch {
@@ -658,7 +668,10 @@ return;
     };
 
     // Telegram typing indicator lasts ~5 seconds, refresh every 4.
-    const interval = setInterval(sendAction, (TELEGRAM_TYPING_DURATION_SEC - 1) * 1000);
+    const interval = setInterval(
+      sendAction,
+      (TELEGRAM_TYPING_DURATION_SEC - 1) * 1000
+    );
 
     // Send immediately.
     void sendAction();
@@ -678,7 +691,7 @@ return;
   async sendMedia(
     conversationId: string,
     attachment: OutboundAttachment,
-    options?: { text?: string; threadId?: string },
+    options?: { text?: string; threadId?: string }
   ): Promise<DeliveryResult> {
     this.requireConnected();
 
@@ -700,9 +713,10 @@ return;
       const extra: Record<string, unknown> = {};
       if (options?.text) {
         // Captions are limited to 1024 chars; truncate if needed.
-        extra.caption = options.text.length > TELEGRAM_MAX_CAPTION
-          ? options.text.slice(0, TELEGRAM_MAX_CAPTION - 3) + '...'
-          : options.text;
+        extra.caption =
+          options.text.length > TELEGRAM_MAX_CAPTION
+            ? options.text.slice(0, TELEGRAM_MAX_CAPTION - 3) + '...'
+            : options.text;
         extra.parse_mode = 'HTML';
       }
       if (options?.threadId) {
@@ -714,7 +728,7 @@ return;
         conversationId,
         type,
         source,
-        extra,
+        extra
       );
 
       return {
@@ -739,19 +753,20 @@ return;
     const fileIdMatch = /^telegram:file:(.+)$/.exec(url);
     if (fileIdMatch) {
       const fileId = fileIdMatch[1];
-      const fileLink = await this.bot!.telegram.callApi('getFile', {
+      const fileLink = (await this.bot!.telegram.callApi('getFile', {
         file_id: fileId,
-      }) as { file_path?: string };
+      })) as { file_path?: string };
 
       if (!fileLink.file_path) {
         throw new Error(`Telegram getFile returned no file_path for ${fileId}`);
       }
 
-      const downloadUrl =
-        `https://api.telegram.org/file/bot${this.telegramConfig!.botToken}/${fileLink.file_path}`;
+      const downloadUrl = `https://api.telegram.org/file/bot${this.telegramConfig!.botToken}/${fileLink.file_path}`;
       const response = await fetch(downloadUrl);
       if (!response.ok) {
-        throw new Error(`Failed to download Telegram file: HTTP ${response.status}`);
+        throw new Error(
+          `Failed to download Telegram file: HTTP ${response.status}`
+        );
       }
       return Buffer.from(await response.arrayBuffer());
     }
@@ -771,7 +786,7 @@ return;
   async addReaction(
     conversationId: string,
     messageId: string,
-    emoji: string,
+    emoji: string
   ): Promise<void> {
     this.requireConnected();
 
@@ -784,7 +799,7 @@ return;
       });
     } catch (err) {
       this.logger.warn(
-        `Failed to add Telegram reaction: ${formatErrorMessage(err)}`,
+        `Failed to add Telegram reaction: ${formatErrorMessage(err)}`
       );
     }
   }
@@ -792,7 +807,7 @@ return;
   async removeReaction(
     conversationId: string,
     messageId: string,
-    _emoji: string,
+    _emoji: string
   ): Promise<void> {
     this.requireConnected();
 
@@ -805,7 +820,7 @@ return;
       });
     } catch (err) {
       this.logger.warn(
-        `Failed to remove Telegram reaction: ${formatErrorMessage(err)}`,
+        `Failed to remove Telegram reaction: ${formatErrorMessage(err)}`
       );
     }
   }
@@ -822,10 +837,7 @@ return;
    * @param handler - Callback invoked when the command is received.
    * @returns Unsubscribe function.
    */
-  onCommand(
-    command: string,
-    handler: CommandHandler,
-  ): () => void {
+  onCommand(command: string, handler: CommandHandler): () => void {
     const normalized = command.trim().toLowerCase();
     if (!this.commandHandlers.has(normalized)) {
       this.commandHandlers.set(normalized, new Set());
@@ -859,7 +871,7 @@ return;
 
   async validateSender(
     senderId: string,
-    chatType: ChatType,
+    chatType: ChatType
   ): Promise<SenderValidation> {
     if (chatType !== 'direct') {
       return { allowed: true };
@@ -872,7 +884,7 @@ return;
 
     const allowList = config.dmAllowList ?? config.pairing.allowList ?? [];
     const normalizedSender = senderId.trim().toLowerCase();
-    const isAllowed = allowList.some((entry) => {
+    const isAllowed = allowList.some(entry => {
       const normalized = entry
         .trim()
         .toLowerCase()
@@ -892,8 +904,8 @@ return;
   getPairingConfig(): PairingConfig | null {
     const config = this.telegramConfig;
     if (!config?.pairing) {
-return null;
-}
+      return null;
+    }
     return {
       requireApproval: config.pairing.requireApproval,
       allowList: config.dmAllowList ?? config.pairing.allowList ?? [],
@@ -924,7 +936,10 @@ return null;
     const config = this.telegramConfig;
     const token = config?.loginWidgetSecret ?? config?.botToken;
     if (!token) {
-      return { valid: false, reason: 'No bot token configured for login widget validation.' };
+      return {
+        valid: false,
+        reason: 'No bot token configured for login widget validation.',
+      };
     }
 
     const { hash, ...data } = authData;
@@ -936,13 +951,16 @@ return null;
     const authDate = parseInt(data.auth_date ?? '0', 10);
     const now = Math.floor(Date.now() / 1000);
     if (now - authDate > 86400) {
-      return { valid: false, reason: 'Auth data has expired (older than 24 hours).' };
+      return {
+        valid: false,
+        reason: 'Auth data has expired (older than 24 hours).',
+      };
     }
 
     // Build the data-check-string.
     const checkString = Object.keys(data)
       .sort()
-      .map((key) => `${key}=${data[key]}`)
+      .map(key => `${key}=${data[key]}`)
       .join('\n');
 
     try {
@@ -976,20 +994,20 @@ return null;
 
   private setupEventHandlers(): void {
     if (!this.bot) {
-return;
-}
+      return;
+    }
 
     // Inbound messages.
     this.bot.on('message', (ctx: TelegramContextLike) => {
       const msg = ctx.message;
       if (!msg) {
-return;
-}
+        return;
+      }
 
       // Skip messages from self.
       if (msg.from?.id === this.selfBotId) {
-return;
-}
+        return;
+      }
 
       // Check group mention policy.
       if (
@@ -1017,8 +1035,8 @@ return;
     this.bot.on('edited_message', (ctx: TelegramContextLike) => {
       const msg = ctx.editedMessage ?? ctx.message;
       if (!msg || !msg.chat?.id || !msg.message_id) {
-return;
-}
+        return;
+      }
 
       this.emit('message_edited', {
         channelId: this.id,
@@ -1033,14 +1051,14 @@ return;
     this.bot.on('chat_member', (ctx: TelegramContextLike) => {
       const update = ctx.chatMember;
       if (!update) {
-return;
-}
+        return;
+      }
 
       const chatId = String(update.chat?.id ?? '');
       const userId = String(update.new_chat_member?.user?.id ?? '');
       if (!chatId || !userId) {
-return;
-}
+        return;
+      }
 
       const status = update.new_chat_member?.status;
       if (status === 'member' || status === 'administrator') {
@@ -1061,23 +1079,25 @@ return;
 
   private setupCommandHandlers(): void {
     // Built-in /start command (required for Telegram bots).
-    this.onCommand('start', (msg) => {
+    this.onCommand('start', msg => {
       const normalized = this.normalizeInboundMessage(msg);
       if (normalized) {
         this.emit('message', {
           ...normalized,
           content: {
             ...normalized.content,
-            text: '/start' + (msg.text?.includes(' ')
-              ? ' ' + msg.text.split(' ').slice(1).join(' ')
-              : ''),
+            text:
+              '/start' +
+              (msg.text?.includes(' ')
+                ? ' ' + msg.text.split(' ').slice(1).join(' ')
+                : ''),
           },
         });
       }
     });
 
     // Built-in /help command.
-    this.onCommand('help', (msg) => {
+    this.onCommand('help', msg => {
       const normalized = this.normalizeInboundMessage(msg);
       if (normalized) {
         this.emit('message', {
@@ -1093,22 +1113,20 @@ return;
 
   private setupCallbackQueryHandler(): void {
     if (!this.bot) {
-return;
-}
+      return;
+    }
 
     this.bot.on('callback_query', async (ctx: TelegramContextLike) => {
       const query = ctx.callbackQuery;
       if (!query || !query.data) {
-return;
-}
+        return;
+      }
 
       // Dedup callback queries (Telegram may deliver duplicates).
       // Matches OpenClaw's deduplication pattern.
       const queryId = query.id;
       if (this.seenCallbackQueryIds.has(queryId)) {
-        this.logger.debug(
-          `Skipping duplicate callback_query ${queryId}.`,
-        );
+        this.logger.debug(`Skipping duplicate callback_query ${queryId}.`);
         return;
       }
       this.seenCallbackQueryIds.set(queryId, Date.now());
@@ -1117,13 +1135,15 @@ return;
       const payload: CallbackQueryPayload = {
         queryId,
         data: query.data,
-        message: msg ? (this.normalizeInboundMessage(msg) ?? undefined) : undefined,
+        message: msg
+          ? (this.normalizeInboundMessage(msg) ?? undefined)
+          : undefined,
         sender: {
           id: query.from?.id ? String(query.from.id) : 'unknown',
           displayName:
             query.from?.first_name && query.from?.last_name
               ? `${query.from.first_name} ${query.from.last_name}`
-              : query.from?.first_name ?? 'Unknown',
+              : (query.from?.first_name ?? 'Unknown'),
           username: query.from?.username,
           isSelf: query.from?.id === this.selfBotId,
           isBot: query.from?.is_bot ?? false,
@@ -1143,7 +1163,7 @@ return;
           }
         } catch (err) {
           this.logger.error(
-            `Error in callback query handler: ${formatErrorMessage(err)}`,
+            `Error in callback query handler: ${formatErrorMessage(err)}`
           );
         }
       }
@@ -1181,8 +1201,8 @@ return;
    */
   private async syncBotCommands(): Promise<void> {
     if (!this.bot) {
-return;
-}
+      return;
+    }
 
     const commands: Array<{ command: string; description: string }> = [
       { command: 'start', description: 'Start the bot' },
@@ -1203,7 +1223,7 @@ return;
       });
     } catch (err) {
       this.logger.warn(
-        `Failed to set Telegram bot commands: ${formatErrorMessage(err)}`,
+        `Failed to set Telegram bot commands: ${formatErrorMessage(err)}`
       );
     }
   }
@@ -1213,11 +1233,11 @@ return;
   // -----------------------------------------------------------------------
 
   private normalizeInboundMessage(
-    msg: TelegramMessageLike,
+    msg: TelegramMessageLike
   ): NormalizedMessage | null {
     if (!msg.chat?.id || !msg.message_id) {
-return null;
-}
+      return null;
+    }
 
     const chatType = this.resolveTelegramChatType(msg);
     const sender = this.normalizeTelegramSender(msg);
@@ -1256,14 +1276,14 @@ return null;
     }
     const type = msg.chat?.type;
     if (type === 'private') {
-return 'direct';
-}
+      return 'direct';
+    }
     if (type === 'group' || type === 'supergroup') {
-return 'group';
-}
+      return 'group';
+    }
     if (type === 'channel') {
-return 'channel';
-}
+      return 'channel';
+    }
     return 'direct';
   }
 
@@ -1274,7 +1294,7 @@ return 'channel';
       displayName:
         from?.first_name && from?.last_name
           ? `${from.first_name} ${from.last_name}`
-          : from?.first_name ?? from?.username ?? 'Unknown',
+          : (from?.first_name ?? from?.username ?? 'Unknown'),
       username: from?.username,
       isSelf: from?.id === this.selfBotId,
       isBot: from?.is_bot ?? false,
@@ -1293,7 +1313,7 @@ return 'channel';
       if (entity.type === 'mention' && entity.offset !== undefined) {
         const mentionText = text.slice(
           entity.offset,
-          entity.offset + entity.length,
+          entity.offset + entity.length
         );
         mentions.push(mentionText.replace(/^@/, ''));
         if (
@@ -1323,7 +1343,7 @@ return 'channel';
   }
 
   private extractTelegramAttachments(
-    msg: TelegramMessageLike,
+    msg: TelegramMessageLike
   ): NormalizedAttachment[] {
     const attachments: NormalizedAttachment[] = [];
 
@@ -1385,7 +1405,9 @@ return 'channel';
         filename: msg.sticker.set_name
           ? `${msg.sticker.set_name}.webp`
           : 'sticker.webp',
-        mimeType: msg.sticker.is_animated ? 'application/x-tgsticker' : 'image/webp',
+        mimeType: msg.sticker.is_animated
+          ? 'application/x-tgsticker'
+          : 'image/webp',
         url: `telegram:file:${msg.sticker.file_id}`,
       });
     }
@@ -1411,10 +1433,10 @@ return 'channel';
     chatId: string,
     text: string,
     parseMode: string,
-    extra: Record<string, unknown>,
+    extra: Record<string, unknown>
   ): Promise<DeliveryResult> {
     const attempt = async (
-      effectiveExtra: Record<string, unknown>,
+      effectiveExtra: Record<string, unknown>
     ): Promise<DeliveryResult> => {
       try {
         await this.rateLimiter.acquire();
@@ -1434,7 +1456,7 @@ return 'channel';
         // Fallback: HTML/Markdown parse error -> retry as plain text.
         if (PARSE_ERR_RE.test(errMsg)) {
           this.logger.debug(
-            `Telegram HTML parse failed, retrying as plain text: ${errMsg}`,
+            `Telegram HTML parse failed, retrying as plain text: ${errMsg}`
           );
           try {
             const sent = await this.bot!.telegram.sendMessage(chatId, text, {
@@ -1475,7 +1497,7 @@ return 'channel';
       hasMessageThreadId(extra)
     ) {
       this.logger.warn(
-        'Telegram thread not found, retrying without message_thread_id.',
+        'Telegram thread not found, retrying without message_thread_id.'
       );
       const extraWithoutThread = { ...extra };
       delete extraWithoutThread.message_thread_id;
@@ -1484,13 +1506,9 @@ return 'channel';
 
     // Forbidden (403) recovery: the bot may have been blocked or kicked
     // from a group. Log and return a descriptive error.
-    if (
-      !result.ok &&
-      result.error &&
-      FORBIDDEN_RE.test(result.error)
-    ) {
+    if (!result.ok && result.error && FORBIDDEN_RE.test(result.error)) {
       this.logger.warn(
-        `Telegram 403 Forbidden for chat ${chatId}: bot may be blocked or removed.`,
+        `Telegram 403 Forbidden for chat ${chatId}: bot may be blocked or removed.`
       );
     }
 
@@ -1504,35 +1522,35 @@ return 'channel';
     conversationId: string,
     type: 'photo' | 'video' | 'audio' | 'document',
     source: unknown,
-    extra: Record<string, unknown>,
+    extra: Record<string, unknown>
   ): Promise<TelegramMessageLike> {
     const doSend = async (
-      effectiveExtra: Record<string, unknown>,
+      effectiveExtra: Record<string, unknown>
     ): Promise<TelegramMessageLike> => {
       switch (type) {
         case 'photo':
           return this.bot!.telegram.sendPhoto(
             conversationId,
             source,
-            effectiveExtra,
+            effectiveExtra
           );
         case 'video':
           return this.bot!.telegram.sendVideo(
             conversationId,
             source,
-            effectiveExtra,
+            effectiveExtra
           );
         case 'audio':
           return this.bot!.telegram.sendAudio(
             conversationId,
             source,
-            effectiveExtra,
+            effectiveExtra
           );
         default:
           return this.bot!.telegram.sendDocument(
             conversationId,
             source,
-            effectiveExtra,
+            effectiveExtra
           );
       }
     };
@@ -1543,7 +1561,7 @@ return 'channel';
       // Stale thread recovery.
       if (hasMessageThreadId(extra) && isTelegramThreadNotFoundError(err)) {
         this.logger.warn(
-          'Telegram media send thread not found, retrying without message_thread_id.',
+          'Telegram media send thread not found, retrying without message_thread_id.'
         );
         const extraWithoutThread = { ...extra };
         delete extraWithoutThread.message_thread_id;
@@ -1559,9 +1577,7 @@ return 'channel';
 
   private isCommandMessage(msg: TelegramMessageLike): boolean {
     const entities = msg.entities ?? [];
-    return entities.some(
-      (e) => e.type === 'bot_command' && e.offset === 0,
-    );
+    return entities.some(e => e.type === 'bot_command' && e.offset === 0);
   }
 
   private dispatchCommand(msg: TelegramMessageLike): void {
@@ -1569,8 +1585,8 @@ return 'channel';
     // Extract command: "/help@mybotname arg1" -> "help"
     const match = /^\/([a-zA-Z0-9_]+)(?:@\S+)?/.exec(text);
     if (!match) {
-return;
-}
+      return;
+    }
 
     const command = match[1].toLowerCase();
     const handlers = this.commandHandlers.get(command);
@@ -1581,7 +1597,7 @@ return;
           handler(msg);
         } catch (err) {
           this.logger.error(
-            `Error in command handler "/${command}": ${formatErrorMessage(err)}`,
+            `Error in command handler "/${command}": ${formatErrorMessage(err)}`
           );
         }
       }
@@ -1602,7 +1618,7 @@ return;
 
   private resolveThreadId(
     threadId?: string,
-    topicThreadId?: number,
+    topicThreadId?: number
   ): number | undefined {
     if (topicThreadId !== undefined) {
       return topicThreadId;
@@ -1615,33 +1631,33 @@ return;
   }
 
   private buildInlineKeyboardMarkup(
-    rows?: readonly (readonly InlineButton[])[],
+    rows?: readonly (readonly InlineButton[])[]
   ): InlineKeyboardMarkup | undefined {
     if (!rows || rows.length === 0) {
-return undefined;
-}
+      return undefined;
+    }
 
     const keyboard = rows
-      .map((row) =>
+      .map(row =>
         row
-          .filter((btn) => btn.text && (btn.callbackData || btn.url))
-          .map((btn) => {
+          .filter(btn => btn.text && (btn.callbackData || btn.url))
+          .map(btn => {
             if (btn.url) {
               return { text: btn.text, url: btn.url };
             }
             return { text: btn.text, callback_data: btn.callbackData! };
-          }),
+          })
       )
-      .filter((row) => row.length > 0);
+      .filter(row => row.length > 0);
 
     if (keyboard.length === 0) {
-return undefined;
-}
+      return undefined;
+    }
     return { inline_keyboard: keyboard };
   }
 
   private resolveMediaSource(
-    attachment: OutboundAttachment,
+    attachment: OutboundAttachment
   ): { source: Buffer; filename: string } | { url: string } | string {
     if (attachment.source === 'buffer' && attachment.buffer) {
       return { source: attachment.buffer, filename: attachment.filename };
@@ -1675,15 +1691,15 @@ return undefined;
   private isSelfMentioned(msg: TelegramMessageLike): boolean {
     const text = msg.text ?? msg.caption ?? '';
     if (!this.selfUsername) {
-return false;
-}
+      return false;
+    }
     return text.toLowerCase().includes(`@${this.selfUsername.toLowerCase()}`);
   }
 
   private requireConnected(): void {
     if (!this.connected || !this.bot) {
       throw new Error(
-        'Telegram adapter is not connected. Call connect() first.',
+        'Telegram adapter is not connected. Call connect() first.'
       );
     }
   }
@@ -1713,7 +1729,7 @@ return false;
  */
 export function splitTelegramMessage(
   text: string,
-  limit: number = TELEGRAM_MAX_TEXT,
+  limit: number = TELEGRAM_MAX_TEXT
 ): string[] {
   if (!text || text.length <= limit) {
     return [text];
@@ -1805,7 +1821,9 @@ export function markdownToTelegramHtml(markdown: string): string {
   const codeBlocks: string[] = [];
   html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (_match, _lang, code) => {
     const idx = codeBlocks.length;
-    codeBlocks.push(`<pre><code>${escapeTelegramHtml(code.trimEnd())}</code></pre>`);
+    codeBlocks.push(
+      `<pre><code>${escapeTelegramHtml(code.trimEnd())}</code></pre>`
+    );
     return `\x00CB${idx}\x00`;
   });
 
@@ -1835,16 +1853,19 @@ export function markdownToTelegramHtml(markdown: string): string {
   html = html.replace(/\|\|(.+?)\|\|/g, '<tg-spoiler>$1</tg-spoiler>');
 
   // Links: [text](url)
-  html = html.replace(
-    /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2">$1</a>',
-  );
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
   // Restore code blocks and inline code.
   // eslint-disable-next-line no-control-regex
-  html = html.replace(/\x00IC(\d+)\x00/g, (_match, idx) => inlineCodes[parseInt(idx, 10)]);
+  html = html.replace(
+    /\x00IC(\d+)\x00/g,
+    (_match, idx) => inlineCodes[parseInt(idx, 10)]
+  );
   // eslint-disable-next-line no-control-regex
-  html = html.replace(/\x00CB(\d+)\x00/g, (_match, idx) => codeBlocks[parseInt(idx, 10)]);
+  html = html.replace(
+    /\x00CB(\d+)\x00/g,
+    (_match, idx) => codeBlocks[parseInt(idx, 10)]
+  );
 
   return html;
 }
@@ -1876,7 +1897,7 @@ async function loadBotConstructor(): Promise<TelegramBotConstructor> {
   }
   throw new Error(
     'Neither "telegraf" nor "grammy" packages are installed. ' +
-    'Install one of them to use the Telegram adapter.',
+      'Install one of them to use the Telegram adapter.'
   );
 }
 
@@ -1901,30 +1922,28 @@ function formatErrorMessage(err: unknown): string {
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) {
-return `${bytes} B`;
-}
+    return `${bytes} B`;
+  }
   if (bytes < 1_048_576) {
-return `${(bytes / 1024).toFixed(1)} KB`;
-}
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
   if (bytes < 1_073_741_824) {
-return `${(bytes / 1_048_576).toFixed(1)} MB`;
-}
+    return `${(bytes / 1_048_576).toFixed(1)} MB`;
+  }
   return `${(bytes / 1_073_741_824).toFixed(2)} GB`;
 }
 
-function hasMessageThreadId(
-  params?: Record<string, unknown>,
-): boolean {
+function hasMessageThreadId(params?: Record<string, unknown>): boolean {
   if (!params) {
-return false;
-}
+    return false;
+  }
   const value = params.message_thread_id;
   if (typeof value === 'number') {
-return Number.isFinite(value);
-}
+    return Number.isFinite(value);
+  }
   if (typeof value === 'string') {
-return value.trim().length > 0;
-}
+    return value.trim().length > 0;
+  }
   return false;
 }
 
@@ -1934,30 +1953,30 @@ function isTelegramThreadNotFoundError(err: unknown): boolean {
 
 function inferMediaType(
   mimeType?: string,
-  filename?: string,
+  filename?: string
 ): 'photo' | 'video' | 'audio' | 'document' {
   if (mimeType) {
     if (mimeType.startsWith('image/')) {
-return 'photo';
-}
+      return 'photo';
+    }
     if (mimeType.startsWith('video/')) {
-return 'video';
-}
+      return 'video';
+    }
     if (mimeType.startsWith('audio/')) {
-return 'audio';
-}
+      return 'audio';
+    }
   }
   if (filename) {
     const ext = filename.split('.').pop()?.toLowerCase();
     if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext ?? '')) {
-return 'photo';
-}
+      return 'photo';
+    }
     if (['mp4', 'avi', 'mov', 'mkv', 'webm'].includes(ext ?? '')) {
-return 'video';
-}
+      return 'video';
+    }
     if (['mp3', 'ogg', 'wav', 'flac', 'm4a', 'aac'].includes(ext ?? '')) {
-return 'audio';
-}
+      return 'audio';
+    }
   }
   return 'document';
 }
@@ -2004,7 +2023,7 @@ type CommandHandler = (msg: TelegramMessageLike) => void;
  * further propagation.
  */
 type CallbackQueryHandler = (
-  payload: CallbackQueryPayload,
+  payload: CallbackQueryPayload
 ) => boolean | void | Promise<boolean | void>;
 
 // ---------------------------------------------------------------------------
@@ -2030,41 +2049,38 @@ interface TelegramBotLike {
     sendMessage(
       chatId: string | number,
       text: string,
-      extra?: Record<string, unknown>,
+      extra?: Record<string, unknown>
     ): Promise<TelegramMessageLike>;
     editMessageText(
       chatId: string | number,
       messageId: number,
       inlineMessageId: string | undefined,
       text: string,
-      extra?: Record<string, unknown>,
+      extra?: Record<string, unknown>
     ): Promise<void>;
     deleteMessage(chatId: string | number, messageId: number): Promise<void>;
     sendChatAction(chatId: string | number, action: string): Promise<void>;
     sendPhoto(
       chatId: string | number,
       source: unknown,
-      extra?: Record<string, unknown>,
+      extra?: Record<string, unknown>
     ): Promise<TelegramMessageLike>;
     sendVideo(
       chatId: string | number,
       source: unknown,
-      extra?: Record<string, unknown>,
+      extra?: Record<string, unknown>
     ): Promise<TelegramMessageLike>;
     sendAudio(
       chatId: string | number,
       source: unknown,
-      extra?: Record<string, unknown>,
+      extra?: Record<string, unknown>
     ): Promise<TelegramMessageLike>;
     sendDocument(
       chatId: string | number,
       source: unknown,
-      extra?: Record<string, unknown>,
+      extra?: Record<string, unknown>
     ): Promise<TelegramMessageLike>;
-    setWebhook(
-      url: string,
-      extra?: Record<string, unknown>,
-    ): Promise<void>;
+    setWebhook(url: string, extra?: Record<string, unknown>): Promise<void>;
     callApi(method: string, params: Record<string, unknown>): Promise<unknown>;
   };
   on(event: string, handler: (ctx: TelegramContextLike) => void): void;

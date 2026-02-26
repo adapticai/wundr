@@ -26,7 +26,7 @@ export interface McpToolRegistry {
   executeTool(
     toolId: string,
     operation: string,
-    params: any,
+    params: any
   ): Promise<{
     success: boolean;
     message: string;
@@ -85,7 +85,7 @@ export class McpToolRegistryImpl implements McpToolRegistry {
   async executeTool(
     toolId: string,
     operation: string,
-    params: any,
+    params: any
   ): Promise<ToolResult> {
     this.logger.info(`Executing tool: ${toolId}, operation: ${operation}`);
 
@@ -108,7 +108,10 @@ export class McpToolRegistryImpl implements McpToolRegistry {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Tool ${toolId} execution failed: ${errorMessage}`, error);
+      this.logger.error(
+        `Tool ${toolId} execution failed: ${errorMessage}`,
+        error
+      );
 
       return {
         success: false,
@@ -179,7 +182,10 @@ export class McpToolRegistryImpl implements McpToolRegistry {
         }
 
         const resolvedPath = path.resolve(filePath);
-        const content = await fs.readFile(resolvedPath, encoding as BufferEncoding);
+        const content = await fs.readFile(
+          resolvedPath,
+          encoding as BufferEncoding
+        );
 
         return {
           path: resolvedPath,
@@ -287,7 +293,7 @@ export class McpToolRegistryImpl implements McpToolRegistry {
         // Safety checks for dangerous commands
         if (this.safetyChecks && this.isCommandDangerous(command)) {
           throw new Error(
-            `Command rejected: Contains potentially dangerous operations - ${command}`,
+            `Command rejected: Contains potentially dangerous operations - ${command}`
           );
         }
 
@@ -365,10 +371,10 @@ export class McpToolRegistryImpl implements McpToolRegistry {
             timeout,
           };
 
-          const req = client.request(url, options, (res) => {
+          const req = client.request(url, options, res => {
             let data = '';
 
-            res.on('data', (chunk) => {
+            res.on('data', chunk => {
               data += chunk;
             });
 
@@ -389,7 +395,7 @@ export class McpToolRegistryImpl implements McpToolRegistry {
             reject(new Error(`Request timeout after ${timeout}ms`));
           });
 
-          req.on('error', (error) => {
+          req.on('error', error => {
             reject(new Error(`Request failed: ${error.message}`));
           });
 
@@ -425,10 +431,13 @@ export class McpToolRegistryImpl implements McpToolRegistry {
         }
 
         const resolvedPath = path.resolve(dirPath);
-        const entries = await fs.readdir(resolvedPath, { withFileTypes: true, encoding: 'utf-8' });
+        const entries = await fs.readdir(resolvedPath, {
+          withFileTypes: true,
+          encoding: 'utf-8',
+        });
 
         const files = await Promise.all(
-          entries.map(async (entry) => {
+          entries.map(async entry => {
             const fullPath = path.join(resolvedPath, entry.name);
             const stats = await fs.stat(fullPath);
 
@@ -439,7 +448,7 @@ export class McpToolRegistryImpl implements McpToolRegistry {
               size: stats.size,
               modified: stats.mtime,
             };
-          }),
+          })
         );
 
         return {
@@ -494,7 +503,7 @@ export class McpToolRegistryImpl implements McpToolRegistry {
     });
 
     this.logger.info(
-      `Registered ${this.tools.size} default tools: ${this.listTools().join(', ')}`,
+      `Registered ${this.tools.size} default tools: ${this.listTools().join(', ')}`
     );
   }
 
@@ -549,7 +558,7 @@ export class McpToolRegistryImpl implements McpToolRegistry {
       'rm -rf /*',
       'mkfs',
       'dd if=/dev/zero',
-      ':(){:|:&};:',  // Fork bomb
+      ':(){:|:&};:', // Fork bomb
       'curl | sh',
       'wget | sh',
       '> /dev/sda',
@@ -569,7 +578,7 @@ export class McpToolRegistryImpl implements McpToolRegistry {
  * Create a default MCP tool registry instance
  */
 export function createMcpToolRegistry(
-  options: { safetyChecks?: boolean } = {},
+  options: { safetyChecks?: boolean } = {}
 ): McpToolRegistry {
   return new McpToolRegistryImpl(options);
 }

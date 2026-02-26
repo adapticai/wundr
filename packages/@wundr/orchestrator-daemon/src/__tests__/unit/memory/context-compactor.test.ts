@@ -50,33 +50,43 @@ import {
 function msg(
   role: MessageRole,
   content: string,
-  overrides: Partial<ConversationMessage> = {},
+  overrides: Partial<ConversationMessage> = {}
 ): ConversationMessage {
   return { role, content, ...overrides };
 }
 
 /** Create a system message. */
-function systemMsg(content: string, overrides: Partial<ConversationMessage> = {}): ConversationMessage {
+function systemMsg(
+  content: string,
+  overrides: Partial<ConversationMessage> = {}
+): ConversationMessage {
   return msg('system', content, overrides);
 }
 
 /** Create a user message. */
-function userMsg(content: string, overrides: Partial<ConversationMessage> = {}): ConversationMessage {
+function userMsg(
+  content: string,
+  overrides: Partial<ConversationMessage> = {}
+): ConversationMessage {
   return msg('user', content, overrides);
 }
 
 /** Create an assistant message. */
-function assistantMsg(content: string, overrides: Partial<ConversationMessage> = {}): ConversationMessage {
+function assistantMsg(
+  content: string,
+  overrides: Partial<ConversationMessage> = {}
+): ConversationMessage {
   return msg('assistant', content, overrides);
 }
 
 /** Create a tool_result message. */
 function toolResultMsg(
   content: string,
-  overrides: Partial<ConversationMessage> = {},
+  overrides: Partial<ConversationMessage> = {}
 ): ConversationMessage {
   return msg('tool_result', content, {
-    toolCallId: overrides.toolCallId ?? `tc-${Math.random().toString(36).slice(2, 8)}`,
+    toolCallId:
+      overrides.toolCallId ?? `tc-${Math.random().toString(36).slice(2, 8)}`,
     toolName: overrides.toolName ?? 'some_tool',
     ...overrides,
   });
@@ -125,9 +135,7 @@ describe('estimateMessageTokens', () => {
       ],
     });
     const tokensWithBlocks = estimateMessageTokens(message);
-    const tokensWithoutBlocks = estimateMessageTokens(
-      msg('assistant', 'base'),
-    );
+    const tokensWithoutBlocks = estimateMessageTokens(msg('assistant', 'base'));
     expect(tokensWithBlocks).toBeGreaterThan(tokensWithoutBlocks);
   });
 
@@ -179,20 +187,16 @@ describe('estimateMessagesTokens', () => {
   });
 
   it('should sum token estimates across multiple messages', () => {
-    const messages = [
-      userMsg('Hello'),
-      assistantMsg('World'),
-    ];
+    const messages = [userMsg('Hello'), assistantMsg('World')];
     const total = estimateMessagesTokens(messages);
     const individual =
-      estimateMessageTokens(messages[0]) +
-      estimateMessageTokens(messages[1]);
+      estimateMessageTokens(messages[0]) + estimateMessageTokens(messages[1]);
     expect(total).toBe(individual);
   });
 
   it('should handle a large conversation', () => {
     const messages = Array.from({ length: 100 }, (_, i) =>
-      userMsg(`Message number ${i} with some content`),
+      userMsg(`Message number ${i} with some content`)
     );
     const tokens = estimateMessagesTokens(messages);
     expect(tokens).toBeGreaterThan(100);
@@ -219,7 +223,9 @@ describe('resolveContextWindowTokens', () => {
 
   it('should prefix-match versioned model names', () => {
     // "claude-3.5-sonnet-20241022" starts with "claude-3.5-sonnet"
-    expect(resolveContextWindowTokens('claude-3.5-sonnet-20241022')).toBe(200_000);
+    expect(resolveContextWindowTokens('claude-3.5-sonnet-20241022')).toBe(
+      200_000
+    );
     // "gpt-4-turbo-preview" starts with "gpt-4" (matched first in iteration order)
     // so it gets gpt-4's window (8192), not gpt-4-turbo's (128000).
     // This is the expected prefix-match behavior: first match wins.
@@ -261,7 +267,9 @@ describe('resolveContextWindowTokens', () => {
 
 describe('classifyMessageImportance', () => {
   it('should classify system messages as critical', () => {
-    expect(classifyMessageImportance(systemMsg('You are a helpful assistant.'))).toBe('critical');
+    expect(
+      classifyMessageImportance(systemMsg('You are a helpful assistant.'))
+    ).toBe('critical');
   });
 
   it('should classify user messages as high', () => {
@@ -269,7 +277,9 @@ describe('classifyMessageImportance', () => {
   });
 
   it('should classify tool_result errors as high', () => {
-    const errorResult = toolResultMsg('Command failed: exit 1', { isError: true });
+    const errorResult = toolResultMsg('Command failed: exit 1', {
+      isError: true,
+    });
     expect(classifyMessageImportance(errorResult)).toBe('high');
   });
 
@@ -284,7 +294,9 @@ describe('classifyMessageImportance', () => {
   });
 
   it('should classify assistant messages as normal', () => {
-    expect(classifyMessageImportance(assistantMsg('Sure, I can help.'))).toBe('normal');
+    expect(classifyMessageImportance(assistantMsg('Sure, I can help.'))).toBe(
+      'normal'
+    );
   });
 
   it('should classify exactly 10_000 char tool result as normal (boundary)', () => {
@@ -317,7 +329,7 @@ describe('splitMessagesByTokenShare', () => {
 
   it('should split messages into approximately equal chunks', () => {
     const messages = Array.from({ length: 10 }, (_, i) =>
-      userMsg(`Message ${i} with equal content`),
+      userMsg(`Message ${i} with equal content`)
     );
     const result = splitMessagesByTokenShare(messages, 2);
     expect(result.length).toBe(2);
@@ -356,8 +368,9 @@ describe('chunkMessagesByMaxTokens', () => {
 
   it('should split when messages exceed maxTokens', () => {
     // Each message is roughly (role + 4 + content) / 4 tokens
-    const messages = Array.from({ length: 20 }, (_) =>
-      userMsg(longString(400)), // each ~100+ tokens
+    const messages = Array.from(
+      { length: 20 },
+      _ => userMsg(longString(400)) // each ~100+ tokens
     );
     const result = chunkMessagesByMaxTokens(messages, 200);
     expect(result.length).toBeGreaterThan(1);
@@ -535,9 +548,9 @@ describe('pruneToolResults', () => {
       userMsg('q'),
       assistantMsg('first response'),
       toolResultMsg(bigContent, { toolCallId: 'tc-1' }), // After first assistant
-      assistantMsg('second response'),                    // 3rd from end
-      assistantMsg('third response'),                     // 2nd from end
-      assistantMsg('fourth response'),                    // last
+      assistantMsg('second response'), // 3rd from end
+      assistantMsg('third response'), // 2nd from end
+      assistantMsg('fourth response'), // last
     ];
     // keepLastAssistants=3 means index of 3rd-from-last assistant is the cutoff
     // The tool result at index 2 is before the cutoff so it CAN be pruned
@@ -622,8 +635,8 @@ describe('pruneHistoryForContextShare', () => {
 
   it('should drop oldest chunks when over budget', () => {
     // Create messages that exceed the budget
-    const messages = Array.from({ length: 20 }, (_) =>
-      userMsg(longString(1_000)),
+    const messages = Array.from({ length: 20 }, _ =>
+      userMsg(longString(1_000))
     );
     const result = pruneHistoryForContextShare({
       messages,
@@ -672,11 +685,11 @@ describe('pruneHistoryForContextShare', () => {
       if (m.role === 'tool_result' && m.toolCallId === 'tc-orphan') {
         // If tool result is kept, its corresponding assistant must also be kept
         const hasCall = result.messages.some(
-          (msg) =>
+          msg =>
             msg.role === 'assistant' &&
             msg.contentBlocks?.some(
-              (b) => b.type === 'tool_call' && b.toolCallId === 'tc-orphan',
-            ),
+              b => b.type === 'tool_call' && b.toolCallId === 'tc-orphan'
+            )
         );
         expect(hasCall).toBe(true);
       }
@@ -786,21 +799,23 @@ describe('ContextCompactor', () => {
     it('should return false when disabled', () => {
       const disabled = new ContextCompactor({ enabled: false });
       const messages = Array.from({ length: 100 }, () =>
-        userMsg(longString(10_000)),
+        userMsg(longString(10_000))
       );
       expect(disabled.shouldCompact(messages, 'gpt-3.5-turbo')).toBe(false);
     });
 
     it('should return false when tokens are below threshold', () => {
       const messages = [userMsg('short message')];
-      expect(compactor.shouldCompact(messages, 'claude-3.5-sonnet')).toBe(false);
+      expect(compactor.shouldCompact(messages, 'claude-3.5-sonnet')).toBe(
+        false
+      );
     });
 
     it('should return true when tokens exceed threshold', () => {
       // gpt-3.5-turbo: 4096 window, trigger at 0.85 * 4096 = 3481 tokens
       // Need ~3481 tokens = ~13924 chars
       const messages = Array.from({ length: 10 }, () =>
-        userMsg(longString(2_000)),
+        userMsg(longString(2_000))
       );
       expect(compactor.shouldCompact(messages, 'gpt-3.5-turbo')).toBe(true);
     });
@@ -822,13 +837,20 @@ describe('ContextCompactor', () => {
     it('should return false when memory flush is disabled', () => {
       const noFlush = new ContextCompactor({
         enabled: true,
-        memoryFlush: { enabled: false, softThresholdTokens: 4_000, prompt: '', systemPrompt: '' },
+        memoryFlush: {
+          enabled: false,
+          softThresholdTokens: 4_000,
+          prompt: '',
+          systemPrompt: '',
+        },
       });
       // Even with lots of tokens, should return false
       const messages = Array.from({ length: 100 }, () =>
-        userMsg(longString(2_000)),
+        userMsg(longString(2_000))
       );
-      expect(noFlush.shouldRunMemoryFlush(messages, 'gpt-3.5-turbo')).toBe(false);
+      expect(noFlush.shouldRunMemoryFlush(messages, 'gpt-3.5-turbo')).toBe(
+        false
+      );
     });
 
     it('should return true when in the flush zone (near trigger, but below)', () => {
@@ -849,7 +871,7 @@ describe('ContextCompactor', () => {
       // Use explicit override: 10_000 window, trigger = 8_500, flush zone = 6_500-8_500
       // Need ~7000 tokens = ~28_000 chars
       const messages = Array.from({ length: 14 }, () =>
-        userMsg(longString(2_000)),
+        userMsg(longString(2_000))
       );
       const tokens = estimateMessagesTokens(messages);
       const threshold = compactorLargeFlush.resolveThreshold(undefined, 10_000);
@@ -857,23 +879,27 @@ describe('ContextCompactor', () => {
 
       if (tokens >= flushStart && tokens < threshold.triggerTokens) {
         expect(
-          compactorLargeFlush.shouldRunMemoryFlush(messages, undefined, 10_000),
+          compactorLargeFlush.shouldRunMemoryFlush(messages, undefined, 10_000)
         ).toBe(true);
       }
     });
 
     it('should return false when below the flush zone', () => {
       const messages = [userMsg('tiny')];
-      expect(compactor.shouldRunMemoryFlush(messages, 'claude-3.5-sonnet')).toBe(false);
+      expect(
+        compactor.shouldRunMemoryFlush(messages, 'claude-3.5-sonnet')
+      ).toBe(false);
     });
 
     it('should return false when already above compaction trigger', () => {
       // Already above trigger -> shouldRunMemoryFlush returns false because
       // the condition is totalTokens < threshold.triggerTokens
       const messages = Array.from({ length: 100 }, () =>
-        userMsg(longString(10_000)),
+        userMsg(longString(10_000))
       );
-      expect(compactor.shouldRunMemoryFlush(messages, 'gpt-3.5-turbo')).toBe(false);
+      expect(compactor.shouldRunMemoryFlush(messages, 'gpt-3.5-turbo')).toBe(
+        false
+      );
     });
   });
 
@@ -897,7 +923,7 @@ describe('ContextCompactor', () => {
       }));
 
       const messages = Array.from({ length: 10 }, () =>
-        userMsg(longString(2_000)),
+        userMsg(longString(2_000))
       );
 
       const result = await compactor.compact({
@@ -922,7 +948,7 @@ describe('ContextCompactor', () => {
       }));
 
       const messages = Array.from({ length: 20 }, (_, i) =>
-        userMsg(`msg ${i}`, { id: `m-${i}` }),
+        userMsg(`msg ${i}`, { id: `m-${i}` })
       );
 
       const result = await compactor.compact({
@@ -947,7 +973,7 @@ describe('ContextCompactor', () => {
       });
 
       const messages = Array.from({ length: 10 }, () =>
-        userMsg(longString(2_000)),
+        userMsg(longString(2_000))
       );
 
       // Should not throw, error should be caught internally
@@ -991,12 +1017,12 @@ describe('ContextCompactor', () => {
       expect(mockSummarize).toHaveBeenCalled();
 
       // System message should always be in the result
-      const roles = result.messages.map((m) => m.role);
+      const roles = result.messages.map(m => m.role);
       expect(roles).toContain('system');
 
       // The first message should be the compaction summary (system)
       const summaryMsg = result.messages.find(
-        (m) => m.metadata?.isCompactionSummary,
+        m => m.metadata?.isCompactionSummary
       );
       expect(summaryMsg).toBeDefined();
       expect(summaryMsg!.role).toBe('system');
@@ -1020,8 +1046,8 @@ describe('ContextCompactor', () => {
 
       if (result.compacted) {
         const systemIds = result.messages
-          .filter((m) => m.role === 'system' && !m.metadata?.isCompactionSummary)
-          .map((m) => m.id);
+          .filter(m => m.role === 'system' && !m.metadata?.isCompactionSummary)
+          .map(m => m.id);
         expect(systemIds).toContain('sys-1');
         expect(systemIds).toContain('sys-2');
       }
@@ -1029,9 +1055,7 @@ describe('ContextCompactor', () => {
 
     it('should return compacted=false when there is nothing to summarize', async () => {
       // Only system messages -- nothing to summarize
-      const messages = [
-        systemMsg('System prompt', { id: 'sys-1' }),
-      ];
+      const messages = [systemMsg('System prompt', { id: 'sys-1' })];
 
       const result = await compactor.compact({
         sessionId: 'test-nothing',
@@ -1048,7 +1072,9 @@ describe('ContextCompactor', () => {
       const messages = [
         userMsg('run this'),
         assistantMsg('running', {
-          contentBlocks: [{ type: 'tool_call', toolCallId: 'tc-1', toolName: 'bash' }],
+          contentBlocks: [
+            { type: 'tool_call', toolCallId: 'tc-1', toolName: 'bash' },
+          ],
         }),
         toolResultMsg('Error: command not found', {
           toolCallId: 'tc-1',
@@ -1070,7 +1096,7 @@ describe('ContextCompactor', () => {
         // If the error tool result was in the summarized portion,
         // it should be in the metadata
         const bashFailure = result.metadata.toolFailures.find(
-          (f) => f.toolName === 'bash',
+          f => f.toolName === 'bash'
         );
         if (bashFailure) {
           expect(bashFailure.toolCallId).toBe('tc-1');
@@ -1099,7 +1125,9 @@ describe('ContextCompactor', () => {
       });
 
       if (result.compacted) {
-        expect(result.summary).toContain('no summarization function configured');
+        expect(result.summary).toContain(
+          'no summarization function configured'
+        );
       }
     });
 
@@ -1159,12 +1187,14 @@ describe('ContextCompactor', () => {
       });
 
       // Count should increase only for compactions that actually compact
-      expect(compactor.getCompactionCount()).toBeGreaterThanOrEqual(countAfterFirst);
+      expect(compactor.getCompactionCount()).toBeGreaterThanOrEqual(
+        countAfterFirst
+      );
     });
 
     it('should produce correct compression ratio in metadata', async () => {
       const messages = Array.from({ length: 20 }, (_, i) =>
-        userMsg(`message ${i}: ${longString(200)}`, { id: `m-${i}` }),
+        userMsg(`message ${i}: ${longString(200)}`, { id: `m-${i}` })
       );
 
       const result = await compactor.compact({
@@ -1177,10 +1207,10 @@ describe('ContextCompactor', () => {
         expect(result.metadata.compressionRatio).toBeGreaterThan(0);
         expect(result.metadata.compressionRatio).toBeLessThanOrEqual(1);
         expect(result.metadata.tokensAfter).toBeLessThan(
-          result.metadata.tokensBefore,
+          result.metadata.tokensBefore
         );
         expect(result.metadata.messagesAfter).toBeLessThan(
-          result.metadata.messagesBefore,
+          result.metadata.messagesBefore
         );
       }
     });
@@ -1230,10 +1260,7 @@ describe('ContextCompactor', () => {
     });
 
     it('should populate durationMs in metadata', async () => {
-      const messages = [
-        userMsg('q1'),
-        assistantMsg('a1'),
-      ];
+      const messages = [userMsg('q1'), assistantMsg('a1')];
 
       const result = await compactor.compact({
         sessionId: 'test-duration',
@@ -1260,11 +1287,13 @@ describe('ContextCompactor', () => {
 
       if (result.compacted) {
         const summaryMsg = result.messages.find(
-          (m) => m.metadata?.isCompactionSummary,
+          m => m.metadata?.isCompactionSummary
         );
         expect(summaryMsg).toBeDefined();
         expect(summaryMsg!.id).toMatch(/^compaction-summary-\d+$/);
-        expect(summaryMsg!.content).toContain('## Conversation Summary (compacted)');
+        expect(summaryMsg!.content).toContain(
+          '## Conversation Summary (compacted)'
+        );
       }
     });
   });
@@ -1333,17 +1362,21 @@ describe('ContextCompactor', () => {
       });
 
       // Should not crash; preservedMessageIds should be empty or contain only defined IDs
-      expect(result.metadata.preservedMessageIds.every((id) => typeof id === 'string')).toBe(true);
+      expect(
+        result.metadata.preservedMessageIds.every(id => typeof id === 'string')
+      ).toBe(true);
     });
 
     it('should handle AbortSignal', async () => {
       const controller = new AbortController();
-      const abortSummarize = vi.fn(async ({ signal }: { signal?: AbortSignal }) => {
-        if (signal?.aborted) {
-          throw new Error('Aborted');
+      const abortSummarize = vi.fn(
+        async ({ signal }: { signal?: AbortSignal }) => {
+          if (signal?.aborted) {
+            throw new Error('Aborted');
+          }
+          return 'summary';
         }
-        return 'summary';
-      });
+      );
 
       const abortCompactor = new ContextCompactor({
         enabled: true,
@@ -1438,8 +1471,12 @@ describe('createContextCompactor', () => {
   it('should use defaults for unspecified fields', () => {
     const compactor = createContextCompactor({});
     const config = compactor.getConfig();
-    expect(config.defaultTriggerRatio).toBe(DEFAULT_CONTEXT_COMPACTOR_CONFIG.defaultTriggerRatio);
-    expect(config.summarizationPasses).toBe(DEFAULT_CONTEXT_COMPACTOR_CONFIG.summarizationPasses);
+    expect(config.defaultTriggerRatio).toBe(
+      DEFAULT_CONTEXT_COMPACTOR_CONFIG.defaultTriggerRatio
+    );
+    expect(config.summarizationPasses).toBe(
+      DEFAULT_CONTEXT_COMPACTOR_CONFIG.summarizationPasses
+    );
   });
 });
 
@@ -1498,7 +1535,7 @@ describe('multi-pass summarization', () => {
 
     // Enough messages to trigger multi-pass
     const messages = Array.from({ length: 30 }, (_, i) =>
-      userMsg(`Message ${i}: ${longString(200)}`, { id: `m-${i}` }),
+      userMsg(`Message ${i}: ${longString(200)}`, { id: `m-${i}` })
     );
 
     await compactor.compact({
@@ -1575,7 +1612,7 @@ describe('tool failure extraction in compaction', () => {
 
     if (result.compacted) {
       const bashFailure = result.metadata.toolFailures.find(
-        (f) => f.toolCallId === 'tc-fail-1',
+        f => f.toolCallId === 'tc-fail-1'
       );
       if (bashFailure) {
         expect(bashFailure.toolName).toBe('bash');
@@ -1617,7 +1654,7 @@ describe('tool failure extraction in compaction', () => {
 
     if (result.compacted) {
       const dupFailures = result.metadata.toolFailures.filter(
-        (f) => f.toolCallId === 'tc-dup',
+        f => f.toolCallId === 'tc-dup'
       );
       expect(dupFailures.length).toBeLessThanOrEqual(1);
     }
@@ -1649,7 +1686,7 @@ describe('tool failure extraction in compaction', () => {
 
     if (result.compacted) {
       const longFailure = result.metadata.toolFailures.find(
-        (f) => f.toolCallId === 'tc-long',
+        f => f.toolCallId === 'tc-long'
       );
       if (longFailure) {
         // MAX_TOOL_FAILURE_CHARS is 240
@@ -1700,15 +1737,15 @@ describe('tool call/result pairing during compaction', () => {
       // If the tool result is in the preserved messages, its corresponding
       // assistant message with the tool call should also be present
       const hasToolResult = result.messages.some(
-        (m) => m.toolCallId === 'tc-pair',
+        m => m.toolCallId === 'tc-pair'
       );
       if (hasToolResult) {
         const hasToolCall = result.messages.some(
-          (m) =>
+          m =>
             m.role === 'assistant' &&
             m.contentBlocks?.some(
-              (b) => b.type === 'tool_call' && b.toolCallId === 'tc-pair',
-            ),
+              b => b.type === 'tool_call' && b.toolCallId === 'tc-pair'
+            )
         );
         expect(hasToolCall).toBe(true);
       }

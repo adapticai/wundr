@@ -178,7 +178,12 @@ describe('TaskDelegator', () => {
         lastSeen: new Date(),
       };
 
-      const delegationId = await delegator.delegate(task, orchestrator, {}, 'local');
+      const delegationId = await delegator.delegate(
+        task,
+        orchestrator,
+        {},
+        'local'
+      );
 
       expect(delegationId).toBeDefined();
       expect(typeof delegationId).toBe('string');
@@ -212,7 +217,12 @@ describe('TaskDelegator', () => {
         lastSeen: new Date(),
       };
 
-      const delegationId = await delegator.delegate(task, orchestrator, {}, 'local');
+      const delegationId = await delegator.delegate(
+        task,
+        orchestrator,
+        {},
+        'local'
+      );
 
       const callback: DelegationCallback = {
         delegationId,
@@ -256,7 +266,12 @@ describe('TaskDelegator', () => {
         lastSeen: new Date(),
       };
 
-      const delegationId = await delegator.delegate(task, orchestrator, {}, 'local');
+      const delegationId = await delegator.delegate(
+        task,
+        orchestrator,
+        {},
+        'local'
+      );
       await delegator.cancelDelegation(delegationId);
 
       const delegation = await delegator.getDelegationStatus(delegationId);
@@ -285,7 +300,12 @@ describe('TaskDelegator', () => {
         lastSeen: new Date(),
       };
 
-      const delegationId = await delegator.delegate(task, orchestrator, {}, 'local');
+      const delegationId = await delegator.delegate(
+        task,
+        orchestrator,
+        {},
+        'local'
+      );
 
       // Complete the delegation
       const callback: DelegationCallback = {
@@ -324,7 +344,12 @@ describe('TaskDelegator', () => {
         lastSeen: new Date(),
       };
 
-      const delegationId = await delegator.delegate(task, orchestrator, {}, 'local');
+      const delegationId = await delegator.delegate(
+        task,
+        orchestrator,
+        {},
+        'local'
+      );
 
       // Complete the delegation
       const callback: DelegationCallback = {

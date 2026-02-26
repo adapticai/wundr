@@ -41,7 +41,9 @@ const DEFAULT_FEDERATION_CONFIG: FederationConfig = {
 /**
  * OrchestratorFederation manages coordination between multiple orchestrator instances
  */
-export class OrchestratorFederation extends EventEmitter<Record<string, unknown>> {
+export class OrchestratorFederation extends EventEmitter<
+  Record<string, unknown>
+> {
   private logger: Logger;
   private config: FederationConfig;
   private orchestrators: Map<string, OrchestratorConnection>;
@@ -53,7 +55,10 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
     super();
 
     this.config = { ...DEFAULT_FEDERATION_CONFIG, ...config };
-    this.logger = new Logger('OrchestratorFederation', verbose ? LogLevel.DEBUG : LogLevel.INFO);
+    this.logger = new Logger(
+      'OrchestratorFederation',
+      verbose ? LogLevel.DEBUG : LogLevel.INFO
+    );
     this.orchestrators = new Map();
 
     // Initialize metrics
@@ -79,15 +84,20 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
    */
   registerOrchestrator(
     id: string,
-    connection: Omit<OrchestratorConnection, 'id'>,
+    connection: Omit<OrchestratorConnection, 'id'>
   ): void {
     if (this.orchestrators.has(id)) {
-      this.logger.warn(`Orchestrator ${id} is already registered, updating connection`);
+      this.logger.warn(
+        `Orchestrator ${id} is already registered, updating connection`
+      );
     }
 
-    if (this.orchestrators.size >= this.config.maxOrchestrators && !this.orchestrators.has(id)) {
+    if (
+      this.orchestrators.size >= this.config.maxOrchestrators &&
+      !this.orchestrators.has(id)
+    ) {
       throw new Error(
-        `Federation capacity reached (${this.config.maxOrchestrators} orchestrators)`,
+        `Federation capacity reached (${this.config.maxOrchestrators} orchestrators)`
       );
     }
 
@@ -163,11 +173,13 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
     fromOrchestratorId: string,
     toOrchestratorId: string,
     task: Task,
-    options: Partial<DelegationRequest> = {},
+    options: Partial<DelegationRequest> = {}
   ): Promise<DelegationResult> {
     const startTime = Date.now();
 
-    this.logger.info(`Delegating task ${task.id} from ${fromOrchestratorId} to ${toOrchestratorId}`);
+    this.logger.info(
+      `Delegating task ${task.id} from ${fromOrchestratorId} to ${toOrchestratorId}`
+    );
 
     // Validate source orchestrator
     const fromOrchestrator = this.orchestrators.get(fromOrchestratorId);
@@ -175,7 +187,7 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
       return this.createDelegationFailure(
         'Source orchestrator not found',
         'unreachable',
-        startTime,
+        startTime
       );
     }
 
@@ -185,7 +197,7 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
       return this.createDelegationFailure(
         'Target orchestrator not found',
         'unreachable',
-        startTime,
+        startTime
       );
     }
 
@@ -194,7 +206,7 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
       return this.createDelegationFailure(
         `Target orchestrator is ${toOrchestrator.status}`,
         'unreachable',
-        startTime,
+        startTime
       );
     }
 
@@ -202,23 +214,25 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
     if (options.requiredCapabilities) {
       const hasCapabilities = this.checkCapabilities(
         toOrchestrator.capabilities,
-        options.requiredCapabilities,
+        options.requiredCapabilities
       );
       if (!hasCapabilities) {
         return this.createDelegationFailure(
           'Target orchestrator lacks required capabilities',
           'capability_mismatch',
-          startTime,
+          startTime
         );
       }
     }
 
     // Check if target is overloaded
-    if (toOrchestrator.activeSessions >= toOrchestrator.capabilities.maxSessions) {
+    if (
+      toOrchestrator.activeSessions >= toOrchestrator.capabilities.maxSessions
+    ) {
       return this.createDelegationFailure(
         'Target orchestrator is overloaded',
         'overloaded',
-        startTime,
+        startTime
       );
     }
 
@@ -236,7 +250,10 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
 
     // Send delegation request via WebSocket
     try {
-      const result = await this.sendDelegationRequest(toOrchestrator, delegationRequest);
+      const result = await this.sendDelegationRequest(
+        toOrchestrator,
+        delegationRequest
+      );
 
       // Update metrics
       this.metrics.totalDelegations++;
@@ -266,7 +283,7 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
       return this.createDelegationFailure(
         error instanceof Error ? error.message : 'Unknown error',
         'rejected',
-        startTime,
+        startTime
       );
     }
   }
@@ -276,9 +293,11 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
    */
   async getSharedContext(
     fromOrchestratorId: string,
-    toOrchestratorId: string,
+    toOrchestratorId: string
   ): Promise<SharedContext | null> {
-    this.logger.debug(`Getting shared context from ${fromOrchestratorId} to ${toOrchestratorId}`);
+    this.logger.debug(
+      `Getting shared context from ${fromOrchestratorId} to ${toOrchestratorId}`
+    );
 
     const fromOrchestrator = this.orchestrators.get(fromOrchestratorId);
     const toOrchestrator = this.orchestrators.get(toOrchestratorId);
@@ -318,7 +337,9 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
       timestamp: new Date(),
     };
 
-    this.logger.info(`Broadcasting message from ${broadcast.sourceId}: ${broadcast.messageType}`);
+    this.logger.info(
+      `Broadcasting message from ${broadcast.sourceId}: ${broadcast.messageType}`
+    );
 
     const payload = JSON.stringify({
       type: 'federation:broadcast',
@@ -337,13 +358,18 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
           orchestrator.socket.send(payload);
           successCount++;
         } catch (error) {
-          this.logger.error(`Failed to broadcast to orchestrator ${id}:`, error);
+          this.logger.error(
+            `Failed to broadcast to orchestrator ${id}:`,
+            error
+          );
         }
       }
     }
 
     this.metrics.totalBroadcasts++;
-    this.logger.debug(`Broadcast sent to ${successCount}/${this.orchestrators.size - 1} orchestrators`);
+    this.logger.debug(
+      `Broadcast sent to ${successCount}/${this.orchestrators.size - 1} orchestrators`
+    );
 
     const event: FederationEvent = {
       type: 'federation:broadcast',
@@ -396,13 +422,18 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
   /**
    * Setup WebSocket event handlers for an orchestrator
    */
-  private setupOrchestratorHandlers(orchestrator: OrchestratorConnection): void {
+  private setupOrchestratorHandlers(
+    orchestrator: OrchestratorConnection
+  ): void {
     orchestrator.socket.on('message', (data: Buffer) => {
       try {
         const message = JSON.parse(data.toString());
         this.handleOrchestratorMessage(orchestrator.id, message);
       } catch (error) {
-        this.logger.error(`Failed to parse message from ${orchestrator.id}:`, error);
+        this.logger.error(
+          `Failed to parse message from ${orchestrator.id}:`,
+          error
+        );
       }
     });
 
@@ -412,7 +443,10 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
     });
 
     orchestrator.socket.on('error', (error: Error) => {
-      this.logger.error(`WebSocket error for orchestrator ${orchestrator.id}:`, error);
+      this.logger.error(
+        `WebSocket error for orchestrator ${orchestrator.id}:`,
+        error
+      );
       this.updateOrchestratorStatus(orchestrator.id, 'degraded');
     });
 
@@ -424,7 +458,10 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
   /**
    * Handle incoming message from an orchestrator
    */
-  private handleOrchestratorMessage(orchestratorId: string, message: unknown): void {
+  private handleOrchestratorMessage(
+    orchestratorId: string,
+    message: unknown
+  ): void {
     const msg = message as { type: string; payload?: unknown };
 
     switch (msg.type) {
@@ -433,19 +470,30 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
         break;
 
       case 'status_update':
-        this.handleStatusUpdate(orchestratorId, msg.payload as { status: OrchestratorStatus });
+        this.handleStatusUpdate(
+          orchestratorId,
+          msg.payload as { status: OrchestratorStatus }
+        );
         break;
 
       case 'task:completed':
-        this.handleTaskCompleted(orchestratorId, msg.payload as { sessionId: string });
+        this.handleTaskCompleted(
+          orchestratorId,
+          msg.payload as { sessionId: string }
+        );
         break;
 
       case 'task:failed':
-        this.handleTaskFailed(orchestratorId, msg.payload as { sessionId: string; error: string });
+        this.handleTaskFailed(
+          orchestratorId,
+          msg.payload as { sessionId: string; error: string }
+        );
         break;
 
       default:
-        this.logger.debug(`Unknown message type from ${orchestratorId}: ${msg.type}`);
+        this.logger.debug(
+          `Unknown message type from ${orchestratorId}: ${msg.type}`
+        );
     }
   }
 
@@ -469,7 +517,10 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
   /**
    * Update orchestrator status
    */
-  private updateOrchestratorStatus(orchestratorId: string, status: OrchestratorStatus): void {
+  private updateOrchestratorStatus(
+    orchestratorId: string,
+    status: OrchestratorStatus
+  ): void {
     const orchestrator = this.orchestrators.get(orchestratorId);
     if (orchestrator && orchestrator.status !== status) {
       const oldStatus = orchestrator.status;
@@ -477,7 +528,9 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
 
       this.updateActiveOrchestrators();
 
-      this.logger.info(`Orchestrator ${orchestratorId} status changed: ${oldStatus} -> ${status}`);
+      this.logger.info(
+        `Orchestrator ${orchestratorId} status changed: ${oldStatus} -> ${status}`
+      );
 
       const event: FederationEvent = {
         type: 'orchestrator:status_changed',
@@ -491,14 +544,20 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
   /**
    * Handle status update from orchestrator
    */
-  private handleStatusUpdate(orchestratorId: string, payload: { status: OrchestratorStatus }): void {
+  private handleStatusUpdate(
+    orchestratorId: string,
+    payload: { status: OrchestratorStatus }
+  ): void {
     this.updateOrchestratorStatus(orchestratorId, payload.status);
   }
 
   /**
    * Handle task completed event
    */
-  private handleTaskCompleted(orchestratorId: string, payload: { sessionId: string }): void {
+  private handleTaskCompleted(
+    orchestratorId: string,
+    payload: { sessionId: string }
+  ): void {
     const event: FederationEvent = {
       type: 'task:completed',
       sessionId: payload.sessionId,
@@ -510,7 +569,10 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
   /**
    * Handle task failed event
    */
-  private handleTaskFailed(orchestratorId: string, payload: { sessionId: string; error: string }): void {
+  private handleTaskFailed(
+    orchestratorId: string,
+    payload: { sessionId: string; error: string }
+  ): void {
     const event: FederationEvent = {
       type: 'task:failed',
       sessionId: payload.sessionId,
@@ -525,7 +587,7 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
    */
   private async sendDelegationRequest(
     orchestrator: OrchestratorConnection,
-    request: DelegationRequest,
+    request: DelegationRequest
   ): Promise<DelegationResult> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -541,7 +603,10 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
       const responseHandler = (data: Buffer): void => {
         try {
           const response = JSON.parse(data.toString());
-          if (response.type === 'delegation:result' && response.requestId === request.task.id) {
+          if (
+            response.type === 'delegation:result' &&
+            response.requestId === request.task.id
+          ) {
             clearTimeout(timeout);
             orchestrator.socket.off('message', responseHandler);
             resolve(response.result as DelegationResult);
@@ -553,7 +618,7 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
 
       orchestrator.socket.on('message', responseHandler);
 
-      orchestrator.socket.send(payload, (error) => {
+      orchestrator.socket.send(payload, error => {
         if (error) {
           clearTimeout(timeout);
           orchestrator.socket.off('message', responseHandler);
@@ -566,7 +631,9 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
   /**
    * Request context from an orchestrator
    */
-  private async requestContext(orchestrator: OrchestratorConnection): Promise<SharedContext> {
+  private async requestContext(
+    orchestrator: OrchestratorConnection
+  ): Promise<SharedContext> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error('Context request timeout'));
@@ -591,7 +658,7 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
 
       orchestrator.socket.on('message', responseHandler);
 
-      orchestrator.socket.send(payload, (error) => {
+      orchestrator.socket.send(payload, error => {
         if (error) {
           clearTimeout(timeout);
           orchestrator.socket.off('message', responseHandler);
@@ -606,17 +673,20 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
    */
   private checkCapabilities(
     available: OrchestratorCapabilities,
-    required: Partial<OrchestratorCapabilities>,
+    required: Partial<OrchestratorCapabilities>
   ): boolean {
     // Check max sessions
-    if (required.maxSessions !== undefined && available.maxSessions < required.maxSessions) {
+    if (
+      required.maxSessions !== undefined &&
+      available.maxSessions < required.maxSessions
+    ) {
       return false;
     }
 
     // Check supported task types
     if (required.supportedTaskTypes) {
-      const hasAllTypes = required.supportedTaskTypes.every((type) =>
-        available.supportedTaskTypes.includes(type),
+      const hasAllTypes = required.supportedTaskTypes.every(type =>
+        available.supportedTaskTypes.includes(type)
       );
       if (!hasAllTypes) {
         return false;
@@ -625,8 +695,8 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
 
     // Check memory tiers
     if (required.memoryTiers) {
-      const hasAllTiers = required.memoryTiers.every((tier) =>
-        available.memoryTiers.includes(tier),
+      const hasAllTiers = required.memoryTiers.every(tier =>
+        available.memoryTiers.includes(tier)
       );
       if (!hasAllTiers) {
         return false;
@@ -636,8 +706,8 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
     // Check specializations
     if (required.specializations) {
       const availableSpecs = available.specializations || [];
-      const hasAllSpecs = required.specializations.every((spec) =>
-        availableSpecs.includes(spec),
+      const hasAllSpecs = required.specializations.every(spec =>
+        availableSpecs.includes(spec)
       );
       if (!hasAllSpecs) {
         return false;
@@ -653,7 +723,7 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
   private createDelegationFailure(
     error: string,
     reason: DelegationResult['reason'],
-    startTime: number,
+    startTime: number
   ): DelegationResult {
     return {
       success: false,
@@ -670,9 +740,9 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
    * Update active orchestrators count
    */
   private updateActiveOrchestrators(): void {
-    this.metrics.activeOrchestrators = Array.from(this.orchestrators.values()).filter(
-      (o) => o.status === 'connected',
-    ).length;
+    this.metrics.activeOrchestrators = Array.from(
+      this.orchestrators.values()
+    ).filter(o => o.status === 'connected').length;
   }
 
   /**
@@ -686,7 +756,8 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
 
     if (this.delegationLatencies.length > 0) {
       const sum = this.delegationLatencies.reduce((a, b) => a + b, 0);
-      this.metrics.averageDelegationLatency = sum / this.delegationLatencies.length;
+      this.metrics.averageDelegationLatency =
+        sum / this.delegationLatencies.length;
     }
   }
 
@@ -697,12 +768,16 @@ export class OrchestratorFederation extends EventEmitter<Record<string, unknown>
     this.heartbeatInterval = setInterval(() => {
       const now = Date.now();
 
-      for (const [id, orchestrator] of Array.from(this.orchestrators.entries())) {
+      for (const [id, orchestrator] of Array.from(
+        this.orchestrators.entries()
+      )) {
         const timeSinceHeartbeat = now - orchestrator.lastHeartbeat.getTime();
 
         // Mark as disconnected if timeout exceeded
         if (timeSinceHeartbeat > this.config.heartbeatTimeout) {
-          this.logger.warn(`Orchestrator ${id} heartbeat timeout (${timeSinceHeartbeat}ms)`);
+          this.logger.warn(
+            `Orchestrator ${id} heartbeat timeout (${timeSinceHeartbeat}ms)`
+          );
           this.updateOrchestratorStatus(id, 'disconnected');
         }
       }

@@ -170,15 +170,24 @@ export class Tracer extends EventEmitter<TracerEvents> {
     super();
 
     this.config = {
-      enabled: config?.enabled ?? (process.env['TRACING_ENABLED'] !== 'false'),
-      sampleRate: config?.sampleRate ?? parseFloat(process.env['TRACING_SAMPLE_RATE'] ?? '1.0'),
-      maxSpansPerTrace: config?.maxSpansPerTrace ?? parseInt(process.env['TRACING_MAX_SPANS'] ?? '1000', 10),
-      spanTtlMs: config?.spanTtlMs ?? parseInt(process.env['TRACING_SPAN_TTL_MS'] ?? '300000', 10),
+      enabled: config?.enabled ?? process.env['TRACING_ENABLED'] !== 'false',
+      sampleRate:
+        config?.sampleRate ??
+        parseFloat(process.env['TRACING_SAMPLE_RATE'] ?? '1.0'),
+      maxSpansPerTrace:
+        config?.maxSpansPerTrace ??
+        parseInt(process.env['TRACING_MAX_SPANS'] ?? '1000', 10),
+      spanTtlMs:
+        config?.spanTtlMs ??
+        parseInt(process.env['TRACING_SPAN_TTL_MS'] ?? '300000', 10),
     };
 
     // Start periodic cleanup of expired spans
     if (this.config.enabled) {
-      this.cleanupTimer = setInterval(() => this.cleanupExpiredSpans(), this.config.spanTtlMs);
+      this.cleanupTimer = setInterval(
+        () => this.cleanupExpiredSpans(),
+        this.config.spanTtlMs
+      );
       if (this.cleanupTimer.unref) {
         this.cleanupTimer.unref();
       }
@@ -196,7 +205,7 @@ export class Tracer extends EventEmitter<TracerEvents> {
   startSpan(
     name: string,
     parentContext?: TraceContext,
-    options?: SpanOptions,
+    options?: SpanOptions
   ): Span {
     if (!this.config.enabled) {
       return this.createNoopSpan(name);
@@ -247,8 +256,8 @@ export class Tracer extends EventEmitter<TracerEvents> {
   endSpan(spanId: string, status: SpanStatus = 'ok'): Span | undefined {
     const span = this.activeSpans.get(spanId);
     if (!span) {
-return undefined;
-}
+      return undefined;
+    }
 
     span.endTime = Date.now();
     span.duration = span.endTime - span.startTime;
@@ -284,8 +293,8 @@ return undefined;
   failSpan(spanId: string, error: Error): Span | undefined {
     const span = this.activeSpans.get(spanId);
     if (!span) {
-return undefined;
-}
+      return undefined;
+    }
 
     span.attributes['error.message'] = error.message;
     span.attributes['error.type'] = error.constructor.name;
@@ -312,12 +321,12 @@ return undefined;
   addEvent(
     spanId: string,
     name: string,
-    attributes?: Record<string, string | number | boolean>,
+    attributes?: Record<string, string | number | boolean>
   ): void {
     const span = this.activeSpans.get(spanId);
     if (!span) {
-return;
-}
+      return;
+    }
 
     span.events.push({
       name,
@@ -331,12 +340,12 @@ return;
    */
   setAttributes(
     spanId: string,
-    attributes: Record<string, string | number | boolean>,
+    attributes: Record<string, string | number | boolean>
   ): void {
     const span = this.activeSpans.get(spanId);
     if (!span) {
-return;
-}
+      return;
+    }
 
     Object.assign(span.attributes, attributes);
   }
@@ -353,7 +362,7 @@ return;
     name: string,
     parentContext: TraceContext | undefined,
     fn: (span: Span) => Promise<T>,
-    options?: SpanOptions,
+    options?: SpanOptions
   ): Promise<T> {
     const span = this.startSpan(name, parentContext, options);
 
@@ -364,7 +373,7 @@ return;
     } catch (error) {
       this.failSpan(
         span.context.spanId,
-        error instanceof Error ? error : new Error(String(error)),
+        error instanceof Error ? error : new Error(String(error))
       );
       throw error;
     }
@@ -377,7 +386,7 @@ return;
     name: string,
     parentContext: TraceContext | undefined,
     fn: (span: Span) => T,
-    options?: SpanOptions,
+    options?: SpanOptions
   ): T {
     const span = this.startSpan(name, parentContext, options);
 
@@ -388,7 +397,7 @@ return;
     } catch (error) {
       this.failSpan(
         span.context.spanId,
-        error instanceof Error ? error : new Error(String(error)),
+        error instanceof Error ? error : new Error(String(error))
       );
       throw error;
     }
@@ -415,17 +424,17 @@ return;
   static fromTraceparent(header: string): TraceContext | undefined {
     const parts = header.split('-');
     if (parts.length < 4) {
-return undefined;
-}
+      return undefined;
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_version, traceId, spanId, _flags] = parts;
     if (!traceId || traceId.length !== 32) {
-return undefined;
-}
+      return undefined;
+    }
     if (!spanId || spanId.length !== 16) {
-return undefined;
-}
+      return undefined;
+    }
 
     return Object.freeze({
       traceId,
@@ -439,7 +448,7 @@ return undefined;
    * Looks for `traceId` / `x-trace-id` fields in the payload.
    */
   static extractFromPayload(
-    payload: Record<string, unknown>,
+    payload: Record<string, unknown>
   ): TraceContext | undefined {
     const traceId =
       (payload['traceId'] as string) ??
@@ -447,8 +456,8 @@ return undefined;
       (payload['trace_id'] as string);
 
     if (!traceId || typeof traceId !== 'string') {
-return undefined;
-}
+      return undefined;
+    }
 
     const spanId =
       (payload['spanId'] as string) ??
@@ -457,7 +466,10 @@ return undefined;
 
     return Object.freeze({
       traceId,
-      spanId: typeof spanId === 'string' && spanId.length === 16 ? spanId : generateSpanId(),
+      spanId:
+        typeof spanId === 'string' && spanId.length === 16
+          ? spanId
+          : generateSpanId(),
       baggage: new Map(),
     });
   }
@@ -468,7 +480,7 @@ return undefined;
    */
   static injectIntoPayload(
     context: TraceContext,
-    payload: Record<string, unknown>,
+    payload: Record<string, unknown>
   ): Record<string, unknown> {
     return {
       ...payload,
@@ -491,8 +503,8 @@ return undefined;
   getTraceSpans(traceId: string): Span[] {
     const traceMap = this.completedSpans.get(traceId);
     if (!traceMap) {
-return [];
-}
+      return [];
+    }
     return Array.from(traceMap.values());
   }
 
@@ -741,12 +753,12 @@ export class SpanExporter {
    */
   start(): void {
     if (this.flushTimer) {
-return;
-}
+      return;
+    }
 
     this.flushTimer = setInterval(
       () => void this.flush(),
-      this.config.flushIntervalMs,
+      this.config.flushIntervalMs
     );
 
     if (this.flushTimer.unref) {
@@ -771,8 +783,8 @@ return;
    */
   async flush(): Promise<void> {
     if (this.buffer.length === 0) {
-return;
-}
+      return;
+    }
 
     const batch = this.buffer.splice(0, this.buffer.length);
 
@@ -799,7 +811,8 @@ return;
   // -----------------------------------------------------------------------
 
   private spanToOTLP(span: Span): OTLPSpan {
-    const msToNano = (ms: number): string => (BigInt(ms) * 1_000_000n).toString();
+    const msToNano = (ms: number): string =>
+      (BigInt(ms) * 1_000_000n).toString();
 
     const attributes: OTLPSpan['attributes'] = [];
     for (const [key, val] of Object.entries(span.attributes)) {
@@ -812,7 +825,7 @@ return;
       }
     }
 
-    const events: OTLPSpan['events'] = span.events.map((event) => {
+    const events: OTLPSpan['events'] = span.events.map(event => {
       const eventAttrs: OTLPSpan['attributes'] = [];
       if (event.attributes) {
         for (const [key, val] of Object.entries(event.attributes)) {
@@ -834,10 +847,10 @@ return;
 
     let statusCode = 0;
     if (span.status === 'ok') {
-statusCode = 1;
-} else if (span.status === 'error') {
-statusCode = 2;
-}
+      statusCode = 1;
+    } else if (span.status === 'error') {
+      statusCode = 2;
+    }
 
     return {
       traceId: span.context.traceId,
@@ -851,9 +864,10 @@ statusCode = 2;
       events,
       status: {
         code: statusCode,
-        message: span.status === 'error'
-          ? (span.attributes['error.message'] as string | undefined)
-          : undefined,
+        message:
+          span.status === 'error'
+            ? (span.attributes['error.message'] as string | undefined)
+            : undefined,
       },
     };
   }

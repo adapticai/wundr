@@ -91,7 +91,7 @@ export function calculateCooldownMs(errorCount: number): number {
   const normalized = Math.max(1, errorCount);
   return Math.min(
     60 * 60 * 1000, // 1 hour max
-    60 * 1000 * 5 ** Math.min(normalized - 1, 3),
+    60 * 1000 * 5 ** Math.min(normalized - 1, 3)
   );
 }
 
@@ -102,7 +102,7 @@ export function calculateCooldownMs(errorCount: number): number {
 export function calculateBillingDisableMs(
   errorCount: number,
   baseHours: number = DEFAULT_BILLING_BACKOFF_HOURS,
-  maxHours: number = DEFAULT_BILLING_MAX_HOURS,
+  maxHours: number = DEFAULT_BILLING_MAX_HOURS
 ): number {
   const normalized = Math.max(1, errorCount);
   const baseMs = Math.max(60_000, baseHours * 60 * 60 * 1000);
@@ -118,9 +118,22 @@ export function calculateBillingDisableMs(
 
 interface AuthProfileManagerEvents {
   'profile:used': (profileId: string, provider: string) => void;
-  'profile:failure': (profileId: string, provider: string, reason: FailureReason) => void;
-  'profile:cooldown': (profileId: string, provider: string, until: number) => void;
-  'profile:disabled': (profileId: string, provider: string, reason: FailureReason, until: number) => void;
+  'profile:failure': (
+    profileId: string,
+    provider: string,
+    reason: FailureReason
+  ) => void;
+  'profile:cooldown': (
+    profileId: string,
+    provider: string,
+    until: number
+  ) => void;
+  'profile:disabled': (
+    profileId: string,
+    provider: string,
+    reason: FailureReason,
+    until: number
+  ) => void;
   'profile:recovered': (profileId: string, provider: string) => void;
 }
 
@@ -135,9 +148,15 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
 
   constructor(config?: AuthProfileManagerConfig) {
     super();
-    this.billingBackoffHours = config?.cooldowns?.billingBackoffHours ?? DEFAULT_BILLING_BACKOFF_HOURS;
-    this.billingMaxHours = config?.cooldowns?.billingMaxHours ?? DEFAULT_BILLING_MAX_HOURS;
-    this.failureWindowMs = (config?.cooldowns?.failureWindowHours ?? DEFAULT_FAILURE_WINDOW_HOURS) * 60 * 60 * 1000;
+    this.billingBackoffHours =
+      config?.cooldowns?.billingBackoffHours ?? DEFAULT_BILLING_BACKOFF_HOURS;
+    this.billingMaxHours =
+      config?.cooldowns?.billingMaxHours ?? DEFAULT_BILLING_MAX_HOURS;
+    this.failureWindowMs =
+      (config?.cooldowns?.failureWindowHours ?? DEFAULT_FAILURE_WINDOW_HOURS) *
+      60 *
+      60 *
+      1000;
 
     if (config?.profiles) {
       for (const profile of config.profiles) {
@@ -199,15 +218,15 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
     }
 
     // Filter out invalid profiles
-    const valid = candidateIds.filter((id) => this.isProfileValid(id, now));
+    const valid = candidateIds.filter(id => this.isProfileValid(id, now));
 
     // Check for explicit ordering
     const explicitOrder = this.explicitOrder.get(normalizedProvider);
     if (explicitOrder && explicitOrder.length > 0) {
       // Filter to only valid profiles that appear in explicit order
-      const ordered = explicitOrder.filter((id) => valid.includes(id));
+      const ordered = explicitOrder.filter(id => valid.includes(id));
       // Add any valid profiles not in explicit order at the end
-      const remaining = valid.filter((id) => !ordered.includes(id));
+      const remaining = valid.filter(id => !ordered.includes(id));
       return this.sortByCooldownAvailability([...ordered, ...remaining], now);
     }
 
@@ -234,7 +253,7 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
    */
   hasAvailableProfile(provider: string): boolean {
     const order = this.getProfileOrder(provider);
-    return order.some((id) => !this.isInCooldown(id));
+    return order.some(id => !this.isInCooldown(id));
   }
 
   // -------------------------------------------------------------------------
@@ -250,7 +269,8 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
       return;
     }
     const profile = this.profiles.get(profileId);
-    const hadCooldown = stats.cooldownUntil !== undefined || stats.disabledUntil !== undefined;
+    const hadCooldown =
+      stats.cooldownUntil !== undefined || stats.disabledUntil !== undefined;
 
     stats.lastUsed = Date.now();
     stats.errorCount = 0;
@@ -292,14 +312,19 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
     stats.failureCounts[reason] = (stats.failureCounts[reason] ?? 0) + 1;
     stats.lastFailureAt = now;
 
-    this.emit('profile:failure', profileId, profile?.provider ?? 'unknown', reason);
+    this.emit(
+      'profile:failure',
+      profileId,
+      profile?.provider ?? 'unknown',
+      reason
+    );
 
     if (reason === 'billing') {
       const billingCount = stats.failureCounts.billing ?? 1;
       const disableMs = calculateBillingDisableMs(
         billingCount,
         this.billingBackoffHours,
-        this.billingMaxHours,
+        this.billingMaxHours
       );
       stats.disabledUntil = now + disableMs;
       stats.disabledReason = 'billing';
@@ -308,7 +333,7 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
         profileId,
         profile?.provider ?? 'unknown',
         reason,
-        stats.disabledUntil,
+        stats.disabledUntil
       );
     } else {
       const cooldownMs = calculateCooldownMs(stats.errorCount);
@@ -317,7 +342,7 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
         'profile:cooldown',
         profileId,
         profile?.provider ?? 'unknown',
-        stats.cooldownUntil,
+        stats.cooldownUntil
       );
     }
   }
@@ -357,8 +382,9 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
    * Returns null if the profile is available.
    */
   getUnusableUntil(stats: ProfileUsageStats): number | null {
-    const values = [stats.cooldownUntil, stats.disabledUntil]
-      .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0);
+    const values = [stats.cooldownUntil, stats.disabledUntil].filter(
+      (v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0
+    );
     if (values.length === 0) {
       return null;
     }
@@ -447,7 +473,10 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
     return true;
   }
 
-  private sortByCooldownAvailability(profileIds: string[], now: number): string[] {
+  private sortByCooldownAvailability(
+    profileIds: string[],
+    now: number
+  ): string[] {
     const available: string[] = [];
     const inCooldown: Array<{ id: string; until: number }> = [];
 
@@ -463,7 +492,7 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
 
     const cooldownSorted = inCooldown
       .sort((a, b) => a.until - b.until)
-      .map((e) => e.id);
+      .map(e => e.id);
 
     return [...available, ...cooldownSorted];
   }
@@ -485,7 +514,10 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
     const now = Date.now();
 
     for (const [id, profile] of this.profiles) {
-      if (provider && profile.provider.toLowerCase() !== provider.toLowerCase()) {
+      if (
+        provider &&
+        profile.provider.toLowerCase() !== provider.toLowerCase()
+      ) {
         continue;
       }
       const stats = this.usageStats.get(id) ?? {
@@ -520,7 +552,12 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
     for (const [id, profile] of this.profiles) {
       const provider = profile.provider.toLowerCase();
       if (!summary.has(provider)) {
-        summary.set(provider, { total: 0, available: 0, cooldown: 0, disabled: 0 });
+        summary.set(provider, {
+          total: 0,
+          available: 0,
+          cooldown: 0,
+          disabled: 0,
+        });
       }
       const entry = summary.get(provider)!;
       entry.total++;
@@ -587,7 +624,7 @@ export class AuthProfileManager extends EventEmitter<AuthProfileManagerEvents> {
     // Sort cooldown by soonest recovery
     const cooldownSorted = inCooldown
       .sort((a, b) => a.until - b.until)
-      .map((e) => e.id);
+      .map(e => e.id);
 
     return [...available, ...cooldownSorted];
   }

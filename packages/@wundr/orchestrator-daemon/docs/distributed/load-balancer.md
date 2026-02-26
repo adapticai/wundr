@@ -2,29 +2,35 @@
 
 ## Overview
 
-The LoadBalancer component distributes sessions across multiple orchestrator nodes using various load balancing strategies. It supports health monitoring, session affinity, and intelligent node selection based on capabilities and load.
+The LoadBalancer component distributes sessions across multiple orchestrator nodes using various
+load balancing strategies. It supports health monitoring, session affinity, and intelligent node
+selection based on capabilities and load.
 
 ## Location
 
 - **Implementation**: `/packages/@wundr/orchestrator-daemon/src/distributed/load-balancer.ts`
 - **Tests**: `/packages/@wundr/orchestrator-daemon/tests/distributed/load-balancer.test.ts`
-- **Examples**: `/packages/@wundr/orchestrator-daemon/src/distributed/examples/load-balancer.example.ts`
+- **Examples**:
+  `/packages/@wundr/orchestrator-daemon/src/distributed/examples/load-balancer.example.ts`
 
 ## Features
 
 ### 1. Multiple Load Balancing Strategies
 
 #### Round-Robin
+
 - Simple rotation through available nodes
 - Fair distribution of load
 - Best for homogeneous nodes
 
 #### Least-Connections
+
 - Selects node with fewest active sessions
 - Adaptive to varying session durations
 - Best for heterogeneous workloads
 
 #### Weighted
+
 - Considers multiple factors:
   - Available capacity (40% weight)
   - Node weight configuration (30% weight)
@@ -34,6 +40,7 @@ The LoadBalancer component distributes sessions across multiple orchestrator nod
 - Best for mixed capacity nodes
 
 #### Capability-Aware
+
 - Matches node capabilities to requirements
 - Prefers specialized nodes (exact capability match)
 - Considers current load as tiebreaker
@@ -142,11 +149,7 @@ loadBalancer.setStrategy('weighted');
 const strategy = loadBalancer.getStrategy(); // 'weighted'
 
 // Supported strategies
-type Strategy =
-  | 'round-robin'
-  | 'least-connections'
-  | 'weighted'
-  | 'capability-aware';
+type Strategy = 'round-robin' | 'least-connections' | 'weighted' | 'capability-aware';
 ```
 
 ### 8. Statistics
@@ -164,16 +167,16 @@ console.log(`Strategy: ${stats.strategy}`);
 
 ```typescript
 // Node events
-loadBalancer.on('node:added', (node) => {
+loadBalancer.on('node:added', node => {
   console.log(`Node added: ${node.id}`);
 });
 
-loadBalancer.on('node:removed', (nodeId) => {
+loadBalancer.on('node:removed', nodeId => {
   console.log(`Node removed: ${nodeId}`);
 });
 
 // Load events
-loadBalancer.on('node:load_updated', (load) => {
+loadBalancer.on('node:load_updated', load => {
   console.log(`Load updated: ${load.nodeId} -> ${load.currentLoad}`);
 });
 
@@ -182,7 +185,7 @@ loadBalancer.on('node:overloaded', (nodeId, load) => {
 });
 
 // Health events
-loadBalancer.on('node:health_changed', (health) => {
+loadBalancer.on('node:health_changed', health => {
   console.log(`Health changed: ${health.nodeId} -> ${health.healthy}`);
 });
 
@@ -200,6 +203,7 @@ loadBalancer.on('selection:failed', (options, reason) => {
 ## Type Definitions
 
 ### LoadBalancerNode
+
 ```typescript
 interface LoadBalancerNode {
   id: string;
@@ -213,6 +217,7 @@ interface LoadBalancerNode {
 ```
 
 ### NodeLoad
+
 ```typescript
 interface NodeLoad {
   nodeId: string;
@@ -224,6 +229,7 @@ interface NodeLoad {
 ```
 
 ### NodeHealth
+
 ```typescript
 interface NodeHealth {
   nodeId: string;
@@ -237,6 +243,7 @@ interface NodeHealth {
 ```
 
 ### NodeSelectionOptions
+
 ```typescript
 interface NodeSelectionOptions {
   requiredCapabilities?: string[];
@@ -248,6 +255,7 @@ interface NodeSelectionOptions {
 ```
 
 ### NodeScore
+
 ```typescript
 interface NodeScore {
   nodeId: string;
@@ -323,9 +331,9 @@ console.log(`Selected: ${gpuNode?.id}`); // gpu-node
 const lb = new LoadBalancer('round-robin');
 
 // Add nodes
-lb.addNode({ id: 'node-1', /* ... */ });
-lb.addNode({ id: 'node-2', /* ... */ });
-lb.addNode({ id: 'node-3', /* ... */ });
+lb.addNode({ id: 'node-1' /* ... */ });
+lb.addNode({ id: 'node-2' /* ... */ });
+lb.addNode({ id: 'node-3' /* ... */ });
 
 // First request establishes affinity
 const node1 = lb.selectNode({ sessionAffinity: 'session-123' });
@@ -380,12 +388,12 @@ console.log(`Selected: ${node?.id}`); // high-capacity
 
 ## Performance Characteristics
 
-| Strategy | Time Complexity | Best Use Case |
-|----------|----------------|---------------|
-| Round-Robin | O(1) | Homogeneous nodes, simple distribution |
-| Least-Connections | O(n) | Variable session durations |
-| Weighted | O(n) | Mixed capacity nodes |
-| Capability-Aware | O(n) | Diverse workloads with requirements |
+| Strategy          | Time Complexity | Best Use Case                          |
+| ----------------- | --------------- | -------------------------------------- |
+| Round-Robin       | O(1)            | Homogeneous nodes, simple distribution |
+| Least-Connections | O(n)            | Variable session durations             |
+| Weighted          | O(n)            | Mixed capacity nodes                   |
+| Capability-Aware  | O(n)            | Diverse workloads with requirements    |
 
 Where n = number of eligible nodes (after filtering)
 

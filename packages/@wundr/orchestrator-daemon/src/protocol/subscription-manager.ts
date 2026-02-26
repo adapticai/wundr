@@ -69,7 +69,7 @@ export function compileGlob(pattern: string): RegExp {
 
   const escaped = pattern
     .split('.')
-    .map((segment) => {
+    .map(segment => {
       if (segment === '**') {
         return '.*';
       }
@@ -95,7 +95,7 @@ export function compileGlob(pattern: string): RegExp {
  */
 function matchesFilter(
   payload: unknown,
-  filter: Record<string, unknown> | undefined,
+  filter: Record<string, unknown> | undefined
 ): boolean {
   if (!filter) {
     return true;
@@ -174,7 +174,7 @@ export class SubscriptionManager {
   subscribe(
     connectionId: string,
     patterns: string[],
-    filter?: Record<string, unknown>,
+    filter?: Record<string, unknown>
   ): Subscription {
     const id = `sub_${randomUUID()}`;
     const matchers = patterns.map(compileGlob);
@@ -257,7 +257,7 @@ export class SubscriptionManager {
 
     for (const [subId, sub] of this.subscriptions) {
       // Check pattern match
-      const matches = sub.matchers.some((re) => re.test(event));
+      const matches = sub.matchers.some(re => re.test(event));
       if (!matches) {
         continue;
       }
@@ -294,7 +294,11 @@ export class SubscriptionManager {
    * Emit an event to subscriptions on a specific connection only.
    * Useful for targeted delivery (e.g. tool approval requests).
    */
-  emitToConnection(connectionId: string, event: string, payload?: unknown): void {
+  emitToConnection(
+    connectionId: string,
+    event: string,
+    payload?: unknown
+  ): void {
     const currentSeq = this.seq++;
     const subIds = this.connectionSubs.get(connectionId);
     if (!subIds) {
@@ -312,7 +316,7 @@ export class SubscriptionManager {
         continue;
       }
 
-      const matches = sub.matchers.some((re) => re.test(event));
+      const matches = sub.matchers.some(re => re.test(event));
       if (!matches) {
         continue;
       }

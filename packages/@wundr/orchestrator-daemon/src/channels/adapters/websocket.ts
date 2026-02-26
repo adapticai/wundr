@@ -72,14 +72,29 @@ export interface WebSocketChannelConfig extends ChannelConfig {
 
 /** Messages sent from client to server. */
 export type ClientMessage =
-  | { type: 'message'; id: string; conversationId: string; text: string; threadId?: string; replyTo?: string }
+  | {
+      type: 'message';
+      id: string;
+      conversationId: string;
+      text: string;
+      threadId?: string;
+      replyTo?: string;
+    }
   | { type: 'typing'; conversationId: string }
   | { type: 'ping' }
   | { type: 'auth'; token: string };
 
 /** Messages sent from server to client. */
 export type ServerMessage =
-  | { type: 'message'; id: string; conversationId: string; text: string; sender: string; timestamp: string; threadId?: string }
+  | {
+      type: 'message';
+      id: string;
+      conversationId: string;
+      text: string;
+      sender: string;
+      timestamp: string;
+      threadId?: string;
+    }
   | { type: 'typing'; conversationId: string; sender: string }
   | { type: 'ack'; messageId: string }
   | { type: 'error'; code: string; message: string }
@@ -175,23 +190,21 @@ export class WebSocketChannelAdapter extends BaseChannelAdapter {
       this.config = config;
 
       this.logger.info(
-        `WebSocket adapter connected${this.ownsServer ? ` on port ${wsConfig.port ?? 8765}` : ' (external server)'}.`,
+        `WebSocket adapter connected${this.ownsServer ? ` on port ${wsConfig.port ?? 8765}` : ' (external server)'}.`
       );
 
       this.emit('connected', { channelId: this.id });
     } catch (err) {
       this.lastError = err instanceof Error ? err.message : String(err);
-      this.logger.error(
-        `WebSocket adapter connect failed: ${this.lastError}`,
-      );
+      this.logger.error(`WebSocket adapter connect failed: ${this.lastError}`);
       throw err;
     }
   }
 
   async disconnect(): Promise<void> {
     if (!this.connected) {
-return;
-}
+      return;
+    }
 
     this.stopHeartbeat();
 
@@ -216,7 +229,7 @@ return;
         this.server.close();
       } catch (err) {
         this.logger.error(
-          `Error closing WebSocket server: ${err instanceof Error ? err.message : String(err)}`,
+          `Error closing WebSocket server: ${err instanceof Error ? err.message : String(err)}`
         );
       }
     }
@@ -238,7 +251,7 @@ return;
       details: {
         connectedClients: this.clients.size,
         authenticatedClients: [...this.clients.values()].filter(
-          (c) => c.authenticated,
+          c => c.authenticated
         ).length,
         totalMessages: this.messageCounter,
       },
@@ -271,8 +284,8 @@ return;
 
     for (const [, client] of this.clients) {
       if (!client.authenticated) {
-continue;
-}
+        continue;
+      }
 
       // Send to clients subscribed to this conversation, or to all if
       // the client has no explicit subscriptions.
@@ -290,14 +303,15 @@ continue;
       messageId,
       conversationId: message.to,
       timestamp: new Date(),
-      error: sentCount === 0 ? 'No connected clients for conversation.' : undefined,
+      error:
+        sentCount === 0 ? 'No connected clients for conversation.' : undefined,
     };
   }
 
   async editMessage(
     conversationId: string,
     messageId: string,
-    newText: string,
+    newText: string
   ): Promise<DeliveryResult> {
     // Broadcast an edit event to all relevant clients.
     const serverMsg: ServerMessage = {
@@ -315,7 +329,7 @@ continue;
 
   async deleteMessage(
     conversationId: string,
-    messageId: string,
+    messageId: string
   ): Promise<boolean> {
     // Broadcast a delete event to all relevant clients.
     this.broadcastToConversation(conversationId, {
@@ -333,7 +347,7 @@ continue;
   async replyToThread(
     conversationId: string,
     threadId: string,
-    message: OutboundMessage,
+    message: OutboundMessage
   ): Promise<DeliveryResult> {
     return this.sendMessage({
       ...message,
@@ -354,8 +368,8 @@ continue;
     let active = true;
     const sendTyping = () => {
       if (!active) {
-return;
-}
+        return;
+      }
       this.broadcastToConversation(conversationId, {
         type: 'typing',
         conversationId,
@@ -380,7 +394,7 @@ return;
 
   async validateSender(
     senderId: string,
-    _chatType: ChatType,
+    _chatType: ChatType
   ): Promise<SenderValidation> {
     // For WebSocket, authentication happens at connection time.
     const client = this.findClientByUserId(senderId);
@@ -412,7 +426,7 @@ return;
    * Get the number of authenticated clients.
    */
   getAuthenticatedClientCount(): number {
-    return [...this.clients.values()].filter((c) => c.authenticated).length;
+    return [...this.clients.values()].filter(c => c.authenticated).length;
   }
 
   /**
@@ -421,8 +435,8 @@ return;
   disconnectClient(userId: string): boolean {
     const client = this.findClientByUserId(userId);
     if (!client) {
-return false;
-}
+      return false;
+    }
     client.ws.close(1000, 'Disconnected by server.');
     return true;
   }
@@ -433,8 +447,8 @@ return false;
 
   private setupServerHandlers(): void {
     if (!this.server) {
-return;
-}
+      return;
+    }
 
     this.server.on('connection', (ws: WebSocketLike) => {
       const clientId = `ws:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
@@ -470,7 +484,7 @@ return;
       ws.on('error', (err: Error) => {
         this.lastError = err.message;
         this.logger.error(
-          `WebSocket client error (${clientId}): ${err.message}`,
+          `WebSocket client error (${clientId}): ${err.message}`
         );
       });
 
@@ -497,7 +511,7 @@ return;
   private handleClientMessage(
     clientId: string,
     client: ConnectedClient,
-    data: string | Buffer,
+    data: string | Buffer
   ): void {
     let msg: ClientMessage;
     try {
@@ -524,8 +538,8 @@ return;
 
       case 'typing':
         if (!client.authenticated) {
-return;
-}
+          return;
+        }
         this.emit('typing', {
           channelId: this.id,
           conversationId: msg.conversationId,
@@ -557,7 +571,7 @@ return;
   private async handleAuth(
     clientId: string,
     client: ConnectedClient,
-    token: string,
+    token: string
   ): Promise<void> {
     const authenticate = this.wsConfig?.authenticate;
 
@@ -608,7 +622,7 @@ return;
   private handleInboundMessage(
     clientId: string,
     client: ConnectedClient,
-    msg: ClientMessage & { type: 'message' },
+    msg: ClientMessage & { type: 'message' }
   ): void {
     this.messageCounter++;
     this.lastMessageAt = new Date();
@@ -660,19 +674,19 @@ return;
       }
     } catch (err) {
       this.logger.error(
-        `Failed to send to WebSocket client: ${err instanceof Error ? err.message : String(err)}`,
+        `Failed to send to WebSocket client: ${err instanceof Error ? err.message : String(err)}`
       );
     }
   }
 
   private broadcastToConversation(
     conversationId: string,
-    msg: ServerMessage,
+    msg: ServerMessage
   ): void {
     for (const [, client] of this.clients) {
       if (!client.authenticated) {
-continue;
-}
+        continue;
+      }
       if (
         client.conversationIds.size === 0 ||
         client.conversationIds.has(conversationId)
@@ -685,16 +699,16 @@ continue;
   private findClientByUserId(userId: string): ConnectedClient | undefined {
     for (const [, client] of this.clients) {
       if (client.userId === userId) {
-return client;
-}
+        return client;
+      }
     }
     return undefined;
   }
 
   private startHeartbeat(intervalMs: number): void {
     if (intervalMs <= 0) {
-return;
-}
+      return;
+    }
 
     this.heartbeatTimer = setInterval(() => {
       const now = Date.now();
@@ -703,7 +717,7 @@ return;
         if (elapsed > intervalMs * 3) {
           // Client missed 3 heartbeats; disconnect.
           this.logger.warn(
-            `WebSocket client ${clientId} timed out (${elapsed}ms since last ping).`,
+            `WebSocket client ${clientId} timed out (${elapsed}ms since last ping).`
           );
           client.ws.close(1001, 'Heartbeat timeout');
           this.clients.delete(clientId);

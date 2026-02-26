@@ -90,11 +90,13 @@ export class TokenBudgetManager extends EventEmitter<TokenBudgetEvents> {
   constructor(config?: TokenBudgetConfig) {
     super();
     this.defaultBudget = {
-      maxTotalTokens: config?.defaultBudget?.maxTotalTokens ?? DEFAULT_MAX_TOTAL_TOKENS,
+      maxTotalTokens:
+        config?.defaultBudget?.maxTotalTokens ?? DEFAULT_MAX_TOTAL_TOKENS,
       maxCostUsd: config?.defaultBudget?.maxCostUsd ?? DEFAULT_MAX_COST_USD,
       window: config?.defaultBudget?.window ?? DEFAULT_WINDOW,
     };
-    this.warningThresholdPercent = config?.warningThresholdPercent ?? DEFAULT_WARNING_PERCENT;
+    this.warningThresholdPercent =
+      config?.warningThresholdPercent ?? DEFAULT_WARNING_PERCENT;
   }
 
   // -------------------------------------------------------------------------
@@ -106,7 +108,8 @@ export class TokenBudgetManager extends EventEmitter<TokenBudgetEvents> {
    */
   setSessionBudget(sessionId: string, budget: Partial<SessionBudget>): void {
     this.budgets.set(sessionId, {
-      maxTotalTokens: budget.maxTotalTokens ?? this.defaultBudget.maxTotalTokens,
+      maxTotalTokens:
+        budget.maxTotalTokens ?? this.defaultBudget.maxTotalTokens,
       maxCostUsd: budget.maxCostUsd ?? this.defaultBudget.maxCostUsd,
       window: budget.window ?? this.defaultBudget.window,
     });
@@ -136,16 +139,19 @@ export class TokenBudgetManager extends EventEmitter<TokenBudgetEvents> {
 
     const totalTokens = usage.totalInputTokens + usage.totalOutputTokens;
     const remainingTokens = Math.max(0, budget.maxTotalTokens - totalTokens);
-    const remainingCostUsd = budget.maxCostUsd > 0
-      ? Math.max(0, budget.maxCostUsd - usage.totalCostUsd)
-      : Infinity;
+    const remainingCostUsd =
+      budget.maxCostUsd > 0
+        ? Math.max(0, budget.maxCostUsd - usage.totalCostUsd)
+        : Infinity;
 
-    const tokenPercent = budget.maxTotalTokens > 0
-      ? (totalTokens / budget.maxTotalTokens) * 100
-      : 0;
-    const costPercent = budget.maxCostUsd > 0
-      ? (usage.totalCostUsd / budget.maxCostUsd) * 100
-      : 0;
+    const tokenPercent =
+      budget.maxTotalTokens > 0
+        ? (totalTokens / budget.maxTotalTokens) * 100
+        : 0;
+    const costPercent =
+      budget.maxCostUsd > 0
+        ? (usage.totalCostUsd / budget.maxCostUsd) * 100
+        : 0;
     const consumedPercent = Math.min(100, Math.max(tokenPercent, costPercent));
 
     const tokenExceeded = remainingTokens <= 0;
@@ -254,7 +260,7 @@ export class TokenBudgetManager extends EventEmitter<TokenBudgetEvents> {
   private maybeResetWindow(
     sessionId: string,
     usage: SessionUsage,
-    budget: SessionBudget,
+    budget: SessionBudget
   ): void {
     if (budget.window === 'lifetime') {
       return;

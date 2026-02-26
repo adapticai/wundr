@@ -17,9 +17,7 @@
 
 import { Logger } from '../utils/logger';
 
-import type {
-  ParsedMemoryFile,
-} from './memory-file-manager';
+import type { ParsedMemoryFile } from './memory-file-manager';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -186,7 +184,11 @@ const PREFERENCE_PATTERNS: Array<{
   { pattern: /\bkeep\s+in\s+mind\b/i, scope: 'project', weight: 0.85 },
   { pattern: /\bnote\s+that\b/i, scope: 'project', weight: 0.7 },
   { pattern: /\bfor\s+this\s+project\b/i, scope: 'project', weight: 0.8 },
-  { pattern: /\bin\s+this\s+(repo|codebase|project)\b/i, scope: 'project', weight: 0.8 },
+  {
+    pattern: /\bin\s+this\s+(repo|codebase|project)\b/i,
+    scope: 'project',
+    weight: 0.8,
+  },
   { pattern: /\bon\s+this\s+machine\b/i, scope: 'local', weight: 0.8 },
   { pattern: /\blocally\b/i, scope: 'local', weight: 0.5 },
 ];
@@ -194,18 +196,31 @@ const PREFERENCE_PATTERNS: Array<{
 /**
  * Phrases indicating project-specific conventions or architecture.
  */
-const PROJECT_PATTERNS: Array<{ pattern: RegExp; section: MemorySectionType }> = [
-  { pattern: /\btests?\s+(?:are|go|live)\s+in\b/i, section: 'Project Conventions' },
-  { pattern: /\bwe\s+use\b/i, section: 'Project Conventions' },
-  { pattern: /\bthe\s+convention\s+is\b/i, section: 'Project Conventions' },
-  { pattern: /\bour\s+(?:pattern|approach|style)\b/i, section: 'Project Conventions' },
-  { pattern: /\barchitecture\b/i, section: 'Architecture Decisions' },
-  { pattern: /\bdesign\s+decision\b/i, section: 'Architecture Decisions' },
-  { pattern: /\bfollow\s+(?:the|this)\s+pattern\b/i, section: 'Project Conventions' },
-  { pattern: /\bbuild\s+(?:with|using|by)\b/i, section: 'Workflow' },
-  { pattern: /\bdeploy\s+(?:with|using|by|to)\b/i, section: 'Workflow' },
-  { pattern: /\brun\s+(?:tests?|lint|build)\s+(?:with|using|by)\b/i, section: 'Workflow' },
-];
+const PROJECT_PATTERNS: Array<{ pattern: RegExp; section: MemorySectionType }> =
+  [
+    {
+      pattern: /\btests?\s+(?:are|go|live)\s+in\b/i,
+      section: 'Project Conventions',
+    },
+    { pattern: /\bwe\s+use\b/i, section: 'Project Conventions' },
+    { pattern: /\bthe\s+convention\s+is\b/i, section: 'Project Conventions' },
+    {
+      pattern: /\bour\s+(?:pattern|approach|style)\b/i,
+      section: 'Project Conventions',
+    },
+    { pattern: /\barchitecture\b/i, section: 'Architecture Decisions' },
+    { pattern: /\bdesign\s+decision\b/i, section: 'Architecture Decisions' },
+    {
+      pattern: /\bfollow\s+(?:the|this)\s+pattern\b/i,
+      section: 'Project Conventions',
+    },
+    { pattern: /\bbuild\s+(?:with|using|by)\b/i, section: 'Workflow' },
+    { pattern: /\bdeploy\s+(?:with|using|by|to)\b/i, section: 'Workflow' },
+    {
+      pattern: /\brun\s+(?:tests?|lint|build)\s+(?:with|using|by)\b/i,
+      section: 'Workflow',
+    },
+  ];
 
 /**
  * Patterns that indicate tool/command usage instructions.
@@ -288,7 +303,7 @@ export class LearningDetector {
    */
   analyzeAndDeduplicate(
     turn: ConversationTurn,
-    existingFiles: ParsedMemoryFile[],
+    existingFiles: ParsedMemoryFile[]
   ): DetectedMemory[] {
     const detections = this.analyze(turn);
     return this.deduplicate(detections, existingFiles);
@@ -328,12 +343,14 @@ export class LearningDetector {
       this.correctionHistory.set(key, history);
 
       // Prune old history
-      this.pruneHistory(this.correctionHistory, this.config.correctionHistorySize);
+      this.pruneHistory(
+        this.correctionHistory,
+        this.config.correctionHistorySize
+      );
 
       const repetitions = history.length;
-      const baseConfidence = repetitions >= 2
-        ? Math.min(0.95, weight + 0.2)
-        : weight;
+      const baseConfidence =
+        repetitions >= 2 ? Math.min(0.95, weight + 0.2) : weight;
 
       detections.push({
         text: correctionText,
@@ -543,7 +560,7 @@ export class LearningDetector {
    */
   private toDetectedMemory(
     raw: RawDetection,
-    turn: ConversationTurn,
+    turn: ConversationTurn
   ): DetectedMemory {
     let confidence = raw.baseConfidence;
 
@@ -578,7 +595,7 @@ export class LearningDetector {
    */
   deduplicate(
     detections: DetectedMemory[],
-    existingFiles: ParsedMemoryFile[],
+    existingFiles: ParsedMemoryFile[]
   ): DetectedMemory[] {
     const existingNormalized = new Set<string>();
 
@@ -663,7 +680,10 @@ export class LearningDetector {
   /**
    * Extract preference text from a user message.
    */
-  private extractPreferenceText(content: string, pattern: RegExp): string | null {
+  private extractPreferenceText(
+    content: string,
+    pattern: RegExp
+  ): string | null {
     const match = pattern.exec(content);
     if (!match) {
       return null;
@@ -673,9 +693,8 @@ export class LearningDetector {
     const startIdx = match.index;
     const afterMatch = content.slice(startIdx);
     const endIdx = afterMatch.search(/[.!?\n]/);
-    let text = endIdx > 0
-      ? afterMatch.slice(0, endIdx).trim()
-      : afterMatch.trim();
+    let text =
+      endIdx > 0 ? afterMatch.slice(0, endIdx).trim() : afterMatch.trim();
 
     if (text.length > 200) {
       text = text.slice(0, 197) + '...';
@@ -738,7 +757,7 @@ export class LearningDetector {
    */
   private extractFixFromContent(
     content: string,
-    _errorSig: string,
+    _errorSig: string
   ): string | null {
     if (!content || content.length < 10) {
       return null;
@@ -767,31 +786,23 @@ export class LearningDetector {
    * Normalize text for comparison.
    */
   private normalizeText(text: string): string {
-    return text
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, ' ')
-      .replace(/[`'"]/g, '');
+    return text.toLowerCase().trim().replace(/\s+/g, ' ').replace(/[`'"]/g, '');
   }
 
   /**
    * Prune a correction history map to keep within size limits.
    */
-  private pruneHistory(
-    history: Map<string, Date[]>,
-    maxSize: number,
-  ): void {
+  private pruneHistory(history: Map<string, Date[]>, maxSize: number): void {
     if (history.size <= maxSize) {
       return;
     }
 
     // Remove oldest entries
-    const entries = Array.from(history.entries())
-      .sort((a, b) => {
-        const lastA = a[1][a[1].length - 1]?.getTime() ?? 0;
-        const lastB = b[1][b[1].length - 1]?.getTime() ?? 0;
-        return lastA - lastB;
-      });
+    const entries = Array.from(history.entries()).sort((a, b) => {
+      const lastA = a[1][a[1].length - 1]?.getTime() ?? 0;
+      const lastB = b[1][b[1].length - 1]?.getTime() ?? 0;
+      return lastA - lastB;
+    });
 
     const toRemove = entries.slice(0, entries.length - maxSize);
     for (const [key] of toRemove) {
@@ -807,14 +818,16 @@ export class LearningDetector {
       return;
     }
 
-    const entries = Array.from(this.errorHistory.entries())
-      .sort((a, b) => {
-        const lastA = a[1].timestamps[a[1].timestamps.length - 1]?.getTime() ?? 0;
-        const lastB = b[1].timestamps[b[1].timestamps.length - 1]?.getTime() ?? 0;
-        return lastA - lastB;
-      });
+    const entries = Array.from(this.errorHistory.entries()).sort((a, b) => {
+      const lastA = a[1].timestamps[a[1].timestamps.length - 1]?.getTime() ?? 0;
+      const lastB = b[1].timestamps[b[1].timestamps.length - 1]?.getTime() ?? 0;
+      return lastA - lastB;
+    });
 
-    const toRemove = entries.slice(0, entries.length - this.config.errorHistorySize);
+    const toRemove = entries.slice(
+      0,
+      entries.length - this.config.errorHistorySize
+    );
     for (const [key] of toRemove) {
       this.errorHistory.delete(key);
     }

@@ -19,7 +19,6 @@ import {
   METHOD_COST_MAP,
 } from '../../../protocol/rate-limiter';
 
-
 describe('RateLimiter (protocol)', () => {
   let limiter: RateLimiter;
 
@@ -390,7 +389,11 @@ describe('RateLimiter (protocol)', () => {
 
   describe('connection management', () => {
     beforeEach(() => {
-      limiter = new RateLimiter({ maxTokens: 10, refillRatePerSecond: 1, tokensPerRequest: 1 });
+      limiter = new RateLimiter({
+        maxTokens: 10,
+        refillRatePerSecond: 1,
+        tokensPerRequest: 1,
+      });
     });
 
     it('should isolate buckets per connection', () => {
@@ -455,7 +458,11 @@ describe('RateLimiter (protocol)', () => {
 
   describe('reset', () => {
     it('should clear all buckets on reset', () => {
-      limiter = new RateLimiter({ maxTokens: 10, refillRatePerSecond: 1, tokensPerRequest: 1 });
+      limiter = new RateLimiter({
+        maxTokens: 10,
+        refillRatePerSecond: 1,
+        tokensPerRequest: 1,
+      });
 
       limiter.consume('conn-a');
       limiter.consume('conn-b');
@@ -483,7 +490,11 @@ describe('RateLimiter (protocol)', () => {
 
   describe('getBucketState', () => {
     beforeEach(() => {
-      limiter = new RateLimiter({ maxTokens: 20, refillRatePerSecond: 5, tokensPerRequest: 1 });
+      limiter = new RateLimiter({
+        maxTokens: 20,
+        refillRatePerSecond: 5,
+        tokensPerRequest: 1,
+      });
     });
 
     it('should return null for unknown connections', () => {
@@ -575,7 +586,11 @@ describe('RateLimiter (protocol)', () => {
     });
 
     it('should handle many concurrent connections', () => {
-      limiter = new RateLimiter({ maxTokens: 5, refillRatePerSecond: 1, tokensPerRequest: 1 });
+      limiter = new RateLimiter({
+        maxTokens: 5,
+        refillRatePerSecond: 1,
+        tokensPerRequest: 1,
+      });
 
       for (let i = 0; i < 200; i++) {
         const result = limiter.consume(`conn-${i}`);

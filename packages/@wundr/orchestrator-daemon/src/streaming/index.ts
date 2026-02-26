@@ -57,10 +57,7 @@ export type {
 
 // Stream handler (entry point)
 export { StreamHandler } from './stream-handler';
-export type {
-  StartStreamOptions,
-  ActiveStream,
-} from './stream-handler';
+export type { StartStreamOptions, ActiveStream } from './stream-handler';
 
 // Provider adapters
 export { createAnthropicStream } from './anthropic-stream';

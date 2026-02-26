@@ -47,7 +47,7 @@ const SENSITIVE_KEY_PATTERNS = [
  * Test whether a key name matches any sensitive pattern.
  */
 export function isSensitiveKey(key: string): boolean {
-  return SENSITIVE_KEY_PATTERNS.some((pattern) => pattern.test(key));
+  return SENSITIVE_KEY_PATTERNS.some(pattern => pattern.test(key));
 }
 
 /**
@@ -158,7 +158,7 @@ function redactRawText(raw: string, config: unknown): string {
       keyBare,
       sep,
       valQuote,
-      val,
+      val
     ) => {
       const key = (keyQuoted ?? keyBare) as string | undefined;
       if (!key || !isSensitiveKey(key)) {
@@ -168,7 +168,7 @@ function redactRawText(raw: string, config: unknown): string {
         return match;
       }
       return `${prefix}${keyExpr}${sep}${valQuote}${REDACTED_SENTINEL}${valQuote}`;
-    },
+    }
   );
 
   return result;
@@ -209,7 +209,7 @@ export function redactSnapshot(snapshot: ConfigSnapshot): ConfigSnapshot {
  */
 export function restoreRedactedValues(
   incoming: unknown,
-  original: unknown,
+  original: unknown
 ): unknown {
   if (incoming === null || incoming === undefined) {
     return incoming;
@@ -219,9 +219,7 @@ export function restoreRedactedValues(
   }
   if (Array.isArray(incoming)) {
     const origArr = Array.isArray(original) ? original : [];
-    return incoming.map((item, i) =>
-      restoreRedactedValues(item, origArr[i]),
-    );
+    return incoming.map((item, i) => restoreRedactedValues(item, origArr[i]));
   }
 
   const orig =
@@ -231,12 +229,12 @@ export function restoreRedactedValues(
 
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(
-    incoming as Record<string, unknown>,
+    incoming as Record<string, unknown>
   )) {
     if (isSensitiveKey(key) && value === REDACTED_SENTINEL) {
       if (!(key in orig)) {
         throw new Error(
-          `config write rejected: "${key}" is redacted; set an explicit value instead of ${REDACTED_SENTINEL}`,
+          `config write rejected: "${key}" is redacted; set an explicit value instead of ${REDACTED_SENTINEL}`
         );
       }
       result[key] = orig[key];
@@ -268,7 +266,7 @@ export function containsRedactedSentinel(obj: unknown): boolean {
     return obj.some(containsRedactedSentinel);
   }
   return Object.values(obj as Record<string, unknown>).some(
-    containsRedactedSentinel,
+    containsRedactedSentinel
   );
 }
 
@@ -276,17 +274,12 @@ export function containsRedactedSentinel(obj: unknown): boolean {
  * List all dot-paths in an object that contain the redaction sentinel.
  * Useful for error reporting.
  */
-export function listRedactedPaths(
-  obj: unknown,
-  prefix = '',
-): string[] {
+export function listRedactedPaths(obj: unknown, prefix = ''): string[] {
   if (obj === null || obj === undefined || typeof obj !== 'object') {
     return [];
   }
   if (Array.isArray(obj)) {
-    return obj.flatMap((item, i) =>
-      listRedactedPaths(item, `${prefix}[${i}]`),
-    );
+    return obj.flatMap((item, i) => listRedactedPaths(item, `${prefix}[${i}]`));
   }
   const paths: string[] = [];
   for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {

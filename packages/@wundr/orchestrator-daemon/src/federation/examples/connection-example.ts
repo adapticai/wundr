@@ -7,7 +7,11 @@ import * as WebSocket from 'ws';
 
 import { OrchestratorConnection } from '../connection';
 
-import type { DelegationRequest, FederationMessage, OrchestratorCapability } from '../types';
+import type {
+  DelegationRequest,
+  FederationMessage,
+  OrchestratorCapability,
+} from '../types';
 
 /**
  * Example: Creating and using an OrchestratorConnection
@@ -47,15 +51,15 @@ async function exampleConnection() {
     console.log('Delegation response:', response);
   });
 
-  connection.on('callback', (callback) => {
+  connection.on('callback', callback => {
     console.log('Task callback:', callback.taskId, callback.status);
   });
 
-  connection.on('heartbeat', (timestamp) => {
+  connection.on('heartbeat', timestamp => {
     console.log('Heartbeat received at:', timestamp);
   });
 
-  connection.on('error', (error) => {
+  connection.on('error', error => {
     console.error('Connection error:', error.message);
   });
 
@@ -64,7 +68,7 @@ async function exampleConnection() {
   });
 
   // 5. Wait for connection to be established
-  await new Promise((resolve) => {
+  await new Promise(resolve => {
     socket.on('open', resolve);
   });
 
@@ -120,7 +124,7 @@ async function exampleConnection() {
   connection.handleHeartbeat();
 
   // 10. Wait for some activity
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  await new Promise(resolve => setTimeout(resolve, 5000));
 
   // 11. Gracefully disconnect
   await connection.disconnect();
@@ -202,7 +206,7 @@ async function exampleBroadcast() {
   });
 
   // Listen for broadcasts
-  connection.on('broadcast', (payload) => {
+  connection.on('broadcast', payload => {
     console.log('Broadcast received on topic:', payload.topic);
     console.log('Data:', payload.data);
   });
@@ -226,8 +230,4 @@ async function exampleBroadcast() {
 }
 
 // Export examples for documentation
-export {
-  exampleConnection,
-  exampleDelegationHandler,
-  exampleBroadcast,
-};
+export { exampleConnection, exampleDelegationHandler, exampleBroadcast };

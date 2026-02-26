@@ -8,7 +8,11 @@ import { createClient } from 'redis';
 
 import { Logger } from '../utils/logger';
 
-import type { LoadBalancer, LoadBalancerNode, NodeSelectionOptions } from './load-balancer';
+import type {
+  LoadBalancer,
+  LoadBalancerNode,
+  NodeSelectionOptions,
+} from './load-balancer';
 import type { Session, Task } from '../types';
 import type {
   DaemonNode,
@@ -36,7 +40,7 @@ interface DistributedSessionEvents {
   'node:health_changed': (nodeId: string, health: NodeHealth) => void;
   'rebalance:started': () => void;
   'rebalance:completed': (migrations: SessionMigrationResult[]) => void;
-  'error': (error: Error, context?: string) => void;
+  error: (error: Error, context?: string) => void;
 }
 
 /**
@@ -57,11 +61,11 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
   constructor(
     nodes: DaemonNode[],
     loadBalancer: LoadBalancer,
-    config?: Partial<DistributedSessionConfig>,
+    config?: Partial<DistributedSessionConfig>
   ) {
     super();
     this.logger = new Logger('DistributedSessionManager');
-    this.nodes = new Map(nodes.map((node) => [node.id, node]));
+    this.nodes = new Map(nodes.map(node => [node.id, node]));
     this.loadBalancer = loadBalancer;
     this.sessionLocations = new Map();
 
@@ -123,10 +127,13 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
       this.startAutoRebalance();
 
       this.logger.info(
-        `DistributedSessionManager initialized with ${this.nodes.size} nodes`,
+        `DistributedSessionManager initialized with ${this.nodes.size} nodes`
       );
     } catch (error) {
-      this.logger.error('Failed to initialize DistributedSessionManager', error);
+      this.logger.error(
+        'Failed to initialize DistributedSessionManager',
+        error
+      );
       throw error;
     }
   }
@@ -160,9 +167,11 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
   /**
    * Spawn a new session on the optimal node
    */
-  async spawnSession(request: SpawnSessionRequest): Promise<SessionSpawnResult> {
+  async spawnSession(
+    request: SpawnSessionRequest
+  ): Promise<SessionSpawnResult> {
     this.logger.info(
-      `Spawning ${request.sessionType} session for orchestrator ${request.orchestratorId}`,
+      `Spawning ${request.sessionType} session for orchestrator ${request.orchestratorId}`
     );
 
     try {
@@ -194,7 +203,9 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
       // Get the corresponding DaemonNode
       const selectedNode = this.nodes.get(selectedLBNode.id);
       if (!selectedNode) {
-        this.logger.error(`Selected node ${selectedLBNode.id} not found in daemon nodes`);
+        this.logger.error(
+          `Selected node ${selectedLBNode.id} not found in daemon nodes`
+        );
         return {
           success: false,
           error: 'Selected node not found',
@@ -233,8 +244,14 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
       selectedNode.load.activeSessions++;
 
       // Update load balancer
-      this.loadBalancer.updateActiveConnections(selectedNode.id, selectedNode.sessions.size);
-      this.loadBalancer.updateNodeLoad(selectedNode.id, selectedNode.load.activeSessions / 100);
+      this.loadBalancer.updateActiveConnections(
+        selectedNode.id,
+        selectedNode.sessions.size
+      );
+      this.loadBalancer.updateNodeLoad(
+        selectedNode.id,
+        selectedNode.load.activeSessions / 100
+      );
 
       // Create session location record
       const location: SessionLocation = {
@@ -269,7 +286,7 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
    */
   async migrateSession(
     sessionId: string,
-    toNodeId: string,
+    toNodeId: string
   ): Promise<SessionMigrationResult> {
     const startTime = Date.now();
     this.logger.info(`Migrating session ${sessionId} to node ${toNodeId}`);
@@ -284,7 +301,7 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
       const fromNodeId = location;
       if (fromNodeId === toNodeId) {
         this.logger.warn(
-          `Session ${sessionId} is already on node ${toNodeId}, skipping migration`,
+          `Session ${sessionId} is already on node ${toNodeId}, skipping migration`
         );
         return {
           success: true,
@@ -301,7 +318,7 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
 
       if (!fromNode || !toNode) {
         throw new Error(
-          `Invalid nodes: from=${fromNodeId} (${!!fromNode}), to=${toNodeId} (${!!toNode})`,
+          `Invalid nodes: from=${fromNodeId} (${!!fromNode}), to=${toNodeId} (${!!toNode})`
         );
       }
 
@@ -313,7 +330,7 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
       // 5. Terminate session on source node
 
       // For now, simulate migration
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Update node session tracking
       fromNode.sessions.delete(sessionId);
@@ -355,7 +372,7 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
 
       this.emit('session:migrated', result);
       this.logger.info(
-        `Successfully migrated session ${sessionId} from ${fromNodeId} to ${toNodeId} in ${result.duration}ms`,
+        `Successfully migrated session ${sessionId} from ${fromNodeId} to ${toNodeId} in ${result.duration}ms`
       );
 
       return result;
@@ -460,7 +477,7 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
 
           if (!result.success) {
             this.logger.warn(
-              `Migration failed for session ${plan.sessionId}: ${result.error}`,
+              `Migration failed for session ${plan.sessionId}: ${result.error}`
             );
           }
         } catch (error) {
@@ -469,7 +486,7 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
       }
 
       this.logger.info(
-        `Rebalancing completed: ${results.filter((r) => r.success).length}/${results.length} successful`,
+        `Rebalancing completed: ${results.filter(r => r.success).length}/${results.length} successful`
       );
       this.emit('rebalance:completed', results);
 
@@ -487,14 +504,14 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
    * Determine if rebalancing is needed
    */
   private shouldRebalance(nodes: DaemonNode[]): boolean {
-    const healthyNodes = nodes.filter((n) => n.status === 'healthy');
+    const healthyNodes = nodes.filter(n => n.status === 'healthy');
 
     if (healthyNodes.length < 2) {
       return false;
     }
 
     // Calculate load distribution
-    const loads = healthyNodes.map((n) => n.load.activeSessions);
+    const loads = healthyNodes.map(n => n.load.activeSessions);
     const avgLoad = loads.reduce((sum, load) => sum + load, 0) / loads.length;
     const maxLoad = Math.max(...loads);
     const minLoad = Math.min(...loads);
@@ -510,7 +527,7 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
    */
   private calculateMigrations(nodes: DaemonNode[]): SessionMigrationPlan[] {
     const migrations: SessionMigrationPlan[] = [];
-    const healthyNodes = nodes.filter((n) => n.status === 'healthy');
+    const healthyNodes = nodes.filter(n => n.status === 'healthy');
 
     if (healthyNodes.length < 2) {
       return migrations;
@@ -518,11 +535,12 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
 
     // Sort nodes by load
     const sortedNodes = [...healthyNodes].sort(
-      (a, b) => b.load.activeSessions - a.load.activeSessions,
+      (a, b) => b.load.activeSessions - a.load.activeSessions
     );
 
     const avgLoad =
-      sortedNodes.reduce((sum, n) => sum + n.load.activeSessions, 0) / sortedNodes.length;
+      sortedNodes.reduce((sum, n) => sum + n.load.activeSessions, 0) /
+      sortedNodes.length;
 
     // Move sessions from overloaded to underloaded nodes
     for (const overloadedNode of sortedNodes) {
@@ -530,17 +548,25 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
         break;
       }
 
-      const underloadedNodes = sortedNodes.filter((n) => n.load.activeSessions < avgLoad);
+      const underloadedNodes = sortedNodes.filter(
+        n => n.load.activeSessions < avgLoad
+      );
       if (underloadedNodes.length === 0) {
         break;
       }
 
-      const sessionsToMigrate = Math.ceil(overloadedNode.load.activeSessions - avgLoad);
-      const sessionIds = Array.from(overloadedNode.sessions).slice(0, sessionsToMigrate);
+      const sessionsToMigrate = Math.ceil(
+        overloadedNode.load.activeSessions - avgLoad
+      );
+      const sessionIds = Array.from(overloadedNode.sessions).slice(
+        0,
+        sessionsToMigrate
+      );
 
       let targetIndex = 0;
       for (const sessionId of sessionIds) {
-        const targetNode = underloadedNodes[targetIndex % underloadedNodes.length];
+        const targetNode =
+          underloadedNodes[targetIndex % underloadedNodes.length];
         migrations.push({
           sessionId,
           fromNode: overloadedNode.id,
@@ -561,12 +587,14 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
   async getClusterStatus(): Promise<ClusterStatus> {
     const nodes = Array.from(this.nodes.values());
 
-    const healthyNodes = nodes.filter((n) => n.status === 'healthy').length;
-    const degradedNodes = nodes.filter((n) => n.status === 'degraded').length;
-    const unreachableNodes = nodes.filter((n) => n.status === 'unreachable').length;
+    const healthyNodes = nodes.filter(n => n.status === 'healthy').length;
+    const degradedNodes = nodes.filter(n => n.status === 'degraded').length;
+    const unreachableNodes = nodes.filter(
+      n => n.status === 'unreachable'
+    ).length;
     const totalSessions = nodes.reduce((sum, n) => sum + n.sessions.size, 0);
 
-    const nodeHealthList: NodeHealth[] = nodes.map((node) => ({
+    const nodeHealthList: NodeHealth[] = nodes.map(node => ({
       nodeId: node.id,
       host: node.host,
       port: node.port,
@@ -633,16 +661,16 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
     // Migrate sessions away from this node
     if (node.sessions.size > 0) {
       this.logger.info(
-        `Migrating ${node.sessions.size} sessions away from node ${nodeId}`,
+        `Migrating ${node.sessions.size} sessions away from node ${nodeId}`
       );
 
       const otherNodes = Array.from(this.nodes.values()).filter(
-        (n) => n.id !== nodeId && n.status === 'healthy',
+        n => n.id !== nodeId && n.status === 'healthy'
       );
 
       if (otherNodes.length === 0) {
         this.logger.error(
-          'Cannot remove node: no other healthy nodes available for session migration',
+          'Cannot remove node: no other healthy nodes available for session migration'
         );
         throw new Error('No healthy nodes available for migration');
       }
@@ -650,7 +678,8 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
       const sessionIds = Array.from(node.sessions);
       for (const sessionId of sessionIds) {
         // Select target node (round-robin for simplicity)
-        const targetNode = otherNodes[sessionIds.indexOf(sessionId) % otherNodes.length];
+        const targetNode =
+          otherNodes[sessionIds.indexOf(sessionId) % otherNodes.length];
         await this.migrateSession(sessionId, targetNode.id);
       }
     }
@@ -663,7 +692,10 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
   /**
    * Store session-to-node mapping in Redis
    */
-  private async storeSessionLocation(sessionId: string, nodeId: string): Promise<void> {
+  private async storeSessionLocation(
+    sessionId: string,
+    nodeId: string
+  ): Promise<void> {
     try {
       await this.redis.hSet('session:nodes', sessionId, nodeId);
       await this.redis.hSet(`session:${sessionId}:metadata`, {
@@ -709,13 +741,15 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
           });
         } else {
           this.logger.warn(
-            `Session ${sessionId} mapped to unknown node ${nodeId}, removing`,
+            `Session ${sessionId} mapped to unknown node ${nodeId}, removing`
           );
           await this.removeSessionLocation(sessionId);
         }
       }
 
-      this.logger.info(`Loaded ${Object.keys(mappings).length} session mappings from Redis`);
+      this.logger.info(
+        `Loaded ${Object.keys(mappings).length} session mappings from Redis`
+      );
     } catch (error) {
       this.logger.error('Failed to load session mappings from Redis', error);
     }
@@ -751,7 +785,9 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
     }
 
     if (newStatus !== node.status) {
-      this.logger.info(`Node ${node.id} status changed: ${node.status} -> ${newStatus}`);
+      this.logger.info(
+        `Node ${node.id} status changed: ${node.status} -> ${newStatus}`
+      );
       node.status = newStatus;
 
       const health: NodeHealth = {
@@ -787,7 +823,7 @@ export class DistributedSessionManager extends EventEmitter<DistributedSessionEv
    * Setup Redis event listeners
    */
   private setupRedisListeners(): void {
-    this.redis.on('error', (error) => {
+    this.redis.on('error', error => {
       this.logger.error('Redis error', error);
       this.emit('error', error, 'redis');
     });

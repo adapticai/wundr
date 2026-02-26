@@ -40,22 +40,22 @@ docker-compose -f docker-compose.dev.yml logs -f daemon
 
 ### Production (`docker-compose.yml`)
 
-| Service  | Port | Description                       |
-|----------|------|-----------------------------------|
-| daemon   | 8787 | Orchestrator daemon WebSocket     |
-| daemon   | 9090 | Prometheus metrics endpoint       |
-| redis    | 6379 | Redis cache and pub/sub           |
-| postgres | 5432 | PostgreSQL database               |
+| Service  | Port | Description                   |
+| -------- | ---- | ----------------------------- |
+| daemon   | 8787 | Orchestrator daemon WebSocket |
+| daemon   | 9090 | Prometheus metrics endpoint   |
+| redis    | 6379 | Redis cache and pub/sub       |
+| postgres | 5432 | PostgreSQL database           |
 
 ### Development (`docker-compose.dev.yml`)
 
 Includes all production services plus:
 
-| Service         | Port | Description                    |
-|-----------------|------|--------------------------------|
-| redis-commander | 8081 | Redis web UI                   |
-| pgadmin         | 5050 | PostgreSQL web UI              |
-| daemon (debug)  | 9229 | Node.js debugger port          |
+| Service         | Port | Description           |
+| --------------- | ---- | --------------------- |
+| redis-commander | 8081 | Redis web UI          |
+| pgadmin         | 5050 | PostgreSQL web UI     |
+| daemon (debug)  | 9229 | Node.js debugger port |
 
 ## Environment Configuration
 
@@ -163,17 +163,20 @@ curl http://localhost:9090/metrics
 ### Redis Commander
 
 Access Redis data via web UI:
+
 - URL: http://localhost:8081
 - No authentication required in dev mode
 
 ### PgAdmin
 
 Access PostgreSQL via web UI:
+
 - URL: http://localhost:5050
 - Email: admin@orchestrator.local
 - Password: admin
 
 **Add Server in PgAdmin:**
+
 1. Right-click Servers > Create > Server
 2. General tab: Name = "Orchestrator"
 3. Connection tab:
@@ -186,10 +189,12 @@ Access PostgreSQL via web UI:
 ### Node.js Debugger
 
 Attach debugger to daemon in dev mode:
+
 - Host: localhost
 - Port: 9229
 
 **VS Code launch.json:**
+
 ```json
 {
   "type": "node",
@@ -399,6 +404,7 @@ curl http://localhost:8787/health
 ## Development Workflow
 
 1. **Start development environment:**
+
    ```bash
    docker-compose -f docker-compose.dev.yml up
    ```
@@ -406,6 +412,7 @@ curl http://localhost:8787/health
 2. **Make code changes** - hot reload happens automatically
 
 3. **Run tests:**
+
    ```bash
    docker-compose exec daemon pnpm test
    ```
@@ -446,5 +453,6 @@ jobs:
 ## Support
 
 For issues and questions:
+
 - GitHub Issues: https://github.com/adapticai/wundr/issues
 - Documentation: See main README.md

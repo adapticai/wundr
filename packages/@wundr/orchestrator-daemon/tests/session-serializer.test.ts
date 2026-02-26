@@ -4,8 +4,17 @@
 
 import { SessionSerializer } from '../src/distributed/session-serializer';
 
-import type { Session, Task, MemoryContext, SessionMetrics } from '../src/types';
-import type { Message, ToolResult, SessionCheckpoint } from '../src/distributed/session-serializer';
+import type {
+  Session,
+  Task,
+  MemoryContext,
+  SessionMetrics,
+} from '../src/types';
+import type {
+  Message,
+  ToolResult,
+  SessionCheckpoint,
+} from '../src/distributed/session-serializer';
 
 describe('SessionSerializer', () => {
   let serializer: SessionSerializer;
@@ -86,7 +95,11 @@ describe('SessionSerializer', () => {
 
   describe('serialize', () => {
     it('should serialize a session successfully', () => {
-      const serialized = serializer.serialize(mockSession, mockMessages, mockToolResults);
+      const serialized = serializer.serialize(
+        mockSession,
+        mockMessages,
+        mockToolResults
+      );
 
       expect(serialized.sessionId).toBe('session-1');
       expect(serialized.orchestratorId).toBe('orch-1');
@@ -98,7 +111,11 @@ describe('SessionSerializer', () => {
     });
 
     it('should include task metadata', () => {
-      const serialized = serializer.serialize(mockSession, mockMessages, mockToolResults);
+      const serialized = serializer.serialize(
+        mockSession,
+        mockMessages,
+        mockToolResults
+      );
 
       expect(serialized.metadata.taskId).toBe('task-1');
       expect(serialized.metadata.taskType).toBe('code');
@@ -119,7 +136,11 @@ describe('SessionSerializer', () => {
         });
       }
 
-      const serialized = serializer.serialize(mockSession, largeMessages, mockToolResults);
+      const serialized = serializer.serialize(
+        mockSession,
+        largeMessages,
+        mockToolResults
+      );
 
       expect(serialized.compressed).toBe(true);
       expect(serialized.compressionAlgorithm).toBe('zlib');
@@ -128,7 +149,11 @@ describe('SessionSerializer', () => {
     });
 
     it('should serialize memory context', () => {
-      const serialized = serializer.serialize(mockSession, mockMessages, mockToolResults);
+      const serialized = serializer.serialize(
+        mockSession,
+        mockMessages,
+        mockToolResults
+      );
 
       expect(serialized.context).toHaveProperty('scratchpad');
       expect(serialized.context).toHaveProperty('episodic');
@@ -138,8 +163,13 @@ describe('SessionSerializer', () => {
 
   describe('deserialize', () => {
     it('should deserialize a session successfully', () => {
-      const serialized = serializer.serialize(mockSession, mockMessages, mockToolResults);
-      const { session, messages, toolResults } = serializer.deserialize(serialized);
+      const serialized = serializer.serialize(
+        mockSession,
+        mockMessages,
+        mockToolResults
+      );
+      const { session, messages, toolResults } =
+        serializer.deserialize(serialized);
 
       expect(session.id).toBe('session-1');
       expect(session.orchestratorId).toBe('orch-1');
@@ -149,7 +179,11 @@ describe('SessionSerializer', () => {
     });
 
     it('should restore dates correctly', () => {
-      const serialized = serializer.serialize(mockSession, mockMessages, mockToolResults);
+      const serialized = serializer.serialize(
+        mockSession,
+        mockMessages,
+        mockToolResults
+      );
       const { session } = serializer.deserialize(serialized);
 
       expect(session.startedAt).toBeInstanceOf(Date);
@@ -170,7 +204,11 @@ describe('SessionSerializer', () => {
         });
       }
 
-      const serialized = serializer.serialize(mockSession, largeMessages, mockToolResults);
+      const serialized = serializer.serialize(
+        mockSession,
+        largeMessages,
+        mockToolResults
+      );
       expect(serialized.compressed).toBe(true);
 
       const { messages } = serializer.deserialize(serialized);
@@ -184,42 +222,74 @@ describe('SessionSerializer', () => {
         // Missing required fields
       } as any;
 
-      expect(() => serializer.deserialize(invalidData)).toThrow('Session validation failed');
+      expect(() => serializer.deserialize(invalidData)).toThrow(
+        'Session validation failed'
+      );
     });
 
     it('should throw on unsupported version', () => {
-      const serialized = serializer.serialize(mockSession, mockMessages, mockToolResults);
+      const serialized = serializer.serialize(
+        mockSession,
+        mockMessages,
+        mockToolResults
+      );
       serialized.checkpointVersion = 999;
 
-      expect(() => serializer.deserialize(serialized)).toThrow('Unsupported checkpoint version');
+      expect(() => serializer.deserialize(serialized)).toThrow(
+        'Unsupported checkpoint version'
+      );
     });
 
     it('should verify integrity - missing required fields', () => {
-      const serialized = serializer.serialize(mockSession, mockMessages, mockToolResults);
+      const serialized = serializer.serialize(
+        mockSession,
+        mockMessages,
+        mockToolResults
+      );
       serialized.sessionId = '';
 
-      expect(() => serializer.deserialize(serialized)).toThrow('missing required fields');
+      expect(() => serializer.deserialize(serialized)).toThrow(
+        'missing required fields'
+      );
     });
 
     it('should verify integrity - invalid timestamps', () => {
-      const serialized = serializer.serialize(mockSession, mockMessages, mockToolResults);
+      const serialized = serializer.serialize(
+        mockSession,
+        mockMessages,
+        mockToolResults
+      );
       serialized.startedAt = 'invalid-date';
 
-      expect(() => serializer.deserialize(serialized)).toThrow('invalid startedAt timestamp');
+      expect(() => serializer.deserialize(serialized)).toThrow(
+        'invalid startedAt timestamp'
+      );
     });
 
     it('should verify integrity - endedAt before startedAt', () => {
       mockSession.endedAt = new Date('2024-12-31T00:00:00Z');
-      const serialized = serializer.serialize(mockSession, mockMessages, mockToolResults);
+      const serialized = serializer.serialize(
+        mockSession,
+        mockMessages,
+        mockToolResults
+      );
 
-      expect(() => serializer.deserialize(serialized)).toThrow('endedAt is before startedAt');
+      expect(() => serializer.deserialize(serialized)).toThrow(
+        'endedAt is before startedAt'
+      );
     });
 
     it('should verify integrity - duplicate message IDs', () => {
-      const serialized = serializer.serialize(mockSession, mockMessages, mockToolResults);
+      const serialized = serializer.serialize(
+        mockSession,
+        mockMessages,
+        mockToolResults
+      );
       serialized.messages.push(serialized.messages[0]); // Duplicate
 
-      expect(() => serializer.deserialize(serialized)).toThrow('duplicate message ID');
+      expect(() => serializer.deserialize(serialized)).toThrow(
+        'duplicate message ID'
+      );
     });
   });
 
@@ -236,7 +306,11 @@ describe('SessionSerializer', () => {
 
       const contextUpdates = { newKey: 'newValue' };
 
-      const checkpoint = serializer.getCheckpoint(mockSession, newMessages, contextUpdates);
+      const checkpoint = serializer.getCheckpoint(
+        mockSession,
+        newMessages,
+        contextUpdates
+      );
 
       expect(checkpoint.version).toBe(1);
       expect(checkpoint.baseVersion).toBe(0);
@@ -255,10 +329,18 @@ describe('SessionSerializer', () => {
         },
       ];
 
-      const checkpoint1 = serializer.getCheckpoint(mockSession, newMessages, {});
+      const checkpoint1 = serializer.getCheckpoint(
+        mockSession,
+        newMessages,
+        {}
+      );
       expect(checkpoint1.version).toBe(1);
 
-      const checkpoint2 = serializer.getCheckpoint(mockSession, newMessages, {});
+      const checkpoint2 = serializer.getCheckpoint(
+        mockSession,
+        newMessages,
+        {}
+      );
       expect(checkpoint2.version).toBe(2);
       expect(checkpoint2.baseVersion).toBe(1);
     });
@@ -309,9 +391,9 @@ describe('SessionSerializer', () => {
         sessionId: 'session-1',
       };
 
-      expect(() => serializer.applyCheckpoint(mockSession, checkpoint, mockMessages, {})).toThrow(
-        'Checkpoint version mismatch'
-      );
+      expect(() =>
+        serializer.applyCheckpoint(mockSession, checkpoint, mockMessages, {})
+      ).toThrow('Checkpoint version mismatch');
     });
 
     it('should throw on invalid checkpoint schema', () => {
@@ -321,7 +403,12 @@ describe('SessionSerializer', () => {
       } as any;
 
       expect(() =>
-        serializer.applyCheckpoint(mockSession, invalidCheckpoint, mockMessages, {})
+        serializer.applyCheckpoint(
+          mockSession,
+          invalidCheckpoint,
+          mockMessages,
+          {}
+        )
       ).toThrow('Checkpoint validation failed');
     });
   });
@@ -340,7 +427,9 @@ describe('SessionSerializer', () => {
       expect(serializer.getAllCheckpointVersions().get('session-1')).toBe(1);
 
       serializer.clearCheckpointVersions('session-1');
-      expect(serializer.getAllCheckpointVersions().get('session-1')).toBeUndefined();
+      expect(
+        serializer.getAllCheckpointVersions().get('session-1')
+      ).toBeUndefined();
     });
   });
 });

@@ -150,7 +150,7 @@ export class ReasoningEngine {
    */
   async reason(
     prompt: string,
-    context?: Record<string, unknown>,
+    context?: Record<string, unknown>
   ): Promise<ReasoningResult> {
     const startTime = Date.now();
     const steps: ReasoningStep[] = [];
@@ -191,7 +191,9 @@ export class ReasoningEngine {
           .join('\n');
 
         steps.push(
-          this.makeStep('action', actionContent, { toolCalls: response.toolCalls }),
+          this.makeStep('action', actionContent, {
+            toolCalls: response.toolCalls,
+          })
         );
 
         // Append assistant message with tool calls to conversation
@@ -204,12 +206,15 @@ export class ReasoningEngine {
         // Execute each tool and add observations
         for (const toolCall of response.toolCalls) {
           const observation = await this.executeToolCall(toolCall);
-          const observationText = typeof observation === 'string'
-            ? observation
-            : JSON.stringify(observation, null, 2);
+          const observationText =
+            typeof observation === 'string'
+              ? observation
+              : JSON.stringify(observation, null, 2);
 
           steps.push(
-            this.makeStep('observation', observationText, { toolName: toolCall.name }),
+            this.makeStep('observation', observationText, {
+              toolName: toolCall.name,
+            })
           );
 
           // Add tool result to conversation
@@ -225,7 +230,10 @@ export class ReasoningEngine {
       }
 
       // No tool calls means the LLM has reached a final answer
-      if (response.finishReason === 'stop' || response.finishReason === 'length') {
+      if (
+        response.finishReason === 'stop' ||
+        response.finishReason === 'length'
+      ) {
         break;
       }
     }
@@ -260,11 +268,12 @@ export class ReasoningEngine {
    */
   async planTask(
     taskDescription: string,
-    constraints?: string[],
+    constraints?: string[]
   ): Promise<ReasoningResult> {
-    const constraintText = constraints && constraints.length > 0
-      ? `\n\nConstraints that the plan MUST respect:\n${constraints.map(c => `- ${c}`).join('\n')}`
-      : '';
+    const constraintText =
+      constraints && constraints.length > 0
+        ? `\n\nConstraints that the plan MUST respect:\n${constraints.map(c => `- ${c}`).join('\n')}`
+        : '';
 
     const prompt =
       `Create a detailed, step-by-step execution plan for the following task.\n\n` +
@@ -289,7 +298,7 @@ export class ReasoningEngine {
    */
   async evaluateAction(
     action: string,
-    context: Record<string, unknown>,
+    context: Record<string, unknown>
   ): Promise<ActionEvaluation> {
     const prompt =
       `Evaluate the following action and decide whether it should be approved.\n\n` +
@@ -341,16 +350,17 @@ export class ReasoningEngine {
    */
   async summarize(
     content: string,
-    options?: { maxLength?: number; format?: 'bullets' | 'paragraph' },
+    options?: { maxLength?: number; format?: 'bullets' | 'paragraph' }
   ): Promise<string> {
     const format = options?.format ?? 'paragraph';
     const lengthGuide = options?.maxLength
       ? ` Keep the summary under ${options.maxLength} characters.`
       : '';
 
-    const formatInstruction = format === 'bullets'
-      ? 'Use a concise bullet-point list.'
-      : 'Write a concise prose paragraph.';
+    const formatInstruction =
+      format === 'bullets'
+        ? 'Use a concise bullet-point list.'
+        : 'Write a concise prose paragraph.';
 
     const response = await this.client.chat({
       model: this.config.model,
@@ -358,8 +368,9 @@ export class ReasoningEngine {
       messages: [
         {
           role: 'system',
-          content: `You are a summarisation assistant. ${formatInstruction}${lengthGuide} ` +
-                   'Return only the summary, with no preamble or explanation.',
+          content:
+            `You are a summarisation assistant. ${formatInstruction}${lengthGuide} ` +
+            'Return only the summary, with no preamble or explanation.',
         },
         {
           role: 'user',
@@ -393,7 +404,7 @@ export class ReasoningEngine {
    */
   private buildUserMessage(
     prompt: string,
-    context?: Record<string, unknown>,
+    context?: Record<string, unknown>
   ): string {
     if (!context || Object.keys(context).length === 0) {
       return prompt;
@@ -422,7 +433,8 @@ export class ReasoningEngine {
    * Strips common prefixes such as "Decision:", "Answer:", "Final answer:".
    */
   private extractDecision(content: string): string {
-    const prefixPattern = /^(?:decision|answer|final\s+answer|conclusion)\s*:\s*/i;
+    const prefixPattern =
+      /^(?:decision|answer|final\s+answer|conclusion)\s*:\s*/i;
     return content.replace(prefixPattern, '').trim();
   }
 
@@ -432,7 +444,7 @@ export class ReasoningEngine {
    */
   private estimateConfidence(
     steps: ReasoningStep[],
-    stepCount: number,
+    stepCount: number
   ): number {
     // Start at high confidence and subtract for each heuristic signal
     let confidence = 0.9;
@@ -444,14 +456,16 @@ export class ReasoningEngine {
 
     // Penalise if any tool execution returned an error
     const hasToolErrors = steps.some(
-      s => s.type === 'observation' && s.content.includes('"error"'),
+      s => s.type === 'observation' && s.content.includes('"error"')
     );
     if (hasToolErrors) {
       confidence -= 0.2;
     }
 
     // Penalise for a very short decision (likely incomplete)
-    const decisionStep = [...steps].reverse().find((s: ReasoningStep) => s.type === 'thought');
+    const decisionStep = [...steps]
+      .reverse()
+      .find((s: ReasoningStep) => s.type === 'thought');
     if (decisionStep && decisionStep.content.length < 50) {
       confidence -= 0.1;
     }
@@ -465,7 +479,7 @@ export class ReasoningEngine {
   private makeStep(
     type: ReasoningStep['type'],
     content: string,
-    metadata?: Record<string, unknown>,
+    metadata?: Record<string, unknown>
   ): ReasoningStep {
     return {
       id: randomUUID(),
@@ -504,7 +518,7 @@ export class ReasoningEngine {
  */
 export function createReasoningEngine(
   client: LLMClient,
-  config?: ReasoningConfig,
+  config?: ReasoningConfig
 ): ReasoningEngine {
   return new ReasoningEngine(client, config);
 }

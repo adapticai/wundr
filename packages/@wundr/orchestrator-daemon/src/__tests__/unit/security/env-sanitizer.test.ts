@@ -50,7 +50,9 @@ const SAFE_ENV: Record<string, string> = {
 };
 
 /** Construct a minimal config object for tests. */
-function makeConfig(overrides?: Partial<EnvSanitizerConfig>): EnvSanitizerConfig {
+function makeConfig(
+  overrides?: Partial<EnvSanitizerConfig>
+): EnvSanitizerConfig {
   return {
     platform: 'linux',
     detectInjection: true,
@@ -120,21 +122,23 @@ describe('EnvSanitizer', () => {
 
     it.each(universalDangerousVars)(
       'should block universal dangerous variable: %s',
-      (varName) => {
+      varName => {
         const env = { ...SAFE_ENV, [varName]: 'malicious-value' };
         const result = sanitizeEnv(env, makeConfig());
 
         expect(result.env).not.toHaveProperty(varName);
-        expect(result.blocked.some((b) => b.key === varName)).toBe(true);
-        expect(result.blocked.find((b) => b.key === varName)?.reason).toBe(
-          'dangerous_variable',
+        expect(result.blocked.some(b => b.key === varName)).toBe(true);
+        expect(result.blocked.find(b => b.key === varName)?.reason).toBe(
+          'dangerous_variable'
         );
         expect(result.changed).toBe(true);
-      },
+      }
     );
 
     it('should block all 38+ universal dangerous variables', () => {
-      expect(_testing.DANGEROUS_ENV_VARS_UNIVERSAL.size).toBeGreaterThanOrEqual(38);
+      expect(_testing.DANGEROUS_ENV_VARS_UNIVERSAL.size).toBeGreaterThanOrEqual(
+        38
+      );
     });
 
     describe('macOS-specific variables', () => {
@@ -152,13 +156,13 @@ describe('EnvSanitizer', () => {
 
       it.each(macosVars)(
         'should block macOS variable %s on darwin',
-        (varName) => {
+        varName => {
           const env = { ...SAFE_ENV, [varName]: '/evil/lib.dylib' };
           const result = sanitizeEnv(env, makeConfig({ platform: 'darwin' }));
 
           expect(result.env).not.toHaveProperty(varName);
-          expect(result.blocked.some((b) => b.key === varName)).toBe(true);
-        },
+          expect(result.blocked.some(b => b.key === varName)).toBe(true);
+        }
       );
 
       it('should NOT block macOS DYLD vars on linux via exact match (caught by prefix)', () => {
@@ -190,16 +194,13 @@ describe('EnvSanitizer', () => {
         'LD_USE_LOAD_BIAS',
       ];
 
-      it.each(linuxVars)(
-        'should block Linux variable %s on linux',
-        (varName) => {
-          const env = { ...SAFE_ENV, [varName]: '/evil/lib.so' };
-          const result = sanitizeEnv(env, makeConfig({ platform: 'linux' }));
+      it.each(linuxVars)('should block Linux variable %s on linux', varName => {
+        const env = { ...SAFE_ENV, [varName]: '/evil/lib.so' };
+        const result = sanitizeEnv(env, makeConfig({ platform: 'linux' }));
 
-          expect(result.env).not.toHaveProperty(varName);
-          expect(result.blocked.some((b) => b.key === varName)).toBe(true);
-        },
-      );
+        expect(result.env).not.toHaveProperty(varName);
+        expect(result.blocked.some(b => b.key === varName)).toBe(true);
+      });
     });
 
     describe('Windows-specific variables', () => {
@@ -208,7 +209,7 @@ describe('EnvSanitizer', () => {
         const result = sanitizeEnv(env, makeConfig({ platform: 'win32' }));
 
         expect(result.env).not.toHaveProperty('COMSPEC');
-        expect(result.blocked.some((b) => b.key === 'COMSPEC')).toBe(true);
+        expect(result.blocked.some(b => b.key === 'COMSPEC')).toBe(true);
       });
 
       it('should block PATHEXT on win32', () => {
@@ -240,7 +241,7 @@ describe('EnvSanitizer', () => {
       const result = sanitizeEnv(env, makeConfig({ platform: 'darwin' }));
 
       expect(result.env).not.toHaveProperty('DYLD_CUSTOM_VAR');
-      const entry = result.blocked.find((b) => b.key === 'DYLD_CUSTOM_VAR');
+      const entry = result.blocked.find(b => b.key === 'DYLD_CUSTOM_VAR');
       expect(entry).toBeDefined();
       expect(entry!.reason).toBe('dangerous_prefix');
     });
@@ -250,7 +251,7 @@ describe('EnvSanitizer', () => {
       const result = sanitizeEnv(env, makeConfig({ platform: 'linux' }));
 
       expect(result.env).not.toHaveProperty('LD_CUSTOM_VAR');
-      const entry = result.blocked.find((b) => b.key === 'LD_CUSTOM_VAR');
+      const entry = result.blocked.find(b => b.key === 'LD_CUSTOM_VAR');
       expect(entry).toBeDefined();
       expect(entry!.reason).toBe('dangerous_prefix');
     });
@@ -259,11 +260,11 @@ describe('EnvSanitizer', () => {
       const env = { ...SAFE_ENV, CUSTOM_EVIL_VAR: 'bad' };
       const result = sanitizeEnv(
         env,
-        makeConfig({ denyPrefixes: ['CUSTOM_EVIL_'] }),
+        makeConfig({ denyPrefixes: ['CUSTOM_EVIL_'] })
       );
 
       expect(result.env).not.toHaveProperty('CUSTOM_EVIL_VAR');
-      const entry = result.blocked.find((b) => b.key === 'CUSTOM_EVIL_VAR');
+      const entry = result.blocked.find(b => b.key === 'CUSTOM_EVIL_VAR');
       expect(entry?.reason).toBe('dangerous_prefix');
     });
 
@@ -282,11 +283,11 @@ describe('EnvSanitizer', () => {
       const env = { ...SAFE_ENV, MY_FORBIDDEN_VAR: 'secret' };
       const result = sanitizeEnv(
         env,
-        makeConfig({ denylist: ['MY_FORBIDDEN_VAR'] }),
+        makeConfig({ denylist: ['MY_FORBIDDEN_VAR'] })
       );
 
       expect(result.env).not.toHaveProperty('MY_FORBIDDEN_VAR');
-      const entry = result.blocked.find((b) => b.key === 'MY_FORBIDDEN_VAR');
+      const entry = result.blocked.find(b => b.key === 'MY_FORBIDDEN_VAR');
       expect(entry?.reason).toBe('config_denylist');
     });
 
@@ -308,8 +309,8 @@ describe('EnvSanitizer', () => {
       const result = sanitizeEnv(env, makeConfig());
 
       expect(result.env).not.toHaveProperty('EVIL');
-      expect(result.blocked.find((b) => b.key === 'EVIL')?.reason).toBe(
-        'injection_detected',
+      expect(result.blocked.find(b => b.key === 'EVIL')?.reason).toBe(
+        'injection_detected'
       );
     });
 
@@ -318,8 +319,8 @@ describe('EnvSanitizer', () => {
       const result = sanitizeEnv(env, makeConfig());
 
       expect(result.env).not.toHaveProperty('EVIL');
-      expect(result.blocked.find((b) => b.key === 'EVIL')?.reason).toBe(
-        'injection_detected',
+      expect(result.blocked.find(b => b.key === 'EVIL')?.reason).toBe(
+        'injection_detected'
       );
     });
 
@@ -328,8 +329,8 @@ describe('EnvSanitizer', () => {
       const result = sanitizeEnv(env, makeConfig());
 
       expect(result.env).not.toHaveProperty('EVIL');
-      expect(result.blocked.find((b) => b.key === 'EVIL')?.reason).toBe(
-        'injection_detected',
+      expect(result.blocked.find(b => b.key === 'EVIL')?.reason).toBe(
+        'injection_detected'
       );
     });
 
@@ -362,8 +363,8 @@ describe('EnvSanitizer', () => {
       const result = sanitizeEnv(env, makeConfig());
 
       expect(result.env).not.toHaveProperty('HUGE');
-      expect(result.blocked.find((b) => b.key === 'HUGE')?.reason).toBe(
-        'injection_detected',
+      expect(result.blocked.find(b => b.key === 'HUGE')?.reason).toBe(
+        'injection_detected'
       );
     });
 
@@ -379,10 +380,7 @@ describe('EnvSanitizer', () => {
 
     it('should skip injection detection when disabled', () => {
       const env = { ...SAFE_ENV, SKETCHY: '$(echo hi)' };
-      const result = sanitizeEnv(
-        env,
-        makeConfig({ detectInjection: false }),
-      );
+      const result = sanitizeEnv(env, makeConfig({ detectInjection: false }));
 
       expect(result.env.SKETCHY).toBe('$(echo hi)');
     });
@@ -405,7 +403,7 @@ describe('EnvSanitizer', () => {
       };
       const result = sanitizeEnv(
         env,
-        makeConfig({ allowlist: ['CUSTOM_VAR'] }),
+        makeConfig({ allowlist: ['CUSTOM_VAR'] })
       );
 
       expect(result.env).toHaveProperty('CUSTOM_VAR');
@@ -420,7 +418,7 @@ describe('EnvSanitizer', () => {
       const env = { ...SAFE_ENV, my_custom_var: 'value' };
       const result = sanitizeEnv(
         env,
-        makeConfig({ allowlist: ['MY_CUSTOM_VAR'] }),
+        makeConfig({ allowlist: ['MY_CUSTOM_VAR'] })
       );
 
       expect(result.env).toHaveProperty('my_custom_var');
@@ -428,9 +426,12 @@ describe('EnvSanitizer', () => {
 
     it('should block non-allowlisted vars with reason not_in_allowlist', () => {
       const env = { ...SAFE_ENV, EXTRA: 'value' };
-      const result = sanitizeEnv(env, makeConfig({ allowlist: ['__PLACEHOLDER__'] }));
+      const result = sanitizeEnv(
+        env,
+        makeConfig({ allowlist: ['__PLACEHOLDER__'] })
+      );
 
-      const entry = result.blocked.find((b) => b.key === 'EXTRA');
+      const entry = result.blocked.find(b => b.key === 'EXTRA');
       expect(entry?.reason).toBe('not_in_allowlist');
     });
 
@@ -439,7 +440,7 @@ describe('EnvSanitizer', () => {
       const env = { ...SAFE_ENV, NODE_OPTIONS: '--evil' };
       const result = sanitizeEnv(
         env,
-        makeConfig({ allowlist: ['NODE_OPTIONS'] }),
+        makeConfig({ allowlist: ['NODE_OPTIONS'] })
       );
 
       expect(result.env).not.toHaveProperty('NODE_OPTIONS');
@@ -458,7 +459,7 @@ describe('EnvSanitizer', () => {
       };
       const result = sanitizeEnv(env, makeConfig());
 
-      expect(result.blocked.some((b) => b.reason === 'empty_key')).toBe(true);
+      expect(result.blocked.some(b => b.reason === 'empty_key')).toBe(true);
     });
 
     it('should block variables with whitespace-only keys', () => {
@@ -468,7 +469,7 @@ describe('EnvSanitizer', () => {
       };
       const result = sanitizeEnv(env, makeConfig());
 
-      expect(result.blocked.some((b) => b.reason === 'empty_key')).toBe(true);
+      expect(result.blocked.some(b => b.reason === 'empty_key')).toBe(true);
     });
   });
 
@@ -484,11 +485,11 @@ describe('EnvSanitizer', () => {
       };
       const result = sanitizeEnv(
         env,
-        makeConfig({ allowPathModification: false }),
+        makeConfig({ allowPathModification: false })
       );
 
       expect(result.env).not.toHaveProperty('PATH');
-      const entry = result.blocked.find((b) => b.key === 'PATH');
+      const entry = result.blocked.find(b => b.key === 'PATH');
       expect(entry?.reason).toBe('path_modification_blocked');
     });
 
@@ -502,7 +503,7 @@ describe('EnvSanitizer', () => {
         makeConfig({
           allowPathModification: true,
           trustedPathDirs: ['/usr/bin', '/usr/local/bin'],
-        }),
+        })
       );
 
       expect(result.env.PATH).toContain('/usr/bin');
@@ -520,10 +521,10 @@ describe('EnvSanitizer', () => {
         makeConfig({
           allowPathModification: true,
           trustedPathDirs: ['/usr/bin'],
-        }),
+        })
       );
 
-      expect(result.modified.some((m) => m.key === 'PATH')).toBe(true);
+      expect(result.modified.some(m => m.key === 'PATH')).toBe(true);
       expect(result.changed).toBe(true);
     });
 
@@ -537,10 +538,10 @@ describe('EnvSanitizer', () => {
         makeConfig({
           allowPathModification: true,
           trustedPathDirs: ['/usr/bin', '/usr/local/bin'],
-        }),
+        })
       );
 
-      expect(result.modified.some((m) => m.key === 'PATH')).toBe(false);
+      expect(result.modified.some(m => m.key === 'PATH')).toBe(false);
     });
   });
 
@@ -592,9 +593,9 @@ describe('EnvSanitizer', () => {
       const events: EnvAuditEvent[] = [];
       const env = { ...SAFE_ENV, NODE_OPTIONS: '--evil' };
 
-      sanitizeEnv(env, makeConfig({ onAudit: (e) => events.push(e) }));
+      sanitizeEnv(env, makeConfig({ onAudit: e => events.push(e) }));
 
-      const event = events.find((e) => e.key === 'NODE_OPTIONS');
+      const event = events.find(e => e.key === 'NODE_OPTIONS');
       expect(event).toBeDefined();
       expect(event!.action).toBe('blocked');
       expect(event!.severity).toBe('critical');
@@ -605,9 +606,9 @@ describe('EnvSanitizer', () => {
       const events: EnvAuditEvent[] = [];
       const env = { ...SAFE_ENV, EVIL: '$(rm -rf /)' };
 
-      sanitizeEnv(env, makeConfig({ onAudit: (e) => events.push(e) }));
+      sanitizeEnv(env, makeConfig({ onAudit: e => events.push(e) }));
 
-      const event = events.find((e) => e.key === 'EVIL');
+      const event = events.find(e => e.key === 'EVIL');
       expect(event).toBeDefined();
       expect(event!.action).toBe('injection_detected');
       expect(event!.severity).toBe('critical');
@@ -622,12 +623,12 @@ describe('EnvSanitizer', () => {
         makeConfig({
           allowPathModification: true,
           trustedPathDirs: ['/usr/bin'],
-          onAudit: (e) => events.push(e),
-        }),
+          onAudit: e => events.push(e),
+        })
       );
 
       const event = events.find(
-        (e) => e.key === 'PATH' && e.action === 'modified',
+        e => e.key === 'PATH' && e.action === 'modified'
       );
       expect(event).toBeDefined();
     });
@@ -640,12 +641,12 @@ describe('EnvSanitizer', () => {
         env,
         makeConfig({
           allowPathModification: false,
-          onAudit: (e) => events.push(e),
-        }),
+          onAudit: e => events.push(e),
+        })
       );
 
       const event = events.find(
-        (e) => e.key === 'PATH' && e.action === 'blocked',
+        e => e.key === 'PATH' && e.action === 'blocked'
       );
       expect(event).toBeDefined();
       expect(event!.severity).toBe('warn');
@@ -655,9 +656,9 @@ describe('EnvSanitizer', () => {
       const events: EnvAuditEvent[] = [];
       const env: Record<string, string> = { '': 'value' };
 
-      sanitizeEnv(env, makeConfig({ onAudit: (e) => events.push(e) }));
+      sanitizeEnv(env, makeConfig({ onAudit: e => events.push(e) }));
 
-      expect(events.some((e) => e.action === 'blocked')).toBe(true);
+      expect(events.some(e => e.action === 'blocked')).toBe(true);
     });
 
     it('should emit audit events for config denylist blocks', () => {
@@ -668,11 +669,11 @@ describe('EnvSanitizer', () => {
         env,
         makeConfig({
           denylist: ['DENY_ME'],
-          onAudit: (e) => events.push(e),
-        }),
+          onAudit: e => events.push(e),
+        })
       );
 
-      const event = events.find((e) => e.key === 'DENY_ME');
+      const event = events.find(e => e.key === 'DENY_ME');
       expect(event).toBeDefined();
       expect(event!.severity).toBe('warn');
     });
@@ -685,11 +686,11 @@ describe('EnvSanitizer', () => {
         env,
         makeConfig({
           allowlist: ['__PLACEHOLDER__'],
-          onAudit: (e) => events.push(e),
-        }),
+          onAudit: e => events.push(e),
+        })
       );
 
-      const event = events.find((e) => e.key === 'NOT_ALLOWED');
+      const event = events.find(e => e.key === 'NOT_ALLOWED');
       expect(event).toBeDefined();
       expect(event!.severity).toBe('info');
     });
@@ -706,7 +707,7 @@ describe('EnvSanitizer', () => {
       const result = sanitizePath(
         '/usr/bin:/usr/local/bin:/sbin',
         trustedDirs,
-        '/home/user',
+        '/home/user'
       );
 
       expect(result).toContain('/usr/bin');
@@ -718,7 +719,7 @@ describe('EnvSanitizer', () => {
       const result = sanitizePath(
         '/usr/bin:/evil/path:/usr/local/bin',
         trustedDirs,
-        '/home/user',
+        '/home/user'
       );
 
       expect(result).not.toContain('/evil/path');
@@ -728,7 +729,7 @@ describe('EnvSanitizer', () => {
       const result = sanitizePath(
         '/usr/bin:/home/user/.local/bin',
         trustedDirs,
-        '/home/user',
+        '/home/user'
       );
 
       expect(result).toContain('/home/user/.local/bin');
@@ -738,7 +739,7 @@ describe('EnvSanitizer', () => {
       const result = sanitizePath(
         '/usr/bin:/nix/store/abc123-pkg/bin',
         trustedDirs,
-        '/home/user',
+        '/home/user'
       );
 
       expect(result).toContain('/nix/store/abc123-pkg/bin');
@@ -748,7 +749,7 @@ describe('EnvSanitizer', () => {
       const result = sanitizePath(
         '/usr/bin:/usr/lib/jvm/bin',
         trustedDirs,
-        '/home/user',
+        '/home/user'
       );
 
       expect(result).toContain('/usr/lib/jvm/bin');
@@ -758,7 +759,7 @@ describe('EnvSanitizer', () => {
       const result = sanitizePath(
         '/usr/bin:/usr/share/something/bin',
         trustedDirs,
-        '/home/user',
+        '/home/user'
       );
 
       expect(result).toContain('/usr/share/something/bin');
@@ -774,7 +775,7 @@ describe('EnvSanitizer', () => {
       const result = sanitizePath(
         '/usr/bin/:/usr/local/bin/',
         trustedDirs,
-        '/home/user',
+        '/home/user'
       );
 
       expect(result).toContain('/usr/bin');
@@ -785,7 +786,7 @@ describe('EnvSanitizer', () => {
       const result = sanitizePath(
         '/usr/bin:::/usr/local/bin',
         trustedDirs,
-        '/home/user',
+        '/home/user'
       );
 
       expect(result).toContain('/usr/bin');
@@ -807,7 +808,7 @@ describe('EnvSanitizer', () => {
   describe('validateEnvForExec', () => {
     it('should not throw for safe environment variables', () => {
       expect(() =>
-        validateEnvForExec(SAFE_ENV, { platform: 'linux' }),
+        validateEnvForExec(SAFE_ENV, { platform: 'linux' })
       ).not.toThrow();
     });
 
@@ -815,7 +816,7 @@ describe('EnvSanitizer', () => {
       const env = { NODE_OPTIONS: '--evil' };
 
       expect(() => validateEnvForExec(env, { platform: 'linux' })).toThrow(
-        EnvSecurityError,
+        EnvSecurityError
       );
     });
 
@@ -835,23 +836,23 @@ describe('EnvSanitizer', () => {
     it('should throw for dangerous prefix variables', () => {
       const env = { DYLD_CUSTOM: 'val' };
 
-      expect(() =>
-        validateEnvForExec(env, { platform: 'darwin' }),
-      ).toThrow(EnvSecurityError);
+      expect(() => validateEnvForExec(env, { platform: 'darwin' })).toThrow(
+        EnvSecurityError
+      );
     });
 
     it('should throw for PATH variable', () => {
       const env = { PATH: '/usr/bin' };
 
       expect(() => validateEnvForExec(env, { platform: 'linux' })).toThrow(
-        EnvSecurityError,
+        EnvSecurityError
       );
 
       try {
         validateEnvForExec(env, { platform: 'linux' });
       } catch (err) {
         expect((err as EnvSecurityError).blockReason).toBe(
-          'path_modification_blocked',
+          'path_modification_blocked'
         );
       }
     });
@@ -860,14 +861,14 @@ describe('EnvSanitizer', () => {
       const env = { EVIL: '$(rm -rf /)' };
 
       expect(() => validateEnvForExec(env, { platform: 'linux' })).toThrow(
-        EnvSecurityError,
+        EnvSecurityError
       );
 
       try {
         validateEnvForExec(env, { platform: 'linux' });
       } catch (err) {
         expect((err as EnvSecurityError).blockReason).toBe(
-          'injection_detected',
+          'injection_detected'
         );
       }
     });
@@ -879,7 +880,7 @@ describe('EnvSanitizer', () => {
         validateEnvForExec(env, {
           platform: 'linux',
           denylist: ['MY_BANNED'],
-        }),
+        })
       ).toThrow(EnvSecurityError);
     });
 
@@ -887,7 +888,7 @@ describe('EnvSanitizer', () => {
       const env: Record<string, string> = { '': 'val', HOME: '/home/user' };
 
       expect(() =>
-        validateEnvForExec(env, { platform: 'linux' }),
+        validateEnvForExec(env, { platform: 'linux' })
       ).not.toThrow();
     });
   });
@@ -967,7 +968,7 @@ describe('EnvSanitizer', () => {
 
       expect(result.env).not.toHaveProperty('NODE_OPTIONS');
       expect(result.env.CLEAN_VAR).toBe('ok');
-      expect(result.blocked.some((b) => b.key === 'NODE_OPTIONS')).toBe(true);
+      expect(result.blocked.some(b => b.key === 'NODE_OPTIONS')).toBe(true);
     });
 
     it('should provide a sanitized PATH even when base has no PATH', () => {
@@ -1011,11 +1012,14 @@ describe('EnvSanitizer', () => {
     });
 
     it('should handle empty overrides object', () => {
-      const result = buildSubprocessEnv({}, {
-        platform: 'linux',
-        baseEnv: { HOME: '/home/user', PATH: '/usr/bin' },
-        trustedPathDirs: ['/usr/bin'],
-      });
+      const result = buildSubprocessEnv(
+        {},
+        {
+          platform: 'linux',
+          baseEnv: { HOME: '/home/user', PATH: '/usr/bin' },
+          trustedPathDirs: ['/usr/bin'],
+        }
+      );
 
       expect(result.env.HOME).toBe('/home/user');
     });
@@ -1086,9 +1090,9 @@ describe('EnvSanitizer', () => {
 
     it.each(exactSensitiveVars)(
       'should detect exact sensitive var: %s',
-      (varName) => {
+      varName => {
         expect(isSensitiveEnvVar(varName)).toBe(true);
-      },
+      }
     );
 
     const patternSensitiveVars = [
@@ -1105,9 +1109,9 @@ describe('EnvSanitizer', () => {
 
     it.each(patternSensitiveVars)(
       'should detect pattern-matched sensitive var: %s',
-      (varName) => {
+      varName => {
         expect(isSensitiveEnvVar(varName)).toBe(true);
-      },
+      }
     );
 
     it('should not flag non-sensitive variables', () => {
@@ -1152,7 +1156,7 @@ describe('EnvSanitizer', () => {
       const env = { ...SAFE_ENV, EXTRA: 'val' };
       const result = checkEnvForApproval(
         env,
-        makeConfig({ allowlist: ['__PLACEHOLDER__'] }),
+        makeConfig({ allowlist: ['__PLACEHOLDER__'] })
       );
 
       // The variable is blocked as not_in_allowlist (not critical)
@@ -1165,7 +1169,7 @@ describe('EnvSanitizer', () => {
       const env = { ...SAFE_ENV, EXTRA: 'val' };
       const result = checkEnvForApproval(
         env,
-        makeConfig({ allowlist: ['__PLACEHOLDER__'] }),
+        makeConfig({ allowlist: ['__PLACEHOLDER__'] })
       );
 
       expect(result.message).toContain('filtered');
@@ -1245,7 +1249,7 @@ describe('EnvSanitizer', () => {
       const error = new EnvSecurityError(
         'message',
         'NODE_OPTIONS',
-        'dangerous_variable',
+        'dangerous_variable'
       );
 
       expect(error.variableKey).toBe('NODE_OPTIONS');
@@ -1284,23 +1288,19 @@ describe('EnvSanitizer', () => {
     describe('isPathEntryTrusted', () => {
       it('should return true for exact match in trusted dirs', () => {
         expect(
-          _testing.isPathEntryTrusted('/usr/bin', ['/usr/bin'], '/home/user'),
+          _testing.isPathEntryTrusted('/usr/bin', ['/usr/bin'], '/home/user')
         ).toBe(true);
       });
 
       it('should return false for untrusted path', () => {
         expect(
-          _testing.isPathEntryTrusted('/evil', ['/usr/bin'], '/home/user'),
+          _testing.isPathEntryTrusted('/evil', ['/usr/bin'], '/home/user')
         ).toBe(false);
       });
 
       it('should return true for home subdirectory', () => {
         expect(
-          _testing.isPathEntryTrusted(
-            '/home/user/.local/bin',
-            [],
-            '/home/user',
-          ),
+          _testing.isPathEntryTrusted('/home/user/.local/bin', [], '/home/user')
         ).toBe(true);
       });
 
@@ -1309,24 +1309,20 @@ describe('EnvSanitizer', () => {
           _testing.isPathEntryTrusted(
             '/nix/store/abc-pkg/bin',
             [],
-            '/home/user',
-          ),
+            '/home/user'
+          )
         ).toBe(true);
       });
 
       it('should return false for empty path', () => {
         expect(
-          _testing.isPathEntryTrusted('', ['/usr/bin'], '/home/user'),
+          _testing.isPathEntryTrusted('', ['/usr/bin'], '/home/user')
         ).toBe(false);
       });
 
       it('should strip trailing slashes before matching', () => {
         expect(
-          _testing.isPathEntryTrusted(
-            '/usr/bin/',
-            ['/usr/bin'],
-            '/home/user',
-          ),
+          _testing.isPathEntryTrusted('/usr/bin/', ['/usr/bin'], '/home/user')
         ).toBe(true);
       });
     });
@@ -1356,7 +1352,7 @@ describe('EnvSanitizer', () => {
 
       it('should allow tab, newline, carriage return', () => {
         expect(
-          _testing.detectInjection('KEY', 'line1\nline2\r\n\ttab'),
+          _testing.detectInjection('KEY', 'line1\nline2\r\n\ttab')
         ).toBeNull();
       });
     });

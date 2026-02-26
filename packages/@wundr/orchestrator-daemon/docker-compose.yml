@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Redis for distributed features and caching
@@ -93,7 +93,8 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8787/health || exit 1"]
+      test:
+        ["CMD-SHELL", "wget -q --spider http://localhost:8787/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

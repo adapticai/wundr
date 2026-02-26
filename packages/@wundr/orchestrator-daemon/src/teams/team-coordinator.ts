@@ -37,8 +37,18 @@ import { EventEmitter } from 'eventemitter3';
 import { DependencyTracker } from './dependency-tracker';
 import { Mailbox } from './mailbox';
 import { SharedTaskList, type CreateTaskInput } from './shared-task-list';
-import { TaskAssigner, type AssignmentCandidate, type AssignmentStrategy, type TeammateCapabilities } from './task-assignment';
-import { TeamContext, type TeamSettingsConfig, type TeamProgress, type TeamResult } from './team-context';
+import {
+  TaskAssigner,
+  type AssignmentCandidate,
+  type AssignmentStrategy,
+  type TeammateCapabilities,
+} from './task-assignment';
+import {
+  TeamContext,
+  type TeamSettingsConfig,
+  type TeamProgress,
+  type TeamResult,
+} from './team-context';
 import { TeamHooks, type HookConfig } from './team-hooks';
 
 // ---------------------------------------------------------------------------
@@ -51,7 +61,12 @@ export type BackendType = 'tmux' | 'iterm2' | 'in-process';
 
 export type TeamStatus = 'creating' | 'active' | 'shutting-down' | 'cleaned-up';
 
-export type TeammateStatus = 'spawning' | 'active' | 'idle' | 'shutting-down' | 'stopped';
+export type TeammateStatus =
+  | 'spawning'
+  | 'active'
+  | 'idle'
+  | 'shutting-down'
+  | 'stopped';
 
 export interface TeamConfig {
   readonly id: string;
@@ -111,16 +126,19 @@ export interface SpawnTeammateOptions {
  * The TeamCoordinator does not import SessionManager directly to keep coupling loose.
  */
 export interface TeamSessionManager {
-  spawnSession(orchestratorId: string, task: {
-    id: string;
-    type: 'code' | 'research' | 'analysis' | 'custom' | 'general';
-    description: string;
-    priority: 'low' | 'medium' | 'high' | 'critical';
-    status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
-    createdAt: Date;
-    updatedAt: Date;
-    metadata?: Record<string, unknown>;
-  }): Promise<{ id: string }>;
+  spawnSession(
+    orchestratorId: string,
+    task: {
+      id: string;
+      type: 'code' | 'research' | 'analysis' | 'custom' | 'general';
+      description: string;
+      priority: 'low' | 'medium' | 'high' | 'critical';
+      status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
+      createdAt: Date;
+      updatedAt: Date;
+      metadata?: Record<string, unknown>;
+    }
+  ): Promise<{ id: string }>;
 
   stopSession(sessionId: string): Promise<void>;
 
@@ -138,12 +156,29 @@ export interface TeamCoordinatorEvents {
   'teammate:idle': (teamId: string, memberId: string) => void;
   'teammate:stopped': (teamId: string, memberId: string) => void;
   'teammate:shutdown-requested': (teamId: string, memberId: string) => void;
-  'teammate:crash-recovered': (teamId: string, memberId: string, releasedTasks: string[]) => void;
-  'teammate:work-redistributed': (teamId: string, memberId: string, assignedTaskIds: string[]) => void;
+  'teammate:crash-recovered': (
+    teamId: string,
+    memberId: string,
+    releasedTasks: string[]
+  ) => void;
+  'teammate:work-redistributed': (
+    teamId: string,
+    memberId: string,
+    assignedTaskIds: string[]
+  ) => void;
   'delegate-mode:changed': (teamId: string, enabled: boolean) => void;
-  'monitor:heartbeat': (teamId: string, activeCount: number, staleCount: number) => void;
+  'monitor:heartbeat': (
+    teamId: string,
+    activeCount: number,
+    staleCount: number
+  ) => void;
   'monitor:stale-detected': (teamId: string, memberId: string) => void;
-  'task:auto-assigned': (teamId: string, taskId: string, assigneeId: string, strategy: string) => void;
+  'task:auto-assigned': (
+    teamId: string,
+    taskId: string,
+    assigneeId: string,
+    strategy: string
+  ) => void;
   'dependency:deadlock-detected': (teamId: string, cyclePath: string[]) => void;
   'progress:updated': (teamId: string, progress: TeamProgress) => void;
 }
@@ -171,7 +206,7 @@ export class TeamError extends Error {
   constructor(
     public readonly code: string,
     message: string,
-    public readonly details?: Record<string, unknown>,
+    public readonly details?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'TeamError';
@@ -233,7 +268,8 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
   /**
    * Dependency trackers per team.
    */
-  private readonly dependencyTrackers: Map<string, DependencyTracker> = new Map();
+  private readonly dependencyTrackers: Map<string, DependencyTracker> =
+    new Map();
 
   /**
    * Team context (shared memory, progress, results) - global instance.
@@ -259,7 +295,7 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
 
   constructor(
     private readonly sessionManager: TeamSessionManager,
-    private readonly options: TeamCoordinatorOptions = {},
+    private readonly options: TeamCoordinatorOptions = {}
   ) {
     super();
     this.monitorIntervalMs = options.monitorIntervalMs ?? 30_000;
@@ -290,7 +326,7 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
       throw new TeamError(
         TeamErrorCode.ONE_TEAM_PER_SESSION,
         `Session ${leadSessionId} already has an active team`,
-        { existingTeamId: this.sessionToTeam.get(leadSessionId) },
+        { existingTeamId: this.sessionToTeam.get(leadSessionId) }
       );
     }
 
@@ -346,9 +382,10 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
     this.mailboxes.set(teamId, mailbox);
 
     // Initialize task assigner
-    const assignmentStrategy = input.assignmentStrategy
-      ?? this.options.assignmentStrategy
-      ?? settings.defaultAssignmentStrategy;
+    const assignmentStrategy =
+      input.assignmentStrategy ??
+      this.options.assignmentStrategy ??
+      settings.defaultAssignmentStrategy;
     const assigner = new TaskAssigner({
       strategy: assignmentStrategy,
       defaultMaxConcurrent: settings.defaultMaxConcurrentTasks,
@@ -364,7 +401,9 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
 
     // Wire hooks into task list and mailbox
     taskList.setTaskCompletedHook(
-      this.hooks.createTaskCompletedCallback(memberId => this.getMemberName(teamId, memberId)),
+      this.hooks.createTaskCompletedCallback(memberId =>
+        this.getMemberName(teamId, memberId)
+      )
     );
     mailbox.setTeammateIdleHook(this.hooks.createTeammateIdleCallback());
 
@@ -392,7 +431,7 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
     });
 
     // Wire dependency cycle detection
-    depTracker.on('dependency:cycle-detected', (cyclePath) => {
+    depTracker.on('dependency:cycle-detected', cyclePath => {
       this.emit('dependency:deadlock-detected', teamId, cyclePath);
     });
 
@@ -408,33 +447,36 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
   /**
    * Spawn a new teammate in an existing team.
    */
-  async spawnTeammate(teamId: string, options: SpawnTeammateOptions): Promise<TeamMember> {
+  async spawnTeammate(
+    teamId: string,
+    options: SpawnTeammateOptions
+  ): Promise<TeamMember> {
     const team = this.getTeamOrThrow(teamId);
 
     if (team.status !== 'active') {
       throw new TeamError(
         TeamErrorCode.TEAM_NOT_ACTIVE,
-        `Team ${teamId} is not active (status: ${team.status})`,
+        `Team ${teamId} is not active (status: ${team.status})`
       );
     }
 
     // Count non-lead active members
     const activeTeammates = team.members.filter(
-      m => m.role !== 'lead' && m.status !== 'stopped',
+      m => m.role !== 'lead' && m.status !== 'stopped'
     );
 
     // Enforce both team config limit and settings limit
     if (activeTeammates.length >= team.maxTeammates) {
       throw new TeamError(
         TeamErrorCode.MAX_TEAMMATES_REACHED,
-        `Team ${teamId} has reached the maximum of ${team.maxTeammates} teammates`,
+        `Team ${teamId} has reached the maximum of ${team.maxTeammates} teammates`
       );
     }
 
     if (!this.teamContext.validateTeamSize(teamId, activeTeammates.length)) {
       throw new TeamError(
         TeamErrorCode.MAX_TEAMMATES_REACHED,
-        `Team ${teamId} has reached the settings limit`,
+        `Team ${teamId} has reached the settings limit`
       );
     }
 
@@ -465,7 +507,7 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
       throw new TeamError(
         TeamErrorCode.SESSION_SPAWN_FAILED,
         `Failed to spawn session for teammate: ${error instanceof Error ? error.message : String(error)}`,
-        { teamId, name: options.name },
+        { teamId, name: options.name }
       );
     }
 
@@ -493,7 +535,8 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
       assigner.registerCapabilities({
         memberId,
         capabilities: options.capabilities ?? [],
-        maxConcurrent: options.maxConcurrentTasks ?? this.defaultMaxConcurrentTasks,
+        maxConcurrent:
+          options.maxConcurrentTasks ?? this.defaultMaxConcurrentTasks,
       });
     }
 
@@ -525,7 +568,7 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
     if (member.role === 'lead') {
       throw new TeamError(
         TeamErrorCode.MEMBER_NOT_FOUND,
-        'Cannot shut down the lead -- use cleanupTeam instead',
+        'Cannot shut down the lead -- use cleanupTeam instead'
       );
     }
 
@@ -584,14 +627,14 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
 
     // Check for active teammates (non-lead)
     const activeMembers = team.members.filter(
-      m => m.role !== 'lead' && m.status !== 'stopped',
+      m => m.role !== 'lead' && m.status !== 'stopped'
     );
 
     if (activeMembers.length > 0) {
       throw new TeamError(
         TeamErrorCode.TEAM_HAS_ACTIVE_MEMBERS,
         `Cannot clean up team ${teamId}: ${activeMembers.length} teammates are still active`,
-        { activeMembers: activeMembers.map(m => m.id) },
+        { activeMembers: activeMembers.map(m => m.id) }
       );
     }
 
@@ -743,7 +786,7 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
     if (!assigner) {
       throw new TeamError(
         TeamErrorCode.TEAM_NOT_FOUND,
-        `Task assigner not found for team: ${teamId}`,
+        `Task assigner not found for team: ${teamId}`
       );
     }
     assigner.setStrategy(strategy);
@@ -752,12 +795,15 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
   /**
    * Register capabilities for a team member.
    */
-  registerMemberCapabilities(teamId: string, config: TeammateCapabilities): void {
+  registerMemberCapabilities(
+    teamId: string,
+    config: TeammateCapabilities
+  ): void {
     const assigner = this.assigners.get(teamId);
     if (!assigner) {
       throw new TeamError(
         TeamErrorCode.TEAM_NOT_FOUND,
-        `Task assigner not found for team: ${teamId}`,
+        `Task assigner not found for team: ${teamId}`
       );
     }
     assigner.registerCapabilities(config);
@@ -774,18 +820,18 @@ export class TeamCoordinator extends EventEmitter<TeamCoordinatorEvents> {
     const taskList = this.getTaskListOrThrow(teamId);
     const assigner = this.assigners.get(teamId);
     if (!assigner) {
-return [];
-}
+      return [];
+    }
 
     const pendingTasks = taskList.getClaimableTasks();
     if (pendingTasks.length === 0) {
-return [];
-}
+      return [];
+    }
 
     const candidates = this.buildAssignmentCandidates(team, taskList);
     if (candidates.length === 0) {
-return [];
-}
+      return [];
+    }
 
     const assignableTasks = pendingTasks.map(t => ({
       id: t.id,
@@ -808,7 +854,13 @@ return [];
           member.assignedTasks.push(decision.taskId);
         }
 
-        this.emit('task:auto-assigned', teamId, decision.taskId, decision.assigneeId, decision.strategy);
+        this.emit(
+          'task:auto-assigned',
+          teamId,
+          decision.taskId,
+          decision.assigneeId,
+          decision.strategy
+        );
       } catch {
         // Task may have been claimed by another teammate in the meantime -- skip
       }
@@ -823,25 +875,29 @@ return [];
    *
    * @returns Array of task IDs assigned to the idle teammate.
    */
-  async redistributeWorkToIdle(teamId: string, idleMemberId: string): Promise<string[]> {
+  async redistributeWorkToIdle(
+    teamId: string,
+    idleMemberId: string
+  ): Promise<string[]> {
     const team = this.getTeamOrThrow(teamId);
     const taskList = this.getTaskListOrThrow(teamId);
     const assigner = this.assigners.get(teamId);
     if (!assigner) {
-return [];
-}
+      return [];
+    }
 
     const pendingTasks = taskList.getClaimableTasks(idleMemberId);
     if (pendingTasks.length === 0) {
-return [];
-}
+      return [];
+    }
 
     const assignedTaskIds: string[] = [];
 
     // Assign tasks directly to the idle member (bypass strategy for idle redistribution)
     const caps = assigner.getCapabilities(idleMemberId);
     const maxConcurrent = caps?.maxConcurrent ?? this.defaultMaxConcurrentTasks;
-    const currentTasks = taskList.getTasksForTeammate(idleMemberId)
+    const currentTasks = taskList
+      .getTasksForTeammate(idleMemberId)
       .filter(t => t.status === 'in_progress');
 
     const availableSlots = maxConcurrent - currentTasks.length;
@@ -862,7 +918,12 @@ return [];
     }
 
     if (assignedTaskIds.length > 0) {
-      this.emit('teammate:work-redistributed', teamId, idleMemberId, assignedTaskIds);
+      this.emit(
+        'teammate:work-redistributed',
+        teamId,
+        idleMemberId,
+        assignedTaskIds
+      );
     }
 
     return assignedTaskIds;
@@ -888,7 +949,7 @@ return [];
     if (!depTracker) {
       throw new TeamError(
         TeamErrorCode.TEAM_NOT_FOUND,
-        `Dependency tracker not found for team: ${teamId}`,
+        `Dependency tracker not found for team: ${teamId}`
       );
     }
     depTracker.addDependency(taskId, dependsOnId);
@@ -903,8 +964,8 @@ return [];
   detectDeadlocks(teamId: string): boolean {
     const depTracker = this.dependencyTrackers.get(teamId);
     if (!depTracker) {
-return false;
-}
+      return false;
+    }
 
     const result = depTracker.detectCycles();
     if (result.hasCycle) {
@@ -927,7 +988,12 @@ return false;
   /**
    * Set a shared context value for a team.
    */
-  setSharedContext(teamId: string, key: string, value: unknown, memberId: string): void {
+  setSharedContext(
+    teamId: string,
+    key: string,
+    value: unknown,
+    memberId: string
+  ): void {
     this.getTeamOrThrow(teamId);
     this.teamContext.set(teamId, key, value, memberId);
   }
@@ -935,7 +1001,11 @@ return false;
   /**
    * Get a shared context value for a team.
    */
-  getSharedContext<T = unknown>(teamId: string, key: string, memberId?: string): T | undefined {
+  getSharedContext<T = unknown>(
+    teamId: string,
+    key: string,
+    memberId?: string
+  ): T | undefined {
     return this.teamContext.get<T>(teamId, key, memberId);
   }
 
@@ -956,8 +1026,8 @@ return false;
   getTeamProgress(teamId: string): TeamProgress | undefined {
     const team = this.teams.get(teamId);
     if (!team) {
-return undefined;
-}
+      return undefined;
+    }
 
     const taskList = this.taskLists.get(teamId);
     const taskStats = taskList?.getStats() ?? {
@@ -969,17 +1039,15 @@ return undefined;
     };
 
     const activeTeammates = team.members.filter(
-      m => m.role !== 'lead' && m.status === 'active',
+      m => m.role !== 'lead' && m.status === 'active'
     ).length;
-    const totalTeammates = team.members.filter(
-      m => m.role !== 'lead',
-    ).length;
+    const totalTeammates = team.members.filter(m => m.role !== 'lead').length;
 
     const progress = this.teamContext.getProgress(
       teamId,
       taskStats,
       activeTeammates,
-      totalTeammates,
+      totalTeammates
     );
 
     this.emit('progress:updated', teamId, progress);
@@ -997,19 +1065,24 @@ return undefined;
   aggregateResults(teamId: string): TeamResult | undefined {
     const team = this.teams.get(teamId);
     if (!team) {
-return undefined;
-}
+      return undefined;
+    }
 
-    const memberInfo = new Map<string, { name: string; tasksCompleted: number; tasksFailed: number }>();
+    const memberInfo = new Map<
+      string,
+      { name: string; tasksCompleted: number; tasksFailed: number }
+    >();
     const taskList = this.taskLists.get(teamId);
 
     for (const member of team.members) {
       if (member.role === 'lead') {
-continue;
-}
+        continue;
+      }
 
       const memberTasks = taskList?.getTasksForTeammate(member.id) ?? [];
-      const completed = memberTasks.filter(t => t.status === 'completed').length;
+      const completed = memberTasks.filter(
+        t => t.status === 'completed'
+      ).length;
 
       memberInfo.set(member.id, {
         name: member.name,
@@ -1031,8 +1104,8 @@ continue;
    */
   startMonitoring(): void {
     if (this.monitorInterval) {
-return;
-} // Already running
+      return;
+    } // Already running
 
     this.monitorInterval = setInterval(() => {
       this.runHealthCheck();
@@ -1071,23 +1144,27 @@ return;
 
     for (const team of this.teams.values()) {
       if (team.status !== 'active') {
-continue;
-}
+        continue;
+      }
 
       let activeCount = 0;
       let staleCount = 0;
 
       for (const member of team.members) {
         if (member.role === 'lead' || member.status === 'stopped') {
-continue;
-}
+          continue;
+        }
         if (member.status === 'shutting-down') {
-continue;
-}
+          continue;
+        }
 
         // Check if session still exists in session manager
         const session = this.sessionManager.getSession(member.sessionId);
-        if (!session || session.status === 'stopped' || session.status === 'failed') {
+        if (
+          !session ||
+          session.status === 'stopped' ||
+          session.status === 'failed'
+        ) {
           // Session is gone -- handle as crash
           void this.handleTeammateCrash(member.sessionId);
           staleCount++;
@@ -1096,7 +1173,7 @@ continue;
 
         // Check heartbeat staleness
         const lastBeat = this.lastHeartbeat.get(member.sessionId);
-        if (lastBeat !== undefined && (now - lastBeat) > this.staleThresholdMs) {
+        if (lastBeat !== undefined && now - lastBeat > this.staleThresholdMs) {
           this.emit('monitor:stale-detected', team.id, member.id);
           staleCount++;
 
@@ -1166,18 +1243,18 @@ continue;
   async handleTeammateCrash(sessionId: string): Promise<void> {
     const teamId = this.teammateSessionToTeam.get(sessionId);
     if (!teamId) {
-return;
-} // Not a team session
+      return;
+    } // Not a team session
 
     const team = this.teams.get(teamId);
     if (!team) {
-return;
-}
+      return;
+    }
 
     const member = team.members.find(m => m.sessionId === sessionId);
     if (!member) {
-return;
-}
+      return;
+    }
 
     member.status = 'stopped';
     this.teammateSessionToTeam.delete(sessionId);
@@ -1206,7 +1283,10 @@ return;
     const mailbox = this.mailboxes.get(teamId);
     if (mailbox) {
       mailbox.unregisterMember(member.id);
-      mailbox.notifyTeammateShutdown(member.id, `Session crashed (${sessionId}). Released tasks: [${releasedTasks.join(', ')}]`);
+      mailbox.notifyTeammateShutdown(
+        member.id,
+        `Session crashed (${sessionId}). Released tasks: [${releasedTasks.join(', ')}]`
+      );
     }
 
     this.emit('teammate:stopped', teamId, member.id);
@@ -1230,14 +1310,14 @@ return;
   getTeamForSession(sessionId: string): TeamConfig | undefined {
     const teamId = this.sessionToTeam.get(sessionId);
     if (teamId) {
-return this.teams.get(teamId);
-}
+      return this.teams.get(teamId);
+    }
 
     // Check if it's a teammate session
     const teammateTeamId = this.teammateSessionToTeam.get(sessionId);
     if (teammateTeamId) {
-return this.teams.get(teammateTeamId);
-}
+      return this.teams.get(teammateTeamId);
+    }
 
     return undefined;
   }
@@ -1255,8 +1335,8 @@ return this.teams.get(teammateTeamId);
   getMember(teamId: string, memberId: string): TeamMember | undefined {
     const team = this.teams.get(teamId);
     if (!team) {
-return undefined;
-}
+      return undefined;
+    }
     return team.members.find(m => m.id === memberId);
   }
 
@@ -1266,28 +1346,32 @@ return undefined;
   getActiveTeammates(teamId: string): TeamMember[] {
     const team = this.teams.get(teamId);
     if (!team) {
-return [];
-}
-    return team.members.filter(m => m.role !== 'lead' && m.status !== 'stopped');
+      return [];
+    }
+    return team.members.filter(
+      m => m.role !== 'lead' && m.status !== 'stopped'
+    );
   }
 
   /**
    * Get comprehensive team status.
    */
-  getTeamStatus(teamId: string): {
-    team: TeamConfig;
-    taskStats: ReturnType<SharedTaskList['getStats']>;
-    mailboxStats: ReturnType<Mailbox['getStats']>;
-    hooks: HookConfig[];
-    assignmentStrategy: AssignmentStrategy | null;
-    dependencyStats: ReturnType<DependencyTracker['getStats']> | null;
-    sharedContextSize: number;
-    settings: TeamSettingsConfig;
-  } | undefined {
+  getTeamStatus(teamId: string):
+    | {
+        team: TeamConfig;
+        taskStats: ReturnType<SharedTaskList['getStats']>;
+        mailboxStats: ReturnType<Mailbox['getStats']>;
+        hooks: HookConfig[];
+        assignmentStrategy: AssignmentStrategy | null;
+        dependencyStats: ReturnType<DependencyTracker['getStats']> | null;
+        sharedContextSize: number;
+        settings: TeamSettingsConfig;
+      }
+    | undefined {
     const team = this.teams.get(teamId);
     if (!team) {
-return undefined;
-}
+      return undefined;
+    }
 
     const taskList = this.taskLists.get(teamId);
     const mailbox = this.mailboxes.get(teamId);
@@ -1296,8 +1380,18 @@ return undefined;
 
     return {
       team,
-      taskStats: taskList?.getStats() ?? { total: 0, pending: 0, inProgress: 0, completed: 0, blocked: 0 },
-      mailboxStats: mailbox?.getStats() ?? { totalMessages: 0, memberCount: 0, unreadByMember: {} },
+      taskStats: taskList?.getStats() ?? {
+        total: 0,
+        pending: 0,
+        inProgress: 0,
+        completed: 0,
+        blocked: 0,
+      },
+      mailboxStats: mailbox?.getStats() ?? {
+        totalMessages: 0,
+        memberCount: 0,
+        unreadByMember: {},
+      },
       hooks: this.hooks.getRegisteredHooks(teamId),
       assignmentStrategy: assigner?.getStrategy() ?? null,
       dependencyStats: depTracker?.getStats() ?? null,
@@ -1327,7 +1421,9 @@ return undefined;
     for (const team of this.teams.values()) {
       const nonLeadMembers = team.members.filter(m => m.role !== 'lead');
       totalTeammates += nonLeadMembers.length;
-      activeTeammates += nonLeadMembers.filter(m => m.status !== 'stopped').length;
+      activeTeammates += nonLeadMembers.filter(
+        m => m.status !== 'stopped'
+      ).length;
 
       const taskList = this.taskLists.get(team.id);
       if (taskList) {
@@ -1399,7 +1495,7 @@ return undefined;
     if (!team) {
       throw new TeamError(
         TeamErrorCode.TEAM_NOT_FOUND,
-        `Team not found: ${teamId}`,
+        `Team not found: ${teamId}`
       );
     }
     return team;
@@ -1410,7 +1506,7 @@ return undefined;
     if (!member) {
       throw new TeamError(
         TeamErrorCode.MEMBER_NOT_FOUND,
-        `Member not found: ${memberId} in team ${team.id}`,
+        `Member not found: ${memberId} in team ${team.id}`
       );
     }
     return member;
@@ -1421,7 +1517,7 @@ return undefined;
     if (!taskList) {
       throw new TeamError(
         TeamErrorCode.TEAM_NOT_FOUND,
-        `Task list not found for team: ${teamId}`,
+        `Task list not found for team: ${teamId}`
       );
     }
     return taskList;
@@ -1430,8 +1526,8 @@ return undefined;
   private getMemberName(teamId: string, memberId: string): string {
     const team = this.teams.get(teamId);
     if (!team) {
-return memberId;
-}
+      return memberId;
+    }
     const member = team.members.find(m => m.id === memberId);
     return member?.name ?? memberId;
   }
@@ -1439,14 +1535,20 @@ return memberId;
   /**
    * Build assignment candidates from active teammates.
    */
-  private buildAssignmentCandidates(team: TeamConfig, taskList: SharedTaskList): AssignmentCandidate[] {
+  private buildAssignmentCandidates(
+    team: TeamConfig,
+    taskList: SharedTaskList
+  ): AssignmentCandidate[] {
     const assigner = this.assigners.get(team.id);
 
     return team.members
-      .filter(m => m.role !== 'lead' && (m.status === 'active' || m.status === 'idle'))
+      .filter(
+        m => m.role !== 'lead' && (m.status === 'active' || m.status === 'idle')
+      )
       .map(m => {
         const caps = assigner?.getCapabilities(m.id);
-        const activeTasks = taskList.getTasksForTeammate(m.id)
+        const activeTasks = taskList
+          .getTasksForTeammate(m.id)
           .filter(t => t.status === 'in_progress');
 
         return {

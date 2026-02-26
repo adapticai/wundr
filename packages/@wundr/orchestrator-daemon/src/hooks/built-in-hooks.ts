@@ -40,7 +40,9 @@ import type {
  * Session lifecycle logger.
  * Logs session start/end events with metadata for audit trails.
  */
-function createSessionLifecycleLogger(logger: HookLogger): HookRegistration<'SessionStart'> & HookRegistration<'SessionEnd'> {
+function createSessionLifecycleLogger(
+  logger: HookLogger
+): HookRegistration<'SessionStart'> & HookRegistration<'SessionEnd'> {
   // We return a SessionStart registration; SessionEnd is registered separately
   return {
     id: 'builtin:session-lifecycle-logger-start',
@@ -61,7 +63,9 @@ function createSessionLifecycleLogger(logger: HookLogger): HookRegistration<'Ses
   } as any;
 }
 
-function createSessionEndLogger(logger: HookLogger): HookRegistration<'SessionEnd'> {
+function createSessionEndLogger(
+  logger: HookLogger
+): HookRegistration<'SessionEnd'> {
   return {
     id: 'builtin:session-lifecycle-logger-end',
     name: 'Session Lifecycle Logger (End)',
@@ -87,10 +91,9 @@ function createSessionEndLogger(logger: HookLogger): HookRegistration<'SessionEn
  * Tool execution logger.
  * Logs all tool calls (success and failure) for debugging and audit.
  */
-function createToolExecutionLogger(logger: HookLogger): [
-  HookRegistration<'PostToolUse'>,
-  HookRegistration<'PostToolUseFailure'>,
-] {
+function createToolExecutionLogger(
+  logger: HookLogger
+): [HookRegistration<'PostToolUse'>, HookRegistration<'PostToolUseFailure'>] {
   const successHook: HookRegistration<'PostToolUse'> = {
     id: 'builtin:tool-execution-logger-success',
     name: 'Tool Execution Logger (Success)',
@@ -136,10 +139,12 @@ function createToolExecutionLogger(logger: HookLogger): [
  * Blocks tool calls that match known destructive patterns unless
  * explicitly overridden. This is a safety guardrail.
  */
-function createDangerousToolBlocker(logger: HookLogger): HookRegistration<'PreToolUse'> {
+function createDangerousToolBlocker(
+  logger: HookLogger
+): HookRegistration<'PreToolUse'> {
   /** Tools that should always require explicit approval */
   const BLOCKED_TOOL_PATTERNS = [
-    /^rm\s+-rf\s+\//,  // rm -rf / patterns in command args
+    /^rm\s+-rf\s+\//, // rm -rf / patterns in command args
     /^drop\s+database/i,
     /^truncate\s+table/i,
   ];
@@ -160,7 +165,9 @@ function createDangerousToolBlocker(logger: HookLogger): HookRegistration<'PreTo
     enabled: true,
     catchErrors: false, // Safety hooks should propagate errors
     source: 'built-in',
-    handler: async (metadata: PreToolUseMetadata): Promise<PreToolUseResult | void> => {
+    handler: async (
+      metadata: PreToolUseMetadata
+    ): Promise<PreToolUseResult | void> => {
       // Check tool name
       if (DESTRUCTIVE_TOOL_NAMES.has(metadata.toolName)) {
         logger.warn('[safety] Blocked destructive tool call', {
@@ -169,7 +176,8 @@ function createDangerousToolBlocker(logger: HookLogger): HookRegistration<'PreTo
         });
         return {
           block: true,
-          blockReason: `Tool "${metadata.toolName}" is blocked by safety policy. ` +
+          blockReason:
+            `Tool "${metadata.toolName}" is blocked by safety policy. ` +
             'This tool is classified as destructive and requires manual approval.',
         };
       }
@@ -184,7 +192,8 @@ function createDangerousToolBlocker(logger: HookLogger): HookRegistration<'PreTo
           });
           return {
             block: true,
-            blockReason: 'Tool input matches dangerous pattern. ' +
+            blockReason:
+              'Tool input matches dangerous pattern. ' +
               'Review and approve the operation manually.',
           };
         }
@@ -200,7 +209,9 @@ function createDangerousToolBlocker(logger: HookLogger): HookRegistration<'PreTo
  * Automatically approves read-only operations and denies nothing
  * (just provides auto-approval for the safe defaults).
  */
-function createPermissionAutoApprover(logger: HookLogger): HookRegistration<'PermissionRequest'> {
+function createPermissionAutoApprover(
+  logger: HookLogger
+): HookRegistration<'PermissionRequest'> {
   return {
     id: 'builtin:permission-auto-approver',
     name: 'Permission Auto-Approver (Low Risk)',
@@ -213,7 +224,9 @@ function createPermissionAutoApprover(logger: HookLogger): HookRegistration<'Per
     matcher: {
       minRiskLevel: 'low',
     },
-    handler: async (metadata: PermissionRequestMetadata): Promise<PermissionRequestResult | void> => {
+    handler: async (
+      metadata: PermissionRequestMetadata
+    ): Promise<PermissionRequestResult | void> => {
       if (metadata.riskLevel === 'low' && metadata.permissionType === 'read') {
         logger.debug('[permission] Auto-approved low-risk read operation', {
           toolName: metadata.toolName,
@@ -234,10 +247,9 @@ function createPermissionAutoApprover(logger: HookLogger): HookRegistration<'Per
  * Subagent lifecycle tracker.
  * Tracks subagent spawn/stop events for monitoring and debugging.
  */
-function createSubagentTracker(logger: HookLogger): [
-  HookRegistration<'SubagentStart'>,
-  HookRegistration<'SubagentStop'>,
-] {
+function createSubagentTracker(
+  logger: HookLogger
+): [HookRegistration<'SubagentStart'>, HookRegistration<'SubagentStop'>] {
   const startHook: HookRegistration<'SubagentStart'> = {
     id: 'builtin:subagent-tracker-start',
     name: 'Subagent Tracker (Start)',
@@ -284,7 +296,9 @@ function createSubagentTracker(logger: HookLogger): [
  * Task completion logger.
  * Logs task completion events with performance metrics.
  */
-function createTaskCompletionLogger(logger: HookLogger): HookRegistration<'TaskCompleted'> {
+function createTaskCompletionLogger(
+  logger: HookLogger
+): HookRegistration<'TaskCompleted'> {
   return {
     id: 'builtin:task-completion-logger',
     name: 'Task Completion Logger',
@@ -312,7 +326,9 @@ function createTaskCompletionLogger(logger: HookLogger): HookRegistration<'TaskC
  * Ensures compaction only happens when truly needed and preserves
  * system-critical messages.
  */
-function createCompactionGuardrail(logger: HookLogger): HookRegistration<'PreCompact'> {
+function createCompactionGuardrail(
+  logger: HookLogger
+): HookRegistration<'PreCompact'> {
   /** Minimum message count before compaction is worthwhile */
   const MIN_MESSAGES_FOR_COMPACTION = 10;
 
@@ -325,7 +341,9 @@ function createCompactionGuardrail(logger: HookLogger): HookRegistration<'PreCom
     enabled: true,
     catchErrors: true,
     source: 'built-in',
-    handler: async (metadata: PreCompactMetadata): Promise<PreCompactResult | void> => {
+    handler: async (
+      metadata: PreCompactMetadata
+    ): Promise<PreCompactResult | void> => {
       if (metadata.messageCount < MIN_MESSAGES_FOR_COMPACTION) {
         logger.debug('[compaction] Skipping compaction: too few messages', {
           messageCount: metadata.messageCount,
@@ -350,7 +368,9 @@ function createCompactionGuardrail(logger: HookLogger): HookRegistration<'PreCom
  * Logs notifications and could be extended to route them to
  * external systems (Slack, email, etc.).
  */
-function createNotificationRouter(logger: HookLogger): HookRegistration<'Notification'> {
+function createNotificationRouter(
+  logger: HookLogger
+): HookRegistration<'Notification'> {
   return {
     id: 'builtin:notification-router',
     name: 'Notification Router',
@@ -361,7 +381,12 @@ function createNotificationRouter(logger: HookLogger): HookRegistration<'Notific
     catchErrors: true,
     source: 'built-in',
     handler: async (metadata: NotificationMetadata) => {
-      const level = metadata.level === 'error' ? 'error' : metadata.level === 'warn' ? 'warn' : 'info';
+      const level =
+        metadata.level === 'error'
+          ? 'error'
+          : metadata.level === 'warn'
+            ? 'warn'
+            : 'info';
       logger[level](`[notification] ${metadata.message}`, {
         source: metadata.source,
         sessionId: metadata.sessionId,
@@ -375,7 +400,9 @@ function createNotificationRouter(logger: HookLogger): HookRegistration<'Notific
  * Prompt length guardrail.
  * Warns or blocks excessively long prompts that could waste tokens.
  */
-function createPromptLengthGuardrail(logger: HookLogger): HookRegistration<'UserPromptSubmit'> {
+function createPromptLengthGuardrail(
+  logger: HookLogger
+): HookRegistration<'UserPromptSubmit'> {
   /** Maximum prompt length before warning */
   const WARN_THRESHOLD = 50_000;
   /** Maximum prompt length before blocking */
@@ -390,7 +417,9 @@ function createPromptLengthGuardrail(logger: HookLogger): HookRegistration<'User
     enabled: true,
     catchErrors: true,
     source: 'built-in',
-    handler: async (metadata: UserPromptSubmitMetadata): Promise<UserPromptSubmitResult | void> => {
+    handler: async (
+      metadata: UserPromptSubmitMetadata
+    ): Promise<UserPromptSubmitResult | void> => {
       if (metadata.promptLength > BLOCK_THRESHOLD) {
         logger.warn('[guardrail] Blocked excessively long prompt', {
           length: metadata.promptLength,
@@ -398,7 +427,8 @@ function createPromptLengthGuardrail(logger: HookLogger): HookRegistration<'User
         });
         return {
           block: true,
-          blockReason: `Prompt length (${metadata.promptLength} chars) exceeds maximum ` +
+          blockReason:
+            `Prompt length (${metadata.promptLength} chars) exceeds maximum ` +
             `allowed length (${BLOCK_THRESHOLD} chars). Please shorten your prompt.`,
         };
       }
@@ -434,7 +464,7 @@ export function registerBuiltInHooks(
     disableAll?: boolean;
     /** Specific hook IDs to disable */
     disable?: string[];
-  },
+  }
 ): void {
   if (options?.disableAll) {
     logger.info('[built-in] All built-in hooks disabled');
@@ -471,7 +501,7 @@ export function registerBuiltInHooks(
 
   logger.info(
     `[built-in] Registered ${registeredCount} built-in hooks` +
-      (disabledSet.size > 0 ? ` (${disabledSet.size} disabled)` : ''),
+      (disabledSet.size > 0 ? ` (${disabledSet.size} disabled)` : '')
   );
 }
 

@@ -239,7 +239,10 @@ describe('Input Validation Security', () => {
         auth: { token: '' },
       };
 
-      const result = middleware.validateMessage(ws, Buffer.from(JSON.stringify(payload)));
+      const result = middleware.validateMessage(
+        ws,
+        Buffer.from(JSON.stringify(payload))
+      );
       // Empty string token is falsy, so it should be ignored (not validated)
       // The message itself should pass through
       expect(result).not.toBeNull();

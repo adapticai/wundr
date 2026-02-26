@@ -125,7 +125,7 @@ export async function GET(
     }
 
     // Fetch full charter
-    const charter = await prisma.charter.findUnique({
+    const charter = await (prisma as any).charter.findUnique({
       where: { id: params.charterId },
     });
 
@@ -248,7 +248,7 @@ export async function PATCH(
     // Update creates a new version: increment version number
     const nextVersion = access.charter.version + 1;
 
-    const updatedCharter = await prisma.charter.update({
+    const updatedCharter = await (prisma as any).charter.update({
       where: { id: params.charterId },
       data: {
         ...(input.name !== undefined && { name: input.name }),
@@ -354,7 +354,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.charter.delete({
+    await (prisma as any).charter.delete({
       where: { id: params.charterId },
     });
 

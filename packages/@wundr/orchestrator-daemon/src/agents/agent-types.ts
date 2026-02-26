@@ -88,12 +88,7 @@ export type RunStatus = z.infer<typeof RunStatusSchema>;
  *   - local:   scoped to the current session only (ephemeral)
  *   - global:  shared across all users and projects
  */
-export const MemoryScopeSchema = z.enum([
-  'user',
-  'project',
-  'local',
-  'global',
-]);
+export const MemoryScopeSchema = z.enum(['user', 'project', 'local', 'global']);
 export type MemoryScope = z.infer<typeof MemoryScopeSchema>;
 
 // =============================================================================
@@ -112,10 +107,12 @@ export interface ToolRestrictions {
   readonly denied?: readonly string[];
 }
 
-export const ToolRestrictionsSchema = z.object({
-  allowed: z.array(z.string()).optional(),
-  denied: z.array(z.string()).optional(),
-}).optional();
+export const ToolRestrictionsSchema = z
+  .object({
+    allowed: z.array(z.string()).optional(),
+    denied: z.array(z.string()).optional(),
+  })
+  .optional();
 
 // =============================================================================
 // Agent Permissions
@@ -196,112 +193,122 @@ export const DEFAULT_HEARTBEAT_CONFIG: HeartbeatConfig = {
 /**
  * Escalation trigger configuration for autonomous agents.
  */
-export const EscalationTriggersSchema = z.object({
-  confidence: z.number().min(0).max(1).optional(),
-  risk_level: z.string().optional(),
-  breaking_change_detected: z.boolean().optional(),
-}).strict().optional();
+export const EscalationTriggersSchema = z
+  .object({
+    confidence: z.number().min(0).max(1).optional(),
+    risk_level: z.string().optional(),
+    breaking_change_detected: z.boolean().optional(),
+  })
+  .strict()
+  .optional();
 
 /**
  * Lifecycle hooks that run before/after agent execution.
  */
-export const AgentHooksSchema = z.object({
-  pre: z.string().optional(),
-  post: z.string().optional(),
-}).strict().optional();
+export const AgentHooksSchema = z
+  .object({
+    pre: z.string().optional(),
+    post: z.string().optional(),
+  })
+  .strict()
+  .optional();
 
 /**
  * Escalation protocol for evaluator agents.
  */
-export const EscalationProtocolSchema = z.object({
-  automatic: z.array(z.string()).optional(),
-  guardian_review: z.array(z.string()).optional(),
-  architect_alert: z.array(z.string()).optional(),
-}).optional();
+export const EscalationProtocolSchema = z
+  .object({
+    automatic: z.array(z.string()).optional(),
+    guardian_review: z.array(z.string()).optional(),
+    architect_alert: z.array(z.string()).optional(),
+  })
+  .optional();
 
 /**
  * Complete agent metadata schema parsed from YAML frontmatter.
  * Unifies all observed fields across 90+ Wundr agent definitions.
  */
-export const AgentMetadataSchema = z.object({
-  // Identity
-  name: z.string().min(1),
-  type: AgentTypeSchema.optional(),
-  description: z.string().optional(),
-  color: z.string().optional(),
+export const AgentMetadataSchema = z
+  .object({
+    // Identity
+    name: z.string().min(1),
+    type: AgentTypeSchema.optional(),
+    description: z.string().optional(),
+    color: z.string().optional(),
 
-  // Hierarchy
-  tier: AgentTierSchema.optional(),
-  scope: z.string().optional(),
-  archetype: z.string().optional(),
+    // Hierarchy
+    tier: AgentTierSchema.optional(),
+    scope: z.string().optional(),
+    archetype: z.string().optional(),
 
-  // Capabilities
-  capabilities: z.array(z.string()).optional(),
-  priority: AgentPrioritySchema.optional(),
+    // Capabilities
+    capabilities: z.array(z.string()).optional(),
+    priority: AgentPrioritySchema.optional(),
 
-  // Runtime Configuration
-  tools: z.array(z.string()).optional(),
-  model: ModelPreferenceSchema.optional(),
-  permissionMode: PermissionModeSchema.optional(),
-  maxTurns: z.number().int().positive().optional(),
+    // Runtime Configuration
+    tools: z.array(z.string()).optional(),
+    model: ModelPreferenceSchema.optional(),
+    permissionMode: PermissionModeSchema.optional(),
+    maxTurns: z.number().int().positive().optional(),
 
-  // Lifecycle Hooks
-  hooks: AgentHooksSchema,
+    // Lifecycle Hooks
+    hooks: AgentHooksSchema,
 
-  // RLHF / Reward Weights
-  rewardWeights: z.record(z.string(), z.number()).optional(),
-  hardConstraints: z.array(z.string()).optional(),
+    // RLHF / Reward Weights
+    rewardWeights: z.record(z.string(), z.number()).optional(),
+    hardConstraints: z.array(z.string()).optional(),
 
-  // Autonomy
-  autonomousAuthority: z.array(z.string()).optional(),
-  escalationTriggers: EscalationTriggersSchema,
+    // Autonomy
+    autonomousAuthority: z.array(z.string()).optional(),
+    escalationTriggers: EscalationTriggersSchema,
 
-  // Team Composition
-  keySubAgents: z.array(z.string()).optional(),
-  specializedMCPs: z.array(z.string()).optional(),
+    // Team Composition
+    keySubAgents: z.array(z.string()).optional(),
+    specializedMCPs: z.array(z.string()).optional(),
 
-  // Evaluator-specific
-  metrics: z.array(z.string()).optional(),
-  evaluationFrequency: z.record(z.string(), z.string()).optional(),
-  thresholds: z.record(z.string(), z.number()).optional(),
-  escalationProtocol: EscalationProtocolSchema,
+    // Evaluator-specific
+    metrics: z.array(z.string()).optional(),
+    evaluationFrequency: z.record(z.string(), z.string()).optional(),
+    thresholds: z.record(z.string(), z.number()).optional(),
+    escalationProtocol: EscalationProtocolSchema,
 
-  // Memory & Resources
-  memoryBankPath: z.string().optional(),
-  worktreeRequirement: z.enum(['read', 'write']).optional(),
-  guidingPrinciples: z.array(z.string()).optional(),
-  measurableObjectives: z.record(z.string(), z.string()).optional(),
+    // Memory & Resources
+    memoryBankPath: z.string().optional(),
+    worktreeRequirement: z.enum(['read', 'write']).optional(),
+    guidingPrinciples: z.array(z.string()).optional(),
+    measurableObjectives: z.record(z.string(), z.string()).optional(),
 
-  // Inheritance
-  extends: z.string().optional(),
+    // Inheritance
+    extends: z.string().optional(),
 
-  // === New: Subagent lifecycle fields (from OpenClaw integration) ===
+    // === New: Subagent lifecycle fields (from OpenClaw integration) ===
 
-  // Tool Restrictions
-  toolRestrictions: ToolRestrictionsSchema,
+    // Tool Restrictions
+    toolRestrictions: ToolRestrictionsSchema,
 
-  // Memory Scope
-  memoryScope: MemoryScopeSchema.optional(),
+    // Memory Scope
+    memoryScope: MemoryScopeSchema.optional(),
 
-  // Heartbeat override
-  heartbeatIntervalMs: z.number().int().positive().optional(),
-  heartbeatMissedThreshold: z.number().int().positive().optional(),
+    // Heartbeat override
+    heartbeatIntervalMs: z.number().int().positive().optional(),
+    heartbeatMissedThreshold: z.number().int().positive().optional(),
 
-  // Instance limits
-  maxInstances: z.number().int().positive().optional(),
+    // Instance limits
+    maxInstances: z.number().int().positive().optional(),
 
-  // State persistence
-  persistState: z.boolean().optional(),
+    // State persistence
+    persistState: z.boolean().optional(),
 
-  // Parent agent for permission inheritance
-  parentAgentId: z.string().optional(),
+    // Parent agent for permission inheritance
+    parentAgentId: z.string().optional(),
 
-  // Restart policy
-  maxRestarts: z.number().int().min(0).optional(),
+    // Restart policy
+    maxRestarts: z.number().int().min(0).optional(),
 
-  // Whether this agent can spawn sub-agents
-  canSpawnSubagents: z.boolean().optional(),
-}).passthrough();
+    // Whether this agent can spawn sub-agents
+    canSpawnSubagents: z.boolean().optional(),
+  })
+  .passthrough();
 
 export type AgentMetadata = z.infer<typeof AgentMetadataSchema>;
 

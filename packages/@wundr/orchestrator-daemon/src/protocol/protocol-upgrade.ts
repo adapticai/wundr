@@ -21,7 +21,6 @@
 
 import { randomUUID } from 'node:crypto';
 
-
 import type { EventFrame, RequestFrame, ResponseFrame } from './protocol-v2';
 
 // ---------------------------------------------------------------------------
@@ -63,9 +62,7 @@ export function isV1Message(parsed: unknown): boolean {
   }
   const obj = parsed as Record<string, unknown>;
   return (
-    typeof obj.action === 'string' &&
-    obj.action.length > 0 &&
-    !('type' in obj)
+    typeof obj.action === 'string' && obj.action.length > 0 && !('type' in obj)
   );
 }
 
@@ -102,56 +99,56 @@ export function isNativeV2(parsed: unknown): boolean {
  */
 const V1_TO_V2_METHOD: Record<string, string> = {
   // Session
-  'createSession': 'session.create',
-  'resumeSession': 'session.resume',
-  'stopSession': 'session.stop',
-  'listSessions': 'session.list',
-  'sessionStatus': 'session.status',
-  'getSessionStatus': 'session.status',
+  createSession: 'session.create',
+  resumeSession: 'session.resume',
+  stopSession: 'session.stop',
+  listSessions: 'session.list',
+  sessionStatus: 'session.status',
+  getSessionStatus: 'session.status',
 
   // Prompt
-  'submitPrompt': 'prompt.submit',
-  'cancelPrompt': 'prompt.cancel',
+  submitPrompt: 'prompt.submit',
+  cancelPrompt: 'prompt.cancel',
 
   // Tool
-  'approveTool': 'tool.approve',
-  'denyTool': 'tool.deny',
+  approveTool: 'tool.approve',
+  denyTool: 'tool.deny',
 
   // Agent
-  'spawnAgent': 'agent.spawn',
-  'agentStatus': 'agent.status',
-  'getAgentStatus': 'agent.status',
-  'stopAgent': 'agent.stop',
+  spawnAgent: 'agent.spawn',
+  agentStatus: 'agent.status',
+  getAgentStatus: 'agent.status',
+  stopAgent: 'agent.stop',
 
   // Team
-  'createTeam': 'team.create',
-  'teamStatus': 'team.status',
-  'getTeamStatus': 'team.status',
-  'teamMessage': 'team.message',
-  'dissolveTeam': 'team.dissolve',
+  createTeam: 'team.create',
+  teamStatus: 'team.status',
+  getTeamStatus: 'team.status',
+  teamMessage: 'team.message',
+  dissolveTeam: 'team.dissolve',
 
   // Memory
-  'queryMemory': 'memory.query',
-  'storeMemory': 'memory.store',
-  'deleteMemory': 'memory.delete',
+  queryMemory: 'memory.query',
+  storeMemory: 'memory.store',
+  deleteMemory: 'memory.delete',
 
   // Config
-  'getConfig': 'config.get',
-  'setConfig': 'config.set',
+  getConfig: 'config.get',
+  setConfig: 'config.set',
 
   // Health
-  'ping': 'health.ping',
-  'healthStatus': 'health.status',
-  'getHealthStatus': 'health.status',
+  ping: 'health.ping',
+  healthStatus: 'health.status',
+  getHealthStatus: 'health.status',
 
   // Auth
-  'connect': 'auth.connect',
-  'refresh': 'auth.refresh',
-  'logout': 'auth.logout',
+  connect: 'auth.connect',
+  refresh: 'auth.refresh',
+  logout: 'auth.logout',
 
   // Subscriptions
-  'subscribe': 'subscribe',
-  'unsubscribe': 'unsubscribe',
+  subscribe: 'subscribe',
+  unsubscribe: 'unsubscribe',
 };
 
 const V2_TO_V1_METHOD: Record<string, string> = {};
@@ -211,7 +208,10 @@ export function v1RequestToV2(v1: V1Request): RequestFrame {
 /**
  * Convert a v2 ResponseFrame to a v1 response.
  */
-export function v2ResponseToV1(frame: ResponseFrame, originalAction?: string): V1Response {
+export function v2ResponseToV1(
+  frame: ResponseFrame,
+  originalAction?: string
+): V1Response {
   const action = originalAction ?? V2_TO_V1_METHOD[frame.id] ?? 'response';
 
   if (frame.ok) {
@@ -329,13 +329,13 @@ export type DetectedFormat = 'v1' | 'v2' | 'jsonrpc2' | 'unknown';
  */
 export function detectFormat(parsed: unknown): DetectedFormat {
   if (isV1Message(parsed)) {
-return 'v1';
-}
+    return 'v1';
+  }
   if (isNativeV2(parsed)) {
-return 'v2';
-}
+    return 'v2';
+  }
   if (isJsonRpc2(parsed)) {
-return 'jsonrpc2';
-}
+    return 'jsonrpc2';
+  }
   return 'unknown';
 }

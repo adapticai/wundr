@@ -107,11 +107,13 @@ export function parseFrontmatter(content: string): ParsedHookFrontmatter {
  *
  * Handles comma-separated lists for events, os, bins, env, and config.
  */
-export function extractMetadata(frontmatter: ParsedHookFrontmatter): HookFileMetadata {
+export function extractMetadata(
+  frontmatter: ParsedHookFrontmatter
+): HookFileMetadata {
   const parseList = (value: string | undefined): string[] => {
     if (!value) {
-return [];
-}
+      return [];
+    }
     // Handle JSON arrays
     if (value.startsWith('[')) {
       try {
@@ -123,7 +125,10 @@ return [];
         // fall through to comma-separated parsing
       }
     }
-    return value.split(',').map((s) => s.trim()).filter(Boolean);
+    return value
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
   };
 
   const events = parseList(frontmatter.events);
@@ -131,22 +136,24 @@ return [];
 
   const requires: HookFileMetadata['requires'] = {};
   const bins = parseList(frontmatter['requires.bins'] ?? frontmatter.bins);
-  const anyBins = parseList(frontmatter['requires.anyBins'] ?? frontmatter.anyBins);
+  const anyBins = parseList(
+    frontmatter['requires.anyBins'] ?? frontmatter.anyBins
+  );
   const env = parseList(frontmatter['requires.env'] ?? frontmatter.env);
   const config = parseList(frontmatter['requires.config']);
 
   if (bins.length > 0) {
-requires.bins = bins;
-}
+    requires.bins = bins;
+  }
   if (anyBins.length > 0) {
-requires.anyBins = anyBins;
-}
+    requires.anyBins = anyBins;
+  }
   if (env.length > 0) {
-requires.env = env;
-}
+    requires.env = env;
+  }
   if (config.length > 0) {
-requires.config = config;
-}
+    requires.config = config;
+  }
 
   return {
     always: frontmatter.always === 'true',
@@ -164,7 +171,9 @@ requires.config = config;
  * Resolve the invocation policy from frontmatter.
  * Defaults to enabled unless the `enabled` field is explicitly `false`.
  */
-export function resolveInvocationPolicy(frontmatter: ParsedHookFrontmatter): HookInvocationPolicy {
+export function resolveInvocationPolicy(
+  frontmatter: ParsedHookFrontmatter
+): HookInvocationPolicy {
   return {
     enabled: frontmatter.enabled !== 'false',
   };
@@ -226,7 +235,9 @@ export function shouldIncludeHook(params: {
 }): boolean {
   const { entry, config, eligibility } = params;
   const hookKey = resolveHookKey(entry.hook.name, entry);
-  const override = config?.hookOverrides?.[hookKey] ?? config?.hookOverrides?.[entry.hook.name];
+  const override =
+    config?.hookOverrides?.[hookKey] ??
+    config?.hookOverrides?.[entry.hook.name];
 
   // Check if explicitly disabled via config
   if (override?.enabled === false) {
@@ -239,7 +250,7 @@ export function shouldIncludeHook(params: {
   if (
     osList.length > 0 &&
     !osList.includes(process.platform) &&
-    !remotePlatforms.some((platform) => osList.includes(platform))
+    !remotePlatforms.some(platform => osList.includes(platform))
   ) {
     return false;
   }
@@ -254,11 +265,11 @@ export function shouldIncludeHook(params: {
   if (requiredBins.length > 0) {
     for (const bin of requiredBins) {
       if (hasBinary(bin)) {
-continue;
-}
+        continue;
+      }
       if (eligibility?.remote?.hasBin?.(bin)) {
-continue;
-}
+        continue;
+      }
       return false;
     }
   }
@@ -267,7 +278,7 @@ continue;
   const requiredAnyBins = entry.metadata?.requires?.anyBins ?? [];
   if (requiredAnyBins.length > 0) {
     const anyFound =
-      requiredAnyBins.some((bin) => hasBinary(bin)) ||
+      requiredAnyBins.some(bin => hasBinary(bin)) ||
       eligibility?.remote?.hasAnyBin?.(requiredAnyBins);
     if (!anyFound) {
       return false;
@@ -279,8 +290,8 @@ continue;
   if (requiredEnv.length > 0) {
     for (const envName of requiredEnv) {
       if (process.env[envName]) {
-continue;
-}
+        continue;
+      }
       return false;
     }
   }
@@ -311,7 +322,8 @@ function loadHookFromDir(params: {
     const content = fs.readFileSync(hookMdPath, 'utf-8');
     const frontmatter = parseFrontmatter(content);
 
-    const name = frontmatter.name || params.nameHint || path.basename(params.hookDir);
+    const name =
+      frontmatter.name || params.nameHint || path.basename(params.hookDir);
     const description = frontmatter.description || '';
 
     // Find handler file
@@ -400,8 +412,8 @@ function loadHooksFromDir(params: {
               nameHint: path.basename(resolvedHookDir),
             });
             if (hook) {
-hooks.push(hook);
-}
+              hooks.push(hook);
+            }
           }
           continue;
         }
@@ -438,7 +450,7 @@ export function loadHookEntriesFromDir(params: {
     pluginId: params.pluginId,
   });
 
-  return hooks.map((hook) => {
+  return hooks.map(hook => {
     let frontmatter: ParsedHookFrontmatter = {};
     try {
       const raw = fs.readFileSync(hook.filePath, 'utf-8');
@@ -495,8 +507,8 @@ export function discoverHookEntries(options: DiscoveryOptions): HookEntry[] {
     : undefined;
 
   // Load from each source
-  const extraHooks = extraDirs.flatMap((dir) =>
-    loadHooksFromDir({ dir, source: 'workspace' }),
+  const extraHooks = extraDirs.flatMap(dir =>
+    loadHooksFromDir({ dir, source: 'workspace' })
   );
   const bundledHooks = options.bundledHooksDir
     ? loadHooksFromDir({ dir: options.bundledHooksDir, source: 'built-in' })
@@ -511,20 +523,20 @@ export function discoverHookEntries(options: DiscoveryOptions): HookEntry[] {
   // Merge with precedence (later sources override earlier)
   const merged = new Map<string, DiscoveredHook>();
   for (const hook of extraHooks) {
-merged.set(hook.name, hook);
-}
+    merged.set(hook.name, hook);
+  }
   for (const hook of bundledHooks) {
-merged.set(hook.name, hook);
-}
+    merged.set(hook.name, hook);
+  }
   for (const hook of managedHooks) {
-merged.set(hook.name, hook);
-}
+    merged.set(hook.name, hook);
+  }
   for (const hook of workspaceHooks) {
-merged.set(hook.name, hook);
-}
+    merged.set(hook.name, hook);
+  }
 
   // Convert to HookEntry with metadata
-  const entries: HookEntry[] = Array.from(merged.values()).map((hook) => {
+  const entries: HookEntry[] = Array.from(merged.values()).map(hook => {
     let frontmatter: ParsedHookFrontmatter = {};
     try {
       const raw = fs.readFileSync(hook.filePath, 'utf-8');
@@ -542,12 +554,12 @@ merged.set(hook.name, hook);
   });
 
   // Filter by eligibility
-  return entries.filter((entry) =>
+  return entries.filter(entry =>
     shouldIncludeHook({
       entry,
       config: options.config,
       eligibility: options.eligibility,
-    }),
+    })
   );
 }
 
@@ -556,14 +568,14 @@ merged.set(hook.name, hook);
  */
 export function buildHookSnapshot(
   entries: HookEntry[],
-  version?: number,
+  version?: number
 ): HookSnapshot {
   return {
-    hooks: entries.map((entry) => ({
+    hooks: entries.map(entry => ({
       name: entry.hook.name,
       events: entry.metadata?.events ?? [],
     })),
-    resolvedHooks: entries.map((entry) => entry.hook),
+    resolvedHooks: entries.map(entry => entry.hook),
     version,
   };
 }
@@ -603,7 +615,9 @@ export interface HookLoaderOptions {
  *
  * @returns The number of hooks successfully loaded and registered.
  */
-export async function loadAndRegisterHooks(options: HookLoaderOptions): Promise<number> {
+export async function loadAndRegisterHooks(
+  options: HookLoaderOptions
+): Promise<number> {
   const { config, registry, logger } = options;
 
   // Check master switch
@@ -629,10 +643,14 @@ export async function loadAndRegisterHooks(options: HookLoaderOptions): Promise<
     for (const entry of entries) {
       // Apply per-hook config overrides
       const hookKey = resolveHookKey(entry.hook.name, entry);
-      const override = config?.hookOverrides?.[hookKey] ?? config?.hookOverrides?.[entry.hook.name];
+      const override =
+        config?.hookOverrides?.[hookKey] ??
+        config?.hookOverrides?.[entry.hook.name];
 
       if (override?.enabled === false) {
-        logger?.debug(`[HookDiscovery] Skipping disabled hook "${entry.hook.name}"`);
+        logger?.debug(
+          `[HookDiscovery] Skipping disabled hook "${entry.hook.name}"`
+        );
         continue;
       }
 
@@ -640,7 +658,7 @@ export async function loadAndRegisterHooks(options: HookLoaderOptions): Promise<
         // Dynamic import with cache-busting
         const url = pathToFileURL(entry.hook.handlerPath).href;
         const cacheBustedUrl = `${url}?t=${Date.now()}`;
-        const mod = await import(cacheBustedUrl) as Record<string, unknown>;
+        const mod = (await import(cacheBustedUrl)) as Record<string, unknown>;
 
         // Get handler function
         const exportName = entry.metadata?.export ?? 'default';
@@ -648,7 +666,7 @@ export async function loadAndRegisterHooks(options: HookLoaderOptions): Promise<
 
         if (typeof handler !== 'function') {
           logger?.error(
-            `[HookDiscovery] Handler "${exportName}" from "${entry.hook.name}" is not a function`,
+            `[HookDiscovery] Handler "${exportName}" from "${entry.hook.name}" is not a function`
           );
           continue;
         }
@@ -656,7 +674,9 @@ export async function loadAndRegisterHooks(options: HookLoaderOptions): Promise<
         // Register for each event listed in metadata
         const events = entry.metadata?.events ?? [];
         if (events.length === 0) {
-          logger?.warn(`[HookDiscovery] Hook "${entry.hook.name}" has no events defined`);
+          logger?.warn(
+            `[HookDiscovery] Hook "${entry.hook.name}" has no events defined`
+          );
           continue;
         }
 
@@ -679,17 +699,17 @@ export async function loadAndRegisterHooks(options: HookLoaderOptions): Promise<
 
         loadedCount++;
         logger?.debug(
-          `[HookDiscovery] Registered hook "${entry.hook.name}" for events: ${events.join(', ')}`,
+          `[HookDiscovery] Registered hook "${entry.hook.name}" for events: ${events.join(', ')}`
         );
       } catch (err) {
         logger?.error(
-          `[HookDiscovery] Failed to load hook "${entry.hook.name}": ${err instanceof Error ? err.message : String(err)}`,
+          `[HookDiscovery] Failed to load hook "${entry.hook.name}": ${err instanceof Error ? err.message : String(err)}`
         );
       }
     }
   } catch (err) {
     logger?.error(
-      `[HookDiscovery] Failed to discover hooks: ${err instanceof Error ? err.message : String(err)}`,
+      `[HookDiscovery] Failed to discover hooks: ${err instanceof Error ? err.message : String(err)}`
     );
   }
 
@@ -703,14 +723,14 @@ export async function loadAndRegisterHooks(options: HookLoaderOptions): Promise<
 
       const url = pathToFileURL(modulePath).href;
       const cacheBustedUrl = `${url}?t=${Date.now()}`;
-      const mod = await import(cacheBustedUrl) as Record<string, unknown>;
+      const mod = (await import(cacheBustedUrl)) as Record<string, unknown>;
 
       const exportName = handlerConfig.export ?? 'default';
       const handler = mod[exportName];
 
       if (typeof handler !== 'function') {
         logger?.error(
-          `[HookDiscovery] Legacy handler "${exportName}" from "${modulePath}" is not a function`,
+          `[HookDiscovery] Legacy handler "${exportName}" from "${modulePath}" is not a function`
         );
         continue;
       }
@@ -730,11 +750,11 @@ export async function loadAndRegisterHooks(options: HookLoaderOptions): Promise<
 
       loadedCount++;
       logger?.debug(
-        `[HookDiscovery] Registered legacy handler for "${handlerConfig.event}"`,
+        `[HookDiscovery] Registered legacy handler for "${handlerConfig.event}"`
       );
     } catch (err) {
       logger?.error(
-        `[HookDiscovery] Failed to load legacy handler from "${handlerConfig.module}": ${err instanceof Error ? err.message : String(err)}`,
+        `[HookDiscovery] Failed to load legacy handler from "${handlerConfig.module}": ${err instanceof Error ? err.message : String(err)}`
       );
     }
   }

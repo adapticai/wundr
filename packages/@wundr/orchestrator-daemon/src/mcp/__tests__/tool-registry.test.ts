@@ -2,7 +2,6 @@
  * MCP Tool Registry Tests
  */
 
-
 import { promises as fs } from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -18,7 +17,9 @@ describe('McpToolRegistry', () => {
   beforeEach(async () => {
     registry = createMcpToolRegistry({ safetyChecks: true });
     // Resolve the real path to handle macOS symlinks (/var -> /private/var)
-    tempDir = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'mcp-test-')));
+    tempDir = await fs.realpath(
+      await fs.mkdtemp(path.join(os.tmpdir(), 'mcp-test-'))
+    );
   });
 
   afterEach(async () => {
@@ -252,7 +253,7 @@ describe('McpToolRegistry', () => {
       const result = await registry.executeTool(
         'non_existent_tool',
         'operation',
-        {},
+        {}
       );
 
       expect(result.success).toBe(false);

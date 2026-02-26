@@ -24,9 +24,11 @@ import {
   BinaryFlags,
 } from '../../../protocol/protocol-v2';
 
+import type {} from '../../../protocol/message-codec';
 import type {
-} from '../../../protocol/message-codec';
-import type { ProtocolFrame, BinaryMetadata } from '../../../protocol/protocol-v2';
+  ProtocolFrame,
+  BinaryMetadata,
+} from '../../../protocol/protocol-v2';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -145,7 +147,11 @@ describe('MessageCodec', () => {
     });
 
     it('should encode multiple frames as a JSON array', () => {
-      const frames = [makeRequestFrame(), makeResponseFrame(), makeEventFrame()];
+      const frames = [
+        makeRequestFrame(),
+        makeResponseFrame(),
+        makeEventFrame(),
+      ];
       const json = codec.encodeBatch(frames);
       const parsed = JSON.parse(json);
       expect(Array.isArray(parsed)).toBe(true);
@@ -158,8 +164,14 @@ describe('MessageCodec', () => {
 
     it('should throw when batch exceeds maxBatchSize', () => {
       const smallBatchCodec = new MessageCodec({ maxBatchSize: 2 });
-      const frames = [makeRequestFrame(), makeRequestFrame(), makeRequestFrame()];
-      expect(() => smallBatchCodec.encodeBatch(frames)).toThrow(/exceeds maximum/);
+      const frames = [
+        makeRequestFrame(),
+        makeRequestFrame(),
+        makeRequestFrame(),
+      ];
+      expect(() => smallBatchCodec.encodeBatch(frames)).toThrow(
+        /exceeds maximum/
+      );
     });
 
     it('should respect the default maxBatchSize of 50', () => {
@@ -226,7 +238,9 @@ describe('MessageCodec', () => {
 
     it('should throw for oversized messages', () => {
       const tinyCodec = new MessageCodec({ maxMessageBytes: 10 });
-      expect(() => tinyCodec.decodeText('x'.repeat(100))).toThrow(/exceeds size limit/);
+      expect(() => tinyCodec.decodeText('x'.repeat(100))).toThrow(
+        /exceeds size limit/
+      );
     });
   });
 
@@ -260,7 +274,11 @@ describe('MessageCodec', () => {
 
     it('should reject oversized batches', () => {
       const tinyBatchCodec = new MessageCodec({ maxBatchSize: 2 });
-      const batch = [makeRequestFrame(), makeRequestFrame(), makeRequestFrame()];
+      const batch = [
+        makeRequestFrame(),
+        makeRequestFrame(),
+        makeRequestFrame(),
+      ];
       const json = JSON.stringify(batch);
       const result = tinyBatchCodec.decodeText(json);
       expect(result.isBatch).toBe(true);
@@ -390,7 +408,9 @@ describe('MessageCodec', () => {
       const frame = makeRequestFrame({
         params: { data: 'x'.repeat(200) },
       } as any);
-      expect(() => tinyCodec.encodeWithCompression(frame)).toThrow(/exceeds size limit/);
+      expect(() => tinyCodec.encodeWithCompression(frame)).toThrow(
+        /exceeds size limit/
+      );
     });
   });
 
@@ -424,8 +444,12 @@ describe('MessageCodec', () => {
 
     it('should throw for unsupported compression algorithm', () => {
       const original = Buffer.from('test');
-      expect(() => codec.compress(original, 'brotli' as any)).toThrow(/unsupported compression/);
-      expect(() => codec.decompress(original, 'brotli' as any)).toThrow(/unsupported decompression/);
+      expect(() => codec.compress(original, 'brotli' as any)).toThrow(
+        /unsupported compression/
+      );
+      expect(() => codec.decompress(original, 'brotli' as any)).toThrow(
+        /unsupported decompression/
+      );
     });
   });
 
@@ -486,7 +510,7 @@ describe('MessageCodec', () => {
       expect(decoded.chunked).toBe(true);
       expect(decoded.final).toBe(true);
       expect(decoded.flags).toBe(
-        BinaryFlags.COMPRESSED | BinaryFlags.CHUNKED | BinaryFlags.FINAL,
+        BinaryFlags.COMPRESSED | BinaryFlags.CHUNKED | BinaryFlags.FINAL
       );
     });
 
@@ -507,7 +531,11 @@ describe('MessageCodec', () => {
     });
 
     it('should handle empty payload', () => {
-      const encoded = codec.encodeBinary(correlationId, metadata, Buffer.alloc(0));
+      const encoded = codec.encodeBinary(
+        correlationId,
+        metadata,
+        Buffer.alloc(0)
+      );
       const decoded = codec.decodeBinary(encoded);
       expect(decoded.payload.length).toBe(0);
       expect(decoded.metadata.method).toBe('file.upload');
@@ -522,7 +550,7 @@ describe('MessageCodec', () => {
 
     it('should throw for invalid correlationId (wrong byte count)', () => {
       expect(() =>
-        codec.encodeBinary('invalid-uuid', {}, Buffer.alloc(0)),
+        codec.encodeBinary('invalid-uuid', {}, Buffer.alloc(0))
       ).toThrow(/invalid correlationId/);
     });
 
@@ -530,7 +558,7 @@ describe('MessageCodec', () => {
       const tinyCodec = new MessageCodec({ maxMessageBytes: 50 });
       const bigPayload = Buffer.alloc(100);
       expect(() =>
-        tinyCodec.encodeBinary(correlationId, metadata, bigPayload),
+        tinyCodec.encodeBinary(correlationId, metadata, bigPayload)
       ).toThrow(/exceeds size limit/);
     });
   });
@@ -538,13 +566,17 @@ describe('MessageCodec', () => {
   describe('binary frame decoding', () => {
     it('should throw for frame shorter than fixed header', () => {
       const tooShort = Buffer.alloc(10);
-      expect(() => codec.decodeBinary(tooShort)).toThrow(/binary frame too short/);
+      expect(() => codec.decodeBinary(tooShort)).toThrow(
+        /binary frame too short/
+      );
     });
 
     it('should throw for unsupported binary header version', () => {
       const buf = Buffer.alloc(BINARY_HEADER_FIXED_SIZE + 10);
       buf.writeUInt8(99, 0); // bad version
-      expect(() => codec.decodeBinary(buf)).toThrow(/unsupported binary header version/);
+      expect(() => codec.decodeBinary(buf)).toThrow(
+        /unsupported binary header version/
+      );
     });
 
     it('should throw for truncated metadata', () => {
@@ -577,12 +609,14 @@ describe('MessageCodec', () => {
       const id = MessageCodec.newCorrelationId();
       // UUID v4 pattern
       expect(id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
       );
     });
 
     it('should return unique IDs', () => {
-      const ids = new Set(Array.from({ length: 100 }, () => MessageCodec.newCorrelationId()));
+      const ids = new Set(
+        Array.from({ length: 100 }, () => MessageCodec.newCorrelationId())
+      );
       expect(ids.size).toBe(100);
     });
   });
@@ -635,12 +669,16 @@ describe('MessageCodec', () => {
 
     it('should handle large binary payloads', () => {
       const correlationId = randomUUID();
-      const bigPayload = Buffer.alloc(100_000, 0xAB);
-      const encoded = codec.encodeBinary(correlationId, { method: 'file.upload' }, bigPayload);
+      const bigPayload = Buffer.alloc(100_000, 0xab);
+      const encoded = codec.encodeBinary(
+        correlationId,
+        { method: 'file.upload' },
+        bigPayload
+      );
       const decoded = codec.decodeBinary(encoded);
       expect(decoded.payload.length).toBe(100_000);
-      expect(decoded.payload[0]).toBe(0xAB);
-      expect(decoded.payload[99_999]).toBe(0xAB);
+      expect(decoded.payload[0]).toBe(0xab);
+      expect(decoded.payload[99_999]).toBe(0xab);
     });
   });
 });

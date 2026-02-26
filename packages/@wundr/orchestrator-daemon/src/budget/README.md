@@ -1,6 +1,7 @@
 # Token Budget Tracker
 
-The Token Budget Tracker provides distributed token usage tracking and budget enforcement for orchestrators using Redis as the backend.
+The Token Budget Tracker provides distributed token usage tracking and budget enforcement for
+orchestrators using Redis as the backend.
 
 ## Features
 
@@ -14,7 +15,8 @@ The Token Budget Tracker provides distributed token usage tracking and budget en
 
 ## Installation
 
-The budget tracker is included in `@wundr.io/orchestrator-daemon`. Ensure Redis is installed and running:
+The budget tracker is included in `@wundr.io/orchestrator-daemon`. Ensure Redis is installed and
+running:
 
 ```bash
 # Install Redis (macOS)
@@ -34,9 +36,9 @@ import { TokenBudgetTracker, BudgetConfig } from '@wundr.io/orchestrator-daemon/
 const config: BudgetConfig = {
   // Default budget for all orchestrators
   defaultBudget: {
-    hourly: 100000,   // 100k tokens per hour
-    daily: 1000000,   // 1M tokens per day
-    monthly: 20000000 // 20M tokens per month
+    hourly: 100000, // 100k tokens per hour
+    daily: 1000000, // 1M tokens per day
+    monthly: 20000000, // 20M tokens per month
   },
 
   // Per-orchestrator budgets (override default)
@@ -44,13 +46,13 @@ const config: BudgetConfig = {
     'orchestrator-tier1': {
       hourly: 200000,
       daily: 2000000,
-      monthly: 40000000
+      monthly: 40000000,
     },
     'orchestrator-tier2': {
       hourly: 50000,
       daily: 500000,
-      monthly: 10000000
-    }
+      monthly: 10000000,
+    },
   },
 
   // Threshold percentages for events
@@ -68,8 +70,8 @@ const config: BudgetConfig = {
     port: 6379,
     password: process.env.REDIS_PASSWORD,
     db: 0,
-    keyPrefix: 'orchestrator'
-  }
+    keyPrefix: 'orchestrator',
+  },
 };
 
 const tracker = new TokenBudgetTracker(config);
@@ -99,11 +101,7 @@ if (!check.allowed) {
 
 ```typescript
 // Reserve tokens before making the call
-const reservation = await tracker.reserveTokens(
-  'orchestrator-id',
-  5000,
-  'hourly'
-);
+const reservation = await tracker.reserveTokens('orchestrator-id', 5000, 'hourly');
 
 if (!reservation.success) {
   console.log(`Reservation failed: ${reservation.error}`);
@@ -115,10 +113,7 @@ try {
   const response = await makeLLMCall();
 
   // Release reservation with actual usage
-  await tracker.releaseReservation(
-    reservation.reservationId!,
-    response.usage.total_tokens
-  );
+  await tracker.releaseReservation(reservation.reservationId!, response.usage.total_tokens);
 } catch (error) {
   // Release reservation on error
   await tracker.releaseReservation(reservation.reservationId!, 0);
@@ -140,8 +135,8 @@ await tracker.trackUsage({
   requestId: 'req-xyz',
   metadata: {
     task: 'code-generation',
-    priority: 'high'
-  }
+    priority: 'high',
+  },
 });
 ```
 
@@ -178,8 +173,8 @@ await tracker.setBudgetOverride({
   expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
   createdBy: 'admin-user',
   metadata: {
-    ticketId: 'INC-12345'
-  }
+    ticketId: 'INC-12345',
+  },
 });
 ```
 
@@ -187,41 +182,41 @@ await tracker.setBudgetOverride({
 
 ```typescript
 // Budget thresholds
-tracker.on('threshold:50', (event) => {
+tracker.on('threshold:50', event => {
   console.log(`⚠️ 50% budget used for ${event.orchestratorId}`);
 });
 
-tracker.on('threshold:75', (event) => {
+tracker.on('threshold:75', event => {
   console.log(`⚠️ 75% budget used for ${event.orchestratorId}`);
   // Send notification
 });
 
-tracker.on('threshold:90', (event) => {
+tracker.on('threshold:90', event => {
   console.log(`⚠️⚠️ 90% budget used for ${event.orchestratorId}`);
   // Alert team
 });
 
-tracker.on('threshold:100', (event) => {
+tracker.on('threshold:100', event => {
   console.log(`🚨 Budget exceeded for ${event.orchestratorId}`);
   // Pause orchestrator or escalate
 });
 
 // Usage tracking
-tracker.on('usage:tracked', (usage) => {
+tracker.on('usage:tracked', usage => {
   console.log(`Tracked ${usage.totalTokens} tokens for ${usage.orchestratorId}`);
 });
 
 // Reservations
-tracker.on('reservation:created', (reservation) => {
+tracker.on('reservation:created', reservation => {
   console.log(`Reserved ${reservation.tokens} tokens`);
 });
 
-tracker.on('reservation:released', (reservationId) => {
+tracker.on('reservation:released', reservationId => {
   console.log(`Released reservation ${reservationId}`);
 });
 
 // Overrides
-tracker.on('override:set', (override) => {
+tracker.on('override:set', override => {
   console.log(`Budget override: +${override.additionalTokens} tokens for ${override.reason}`);
 });
 ```
@@ -276,7 +271,7 @@ await tracker.trackUsage({ ... });
 const checks = await Promise.all([
   tracker.checkBudget(orchestratorId, tokens, 'hourly'),
   tracker.checkBudget(orchestratorId, tokens, 'daily'),
-  tracker.checkBudget(orchestratorId, tokens, 'monthly')
+  tracker.checkBudget(orchestratorId, tokens, 'monthly'),
 ]);
 
 if (checks.some(c => !c.allowed)) {
@@ -289,22 +284,22 @@ if (checks.some(c => !c.allowed)) {
 
 ```typescript
 // Set up monitoring before starting
-tracker.on('threshold:75', async (event) => {
+tracker.on('threshold:75', async event => {
   await notificationService.send({
     to: 'team@company.com',
     subject: `Budget Alert: ${event.orchestratorId}`,
-    message: `75% of ${event.period} budget used`
+    message: `75% of ${event.period} budget used`,
   });
 });
 
-tracker.on('budget:exceeded', async (event) => {
+tracker.on('budget:exceeded', async event => {
   // Pause low-priority tasks
   await orchestrator.pauseLowPriorityTasks();
 
   // Alert on-call
   await pagerDuty.trigger({
     severity: 'high',
-    summary: `Budget exceeded: ${event.orchestratorId}`
+    summary: `Budget exceeded: ${event.orchestratorId}`,
   });
 });
 ```
@@ -320,7 +315,7 @@ if (isPriority && isTimeSemsitive) {
     additionalTokens: 100000,
     reason: 'Critical production incident',
     expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours
-    createdBy: currentUser
+    createdBy: currentUser,
   });
 }
 ```
@@ -380,8 +375,8 @@ describe('TokenBudgetTracker', () => {
       redis: {
         host: 'localhost',
         port: 6379,
-        keyPrefix: 'test'
-      }
+        keyPrefix: 'test',
+      },
     });
   });
 
@@ -397,7 +392,7 @@ describe('TokenBudgetTracker', () => {
       promptTokens: 100,
       completionTokens: 200,
       totalTokens: 300,
-      model: 'claude-sonnet-4.5'
+      model: 'claude-sonnet-4.5',
     });
 
     const stats = await tracker.getUsageStats('test-orch', 'hourly');

@@ -22,6 +22,7 @@ nano .env
 ### 2. Start Services
 
 **Option A: Using Make (Recommended)**
+
 ```bash
 # Development mode with hot reload + dev tools
 make dev
@@ -31,6 +32,7 @@ make prod
 ```
 
 **Option B: Using Docker Compose**
+
 ```bash
 # Development
 docker-compose -f docker-compose.dev.yml up -d
@@ -40,6 +42,7 @@ docker-compose up -d
 ```
 
 **Option C: Using Start Script**
+
 ```bash
 # Development
 ./docker-start.sh dev up
@@ -64,6 +67,7 @@ make logs
 ## Access Points
 
 ### Production Mode
+
 - **Daemon WebSocket**: ws://localhost:8787
 - **Health Check**: http://localhost:8787/health
 - **Metrics**: http://localhost:9090/metrics
@@ -71,7 +75,9 @@ make logs
 - **PostgreSQL**: localhost:5432
 
 ### Development Mode
+
 All production endpoints plus:
+
 - **Redis Commander**: http://localhost:8081
 - **PgAdmin**: http://localhost:5050 (admin@orchestrator.local / admin)
 - **Node Debugger**: localhost:9229
@@ -335,16 +341,16 @@ docker-compose restart redis
 
 ## Development vs Production
 
-| Feature              | Development | Production |
-|---------------------|-------------|------------|
-| Hot Reload          | ✓           | ✗          |
-| Debug Port          | ✓ (9229)    | ✗          |
-| Redis Commander     | ✓           | ✗          |
-| PgAdmin             | ✓           | ✗          |
-| Source Mounts       | ✓           | ✗          |
-| Optimized Build     | ✗           | ✓          |
-| Security Hardening  | ✗           | ✓          |
-| Resource Limits     | ✗           | ✓          |
+| Feature            | Development | Production |
+| ------------------ | ----------- | ---------- |
+| Hot Reload         | ✓           | ✗          |
+| Debug Port         | ✓ (9229)    | ✗          |
+| Redis Commander    | ✓           | ✗          |
+| PgAdmin            | ✓           | ✗          |
+| Source Mounts      | ✓           | ✗          |
+| Optimized Build    | ✗           | ✓          |
+| Security Hardening | ✗           | ✓          |
+| Resource Limits    | ✗           | ✓          |
 
 ## Next Steps
 

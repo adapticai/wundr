@@ -201,7 +201,9 @@ export class NeolithApiClient {
    * });
    * ```
    */
-  async sendHeartbeat(options: HeartbeatOptions = {}): Promise<HeartbeatResponse> {
+  async sendHeartbeat(
+    options: HeartbeatOptions = {}
+  ): Promise<HeartbeatResponse> {
     return this.request<HeartbeatResponse>({
       method: 'POST',
       path: '/api/daemon/heartbeat',
@@ -230,7 +232,7 @@ export class NeolithApiClient {
    */
   async getMessages(
     channelId: string,
-    options: GetMessagesOptions = {},
+    options: GetMessagesOptions = {}
   ): Promise<MessagesResponse> {
     const params = new URLSearchParams();
     params.set('channelId', channelId);
@@ -279,7 +281,7 @@ export class NeolithApiClient {
   async sendMessage(
     channelId: string,
     content: string,
-    options: SendMessageOptions = {},
+    options: SendMessageOptions = {}
   ): Promise<SendMessageResponse> {
     return this.request<SendMessageResponse>({
       method: 'POST',
@@ -310,7 +312,7 @@ export class NeolithApiClient {
    */
   async updateStatus(
     status: OrchestratorStatus,
-    options: UpdateStatusOptions = {},
+    options: UpdateStatusOptions = {}
   ): Promise<{ success: true }> {
     return this.request<{ success: true }>({
       method: 'PUT',
@@ -358,7 +360,13 @@ export class NeolithApiClient {
    * @throws {Error} If request fails after all retries
    */
   private async request<T>(options: RequestOptions): Promise<T> {
-    const { method, path, body, requiresAuth = true, skipRetry = false } = options;
+    const {
+      method,
+      path,
+      body,
+      requiresAuth = true,
+      skipRetry = false,
+    } = options;
 
     // Ensure valid token for authenticated requests
     if (requiresAuth) {
@@ -386,7 +394,7 @@ export class NeolithApiClient {
 
         // Handle non-OK responses
         if (!response.ok) {
-          const errorData = await response.json() as ApiError;
+          const errorData = (await response.json()) as ApiError;
 
           // If token expired, try to refresh and retry once
           if (response.status === 401 && requiresAuth && attempt === 0) {
@@ -395,14 +403,18 @@ export class NeolithApiClient {
               continue; // Retry with new token
             } catch {
               // Refresh failed, throw the original error
-              throw new Error(`API request failed: ${errorData.error} (${errorData.code})`);
+              throw new Error(
+                `API request failed: ${errorData.error} (${errorData.code})`
+              );
             }
           }
 
-          throw new Error(`API request failed: ${errorData.error} (${errorData.code})`);
+          throw new Error(
+            `API request failed: ${errorData.error} (${errorData.code})`
+          );
         }
 
-        return await response.json() as T;
+        return (await response.json()) as T;
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
 

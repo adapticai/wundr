@@ -10,7 +10,6 @@
  * @packageDocumentation
  */
 
-
 import type {
   ChannelId,
   ChannelLogger,
@@ -163,10 +162,8 @@ export class ChannelRouter {
       dmScope: options.dmScope ?? 'per-peer',
       identityLinks: options.identityLinks ?? {},
       logger: options.logger ?? {
-        info: (msg, ...args) =>
-          console.log(`[ChannelRouter] ${msg}`, ...args),
-        warn: (msg, ...args) =>
-          console.warn(`[ChannelRouter] ${msg}`, ...args),
+        info: (msg, ...args) => console.log(`[ChannelRouter] ${msg}`, ...args),
+        warn: (msg, ...args) => console.warn(`[ChannelRouter] ${msg}`, ...args),
         error: (msg, ...args) =>
           console.error(`[ChannelRouter] ${msg}`, ...args),
         debug: (msg, ...args) =>
@@ -212,7 +209,7 @@ export class ChannelRouter {
     const teamId = normalize(input.teamId ?? '');
 
     // Filter bindings to those matching channel + account.
-    const candidates = this.bindings.filter((binding) => {
+    const candidates = this.bindings.filter(binding => {
       if (normalize(binding.match.channel) !== channelId) {
         return false;
       }
@@ -221,7 +218,7 @@ export class ChannelRouter {
 
     const choose = (
       agentId: string,
-      matchedBy: ResolvedRoute['matchedBy'],
+      matchedBy: ResolvedRoute['matchedBy']
     ): ResolvedRoute => {
       const sessionKey = this.buildSessionKey({
         agentId,
@@ -241,10 +238,10 @@ export class ChannelRouter {
     // 1. Exact peer match.
     if (peer) {
       const peerMatch = candidates.find(
-        (b) =>
+        b =>
           b.match.peer &&
           normalize(b.match.peer.kind) === peer.kind &&
-          normalize(b.match.peer.id) === peer.id,
+          normalize(b.match.peer.id) === peer.id
       );
       if (peerMatch) {
         return choose(peerMatch.agentId, 'binding.peer');
@@ -257,10 +254,10 @@ export class ChannelRouter {
       : null;
     if (parentPeer && parentPeer.id) {
       const parentMatch = candidates.find(
-        (b) =>
+        b =>
           b.match.peer &&
           normalize(b.match.peer.kind) === parentPeer.kind &&
-          normalize(b.match.peer.id) === parentPeer.id,
+          normalize(b.match.peer.id) === parentPeer.id
       );
       if (parentMatch) {
         return choose(parentMatch.agentId, 'binding.peer.parent');
@@ -270,7 +267,7 @@ export class ChannelRouter {
     // 3. Guild match.
     if (guildId) {
       const guildMatch = candidates.find(
-        (b) => b.match.guildId && normalize(b.match.guildId) === guildId,
+        b => b.match.guildId && normalize(b.match.guildId) === guildId
       );
       if (guildMatch) {
         return choose(guildMatch.agentId, 'binding.guild');
@@ -280,7 +277,7 @@ export class ChannelRouter {
     // 4. Team match.
     if (teamId) {
       const teamMatch = candidates.find(
-        (b) => b.match.teamId && normalize(b.match.teamId) === teamId,
+        b => b.match.teamId && normalize(b.match.teamId) === teamId
       );
       if (teamMatch) {
         return choose(teamMatch.agentId, 'binding.team');
@@ -289,11 +286,11 @@ export class ChannelRouter {
 
     // 5. Account match (no peer, guild, or team specified in binding).
     const accountMatch = candidates.find(
-      (b) =>
+      b =>
         b.match.accountId?.trim() !== '*' &&
         !b.match.peer &&
         !b.match.guildId &&
-        !b.match.teamId,
+        !b.match.teamId
     );
     if (accountMatch) {
       return choose(accountMatch.agentId, 'binding.account');
@@ -301,11 +298,11 @@ export class ChannelRouter {
 
     // 6. Channel-wide wildcard match.
     const channelMatch = candidates.find(
-      (b) =>
+      b =>
         b.match.accountId?.trim() === '*' &&
         !b.match.peer &&
         !b.match.guildId &&
-        !b.match.teamId,
+        !b.match.teamId
     );
     if (channelMatch) {
       return choose(channelMatch.agentId, 'binding.channel');
@@ -374,7 +371,7 @@ export class ChannelRouter {
    */
   removeBindingsForAgent(agentId: string): number {
     const before = this.bindings.length;
-    this.bindings = this.bindings.filter((b) => b.agentId !== agentId);
+    this.bindings = this.bindings.filter(b => b.agentId !== agentId);
     return before - this.bindings.length;
   }
 
@@ -397,11 +394,9 @@ export class ChannelRouter {
   private resolveIdentity(platformUserId: string): string {
     const normalized = platformUserId.toLowerCase();
     for (const [canonicalId, linkedIds] of Object.entries(
-      this.options.identityLinks,
+      this.options.identityLinks
     )) {
-      if (
-        linkedIds.some((linked) => linked.toLowerCase() === normalized)
-      ) {
+      if (linkedIds.some(linked => linked.toLowerCase() === normalized)) {
         return canonicalId.toLowerCase();
       }
     }
@@ -424,10 +419,7 @@ function sanitize(value: string): string {
     .replace(/[^a-z0-9_-]/g, '_');
 }
 
-function matchesAccountId(
-  match: string | undefined,
-  actual: string,
-): boolean {
+function matchesAccountId(match: string | undefined, actual: string): boolean {
   const trimmed = (match ?? '').trim();
   if (!trimmed) {
     return actual === 'default';
@@ -445,9 +437,7 @@ function matchesAccountId(
 /**
  * Extract RouteInput from a NormalizedMessage.
  */
-export function routeInputFromMessage(
-  message: NormalizedMessage,
-): RouteInput {
+export function routeInputFromMessage(message: NormalizedMessage): RouteInput {
   return {
     channelId: message.channelId,
     accountId: message.guildId,

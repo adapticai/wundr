@@ -78,7 +78,10 @@ export interface AgentLifecycleOptions {
   /** Callback when a dead agent is detected */
   readonly onAgentDead?: (record: AgentRunRecord) => void;
   /** Callback when an agent is restarted */
-  readonly onAgentRestarted?: (oldRunId: string, newRecord: AgentRunRecord) => void;
+  readonly onAgentRestarted?: (
+    oldRunId: string,
+    newRecord: AgentRunRecord
+  ) => void;
 }
 
 // =============================================================================
@@ -95,7 +98,10 @@ export class AgentLifecycleManager {
   private readonly onRunCompleted?: (record: AgentRunRecord) => void;
   private readonly onRunFailed?: (record: AgentRunRecord) => void;
   private readonly onAgentDead?: (record: AgentRunRecord) => void;
-  private readonly onAgentRestarted?: (oldRunId: string, newRecord: AgentRunRecord) => void;
+  private readonly onAgentRestarted?: (
+    oldRunId: string,
+    newRecord: AgentRunRecord
+  ) => void;
 
   private readonly runs: Map<string, AgentRunRecord> = new Map();
   private readonly agentStates: Map<string, AgentPersistedState> = new Map();
@@ -141,24 +147,23 @@ export class AgentLifecycleManager {
     // Validate agent exists
     const definition = this.registry.get(params.agentId);
     if (!definition) {
-      throw new Error(
-        `Agent "${params.agentId}" not found in registry`,
-      );
+      throw new Error(`Agent "${params.agentId}" not found in registry`);
     }
 
     // Validate resource limits
     if (!this.canSpawn(definition.metadata.type)) {
       throw new Error(
-        `Cannot spawn agent "${params.agentId}": resource limits exceeded`,
+        `Cannot spawn agent "${params.agentId}": resource limits exceeded`
       );
     }
 
     // Validate per-agent instance limit
     if (!this.canSpawnAgent(params.agentId)) {
-      const maxInstances = definition.metadata.maxInstances
-        ?? this.limits.maxConcurrentPerAgent?.[params.agentId];
+      const maxInstances =
+        definition.metadata.maxInstances ??
+        this.limits.maxConcurrentPerAgent?.[params.agentId];
       throw new Error(
-        `Cannot spawn agent "${params.agentId}": max instances (${maxInstances ?? 'N/A'}) reached`,
+        `Cannot spawn agent "${params.agentId}": max instances (${maxInstances ?? 'N/A'}) reached`
       );
     }
 
@@ -169,7 +174,7 @@ export class AgentLifecycleManager {
         const parentDef = this.registry.get(parentRecord.agentId);
         if (parentDef && parentDef.metadata.canSpawnSubagents === false) {
           throw new Error(
-            `Parent agent "${parentRecord.agentId}" is not allowed to spawn sub-agents`,
+            `Parent agent "${parentRecord.agentId}" is not allowed to spawn sub-agents`
           );
         }
       }
@@ -181,19 +186,18 @@ export class AgentLifecycleManager {
 
     // Compute archive time
     const archiveAfterMs = this.limits.archiveAfterMinutes * 60_000;
-    const archiveAtMs = archiveAfterMs > 0
-      ? now + archiveAfterMs
-      : undefined;
+    const archiveAtMs = archiveAfterMs > 0 ? now + archiveAfterMs : undefined;
 
     // Build child session key
     const childSessionKey = `agent:main:subagent:${params.agentId}-${runId.slice(4, 12)}`;
 
     // Resolve memory scope
-    const memoryScope = params.memoryScope
-      ?? this.registry.resolveMemoryScope(params.agentId);
+    const memoryScope =
+      params.memoryScope ?? this.registry.resolveMemoryScope(params.agentId);
 
     // Resolve effective tool restrictions
-    let effectiveToolRestrictions: ToolRestrictions | undefined = params.toolRestrictions;
+    let effectiveToolRestrictions: ToolRestrictions | undefined =
+      params.toolRestrictions;
     if (!effectiveToolRestrictions && params.parentRunId) {
       const parentRecord = this.runs.get(params.parentRunId);
       if (parentRecord?.effectiveToolRestrictions) {
@@ -209,11 +213,13 @@ export class AgentLifecycleManager {
     }
 
     // Resolve permission chain
-    const permissionChainIds = this.registry.resolvePermissionChain(params.agentId);
+    const permissionChainIds = this.registry.resolvePermissionChain(
+      params.agentId
+    );
 
     // Resolve max restarts from definition
-    const maxRestarts = definition.metadata.maxRestarts
-      ?? this.heartbeatConfig.maxRestarts;
+    const maxRestarts =
+      definition.metadata.maxRestarts ?? this.heartbeatConfig.maxRestarts;
 
     const record: AgentRunRecord = {
       runId,
@@ -252,7 +258,7 @@ export class AgentLifecycleManager {
     this.startHealthChecker();
 
     this.logger(
-      `[Lifecycle] Spawned agent "${params.agentId}" as run ${runId.slice(0, 12)}`,
+      `[Lifecycle] Spawned agent "${params.agentId}" as run ${runId.slice(0, 12)}`
     );
 
     return record;
@@ -266,7 +272,7 @@ export class AgentLifecycleManager {
    * Gets the current status of a run.
    */
   getRunStatus(
-    runId: string,
+    runId: string
   ): 'pending' | 'running' | 'completed' | 'failed' | 'timeout' | 'unknown' {
     const record = this.runs.get(runId);
     if (!record) {
@@ -283,14 +289,14 @@ export class AgentLifecycleManager {
 
     const status = record.outcome?.status;
     if (status === 'ok') {
-return 'completed';
-}
+      return 'completed';
+    }
     if (status === 'error') {
-return 'failed';
-}
+      return 'failed';
+    }
     if (status === 'timeout') {
-return 'timeout';
-}
+      return 'timeout';
+    }
     return 'completed';
   }
 
@@ -379,7 +385,7 @@ return 'timeout';
   markCompleted(
     runId: string,
     outcome: AgentRunOutcome,
-    endedAt?: number,
+    endedAt?: number
   ): void {
     const record = this.runs.get(runId);
     if (!record) {
@@ -403,7 +409,7 @@ return 'timeout';
     }
 
     this.logger(
-      `[Lifecycle] Run ${runId.slice(0, 12)} completed: ${outcome.status}`,
+      `[Lifecycle] Run ${runId.slice(0, 12)} completed: ${outcome.status}`
     );
   }
 
@@ -413,7 +419,7 @@ return 'timeout';
   updateTokenUsage(
     runId: string,
     tokensUsed: number,
-    costEstimate?: number,
+    costEstimate?: number
   ): void {
     const record = this.runs.get(runId);
     if (!record) {
@@ -471,13 +477,16 @@ return 'timeout';
         continue;
       }
 
-      const lastHb = record.lastHeartbeat ?? record.startedAt ?? record.createdAt;
+      const lastHb =
+        record.lastHeartbeat ?? record.startedAt ?? record.createdAt;
       const missedHeartbeats = record.missedHeartbeats ?? 0;
       const threshold = this.heartbeatConfig.missedThreshold;
       const healthy = missedHeartbeats < threshold;
-      const pendingRestart = !healthy &&
+      const pendingRestart =
+        !healthy &&
         this.heartbeatConfig.autoRestart &&
-        (record.restartCount ?? 0) < (record.maxRestarts ?? this.heartbeatConfig.maxRestarts);
+        (record.restartCount ?? 0) <
+          (record.maxRestarts ?? this.heartbeatConfig.maxRestarts);
 
       const mailbox = record.mailbox ?? [];
       const pendingMessages = mailbox.filter(m => !m.read).length;
@@ -520,7 +529,8 @@ return 'timeout';
         continue;
       }
 
-      const lastHb = record.lastHeartbeat ?? record.startedAt ?? record.createdAt;
+      const lastHb =
+        record.lastHeartbeat ?? record.startedAt ?? record.createdAt;
       const elapsed = now - lastHb;
       const missedCount = Math.floor(elapsed / this.heartbeatConfig.intervalMs);
 
@@ -539,13 +549,14 @@ return 'timeout';
 
       this.logger(
         `[Lifecycle] Agent "${record.agentId}" (run ${record.runId.slice(0, 12)}) is dead ` +
-        `(${missedCount} missed heartbeats)`,
+          `(${missedCount} missed heartbeats)`
       );
 
       // Attempt restart if configured
       if (
         this.heartbeatConfig.autoRestart &&
-        (record.restartCount ?? 0) < (record.maxRestarts ?? this.heartbeatConfig.maxRestarts)
+        (record.restartCount ?? 0) <
+          (record.maxRestarts ?? this.heartbeatConfig.maxRestarts)
       ) {
         const restartedRecord = this.restartAgent(record);
         if (restartedRecord) {
@@ -581,7 +592,7 @@ return 'timeout';
     fromAgentId: string,
     fromRunId: string,
     content: string,
-    replyTo?: string,
+    replyTo?: string
   ): MailboxMessage {
     const record = this.runs.get(toRunId);
     if (!record) {
@@ -702,7 +713,7 @@ return 'timeout';
    */
   synthesizeOutputs(
     runIds: string[],
-    strategy: SynthesisStrategy = 'merge',
+    strategy: SynthesisStrategy = 'merge'
   ): SynthesizedResult {
     const startTime = Date.now();
     const records = runIds
@@ -758,7 +769,9 @@ return 'timeout';
 
       case 'chain':
         synthesizedOutput = this.chainSynthesis(records);
-        confidence = records.filter(r => r.outcome?.status === 'ok').length / records.length;
+        confidence =
+          records.filter(r => r.outcome?.status === 'ok').length /
+          records.length;
         break;
 
       case 'consensus':
@@ -791,7 +804,7 @@ return 'timeout';
   saveAgentState(
     agentId: string,
     scope: MemoryScope,
-    data: Record<string, unknown>,
+    data: Record<string, unknown>
   ): void {
     const existing = this.agentStates.get(agentId);
 
@@ -808,7 +821,7 @@ return 'timeout';
     this.persist();
 
     this.logger(
-      `[Lifecycle] Saved state for agent "${agentId}" (scope: ${scope})`,
+      `[Lifecycle] Saved state for agent "${agentId}" (scope: ${scope})`
     );
   }
 
@@ -1002,19 +1015,20 @@ return 'timeout';
       const data: PersistedAgentRegistry = {
         version: REGISTRY_VERSION,
         runs: serializedRuns,
-        agentStates: Object.keys(serializedStates).length > 0
-          ? serializedStates
-          : undefined,
+        agentStates:
+          Object.keys(serializedStates).length > 0
+            ? serializedStates
+            : undefined,
       };
 
       fs.writeFileSync(
         this.persistPath,
         JSON.stringify(data, null, 2) + '\n',
-        'utf-8',
+        'utf-8'
       );
     } catch (err) {
       this.logger(
-        `[Lifecycle] Persist failed: ${err instanceof Error ? err.message : String(err)}`,
+        `[Lifecycle] Persist failed: ${err instanceof Error ? err.message : String(err)}`
       );
     }
   }
@@ -1050,7 +1064,7 @@ return 'timeout';
 
       if (version !== REGISTRY_VERSION) {
         this.logger(
-          `[Lifecycle] Unknown persistence version: ${version}, expected ${REGISTRY_VERSION}`,
+          `[Lifecycle] Unknown persistence version: ${version}, expected ${REGISTRY_VERSION}`
         );
         return;
       }
@@ -1058,7 +1072,7 @@ return 'timeout';
       this.restoreFromV2(parsed as unknown as PersistedAgentRegistry);
     } catch (err) {
       this.logger(
-        `[Lifecycle] Restore failed: ${err instanceof Error ? err.message : String(err)}`,
+        `[Lifecycle] Restore failed: ${err instanceof Error ? err.message : String(err)}`
       );
     }
   }
@@ -1143,8 +1157,9 @@ return 'timeout';
    */
   canSpawnAgent(agentId: string): boolean {
     const definition = this.registry.get(agentId);
-    const maxInstances = definition?.metadata.maxInstances
-      ?? this.limits.maxConcurrentPerAgent?.[agentId];
+    const maxInstances =
+      definition?.metadata.maxInstances ??
+      this.limits.maxConcurrentPerAgent?.[agentId];
 
     if (maxInstances === undefined) {
       return true; // No per-agent limit
@@ -1161,7 +1176,8 @@ return 'timeout';
   canSpawnAtTier(tier: AgentTier): boolean {
     const usage = this.getResourceUsage();
     const tierCount = usage.activeByTier[tier] ?? 0;
-    const tierLimit = this.limits.maxConcurrentPerTier[tier] ?? this.limits.maxConcurrentAgents;
+    const tierLimit =
+      this.limits.maxConcurrentPerTier[tier] ?? this.limits.maxConcurrentAgents;
     return tierCount < tierLimit;
   }
 
@@ -1246,15 +1262,15 @@ return 'timeout';
 
       this.logger(
         `[Lifecycle] Restarted agent "${deadRecord.agentId}" ` +
-        `(old: ${deadRecord.runId.slice(0, 12)}, new: ${newRecord.runId.slice(0, 12)}, ` +
-        `restart ${newRecord.restartCount}/${newRecord.maxRestarts ?? 'unlimited'})`,
+          `(old: ${deadRecord.runId.slice(0, 12)}, new: ${newRecord.runId.slice(0, 12)}, ` +
+          `restart ${newRecord.restartCount}/${newRecord.maxRestarts ?? 'unlimited'})`
       );
 
       return newRecord;
     } catch (err) {
       this.logger(
         `[Lifecycle] Failed to restart agent "${deadRecord.agentId}": ` +
-        `${err instanceof Error ? err.message : String(err)}`,
+          `${err instanceof Error ? err.message : String(err)}`
       );
       return null;
     }
@@ -1283,7 +1299,9 @@ return 'timeout';
       lastTask: record.task,
       lastOutcome: record.outcome?.status,
       lastCompletedAt: record.endedAt,
-      tokensUsed: (existing?.data?.tokensUsed as number ?? 0) + (record.tokensUsed ?? 0),
+      tokensUsed:
+        ((existing?.data?.tokensUsed as number) ?? 0) +
+        (record.tokensUsed ?? 0),
       totalRuns: (existing?.runCount ?? 0) + 1,
     };
 
@@ -1304,7 +1322,11 @@ return 'timeout';
     }, this.sweepIntervalMs);
 
     // Allow process to exit even if sweeper is running
-    if (this.sweeper && typeof this.sweeper === 'object' && 'unref' in this.sweeper) {
+    if (
+      this.sweeper &&
+      typeof this.sweeper === 'object' &&
+      'unref' in this.sweeper
+    ) {
       (this.sweeper as { unref: () => void }).unref();
     }
   }
@@ -1332,7 +1354,7 @@ return 'timeout';
       this.runs.delete(runId);
       mutated = true;
       this.logger(
-        `[Lifecycle] Archived run ${runId.slice(0, 12)} (agent: ${record.agentId})`,
+        `[Lifecycle] Archived run ${runId.slice(0, 12)} (agent: ${record.agentId})`
       );
     }
 
@@ -1358,7 +1380,11 @@ return 'timeout';
       this.checkHealth();
     }, this.heartbeatConfig.intervalMs);
 
-    if (this.healthChecker && typeof this.healthChecker === 'object' && 'unref' in this.healthChecker) {
+    if (
+      this.healthChecker &&
+      typeof this.healthChecker === 'object' &&
+      'unref' in this.healthChecker
+    ) {
       (this.healthChecker as { unref: () => void }).unref();
     }
   }
@@ -1410,7 +1436,7 @@ return 'timeout';
     this.startTimersIfNeeded();
 
     this.logger(
-      `[Lifecycle] Restored ${restoredCount} run records from V1 format`,
+      `[Lifecycle] Restored ${restoredCount} run records from V1 format`
     );
   }
 
@@ -1433,7 +1459,7 @@ return 'timeout';
       }
 
       this.logger(
-        `[Lifecycle] Restored ${restoredCount} run records from disk`,
+        `[Lifecycle] Restored ${restoredCount} run records from disk`
       );
     }
 
@@ -1457,7 +1483,7 @@ return 'timeout';
 
       if (stateCount > 0) {
         this.logger(
-          `[Lifecycle] Restored ${stateCount} agent states from disk`,
+          `[Lifecycle] Restored ${stateCount} agent states from disk`
         );
       }
     }
@@ -1489,7 +1515,7 @@ return 'timeout';
       task: string;
       label?: string;
       outputText?: string;
-    }>,
+    }>
   ): unknown {
     return {
       agents: outputs.map(o => ({
@@ -1506,9 +1532,10 @@ return 'timeout';
     };
   }
 
-  private voteSynthesis(
-    outputs: Array<{ status: string }>,
-  ): { output: unknown; confidence: number } {
+  private voteSynthesis(outputs: Array<{ status: string }>): {
+    output: unknown;
+    confidence: number;
+  } {
     const statusCounts: Record<string, number> = {};
 
     for (const output of outputs) {
@@ -1531,9 +1558,10 @@ return 'timeout';
     };
   }
 
-  private bestPickSynthesis(
-    records: AgentRunRecord[],
-  ): { output: unknown; confidence: number } {
+  private bestPickSynthesis(records: AgentRunRecord[]): {
+    output: unknown;
+    confidence: number;
+  } {
     // Pick the run with the best outcome and shortest duration
     const completed = records.filter(r => r.outcome?.status === 'ok');
     if (completed.length === 0) {
@@ -1593,7 +1621,7 @@ export function createAgentLifecycleManager(
   registry: AgentRegistry,
   stateDir: string,
   limits?: Partial<ResourceLimits>,
-  heartbeat?: Partial<HeartbeatConfig>,
+  heartbeat?: Partial<HeartbeatConfig>
 ): AgentLifecycleManager {
   return new AgentLifecycleManager({
     registry,

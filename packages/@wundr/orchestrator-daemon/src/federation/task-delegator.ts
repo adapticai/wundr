@@ -21,7 +21,10 @@ import type {
  */
 export interface DelegationTracker {
   track(delegation: DelegationRecord): Promise<void>;
-  update(delegationId: string, updates: Partial<DelegationRecord>): Promise<void>;
+  update(
+    delegationId: string,
+    updates: Partial<DelegationRecord>
+  ): Promise<void>;
   get(delegationId: string): Promise<DelegationRecord | null>;
   getByOrchestrator(orchestratorId: string): Promise<DelegationRecord[]>;
   getByStatus(status: DelegationStatus): Promise<DelegationRecord[]>;
@@ -38,7 +41,10 @@ export class InMemoryDelegationTracker implements DelegationTracker {
     this.delegations.set(delegation.delegationId, delegation);
   }
 
-  async update(delegationId: string, updates: Partial<DelegationRecord>): Promise<void> {
+  async update(
+    delegationId: string,
+    updates: Partial<DelegationRecord>
+  ): Promise<void> {
     const delegation = this.delegations.get(delegationId);
     if (delegation) {
       this.delegations.set(delegationId, { ...delegation, ...updates });
@@ -51,12 +57,16 @@ export class InMemoryDelegationTracker implements DelegationTracker {
 
   async getByOrchestrator(orchestratorId: string): Promise<DelegationRecord[]> {
     return Array.from(this.delegations.values()).filter(
-      (d) => d.fromOrchestrator === orchestratorId || d.toOrchestrator === orchestratorId,
+      d =>
+        d.fromOrchestrator === orchestratorId ||
+        d.toOrchestrator === orchestratorId
     );
   }
 
   async getByStatus(status: DelegationStatus): Promise<DelegationRecord[]> {
-    return Array.from(this.delegations.values()).filter((d) => d.status === status);
+    return Array.from(this.delegations.values()).filter(
+      d => d.status === status
+    );
   }
 
   async delete(delegationId: string): Promise<void> {
@@ -81,13 +91,13 @@ export interface TaskDelegatorConfig {
 export class TaskDelegator extends EventEmitter {
   private tracker: DelegationTracker;
   private config: Required<TaskDelegatorConfig>;
-  private callbackHandlers = new Map<string, (callback: DelegationCallback) => void>();
+  private callbackHandlers = new Map<
+    string,
+    (callback: DelegationCallback) => void
+  >();
   private timeouts = new Map<string, NodeJS.Timeout>();
 
-  constructor(
-    tracker?: DelegationTracker,
-    config: TaskDelegatorConfig = {},
-  ) {
+  constructor(tracker?: DelegationTracker, config: TaskDelegatorConfig = {}) {
     super();
 
     this.tracker = tracker || new InMemoryDelegationTracker();
@@ -106,22 +116,22 @@ export class TaskDelegator extends EventEmitter {
   selectBestOrchestrator(
     task: Task,
     availableOrchestrators: OrchestratorInfo[],
-    context?: DelegationContext,
+    context?: DelegationContext
   ): OrchestratorInfo | null {
     // Filter out unavailable orchestrators
-    let candidates = availableOrchestrators.filter((o) => o.available);
+    let candidates = availableOrchestrators.filter(o => o.available);
 
     // Apply exclusions
     if (context?.excludedOrchestrators?.length) {
       candidates = candidates.filter(
-        (o) => !context.excludedOrchestrators!.includes(o.id),
+        o => !context.excludedOrchestrators!.includes(o.id)
       );
     }
 
     // Apply preferred orchestrators first
     if (context?.preferredOrchestrators?.length) {
-      const preferred = candidates.filter((o) =>
-        context.preferredOrchestrators!.includes(o.id),
+      const preferred = candidates.filter(o =>
+        context.preferredOrchestrators!.includes(o.id)
       );
       if (preferred.length > 0) {
         candidates = preferred;
@@ -133,8 +143,8 @@ export class TaskDelegator extends EventEmitter {
     }
 
     // Score each candidate
-    const scores = candidates.map((orchestrator) =>
-      this.scoreOrchestrator(orchestrator, task, context),
+    const scores = candidates.map(orchestrator =>
+      this.scoreOrchestrator(orchestrator, task, context)
     );
 
     // Sort by score (highest first)
@@ -142,7 +152,7 @@ export class TaskDelegator extends EventEmitter {
 
     // Return the orchestrator with the highest score
     const bestScore = scores[0];
-    return candidates.find((o) => o.id === bestScore.orchestratorId) || null;
+    return candidates.find(o => o.id === bestScore.orchestratorId) || null;
   }
 
   /**
@@ -151,7 +161,7 @@ export class TaskDelegator extends EventEmitter {
   private scoreOrchestrator(
     orchestrator: OrchestratorInfo,
     task: Task,
-    context?: DelegationContext,
+    context?: DelegationContext
   ): CapabilityScore {
     const breakdown = {
       capabilityMatch: 0,
@@ -165,7 +175,7 @@ export class TaskDelegator extends EventEmitter {
     const capabilityScore = this.calculateCapabilityMatch(
       orchestrator.capabilities,
       task,
-      context?.requiredCapabilities,
+      context?.requiredCapabilities
     );
     breakdown.capabilityMatch = capabilityScore;
 
@@ -234,7 +244,7 @@ export class TaskDelegator extends EventEmitter {
   private calculateCapabilityMatch(
     capabilities: string[],
     task: Task,
-    requiredCapabilities?: string[],
+    requiredCapabilities?: string[]
   ): number {
     let score = 0;
 
@@ -246,10 +256,11 @@ export class TaskDelegator extends EventEmitter {
 
     // Required capabilities matching
     if (requiredCapabilities?.length) {
-      const matchedCapabilities = capabilities.filter((c) =>
-        requiredCapabilities.includes(c),
+      const matchedCapabilities = capabilities.filter(c =>
+        requiredCapabilities.includes(c)
       );
-      const matchPercentage = matchedCapabilities.length / requiredCapabilities.length;
+      const matchPercentage =
+        matchedCapabilities.length / requiredCapabilities.length;
       score += matchPercentage * 20;
     }
 
@@ -266,7 +277,7 @@ export class TaskDelegator extends EventEmitter {
     task: Task,
     targetOrchestrator: OrchestratorInfo,
     context: DelegationContext = {},
-    fromOrchestrator: string = 'local',
+    fromOrchestrator: string = 'local'
   ): Promise<string> {
     const delegationId = uuidv4();
 
@@ -313,7 +324,7 @@ export class TaskDelegator extends EventEmitter {
   private simulateDelegation(
     delegationId: string,
     targetOrchestrator: OrchestratorInfo,
-    task: Task,
+    task: Task
   ): void {
     // This is a placeholder - in real implementation, this would:
     // 1. Establish connection with target orchestrator
@@ -334,13 +345,15 @@ export class TaskDelegator extends EventEmitter {
    */
   async waitForResult(
     delegationId: string,
-    timeout?: number,
+    timeout?: number
   ): Promise<DelegationResult> {
     const waitTimeout = timeout || this.config.callbackTimeout;
 
     return new Promise((resolve, reject) => {
       const timeoutHandle = setTimeout(() => {
-        reject(new Error(`Timeout waiting for delegation result: ${delegationId}`));
+        reject(
+          new Error(`Timeout waiting for delegation result: ${delegationId}`)
+        );
       }, waitTimeout);
 
       const checkResult = async () => {
@@ -354,10 +367,21 @@ export class TaskDelegator extends EventEmitter {
 
         if (delegation.status === 'completed') {
           clearTimeout(timeoutHandle);
-          resolve(delegation.result || { success: false, error: 'No result provided', timestamp: new Date() });
-        } else if (delegation.status === 'failed' || delegation.status === 'cancelled') {
+          resolve(
+            delegation.result || {
+              success: false,
+              error: 'No result provided',
+              timestamp: new Date(),
+            }
+          );
+        } else if (
+          delegation.status === 'failed' ||
+          delegation.status === 'cancelled'
+        ) {
           clearTimeout(timeoutHandle);
-          reject(new Error(delegation.error || `Delegation ${delegation.status}`));
+          reject(
+            new Error(delegation.error || `Delegation ${delegation.status}`)
+          );
         } else {
           // Still in progress, check again
           setTimeout(checkResult, 1000);
@@ -392,7 +416,11 @@ export class TaskDelegator extends EventEmitter {
       result,
     };
 
-    if (status === 'completed' || status === 'failed' || status === 'cancelled') {
+    if (
+      status === 'completed' ||
+      status === 'failed' ||
+      status === 'cancelled'
+    ) {
       updates.completedAt = timestamp;
     }
 
@@ -436,10 +464,11 @@ export class TaskDelegator extends EventEmitter {
 
     // Calculate retry delay with exponential backoff
     const retryDelay =
-      this.config.retryDelay * Math.pow(this.config.backoffMultiplier, delegation.retryCount);
+      this.config.retryDelay *
+      Math.pow(this.config.backoffMultiplier, delegation.retryCount);
 
     // Wait before retrying
-    await new Promise((resolve) => setTimeout(resolve, retryDelay));
+    await new Promise(resolve => setTimeout(resolve, retryDelay));
 
     // Create new delegation
     const newDelegationId = uuidv4();
@@ -486,8 +515,13 @@ export class TaskDelegator extends EventEmitter {
       throw new Error(`Delegation not found: ${delegationId}`);
     }
 
-    if (delegation.status === 'completed' || delegation.status === 'cancelled') {
-      throw new Error(`Cannot cancel delegation in status: ${delegation.status}`);
+    if (
+      delegation.status === 'completed' ||
+      delegation.status === 'cancelled'
+    ) {
+      throw new Error(
+        `Cannot cancel delegation in status: ${delegation.status}`
+      );
     }
 
     // Clear timeout
@@ -520,7 +554,10 @@ export class TaskDelegator extends EventEmitter {
     }
 
     // Only handle timeout if still in progress
-    if (delegation.status === 'in_progress' || delegation.status === 'pending') {
+    if (
+      delegation.status === 'in_progress' ||
+      delegation.status === 'pending'
+    ) {
       await this.tracker.update(delegationId, {
         status: 'failed',
         completedAt: new Date(),
@@ -541,21 +578,27 @@ export class TaskDelegator extends EventEmitter {
   /**
    * Get delegation status
    */
-  async getDelegationStatus(delegationId: string): Promise<DelegationRecord | null> {
+  async getDelegationStatus(
+    delegationId: string
+  ): Promise<DelegationRecord | null> {
     return this.tracker.get(delegationId);
   }
 
   /**
    * Get all delegations for an orchestrator
    */
-  async getOrchestratorDelegations(orchestratorId: string): Promise<DelegationRecord[]> {
+  async getOrchestratorDelegations(
+    orchestratorId: string
+  ): Promise<DelegationRecord[]> {
     return this.tracker.getByOrchestrator(orchestratorId);
   }
 
   /**
    * Get delegations by status
    */
-  async getDelegationsByStatus(status: DelegationStatus): Promise<DelegationRecord[]> {
+  async getDelegationsByStatus(
+    status: DelegationStatus
+  ): Promise<DelegationRecord[]> {
     return this.tracker.getByStatus(status);
   }
 
@@ -568,8 +611,11 @@ export class TaskDelegator extends EventEmitter {
     const failedDelegations = await this.tracker.getByStatus('failed');
     const cancelledDelegations = await this.tracker.getByStatus('cancelled');
 
-    const toDelete = [...completedDelegations, ...failedDelegations, ...cancelledDelegations]
-      .filter((d) => d.completedAt && d.completedAt < cutoff);
+    const toDelete = [
+      ...completedDelegations,
+      ...failedDelegations,
+      ...cancelledDelegations,
+    ].filter(d => d.completedAt && d.completedAt < cutoff);
 
     for (const delegation of toDelete) {
       await this.tracker.delete(delegation.delegationId);
@@ -583,7 +629,7 @@ export class TaskDelegator extends EventEmitter {
    */
   async shutdown(): Promise<void> {
     // Clear all timeouts
-    this.timeouts.forEach((timeoutHandle) => {
+    this.timeouts.forEach(timeoutHandle => {
       clearTimeout(timeoutHandle);
     });
     this.timeouts.clear();

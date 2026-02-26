@@ -72,7 +72,9 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
   /**
    * Register an orchestrator with the federation
    */
-  async registerOrchestrator(metadata: RegistryOrchestratorMetadata): Promise<void> {
+  async registerOrchestrator(
+    metadata: RegistryOrchestratorMetadata
+  ): Promise<void> {
     if (!this.connected) {
       throw new Error('Redis not connected');
     }
@@ -179,7 +181,9 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
   /**
    * Get orchestrators by capability
    */
-  async getOrchestratorsByCapability(capabilities: string[]): Promise<RegistryOrchestratorMetadata[]> {
+  async getOrchestratorsByCapability(
+    capabilities: string[]
+  ): Promise<RegistryOrchestratorMetadata[]> {
     if (!this.connected) {
       throw new Error('Redis not connected');
     }
@@ -189,21 +193,29 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
     }
 
     // Get intersection of all capability sets
-    const capabilityKeys = capabilities.map(cap => this.getCapabilityIndexKey(cap));
+    const capabilityKeys = capabilities.map(cap =>
+      this.getCapabilityIndexKey(cap)
+    );
     const orchestratorIds = await this.redis.sInter(capabilityKeys);
 
     // Fetch metadata for all matching orchestrators
-    const metadataPromises = orchestratorIds.map(id => this.getOrchestratorMetadata(id));
+    const metadataPromises = orchestratorIds.map(id =>
+      this.getOrchestratorMetadata(id)
+    );
     const metadataList = await Promise.all(metadataPromises);
 
     // Filter out null values
-    return metadataList.filter((m): m is RegistryOrchestratorMetadata => m !== null);
+    return metadataList.filter(
+      (m): m is RegistryOrchestratorMetadata => m !== null
+    );
   }
 
   /**
    * Get orchestrators by region
    */
-  async getOrchestratorsByRegion(region: string): Promise<RegistryOrchestratorMetadata[]> {
+  async getOrchestratorsByRegion(
+    region: string
+  ): Promise<RegistryOrchestratorMetadata[]> {
     if (!this.connected) {
       throw new Error('Redis not connected');
     }
@@ -212,11 +224,15 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
     const orchestratorIds = await this.redis.sMembers(regionKey);
 
     // Fetch metadata for all orchestrators in region
-    const metadataPromises = orchestratorIds.map(id => this.getOrchestratorMetadata(id));
+    const metadataPromises = orchestratorIds.map(id =>
+      this.getOrchestratorMetadata(id)
+    );
     const metadataList = await Promise.all(metadataPromises);
 
     // Filter out null values
-    return metadataList.filter((m): m is RegistryOrchestratorMetadata => m !== null);
+    return metadataList.filter(
+      (m): m is RegistryOrchestratorMetadata => m !== null
+    );
   }
 
   /**
@@ -241,7 +257,9 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
   /**
    * Get orchestrator metrics
    */
-  async getOrchestratorMetrics(id: string): Promise<RegistryOrchestratorMetrics | null> {
+  async getOrchestratorMetrics(
+    id: string
+  ): Promise<RegistryOrchestratorMetrics | null> {
     if (!this.connected) {
       throw new Error('Redis not connected');
     }
@@ -251,13 +269,13 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
       return null;
     }
 
-    const load = metadata.maxSessions > 0
-      ? metadata.currentSessions / metadata.maxSessions
-      : 0;
+    const load =
+      metadata.maxSessions > 0
+        ? metadata.currentSessions / metadata.maxSessions
+        : 0;
 
-    const tokenUtilization = metadata.tokenLimit > 0
-      ? metadata.tokensUsed / metadata.tokenLimit
-      : 0;
+    const tokenUtilization =
+      metadata.tokenLimit > 0 ? metadata.tokensUsed / metadata.tokenLimit : 0;
 
     const uptime = Date.now() - metadata.registeredAt.getTime();
 
@@ -277,7 +295,9 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
   /**
    * Query orchestrators with complex filters
    */
-  async queryOrchestrators(query: OrchestratorQuery): Promise<RegistryOrchestratorMetadata[]> {
+  async queryOrchestrators(
+    query: OrchestratorQuery
+  ): Promise<RegistryOrchestratorMetadata[]> {
     if (!this.connected) {
       throw new Error('Redis not connected');
     }
@@ -307,7 +327,8 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
 
       // Filter by available sessions
       if (query.minAvailableSessions !== undefined) {
-        const availableSessions = orchestrator.maxSessions - orchestrator.currentSessions;
+        const availableSessions =
+          orchestrator.maxSessions - orchestrator.currentSessions;
         if (availableSessions < query.minAvailableSessions) {
           return false;
         }
@@ -315,7 +336,8 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
 
       // Filter by available tokens
       if (query.minAvailableTokens !== undefined) {
-        const availableTokens = orchestrator.tokenLimit - orchestrator.tokensUsed;
+        const availableTokens =
+          orchestrator.tokenLimit - orchestrator.tokensUsed;
         if (availableTokens < query.minAvailableTokens) {
           return false;
         }
@@ -328,7 +350,9 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
   /**
    * Get metadata for a specific orchestrator
    */
-  async getOrchestratorMetadata(id: string): Promise<RegistryOrchestratorMetadata | null> {
+  async getOrchestratorMetadata(
+    id: string
+  ): Promise<RegistryOrchestratorMetadata | null> {
     if (!this.connected) {
       throw new Error('Redis not connected');
     }
@@ -357,17 +381,26 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
       throw new Error('Redis not connected');
     }
 
-    const orchestratorIds = await this.redis.sMembers(this.getOrchestratorSetKey());
-    const metadataPromises = orchestratorIds.map(id => this.getOrchestratorMetadata(id));
+    const orchestratorIds = await this.redis.sMembers(
+      this.getOrchestratorSetKey()
+    );
+    const metadataPromises = orchestratorIds.map(id =>
+      this.getOrchestratorMetadata(id)
+    );
     const metadataList = await Promise.all(metadataPromises);
 
-    return metadataList.filter((m): m is RegistryOrchestratorMetadata => m !== null);
+    return metadataList.filter(
+      (m): m is RegistryOrchestratorMetadata => m !== null
+    );
   }
 
   /**
    * Update orchestrator status
    */
-  async updateStatus(id: string, status: RegistryOrchestratorStatus): Promise<void> {
+  async updateStatus(
+    id: string,
+    status: RegistryOrchestratorStatus
+  ): Promise<void> {
     if (!this.connected) {
       throw new Error('Redis not connected');
     }
@@ -396,7 +429,7 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
     updates: {
       currentSessions?: number;
       tokensUsed?: number;
-    },
+    }
   ): Promise<void> {
     if (!this.connected) {
       throw new Error('Redis not connected');
@@ -446,14 +479,25 @@ export class FederationRegistry extends EventEmitter<FederationRegistryEvents> {
 
       // Check if stale (>5 min) - auto-deregister
       if (lastHeartbeat < staleThreshold) {
-        this.emit('orchestrator:stale', orchestrator.id, orchestrator.lastHeartbeat);
+        this.emit(
+          'orchestrator:stale',
+          orchestrator.id,
+          orchestrator.lastHeartbeat
+        );
         await this.deregisterOrchestrator(orchestrator.id);
         continue;
       }
 
       // Check if unhealthy (>30s) - mark as offline
-      if (lastHeartbeat < unhealthyThreshold && orchestrator.status !== 'offline') {
-        this.emit('orchestrator:unhealthy', orchestrator.id, orchestrator.lastHeartbeat);
+      if (
+        lastHeartbeat < unhealthyThreshold &&
+        orchestrator.status !== 'offline'
+      ) {
+        this.emit(
+          'orchestrator:unhealthy',
+          orchestrator.id,
+          orchestrator.lastHeartbeat
+        );
         await this.updateStatus(orchestrator.id, 'offline');
       }
     }

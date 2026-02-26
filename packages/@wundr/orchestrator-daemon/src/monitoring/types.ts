@@ -135,6 +135,8 @@ export interface IMetricsRegistry {
   register(): void;
   collect(): Promise<string>;
   reset(): void;
-  getMetric(name: keyof DaemonMetrics): Counter<string> | Gauge<string> | Histogram<string> | undefined;
+  getMetric(
+    name: keyof DaemonMetrics
+  ): Counter<string> | Gauge<string> | Histogram<string> | undefined;
   getRegistry(): Registry;
 }

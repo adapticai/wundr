@@ -243,7 +243,7 @@ class TwilioRateLimiter {
         const retryAfterSec = extractRetryAfterSec(err);
         if (retryAfterSec > 0 && attempt < this.maxRetries) {
           this.logger.warn(
-            `Twilio rate limited on ${label}: retrying after ${retryAfterSec}s (attempt ${attempt + 1}/${this.maxRetries}).`,
+            `Twilio rate limited on ${label}: retrying after ${retryAfterSec}s (attempt ${attempt + 1}/${this.maxRetries}).`
           );
           await sleep(retryAfterSec * 1000);
           continue;
@@ -341,14 +341,14 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
     }
     if (!twilioConfig.phoneNumbers || twilioConfig.phoneNumbers.length === 0) {
       throw new Error(
-        'Twilio adapter requires at least one phoneNumbers entry.',
+        'Twilio adapter requires at least one phoneNumbers entry.'
       );
     }
 
     this.twilioConfig = twilioConfig;
     this.rateLimiter = new TwilioRateLimiter(
       twilioConfig.maxRetries ?? 3,
-      this.logger,
+      this.logger
     );
 
     // Validate credentials with a lightweight account fetch.
@@ -365,7 +365,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
     this.config = config;
 
     this.logger.info(
-      `Twilio adapter connected (accountSid: ${twilioConfig.accountSid}, numbers: ${twilioConfig.phoneNumbers.map((n) => n.number).join(', ')}).`,
+      `Twilio adapter connected (accountSid: ${twilioConfig.accountSid}, numbers: ${twilioConfig.phoneNumbers.map(n => n.number).join(', ')}).`
     );
 
     this.emit('connected', {
@@ -411,7 +411,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
         lastMessageAt: this.lastMessageAt ?? undefined,
         lastErrorAt: this.lastErrorAt ?? undefined,
         details: {
-          phoneNumbers: this.twilioConfig.phoneNumbers.map((n) => n.number),
+          phoneNumbers: this.twilioConfig.phoneNumbers.map(n => n.number),
           webhookBaseUrl: this.twilioConfig.webhookBaseUrl,
         },
       };
@@ -463,7 +463,11 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
    * @param from - Sender number in E.164. Defaults to the configured defaultFromNumber
    *               or the first number with SMS capability.
    */
-  async sendSMS(to: string, body: string, from?: string): Promise<DeliveryResult> {
+  async sendSMS(
+    to: string,
+    body: string,
+    from?: string
+  ): Promise<DeliveryResult> {
     this.requireConnected();
 
     const fromNumber = this.resolveFromNumber(from, 'sms');
@@ -480,12 +484,12 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
           To: to,
           From: fromNumber,
           Body: body,
-        }),
+        })
       );
 
       if (response.error_code) {
         this.logger.error(
-          `Twilio SMS error ${response.error_code}: ${response.error_message}`,
+          `Twilio SMS error ${response.error_code}: ${response.error_message}`
         );
         return {
           ok: false,
@@ -494,7 +498,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
       }
 
       this.logger.info(
-        `Twilio SMS sent: SID=${response.sid} to=${to} from=${fromNumber}`,
+        `Twilio SMS sent: SID=${response.sid} to=${to} from=${fromNumber}`
       );
 
       return {
@@ -518,7 +522,9 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
    * @param webhookData - The parsed form-encoded body from Twilio's webhook.
    * @returns The normalized message, or null if the payload is invalid.
    */
-  handleIncomingSMS(webhookData: TwilioSmsWebhookData): NormalizedMessage | null {
+  handleIncomingSMS(
+    webhookData: TwilioSmsWebhookData
+  ): NormalizedMessage | null {
     if (!webhookData.MessageSid || !webhookData.From || !webhookData.To) {
       this.logger.warn('Twilio handleIncomingSMS: missing required fields.');
       return null;
@@ -543,7 +549,11 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
    * @param twimlUrl - URL that Twilio will fetch to get TwiML instructions for the call.
    * @param from - Caller ID in E.164. Defaults to configured defaultFromNumber.
    */
-  async makeCall(to: string, twimlUrl: string, from?: string): Promise<DeliveryResult> {
+  async makeCall(
+    to: string,
+    twimlUrl: string,
+    from?: string
+  ): Promise<DeliveryResult> {
     this.requireConnected();
 
     const fromNumber = this.resolveFromNumber(from, 'voice');
@@ -560,11 +570,11 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
           To: to,
           From: fromNumber,
           Url: twimlUrl,
-        }),
+        })
       );
 
       this.logger.info(
-        `Twilio call initiated: SID=${response.sid} to=${to} from=${fromNumber}`,
+        `Twilio call initiated: SID=${response.sid} to=${to} from=${fromNumber}`
       );
 
       return {
@@ -591,11 +601,14 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
    */
   handleIncomingCall(
     webhookData: TwilioVoiceWebhookData,
-    twimlOptions?: TwiMLOptions,
+    twimlOptions?: TwiMLOptions
   ): string {
     if (!webhookData.CallSid || !webhookData.From) {
       this.logger.warn('Twilio handleIncomingCall: missing required fields.');
-      return this.generateTwiML({ say: 'Sorry, an error occurred.', hangup: true });
+      return this.generateTwiML({
+        say: 'Sorry, an error occurred.',
+        hangup: true,
+      });
     }
 
     // Emit a "message" event so the orchestrator can respond.
@@ -620,7 +633,10 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
    * @returns TwiML XML string ready to return as the HTTP response body.
    */
   generateTwiML(options: TwiMLOptions): string {
-    const parts: string[] = ['<?xml version="1.0" encoding="UTF-8"?>', '<Response>'];
+    const parts: string[] = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<Response>',
+    ];
 
     if (options.pause) {
       parts.push(`  <Pause length="${options.pause}"/>`);
@@ -641,8 +657,12 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
       }
 
       if (g.say) {
-        const voice = options.voice ? ` voice="${escapeTwiMLAttr(options.voice)}"` : '';
-        const lang = options.language ? ` language="${escapeTwiMLAttr(options.language)}"` : '';
+        const voice = options.voice
+          ? ` voice="${escapeTwiMLAttr(options.voice)}"`
+          : '';
+        const lang = options.language
+          ? ` language="${escapeTwiMLAttr(options.language)}"`
+          : '';
         parts.push(`  <Gather ${attrs.join(' ')}>`);
         parts.push(`    <Say${voice}${lang}>${escapeTwiMLText(g.say)}</Say>`);
         parts.push('  </Gather>');
@@ -650,8 +670,12 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
         parts.push(`  <Gather ${attrs.join(' ')}/>`);
       }
     } else if (options.say) {
-      const voice = options.voice ? ` voice="${escapeTwiMLAttr(options.voice)}"` : '';
-      const lang = options.language ? ` language="${escapeTwiMLAttr(options.language)}"` : '';
+      const voice = options.voice
+        ? ` voice="${escapeTwiMLAttr(options.voice)}"`
+        : '';
+      const lang = options.language
+        ? ` language="${escapeTwiMLAttr(options.language)}"`
+        : '';
       parts.push(`  <Say${voice}${lang}>${escapeTwiMLText(options.say)}</Say>`);
     }
 
@@ -660,7 +684,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
         ? ` callerId="${escapeTwiMLAttr(options.dial.callerId)}"`
         : '';
       parts.push(
-        `  <Dial${callerId}><Number>${escapeTwiMLText(options.dial.number)}</Number></Dial>`,
+        `  <Dial${callerId}><Number>${escapeTwiMLText(options.dial.number)}</Number></Dial>`
       );
     }
 
@@ -688,7 +712,11 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
    * @param body - Message text.
    * @param from - Sender WhatsApp number. Defaults to the first WhatsApp-capable number.
    */
-  async sendWhatsApp(to: string, body: string, from?: string): Promise<DeliveryResult> {
+  async sendWhatsApp(
+    to: string,
+    body: string,
+    from?: string
+  ): Promise<DeliveryResult> {
     this.requireConnected();
 
     const fromNumber = this.resolveFromNumber(from, 'whatsapp');
@@ -711,7 +739,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
           To: normalizedTo,
           From: normalizedFrom,
           Body: body,
-        }),
+        })
       );
 
       if (response.error_code) {
@@ -722,7 +750,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
       }
 
       this.logger.info(
-        `Twilio WhatsApp sent: SID=${response.sid} to=${normalizedTo}`,
+        `Twilio WhatsApp sent: SID=${response.sid} to=${normalizedTo}`
       );
 
       return {
@@ -746,9 +774,13 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
    * @param webhookData - The parsed form-encoded body from Twilio's WhatsApp webhook.
    * @returns The normalized message, or null if the payload is invalid.
    */
-  handleIncomingWhatsApp(webhookData: TwilioSmsWebhookData): NormalizedMessage | null {
+  handleIncomingWhatsApp(
+    webhookData: TwilioSmsWebhookData
+  ): NormalizedMessage | null {
     if (!webhookData.MessageSid || !webhookData.From || !webhookData.To) {
-      this.logger.warn('Twilio handleIncomingWhatsApp: missing required fields.');
+      this.logger.warn(
+        'Twilio handleIncomingWhatsApp: missing required fields.'
+      );
       return null;
     }
 
@@ -773,7 +805,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
    */
   async listAvailableNumbers(
     countryCode: string,
-    areaCode?: string,
+    areaCode?: string
   ): Promise<TwilioAvailableNumber[]> {
     this.requireConnected();
 
@@ -784,10 +816,12 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
 
     try {
       const url = this.buildApiUrl(
-        `AvailablePhoneNumbers/${countryCode.toUpperCase()}/Local.json?${params.toString()}`,
+        `AvailablePhoneNumbers/${countryCode.toUpperCase()}/Local.json?${params.toString()}`
       );
       const response = await this.withRateLimit('available-numbers', () =>
-        this.twilioGet<{ available_phone_numbers: TwilioAvailableNumber[] }>(url),
+        this.twilioGet<{ available_phone_numbers: TwilioAvailableNumber[] }>(
+          url
+        )
       );
       return response.available_phone_numbers ?? [];
     } catch (err) {
@@ -808,7 +842,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
   async provisionNumber(
     countryCode: string,
     areaCode?: string,
-    capabilities: ('voice' | 'sms' | 'whatsapp')[] = ['sms', 'voice'],
+    capabilities: ('voice' | 'sms' | 'whatsapp')[] = ['sms', 'voice']
   ): Promise<TwilioPhoneNumber> {
     this.requireConnected();
     const config = this.requireConfig();
@@ -817,7 +851,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
     const available = await this.listAvailableNumbers(countryCode, areaCode);
     if (available.length === 0) {
       throw new Error(
-        `No available numbers found for country=${countryCode}${areaCode ? `, areaCode=${areaCode}` : ''}.`,
+        `No available numbers found for country=${countryCode}${areaCode ? `, areaCode=${areaCode}` : ''}.`
       );
     }
 
@@ -826,14 +860,17 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
     // Purchase the number.
     const webhookBase = config.webhookBaseUrl.replace(/\/$/, '');
     const purchased = await this.withRateLimit('provision', () =>
-      this.twilioPost<TwilioIncomingNumberResponse>('IncomingPhoneNumbers.json', {
-        PhoneNumber: target.phone_number,
-        SmsUrl: `${webhookBase}/webhooks/twilio/sms`,
-        SmsMethod: 'POST',
-        VoiceUrl: `${webhookBase}/webhooks/twilio/voice`,
-        VoiceMethod: 'POST',
-        StatusCallback: `${webhookBase}/webhooks/twilio/status`,
-      }),
+      this.twilioPost<TwilioIncomingNumberResponse>(
+        'IncomingPhoneNumbers.json',
+        {
+          PhoneNumber: target.phone_number,
+          SmsUrl: `${webhookBase}/webhooks/twilio/sms`,
+          SmsMethod: 'POST',
+          VoiceUrl: `${webhookBase}/webhooks/twilio/voice`,
+          VoiceMethod: 'POST',
+          StatusCallback: `${webhookBase}/webhooks/twilio/status`,
+        }
+      )
     );
 
     const provisioned: TwilioPhoneNumber = {
@@ -843,7 +880,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
     };
 
     this.logger.info(
-      `Twilio provisioned number: ${purchased.phone_number} (SID: ${purchased.sid})`,
+      `Twilio provisioned number: ${purchased.phone_number} (SID: ${purchased.sid})`
     );
 
     return provisioned;
@@ -859,7 +896,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
 
     try {
       await this.withRateLimit('release', () =>
-        this.twilioDelete(`IncomingPhoneNumbers/${phoneSid}.json`),
+        this.twilioDelete(`IncomingPhoneNumbers/${phoneSid}.json`)
       );
       this.logger.info(`Twilio released number SID: ${phoneSid}`);
     } catch (err) {
@@ -887,7 +924,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
   async validateWebhook(
     signature: string,
     url: string,
-    params: Record<string, string>,
+    params: Record<string, string>
   ): Promise<boolean> {
     if (!this.twilioConfig?.authToken) {
       return false;
@@ -900,7 +937,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
       // Build the data string: URL + sorted param key-value pairs concatenated.
       const sortedKeys = Object.keys(params).sort();
       const paramString = sortedKeys
-        .map((key) => `${key}${params[key]}`)
+        .map(key => `${key}${params[key]}`)
         .join('');
       const dataString = url + paramString;
 
@@ -912,7 +949,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
       return hmac === signature;
     } catch (err) {
       this.logger.error(
-        `Twilio validateWebhook crypto error: ${err instanceof Error ? err.message : String(err)}`,
+        `Twilio validateWebhook crypto error: ${err instanceof Error ? err.message : String(err)}`
       );
       return false;
     }
@@ -928,7 +965,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
    */
   routeWebhook(
     type: 'sms' | 'whatsapp' | 'voice',
-    data: TwilioSmsWebhookData | TwilioVoiceWebhookData,
+    data: TwilioSmsWebhookData | TwilioVoiceWebhookData
   ): NormalizedMessage | string | null {
     switch (type) {
       case 'sms':
@@ -949,7 +986,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
 
   async validateSender(
     senderId: string,
-    _chatType: ChatType,
+    _chatType: ChatType
   ): Promise<SenderValidation> {
     const config = this.twilioConfig;
     if (!config?.pairing?.requireApproval) {
@@ -959,7 +996,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
     const allowList = config.dmAllowList ?? config.pairing.allowList ?? [];
     const normalized = normalizeE164(senderId);
     const isAllowed = allowList.some(
-      (entry) => normalizeE164(entry) === normalized,
+      entry => normalizeE164(entry) === normalized
     );
 
     return isAllowed
@@ -989,7 +1026,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
 
   private normalizeInboundSMS(
     data: TwilioSmsWebhookData,
-    mode: 'sms' | 'whatsapp',
+    mode: 'sms' | 'whatsapp'
   ): NormalizedMessage | null {
     const from = data.From;
     const to = data.To;
@@ -1030,7 +1067,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
   }
 
   private normalizeInboundCall(
-    data: TwilioVoiceWebhookData,
+    data: TwilioVoiceWebhookData
   ): NormalizedMessage | null {
     const from = data.From;
     if (!from) {
@@ -1066,7 +1103,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
   }
 
   private extractTwilioMediaAttachments(
-    data: TwilioSmsWebhookData,
+    data: TwilioSmsWebhookData
   ): NormalizedAttachment[] {
     const numMedia = parseInt(data.NumMedia ?? '0', 10);
     if (!numMedia || numMedia <= 0) {
@@ -1100,7 +1137,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
    */
   private resolveFromNumber(
     from: string | undefined,
-    capability: 'sms' | 'voice' | 'whatsapp',
+    capability: 'sms' | 'voice' | 'whatsapp'
   ): string | null {
     const config = this.twilioConfig;
     if (!config) {
@@ -1114,7 +1151,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
     if (from) {
       const rawFrom = stripPrefix(from);
       const found = config.phoneNumbers.find(
-        (n) => n.number === rawFrom || n.number === from,
+        n => n.number === rawFrom || n.number === from
       );
       if (found && found.capabilities.includes(capability)) {
         return found.number;
@@ -1128,8 +1165,8 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
     }
 
     // Auto-select the first number with the required capability.
-    const capable = config.phoneNumbers.find((n) =>
-      n.capabilities.includes(capability),
+    const capable = config.phoneNumbers.find(n =>
+      n.capabilities.includes(capability)
     );
     return capable?.number ?? null;
   }
@@ -1149,7 +1186,10 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
     return `Basic ${Buffer.from(credentials).toString('base64')}`;
   }
 
-  private async twilioPost<T>(path: string, body: Record<string, string>): Promise<T> {
+  private async twilioPost<T>(
+    path: string,
+    body: Record<string, string>
+  ): Promise<T> {
     const url = this.buildApiUrl(path);
     const formBody = new URLSearchParams(body).toString();
 
@@ -1174,7 +1214,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
       const err = new TwilioApiError(
         `Twilio API error ${twilioCode}: ${twilioMessage}`,
         response.status,
-        twilioCode,
+        twilioCode
       );
       throw err;
     }
@@ -1199,7 +1239,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
       throw new TwilioApiError(
         `Twilio API error ${response.status}: ${errorBody?.message ?? response.statusText}`,
         response.status,
-        errorBody?.code,
+        errorBody?.code
       );
     }
 
@@ -1223,7 +1263,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
       throw new TwilioApiError(
         `Twilio DELETE error ${response.status}: ${errorBody?.message ?? response.statusText}`,
         response.status,
-        errorBody?.code,
+        errorBody?.code
       );
     }
   }
@@ -1236,7 +1276,7 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
 
   private async withRateLimit<T>(
     label: string,
-    fn: () => Promise<T>,
+    fn: () => Promise<T>
   ): Promise<T> {
     if (!this.rateLimiter) {
       return fn();
@@ -1250,17 +1290,13 @@ export class TwilioChannelAdapter extends BaseChannelAdapter {
 
   private requireConnected(): void {
     if (!this.connected || !this.twilioConfig) {
-      throw new Error(
-        'Twilio adapter is not connected. Call connect() first.',
-      );
+      throw new Error('Twilio adapter is not connected. Call connect() first.');
     }
   }
 
   private requireConfig(): TwilioConfig {
     if (!this.twilioConfig) {
-      throw new Error(
-        'Twilio adapter is not connected. Call connect() first.',
-      );
+      throw new Error('Twilio adapter is not connected. Call connect() first.');
     }
     return this.twilioConfig;
   }
@@ -1278,7 +1314,7 @@ class TwilioApiError extends Error {
   constructor(
     message: string,
     readonly httpStatus: number,
-    readonly twilioCode?: number,
+    readonly twilioCode?: number
   ) {
     super(message);
     this.name = 'TwilioApiError';
@@ -1311,7 +1347,7 @@ function extractRetryAfterSec(err: unknown): number {
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
@@ -1329,7 +1365,7 @@ function normalizeE164(raw: string): string {
  * Resolve a MIME type to a normalized attachment type.
  */
 function resolveAttachmentType(
-  mimeType?: string,
+  mimeType?: string
 ): 'image' | 'video' | 'audio' | 'file' {
   if (!mimeType) {
     return 'file';

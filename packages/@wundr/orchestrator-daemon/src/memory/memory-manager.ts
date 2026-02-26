@@ -219,14 +219,17 @@ interface SqliteDatabase {
 }
 
 interface SqliteStatement {
-  run(...params: unknown[]): { changes: number; lastInsertRowid: number | bigint };
+  run(...params: unknown[]): {
+    changes: number;
+    lastInsertRowid: number | bigint;
+  };
   get(...params: unknown[]): unknown;
   all(...params: unknown[]): unknown[];
 }
 
 type BetterSqlite3Constructor = new (
   filename: string,
-  options?: Record<string, unknown>,
+  options?: Record<string, unknown>
 ) => SqliteDatabase;
 
 let _BetterSqlite3: BetterSqlite3Constructor | null | undefined = undefined;
@@ -294,10 +297,13 @@ class InMemoryDatabase implements SqliteDatabase {
 class InMemoryStatement implements SqliteStatement {
   constructor(
     private db: InMemoryDatabase,
-    private sql: string,
+    private sql: string
   ) {}
 
-  run(...params: unknown[]): { changes: number; lastInsertRowid: number | bigint } {
+  run(...params: unknown[]): {
+    changes: number;
+    lastInsertRowid: number | bigint;
+  } {
     // Parse simple INSERT/UPDATE/DELETE for the tables we use
     const sql = this.sql.trim();
 
@@ -306,7 +312,9 @@ class InMemoryStatement implements SqliteStatement {
       const tableMatch = /INTO\s+(\w+)/i.exec(sql);
       const tableName = tableMatch?.[1] ?? 'memories';
       const table = this.db._getTable(tableName);
-      const id = (params[0] as string) ?? `auto_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const id =
+        (params[0] as string) ??
+        `auto_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       const row: Record<string, unknown> = { id };
       // Map positional params to columns based on the SQL
       const colMatch = /\(([^)]+)\)\s*VALUES/i.exec(sql);
@@ -418,7 +426,7 @@ export class MemoryManager {
     this.episodic = [];
     this.semantic = [];
     this.lruCache = new LRUCache<string, MemoryEntry>(
-      this.persistenceConfig.lruCacheSize,
+      this.persistenceConfig.lruCacheSize
     );
 
     this.initializeDatabase();
@@ -449,20 +457,20 @@ export class MemoryManager {
         this.db.pragma('foreign_keys = ON');
 
         this.logger.info(
-          `SQLite database opened: ${this.persistenceConfig.dbPath}`,
+          `SQLite database opened: ${this.persistenceConfig.dbPath}`
         );
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         this.errors.push(`SQLite open failed: ${message}`);
         this.logger.warn(
-          `Failed to open SQLite database, using in-memory fallback: ${message}`,
+          `Failed to open SQLite database, using in-memory fallback: ${message}`
         );
         this.db = new InMemoryDatabase();
         this.dbBackend = 'in-memory';
       }
     } else {
       this.logger.info(
-        'better-sqlite3 not available, using in-memory fallback',
+        'better-sqlite3 not available, using in-memory fallback'
       );
       this.db = new InMemoryDatabase();
       this.dbBackend = 'in-memory';
@@ -546,9 +554,11 @@ export class MemoryManager {
       }
 
       // Store schema version
-      this.db.prepare(
-        `INSERT OR REPLACE INTO ${META_TABLE} (key, value) VALUES (?, ?)`,
-      ).run('schema_version', String(SCHEMA_VERSION));
+      this.db
+        .prepare(
+          `INSERT OR REPLACE INTO ${META_TABLE} (key, value) VALUES (?, ?)`
+        )
+        .run('schema_version', String(SCHEMA_VERSION));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.errors.push(`Schema creation failed: ${message}`);
@@ -566,12 +576,14 @@ export class MemoryManager {
     }
 
     try {
-      const episodicRows = this.db.prepare(
-        `SELECT id, content, type, timestamp, metadata
+      const episodicRows = this.db
+        .prepare(
+          `SELECT id, content, type, timestamp, metadata
          FROM ${MEMORIES_TABLE}
          WHERE tier = ?
-         ORDER BY timestamp DESC`,
-      ).all('episodic') as Array<{
+         ORDER BY timestamp DESC`
+        )
+        .all('episodic') as Array<{
         id: string;
         content: string;
         type: string;
@@ -581,12 +593,14 @@ export class MemoryManager {
 
       this.episodic = episodicRows.map(row => this.rowToEntry(row));
 
-      const semanticRows = this.db.prepare(
-        `SELECT id, content, type, timestamp, metadata
+      const semanticRows = this.db
+        .prepare(
+          `SELECT id, content, type, timestamp, metadata
          FROM ${MEMORIES_TABLE}
          WHERE tier = ?
-         ORDER BY timestamp DESC`,
-      ).all('semantic') as Array<{
+         ORDER BY timestamp DESC`
+        )
+        .all('semantic') as Array<{
         id: string;
         content: string;
         type: string;
@@ -597,10 +611,12 @@ export class MemoryManager {
       this.semantic = semanticRows.map(row => this.rowToEntry(row));
 
       // Load session deltas
-      const deltaRows = this.db.prepare(
-        `SELECT session_id, last_indexed_turn, last_indexed_at, pending_turns
-         FROM ${SESSION_DELTAS_TABLE}`,
-      ).all() as Array<{
+      const deltaRows = this.db
+        .prepare(
+          `SELECT session_id, last_indexed_turn, last_indexed_at, pending_turns
+         FROM ${SESSION_DELTAS_TABLE}`
+        )
+        .all() as Array<{
         session_id: string;
         last_indexed_turn: number;
         last_indexed_at: number;
@@ -616,7 +632,7 @@ export class MemoryManager {
       }
 
       this.logger.info(
-        `Loaded ${this.episodic.length} episodic and ${this.semantic.length} semantic memories from SQLite`,
+        `Loaded ${this.episodic.length} episodic and ${this.semantic.length} semantic memories from SQLite`
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -725,8 +741,8 @@ export class MemoryManager {
   retrieve(query: string, tier: MemoryTier = 'episodic'): MemoryEntry[] {
     const memories = tier === 'episodic' ? this.episodic : this.semantic;
 
-    const relevant = memories.filter((entry) =>
-      entry.content.toLowerCase().includes(query.toLowerCase()),
+    const relevant = memories.filter(entry =>
+      entry.content.toLowerCase().includes(query.toLowerCase())
     );
 
     relevant.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
@@ -751,7 +767,7 @@ export class MemoryManager {
       queryEmbedding?: number[];
       vectorWeight?: number;
       textWeight?: number;
-    },
+    }
   ): MemorySearchResult[] {
     const maxResults = options?.maxResults ?? this.config.retrieval.maxResults;
     const minScore = options?.minScore ?? 0;
@@ -785,12 +801,10 @@ export class MemoryManager {
       keywordResults,
       vectorResults,
       textWeight,
-      vectorWeight,
+      vectorWeight
     );
 
-    return merged
-      .filter(r => r.score >= minScore)
-      .slice(0, maxResults);
+    return merged.filter(r => r.score >= minScore).slice(0, maxResults);
   }
 
   /**
@@ -799,7 +813,7 @@ export class MemoryManager {
   private searchKeyword(
     query: string,
     tiers: MemoryTier[],
-    limit: number,
+    limit: number
   ): MemorySearchResult[] {
     if (!this.ftsAvailable || !this.db || this.dbBackend !== 'sqlite') {
       // Fallback to in-memory substring search
@@ -813,14 +827,16 @@ export class MemoryManager {
 
     try {
       const tierPlaceholders = tiers.map(() => '?').join(', ');
-      const rows = this.db.prepare(
-        `SELECT f.id, f.tier, f.type, rank
+      const rows = this.db
+        .prepare(
+          `SELECT f.id, f.tier, f.type, rank
          FROM ${FTS_TABLE} f
          WHERE ${FTS_TABLE} MATCH ?
            AND f.tier IN (${tierPlaceholders})
          ORDER BY rank
-         LIMIT ?`,
-      ).all(ftsQuery, ...tiers, limit) as Array<{
+         LIMIT ?`
+        )
+        .all(ftsQuery, ...tiers, limit) as Array<{
         id: string;
         tier: string;
         type: string;
@@ -831,8 +847,8 @@ export class MemoryManager {
       for (const row of rows) {
         const entry = this.getEntryById(row.id);
         if (!entry) {
-continue;
-}
+          continue;
+        }
 
         // Convert BM25 rank to a 0-1 score
         const score = this.bm25RankToScore(row.rank);
@@ -858,7 +874,7 @@ continue;
   private searchKeywordFallback(
     query: string,
     tiers: MemoryTier[],
-    limit: number,
+    limit: number
   ): MemorySearchResult[] {
     const queryLower = query.toLowerCase();
     const queryTerms = queryLower.split(/\s+/).filter(t => t.length > 1);
@@ -895,11 +911,12 @@ continue;
       }
 
       if (matchedTerms === 0) {
-continue;
-}
+        continue;
+      }
 
       // Score: fraction of matched terms + small boost for frequency
-      const termCoverage = queryTerms.length > 0 ? matchedTerms / queryTerms.length : 0;
+      const termCoverage =
+        queryTerms.length > 0 ? matchedTerms / queryTerms.length : 0;
       const frequencyBoost = Math.min(0.3, totalOccurrences * 0.02);
       const score = Math.min(1.0, termCoverage * 0.7 + frequencyBoost + 0.1);
 
@@ -916,7 +933,7 @@ continue;
   private searchVector(
     queryEmbedding: number[],
     tiers: MemoryTier[],
-    limit: number,
+    limit: number
   ): MemorySearchResult[] {
     if (!this.db || this.dbBackend !== 'sqlite') {
       return [];
@@ -924,13 +941,15 @@ continue;
 
     try {
       const tierPlaceholders = tiers.map(() => '?').join(', ');
-      const rows = this.db.prepare(
-        `SELECT id, tier, type, embedding
+      const rows = this.db
+        .prepare(
+          `SELECT id, tier, type, embedding
          FROM ${MEMORIES_TABLE}
          WHERE tier IN (${tierPlaceholders})
            AND embedding IS NOT NULL
-           AND embedding != ''`,
-      ).all(...tiers) as Array<{
+           AND embedding != ''`
+        )
+        .all(...tiers) as Array<{
         id: string;
         tier: string;
         type: string;
@@ -946,15 +965,18 @@ continue;
           continue;
         }
 
-        const similarity = this.cosineSimilarity(queryEmbedding, storedEmbedding);
+        const similarity = this.cosineSimilarity(
+          queryEmbedding,
+          storedEmbedding
+        );
         if (similarity <= 0) {
-continue;
-}
+          continue;
+        }
 
         const entry = this.getEntryById(row.id);
         if (!entry) {
-continue;
-}
+          continue;
+        }
 
         results.push({
           entry,
@@ -979,14 +1001,17 @@ continue;
     keywordResults: MemorySearchResult[],
     vectorResults: MemorySearchResult[],
     textWeight: number,
-    vectorWeight: number,
+    vectorWeight: number
   ): MemorySearchResult[] {
     const k = 60; // RRF constant
-    const scoreMap = new Map<string, {
-      entry: MemoryEntry;
-      tier: MemoryTier;
-      score: number;
-    }>();
+    const scoreMap = new Map<
+      string,
+      {
+        entry: MemoryEntry;
+        tier: MemoryTier;
+        score: number;
+      }
+    >();
 
     for (let i = 0; i < keywordResults.length; i++) {
       const result = keywordResults[i]!;
@@ -1041,12 +1066,19 @@ continue;
    */
   batchUpsert(
     entries: Array<Omit<MemoryEntry, 'id'> & { id?: string }>,
-    tier: MemoryTier,
+    tier: MemoryTier
   ): BatchResult {
-    const result: BatchResult = { inserted: 0, updated: 0, failed: 0, errors: [] };
+    const result: BatchResult = {
+      inserted: 0,
+      updated: 0,
+      failed: 0,
+      errors: [],
+    };
 
     if (tier === 'scratchpad') {
-      result.errors.push('Batch operations are not supported for the scratchpad tier');
+      result.errors.push(
+        'Batch operations are not supported for the scratchpad tier'
+      );
       result.failed = entries.length;
       return result;
     }
@@ -1084,7 +1116,9 @@ continue;
       } catch (err) {
         try {
           this.execSql('ROLLBACK');
-        } catch { /* ignore rollback errors */ }
+        } catch {
+          /* ignore rollback errors */
+        }
         const message = err instanceof Error ? err.message : String(err);
         result.errors.push(`Transaction failed: ${message}`);
         result.failed = entries.length;
@@ -1116,7 +1150,7 @@ continue;
     }
 
     this.logger.info(
-      `Batch upsert to ${tier}: ${result.inserted} inserted, ${result.updated} updated, ${result.failed} failed`,
+      `Batch upsert to ${tier}: ${result.inserted} inserted, ${result.updated} updated, ${result.failed} failed`
     );
 
     return result;
@@ -1134,7 +1168,7 @@ continue;
    */
   indexSessionTranscript(
     sessionId: string,
-    entries: SessionTranscriptEntry[],
+    entries: SessionTranscriptEntry[]
   ): { indexed: number; skipped: number } {
     let delta = this.sessionDeltas.get(sessionId);
     if (!delta) {
@@ -1142,34 +1176,43 @@ continue;
       this.sessionDeltas.set(sessionId, delta);
     }
 
-    const newEntries = entries.filter(e => e.turnNumber > delta!.lastIndexedTurn);
+    const newEntries = entries.filter(
+      e => e.turnNumber > delta!.lastIndexedTurn
+    );
     if (newEntries.length === 0) {
       return { indexed: 0, skipped: entries.length };
     }
 
     // Convert transcript entries to memory entries
-    const memoryEntries: Array<Omit<MemoryEntry, 'id'> & { id?: string }> = newEntries.map(e => ({
-      content: `[${e.role}] ${e.content}`,
-      timestamp: e.timestamp,
-      type: 'interaction' as const,
-      metadata: {
-        sessionId: e.sessionId,
-        role: e.role,
-        turnNumber: e.turnNumber,
-        source: 'transcript',
-      },
-    }));
+    const memoryEntries: Array<Omit<MemoryEntry, 'id'> & { id?: string }> =
+      newEntries.map(e => ({
+        content: `[${e.role}] ${e.content}`,
+        timestamp: e.timestamp,
+        type: 'interaction' as const,
+        metadata: {
+          sessionId: e.sessionId,
+          role: e.role,
+          turnNumber: e.turnNumber,
+          source: 'transcript',
+        },
+      }));
 
     const batchResult = this.batchUpsert(memoryEntries, 'episodic');
 
     // Update delta state
-    const maxTurn = newEntries.reduce((max, e) => Math.max(max, e.turnNumber), 0);
+    const maxTurn = newEntries.reduce(
+      (max, e) => Math.max(max, e.turnNumber),
+      0
+    );
     delta.lastIndexedTurn = maxTurn;
     delta.lastIndexedAt = Date.now();
     delta.pendingTurns = 0;
     this.persistSessionDelta(sessionId, delta);
 
-    return { indexed: batchResult.inserted + batchResult.updated, skipped: entries.length - newEntries.length };
+    return {
+      indexed: batchResult.inserted + batchResult.updated,
+      skipped: entries.length - newEntries.length,
+    };
   }
 
   /**
@@ -1193,7 +1236,7 @@ continue;
     }
 
     const threshold = Math.floor(
-      this.episodic.length * this.config.compaction.threshold,
+      this.episodic.length * this.config.compaction.threshold
     );
 
     if (this.episodic.length > threshold) {
@@ -1201,7 +1244,7 @@ continue;
 
       const toArchive = this.episodic.slice(
         0,
-        this.episodic.length - this.config.retrieval.maxResults,
+        this.episodic.length - this.config.retrieval.maxResults
       );
 
       const summary: MemoryEntry = {
@@ -1231,7 +1274,7 @@ continue;
       this.lastCompactionAt = Date.now();
 
       this.logger.info(
-        `Compaction complete. Archived ${toArchive.length} entries.`,
+        `Compaction complete. Archived ${toArchive.length} entries.`
       );
     }
   }
@@ -1242,11 +1285,10 @@ continue;
    * This is the explicit compaction API (as opposed to the automatic
    * compaction triggered by addEpisodic).
    */
-  runCompaction(options?: {
-    targetEpisodicSize?: number;
-  }): CompactionResult {
+  runCompaction(options?: { targetEpisodicSize?: number }): CompactionResult {
     const entriesBefore = this.episodic.length;
-    const targetSize = options?.targetEpisodicSize ?? this.config.retrieval.maxResults;
+    const targetSize =
+      options?.targetEpisodicSize ?? this.config.retrieval.maxResults;
 
     if (this.episodic.length <= targetSize) {
       return {
@@ -1311,8 +1353,8 @@ continue;
    */
   private buildCompactionSummary(entries: MemoryEntry[]): string {
     if (entries.length === 0) {
-return 'Empty archive';
-}
+      return 'Empty archive';
+    }
 
     const firstTimestamp = entries[0]?.timestamp;
     const lastTimestamp = entries[entries.length - 1]?.timestamp;
@@ -1330,12 +1372,14 @@ return 'Empty archive';
     ];
 
     if (firstTimestamp && lastTimestamp) {
-      const startStr = firstTimestamp instanceof Date
-        ? firstTimestamp.toISOString().split('T')[0]
-        : String(firstTimestamp);
-      const endStr = lastTimestamp instanceof Date
-        ? lastTimestamp.toISOString().split('T')[0]
-        : String(lastTimestamp);
+      const startStr =
+        firstTimestamp instanceof Date
+          ? firstTimestamp.toISOString().split('T')[0]
+          : String(firstTimestamp);
+      const endStr =
+        lastTimestamp instanceof Date
+          ? lastTimestamp.toISOString().split('T')[0]
+          : String(lastTimestamp);
       parts.push(`from ${startStr} to ${endStr}`);
     }
 
@@ -1355,8 +1399,8 @@ return 'Empty archive';
     // Check LRU cache first
     const cached = this.lruCache.get(id);
     if (cached) {
-return cached;
-}
+      return cached;
+    }
 
     // Check in-memory arrays
     const episodic = this.episodic.find(e => e.id === id);
@@ -1374,11 +1418,13 @@ return cached;
     // Check SQLite
     if (this.db && this.dbBackend === 'sqlite') {
       try {
-        const row = this.db.prepare(
-          `SELECT id, content, type, timestamp, metadata
+        const row = this.db
+          .prepare(
+            `SELECT id, content, type, timestamp, metadata
            FROM ${MEMORIES_TABLE}
-           WHERE id = ?`,
-        ).get(id) as {
+           WHERE id = ?`
+          )
+          .get(id) as {
           id: string;
           content: string;
           type: string;
@@ -1448,25 +1494,37 @@ return cached;
 
     if (this.db && this.dbBackend === 'sqlite') {
       try {
-        const epCount = this.db.prepare(
-          `SELECT COUNT(*) as count FROM ${MEMORIES_TABLE} WHERE tier = ?`,
-        ).get('episodic') as { count: number } | null;
+        const epCount = this.db
+          .prepare(
+            `SELECT COUNT(*) as count FROM ${MEMORIES_TABLE} WHERE tier = ?`
+          )
+          .get('episodic') as { count: number } | null;
         dbEpisodicCount = epCount?.count ?? this.episodic.length;
 
-        const semCount = this.db.prepare(
-          `SELECT COUNT(*) as count FROM ${MEMORIES_TABLE} WHERE tier = ?`,
-        ).get('semantic') as { count: number } | null;
+        const semCount = this.db
+          .prepare(
+            `SELECT COUNT(*) as count FROM ${MEMORIES_TABLE} WHERE tier = ?`
+          )
+          .get('semantic') as { count: number } | null;
         dbSemanticCount = semCount?.count ?? this.semantic.length;
 
-        const pageCountResult = this.db.pragma('page_count') as Array<{ page_count: number }> | number;
-        const pageSizeResult = this.db.pragma('page_size') as Array<{ page_size: number }> | number;
+        const pageCountResult = this.db.pragma('page_count') as
+          | Array<{ page_count: number }>
+          | number;
+        const pageSizeResult = this.db.pragma('page_size') as
+          | Array<{ page_size: number }>
+          | number;
 
         const pageCount = Array.isArray(pageCountResult)
           ? (pageCountResult[0]?.page_count ?? 0)
-          : (typeof pageCountResult === 'number' ? pageCountResult : 0);
+          : typeof pageCountResult === 'number'
+            ? pageCountResult
+            : 0;
         const pageSize = Array.isArray(pageSizeResult)
           ? (pageSizeResult[0]?.page_size ?? 4096)
-          : (typeof pageSizeResult === 'number' ? pageSizeResult : 4096);
+          : typeof pageSizeResult === 'number'
+            ? pageSizeResult
+            : 4096;
         dbSizeBytes = pageCount * pageSize;
       } catch {
         // Keep defaults
@@ -1536,7 +1594,9 @@ return cached;
       } catch (err) {
         try {
           this.execSql('ROLLBACK');
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         const message = err instanceof Error ? err.message : String(err);
         this.logger.warn(`Failed to persist imported context: ${message}`);
       }
@@ -1560,11 +1620,13 @@ return cached;
       scratchpad: Object.fromEntries(this.scratchpad),
       episodic: this.episodic.map(e => ({
         ...e,
-        timestamp: e.timestamp instanceof Date ? e.timestamp : new Date(e.timestamp),
+        timestamp:
+          e.timestamp instanceof Date ? e.timestamp : new Date(e.timestamp),
       })),
       semantic: this.semantic.map(e => ({
         ...e,
-        timestamp: e.timestamp instanceof Date ? e.timestamp : new Date(e.timestamp),
+        timestamp:
+          e.timestamp instanceof Date ? e.timestamp : new Date(e.timestamp),
       })),
       sessionDeltas: deltas,
     };
@@ -1599,14 +1661,16 @@ return cached;
     // Import episodic
     const episodicEntries = snapshot.episodic.map(e => ({
       ...e,
-      timestamp: e.timestamp instanceof Date ? e.timestamp : new Date(e.timestamp),
+      timestamp:
+        e.timestamp instanceof Date ? e.timestamp : new Date(e.timestamp),
     }));
     this.episodic = episodicEntries;
 
     // Import semantic
     const semanticEntries = snapshot.semantic.map(e => ({
       ...e,
-      timestamp: e.timestamp instanceof Date ? e.timestamp : new Date(e.timestamp),
+      timestamp:
+        e.timestamp instanceof Date ? e.timestamp : new Date(e.timestamp),
     }));
     this.semantic = semanticEntries;
 
@@ -1632,14 +1696,16 @@ return cached;
       } catch (err) {
         try {
           this.execSql('ROLLBACK');
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         const message = err instanceof Error ? err.message : String(err);
         this.logger.warn(`Failed to persist snapshot: ${message}`);
       }
     }
 
     this.logger.info(
-      `Snapshot imported: ${this.episodic.length} episodic, ${this.semantic.length} semantic`,
+      `Snapshot imported: ${this.episodic.length} episodic, ${this.semantic.length} semantic`
     );
   }
 
@@ -1652,8 +1718,8 @@ return cached;
    */
   close(): void {
     if (this.closed) {
-return;
-}
+      return;
+    }
     this.closed = true;
 
     if (this.db) {
@@ -1684,11 +1750,13 @@ return;
     }
 
     try {
-      const result = this.db.prepare(
-        `UPDATE ${MEMORIES_TABLE}
+      const result = this.db
+        .prepare(
+          `UPDATE ${MEMORIES_TABLE}
          SET embedding = ?, updated_at = unixepoch('now')
-         WHERE id = ?`,
-      ).run(JSON.stringify(embedding), id);
+         WHERE id = ?`
+        )
+        .run(JSON.stringify(embedding), id);
 
       return result.changes > 0;
     } catch (err) {
@@ -1709,15 +1777,18 @@ return;
    */
   private execSql(sql: string): void {
     if (!this.db) {
-return;
-}
+      return;
+    }
 
     // better-sqlite3 Database has an `exec` method for raw SQL.
     // We stored a reference whose interface calls it `run`, but the actual
     // better-sqlite3 object exposes `exec`. We use a type assertion here
     // because our minimal SqliteDatabase interface intentionally only
     // declares `run` to stay compatible with the InMemoryDatabase polyfill.
-    const dbAny = this.db as unknown as { exec?: (sql: string) => void; run: (sql: string) => void };
+    const dbAny = this.db as unknown as {
+      exec?: (sql: string) => void;
+      run: (sql: string) => void;
+    };
     if (typeof dbAny.exec === 'function') {
       dbAny.exec(sql);
     } else {
@@ -1738,30 +1809,43 @@ return;
     }
 
     try {
-      const timestamp = entry.timestamp instanceof Date
-        ? entry.timestamp.getTime()
-        : entry.timestamp;
+      const timestamp =
+        entry.timestamp instanceof Date
+          ? entry.timestamp.getTime()
+          : entry.timestamp;
       const metadata = entry.metadata ? JSON.stringify(entry.metadata) : null;
       const hash = this.hashContent(entry.content);
 
-      this.db.prepare(
-        `INSERT OR REPLACE INTO ${MEMORIES_TABLE}
+      this.db
+        .prepare(
+          `INSERT OR REPLACE INTO ${MEMORIES_TABLE}
            (id, tier, content, type, timestamp, metadata, hash, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, unixepoch('now'), unixepoch('now'))`,
-      ).run(entry.id, tier, entry.content, entry.type, timestamp, metadata, hash);
+         VALUES (?, ?, ?, ?, ?, ?, ?, unixepoch('now'), unixepoch('now'))`
+        )
+        .run(
+          entry.id,
+          tier,
+          entry.content,
+          entry.type,
+          timestamp,
+          metadata,
+          hash
+        );
 
       // Update FTS index
       if (this.ftsAvailable) {
         try {
           // Delete old FTS entry if exists
-          this.db.prepare(
-            `DELETE FROM ${FTS_TABLE} WHERE id = ?`,
-          ).run(entry.id);
+          this.db
+            .prepare(`DELETE FROM ${FTS_TABLE} WHERE id = ?`)
+            .run(entry.id);
 
-          this.db.prepare(
-            `INSERT INTO ${FTS_TABLE} (content, id, tier, type)
-             VALUES (?, ?, ?, ?)`,
-          ).run(entry.content, entry.id, tier, entry.type);
+          this.db
+            .prepare(
+              `INSERT INTO ${FTS_TABLE} (content, id, tier, type)
+             VALUES (?, ?, ?, ?)`
+            )
+            .run(entry.content, entry.id, tier, entry.type);
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
           this.logger.debug(`FTS insert failed for ${entry.id}: ${message}`);
@@ -1783,15 +1867,11 @@ return;
     }
 
     try {
-      this.db.prepare(
-        `DELETE FROM ${MEMORIES_TABLE} WHERE id = ?`,
-      ).run(id);
+      this.db.prepare(`DELETE FROM ${MEMORIES_TABLE} WHERE id = ?`).run(id);
 
       if (this.ftsAvailable) {
         try {
-          this.db.prepare(
-            `DELETE FROM ${FTS_TABLE} WHERE id = ?`,
-          ).run(id);
+          this.db.prepare(`DELETE FROM ${FTS_TABLE} WHERE id = ?`).run(id);
         } catch {
           // Best effort
         }
@@ -1804,17 +1884,27 @@ return;
   /**
    * Persist session delta tracking state to SQLite.
    */
-  private persistSessionDelta(sessionId: string, delta: SessionDeltaState): void {
+  private persistSessionDelta(
+    sessionId: string,
+    delta: SessionDeltaState
+  ): void {
     if (!this.db || this.dbBackend !== 'sqlite') {
       return;
     }
 
     try {
-      this.db.prepare(
-        `INSERT OR REPLACE INTO ${SESSION_DELTAS_TABLE}
+      this.db
+        .prepare(
+          `INSERT OR REPLACE INTO ${SESSION_DELTAS_TABLE}
            (session_id, last_indexed_turn, last_indexed_at, pending_turns)
-         VALUES (?, ?, ?, ?)`,
-      ).run(sessionId, delta.lastIndexedTurn, delta.lastIndexedAt, delta.pendingTurns);
+         VALUES (?, ?, ?, ?)`
+        )
+        .run(
+          sessionId,
+          delta.lastIndexedTurn,
+          delta.lastIndexedAt,
+          delta.pendingTurns
+        );
     } catch {
       // Best effort
     }
@@ -1863,7 +1953,11 @@ return;
    * Compute a content hash for deduplication and change detection.
    */
   private hashContent(content: string): string {
-    return crypto.createHash('sha256').update(content).digest('hex').slice(0, 16);
+    return crypto
+      .createHash('sha256')
+      .update(content)
+      .digest('hex')
+      .slice(0, 16);
   }
 
   /**
@@ -1874,8 +1968,8 @@ return;
   private buildFtsQuery(raw: string): string | null {
     const cleaned = raw.trim();
     if (!cleaned) {
-return null;
-}
+      return null;
+    }
 
     // Tokenize, escape double quotes, wrap each token
     const tokens = cleaned
@@ -1885,8 +1979,8 @@ return null;
       .slice(0, 20); // Limit tokens
 
     if (tokens.length === 0) {
-return null;
-}
+      return null;
+    }
 
     return tokens.join(' OR ');
   }
@@ -1907,8 +2001,8 @@ return null;
    */
   private cosineSimilarity(a: number[], b: number[]): number {
     if (a.length !== b.length || a.length === 0) {
-return 0;
-}
+      return 0;
+    }
 
     let dotProduct = 0;
     let normA = 0;
@@ -1924,8 +2018,8 @@ return 0;
 
     const denominator = Math.sqrt(normA) * Math.sqrt(normB);
     if (denominator === 0) {
-return 0;
-}
+      return 0;
+    }
 
     return dotProduct / denominator;
   }

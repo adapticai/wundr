@@ -94,8 +94,8 @@ vi.mock('../../../skills/skill-watcher', () => {
 
 vi.mock('fs', () => ({
   accessSync: vi.fn(() => {
- throw new Error('not found'); 
-}),
+    throw new Error('not found');
+  }),
   existsSync: vi.fn().mockReturnValue(true),
   statSync: vi.fn().mockReturnValue({ mtimeMs: 1000, size: 100 }),
   constants: { X_OK: 1 },
@@ -105,30 +105,32 @@ vi.mock('fs', () => ({
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeSkillEntry(overrides: Partial<{
-  name: string;
-  description: string;
-  source: string;
-  body: string;
-  context: string;
-  userInvocable: boolean;
-  disableModelInvocation: boolean;
-  tags: string[];
-  version: string;
-  category: string;
-  always: boolean;
-  primaryEnv: string;
-  skillKey: string;
-  os: string[];
-  bins: string[];
-  anyBins: string[];
-  env: string[];
-  config: string[];
-  dependencies: string[];
-  model: string;
-  tools: string[];
-  allowedTools: string[];
-}> = {}): SkillEntry {
+function makeSkillEntry(
+  overrides: Partial<{
+    name: string;
+    description: string;
+    source: string;
+    body: string;
+    context: string;
+    userInvocable: boolean;
+    disableModelInvocation: boolean;
+    tags: string[];
+    version: string;
+    category: string;
+    always: boolean;
+    primaryEnv: string;
+    skillKey: string;
+    os: string[];
+    bins: string[];
+    anyBins: string[];
+    env: string[];
+    config: string[];
+    dependencies: string[];
+    model: string;
+    tools: string[];
+    allowedTools: string[];
+  }> = {}
+): SkillEntry {
   const name = overrides.name ?? 'test-skill';
   const description = overrides.description ?? 'A test skill';
   return {
@@ -291,7 +293,7 @@ describe('SkillRegistry', () => {
 
       expect(listener).toHaveBeenCalledTimes(1);
       expect(listener).toHaveBeenCalledWith(
-        expect.objectContaining({ count: 1 }),
+        expect.objectContaining({ count: 1 })
       );
     });
 
@@ -300,7 +302,11 @@ describe('SkillRegistry', () => {
       registry.on('validationComplete', validationListener);
 
       (validator.validateAllSkills as Mock).mockReturnValue([
-        { skillName: 'bad', valid: false, issues: [{ rule: 'x', severity: 'error', message: 'err' }] },
+        {
+          skillName: 'bad',
+          valid: false,
+          issues: [{ rule: 'x', severity: 'error', message: 'err' }],
+        },
       ]);
 
       loadEntries([makeSkillEntry({ name: 'bad' })]);
@@ -340,7 +346,16 @@ describe('SkillRegistry', () => {
         critical: 1,
         warn: 0,
         info: 0,
-        findings: [{ ruleId: 'test', severity: 'critical', file: 'x', line: 1, message: 'bad', evidence: 'x' }],
+        findings: [
+          {
+            ruleId: 'test',
+            severity: 'critical',
+            file: 'x',
+            line: 1,
+            message: 'bad',
+            evidence: 'x',
+          },
+        ],
       });
       (scanner.hasCriticalFindings as Mock).mockReturnValue(true);
 
@@ -360,7 +375,11 @@ describe('SkillRegistry', () => {
       reg.on('scanFailed', scanFailedListener);
 
       (scanner.scanSkillComplete as Mock).mockResolvedValue({
-        scannedFiles: 1, critical: 1, warn: 0, info: 0, findings: [],
+        scannedFiles: 1,
+        critical: 1,
+        warn: 0,
+        info: 0,
+        findings: [],
       });
       (scanner.hasCriticalFindings as Mock).mockReturnValue(true);
 
@@ -368,7 +387,7 @@ describe('SkillRegistry', () => {
       await reg.load();
 
       expect(scanFailedListener).toHaveBeenCalledWith(
-        expect.objectContaining({ skillName: 'bad-skill' }),
+        expect.objectContaining({ skillName: 'bad-skill' })
       );
     });
 
@@ -549,8 +568,8 @@ describe('SkillRegistry', () => {
 
     it('swallows errors from event listeners', async () => {
       const errorListener = vi.fn(() => {
- throw new Error('boom'); 
-});
+        throw new Error('boom');
+      });
       const normalListener = vi.fn();
 
       registry.on('loaded', errorListener);
@@ -605,9 +624,7 @@ describe('SkillRegistry', () => {
 
       // formatSkillsForPrompt should only receive the model-on skill
       expect(loader.formatSkillsForPrompt).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ name: 'model-on' }),
-        ]),
+        expect.arrayContaining([expect.objectContaining({ name: 'model-on' })])
       );
       const callArgs = (loader.formatSkillsForPrompt as Mock).mock.calls[0][0];
       expect(callArgs.every((s: any) => s.name !== 'model-off')).toBe(true);
@@ -629,7 +646,11 @@ describe('SkillRegistry', () => {
   describe('buildCommandSpecs()', () => {
     it('generates command specs from user-invocable skills', async () => {
       loadEntries([
-        makeSkillEntry({ name: 'review-pr', description: 'Review a PR', userInvocable: true }),
+        makeSkillEntry({
+          name: 'review-pr',
+          description: 'Review a PR',
+          userInvocable: true,
+        }),
       ]);
       await registry.load();
 
@@ -653,9 +674,7 @@ describe('SkillRegistry', () => {
     });
 
     it('sanitizes command names (removes special chars, lowercases)', async () => {
-      loadEntries([
-        makeSkillEntry({ name: 'My--Cool..Skill!' }),
-      ]);
+      loadEntries([makeSkillEntry({ name: 'My--Cool..Skill!' })]);
       await registry.load();
 
       const specs = registry.buildCommandSpecs();
@@ -676,9 +695,7 @@ describe('SkillRegistry', () => {
     });
 
     it('avoids reserved names', async () => {
-      loadEntries([
-        makeSkillEntry({ name: 'help' }),
-      ]);
+      loadEntries([makeSkillEntry({ name: 'help' })]);
       await registry.load();
 
       const specs = registry.buildCommandSpecs(new Set(['help']));
@@ -687,9 +704,7 @@ describe('SkillRegistry', () => {
 
     it('truncates long descriptions', async () => {
       const longDesc = 'x'.repeat(200);
-      loadEntries([
-        makeSkillEntry({ name: 'wordy', description: longDesc }),
-      ]);
+      loadEntries([makeSkillEntry({ name: 'wordy', description: longDesc })]);
       await registry.load();
 
       const specs = registry.buildCommandSpecs();
@@ -723,7 +738,10 @@ describe('SkillRegistry', () => {
     });
 
     it('getAllVersionInfo returns all version entries', async () => {
-      loadEntries([makeSkillEntry({ name: 'a' }), makeSkillEntry({ name: 'b' })]);
+      loadEntries([
+        makeSkillEntry({ name: 'a' }),
+        makeSkillEntry({ name: 'b' }),
+      ]);
       await registry.load();
 
       const all = registry.getAllVersionInfo();
@@ -732,10 +750,25 @@ describe('SkillRegistry', () => {
 
     it('getUpdatedSkills returns names of updated skills', async () => {
       (loader.buildVersionInfo as Mock)
-        .mockReturnValueOnce({ name: 'changed', currentVersion: 'v2', previousVersion: 'v1', updated: true, mtimeMs: 0 })
-        .mockReturnValueOnce({ name: 'same', currentVersion: 'v1', previousVersion: 'v1', updated: false, mtimeMs: 0 });
+        .mockReturnValueOnce({
+          name: 'changed',
+          currentVersion: 'v2',
+          previousVersion: 'v1',
+          updated: true,
+          mtimeMs: 0,
+        })
+        .mockReturnValueOnce({
+          name: 'same',
+          currentVersion: 'v1',
+          previousVersion: 'v1',
+          updated: false,
+          mtimeMs: 0,
+        });
 
-      loadEntries([makeSkillEntry({ name: 'changed' }), makeSkillEntry({ name: 'same' })]);
+      loadEntries([
+        makeSkillEntry({ name: 'changed' }),
+        makeSkillEntry({ name: 'same' }),
+      ]);
       await registry.load();
 
       const updated = registry.getUpdatedSkills();
@@ -852,10 +885,15 @@ describe('SkillRegistry', () => {
   describe('exportState()', () => {
     it('returns structured state with skill metadata', async () => {
       (loader.buildVersionInfo as Mock).mockReturnValue({
-        name: 'exp', currentVersion: '1.0.0', updated: true, mtimeMs: 123,
+        name: 'exp',
+        currentVersion: '1.0.0',
+        updated: true,
+        mtimeMs: 123,
       });
 
-      loadEntries([makeSkillEntry({ name: 'exp', description: 'export test' })]);
+      loadEntries([
+        makeSkillEntry({ name: 'exp', description: 'export test' }),
+      ]);
       await registry.load();
 
       const state = registry.exportState();

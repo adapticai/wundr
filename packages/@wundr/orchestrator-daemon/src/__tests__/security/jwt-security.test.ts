@@ -37,24 +37,39 @@ describe('JWT Security', () => {
 
   describe('algorithm confusion (CVE-2015-9235)', () => {
     it('should reject "none" algorithm (bypass signature verification)', () => {
-      const header = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url');
-      const payload = Buffer.from(JSON.stringify(createMockJwtPayload())).toString('base64url');
+      const header = Buffer.from(
+        JSON.stringify({ alg: 'none', typ: 'JWT' })
+      ).toString('base64url');
+      const payload = Buffer.from(
+        JSON.stringify(createMockJwtPayload())
+      ).toString('base64url');
 
       // No signature, or empty signature
       const tokenNoSig = `${header}.${payload}.`;
       const tokenEmptySig = `${header}.${payload}.e30`;
 
-      expect(verifyJwt(tokenNoSig, TEST_JWT_SECRET, ISSUER, AUDIENCE).ok).toBe(false);
-      expect(verifyJwt(tokenEmptySig, TEST_JWT_SECRET, ISSUER, AUDIENCE).ok).toBe(false);
+      expect(verifyJwt(tokenNoSig, TEST_JWT_SECRET, ISSUER, AUDIENCE).ok).toBe(
+        false
+      );
+      expect(
+        verifyJwt(tokenEmptySig, TEST_JWT_SECRET, ISSUER, AUDIENCE).ok
+      ).toBe(false);
     });
 
     it('should reject RS256 (asymmetric key confusion with HMAC secret)', () => {
-      const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
-      const payload = Buffer.from(JSON.stringify(createMockJwtPayload())).toString('base64url');
+      const header = Buffer.from(
+        JSON.stringify({ alg: 'RS256', typ: 'JWT' })
+      ).toString('base64url');
+      const payload = Buffer.from(
+        JSON.stringify(createMockJwtPayload())
+      ).toString('base64url');
 
       // An attacker might try to sign with the public key as HMAC secret
       const sigInput = `${header}.${payload}`;
-      const sig = createHmac('sha256', TEST_JWT_SECRET).update(sigInput).digest().toString('base64url');
+      const sig = createHmac('sha256', TEST_JWT_SECRET)
+        .update(sigInput)
+        .digest()
+        .toString('base64url');
       const token = `${sigInput}.${sig}`;
 
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
@@ -62,11 +77,24 @@ describe('JWT Security', () => {
     });
 
     it('should only accept HS256 algorithm', () => {
-      const algorithms = ['HS384', 'HS512', 'RS256', 'RS384', 'RS512', 'ES256', 'PS256', 'none'];
+      const algorithms = [
+        'HS384',
+        'HS512',
+        'RS256',
+        'RS384',
+        'RS512',
+        'ES256',
+        'PS256',
+        'none',
+      ];
 
       for (const alg of algorithms) {
-        const header = Buffer.from(JSON.stringify({ alg, typ: 'JWT' })).toString('base64url');
-        const payload = Buffer.from(JSON.stringify(createMockJwtPayload())).toString('base64url');
+        const header = Buffer.from(
+          JSON.stringify({ alg, typ: 'JWT' })
+        ).toString('base64url');
+        const payload = Buffer.from(
+          JSON.stringify(createMockJwtPayload())
+        ).toString('base64url');
         const sig = Buffer.from('fake-signature').toString('base64url');
         const token = `${header}.${payload}.${sig}`;
 
@@ -102,7 +130,9 @@ describe('JWT Security', () => {
       // Attacker tries to change sub to "admin"
       const parts = token.split('.');
       const modifiedPayload = { ...payload, sub: 'admin' };
-      const newPayloadEncoded = Buffer.from(JSON.stringify(modifiedPayload)).toString('base64url');
+      const newPayloadEncoded = Buffer.from(
+        JSON.stringify(modifiedPayload)
+      ).toString('base64url');
       const tampered = `${parts[0]}.${newPayloadEncoded}.${parts[2]}`;
 
       const result = verifyJwt(tampered, TEST_JWT_SECRET, ISSUER, AUDIENCE);
@@ -114,8 +144,13 @@ describe('JWT Security', () => {
       const token = signJwt(payload, TEST_JWT_SECRET);
 
       const parts = token.split('.');
-      const escalatedPayload = { ...payload, scopes: ['read', 'admin', 'delete'] };
-      const newPayloadEncoded = Buffer.from(JSON.stringify(escalatedPayload)).toString('base64url');
+      const escalatedPayload = {
+        ...payload,
+        scopes: ['read', 'admin', 'delete'],
+      };
+      const newPayloadEncoded = Buffer.from(
+        JSON.stringify(escalatedPayload)
+      ).toString('base64url');
       const tampered = `${parts[0]}.${newPayloadEncoded}.${parts[2]}`;
 
       const result = verifyJwt(tampered, TEST_JWT_SECRET, ISSUER, AUDIENCE);
@@ -136,8 +171,8 @@ describe('JWT Security', () => {
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
       if (!result.ok) {
-expect(result.reason).toBe('jwt_expired');
-}
+        expect(result.reason).toBe('jwt_expired');
+      }
     });
 
     it('should reject token with exp=0 (epoch)', () => {
@@ -169,8 +204,8 @@ expect(result.reason).toBe('jwt_expired');
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
       if (!result.ok) {
-expect(result.reason).toBe('jwt_issuer_mismatch');
-}
+        expect(result.reason).toBe('jwt_issuer_mismatch');
+      }
     });
 
     it('should reject token intended for different audience', () => {
@@ -180,8 +215,8 @@ expect(result.reason).toBe('jwt_issuer_mismatch');
       const result = verifyJwt(token, TEST_JWT_SECRET, ISSUER, AUDIENCE);
       expect(result.ok).toBe(false);
       if (!result.ok) {
-expect(result.reason).toBe('jwt_audience_mismatch');
-}
+        expect(result.reason).toBe('jwt_audience_mismatch');
+      }
     });
   });
 

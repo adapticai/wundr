@@ -28,8 +28,6 @@
 
 import { EventEmitter } from 'eventemitter3';
 
-
-
 import {
   type AuthProfile,
   type FailureReason,
@@ -47,14 +45,8 @@ import {
   ProviderRegistry,
   modelKey,
 } from './provider-registry';
-import {
-  type RetryConfig,
-  withRetry,
-} from './retry';
-import {
-  type StreamEvent,
-  StreamingAdapter,
-} from './streaming';
+import { type RetryConfig, withRetry } from './retry';
+import { type StreamEvent, StreamingAdapter } from './streaming';
 import {
   type SessionBudget,
   type BudgetCheck,
@@ -97,10 +89,10 @@ export interface RequiredCapabilities {
 
 /** Routing strategy for candidate ordering. */
 export type RoutingStrategy =
-  | 'failover'       // Default: try primary, then fallbacks in order
+  | 'failover' // Default: try primary, then fallbacks in order
   | 'cost_optimized' // Prefer cheapest model that meets requirements
   | 'latency_optimized' // Prefer lowest-latency provider
-  | 'balanced';      // Score-based blend of cost, latency, and health
+  | 'balanced'; // Score-based blend of cost, latency, and health
 
 export interface RoutingRequest {
   messages: Message[];
@@ -187,7 +179,10 @@ export interface ModelRouterConfig {
   /** Default routing strategy */
   defaultRoutingStrategy?: RoutingStrategy;
   /** LLM client factory: given provider + config, returns an LLM client */
-  clientFactory: (provider: string, config: { apiKey: string; baseUrl?: string }) => LLMClient;
+  clientFactory: (
+    provider: string,
+    config: { apiKey: string; baseUrl?: string }
+  ) => LLMClient;
   /** Provider registry configuration */
   registry?: ProviderRegistryConfig;
   /** Auth profile configuration */
@@ -275,7 +270,7 @@ export class FailoverError extends RoutingError {
       status?: number;
       code?: string;
       cause?: unknown;
-    },
+    }
   ) {
     super(message, { cause: params.cause });
     this.name = 'FailoverError';
@@ -293,7 +288,10 @@ export class RoutingExhaustedError extends RoutingError {
 
   constructor(attempts: FailoverAttempt[]) {
     const summary = attempts
-      .map((a) => `${a.provider}/${a.model}: ${a.error}${a.reason ? ` (${a.reason})` : ''}`)
+      .map(
+        a =>
+          `${a.provider}/${a.model}: ${a.error}${a.reason ? ` (${a.reason})` : ''}`
+      )
       .join(' | ');
     super(`All models failed (${attempts.length}): ${summary}`);
     this.name = 'RoutingExhaustedError';
@@ -309,7 +307,7 @@ export class ContextOverflowError extends RoutingError {
   constructor(estimatedTokens: number, contextWindow: number, model: string) {
     super(
       `Context overflow for ${model}: estimated ${estimatedTokens.toLocaleString()} tokens ` +
-      `exceeds context window of ${contextWindow.toLocaleString()} tokens`,
+        `exceeds context window of ${contextWindow.toLocaleString()} tokens`
     );
     this.name = 'ContextOverflowError';
     this.estimatedTokens = estimatedTokens;
@@ -323,7 +321,9 @@ export class BudgetExceededError extends RoutingError {
   readonly budgetCheck: BudgetCheck;
 
   constructor(sessionId: string, budgetCheck: BudgetCheck) {
-    super(budgetCheck.message ?? `Token budget exceeded for session ${sessionId}`);
+    super(
+      budgetCheck.message ?? `Token budget exceeded for session ${sessionId}`
+    );
     this.name = 'BudgetExceededError';
     this.sessionId = sessionId;
     this.budgetCheck = budgetCheck;
@@ -334,10 +334,12 @@ export class BudgetExceededError extends RoutingError {
 // Error classification helpers
 // ---------------------------------------------------------------------------
 
-const TIMEOUT_PATTERNS = /timeout|timed out|deadline exceeded|context deadline exceeded/i;
+const TIMEOUT_PATTERNS =
+  /timeout|timed out|deadline exceeded|context deadline exceeded/i;
 const ABORT_TIMEOUT_PATTERNS = /request was aborted|request aborted/i;
 const RATE_LIMIT_PATTERNS = /rate.?limit|too many requests|throttl/i;
-const AUTH_PATTERNS = /auth|unauthorized|forbidden|invalid.?key|invalid.?api|invalid.?token/i;
+const AUTH_PATTERNS =
+  /auth|unauthorized|forbidden|invalid.?key|invalid.?api|invalid.?token/i;
 const BILLING_PATTERNS = /billing|payment|quota|insufficient.?fund|credit/i;
 
 function isAbortError(err: unknown): boolean {
@@ -371,7 +373,8 @@ function getStatusCode(err: unknown): number | undefined {
     return undefined;
   }
   const candidate =
-    (err as { status?: unknown }).status ?? (err as { statusCode?: unknown }).statusCode;
+    (err as { status?: unknown }).status ??
+    (err as { statusCode?: unknown }).statusCode;
   if (typeof candidate === 'number') {
     return candidate;
   }
@@ -393,23 +396,27 @@ function classifyFailoverReason(err: unknown): FailureReason | null {
 
   const status = getStatusCode(err);
   if (status === 401 || status === 403) {
-return 'auth';
-}
+    return 'auth';
+  }
   if (status === 402) {
-return 'billing';
-}
+    return 'billing';
+  }
   if (status === 429) {
-return 'rate_limit';
-}
+    return 'rate_limit';
+  }
   if (status === 408) {
-return 'timeout';
-}
+    return 'timeout';
+  }
   if (status === 400) {
-return 'format';
-}
+    return 'format';
+  }
 
   const code = (getErrorCode(err) ?? '').toUpperCase();
-  if (['ETIMEDOUT', 'ESOCKETTIMEDOUT', 'ECONNRESET', 'ECONNABORTED'].includes(code)) {
+  if (
+    ['ETIMEDOUT', 'ESOCKETTIMEDOUT', 'ECONNRESET', 'ECONNABORTED'].includes(
+      code
+    )
+  ) {
     return 'timeout';
   }
   if (['ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN'].includes(code)) {
@@ -421,17 +428,17 @@ return 'format';
 
   const message = err instanceof Error ? err.message : String(err);
   if (RATE_LIMIT_PATTERNS.test(message)) {
-return 'rate_limit';
-}
+    return 'rate_limit';
+  }
   if (AUTH_PATTERNS.test(message)) {
-return 'auth';
-}
+    return 'auth';
+  }
   if (BILLING_PATTERNS.test(message)) {
-return 'billing';
-}
+    return 'billing';
+  }
   if (TIMEOUT_PATTERNS.test(message)) {
-return 'timeout';
-}
+    return 'timeout';
+  }
 
   return null;
 }
@@ -442,7 +449,7 @@ function shouldRethrowAbort(err: unknown): boolean {
 
 function coerceToFailoverError(
   err: unknown,
-  context: { provider: string; model: string; profileId?: string },
+  context: { provider: string; model: string; profileId?: string }
 ): FailoverError | null {
   if (err instanceof FailoverError) {
     return err;
@@ -468,7 +475,9 @@ function coerceToFailoverError(
  * Rate limit and timeout are retryable; auth/billing are not.
  */
 function isRetryableReason(reason: FailureReason): boolean {
-  return reason === 'rate_limit' || reason === 'timeout' || reason === 'network';
+  return (
+    reason === 'rate_limit' || reason === 'timeout' || reason === 'network'
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -476,9 +485,24 @@ function isRetryableReason(reason: FailureReason): boolean {
 // ---------------------------------------------------------------------------
 
 interface ModelRouterEvents {
-  'router:attempt': (attempt: { provider: string; model: string; attemptNumber: number }) => void;
-  'router:retry': (info: { provider: string; model: string; attempt: number; delayMs: number; error: string }) => void;
-  'router:success': (result: { provider: string; model: string; attempts: number; latencyMs: number }) => void;
+  'router:attempt': (attempt: {
+    provider: string;
+    model: string;
+    attemptNumber: number;
+  }) => void;
+  'router:retry': (info: {
+    provider: string;
+    model: string;
+    attempt: number;
+    delayMs: number;
+    error: string;
+  }) => void;
+  'router:success': (result: {
+    provider: string;
+    model: string;
+    attempts: number;
+    latencyMs: number;
+  }) => void;
   'router:failover': (attempt: FailoverAttempt) => void;
   'router:exhausted': (attempts: FailoverAttempt[]) => void;
   'router:cost': (cost: CostRecord) => void;
@@ -496,7 +520,10 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
   private readonly streamingAdapter: StreamingAdapter;
   private readonly healthTracker: ProviderHealthTracker;
   private readonly budgetManager: TokenBudgetManager;
-  private readonly clientFactory: (provider: string, config: { apiKey: string; baseUrl?: string }) => LLMClient;
+  private readonly clientFactory: (
+    provider: string,
+    config: { apiKey: string; baseUrl?: string }
+  ) => LLMClient;
   private readonly clientCache: Map<string, LLMClient> = new Map();
 
   private readonly primaryRef: ModelRef;
@@ -519,10 +546,10 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
     this.retryConfig = config.retry ?? {};
 
     // Wire up health tracker events to router events
-    this.healthTracker.on('circuit:opened', (provider) => {
+    this.healthTracker.on('circuit:opened', provider => {
       this.emit('router:circuit_opened', provider);
     });
-    this.healthTracker.on('circuit:closed', (provider) => {
+    this.healthTracker.on('circuit:closed', provider => {
       this.emit('router:circuit_closed', provider);
     });
 
@@ -617,7 +644,10 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
       }
 
       // Validate context window
-      const contextWindow = this.registry.getContextWindow(candidate.provider, candidate.model);
+      const contextWindow = this.registry.getContextWindow(
+        candidate.provider,
+        candidate.model
+      );
       const contextValidation = this.tokenCounter.checkRequest({
         systemPrompt: request.systemPrompt,
         messages: request.messages,
@@ -663,7 +693,11 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
 
       try {
         const client = this.getOrCreateClient(candidate.provider, profile);
-        const chatParams = this.buildChatParams(request, candidate, thinkingMode);
+        const chatParams = this.buildChatParams(
+          request,
+          candidate,
+          thinkingMode
+        );
 
         // Retry loop for transient errors within the same candidate
         const { result: response } = await withRetry(
@@ -673,7 +707,7 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
           {
             ...this.retryConfig,
             signal: request.signal,
-            isRetryable: (err) => {
+            isRetryable: err => {
               const reason = classifyFailoverReason(err);
               return reason !== null && isRetryableReason(reason);
             },
@@ -688,7 +722,7 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
                 error: errorMsg,
               });
             },
-          },
+          }
         );
 
         const attemptLatencyMs = Date.now() - attemptStartTime;
@@ -706,7 +740,7 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
           profile.id,
           response.usage,
           request.sessionId,
-          attemptLatencyMs,
+          attemptLatencyMs
         );
         this.emit('router:cost', cost);
 
@@ -777,11 +811,17 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
 
         // On rate limit, try rotating to next auth profile for same provider
         if (failoverErr.reason === 'rate_limit') {
-          const alternateProfile = this.authManager.getNextProfile(candidate.provider);
+          const alternateProfile = this.authManager.getNextProfile(
+            candidate.provider
+          );
           if (alternateProfile && alternateProfile.id !== profile.id) {
             // Re-attempt with alternate profile (inline, not via main loop)
             const retryResult = await this.attemptWithProfile(
-              request, candidate, alternateProfile, thinkingMode, routeStartTime,
+              request,
+              candidate,
+              alternateProfile,
+              thinkingMode,
+              routeStartTime
             );
             if (retryResult) {
               // Clear the attempt we're about to push since we recovered
@@ -820,7 +860,9 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
    * Route a streaming request with automatic failover.
    * Returns an async iterator of unified StreamEvents.
    */
-  async *routeStream(request: RoutingRequest): AsyncIterableIterator<StreamEvent> {
+  async *routeStream(
+    request: RoutingRequest
+  ): AsyncIterableIterator<StreamEvent> {
     // Check session budget before attempting any model
     if (request.sessionId) {
       const budgetCheck = this.budgetManager.checkBudget(request.sessionId);
@@ -835,11 +877,12 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
     let lastError: unknown;
 
     // Filter to only streaming-capable candidates
-    const streamCandidates = candidates.filter((c) => {
+    const streamCandidates = candidates.filter(c => {
       return this.registry.supportsCapability(c.provider, c.model, 'streaming');
     });
 
-    const effectiveCandidates = streamCandidates.length > 0 ? streamCandidates : candidates;
+    const effectiveCandidates =
+      streamCandidates.length > 0 ? streamCandidates : candidates;
 
     for (let i = 0; i < effectiveCandidates.length; i++) {
       const candidate = effectiveCandidates[i];
@@ -876,7 +919,10 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
         continue;
       }
 
-      const contextWindow = this.registry.getContextWindow(candidate.provider, candidate.model);
+      const contextWindow = this.registry.getContextWindow(
+        candidate.provider,
+        candidate.model
+      );
       const contextValidation = this.tokenCounter.checkRequest({
         systemPrompt: request.systemPrompt,
         messages: request.messages,
@@ -917,7 +963,11 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
 
       try {
         const client = this.getOrCreateClient(candidate.provider, profile);
-        const chatParams = this.buildChatParams(request, candidate, thinkingMode);
+        const chatParams = this.buildChatParams(
+          request,
+          candidate,
+          thinkingMode
+        );
         const rawStream = client.chatStream(chatParams);
 
         const adaptedStream = this.streamingAdapter.adaptChunks(rawStream, {
@@ -951,7 +1001,7 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
             profile.id,
             streamUsage,
             request.sessionId,
-            streamLatencyMs,
+            streamLatencyMs
           );
           this.emit('router:cost', cost);
 
@@ -1115,7 +1165,10 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
         return;
       }
       // Check required capabilities
-      if (request.requiredCapabilities && !this.matchesCapabilities(ref, request.requiredCapabilities)) {
+      if (
+        request.requiredCapabilities &&
+        !this.matchesCapabilities(ref, request.requiredCapabilities)
+      ) {
         return;
       }
       seen.add(key);
@@ -1158,32 +1211,35 @@ export class ModelRouter extends EventEmitter<ModelRouterEvents> {
   /**
    * Check whether a model reference meets the required capabilities.
    */
-  private matchesCapabilities(ref: ModelRef, required: RequiredCapabilities): boolean {
+  private matchesCapabilities(
+    ref: ModelRef,
+    required: RequiredCapabilities
+  ): boolean {
     const caps = this.registry.getModelCapabilities(ref.provider, ref.model);
     if (!caps) {
       // Unknown model -- allow by default (it may be a custom model)
       return true;
     }
     if (required.vision && !caps.vision) {
-return false;
-}
+      return false;
+    }
     if (required.toolCalling && !caps.toolCalling) {
-return false;
-}
+      return false;
+    }
     if (required.streaming && !caps.streaming) {
-return false;
-}
+      return false;
+    }
     if (required.reasoning && !caps.reasoning) {
-return false;
-}
+      return false;
+    }
     if (required.jsonMode && !caps.jsonMode) {
-return false;
-}
+      return false;
+    }
     if (required.minContextWindow) {
       const window = this.registry.getContextWindow(ref.provider, ref.model);
       if (window < required.minContextWindow) {
-return false;
-}
+        return false;
+      }
     }
     return true;
   }
@@ -1193,7 +1249,10 @@ return false;
    * The first candidate (explicit override or thinking-preferred) is always
    * kept at position 0 to respect user intent.
    */
-  private applySortingStrategy(candidates: ModelRef[], strategy: RoutingStrategy): ModelRef[] {
+  private applySortingStrategy(
+    candidates: ModelRef[],
+    strategy: RoutingStrategy
+  ): ModelRef[] {
     if (candidates.length <= 1 || strategy === 'failover') {
       return candidates;
     }
@@ -1202,7 +1261,7 @@ return false;
     const first = candidates[0];
     const rest = candidates.slice(1);
 
-    const scored = rest.map((ref) => ({
+    const scored = rest.map(ref => ({
       ref,
       score: this.scoreCandidateForStrategy(ref, strategy),
     }));
@@ -1210,22 +1269,23 @@ return false;
     // Sort by score descending (higher score = better candidate)
     scored.sort((a, b) => b.score - a.score);
 
-    return [first, ...scored.map((s) => s.ref)];
+    return [first, ...scored.map(s => s.ref)];
   }
 
   /**
    * Score a candidate model for a given routing strategy.
    * Higher scores indicate better candidates.
    */
-  private scoreCandidateForStrategy(ref: ModelRef, strategy: RoutingStrategy): number {
+  private scoreCandidateForStrategy(
+    ref: ModelRef,
+    strategy: RoutingStrategy
+  ): number {
     const pricing = this.registry.getModelPricing(ref.provider, ref.model);
     const health = this.healthTracker.getSnapshot(ref.provider);
     const latencyP50 = health.latencyP50Ms ?? 5_000; // Default 5s if no data
 
     // Cost score: inverse of cost per million tokens (cheaper = higher score)
-    const avgCostPerM = pricing
-      ? (pricing.input + pricing.output) / 2
-      : 10; // Default moderate cost
+    const avgCostPerM = pricing ? (pricing.input + pricing.output) / 2 : 10; // Default moderate cost
     const costScore = 100 / Math.max(0.01, avgCostPerM);
 
     // Latency score: inverse of P50 latency (faster = higher score)
@@ -1238,7 +1298,7 @@ return false;
     } else if (health.state === 'half_open') {
       healthScore = 30;
     } else if (health.totalRequests > 0) {
-      const successRate = 1 - (health.totalFailures / health.totalRequests);
+      const successRate = 1 - health.totalFailures / health.totalRequests;
       healthScore = successRate * 100;
     }
 
@@ -1281,7 +1341,7 @@ return false;
     candidate: ModelRef,
     profile: AuthProfile,
     thinkingMode: ThinkingMode,
-    routeStartTime: number,
+    routeStartTime: number
   ): Promise<RoutingResult | null> {
     const attemptStartTime = Date.now();
 
@@ -1300,7 +1360,10 @@ return false;
       this.healthTracker.recordSuccess(candidate.provider, attemptLatencyMs);
       this.authManager.markUsed(profile.id);
 
-      const contextWindow = this.registry.getContextWindow(candidate.provider, candidate.model);
+      const contextWindow = this.registry.getContextWindow(
+        candidate.provider,
+        candidate.model
+      );
       const contextValidation = this.tokenCounter.checkRequest({
         systemPrompt: request.systemPrompt,
         messages: request.messages,
@@ -1310,7 +1373,11 @@ return false;
       });
 
       const cost = this.calculateCost(
-        candidate, profile.id, response.usage, request.sessionId, attemptLatencyMs,
+        candidate,
+        profile.id,
+        response.usage,
+        request.sessionId,
+        attemptLatencyMs
       );
       this.emit('router:cost', cost);
 
@@ -1368,13 +1435,13 @@ return false;
   private buildChatParams(
     request: RoutingRequest,
     candidate: ModelRef,
-    thinkingMode: ThinkingMode,
+    thinkingMode: ThinkingMode
   ): ChatParams {
     const messages = [...request.messages];
 
     // Prepend system prompt as system message if provided
     if (request.systemPrompt) {
-      const hasSystemMessage = messages.some((m) => m.role === 'system');
+      const hasSystemMessage = messages.some(m => m.role === 'system');
       if (!hasSystemMessage) {
         messages.unshift({ role: 'system', content: request.systemPrompt });
       }
@@ -1389,7 +1456,7 @@ return false;
     if (thinkingBudget.budgetTokens > 0) {
       const supportsReasoning = this.registry.supportsReasoning(
         candidate.provider,
-        candidate.model,
+        candidate.model
       );
       if (supportsReasoning) {
         providerParams.thinkingBudget = thinkingBudget.budgetTokens;
@@ -1402,7 +1469,8 @@ return false;
       tools: request.tools,
       temperature: request.temperature,
       maxTokens: request.maxTokens,
-      providerParams: Object.keys(providerParams).length > 0 ? providerParams : undefined,
+      providerParams:
+        Object.keys(providerParams).length > 0 ? providerParams : undefined,
     };
   }
 
@@ -1415,9 +1483,12 @@ return false;
     profileId: string,
     usage: TokenUsage,
     sessionId?: string,
-    latencyMs?: number,
+    latencyMs?: number
   ): CostRecord {
-    const pricing = this.registry.getModelPricing(candidate.provider, candidate.model);
+    const pricing = this.registry.getModelPricing(
+      candidate.provider,
+      candidate.model
+    );
     const inputCostUsd = pricing
       ? (usage.promptTokens / 1_000_000) * pricing.input
       : 0;

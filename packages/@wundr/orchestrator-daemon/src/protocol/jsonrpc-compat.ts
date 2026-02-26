@@ -33,7 +33,12 @@ import { z } from 'zod';
 
 import { ErrorCodes } from './protocol-v2';
 
-import type { ErrorShape, EventFrame, RequestFrame, ResponseFrame } from './protocol-v2';
+import type {
+  ErrorShape,
+  EventFrame,
+  RequestFrame,
+  ResponseFrame,
+} from './protocol-v2';
 
 // ---------------------------------------------------------------------------
 // JSON-RPC 2.0 types
@@ -86,14 +91,15 @@ const JsonRpcRequestSchema = z.object({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const JsonRpcNotificationSchema = z.object({
-  jsonrpc: z.literal('2.0'),
-  method: z.string().min(1),
-  params: z.unknown().optional(),
-}).refine(
-  (val) => !('id' in val),
-  { message: 'notifications must not include an id field' },
-);
+const JsonRpcNotificationSchema = z
+  .object({
+    jsonrpc: z.literal('2.0'),
+    method: z.string().min(1),
+    params: z.unknown().optional(),
+  })
+  .refine(val => !('id' in val), {
+    message: 'notifications must not include an id field',
+  });
 
 // ---------------------------------------------------------------------------
 // Error code mapping
@@ -158,14 +164,24 @@ export function isJsonRpcBatch(parsed: unknown): parsed is unknown[] {
 export type InboundResult =
   | { type: 'request'; frame: RequestFrame }
   | { type: 'notification'; event: string; payload: unknown }
-  | { type: 'error'; id: string | number | null; code: number; message: string };
+  | {
+      type: 'error';
+      id: string | number | null;
+      code: number;
+      message: string;
+    };
 
 /**
  * Convert a parsed JSON-RPC 2.0 message to a native protocol frame.
  */
 export function jsonRpcToNative(parsed: unknown): InboundResult {
   if (!parsed || typeof parsed !== 'object') {
-    return { type: 'error', id: null, code: -32600, message: 'invalid request object' };
+    return {
+      type: 'error',
+      id: null,
+      code: -32600,
+      message: 'invalid request object',
+    };
   }
 
   const obj = parsed as Record<string, unknown>;
@@ -174,8 +190,13 @@ export function jsonRpcToNative(parsed: unknown): InboundResult {
   if ('id' in obj) {
     const result = JsonRpcRequestSchema.safeParse(obj);
     if (!result.success) {
-      const id = 'id' in obj ? obj.id as string | number : null;
-      return { type: 'error', id, code: -32600, message: 'invalid JSON-RPC request' };
+      const id = 'id' in obj ? (obj.id as string | number) : null;
+      return {
+        type: 'error',
+        id,
+        code: -32600,
+        message: 'invalid JSON-RPC request',
+      };
     }
 
     const req = result.data;
@@ -199,7 +220,12 @@ export function jsonRpcToNative(parsed: unknown): InboundResult {
     };
   }
 
-  return { type: 'error', id: null, code: -32600, message: 'unrecognized JSON-RPC message' };
+  return {
+    type: 'error',
+    id: null,
+    code: -32600,
+    message: 'unrecognized JSON-RPC message',
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -211,7 +237,7 @@ export function jsonRpcToNative(parsed: unknown): InboundResult {
  */
 export function nativeResponseToJsonRpc(
   frame: ResponseFrame,
-  originalId?: string | number,
+  originalId?: string | number
 ): JsonRpcSuccessResponse | JsonRpcErrorResponse {
   const id = originalId ?? frame.id;
 
@@ -234,11 +260,14 @@ export function nativeResponseToJsonRpc(
     error: {
       code,
       message: error?.message ?? 'unknown error',
-      data: error?.details !== undefined ? error.details : {
-        wundrCode: error?.code,
-        retryable: error?.retryable,
-        retryAfterMs: error?.retryAfterMs,
-      },
+      data:
+        error?.details !== undefined
+          ? error.details
+          : {
+              wundrCode: error?.code,
+              retryable: error?.retryable,
+              retryAfterMs: error?.retryAfterMs,
+            },
     },
   };
 }
@@ -265,7 +294,7 @@ export function jsonRpcErrorResponse(
   id: string | number | null,
   code: number,
   message: string,
-  data?: unknown,
+  data?: unknown
 ): JsonRpcErrorResponse {
   return {
     jsonrpc: '2.0',

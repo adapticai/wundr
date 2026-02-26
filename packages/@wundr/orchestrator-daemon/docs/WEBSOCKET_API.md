@@ -2,7 +2,9 @@
 
 ## Overview
 
-The Orchestrator Daemon WebSocket API provides real-time bidirectional communication between Orchestrator daemon clients and the Neolith backend. This protocol supports authentication, event streaming, heartbeat monitoring, and automatic reconnection.
+The Orchestrator Daemon WebSocket API provides real-time bidirectional communication between
+Orchestrator daemon clients and the Neolith backend. This protocol supports authentication, event
+streaming, heartbeat monitoring, and automatic reconnection.
 
 ## Connection
 
@@ -30,10 +32,10 @@ All messages follow a common structure:
 
 ```typescript
 interface WSMessage {
-  type: WSMessageType;      // Message type identifier
-  id: string;               // Unique message ID (UUID)
-  timestamp: string;        // ISO 8601 timestamp
-  payload?: object;         // Type-specific payload
+  type: WSMessageType; // Message type identifier
+  id: string; // Unique message ID (UUID)
+  timestamp: string; // ISO 8601 timestamp
+  payload?: object; // Type-specific payload
 }
 ```
 
@@ -87,6 +89,7 @@ Authenticate the WebSocket connection using a JWT access token.
 ```
 
 **Error Codes:**
+
 - `AUTH_FAILED` - Invalid credentials
 - `TOKEN_EXPIRED` - Access token has expired
 - `INSUFFICIENT_SCOPE` - Token lacks required scopes
@@ -115,6 +118,7 @@ Send periodic heartbeat to maintain connection and report metrics.
 ```
 
 **Status Values:**
+
 - `active` - Daemon is actively processing
 - `idle` - Daemon is running but idle
 - `busy` - Daemon is under heavy load
@@ -134,6 +138,7 @@ Send periodic heartbeat to maintain connection and report metrics.
 ```
 
 **Important:**
+
 - Send heartbeats at the interval specified in `auth_success` (typically 30 seconds)
 - Missing 3 consecutive heartbeats will result in connection closure
 - Include metrics to enable monitoring and diagnostics
@@ -148,12 +153,7 @@ Subscribe to specific event types.
   "id": "990e8400-e29b-41d4-a716-446655440005",
   "timestamp": "2024-01-15T10:30:35Z",
   "payload": {
-    "eventTypes": [
-      "message.received",
-      "message.sent",
-      "presence.updated",
-      "channel.joined"
-    ],
+    "eventTypes": ["message.received", "message.sent", "presence.updated", "channel.joined"],
     "channelIds": ["channel_1", "channel_2"]
   }
 }
@@ -162,6 +162,7 @@ Subscribe to specific event types.
 **Event Types:**
 
 **Message Events:**
+
 - `message.received` - New message in subscribed channel
 - `message.sent` - Message successfully sent
 - `message.updated` - Message edited
@@ -169,6 +170,7 @@ Subscribe to specific event types.
 - `message.reaction` - Reaction added to message
 
 **Channel Events:**
+
 - `channel.joined` - Orchestrator joined a channel
 - `channel.left` - Orchestrator left a channel
 - `channel.updated` - Channel metadata updated
@@ -176,21 +178,25 @@ Subscribe to specific event types.
 - `channel.member_removed` - Member removed from channel
 
 **Presence Events:**
+
 - `presence.updated` - User presence status changed
 - `presence.user_online` - User came online
 - `presence.user_offline` - User went offline
 
 **VP Events:**
+
 - `vp.status_changed` - Orchestrator status changed
 - `vp.config_updated` - Orchestrator configuration updated
 - `vp.mentioned` - Orchestrator was mentioned in a message
 
 **System Events:**
+
 - `system.rate_limited` - Rate limit applied
 - `system.maintenance` - Scheduled maintenance
 - `system.reconnect_required` - Server requesting reconnect
 
 **Wildcard:**
+
 - `*` - Subscribe to all event types
 
 ### 4. Unsubscribe from Events
@@ -218,16 +224,13 @@ Acknowledge receipt and processing of events.
   "id": "bb0e8400-e29b-41d4-a716-446655440007",
   "timestamp": "2024-01-15T10:30:45Z",
   "payload": {
-    "eventIds": [
-      "event_123",
-      "event_124",
-      "event_125"
-    ]
+    "eventIds": ["event_123", "event_124", "event_125"]
   }
 }
 ```
 
 **Important:**
+
 - Events with `requiresAck: true` must be acknowledged
 - Unacknowledged events may be redelivered
 - Acknowledge events in batches for efficiency
@@ -280,6 +283,7 @@ Receive error notifications from the server.
 ```
 
 **Common Error Codes:**
+
 - `INVALID_MESSAGE` - Malformed message
 - `NOT_AUTHENTICATED` - Action requires authentication
 - `INSUFFICIENT_SCOPE` - Token lacks required scope
@@ -321,6 +325,7 @@ Server requests client to reconnect.
 ```
 
 **Client Actions:**
+
 1. Close current connection gracefully
 2. Wait for specified delay
 3. Establish new connection
@@ -332,17 +337,17 @@ Server requests client to reconnect.
 
 Standard and custom close codes used by the server:
 
-| Code | Name | Description |
-|------|------|-------------|
-| 1000 | NORMAL | Normal closure |
-| 1001 | GOING_AWAY | Server shutting down |
-| 1002 | PROTOCOL_ERROR | Protocol violation |
-| 4001 | AUTH_FAILED | Authentication failed |
-| 4002 | AUTH_TIMEOUT | Authentication timeout (>10s) |
-| 4003 | TOKEN_EXPIRED | Access token expired |
-| 4004 | RATE_LIMITED | Rate limit exceeded |
-| 4005 | INSUFFICIENT_SCOPE | Missing required scopes |
-| 4006 | SESSION_TERMINATED | Session terminated by server |
+| Code | Name               | Description                   |
+| ---- | ------------------ | ----------------------------- |
+| 1000 | NORMAL             | Normal closure                |
+| 1001 | GOING_AWAY         | Server shutting down          |
+| 1002 | PROTOCOL_ERROR     | Protocol violation            |
+| 4001 | AUTH_FAILED        | Authentication failed         |
+| 4002 | AUTH_TIMEOUT       | Authentication timeout (>10s) |
+| 4003 | TOKEN_EXPIRED      | Access token expired          |
+| 4004 | RATE_LIMITED       | Rate limit exceeded           |
+| 4005 | INSUFFICIENT_SCOPE | Missing required scopes       |
+| 4006 | SESSION_TERMINATED | Session terminated by server  |
 
 ## Connection Recovery
 
@@ -352,7 +357,7 @@ Implement exponential backoff for reconnection:
 
 ```typescript
 let reconnectDelay = 1000; // Start with 1 second
-const maxDelay = 60000;    // Max 60 seconds
+const maxDelay = 60000; // Max 60 seconds
 
 function reconnect() {
   setTimeout(() => {
@@ -419,7 +424,7 @@ class DaemonWSClient {
       this.reconnect(url);
     });
 
-    this.ws.on('error', (error) => {
+    this.ws.on('error', error => {
       console.error('WebSocket error:', error);
     });
   }
@@ -580,12 +585,12 @@ const client = new DaemonWSClient(
 
 ## Rate Limits
 
-| Operation | Limit | Window |
-|-----------|-------|--------|
-| WebSocket connections | 5 per Orchestrator | N/A |
-| Messages sent | 100 per minute | 60s |
-| Event subscriptions | 50 event types | N/A |
-| Heartbeats | 1 per 10 seconds | N/A |
+| Operation             | Limit              | Window |
+| --------------------- | ------------------ | ------ |
+| WebSocket connections | 5 per Orchestrator | N/A    |
+| Messages sent         | 100 per minute     | 60s    |
+| Event subscriptions   | 50 event types     | N/A    |
+| Heartbeats            | 1 per 10 seconds   | N/A    |
 
 ## Monitoring and Metrics
 
@@ -603,6 +608,7 @@ Track these metrics for operational visibility:
 ## Support
 
 For issues or questions:
+
 - GitHub: https://github.com/wundr/neolith/issues
 - Documentation: https://docs.neolith.io/daemon-websocket
 - Email: support@neolith.io

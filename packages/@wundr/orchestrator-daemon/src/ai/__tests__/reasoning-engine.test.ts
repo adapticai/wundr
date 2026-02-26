@@ -7,7 +7,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ReasoningEngine, createReasoningEngine } from '../reasoning-engine';
 import { DefaultToolRegistry } from '../tool-registry';
 
-import type { LLMClient, ChatParams, ChatResponse, ChatChunk } from '../../types/llm';
+import type {
+  LLMClient,
+  ChatParams,
+  ChatResponse,
+  ChatChunk,
+} from '../../types/llm';
 import type { ReasoningConfig } from '../reasoning-engine';
 import type { ToolDescription } from '../tool-registry';
 
@@ -16,16 +21,17 @@ import type { ToolDescription } from '../tool-registry';
 // =============================================================================
 
 function createMockLLMClient(
-  overrides?: Partial<LLMClient>,
+  overrides?: Partial<LLMClient>
 ): LLMClient & { chat: ReturnType<typeof vi.fn> } {
   const chat = vi.fn<[ChatParams], Promise<ChatResponse>>();
   return {
     provider: 'mock',
     chat,
-    chatStream: overrides?.chatStream ??
-      (async function* (): AsyncIterableIterator<ChatChunk> {
+    chatStream:
+      overrides?.chatStream ??
+      async function* (): AsyncIterableIterator<ChatChunk> {
         /* noop */
-      }),
+      },
     countTokens: overrides?.countTokens ?? vi.fn(async () => 10),
     ...overrides,
   } as LLMClient & { chat: ReturnType<typeof vi.fn> };
@@ -40,7 +46,7 @@ function makeChatResponse(
     toolCalls?: ChatResponse['toolCalls'];
     finishReason?: ChatResponse['finishReason'];
     totalTokens?: number;
-  },
+  }
 ): ChatResponse {
   return {
     id: 'resp-1',
@@ -78,9 +84,7 @@ describe('ReasoningEngine', () => {
 
   describe('reason', () => {
     it('should return a decision from a single-step response', async () => {
-      client.chat.mockResolvedValueOnce(
-        makeChatResponse('The answer is 42.'),
-      );
+      client.chat.mockResolvedValueOnce(makeChatResponse('The answer is 42.'));
 
       const result = await engine.reason('What is the meaning of life?');
 
@@ -115,8 +119,8 @@ describe('ReasoningEngine', () => {
       };
       toolRegistry.register(
         'get_price',
-        vi.fn(async (args) => ({ price: 150.5, ticker: args.ticker })),
-        desc,
+        vi.fn(async args => ({ price: 150.5, ticker: args.ticker })),
+        desc
       );
 
       const engineWithTools = new ReasoningEngine(client, {
@@ -132,12 +136,12 @@ describe('ReasoningEngine', () => {
             { id: 'tc-1', name: 'get_price', arguments: '{"ticker":"AAPL"}' },
           ],
           finishReason: 'tool_calls',
-        }),
+        })
       );
 
       // Second call: LLM receives tool result and provides final answer
       client.chat.mockResolvedValueOnce(
-        makeChatResponse('AAPL is trading at $150.50.'),
+        makeChatResponse('AAPL is trading at $150.50.')
       );
 
       const result = await engineWithTools.reason('What is the price of AAPL?');
@@ -153,7 +157,7 @@ describe('ReasoningEngine', () => {
 
     it('should strip common prefixes from the decision text', async () => {
       client.chat.mockResolvedValueOnce(
-        makeChatResponse('Decision: Approve the transfer.'),
+        makeChatResponse('Decision: Approve the transfer.')
       );
 
       const result = await engine.reason('Should we approve?');
@@ -175,7 +179,7 @@ describe('ReasoningEngine', () => {
           name: 'slow_tool',
           description: 'A slow tool',
           inputSchema: { type: 'object', properties: {} },
-        },
+        }
       );
 
       const engineLimited = new ReasoningEngine(client, {
@@ -187,11 +191,9 @@ describe('ReasoningEngine', () => {
       // Both calls return tool invocations so the loop never gets a 'stop'
       client.chat.mockResolvedValue(
         makeChatResponse('Thinking...', {
-          toolCalls: [
-            { id: 'tc-loop', name: 'slow_tool', arguments: '{}' },
-          ],
+          toolCalls: [{ id: 'tc-loop', name: 'slow_tool', arguments: '{}' }],
           finishReason: 'tool_calls',
-        }),
+        })
       );
 
       const result = await engineLimited.reason('Solve a hard problem');
@@ -206,12 +208,14 @@ describe('ReasoningEngine', () => {
       const toolRegistry = new DefaultToolRegistry();
       toolRegistry.register(
         'broken_tool',
-        vi.fn(async () => { throw new Error('connection refused'); }),
+        vi.fn(async () => {
+          throw new Error('connection refused');
+        }),
         {
           name: 'broken_tool',
           description: 'A broken tool',
           inputSchema: { type: 'object', properties: {} },
-        },
+        }
       );
 
       const engineBroken = new ReasoningEngine(client, {
@@ -223,21 +227,19 @@ describe('ReasoningEngine', () => {
       client.chat
         .mockResolvedValueOnce(
           makeChatResponse('Let me try the tool.', {
-            toolCalls: [
-              { id: 'tc-err', name: 'broken_tool', arguments: '{}' },
-            ],
+            toolCalls: [{ id: 'tc-err', name: 'broken_tool', arguments: '{}' }],
             finishReason: 'tool_calls',
-          }),
+          })
         )
         .mockResolvedValueOnce(
-          makeChatResponse('The tool failed, but I can still answer.'),
+          makeChatResponse('The tool failed, but I can still answer.')
         );
 
       const result = await engineBroken.reason('Do something');
 
       // An observation with "error" should be in the steps
       const errorObs = result.steps.find(
-        s => s.type === 'observation' && s.content.includes('error'),
+        s => s.type === 'observation' && s.content.includes('error')
       );
       expect(errorObs).toBeDefined();
       expect(result.confidence).toBeLessThan(0.9);
@@ -252,8 +254,8 @@ describe('ReasoningEngine', () => {
     it('should return a ReasoningResult containing a plan', async () => {
       client.chat.mockResolvedValueOnce(
         makeChatResponse(
-          '1. Fetch data [depends: none]\n2. Analyse data [depends: 1]\n3. Report [depends: 2]',
-        ),
+          '1. Fetch data [depends: none]\n2. Analyse data [depends: 1]\n3. Report [depends: 2]'
+        )
       );
 
       const result = await engine.planTask('Analyse market data');
@@ -267,7 +269,10 @@ describe('ReasoningEngine', () => {
     it('should include constraints in the prompt when provided', async () => {
       client.chat.mockResolvedValueOnce(makeChatResponse('1. Do the thing'));
 
-      await engine.planTask('Build feature', ['Must use TypeScript', 'Under 1 hour']);
+      await engine.planTask('Build feature', [
+        'Must use TypeScript',
+        'Under 1 hour',
+      ]);
 
       const messages = client.chat.mock.calls[0][0].messages;
       const userMessage = messages.find(m => m.role === 'user');
@@ -309,7 +314,9 @@ describe('ReasoningEngine', () => {
 
       client.chat.mockResolvedValueOnce(makeChatResponse(json));
 
-      const evaluation = await engine.evaluateAction('Rebalance now', { market: 'open' });
+      const evaluation = await engine.evaluateAction('Rebalance now', {
+        market: 'open',
+      });
 
       expect(evaluation.approved).toBe(false);
       expect(evaluation.riskLevel).toBe('high');
@@ -318,7 +325,7 @@ describe('ReasoningEngine', () => {
 
     it('should fall back gracefully when LLM returns non-JSON', async () => {
       client.chat.mockResolvedValueOnce(
-        makeChatResponse('I cannot evaluate this action properly.'),
+        makeChatResponse('I cannot evaluate this action properly.')
       );
 
       const evaluation = await engine.evaluateAction('Unknown action', {});
@@ -336,11 +343,11 @@ describe('ReasoningEngine', () => {
   describe('summarize', () => {
     it('should return summarised text', async () => {
       client.chat.mockResolvedValueOnce(
-        makeChatResponse('Markets rose 2% today led by tech stocks.'),
+        makeChatResponse('Markets rose 2% today led by tech stocks.')
       );
 
       const summary = await engine.summarize(
-        'Today the S&P 500 rose by 2.1%. Technology stocks led the rally...',
+        'Today the S&P 500 rose by 2.1%. Technology stocks led the rally...'
       );
 
       expect(summary).toBe('Markets rose 2% today led by tech stocks.');
@@ -348,13 +355,13 @@ describe('ReasoningEngine', () => {
 
     it('should pass bullet format instruction when format is bullets', async () => {
       client.chat.mockResolvedValueOnce(
-        makeChatResponse('- Point 1\n- Point 2'),
+        makeChatResponse('- Point 1\n- Point 2')
       );
 
       await engine.summarize('Long content here', { format: 'bullets' });
 
       const systemMessage = client.chat.mock.calls[0][0].messages.find(
-        m => m.role === 'system',
+        m => m.role === 'system'
       );
       expect(systemMessage?.content).toContain('bullet-point');
     });
@@ -365,7 +372,7 @@ describe('ReasoningEngine', () => {
       await engine.summarize('Content', { maxLength: 100 });
 
       const systemMessage = client.chat.mock.calls[0][0].messages.find(
-        m => m.role === 'system',
+        m => m.role === 'system'
       );
       expect(systemMessage?.content).toContain('100');
     });

@@ -2,7 +2,8 @@
 
 ## Overview
 
-The MetricsServer provides a production-ready HTTP endpoint for Prometheus metrics scraping and health monitoring. It implements three endpoints with comprehensive middleware support.
+The MetricsServer provides a production-ready HTTP endpoint for Prometheus metrics scraping and
+health monitoring. It implements three endpoints with comprehensive middleware support.
 
 ## Quick Start
 
@@ -34,12 +35,14 @@ constructor(registry: MetricsRegistry, config?: MetricsServerConfig)
 ```
 
 **Parameters:**
+
 - `registry` - MetricsRegistry instance for metrics collection
 - `config` - Optional configuration object
 
 ### Methods
 
 #### start(): Promise<void>
+
 Starts the HTTP server and begins listening for requests.
 
 **Returns:** Promise that resolves when server is ready
@@ -47,17 +50,20 @@ Starts the HTTP server and begins listening for requests.
 **Throws:** Error if server fails to start or port is in use
 
 **Example:**
+
 ```typescript
 await server.start();
 console.log('Server started on port 9090');
 ```
 
 #### stop(): Promise<void>
+
 Gracefully stops the HTTP server.
 
 **Returns:** Promise that resolves when server is stopped
 
 **Example:**
+
 ```typescript
 process.on('SIGTERM', async () => {
   await server.stop();
@@ -66,12 +72,15 @@ process.on('SIGTERM', async () => {
 ```
 
 #### setReady(ready: boolean): void
+
 Sets the readiness state for the `/ready` endpoint.
 
 **Parameters:**
+
 - `ready` - True if service is ready to accept traffic
 
 **Example:**
+
 ```typescript
 // Mark as not ready during initialization
 server.setReady(false);
@@ -82,11 +91,13 @@ server.setReady(true);
 ```
 
 #### isRunning(): boolean
+
 Checks if the server is currently running.
 
 **Returns:** True if server is running
 
 **Example:**
+
 ```typescript
 if (server.isRunning()) {
   console.log('Server is running');
@@ -130,6 +141,7 @@ interface HealthChecks {
 ```
 
 **Example:**
+
 ```typescript
 const server = createMetricsServer(metricsRegistry, {
   port: 9090,
@@ -156,15 +168,18 @@ const server = createMetricsServer(metricsRegistry, {
 Returns Prometheus-formatted metrics for scraping.
 
 **Response Headers:**
+
 - `Content-Type: text/plain; version=0.0.4; charset=utf-8`
 - `Access-Control-Allow-Origin: *` (if CORS enabled)
 
 **Status Codes:**
+
 - `200 OK` - Metrics successfully collected
 - `405 Method Not Allowed` - Non-GET request
 - `500 Internal Server Error` - Failed to collect metrics
 
 **Response Format:**
+
 ```
 # HELP orchestrator_sessions_active Number of currently active orchestrator sessions
 # TYPE orchestrator_sessions_active gauge
@@ -176,6 +191,7 @@ orchestrator_tokens_used_total{orchestrator_id="orch-1",model="claude-sonnet-4"}
 ```
 
 **cURL Example:**
+
 ```bash
 curl http://localhost:9090/metrics
 ```
@@ -185,41 +201,47 @@ curl http://localhost:9090/metrics
 Returns detailed health status with dependency checks.
 
 **Response Headers:**
+
 - `Content-Type: application/json`
 - `Access-Control-Allow-Origin: *` (if CORS enabled)
 
 **Status Codes:**
+
 - `200 OK` - Service is healthy or degraded
 - `503 Service Unavailable` - Service is unhealthy
 - `405 Method Not Allowed` - Non-GET request
 - `500 Internal Server Error` - Health check failed
 
 **Response Format:**
+
 ```typescript
 interface HealthResponse {
   status: 'healthy' | 'degraded' | 'unhealthy';
   version: string;
-  uptime: number;  // seconds
+  uptime: number; // seconds
   checks: {
     redis: boolean;
     database: boolean;
     federationRegistry: boolean;
   };
-  timestamp: string;  // ISO 8601
+  timestamp: string; // ISO 8601
 }
 ```
 
 **Health Status Logic:**
+
 - `healthy` - All checks passed
 - `degraded` - Some checks failed
 - `unhealthy` - All checks failed
 
 **cURL Example:**
+
 ```bash
 curl http://localhost:9090/health | jq
 ```
 
 **Example Response:**
+
 ```json
 {
   "status": "healthy",
@@ -239,29 +261,34 @@ curl http://localhost:9090/health | jq
 Returns readiness status for Kubernetes readiness probes.
 
 **Response Headers:**
+
 - `Content-Type: application/json`
 - `Access-Control-Allow-Origin: *` (if CORS enabled)
 
 **Status Codes:**
+
 - `200 OK` - Service is ready
 - `503 Service Unavailable` - Service is not ready
 - `405 Method Not Allowed` - Non-GET request
 
 **Response Format:**
+
 ```typescript
 interface ReadinessResponse {
   ready: boolean;
-  timestamp: string;  // ISO 8601
+  timestamp: string; // ISO 8601
   message?: string;
 }
 ```
 
 **cURL Example:**
+
 ```bash
 curl http://localhost:9090/ready | jq
 ```
 
 **Example Response:**
+
 ```json
 {
   "ready": true,
@@ -275,6 +302,7 @@ curl http://localhost:9090/ready | jq
 ### CORS Support
 
 Automatically adds CORS headers when `enableCors: true`:
+
 - `Access-Control-Allow-Origin: *`
 - `Access-Control-Allow-Methods: GET, OPTIONS`
 - `Access-Control-Allow-Headers: Content-Type`
@@ -285,6 +313,7 @@ Handles OPTIONS preflight requests with `204 No Content`.
 ### Request Logging
 
 When `enableLogging: true`, logs:
+
 - Request method, URL, and remote address
 - Response time in milliseconds
 - Error details if request fails
@@ -292,6 +321,7 @@ When `enableLogging: true`, logs:
 ### Error Handling
 
 All errors return JSON format:
+
 ```json
 {
   "error": "Error message",
@@ -354,9 +384,9 @@ Always drain connections before stopping:
 
 ```typescript
 process.on('SIGTERM', async () => {
-  server.setReady(false);                      // Stop accepting new traffic
+  server.setReady(false); // Stop accepting new traffic
   await new Promise(r => setTimeout(r, 5000)); // Wait for in-flight requests
-  await server.stop();                         // Stop server
+  await server.stop(); // Stop server
   process.exit(0);
 });
 ```
@@ -386,7 +416,7 @@ Use package.json version in production:
 import { version } from '../package.json';
 
 const server = createMetricsServer(metricsRegistry, {
-  version,  // "1.0.6"
+  version, // "1.0.6"
 });
 ```
 
@@ -398,8 +428,8 @@ Never expose sensitive information in errors:
 try {
   await riskyOperation();
 } catch (error) {
-  logger.error('Operation failed:', error);  // Log details
-  throw new Error('Internal error');         // Generic message
+  logger.error('Operation failed:', error); // Log details
+  throw new Error('Internal error'); // Generic message
 }
 ```
 
@@ -421,6 +451,7 @@ const server = createMetricsServer(metricsRegistry, {
 **Error:** `EADDRINUSE: address already in use`
 
 **Solutions:**
+
 ```bash
 # Find process using port
 lsof -i :9090
@@ -437,6 +468,7 @@ METRICS_PORT=9091 node server.js
 **Symptoms:** `/health` returns `unhealthy` status
 
 **Solutions:**
+
 1. Check health check function doesn't throw
 2. Verify dependencies are reachable
 3. Add timeout to health checks
@@ -467,6 +499,7 @@ healthChecks: {
 **Symptoms:** `/metrics` shows stale data
 
 **Solutions:**
+
 1. Ensure metrics are registered
 2. Check collector is flushing batches
 3. Verify metrics are being recorded

@@ -6,7 +6,10 @@
 
 import { FederationRegistry } from '../registry';
 
-import type { RegistryOrchestratorMetadata, FederationRegistryConfig } from '../registry-types';
+import type {
+  RegistryOrchestratorMetadata,
+  FederationRegistryConfig,
+} from '../registry-types';
 
 async function main() {
   // Configuration
@@ -26,11 +29,13 @@ async function main() {
   const registry = new FederationRegistry(config);
 
   // Listen for events
-  registry.on('orchestrator:registered', (metadata) => {
-    console.log(`✅ Orchestrator registered: ${metadata.name} (${metadata.id})`);
+  registry.on('orchestrator:registered', metadata => {
+    console.log(
+      `✅ Orchestrator registered: ${metadata.name} (${metadata.id})`
+    );
   });
 
-  registry.on('orchestrator:deregistered', (id) => {
+  registry.on('orchestrator:deregistered', id => {
     console.log(`❌ Orchestrator deregistered: ${id}`);
   });
 
@@ -39,7 +44,9 @@ async function main() {
   });
 
   registry.on('orchestrator:unhealthy', (id, lastHeartbeat) => {
-    console.log(`⚠️  Orchestrator ${id} is unhealthy (last heartbeat: ${lastHeartbeat})`);
+    console.log(
+      `⚠️  Orchestrator ${id} is unhealthy (last heartbeat: ${lastHeartbeat})`
+    );
   });
 
   registry.on('heartbeat:received', (id, timestamp) => {
@@ -113,29 +120,33 @@ async function main() {
 
   // Find orchestrators by capability
   console.log('\n🔍 Finding orchestrators with code-completion capability:');
-  const codeCompletionOrchestrators = await registry.getOrchestratorsByCapability([
-    'code-completion',
-  ]);
+  const codeCompletionOrchestrators =
+    await registry.getOrchestratorsByCapability(['code-completion']);
   codeCompletionOrchestrators.forEach(orch => {
     console.log(`  - ${orch.name} (${orch.id}) in ${orch.region}`);
   });
 
   // Find orchestrators by region
   console.log('\n🌍 Finding orchestrators in us-east-1:');
-  const usEastOrchestrators = await registry.getOrchestratorsByRegion('us-east-1');
+  const usEastOrchestrators =
+    await registry.getOrchestratorsByRegion('us-east-1');
   usEastOrchestrators.forEach(orch => {
     console.log(`  - ${orch.name} (${orch.id})`);
   });
 
   // Complex query
-  console.log('\n🎯 Complex query: production orchestrators with text-generation:');
+  console.log(
+    '\n🎯 Complex query: production orchestrators with text-generation:'
+  );
   const productionOrchestrators = await registry.queryOrchestrators({
     capabilities: ['text-generation'],
     status: ['online'],
     minAvailableSessions: 20,
   });
   productionOrchestrators.forEach(orch => {
-    console.log(`  - ${orch.name} (${orch.id}) - ${orch.maxSessions} max sessions`);
+    console.log(
+      `  - ${orch.name} (${orch.id}) - ${orch.maxSessions} max sessions`
+    );
   });
 
   // Simulate session load
@@ -150,8 +161,12 @@ async function main() {
   if (metrics) {
     console.log('\n📊 Metrics for orch-us-east-1:');
     console.log(`  Load: ${(metrics.load * 100).toFixed(1)}%`);
-    console.log(`  Sessions: ${metrics.sessions} / ${orchestrator1.maxSessions}`);
-    console.log(`  Token utilization: ${(metrics.tokenUtilization * 100).toFixed(1)}%`);
+    console.log(
+      `  Sessions: ${metrics.sessions} / ${orchestrator1.maxSessions}`
+    );
+    console.log(
+      `  Token utilization: ${(metrics.tokenUtilization * 100).toFixed(1)}%`
+    );
     console.log(`  Uptime: ${(metrics.uptime / 1000).toFixed(0)}s`);
   }
 
@@ -172,7 +187,9 @@ async function main() {
 
   // Health check
   const healthy = await registry.healthCheck();
-  console.log(`\n🏥 Registry health check: ${healthy ? '✅ Healthy' : '❌ Unhealthy'}`);
+  console.log(
+    `\n🏥 Registry health check: ${healthy ? '✅ Healthy' : '❌ Unhealthy'}`
+  );
 
   // Cleanup
   console.log('\n🧹 Cleaning up...');

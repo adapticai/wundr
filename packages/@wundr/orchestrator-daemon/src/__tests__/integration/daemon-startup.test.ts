@@ -65,7 +65,9 @@ vi.mock('../../session/session-manager', () => ({
 // LLM client
 vi.mock('../../llm', () => ({
   createOpenAIClient: vi.fn(() => ({
-    chat: vi.fn().mockResolvedValue({ content: 'test', usage: { totalTokens: 0 } }),
+    chat: vi
+      .fn()
+      .mockResolvedValue({ content: 'test', usage: { totalTokens: 0 } }),
   })),
 }));
 
@@ -84,7 +86,14 @@ vi.mock('../../hooks', () => ({
     getHooksForEvent: vi.fn().mockReturnValue([]),
   })),
   createHookEngine: vi.fn(() => ({
-    fire: vi.fn().mockResolvedValue({ event: 'SessionStart', results: [], totalDurationMs: 0, successCount: 0, failureCount: 0, skippedCount: 0 }),
+    fire: vi.fn().mockResolvedValue({
+      event: 'SessionStart',
+      results: [],
+      totalDurationMs: 0,
+      successCount: 0,
+      failureCount: 0,
+      skippedCount: 0,
+    }),
   })),
   registerBuiltInHooks: vi.fn(),
 }));
@@ -243,15 +252,15 @@ describe('Daemon Startup Integration', () => {
         expect(status).toBeDefined();
       } finally {
         if (origPort !== undefined) {
-process.env['DAEMON_PORT'] = origPort;
-} else {
-delete process.env['DAEMON_PORT'];
-}
+          process.env['DAEMON_PORT'] = origPort;
+        } else {
+          delete process.env['DAEMON_PORT'];
+        }
         if (origHost !== undefined) {
-process.env['DAEMON_HOST'] = origHost;
-} else {
-delete process.env['DAEMON_HOST'];
-}
+          process.env['DAEMON_HOST'] = origHost;
+        } else {
+          delete process.env['DAEMON_HOST'];
+        }
       }
     });
 
@@ -275,7 +284,7 @@ delete process.env['DAEMON_HOST'];
       expect(statusBeforeStart.status).toBe('stopped');
 
       // Track the 'started' event emission
-      const startedPromise = new Promise<void>((resolve) => {
+      const startedPromise = new Promise<void>(resolve => {
         daemon.on('started', () => resolve());
       });
 
@@ -308,7 +317,7 @@ delete process.env['DAEMON_HOST'];
 
     it('loads agent definitions gracefully (non-fatal on failure)', async () => {
       mockAgentRegistryLoadFromDirectory.mockRejectedValueOnce(
-        new Error('no agents dir'),
+        new Error('no agents dir')
       );
 
       daemon = new OrchestratorDaemon(buildConfig());
@@ -348,7 +357,7 @@ delete process.env['DAEMON_HOST'];
       await daemon.start();
       expect(daemon.getStatus().status).toBe('running');
 
-      const stoppedPromise = new Promise<void>((resolve) => {
+      const stoppedPromise = new Promise<void>(resolve => {
         daemon.on('stopped', () => resolve());
       });
 

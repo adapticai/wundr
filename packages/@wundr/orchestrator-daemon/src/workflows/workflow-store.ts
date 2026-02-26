@@ -17,7 +17,11 @@
 import { Logger } from '../utils/logger';
 import { WorkflowError, WorkflowErrorCode } from './types';
 
-import type { WorkflowDefinition, WorkflowExecution, StepResult } from './types';
+import type {
+  WorkflowDefinition,
+  WorkflowExecution,
+  StepResult,
+} from './types';
 
 // =============================================================================
 // Store Interface
@@ -77,8 +81,8 @@ export interface IWorkflowStore {
 function cloneDefinition(def: WorkflowDefinition): WorkflowDefinition {
   return {
     ...def,
-    steps: def.steps.map((s) => ({ ...s, dependencies: [...s.dependencies] })),
-    triggers: def.triggers.map((t) => ({ ...t })),
+    steps: def.steps.map(s => ({ ...s, dependencies: [...s.dependencies] })),
+    triggers: def.triggers.map(t => ({ ...t })),
     variables: { ...def.variables },
     metadata: { ...def.metadata },
   };
@@ -188,7 +192,9 @@ export class InMemoryWorkflowStore implements IWorkflowStore {
    */
   async saveExecution(execution: WorkflowExecution): Promise<void> {
     this.executions.set(execution.id, cloneExecution(execution));
-    this.logger.debug(`Execution saved: ${execution.id} (status: ${execution.status})`);
+    this.logger.debug(
+      `Execution saved: ${execution.id} (status: ${execution.status})`
+    );
   }
 
   /**
@@ -211,7 +217,7 @@ export class InMemoryWorkflowStore implements IWorkflowStore {
   async listExecutions(workflowId?: string): Promise<WorkflowExecution[]> {
     let all = Array.from(this.executions.values());
     if (workflowId !== undefined) {
-      all = all.filter((e) => e.workflowId === workflowId);
+      all = all.filter(e => e.workflowId === workflowId);
     }
     return all.map(cloneExecution);
   }
@@ -266,9 +272,7 @@ export class InMemoryWorkflowStore implements IWorkflowStore {
  * @internal
  */
 export function throwStoreError(message: string, cause?: unknown): never {
-  throw new WorkflowError(
-    WorkflowErrorCode.STORE_ERROR,
-    message,
-    { cause: cause instanceof Error ? cause.message : String(cause) },
-  );
+  throw new WorkflowError(WorkflowErrorCode.STORE_ERROR, message, {
+    cause: cause instanceof Error ? cause.message : String(cause),
+  });
 }
