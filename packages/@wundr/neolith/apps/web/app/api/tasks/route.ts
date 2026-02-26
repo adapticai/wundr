@@ -67,7 +67,55 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Parse and validate query parameters
-    const searchParams = Object.fromEntries(request.nextUrl.searchParams);
+    const rawParams = request.nextUrl.searchParams;
+    const searchParams: Record<string, unknown> = {};
+
+    // Handle single-value params
+    for (const key of [
+      'workspaceId',
+      'orchestratorId',
+      'channelId',
+      'assignedToId',
+      'creatorId',
+      'search',
+      'searchTerm',
+      'dueBefore',
+      'dueAfter',
+      'sortBy',
+      'sortOrder',
+    ]) {
+      const val = rawParams.get(key);
+      if (val !== null) searchParams[key] = val;
+    }
+
+    // Handle numeric params
+    for (const key of ['limit', 'offset', 'page']) {
+      const val = rawParams.get(key);
+      if (val !== null) searchParams[key] = val;
+    }
+
+    // Handle boolean params
+    const includeCompleted = rawParams.get('includeCompleted');
+    if (includeCompleted !== null) {
+      searchParams.includeCompleted = includeCompleted === 'true';
+    }
+
+    // Handle array params (status, priority, tags)
+    const statusValues = rawParams.getAll('status');
+    if (statusValues.length > 0) {
+      searchParams.status =
+        statusValues.length === 1 ? statusValues[0] : statusValues;
+    }
+    const priorityValues = rawParams.getAll('priority');
+    if (priorityValues.length > 0) {
+      searchParams.priority =
+        priorityValues.length === 1 ? priorityValues[0] : priorityValues;
+    }
+    const tagsValues = rawParams.getAll('tags');
+    if (tagsValues.length > 0) {
+      searchParams.tags = tagsValues;
+    }
+
     const parseResult = taskFiltersSchema.safeParse(searchParams);
 
     if (!parseResult.success) {
@@ -327,10 +375,27 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const input: CreateTaskInput = parseResult.data;
 
+    // Resolve workspace from slug or ID
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        OR: [{ id: input.workspaceId }, { slug: input.workspaceId }],
+      },
+      select: { id: true },
+    });
+
+    if (!workspace) {
+      return NextResponse.json(
+        createErrorResponse('Workspace not found', TASK_ERROR_CODES.NOT_FOUND),
+        { status: 404 }
+      );
+    }
+
+    const resolvedWsId = workspace.id;
+
     // Check user has access to workspace
     const workspaceMember = await prisma.workspaceMember.findFirst({
       where: {
-        workspaceId: input.workspaceId,
+        workspaceId: resolvedWsId,
         userId: session.user.id,
       },
     });
@@ -355,8 +420,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (
       !orchestrator ||
-      (orchestrator.workspaceId &&
-        orchestrator.workspaceId !== input.workspaceId)
+      (orchestrator.workspaceId && orchestrator.workspaceId !== resolvedWsId)
     ) {
       return NextResponse.json(
         createErrorResponse(
@@ -371,7 +435,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const depValidation = await validateTaskDependencies(
       'new-task', // temporary ID for new task
       input.dependsOn || [],
-      input.workspaceId
+      resolvedWsId
     );
 
     if (!depValidation.valid) {
@@ -419,7 +483,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         dependsOn: input.dependsOn,
         metadata: input.metadata as Prisma.InputJsonValue,
         orchestratorId: input.orchestratorId,
-        workspaceId: input.workspaceId,
+        workspaceId: resolvedWsId,
         channelId: input.channelId,
         createdById: session.user.id,
         assignedToId: input.assignedToId,
