@@ -138,71 +138,183 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       acknowledged: alert.acknowledged,
     }));
 
-    // TODO: Add system health alerts from audit logs
-    // Check for high error rates, session failures, latency spikes, etc.
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
 
-    // Detect high error rate (>10% in last hour)
-    const [totalLogs, errorLogs] = await Promise.all([
-      prisma.auditLog.count({
-        where: { createdAt: { gte: oneHourAgo } },
-      }),
-      prisma.auditLog.count({
+    // Alert 1: High error rate from audit logs (count > 10 in last hour)
+    try {
+      const errorLogCount = await (prisma as any).auditLog.count({
         where: {
           createdAt: { gte: oneHourAgo },
-          severity: { in: ['error', 'critical'] },
+          OR: [
+            { severity: 'critical' },
+            { action: { contains: 'error', mode: 'insensitive' } },
+            { action: { contains: 'fail', mode: 'insensitive' } },
+          ],
         },
-      }),
-    ]);
+      });
 
-    if (totalLogs > 0) {
-      const errorRate = (errorLogs / totalLogs) * 100;
-      if (errorRate > 10) {
+      if (errorLogCount > 10) {
         healthAlerts.push({
-          id: `error-rate-${now.getTime()}`,
+          id: crypto.randomUUID(),
           type: 'high_error_rate',
-          severity: errorRate > 25 ? 'critical' : 'warning',
-          message: `High error rate detected: ${errorRate.toFixed(1)}% of requests failing`,
+          severity: errorLogCount > 50 ? 'critical' : 'warning',
+          message: `High error rate detected: ${errorLogCount} error/failure audit log entries in the last hour`,
+          orchestratorId: undefined,
           timestamp: now.toISOString(),
           acknowledged: false,
         });
       }
+    } catch (err) {
+      console.error(
+        '[GET /api/admin/health/alerts] Failed to query audit logs for error rate:',
+        err
+      );
     }
 
-    // Detect unhealthy orchestrators (OFFLINE or AWAY status)
-    const unhealthyOrchestrators = await prisma.orchestrator.findMany({
-      where: {
-        status: { in: ['OFFLINE', 'AWAY'] },
-      },
-      select: {
-        id: true,
-        status: true,
-        updatedAt: true,
-        user: {
-          select: {
-            name: true,
-            displayName: true,
+    // Alert 2: Token budget exhaustion (>90% used)
+    try {
+      const tokenUsageRecords = await (prisma as any).tokenUsage.findMany({
+        where: {
+          budgetLimit: { gt: 0 },
+        },
+        select: {
+          orchestratorId: true,
+          tokensUsed: true,
+          budgetLimit: true,
+        },
+      });
+
+      for (const record of tokenUsageRecords) {
+        const usagePercent = (record.tokensUsed / record.budgetLimit) * 100;
+        if (usagePercent > 90) {
+          healthAlerts.push({
+            id: crypto.randomUUID(),
+            type: 'budget_exhaustion',
+            severity: usagePercent >= 100 ? 'critical' : 'warning',
+            message: `Orchestrator token budget at ${usagePercent.toFixed(1)}% capacity (${record.tokensUsed}/${record.budgetLimit} tokens used)`,
+            orchestratorId: record.orchestratorId ?? null,
+            timestamp: now.toISOString(),
+            acknowledged: false,
+          });
+        }
+      }
+    } catch (err) {
+      console.error(
+        '[GET /api/admin/health/alerts] Failed to query tokenUsage for budget exhaustion:',
+        err
+      );
+    }
+
+    // Alert 3: Orchestrators with no recent audit log activity in last 30 minutes
+    try {
+      const activeOrchestrators = await (prisma as any).orchestrator.findMany({
+        where: {
+          status: { notIn: ['OFFLINE', 'DELETED'] },
+        },
+        select: {
+          id: true,
+          status: true,
+          updatedAt: true,
+          user: {
+            select: {
+              name: true,
+              displayName: true,
+            },
           },
         },
-      },
-    });
-
-    // Only alert on orchestrators that have been offline for more than 5 minutes
-    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
-    unhealthyOrchestrators
-      .filter(o => o.updatedAt < fiveMinutesAgo)
-      .forEach(orchestrator => {
-        healthAlerts.push({
-          id: `node-${orchestrator.id}`,
-          type: 'node_unhealthy',
-          severity: orchestrator.status === 'OFFLINE' ? 'critical' : 'warning',
-          message: `Orchestrator ${orchestrator.user?.displayName || orchestrator.user?.name} is ${orchestrator.status.toLowerCase()}`,
-          orchestratorId: orchestrator.id,
-          timestamp: now.toISOString(),
-          acknowledged: false,
-        });
       });
+
+      for (const orchestrator of activeOrchestrators) {
+        try {
+          const recentActivityCount = await (prisma as any).auditLog.count({
+            where: {
+              orchestratorId: orchestrator.id,
+              createdAt: { gte: thirtyMinutesAgo },
+            },
+          });
+
+          if (recentActivityCount === 0) {
+            const displayName =
+              orchestrator.user?.displayName ||
+              orchestrator.user?.name ||
+              orchestrator.id;
+            healthAlerts.push({
+              id: crypto.randomUUID(),
+              type: 'node_unhealthy',
+              severity: 'warning',
+              message: `Orchestrator ${displayName} has no activity in the last 30 minutes`,
+              orchestratorId: orchestrator.id,
+              timestamp: now.toISOString(),
+              acknowledged: false,
+            });
+          }
+        } catch (innerErr) {
+          console.error(
+            `[GET /api/admin/health/alerts] Failed to check activity for orchestrator ${orchestrator.id}:`,
+            innerErr
+          );
+        }
+      }
+    } catch (err) {
+      console.error(
+        '[GET /api/admin/health/alerts] Failed to query orchestrators for node health:',
+        err
+      );
+    }
+
+    // Alert 4: Latency spike (avg response time > 5000ms from recent metrics)
+    try {
+      const recentMetrics = await (prisma as any).auditLog.findMany({
+        where: {
+          createdAt: { gte: oneHourAgo },
+          metadata: { not: null },
+        },
+        select: {
+          metadata: true,
+        },
+        take: 500,
+      });
+
+      const responseTimes: number[] = recentMetrics
+        .map((m: any) => {
+          try {
+            const meta =
+              typeof m.metadata === 'string'
+                ? JSON.parse(m.metadata)
+                : m.metadata;
+            return typeof meta?.responseTime === 'number'
+              ? meta.responseTime
+              : null;
+          } catch {
+            return null;
+          }
+        })
+        .filter((t: number | null): t is number => t !== null);
+
+      if (responseTimes.length > 0) {
+        const avgResponseTime =
+          responseTimes.reduce((sum, t) => sum + t, 0) / responseTimes.length;
+
+        if (avgResponseTime > 5000) {
+          healthAlerts.push({
+            id: crypto.randomUUID(),
+            type: 'latency_spike',
+            severity: avgResponseTime > 10000 ? 'critical' : 'warning',
+            message: `Average response time is ${avgResponseTime.toFixed(0)}ms, exceeding the 5000ms threshold`,
+            orchestratorId: undefined,
+            timestamp: now.toISOString(),
+            acknowledged: false,
+          });
+        }
+      }
+    } catch (err) {
+      console.error(
+        '[GET /api/admin/health/alerts] Failed to query audit logs for latency metrics:',
+        err
+      );
+    }
 
     // Apply filters
     if (severityFilter) {

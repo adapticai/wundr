@@ -283,12 +283,59 @@ export async function POST(
       );
     }
 
-    // TODO: Send notifications to invited users
-    // This would typically:
-    // 1. Create call invitation records
-    // 2. Send push notifications
-    // 3. Send real-time WebSocket events
-    // 4. Optionally send email notifications
+    // Log notifications for invited users (in_app + email)
+    for (const userId of usersWithAccess) {
+      const invitedUser = users.find(u => u.id === userId);
+      if (!invitedUser) continue;
+
+      try {
+        // In-app notification log
+        await (prisma as any).communicationLog.create({
+          data: {
+            channel: 'in_app',
+            direction: 'outbound',
+            recipientAddress: userId,
+            senderAddress: 'system@wundr.io',
+            content: `You have been invited to join a ${call.type} call in channel ${call.channelId}.${message ? ` Message: ${message}` : ''}`,
+            status: 'pending',
+            metadata: {
+              type: 'call_invite',
+              callId: params.callId,
+              roomName: call.roomName,
+              callType: call.type,
+            },
+            organizationId: channel.workspace.organizationId,
+          },
+        });
+
+        // Email notification log
+        if (invitedUser.email) {
+          await (prisma as any).communicationLog.create({
+            data: {
+              channel: 'email',
+              direction: 'outbound',
+              recipientAddress: invitedUser.email,
+              senderAddress: 'system@wundr.io',
+              content: `Subject: You've been invited to a call\n\nHi ${invitedUser.name || 'there'},\n\nYou have been invited to join an active ${call.type} call.${message ? `\n\nMessage: ${message}` : ''}`,
+              status: 'pending',
+              metadata: {
+                type: 'call_invite',
+                callId: params.callId,
+                roomName: call.roomName,
+                callType: call.type,
+              },
+              organizationId: channel.workspace.organizationId,
+            },
+          });
+        }
+      } catch (err) {
+        console.error(
+          '[POST /api/calls/:callId/invite] Failed to log notification:',
+          err
+        );
+        // Don't fail the main operation if notification logging fails
+      }
+    }
 
     // Record invitations (if table exists)
     const now = new Date();

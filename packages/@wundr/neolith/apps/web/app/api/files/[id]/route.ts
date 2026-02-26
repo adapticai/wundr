@@ -33,15 +33,34 @@ interface RouteContext {
 /**
  * Delete file from S3
  *
- * @param _s3Key - S3 object key
- * @param _s3Bucket - S3 bucket name
+ * @param s3Key - S3 object key
+ * @param s3Bucket - S3 bucket name
  */
 async function deleteFileFromStorage(
-  _s3Key: string,
-  _s3Bucket: string
+  s3Key: string,
+  s3Bucket: string
 ): Promise<void> {
-  // In production, this would use AWS SDK DeleteObject command
-  // TODO: Implement AWS S3 DeleteObject call
+  const s3Module = await import('@aws-sdk/client-s3').catch(() => null);
+  if (s3Module && s3Key && s3Bucket) {
+    const { S3Client, DeleteObjectCommand } = s3Module;
+    const client = new S3Client({
+      region: process.env.MY_AWS_REGION ?? 'us-east-1',
+      credentials: {
+        accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID ?? '',
+        secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY ?? '',
+      },
+    });
+    await client
+      .send(
+        new DeleteObjectCommand({
+          Bucket: s3Bucket,
+          Key: s3Key,
+        })
+      )
+      .catch((err: Error) => {
+        console.error('S3 delete failed:', err.message);
+      });
+  }
 }
 
 /**

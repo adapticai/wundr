@@ -319,28 +319,40 @@ export async function POST(
       );
     }
 
-    // TODO: Start recording via LiveKit Egress API
-    // In production, use the livekit-server-sdk:
-    //
-    // const egressClient = new EgressClient(
-    //   process.env.LIVEKIT_URL!,
-    //   process.env.LIVEKIT_API_KEY!,
-    //   process.env.LIVEKIT_API_SECRET!,
-    // );
-    //
-    // const output = new EncodedFileOutput({
-    //   filepath: outputPath || `recordings/${params.callId}/${Date.now()}.${format}`,
-    //   ...s3Config,
-    // });
-    //
-    // const info = await egressClient.startRoomCompositeEgress(
-    //   result.call.roomName,
-    //   { file: output },
-    //   { audioOnly },
-    // );
-
-    // Simulate egress start for development
-    const egressId = `egress_${Date.now().toString(36)}${crypto.randomUUID().split('-')[0]}`;
+    // Attempt to start recording via LiveKit Egress API, fall back to local ID
+    let egressId = `egress_${Date.now().toString(36)}${crypto.randomUUID().split('-')[0]}`;
+    const livekitModule = await import('livekit-server-sdk').catch(() => null);
+    if (
+      livekitModule &&
+      process.env.LIVEKIT_API_KEY &&
+      process.env.LIVEKIT_API_SECRET
+    ) {
+      const { EgressClient } = livekitModule;
+      const egressClient = new EgressClient(
+        process.env.LIVEKIT_URL ?? 'wss://livekit.example.com',
+        process.env.LIVEKIT_API_KEY,
+        process.env.LIVEKIT_API_SECRET
+      );
+      try {
+        const roomName = result.call.roomName ?? `call-${params.callId}`;
+        const egressInfo = await (egressClient as any).startRoomCompositeEgress(
+          roomName,
+          {
+            file: { filepath: `recordings/${params.callId}/${Date.now()}.mp4` },
+          }
+        );
+        if (egressInfo?.egressId) {
+          egressId = egressInfo.egressId;
+        }
+      } catch (err) {
+        console.error(
+          'LiveKit recording start failed, using local egress ID:',
+          err
+        );
+      }
+    } else {
+      console.warn('LiveKit not configured - recording registered in DB only');
+    }
     const now = new Date();
 
     // Record the recording state
@@ -500,9 +512,25 @@ export async function DELETE(
       );
     }
 
-    // TODO: Stop recording via LiveKit Egress API
-    // const egressClient = new EgressClient(...);
-    // await egressClient.stopEgress(currentRecording.egress_id);
+    // Stop recording via LiveKit Egress API
+    const livekitModule = await import('livekit-server-sdk').catch(() => null);
+    if (
+      livekitModule &&
+      process.env.LIVEKIT_API_KEY &&
+      currentRecording.egress_id
+    ) {
+      const { EgressClient } = livekitModule;
+      const egressClient = new EgressClient(
+        process.env.LIVEKIT_URL ?? 'wss://livekit.example.com',
+        process.env.LIVEKIT_API_KEY,
+        process.env.LIVEKIT_API_SECRET ?? ''
+      );
+      try {
+        await egressClient.stopEgress(currentRecording.egress_id);
+      } catch (err) {
+        console.error('LiveKit recording stop failed:', err);
+      }
+    }
 
     const now = new Date();
 

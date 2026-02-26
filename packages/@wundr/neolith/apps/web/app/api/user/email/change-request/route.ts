@@ -152,8 +152,54 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       userAgent: request.headers.get('user-agent') || undefined,
     });
 
-    // TODO: Send verification emails to both old and new addresses
-    // await sendEmailChangeVerification(user.email, newEmail, token);
+    // Log notification for future delivery - email to new address with verification token
+    try {
+      await (prisma as any).communicationLog.create({
+        data: {
+          channel: 'email',
+          direction: 'outbound',
+          recipientAddress: newEmail,
+          senderAddress: 'system@wundr.io',
+          content: `Subject: Verify your new email address\n\nPlease verify your new email address by using the following token:\n\n${token}\n\nThis token expires in 24 hours.`,
+          status: 'pending',
+          metadata: {
+            type: 'email_change_verification',
+            userId: session.user.id,
+          },
+        },
+      });
+    } catch (err) {
+      console.error(
+        '[POST /api/user/email/change-request] Failed to log new-email notification:',
+        err
+      );
+      // Don't fail the main operation if notification logging fails
+    }
+
+    // Log notification for future delivery - security alert to old address
+    try {
+      await (prisma as any).communicationLog.create({
+        data: {
+          channel: 'email',
+          direction: 'outbound',
+          recipientAddress: user.email,
+          senderAddress: 'system@wundr.io',
+          content: `Subject: Email change requested on your account\n\nA request was made to change the email address on your Wundr account to ${newEmail}.\n\nIf you did not request this change, please contact support immediately.`,
+          status: 'pending',
+          metadata: {
+            type: 'email_change_alert',
+            userId: session.user.id,
+            newEmail,
+          },
+        },
+      });
+    } catch (err) {
+      console.error(
+        '[POST /api/user/email/change-request] Failed to log old-email notification:',
+        err
+      );
+      // Don't fail the main operation if notification logging fails
+    }
 
     return NextResponse.json({
       success: true,

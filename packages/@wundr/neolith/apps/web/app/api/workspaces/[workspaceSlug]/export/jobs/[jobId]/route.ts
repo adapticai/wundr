@@ -177,7 +177,30 @@ export async function DELETE(
       where: { id: jobId },
     });
 
-    // TODO: If job has a file URL, delete the file from S3/storage
+    // If job has a file URL (S3 key), delete the exported file from S3
+    if (job.fileUrl) {
+      const s3Module = await import('@aws-sdk/client-s3').catch(() => null);
+      if (s3Module) {
+        const { S3Client, DeleteObjectCommand } = s3Module;
+        const client = new S3Client({
+          region: process.env.MY_AWS_REGION ?? 'us-east-1',
+          credentials: {
+            accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID ?? '',
+            secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY ?? '',
+          },
+        });
+        await client
+          .send(
+            new DeleteObjectCommand({
+              Bucket: process.env.MY_AWS_S3_BUCKET ?? '',
+              Key: job.fileUrl,
+            })
+          )
+          .catch((err: Error) => {
+            console.error('S3 export file delete failed:', err.message);
+          });
+      }
+    }
 
     return NextResponse.json({
       message: 'Export job deleted successfully',

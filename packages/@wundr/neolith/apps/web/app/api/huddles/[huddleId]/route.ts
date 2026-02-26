@@ -498,7 +498,27 @@ export async function DELETE(
       `.catch(() => {});
     }
 
-    // TODO: Notify LiveKit to close the room
+    // Notify LiveKit to close the room
+    const livekitModule = await import('livekit-server-sdk').catch(() => null);
+    if (
+      livekitModule &&
+      process.env.LIVEKIT_API_KEY &&
+      process.env.LIVEKIT_API_SECRET
+    ) {
+      const { RoomServiceClient } = livekitModule;
+      const roomService = new RoomServiceClient(
+        process.env.LIVEKIT_URL ?? 'wss://livekit.example.com',
+        process.env.LIVEKIT_API_KEY,
+        process.env.LIVEKIT_API_SECRET
+      );
+      try {
+        await roomService.deleteRoom(
+          result.huddle.roomName ?? `huddle-${params.huddleId}`
+        );
+      } catch (err) {
+        console.error('LiveKit room deletion failed:', err);
+      }
+    }
 
     return NextResponse.json({
       message: 'Huddle ended successfully',

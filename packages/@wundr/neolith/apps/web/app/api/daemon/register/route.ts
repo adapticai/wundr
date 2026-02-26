@@ -9,6 +9,9 @@
  * @module app/api/daemon/register/route
  */
 
+import { createHash, timingSafeEqual } from 'crypto';
+
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -71,6 +74,49 @@ function createErrorResponse(
       ...(details && { details }),
     },
   };
+}
+
+// =============================================================================
+// API Key Validation
+// =============================================================================
+
+/**
+ * Validates the provided API key against the orchestrator's stored key hash.
+ * Supports both SHA-256 hex hashes and bcrypt hashes (via dynamic import).
+ * Uses constant-time comparison to prevent timing attacks.
+ *
+ * @param apiKey - The plain-text API key provided in the request
+ * @param storedHash - The hash stored in orchestrator.capabilities.apiKeyHash
+ * @returns True if the API key matches, false otherwise
+ */
+async function validateApiKey(
+  apiKey: string,
+  storedHash: string
+): Promise<boolean> {
+  // Attempt bcrypt comparison first via dynamic import
+  const bcrypt = await import('bcrypt').catch(() => null);
+  if (bcrypt) {
+    try {
+      return await bcrypt.compare(apiKey, storedHash);
+    } catch {
+      // storedHash may not be a valid bcrypt hash; fall through to SHA-256
+    }
+  }
+
+  // Fallback: SHA-256 constant-time comparison
+  const providedHash = createHash('sha256').update(apiKey).digest('hex');
+  const providedBuffer = Buffer.from(providedHash, 'hex');
+  const storedBuffer = Buffer.from(storedHash, 'hex');
+
+  if (providedBuffer.length !== storedBuffer.length) {
+    return false;
+  }
+
+  try {
+    return timingSafeEqual(providedBuffer, storedBuffer);
+  } catch {
+    return false;
+  }
 }
 
 // =============================================================================
@@ -139,9 +185,42 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { orchestratorId, organizationId, apiKey, daemonInfo } =
       parseResult.data;
 
-    // TODO: Validate API key against Orchestrator's stored key hash
-    // This would use orchestratorService.validateAPIKey(apiKey)
-    if (!apiKey.startsWith('gns_')) {
+    // Verify Orchestrator exists and belongs to the organization
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: orchestratorId },
+      select: {
+        id: true,
+        organizationId: true,
+        capabilities: true,
+      },
+    });
+
+    if (!orchestrator) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Orchestrator not found',
+          REGISTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND
+        ),
+        { status: 404 }
+      );
+    }
+
+    if (orchestrator.organizationId !== organizationId) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Orchestrator does not belong to the specified organization',
+          REGISTER_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
+      );
+    }
+
+    // Validate API key against Orchestrator's stored key hash
+    const orchestratorCapabilities = orchestrator.capabilities as {
+      apiKeyHash?: string;
+    } | null;
+
+    if (!orchestratorCapabilities?.apiKeyHash) {
       return NextResponse.json(
         createErrorResponse(
           'Invalid API key',
@@ -151,19 +230,60 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // TODO: Verify Orchestrator exists and belongs to the organization
-    // const orchestrator = await orchestratorService.getOrchestrator(orchestratorId);
-    // if (!orchestrator || orchestrator.organizationId !== organizationId) {...}
+    const isValidKey = await validateApiKey(
+      apiKey,
+      orchestratorCapabilities.apiKeyHash
+    );
 
-    // TODO: Get Redis client and heartbeat service
-    // const redis = getRedisClient();
-    // const heartbeatService = createHeartbeatService(redis);
-    // await heartbeatService.registerDaemon(orchestratorId, {
-    //   ...daemonInfo,
-    //   startedAt: new Date(daemonInfo.startedAt),
-    // });
+    if (!isValidKey) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Invalid API key',
+          REGISTER_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
+      );
+    }
 
     const registeredAt = new Date().toISOString();
+
+    // Register daemon heartbeat in Redis if available
+    const heartbeatKey = `daemon:heartbeat:${orchestratorId}`;
+    const heartbeatTtlSeconds = 90; // 3 missed heartbeats at 30s interval
+
+    try {
+      const ioredis = await import('ioredis').catch(() => null);
+      if (ioredis && process.env.REDIS_URL) {
+        const redisClient = new ioredis.default(process.env.REDIS_URL);
+        await redisClient.setex(
+          heartbeatKey,
+          heartbeatTtlSeconds,
+          JSON.stringify({
+            orchestratorId,
+            organizationId,
+            instanceId: daemonInfo.instanceId,
+            version: daemonInfo.version,
+            host: daemonInfo.host,
+            port: daemonInfo.port,
+            protocol: daemonInfo.protocol,
+            startedAt: daemonInfo.startedAt,
+            registeredAt,
+            status: 'active',
+          })
+        );
+        await redisClient.quit();
+      } else {
+        console.warn(
+          '[POST /api/daemon/register] Redis unavailable; proceeding with DB-only registration',
+          { orchestratorId }
+        );
+      }
+    } catch (redisError) {
+      console.warn(
+        '[POST /api/daemon/register] Redis heartbeat registration failed; continuing with DB-only registration',
+        { orchestratorId, error: redisError }
+      );
+    }
 
     return NextResponse.json(
       {

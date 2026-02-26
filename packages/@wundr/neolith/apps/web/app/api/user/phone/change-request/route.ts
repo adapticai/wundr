@@ -124,8 +124,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       userAgent: request.headers.get('user-agent') || undefined,
     });
 
-    // TODO: Send SMS verification code
-    // await sendSMSVerification(phoneNumber, code);
+    // Log SMS notification for future delivery
+    try {
+      await (prisma as any).communicationLog.create({
+        data: {
+          channel: 'sms',
+          direction: 'outbound',
+          recipientAddress: phoneNumber,
+          senderAddress: 'system@wundr.io',
+          content: `Your Wundr verification code is: ${code}. It expires in 10 minutes.`,
+          status: 'pending',
+          metadata: {
+            type: 'phone_change_verification',
+            userId: session.user.id,
+          },
+        },
+      });
+    } catch (err) {
+      console.error(
+        '[POST /api/user/phone/change-request] Failed to log SMS notification:',
+        err
+      );
+      // Don't fail the main operation if notification logging fails
+    }
 
     return NextResponse.json({
       success: true,

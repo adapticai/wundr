@@ -274,23 +274,39 @@ export async function POST(
 
     // For completely new emails, create channel invitations
     if (newEmails.length > 0) {
-      // TODO: Implement email invitation system
-      // This would typically involve:
-      // 1. Creating invitation records in the database
-      // 2. Generating invitation tokens
-      // 3. Sending invitation emails via email service
-      // 4. Creating a public invitation acceptance page
+      // Log email invitation notifications for future delivery
+      for (const email of newEmails) {
+        const inviteToken = crypto.randomUUID();
+        const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/invite/channel/${params.channelId}?token=${inviteToken}`;
 
-      // For now, we'll just log that this feature is pending
-      console.log(
-        '[POST /api/channels/:channelId/invites] Email invitations not yet implemented for:',
-        newEmails
-      );
-
-      // Return them as failed for now
-      results.failed.push(
-        ...newEmails.map(email => `${email} (email invitations coming soon)`)
-      );
+        try {
+          await (prisma as any).communicationLog.create({
+            data: {
+              channel: 'email',
+              direction: 'outbound',
+              recipientAddress: email,
+              senderAddress: 'system@wundr.io',
+              content: `Subject: ${inviterName} invited you to join a channel\n\nHi,\n\n${inviterName} has invited you to join a channel on Wundr.\n\nClick the link below to accept the invitation:\n${inviteLink}`,
+              status: 'pending',
+              metadata: {
+                type: 'channel_invite',
+                channelId: params.channelId,
+                inviteToken,
+                invitedRole: role,
+              },
+              organizationId: access.channel.workspace.organizationId,
+            },
+          });
+          results.invited.push(email);
+        } catch (err) {
+          console.error(
+            '[POST /api/channels/:channelId/invites] Failed to log notification:',
+            err
+          );
+          // Don't fail the main operation if notification logging fails
+          results.failed.push(`${email} (notification logging failed)`);
+        }
+      }
     }
 
     return NextResponse.json(

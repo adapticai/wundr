@@ -9,6 +9,7 @@
  * @module app/api/webhooks/[provider]/route
  */
 
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
@@ -62,6 +63,247 @@ interface GitHubEvent {
   installation?: {
     id: number;
   };
+  // push event fields
+  ref?: string;
+  commits?: Array<{ id: string; message: string; author: { name: string } }>;
+  pusher?: { name: string; email: string };
+  // pull_request event fields
+  number?: number;
+  pull_request?: {
+    number: number;
+    title: string;
+    merged: boolean;
+    user: { login: string };
+    head: { ref: string };
+    base: { ref: string };
+  };
+  // issues event fields
+  issue?: {
+    number: number;
+    title: string;
+    user: { login: string };
+  };
+}
+
+/**
+ * GitLab webhook event structure
+ */
+interface GitLabEvent {
+  object_kind?: string;
+  ref?: string;
+  status?: string;
+  stages?: string[];
+  object_attributes?: {
+    action?: string;
+    title?: string;
+    source_branch?: string;
+    target_branch?: string;
+    state?: string;
+    iid?: number;
+  };
+}
+
+/**
+ * Linear webhook event structure
+ */
+interface LinearEvent {
+  type?: string;
+  action?: string;
+  data?: {
+    id?: string;
+    title?: string;
+    state?: { name: string };
+    assignee?: { name: string };
+  };
+}
+
+/** Webhook processor result */
+interface WebhookProcessorResult {
+  [key: string]: unknown;
+  processed: boolean;
+  event: string;
+  summary: string;
+}
+
+/** Write an audit log entry for an integration event */
+async function writeAuditLog(
+  action: string,
+  resourceType: string,
+  resourceId: string,
+  metadata: Record<string, unknown>
+): Promise<void> {
+  await (prisma as any).auditLog.create({
+    data: {
+      actorType: 'integration',
+      action,
+      resourceType,
+      resourceId,
+      metadata,
+    },
+  });
+}
+
+/** Process a GitHub webhook payload after signature verification */
+async function processGitHubWebhook(
+  request: NextRequest,
+  payload: GitHubEvent
+): Promise<WebhookProcessorResult> {
+  const eventType = request.headers.get('x-github-event') ?? 'unknown';
+  const repo = payload.repository?.full_name ?? 'unknown';
+  let summary = '';
+
+  switch (eventType) {
+    case 'push': {
+      const branch = payload.ref?.replace('refs/heads/', '') ?? 'unknown';
+      const commitCount = payload.commits?.length ?? 0;
+      const pusher = payload.pusher?.name ?? payload.sender?.login ?? 'unknown';
+      summary = `${pusher} pushed ${commitCount} commit(s) to ${repo}/${branch}`;
+      await writeAuditLog('github.push', 'repository', repo, {
+        repo,
+        branch,
+        commitCount,
+        pusher,
+        commits: (payload.commits ?? []).map(c => ({
+          id: c.id,
+          message: c.message,
+          author: c.author.name,
+        })),
+      });
+      break;
+    }
+
+    case 'pull_request': {
+      const action = payload.action ?? 'unknown';
+      const pr = payload.pull_request;
+      const prNumber = pr?.number ?? payload.number ?? 0;
+      const prTitle = pr?.title ?? 'unknown';
+      const author = pr?.user?.login ?? payload.sender?.login ?? 'unknown';
+      const merged = pr?.merged ?? false;
+      const effectiveAction = action === 'closed' && merged ? 'merged' : action;
+      summary = `PR #${prNumber} "${prTitle}" ${effectiveAction} by ${author} in ${repo}`;
+      await writeAuditLog(
+        `github.pull_request.${effectiveAction}`,
+        'pull_request',
+        String(prNumber),
+        {
+          repo,
+          prNumber,
+          title: prTitle,
+          author,
+          action: effectiveAction,
+          merged,
+        }
+      );
+      break;
+    }
+
+    case 'issues': {
+      const action = payload.action ?? 'unknown';
+      const issue = payload.issue;
+      const issueNumber = issue?.number ?? 0;
+      const issueTitle = issue?.title ?? 'unknown';
+      summary = `Issue #${issueNumber} "${issueTitle}" ${action} in ${repo}`;
+      await writeAuditLog(
+        `github.issue.${action}`,
+        'issue',
+        String(issueNumber),
+        {
+          repo,
+          issueNumber,
+          title: issueTitle,
+          action,
+        }
+      );
+      break;
+    }
+
+    default:
+      summary = `Unhandled GitHub event: ${eventType} in ${repo}`;
+      break;
+  }
+
+  return { processed: true, event: eventType, summary };
+}
+
+/** Process a GitLab webhook payload after token verification */
+async function processGitLabWebhook(
+  request: NextRequest,
+  payload: GitLabEvent
+): Promise<WebhookProcessorResult> {
+  const eventHeader = request.headers.get('x-gitlab-event') ?? 'unknown';
+  let summary = '';
+
+  switch (eventHeader) {
+    case 'Pipeline Hook': {
+      const status = payload.status ?? 'unknown';
+      const ref = payload.ref ?? 'unknown';
+      const stages = payload.stages ?? [];
+      summary = `Pipeline ${status} on ${ref} (stages: ${stages.join(', ') || 'none'})`;
+      await writeAuditLog(`gitlab.pipeline.${status}`, 'pipeline', ref, {
+        status,
+        ref,
+        stages,
+      });
+      break;
+    }
+
+    case 'Merge Request Hook': {
+      const attrs = payload.object_attributes ?? {};
+      const action = attrs.action ?? 'unknown';
+      const title = attrs.title ?? 'unknown';
+      const sourceBranch = attrs.source_branch ?? 'unknown';
+      const targetBranch = attrs.target_branch ?? 'unknown';
+      const mrIid = attrs.iid ?? 0;
+      summary = `MR #${mrIid} "${title}" ${action} (${sourceBranch} -> ${targetBranch})`;
+      await writeAuditLog(
+        `gitlab.merge_request.${action}`,
+        'merge_request',
+        String(mrIid),
+        {
+          action,
+          title,
+          sourceBranch,
+          targetBranch,
+          mrIid,
+        }
+      );
+      break;
+    }
+
+    default:
+      summary = `Unhandled GitLab event: ${eventHeader}`;
+      break;
+  }
+
+  return { processed: true, event: eventHeader, summary };
+}
+
+/** Process a Linear webhook payload */
+async function processLinearWebhook(
+  payload: LinearEvent
+): Promise<WebhookProcessorResult> {
+  const type = payload.type ?? 'unknown';
+  const action = payload.action ?? 'unknown';
+  let summary = '';
+
+  if (type === 'Issue' && (action === 'create' || action === 'update')) {
+    const data = payload.data ?? {};
+    const issueId = data.id ?? 'unknown';
+    const title = data.title ?? 'unknown';
+    const status = data.state?.name ?? 'unknown';
+    const assignee = data.assignee?.name ?? 'unassigned';
+    summary = `Issue "${title}" ${action}d — status: ${status}, assignee: ${assignee}`;
+    await writeAuditLog(`linear.issue.${action}`, 'issue', issueId, {
+      title,
+      status,
+      assignee,
+      action,
+    });
+  } else {
+    summary = `Unhandled Linear event: type=${type} action=${action}`;
+  }
+
+  return { processed: true, event: `${type}.${action}`, summary };
 }
 
 /**
@@ -182,9 +424,11 @@ async function handleGitHubWebhook(
     );
   }
 
-  // Parse the payload
-  // TODO: Process GitHub webhook payload
-  JSON.parse(body) as GitHubEvent;
+  // Parse the payload and process
+  const payload = JSON.parse(body) as GitHubEvent;
+  const result = await processGitHubWebhook(request, payload);
+
+  logger.info('GitHub webhook processed', result);
 
   // Acknowledge receipt
   return new NextResponse(null, { status: 200 });
@@ -212,9 +456,11 @@ async function handleGitLabWebhook(
     );
   }
 
-  // Parse the payload
-  // TODO: Process GitLab webhook payload
-  JSON.parse(body);
+  // Parse the payload and process
+  const payload = JSON.parse(body) as GitLabEvent;
+  const result = await processGitLabWebhook(request, payload);
+
+  logger.info('GitLab webhook processed', result);
 
   // Acknowledge receipt
   return new NextResponse(null, { status: 200 });
@@ -228,8 +474,10 @@ async function handleLinearWebhook(
   body: string
 ): Promise<NextResponse> {
   // Linear uses a signature in the request body
-  // TODO: Process Linear webhook payload
-  JSON.parse(body) as { type?: string; action?: string };
+  const payload = JSON.parse(body) as LinearEvent;
+  const result = await processLinearWebhook(payload);
+
+  logger.info('Linear webhook processed', result);
 
   // Acknowledge receipt
   return NextResponse.json({ success: true });
