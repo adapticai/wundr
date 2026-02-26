@@ -846,6 +846,55 @@ export {
 } from './agent-identity-service';
 
 // =============================================================================
+// Email Service
+// =============================================================================
+
+export {
+  // Service implementation
+  EmailServiceImpl,
+  createEmailService,
+  emailService,
+
+  // Constants
+  EMAIL_BUILT_IN_TEMPLATES,
+
+  // Interfaces
+  type IEmailService,
+
+  // Types
+  type EmailMessage,
+  type EmailDeliveryStatus,
+  type EmailTemplate,
+
+  // Errors
+  EmailServiceError,
+  EmailDeliveryError,
+  EmailTemplateError,
+} from './email-service';
+
+// =============================================================================
+// Communication Hub
+// =============================================================================
+
+export {
+  // Service implementation
+  createCommunicationHub,
+  getCommunicationHub,
+
+  // Interfaces
+  type ICommunicationHub,
+
+  // Types
+  type CommunicationChannel,
+  type UnifiedOutboundMessage,
+  type DeliveryResult,
+  type ChannelHealth,
+
+  // Errors
+  CommunicationHubError,
+} from './communication-hub';
+
+// =============================================================================
 // Alert Service
 // =============================================================================
 

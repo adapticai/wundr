@@ -243,6 +243,7 @@ model message {
   replies            message[]           @relation("messageToMessage")
   reactions          reaction[]
   savedItems         savedItem[]
+  routingDecisions   routingDecision[]
 
   @@index([authorId])
   @@index([channelId])
@@ -506,6 +507,78 @@ model agentIdentity {
   @@map("agent_identities")
 }
 
+// ============================================================================
+// Communication & Traffic Manager Models
+// ============================================================================
+
+/// Tracks all cross-channel communications (email, SMS, WhatsApp, voice, etc.)
+model communicationLog {
+  id                String       @id @default(cuid())
+  orchestratorId    String
+  orchestrator      orchestrator @relation(fields: [orchestratorId], references: [id], onDelete: Cascade)
+  channel           String // email, sms, whatsapp, voice, slack, internal
+  direction         String // inbound, outbound
+  externalId        String? // Platform message ID (SendGrid ID, Twilio SID, etc.)
+  recipientAddress  String // Email address, phone number, Slack user ID
+  senderAddress     String // From address
+  subject           String? // Email subject
+  content           String // Message body
+  status            String   @default("pending") // pending, sent, delivered, failed, bounced
+  metadata          Json     @default("{}")
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  failedAt          DateTime?
+  errorMessage      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([orchestratorId, channel, createdAt(sort: Desc)])
+  @@index([status])
+  @@index([externalId])
+  @@index([recipientAddress])
+}
+
+/// Audit trail for traffic manager routing decisions
+model routingDecision {
+  id               String   @id @default(cuid())
+  messageId        String? // Reference to message (nullable for external messages)
+  message          message? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  organizationId   String
+  agentId          String // Selected agent user ID
+  agentName        String? // Denormalized for quick display
+  confidence       Float // 0.0 - 1.0
+  reasoning        String
+  matchedBy        String // direct_mention, thread_continuity, binding_rule, discipline_match, seniority_escalation, load_balance, fallback
+  fallbackUsed     Boolean  @default(false)
+  escalated        Boolean  @default(false)
+  routingLatencyMs Int      @default(0)
+  channelId        String? // Source channel
+  metadata         Json     @default("{}")
+  createdAt        DateTime @default(now())
+
+  @@index([messageId])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([agentId, createdAt(sort: Desc)])
+  @@index([matchedBy])
+}
+
+/// Communication channel preferences per orchestrator
+model communicationPreference {
+  id               String       @id @default(cuid())
+  orchestratorId   String       @unique
+  orchestrator     orchestrator @relation(fields: [orchestratorId], references: [id], onDelete: Cascade)
+  channelRanking   Json         @default("[]") // Ordered array of preferred channels
+  emailEnabled     Boolean      @default(false)
+  smsEnabled       Boolean      @default(false)
+  whatsappEnabled  Boolean      @default(false)
+  voiceEnabled     Boolean      @default(false)
+  slackEnabled     Boolean      @default(true)
+  internalEnabled  Boolean      @default(true)
+  notificationRules Json        @default("{}") // Per-channel notification settings
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
 model verificationToken {
   identifier String
   token      String   @unique
@@ -542,7 +615,9 @@ model orchestrator {
   tokenUsage           TokenUsage[]
   budgetConfig         BudgetConfig?
   budgetAlerts         BudgetAlert[]
-  federationRegistry   FederationRegistry?
+  federationRegistry      FederationRegistry?
+  communicationLogs       communicationLog[]
+  communicationPreference communicationPreference?
 
   @@index([disciplineId])
   @@index([discipline])

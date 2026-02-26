@@ -608,6 +608,63 @@ export async function POST(
       }
     }
 
+    // -----------------------------------------------------------------------
+    // Traffic Manager Integration
+    // -----------------------------------------------------------------------
+    // If the sender is human, check if orchestrator agents are in the channel
+    // and route the message through the traffic manager for agent assignment.
+    const senderUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isOrchestrator: true },
+    });
+
+    if (!senderUser?.isOrchestrator) {
+      // Check for orchestrator members in this channel
+      const orchestratorMembers = await prisma.channelMember.findMany({
+        where: {
+          channelId: params.channelId,
+          user: { isOrchestrator: true },
+        },
+        select: { userId: true, user: { select: { name: true, displayName: true } } },
+      });
+
+      if (orchestratorMembers.length > 0) {
+        // Check if message @mentions a specific orchestrator
+        const mentionedOrchestrators = orchestratorMembers.filter((om) =>
+          mentionedUsernames.some(
+            (u) =>
+              u === om.user.name?.toLowerCase() ||
+              u === om.user.displayName?.toLowerCase()
+          )
+        );
+
+        // Route through traffic manager (non-blocking)
+        const routePayload = {
+          channelId: params.channelId,
+          messageContent: input.content,
+          senderId: session.user.id,
+          threadId: input.parentId || undefined,
+          metadata: {
+            messageId: message.id,
+            directMention: mentionedOrchestrators.length > 0
+              ? mentionedOrchestrators[0].userId
+              : undefined,
+          },
+        };
+
+        fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/traffic-manager/route-message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(routePayload),
+        }).catch((err: unknown) => {
+          console.error(
+            '[POST /api/channels/:channelId/messages] Failed to route through traffic manager:',
+            err
+          );
+        });
+      }
+    }
+
     // Transform message to convert BigInt file sizes to numbers for JSON serialization
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const messageWithAttachments = message as any;
