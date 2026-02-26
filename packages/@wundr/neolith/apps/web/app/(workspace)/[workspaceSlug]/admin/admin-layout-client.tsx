@@ -338,6 +338,9 @@ export function AdminLayoutClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Detect if we're in a sub-layout that provides its own sidebar (e.g. /admin/settings/)
+  const isInSettingsSubLayout = pathname?.includes('/admin/settings');
+
   // Keyboard shortcuts
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -512,28 +515,32 @@ export function AdminLayoutClient({
 
   return (
     <div className='flex h-screen overflow-hidden'>
-      {/* Desktop Sidebar */}
-      <aside
-        className={cn(
-          'hidden border-r bg-background transition-all duration-300 lg:block',
-          sidebarOpen ? 'w-64' : 'w-16'
-        )}
-      >
-        <SidebarContent />
-      </aside>
-
-      {/* Mobile Drawer */}
-      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side='left' className='w-64 p-0'>
-          <SheetHeader className='border-b p-4'>
-            <SheetTitle className='flex items-center gap-2'>
-              <Shield className='h-5 w-5 text-primary' />
-              Admin Console
-            </SheetTitle>
-          </SheetHeader>
+      {/* Desktop Sidebar - hidden when in settings sub-layout which provides its own */}
+      {!isInSettingsSubLayout && (
+        <aside
+          className={cn(
+            'hidden border-r bg-background transition-all duration-300 lg:block',
+            sidebarOpen ? 'w-64' : 'w-16'
+          )}
+        >
           <SidebarContent />
-        </SheetContent>
-      </Sheet>
+        </aside>
+      )}
+
+      {/* Mobile Drawer - hidden when in settings sub-layout */}
+      {!isInSettingsSubLayout && (
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetContent side='left' className='w-64 p-0'>
+            <SheetHeader className='border-b p-4'>
+              <SheetTitle className='flex items-center gap-2'>
+                <Shield className='h-5 w-5 text-primary' />
+                Admin Console
+              </SheetTitle>
+            </SheetHeader>
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      )}
 
       {/* Main Content */}
       <div className='flex flex-1 flex-col overflow-hidden'>
