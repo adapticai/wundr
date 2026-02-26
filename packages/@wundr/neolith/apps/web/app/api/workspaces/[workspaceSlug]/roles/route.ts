@@ -88,9 +88,9 @@ const SYSTEM_ROLES: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>[] = [
 /**
  * Helper to check workspace membership and permissions
  */
-async function checkWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+async function checkWorkspaceAccess(workspaceIdOrSlug: string, userId: string) {
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceIdOrSlug }, { slug: workspaceIdOrSlug }] },
     select: { id: true, organizationId: true, settings: true },
   });
 
@@ -101,7 +101,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   const membership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
-        workspaceId,
+        workspaceId: workspace.id,
         userId,
       },
     },

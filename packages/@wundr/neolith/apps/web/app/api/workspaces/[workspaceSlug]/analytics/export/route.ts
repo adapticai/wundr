@@ -220,8 +220,8 @@ export async function POST(
     }
 
     // Store scheduled export configuration in workspace settings
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { settings: true },
     });
 

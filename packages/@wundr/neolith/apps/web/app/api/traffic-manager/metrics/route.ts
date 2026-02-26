@@ -47,8 +47,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { organizationId: true },
     });
 

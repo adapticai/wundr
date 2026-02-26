@@ -106,8 +106,8 @@ async function findRole(
   }
 
   // Check custom roles in workspace settings
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     select: { settings: true },
   });
 
@@ -284,8 +284,8 @@ export async function PATCH(
     }
 
     // Update custom role in workspace settings
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { settings: true },
     });
 
@@ -408,8 +408,8 @@ export async function DELETE(
     }
 
     // Remove custom role from workspace settings
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { settings: true },
     });
 

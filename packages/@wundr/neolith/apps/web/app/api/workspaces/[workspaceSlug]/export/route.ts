@@ -391,8 +391,8 @@ async function fetchExportData(
   const shouldExportAll = type === 'all';
 
   // Export workspace info
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     select: {
       id: true,
       name: true,

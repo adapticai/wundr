@@ -107,8 +107,8 @@ export async function POST(
     };
 
     // Get current invites
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { settings: true },
     });
 

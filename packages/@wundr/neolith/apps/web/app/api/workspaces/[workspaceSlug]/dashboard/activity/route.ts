@@ -97,8 +97,8 @@ interface ActivityEntry {
  * Allows access if user is a workspace member OR an org owner/admin
  */
 async function checkWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     select: {
       id: true,
       name: true,
@@ -128,7 +128,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
-        workspaceId,
+        workspaceId: workspace.id,
         userId,
       },
     },

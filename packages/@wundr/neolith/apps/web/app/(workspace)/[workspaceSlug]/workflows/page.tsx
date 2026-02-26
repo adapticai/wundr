@@ -98,9 +98,6 @@ export default function WorkflowsPage() {
   const [triggerTypeFilter, setTriggerTypeFilter] = useState<
     TriggerType | 'all'
   >('all');
-  const [categoryFilter, setCategoryFilter] = useState<
-    WorkflowTemplateCategory | 'all'
-  >('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('createdAt');
@@ -112,12 +109,9 @@ export default function WorkflowsPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Hooks
-  const { workflows, isLoading, error, createWorkflow, mutate } = useWorkflows(
-    workspaceSlug,
-    {
-      status: statusFilter === 'all' ? undefined : statusFilter,
-    }
-  );
+  const { workflows, isLoading, error, mutate } = useWorkflows(workspaceSlug, {
+    status: statusFilter === 'all' ? undefined : statusFilter,
+  });
   const { templates, isLoading: templatesLoading } =
     useWorkflowTemplates(workspaceSlug);
 

@@ -35,8 +35,8 @@ interface RouteContext {
  * Helper to check admin access for workspace
  */
 async function checkAdminAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
   });
 
   if (!workspace) {
@@ -46,7 +46,7 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
-        workspaceId,
+        workspaceId: workspace.id,
         userId,
       },
     },

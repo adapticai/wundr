@@ -25,9 +25,9 @@ interface RouteContext {
 /**
  * Helper function to check admin access
  */
-async function checkAdminAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+async function checkAdminAccess(workspaceIdOrSlug: string, userId: string) {
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceIdOrSlug }, { slug: workspaceIdOrSlug }] },
     include: {
       organization: {
         select: {

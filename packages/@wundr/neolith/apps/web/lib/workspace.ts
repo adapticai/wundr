@@ -83,6 +83,52 @@ export async function getWorkspaceWithAccess(
 }
 
 /**
+ * Resolve workspace by ID or slug and verify user access via organization membership.
+ * This is used by API routes that receive `workspaceSlug` from URL params.
+ *
+ * @param workspaceIdOrSlug - The workspace ID (CUID) or slug
+ * @param userId - The user ID to check access for
+ * @returns Workspace with organization membership, or null if not found/no access
+ */
+export async function resolveWorkspaceAccess(
+  workspaceIdOrSlug: string,
+  userId: string
+) {
+  try {
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        OR: [{ id: workspaceIdOrSlug }, { slug: workspaceIdOrSlug }],
+      },
+      include: {
+        organization: true,
+      },
+    });
+
+    if (!workspace) {
+      return null;
+    }
+
+    const orgMembership = await prisma.organizationMember.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: workspace.organizationId,
+          userId,
+        },
+      },
+    });
+
+    if (!orgMembership) {
+      return null;
+    }
+
+    return { workspace, orgMembership };
+  } catch (error) {
+    console.error('Error resolving workspace access:', error);
+    return null;
+  }
+}
+
+/**
  * Check if user has access to a workspace
  *
  * @param workspaceId - The workspace ID to check

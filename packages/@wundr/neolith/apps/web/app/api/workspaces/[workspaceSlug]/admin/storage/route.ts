@@ -326,7 +326,7 @@ export async function PATCH(
 
     // Update workspace settings
     await prisma.workspace.update({
-      where: { id: workspaceSlug },
+      where: { id: membership.workspace.id },
       data: {
         settings: {
           ...workspaceSettings,

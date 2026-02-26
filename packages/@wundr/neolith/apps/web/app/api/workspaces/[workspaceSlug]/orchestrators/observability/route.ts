@@ -55,8 +55,8 @@ interface OrchestratorHealthStatus {
  * Helper to verify workspace access
  */
 async function verifyWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     select: { id: true, organizationId: true, name: true },
   });
 

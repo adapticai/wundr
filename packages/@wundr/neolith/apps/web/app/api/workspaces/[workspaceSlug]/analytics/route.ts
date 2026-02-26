@@ -111,9 +111,12 @@ interface AnalyticsResponse {
 /**
  * Helper to check workspace access via organization membership
  */
-async function checkWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+async function checkWorkspaceAccess(workspaceIdOrSlug: string, userId: string) {
+  // Support both workspace ID (CUID) and slug lookups
+  const workspace = await prisma.workspace.findFirst({
+    where: {
+      OR: [{ id: workspaceIdOrSlug }, { slug: workspaceIdOrSlug }],
+    },
     include: {
       organization: true,
     },

@@ -99,8 +99,8 @@ function generateHuddleRoomName(workspaceId: string): string {
  * Helper to verify user has access to workspace
  */
 async function verifyWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
   });
 
   if (!workspace) {
@@ -217,8 +217,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       `;
     } catch {
       // If table doesn't exist, store in workspace settings
-      const workspace = await prisma.workspace.findUnique({
-        where: { id: workspaceId },
+      const workspace = await prisma.workspace.findFirst({
+        where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
         select: { settings: true },
       });
 

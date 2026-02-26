@@ -96,8 +96,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check if workspace exists and user has access
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: input.workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: input.workspaceId }, { slug: input.workspaceId }] },
     });
 
     if (!workspace) {

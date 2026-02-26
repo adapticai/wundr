@@ -62,8 +62,8 @@ interface ExportedWorkflow {
  * Helper to check workspace access
  */
 async function checkWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     include: {
       organization: true,
     },
@@ -89,7 +89,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
-        workspaceId,
+        workspaceId: workspace.id,
         userId,
       },
     },

@@ -101,8 +101,8 @@ export async function GET(
     const filters: OrchestratorMentionsFiltersInput = parseResult.data;
 
     // Verify workspace exists and get organization ID
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { id: true, organizationId: true },
     });
 
@@ -375,8 +375,8 @@ export async function POST(
     const input: MarkMentionsHandledInput = parseResult.data;
 
     // Verify workspace and Orchestrator (same as GET)
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { id: true, organizationId: true },
     });
 

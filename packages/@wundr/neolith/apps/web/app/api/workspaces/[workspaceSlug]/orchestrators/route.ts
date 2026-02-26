@@ -37,9 +37,9 @@ interface RouteContext {
 /**
  * Helper function to check workspace access and return membership info
  */
-async function checkWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+async function checkWorkspaceAccess(workspaceIdOrSlug: string, userId: string) {
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceIdOrSlug }, { slug: workspaceIdOrSlug }] },
     include: {
       organization: {
         select: {
@@ -73,7 +73,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
-        workspaceId,
+        workspaceId: workspace.id,
         userId,
       },
     },

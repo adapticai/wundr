@@ -52,8 +52,8 @@ type TemplateFiltersInput = z.infer<typeof templateFiltersSchema>;
  * Helper function to check workspace access
  */
 async function checkWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     include: {
       organization: {
         select: {

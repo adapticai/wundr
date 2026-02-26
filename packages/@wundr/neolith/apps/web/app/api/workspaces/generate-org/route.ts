@@ -649,7 +649,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           orchestratorMap.set(orchestrator.id, orchestratorUser.id);
 
           // Create agent identity for each orchestrator
-          await tx.agentIdentity.create({
+          await (tx as any).agentIdentity.create({
             data: {
               userId: orchestratorUser.id,
               corporateEmail: orchestratorUser.email,
@@ -848,7 +848,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 9. Create Charter (if charterData provided)
     // =========================================================================
     if (charterData?.mission) {
-      await prisma.charter.create({
+      await (prisma as any).charter.create({
         data: {
           name: `${input.workspaceName} Charter`,
           mission: charterData.mission,

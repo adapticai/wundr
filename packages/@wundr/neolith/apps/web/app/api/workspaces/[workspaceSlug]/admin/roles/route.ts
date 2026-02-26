@@ -288,8 +288,8 @@ export async function POST(
     }
 
     // Create custom role (stored in workspace settings for now)
-    const workspaceWithSettings = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspaceWithSettings = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { settings: true },
     });
 

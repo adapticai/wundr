@@ -625,7 +625,7 @@ function registerIpcHandlers(): void {
 
   // User type management
   ipcMain.handle('get-user-type', async () => {
-    return store.get('userType', null);
+    return store.get('userType') ?? null;
   });
 
   ipcMain.handle(

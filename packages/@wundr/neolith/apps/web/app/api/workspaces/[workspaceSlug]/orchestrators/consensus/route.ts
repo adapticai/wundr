@@ -115,8 +115,8 @@ async function verifyWorkspaceAccess(
   workspaceId: string,
   userId: string
 ): Promise<{ success: boolean; organizationId?: string; error?: string }> {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     select: { id: true, organizationId: true },
   });
 
@@ -323,8 +323,8 @@ export async function POST(
     };
 
     // Store consensus in workspace settings JSON field
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { settings: true },
     });
 
@@ -456,8 +456,8 @@ export async function GET(
     const orchestratorId = searchParams.get('orchestratorId'); // Filter by OrchestratorID
 
     // Fetch workspace settings with consensuses
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { settings: true },
     });
 
@@ -607,8 +607,8 @@ export async function PATCH(
     }
 
     // Get workspace settings
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { settings: true },
     });
 

@@ -95,8 +95,8 @@ export async function GET(
     const { workspaceSlug: workspaceId, executionId } = params;
 
     // Check workspace exists and user has access
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     });
 
     if (!workspace) {

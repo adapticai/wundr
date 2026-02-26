@@ -70,8 +70,8 @@ export async function GET(
     const { workspaceSlug: workspaceId } = await context.params;
 
     // Get workspace settings
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { id: true, settings: true },
     });
 
@@ -158,8 +158,8 @@ export async function PATCH(
     const { workspaceSlug: workspaceId } = await context.params;
 
     // Get workspace settings
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { id: true, settings: true },
     });
 

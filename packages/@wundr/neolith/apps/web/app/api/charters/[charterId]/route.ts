@@ -36,7 +36,7 @@ interface RouteContext {
  * Helper to check org membership for a charter
  */
 async function checkCharterAccess(charterId: string, userId: string) {
-  const charter = await prisma.charter.findUnique({
+  const charter = await (prisma as any).charter.findUnique({
     where: { id: charterId },
     select: {
       id: true,

@@ -247,7 +247,7 @@ async function getAccessibleChannels(
   const membership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
-        workspaceId,
+        workspaceId: workspaceId,
         userId,
       },
     },
@@ -520,8 +520,8 @@ async function searchUsers(
   includeHighlight: boolean = true
 ): Promise<{ results: UserResult[]; totalCount: number }> {
   // Get workspace to find organization
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     select: { organizationId: true },
   });
 
@@ -596,8 +596,8 @@ async function searchOrchestrators(
   includeHighlight: boolean = true
 ): Promise<{ results: OrchestratorResult[]; totalCount: number }> {
   // Get workspace to find organization
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     select: { organizationId: true },
   });
 

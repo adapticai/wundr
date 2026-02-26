@@ -28,7 +28,6 @@ export type {
   AgentStatus,
   ContentAnalysis,
   InboundMessageEnvelope,
-  MessagePriority,
   RoutingDecision,
   RoutingRule,
   TrafficManagerConfig,
@@ -75,7 +74,8 @@ export class TrafficManager extends EventEmitter {
       organizationId: this.config.organizationId,
     };
 
-    const envelopeWithAnalysis: InboundMessageEnvelope = this.config.enableContentAnalysis
+    const envelopeWithAnalysis: InboundMessageEnvelope = this.config
+      .enableContentAnalysis
       ? { ...envelope, analysis: this.analyzer.analyze(message) }
       : envelope;
 
@@ -86,7 +86,8 @@ export class TrafficManager extends EventEmitter {
 
     this.emit('message:routed', decision);
     if (decision.escalated) this.emit('message:escalated', decision);
-    if (decision.matchedBy === 'fallback') this.emit('message:fallback', decision);
+    if (decision.matchedBy === 'fallback')
+      this.emit('message:fallback', decision);
 
     return decision;
   }
@@ -130,7 +131,9 @@ export class TrafficManager extends EventEmitter {
 // Factory helpers
 // ---------------------------------------------------------------------------
 
-export function createTrafficManager(config: TrafficManagerConfig): TrafficManager {
+export function createTrafficManager(
+  config: TrafficManagerConfig
+): TrafficManager {
   return new TrafficManager(config);
 }
 
@@ -144,7 +147,9 @@ export function getTrafficManager(): TrafficManager | null {
   return instance;
 }
 
-export function initTrafficManager(config: TrafficManagerConfig): TrafficManager {
+export function initTrafficManager(
+  config: TrafficManagerConfig
+): TrafficManager {
   instance = createTrafficManager(config);
   return instance;
 }

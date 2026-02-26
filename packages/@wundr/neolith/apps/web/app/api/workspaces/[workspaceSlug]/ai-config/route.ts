@@ -103,8 +103,8 @@ export async function GET(
     }
 
     // Fetch workspace settings
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: {
         id: true,
         settings: true,
@@ -207,8 +207,8 @@ export async function PATCH(
     const validatedConfig = updateSchema.parse(body);
 
     // Get current workspace settings
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { settings: true },
     });
 

@@ -127,8 +127,8 @@ export async function GET(
     }
 
     // Get invites from workspace settings (in production, this would be a separate table)
-    const workspaceData = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspaceData = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { settings: true },
     });
 
@@ -284,8 +284,8 @@ export async function POST(
     }
 
     // Get current invites
-    const workspaceWithSettings = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspaceWithSettings = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { settings: true },
     });
 
@@ -328,8 +328,8 @@ export async function POST(
     });
 
     // Get workspace details for email
-    const workspaceDetails = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspaceDetails = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: {
         name: true,
         slug: true,

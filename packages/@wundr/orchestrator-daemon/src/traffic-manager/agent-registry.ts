@@ -1,5 +1,9 @@
 import EventEmitter from 'eventemitter3';
-import type { AgentCapabilityProfile, AgentSeniority, AgentStatus } from './types.js';
+import type {
+  AgentCapabilityProfile,
+  AgentSeniority,
+  AgentStatus,
+} from './types.js';
 
 const SENIORITY_RANK: Record<AgentSeniority, number> = {
   ic: 1,
@@ -48,35 +52,41 @@ export class AgentRegistry extends EventEmitter<AgentRegistryEvents> {
   }
 
   listAvailable(): AgentCapabilityProfile[] {
-    return this.listAgents().filter((a) => a.status === 'available');
+    return this.listAgents().filter(a => a.status === 'available');
   }
 
   findByDiscipline(discipline: string): AgentCapabilityProfile[] {
-    return this.listAgents().filter((a) => a.discipline === discipline);
+    return this.listAgents().filter(a => a.discipline === discipline);
   }
 
   findByCapability(capability: string): AgentCapabilityProfile[] {
-    return this.listAgents().filter((a) => a.capabilities.includes(capability));
+    return this.listAgents().filter(a => a.capabilities.includes(capability));
   }
 
   findBySeniority(minSeniority: AgentSeniority): AgentCapabilityProfile[] {
     const minRank = SENIORITY_RANK[minSeniority];
-    return this.listAgents().filter((a) => SENIORITY_RANK[a.seniority] >= minRank);
+    return this.listAgents().filter(
+      a => SENIORITY_RANK[a.seniority] >= minRank
+    );
   }
 
   updateStatus(agentId: string, status: AgentStatus): void {
     const agent = this.agents.get(agentId);
     if (!agent) return;
     const oldStatus = agent.status;
-    agent.status = status;
-    this.emit('agent:status-changed', { agentId, oldStatus, newStatus: status });
+    this.agents.set(agentId, { ...agent, status });
+    this.emit('agent:status-changed', {
+      agentId,
+      oldStatus,
+      newStatus: status,
+    });
   }
 
   updateLoad(agentId: string, load: number): void {
     const agent = this.agents.get(agentId);
     if (!agent) return;
     const oldLoad = agent.currentLoad;
-    agent.currentLoad = load;
+    this.agents.set(agentId, { ...agent, currentLoad: load });
     this.emit('agent:load-changed', { agentId, oldLoad, newLoad: load });
   }
 
@@ -87,18 +97,20 @@ export class AgentRegistry extends EventEmitter<AgentRegistryEvents> {
     let candidates = this.listAvailable();
 
     if (filter?.discipline) {
-      candidates = candidates.filter((a) => a.discipline === filter.discipline);
+      candidates = candidates.filter(a => a.discipline === filter.discipline);
     }
 
     if (filter?.minSeniority) {
       const minRank = SENIORITY_RANK[filter.minSeniority];
-      candidates = candidates.filter((a) => SENIORITY_RANK[a.seniority] >= minRank);
+      candidates = candidates.filter(
+        a => SENIORITY_RANK[a.seniority] >= minRank
+      );
     }
 
     if (candidates.length === 0) return null;
 
     return candidates.reduce((lowest, agent) =>
-      agent.currentLoad < lowest.currentLoad ? agent : lowest,
+      agent.currentLoad < lowest.currentLoad ? agent : lowest
     );
   }
 }

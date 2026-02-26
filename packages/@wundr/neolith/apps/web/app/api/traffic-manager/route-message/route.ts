@@ -166,15 +166,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             id: true,
             name: true,
             displayName: true,
-            orchestratorConfig: {
-              select: {
-                id: true,
-                discipline: true,
-                role: true,
-                capabilities: true,
-                status: true,
-              },
-            },
+            orchestratorConfig: true,
           },
         },
       },
@@ -214,9 +206,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const disciplineMatch = channelMembers.find(m =>
           disciplines.some(
             d =>
-              m.user.orchestratorConfig?.discipline?.toLowerCase() === d ||
+              (m.user.orchestratorConfig as any)?.discipline?.toLowerCase() ===
+                d ||
               (
-                m.user.orchestratorConfig?.capabilities as string[] | null
+                (m.user.orchestratorConfig as any)?.capabilities as
+                  | string[]
+                  | null
               )?.some((c: string) => c.toLowerCase().includes(d))
           )
         );
@@ -234,8 +229,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (urgency === 'CRITICAL' || urgency === 'URGENT') {
       const vpAgent = channelMembers.find(
         m =>
-          m.user.orchestratorConfig?.role?.toLowerCase().includes('vp') ||
-          m.user.orchestratorConfig?.role?.toLowerCase().includes('chief')
+          (m.user.orchestratorConfig as any)?.role
+            ?.toLowerCase()
+            .includes('vp') ||
+          (m.user.orchestratorConfig as any)?.role
+            ?.toLowerCase()
+            .includes('chief')
       );
       if (vpAgent && vpAgent.userId !== selectedAgent.userId) {
         selectedAgent = vpAgent;
@@ -261,7 +260,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           null,
         organizationId: channel?.workspace?.organizationId ?? '',
         agentId: selectedAgent.userId,
-        agentName: selectedAgent.user.displayName || selectedAgent.user.name,
+        agentName:
+          (selectedAgent as any).user.displayName ||
+          (selectedAgent as any).user.name,
         confidence,
         reasoning,
         matchedBy,
@@ -281,7 +282,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({
       data: {
         agentId: selectedAgent.userId,
-        agentName: selectedAgent.user.displayName || selectedAgent.user.name,
+        agentName:
+          (selectedAgent as any).user.displayName ||
+          (selectedAgent as any).user.name,
         confidence,
         reasoning,
         matchedBy,

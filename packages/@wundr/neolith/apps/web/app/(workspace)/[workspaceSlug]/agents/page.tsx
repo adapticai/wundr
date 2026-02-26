@@ -243,7 +243,7 @@ export default function AgentsPage() {
 
       {/* Results count */}
       {!isLoading && (
-        <div className='text-sm text-stone-400'>
+        <div className='text-sm text-muted-foreground'>
           Showing {filteredCount} of {totalCount} agents
         </div>
       )}
@@ -261,8 +261,8 @@ export default function AgentsPage() {
         !searchQuery &&
         statusFilter === 'all' &&
         typeFilter === 'all' && (
-          <div className='rounded-lg border border-stone-800 bg-stone-900 p-8 text-center'>
-            <div className='mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-stone-800'>
+          <div className='rounded-lg border bg-card p-8 text-center'>
+            <div className='mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted'>
               <svg
                 xmlns='http://www.w3.org/2000/svg'
                 width='24'
@@ -273,7 +273,7 @@ export default function AgentsPage() {
                 strokeWidth='2'
                 strokeLinecap='round'
                 strokeLinejoin='round'
-                className='text-stone-400'
+                className='text-muted-foreground'
               >
                 <path d='M12 8V4H8' />
                 <rect width='16' height='12' x='4' y='8' rx='2' />
@@ -283,10 +283,8 @@ export default function AgentsPage() {
                 <path d='M9 13v2' />
               </svg>
             </div>
-            <h3 className='mt-4 text-lg font-medium text-stone-100'>
-              No agents configured
-            </h3>
-            <p className='mt-2 text-sm text-stone-400'>
+            <h3 className='mt-4 text-lg font-medium'>No agents configured</h3>
+            <p className='mt-2 text-sm text-muted-foreground'>
               Get started by creating your first AI agent to automate tasks.
             </p>
             <Button className='mt-4' onClick={() => setIsCreateModalOpen(true)}>
@@ -299,11 +297,9 @@ export default function AgentsPage() {
       {!isLoading &&
         agents.length === 0 &&
         (searchQuery || statusFilter !== 'all' || typeFilter !== 'all') && (
-          <div className='rounded-lg border border-stone-800 bg-stone-900 p-8 text-center'>
-            <h3 className='text-lg font-medium text-stone-100'>
-              No agents found
-            </h3>
-            <p className='mt-2 text-sm text-stone-400'>
+          <div className='rounded-lg border bg-card p-8 text-center'>
+            <h3 className='text-lg font-medium'>No agents found</h3>
+            <p className='mt-2 text-sm text-muted-foreground'>
               Try adjusting your search or filters.
             </p>
           </div>

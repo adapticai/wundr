@@ -671,7 +671,7 @@ export default function GeneralSettingsPage() {
               </SelectTrigger>
               <SelectContent>
                 {channels.length === 0 ? (
-                  <SelectItem value='' disabled>
+                  <SelectItem value='__none__' disabled>
                     No channels available
                   </SelectItem>
                 ) : (

@@ -25,20 +25,20 @@ export class MetricsCollector {
     const windowMinutes = windowMs / 60_000;
 
     const messagesPerMinute = total / windowMinutes;
-    const averageRoutingLatencyMs = total > 0
-      ? window.reduce((sum, r) => sum + r.durationMs, 0) / total
-      : 0;
-    const escalationRate = total > 0
-      ? window.filter(r => r.decision.escalated).length / total
-      : 0;
-    const fallbackRate = total > 0
-      ? window.filter(r => r.decision.matchedBy === 'fallback').length / total
-      : 0;
+    const averageRoutingLatencyMs =
+      total > 0 ? window.reduce((sum, r) => sum + r.durationMs, 0) / total : 0;
+    const escalationRate =
+      total > 0 ? window.filter(r => r.decision.escalated).length / total : 0;
+    const fallbackRate =
+      total > 0
+        ? window.filter(r => r.decision.matchedBy === 'fallback').length / total
+        : 0;
 
     const agentCounts: Record<string, number> = {};
     for (const r of window) {
-      if (r.decision.agentId) {
-        agentCounts[r.decision.agentId] = (agentCounts[r.decision.agentId] ?? 0) + 1;
+      if (r.decision.selectedAgentId) {
+        agentCounts[r.decision.selectedAgentId] =
+          (agentCounts[r.decision.selectedAgentId] ?? 0) + 1;
       }
     }
     const agentUtilization: Record<string, number> = {};
@@ -46,47 +46,68 @@ export class MetricsCollector {
       agentUtilization[agentId] = total > 0 ? count / total : 0;
     }
 
+    const routingMethodDistribution = this.getMethodDistribution(
+      windowMs
+    ) as TrafficMetrics['routingMethodDistribution'];
+
     return {
       messagesPerMinute,
       averageRoutingLatencyMs,
       escalationRate,
       fallbackRate,
       agentUtilization,
-      totalMessages: total,
-      windowMs,
+      totalMessagesRouted: total,
+      routingMethodDistribution,
+      windowStartedAt: new Date(Date.now() - windowMs),
     };
   }
 
   getAgentMetrics(
     agentId: string,
-    windowMs: number = DEFAULT_WINDOW_MS,
-  ): { messagesHandled: number; avgRoutingLatencyMs: number; utilizationRatio: number } {
+    windowMs: number = DEFAULT_WINDOW_MS
+  ): {
+    messagesHandled: number;
+    avgRoutingLatencyMs: number;
+    utilizationRatio: number;
+  } {
     const window = this.getWindow(windowMs);
-    const agentRecords = window.filter(r => r.decision.agentId === agentId);
+    const agentRecords = window.filter(
+      r => r.decision.selectedAgentId === agentId
+    );
     const messagesHandled = agentRecords.length;
-    const avgRoutingLatencyMs = messagesHandled > 0
-      ? agentRecords.reduce((sum, r) => sum + r.durationMs, 0) / messagesHandled
-      : 0;
-    const utilizationRatio = window.length > 0 ? messagesHandled / window.length : 0;
+    const avgRoutingLatencyMs =
+      messagesHandled > 0
+        ? agentRecords.reduce((sum, r) => sum + r.durationMs, 0) /
+          messagesHandled
+        : 0;
+    const utilizationRatio =
+      window.length > 0 ? messagesHandled / window.length : 0;
 
     return { messagesHandled, avgRoutingLatencyMs, utilizationRatio };
   }
 
   getChannelMetrics(
     channelId: string,
-    windowMs: number = DEFAULT_WINDOW_MS,
+    windowMs: number = DEFAULT_WINDOW_MS
   ): { volume: number; avgLatency: number } {
     const window = this.getWindow(windowMs);
-    const channelRecords = window.filter(r => r.decision.channelId === channelId);
+    const channelRecords = window.filter(
+      r =>
+        (r.decision as RoutingDecision & { channelId?: string }).channelId ===
+        channelId
+    );
     const volume = channelRecords.length;
-    const avgLatency = volume > 0
-      ? channelRecords.reduce((sum, r) => sum + r.durationMs, 0) / volume
-      : 0;
+    const avgLatency =
+      volume > 0
+        ? channelRecords.reduce((sum, r) => sum + r.durationMs, 0) / volume
+        : 0;
 
     return { volume, avgLatency };
   }
 
-  getMethodDistribution(windowMs: number = DEFAULT_WINDOW_MS): Record<string, number> {
+  getMethodDistribution(
+    windowMs: number = DEFAULT_WINDOW_MS
+  ): Record<string, number> {
     const window = this.getWindow(windowMs);
     const distribution: Record<string, number> = {};
     for (const r of window) {

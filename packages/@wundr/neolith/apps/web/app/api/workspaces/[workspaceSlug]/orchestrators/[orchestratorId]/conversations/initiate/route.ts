@@ -104,8 +104,8 @@ export async function POST(
     const input: InitiateConversationInput = parseResult.data;
 
     // Verify workspace exists and get organization ID
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
       select: { id: true, organizationId: true },
     });
 

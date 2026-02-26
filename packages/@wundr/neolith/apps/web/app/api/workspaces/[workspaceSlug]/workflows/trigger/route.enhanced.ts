@@ -413,8 +413,8 @@ export async function POST(
     const params = await context.params;
     const { workspaceSlug: workspaceId } = params;
 
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     });
 
     if (!workspace) {
@@ -588,8 +588,8 @@ export async function GET(
     const params = await context.params;
     const { workspaceSlug: workspaceId } = params;
 
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     });
 
     if (!workspace) {

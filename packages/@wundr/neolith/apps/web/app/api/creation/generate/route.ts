@@ -39,8 +39,8 @@ import type { NextRequest } from 'next/server';
  */
 async function createOrchestrator(spec: OrchestratorSpec, workspaceId: string) {
   // First, get the workspace to get organization ID
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     select: { organizationId: true },
   });
 
@@ -402,8 +402,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
 
         // Verify workspace exists
-        const workspace = await prisma.workspace.findUnique({
-          where: { id: workspaceId },
+        const workspace = await prisma.workspace.findFirst({
+          where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
         });
         if (!workspace) {
           return NextResponse.json(

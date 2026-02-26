@@ -85,8 +85,8 @@ export async function POST(
     });
 
     // Store inquiry in workspace settings for tracking
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+    const workspace = await prisma.workspace.findFirst({
+      where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     });
 
     const settings = (workspace?.settings as Record<string, unknown>) || {};

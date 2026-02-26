@@ -34,8 +34,8 @@ interface RouteContext {
  * Helper function to verify workspace access
  */
 async function getWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
+  const workspace = await prisma.workspace.findFirst({
+    where: { OR: [{ id: workspaceId }, { slug: workspaceId }] },
     select: { id: true, organizationId: true },
   });
 
