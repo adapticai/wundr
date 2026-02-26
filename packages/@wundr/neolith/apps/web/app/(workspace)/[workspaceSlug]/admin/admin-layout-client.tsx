@@ -3,22 +3,28 @@
 import {
   Activity,
   Bell,
+  Bot,
   ChevronLeft,
   ChevronRight,
   CreditCard,
   Database,
   FileText,
+  GitBranch,
   Home,
   Key,
   LayoutDashboard,
   Lock,
   Mail,
   Menu,
+  MessageSquare,
   MoreVertical,
   Package,
+  Route,
+  ScrollText,
   Search,
   Settings,
   Shield,
+  Sparkles,
   Users,
   Webhook,
   Workflow,
@@ -78,7 +84,7 @@ interface NavItem {
   icon: React.ReactNode;
   description?: string;
   badge?: string;
-  section: 'overview' | 'management' | 'settings' | 'security';
+  section: 'overview' | 'management' | 'ai-organization' | 'settings' | 'security';
 }
 
 /**
@@ -150,18 +156,53 @@ export function AdminLayoutClient({
       section: 'management',
     },
     {
-      title: 'Orchestrators',
-      href: `/${workspaceSlug}/admin/orchestrators`,
-      icon: <Workflow className='h-4 w-4' />,
-      description: 'Manage orchestrator services',
-      section: 'management',
-    },
-    {
       title: 'Workflows',
       href: `/${workspaceSlug}/admin/workflows`,
       icon: <FileText className='h-4 w-4' />,
       description: 'Configure automated workflows',
       section: 'management',
+    },
+    {
+      title: 'Orchestrators',
+      href: `/${workspaceSlug}/admin/orchestrators`,
+      icon: <Bot className='h-4 w-4' />,
+      description: 'Manage orchestrator services',
+      section: 'ai-organization',
+    },
+    {
+      title: 'Org Chart',
+      href: `/${workspaceSlug}/admin/org-chart`,
+      icon: <GitBranch className='h-4 w-4' />,
+      description: 'View AI organisation hierarchy',
+      section: 'ai-organization',
+    },
+    {
+      title: 'Traffic Manager',
+      href: `/${workspaceSlug}/admin/traffic-manager`,
+      icon: <Route className='h-4 w-4' />,
+      description: 'Route and balance agent traffic',
+      section: 'ai-organization',
+    },
+    {
+      title: 'Charter',
+      href: `/${workspaceSlug}/admin/charter`,
+      icon: <ScrollText className='h-4 w-4' />,
+      description: 'View and edit organisation charter',
+      section: 'ai-organization',
+    },
+    {
+      title: 'Communications',
+      href: `/${workspaceSlug}/admin/communications`,
+      icon: <MessageSquare className='h-4 w-4' />,
+      description: 'Monitor agent communications',
+      section: 'ai-organization',
+    },
+    {
+      title: 'AI Settings',
+      href: `/${workspaceSlug}/admin/ai`,
+      icon: <Sparkles className='h-4 w-4' />,
+      description: 'Configure AI behaviour and models',
+      section: 'ai-organization',
     },
     {
       title: 'Settings',
@@ -225,6 +266,7 @@ export function AdminLayoutClient({
   const groupedNav = {
     overview: navItems.filter(item => item.section === 'overview'),
     management: navItems.filter(item => item.section === 'management'),
+    aiOrganization: navItems.filter(item => item.section === 'ai-organization'),
     settings: navItems.filter(item => item.section === 'settings'),
     security: navItems.filter(item => item.section === 'security'),
   };
@@ -388,6 +430,22 @@ export function AdminLayoutClient({
             )}
             <div className='space-y-1'>
               {groupedNav.management.map(item => (
+                <NavLink key={item.href} item={item} />
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* AI Organization Section */}
+          <div>
+            {sidebarOpen && (
+              <h4 className='mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
+                AI Organization
+              </h4>
+            )}
+            <div className='space-y-1'>
+              {groupedNav.aiOrganization.map(item => (
                 <NavLink key={item.href} item={item} />
               ))}
             </div>
@@ -568,6 +626,26 @@ export function AdminLayoutClient({
 
           <CommandGroup heading='Management'>
             {groupedNav.management.map(item => (
+              <CommandItem
+                key={item.href}
+                onSelect={() => {
+                  setCommandOpen(false);
+                  window.location.href = item.href;
+                }}
+              >
+                {item.icon}
+                <span>{item.title}</span>
+                {item.description && (
+                  <span className='ml-auto text-xs text-muted-foreground'>
+                    {item.description}
+                  </span>
+                )}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+
+          <CommandGroup heading='AI Organization'>
+            {groupedNav.aiOrganization.map(item => (
               <CommandItem
                 key={item.href}
                 onSelect={() => {

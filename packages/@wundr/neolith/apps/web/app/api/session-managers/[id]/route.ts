@@ -5,7 +5,8 @@
  *
  * Routes:
  * - GET /api/session-managers/:id - Get session manager details
- * - PATCH /api/session-managers/:id - Update session manager
+ * - PUT /api/session-managers/:id - Update session manager
+ * - PATCH /api/session-managers/:id - Update session manager (partial)
  * - DELETE /api/session-managers/:id - Delete session manager
  *
  * @module app/api/session-managers/[id]/route
@@ -101,100 +102,9 @@ async function getSessionManagerWithAccessCheck(
 }
 
 /**
- * GET /api/session-managers/:id
- *
- * Get details for a specific session manager.
- * Requires authentication and organization membership.
- *
- * @param request - Next.js request object
- * @param context - Route context containing session manager ID
- * @returns Session manager details with orchestrator and subagents
+ * Shared update logic for PUT and PATCH handlers
  */
-export async function GET(
-  _request: NextRequest,
-  context: RouteContext
-): Promise<NextResponse> {
-  try {
-    // Authenticate user
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        createErrorResponse(
-          'Authentication required',
-          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED
-        ),
-        { status: 401 }
-      );
-    }
-
-    // Validate session manager ID parameter
-    const params = await context.params;
-    const paramResult = sessionManagerIdParamSchema.safeParse(params);
-    if (!paramResult.success) {
-      return NextResponse.json(
-        createErrorResponse(
-          'Invalid session manager ID format',
-          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
-        ),
-        { status: 400 }
-      );
-    }
-
-    // Get session manager with access check
-    const result = await getSessionManagerWithAccessCheck(
-      params.id,
-      session.user.id
-    );
-
-    if (!result) {
-      return NextResponse.json(
-        createErrorResponse(
-          'Session manager not found or access denied',
-          SESSION_MANAGER_ERROR_CODES.NOT_FOUND
-        ),
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ data: result.sessionManager });
-  } catch (error) {
-    console.error('[GET /api/session-managers/:id] Error:', error);
-    return NextResponse.json(
-      createErrorResponse(
-        'An internal error occurred',
-        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR
-      ),
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * PATCH /api/session-managers/:id
- *
- * Update an existing session manager.
- * Requires authentication and admin/owner role in the orchestrator's organization.
- *
- * Request body (all fields optional):
- * {
- *   "name": "Updated name",
- *   "description": "Updated description",
- *   "charterId": "new_charter_id",
- *   "charterData": { ... },
- *   "disciplineId": "new_discipline_id",
- *   "isGlobal": true,
- *   "globalConfig": { "invokeableBy": ["orch_id"] },
- *   "status": "ACTIVE",
- *   "maxConcurrentSubagents": 30,
- *   "tokenBudgetPerHour": 150000,
- *   "worktreeConfig": { ... }
- * }
- *
- * @param request - Next.js request with update data
- * @param context - Route context containing session manager ID
- * @returns Updated session manager object
- */
-export async function PATCH(
+async function updateSessionManager(
   request: NextRequest,
   context: RouteContext
 ): Promise<NextResponse> {
@@ -381,7 +291,7 @@ export async function PATCH(
       message: 'Session manager updated successfully',
     });
   } catch (error) {
-    console.error('[PATCH /api/session-managers/:id] Error:', error);
+    console.error('[PUT|PATCH /api/session-managers/:id] Error:', error);
 
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
@@ -403,6 +313,124 @@ export async function PATCH(
       { status: 500 }
     );
   }
+}
+
+/**
+ * GET /api/session-managers/:id
+ *
+ * Get details for a specific session manager.
+ * Requires authentication and organization membership.
+ *
+ * @param request - Next.js request object
+ * @param context - Route context containing session manager ID
+ * @returns Session manager details with orchestrator name and subagents
+ */
+export async function GET(
+  _request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
+  try {
+    // Authenticate user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Authentication required',
+          SESSION_MANAGER_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
+      );
+    }
+
+    // Validate session manager ID parameter
+    const params = await context.params;
+    const paramResult = sessionManagerIdParamSchema.safeParse(params);
+    if (!paramResult.success) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Invalid session manager ID format',
+          SESSION_MANAGER_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
+      );
+    }
+
+    // Get session manager with access check
+    const result = await getSessionManagerWithAccessCheck(
+      params.id,
+      session.user.id
+    );
+
+    if (!result) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Session manager not found or access denied',
+          SESSION_MANAGER_ERROR_CODES.NOT_FOUND
+        ),
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ data: result.sessionManager });
+  } catch (error) {
+    console.error('[GET /api/session-managers/:id] Error:', error);
+    return NextResponse.json(
+      createErrorResponse(
+        'An internal error occurred',
+        SESSION_MANAGER_ERROR_CODES.INTERNAL_ERROR
+      ),
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * PUT /api/session-managers/:id
+ *
+ * Update an existing session manager.
+ * Requires authentication and admin/owner role in the orchestrator's organization.
+ *
+ * Request body (all fields optional):
+ * {
+ *   "name": "Updated name",
+ *   "description": "Updated description",
+ *   "charterId": "new_charter_id",
+ *   "charterData": { ... },
+ *   "disciplineId": "new_discipline_id",
+ *   "isGlobal": true,
+ *   "globalConfig": { "invokeableBy": ["orch_id"] },
+ *   "status": "ACTIVE",
+ *   "maxConcurrentSubagents": 30,
+ *   "tokenBudgetPerHour": 150000,
+ *   "worktreeConfig": { ... }
+ * }
+ *
+ * @param request - Next.js request with update data
+ * @param context - Route context containing session manager ID
+ * @returns Updated session manager object
+ */
+export async function PUT(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
+  return updateSessionManager(request, context);
+}
+
+/**
+ * PATCH /api/session-managers/:id
+ *
+ * Update an existing session manager (partial update semantics).
+ * Requires authentication and admin/owner role in the orchestrator's organization.
+ *
+ * @param request - Next.js request with update data
+ * @param context - Route context containing session manager ID
+ * @returns Updated session manager object
+ */
+export async function PATCH(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
+  return updateSessionManager(request, context);
 }
 
 /**

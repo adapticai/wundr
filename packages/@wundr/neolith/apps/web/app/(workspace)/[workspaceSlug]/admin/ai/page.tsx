@@ -1,28 +1,9 @@
-/**
- * AI Admin Dashboard Page
- *
- * Comprehensive AI management interface for workspace administrators.
- * Features:
- * - Workspace-wide AI usage metrics
- * - Per-user usage breakdown
- * - Cost projections and analysis
- * - Model availability toggles
- * - Rate limit configuration
- * - Usage alerts setup
- * - Export usage reports
- *
- * @module app/(workspace)/[workspaceSlug]/admin/ai/page
- */
+'use client';
 
-import { prisma } from '@neolith/database';
-import { redirect } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
 
-import { auth } from '@/lib/auth';
-import { AVAILABLE_MODELS } from '@/lib/ai/providers';
-
-import { AIUsageChart } from '@/components/admin/ai-usage-chart';
-import { AIModelManagement } from '@/components/admin/ai-model-management';
-import { AICostBreakdown } from '@/components/admin/ai-cost-breakdown';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -30,409 +11,645 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { usePageHeader } from '@/contexts/page-header-context';
+import { useToast } from '@/hooks/use-toast';
 
-interface AdminAIPageProps {
-  params: Promise<{ workspaceSlug: string }>;
-}
-
-/**
- * Get AI usage statistics for workspace
- */
-async function getAIUsageStats(workspaceId: string) {
-  const now = new Date();
-  const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-  // Get all orchestrators for this workspace
-  const orchestrators = await prisma.orchestrator.findMany({
-    where: { workspaceId },
-    select: { id: true },
-  });
-
-  const orchestratorIds = orchestrators.map(o => o.id);
-
-  // Get token usage for different time periods
-  const [last24HoursUsage, last7DaysUsage, last30DaysUsage, allTimeUsage] =
-    await Promise.all([
-      prisma.tokenUsage.aggregate({
-        where: {
-          orchestratorId: { in: orchestratorIds },
-          createdAt: { gte: last24Hours },
-        },
-        _sum: {
-          totalTokens: true,
-          inputTokens: true,
-          outputTokens: true,
-          cost: true,
-        },
-        _count: true,
-      }),
-      prisma.tokenUsage.aggregate({
-        where: {
-          orchestratorId: { in: orchestratorIds },
-          createdAt: { gte: last7Days },
-        },
-        _sum: {
-          totalTokens: true,
-          inputTokens: true,
-          outputTokens: true,
-          cost: true,
-        },
-        _count: true,
-      }),
-      prisma.tokenUsage.aggregate({
-        where: {
-          orchestratorId: { in: orchestratorIds },
-          createdAt: { gte: last30Days },
-        },
-        _sum: {
-          totalTokens: true,
-          inputTokens: true,
-          outputTokens: true,
-          cost: true,
-        },
-        _count: true,
-      }),
-      prisma.tokenUsage.aggregate({
-        where: { orchestratorId: { in: orchestratorIds } },
-        _sum: {
-          totalTokens: true,
-          inputTokens: true,
-          outputTokens: true,
-          cost: true,
-        },
-        _count: true,
-      }),
-    ]);
-
-  // Get daily usage for last 30 days
-  const dailyUsage = await prisma.tokenUsage.groupBy({
-    by: ['createdAt'],
-    where: {
-      orchestratorId: { in: orchestratorIds },
-      createdAt: { gte: last30Days },
-    },
-    _sum: { totalTokens: true, cost: true },
-  });
-
-  // Get usage by model
-  const usageByModel = await prisma.tokenUsage.groupBy({
-    by: ['model'],
-    where: { orchestratorId: { in: orchestratorIds } },
-    _sum: {
-      totalTokens: true,
-      inputTokens: true,
-      outputTokens: true,
-      cost: true,
-    },
-    _count: true,
-  });
-
-  // Get usage by user (via orchestrator owner)
-  const usageByUser = await prisma.tokenUsage.findMany({
-    where: { orchestratorId: { in: orchestratorIds } },
-    select: {
-      orchestrator: {
-        select: {
-          userId: true,
-          user: {
-            select: { id: true, name: true, email: true },
-          },
-        },
-      },
-      totalTokens: true,
-      inputTokens: true,
-      outputTokens: true,
-      cost: true,
-    },
-  });
-
-  // Aggregate by user
-  const userUsageMap = new Map<
-    string,
-    {
-      userId: string;
-      userName: string;
-      userEmail: string;
-      totalTokens: number;
-      inputTokens: number;
-      outputTokens: number;
-      cost: number;
-      requestCount: number;
-    }
-  >();
-
-  for (const usage of usageByUser) {
-    const userId = usage.orchestrator.user?.id || usage.orchestrator.userId;
-    const userName = usage.orchestrator.user?.name || 'Unknown';
-    const userEmail = usage.orchestrator.user?.email || 'unknown@example.com';
-
-    const existing = userUsageMap.get(userId) || {
-      userId,
-      userName,
-      userEmail,
-      totalTokens: 0,
-      inputTokens: 0,
-      outputTokens: 0,
-      cost: 0,
-      requestCount: 0,
+interface AISettings {
+  defaultModel: string;
+  tokenBudget: number;
+  tokenUsage: number;
+  autoSpawn: {
+    enabled: boolean;
+    maxAgentsPerDiscipline: number;
+    triggers: {
+      onMessage: boolean;
+      onSchedule: boolean;
+      onEscalation: boolean;
     };
-
-    existing.totalTokens += usage.totalTokens;
-    existing.inputTokens += usage.inputTokens;
-    existing.outputTokens += usage.outputTokens;
-    existing.cost += Number(usage.cost || 0);
-    existing.requestCount += 1;
-
-    userUsageMap.set(userId, existing);
-  }
-
-  return {
-    summary: {
-      last24Hours: {
-        tokens: last24HoursUsage._sum.totalTokens || 0,
-        cost: Number(last24HoursUsage._sum.cost || 0),
-        requests: last24HoursUsage._count,
-      },
-      last7Days: {
-        tokens: last7DaysUsage._sum.totalTokens || 0,
-        cost: Number(last7DaysUsage._sum.cost || 0),
-        requests: last7DaysUsage._count,
-      },
-      last30Days: {
-        tokens: last30DaysUsage._sum.totalTokens || 0,
-        cost: Number(last30DaysUsage._sum.cost || 0),
-        requests: last30DaysUsage._count,
-      },
-      allTime: {
-        tokens: allTimeUsage._sum.totalTokens || 0,
-        cost: Number(allTimeUsage._sum.cost || 0),
-        requests: allTimeUsage._count,
-      },
-    },
-    dailyUsage: dailyUsage.map(d => ({
-      date: d.createdAt.toISOString().split('T')[0],
-      tokens: d._sum.totalTokens || 0,
-      cost: Number(d._sum.cost || 0),
-    })),
-    usageByModel: usageByModel.map(m => ({
-      model: m.model,
-      tokens: m._sum.totalTokens || 0,
-      inputTokens: m._sum.inputTokens || 0,
-      outputTokens: m._sum.outputTokens || 0,
-      cost: Number(m._sum.cost || 0),
-      requests: m._count,
-    })),
-    usageByUser: Array.from(userUsageMap.values()),
+  };
+  trafficManager: {
+    defaultRoutingMethod: string;
+    escalationThreshold: string;
+    enableContentAnalysis: boolean;
+    maxRoutingLatency: number;
+  };
+  daemonConnection: {
+    daemonUrl: string;
+    apiSecret: string;
+  };
+  communicationDefaults: {
+    notificationChannels: string[];
+    quietHoursStart: string;
+    quietHoursEnd: string;
   };
 }
 
-/**
- * Get workspace AI settings
- */
-async function getWorkspaceAISettings(workspaceId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: { settings: true },
-  });
-
-  const settings = (workspace?.settings as any) || {};
-  return {
-    enabledModels: settings.ai?.enabledModels || Object.keys(AVAILABLE_MODELS),
-    rateLimits: settings.ai?.rateLimits || {
-      requestsPerMinute: 60,
-      tokensPerMinute: 100000,
-      costPerDay: 100,
+const DEFAULT_SETTINGS: AISettings = {
+  defaultModel: 'claude-sonnet-4',
+  tokenBudget: 1000000,
+  tokenUsage: 0,
+  autoSpawn: {
+    enabled: false,
+    maxAgentsPerDiscipline: 3,
+    triggers: {
+      onMessage: false,
+      onSchedule: false,
+      onEscalation: false,
     },
-    alerts: settings.ai?.alerts || {
-      enabled: true,
-      thresholds: [50, 75, 90],
-      recipients: [],
-    },
-  };
-}
+  },
+  trafficManager: {
+    defaultRoutingMethod: 'round-robin',
+    escalationThreshold: 'medium',
+    enableContentAnalysis: false,
+    maxRoutingLatency: 500,
+  },
+  daemonConnection: {
+    daemonUrl: '',
+    apiSecret: '',
+  },
+  communicationDefaults: {
+    notificationChannels: [],
+    quietHoursStart: '22:00',
+    quietHoursEnd: '08:00',
+  },
+};
 
-export default async function AdminAIPage({ params }: AdminAIPageProps) {
-  const { workspaceSlug } = await params;
-  const session = await auth();
+const NOTIFICATION_CHANNELS = [
+  { id: 'email', label: 'Email' },
+  { id: 'sms', label: 'SMS' },
+  { id: 'slack', label: 'Slack' },
+  { id: 'internal', label: 'Internal' },
+];
 
-  // Authentication check
-  if (!session?.user?.id) {
-    redirect('/login');
+export default function AISettingsPage() {
+  const params = useParams();
+  const workspaceSlug = params.workspaceSlug as string;
+  const { setPageHeader } = usePageHeader();
+  const { toast } = useToast();
+
+  const [settings, setSettings] = useState<AISettings>(DEFAULT_SETTINGS);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+
+  useEffect(() => {
+    setPageHeader(
+      'AI Organization Settings',
+      'Configure AI models, budgets, and automation for your workspace'
+    );
+  }, [setPageHeader]);
+
+  const fetchSettings = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/settings`
+      );
+      if (!response.ok) {
+        throw new Error('Failed to load settings');
+      }
+      const data = await response.json();
+      const aiSettings = data?.workspace?.settings?.aiSettings;
+      if (aiSettings) {
+        setSettings(prev => ({ ...prev, ...aiSettings }));
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to load settings',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [workspaceSlug, toast]);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  const handleSave = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/settings`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ aiSettings: settings }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to save settings');
+      }
+      toast({
+        title: 'Saved',
+        description: 'AI settings updated successfully',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to save settings',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [workspaceSlug, settings, toast]);
+
+  const handleTestConnection = useCallback(async () => {
+    setIsTestingConnection(true);
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/settings/test-daemon`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            daemonUrl: settings.daemonConnection.daemonUrl,
+            apiSecret: settings.daemonConnection.apiSecret,
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Connection test failed');
+      }
+      toast({
+        title: 'Connected',
+        description: 'Daemon connection successful',
+      });
+    } catch (error) {
+      toast({
+        title: 'Connection Failed',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Could not connect to daemon',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsTestingConnection(false);
+    }
+  }, [workspaceSlug, settings.daemonConnection, toast]);
+
+  const toggleNotificationChannel = useCallback((channelId: string) => {
+    setSettings(prev => {
+      const channels = prev.communicationDefaults.notificationChannels;
+      const updated = channels.includes(channelId)
+        ? channels.filter(c => c !== channelId)
+        : [...channels, channelId];
+      return {
+        ...prev,
+        communicationDefaults: {
+          ...prev.communicationDefaults,
+          notificationChannels: updated,
+        },
+      };
+    });
+  }, []);
+
+  const tokenBudgetPercent = Math.min(
+    Math.round((settings.tokenUsage / settings.tokenBudget) * 100),
+    100
+  );
+
+  if (isLoading) {
+    return (
+      <div className='flex items-center justify-center py-20'>
+        <p className='text-muted-foreground'>Loading settings...</p>
+      </div>
+    );
   }
-
-  // Find workspace
-  const workspace = await prisma.workspace.findFirst({
-    where: {
-      OR: [{ id: workspaceSlug }, { slug: workspaceSlug }],
-    },
-    select: { id: true, name: true, slug: true },
-  });
-
-  if (!workspace) {
-    redirect('/');
-  }
-
-  // Authorization check - only ADMIN and OWNER roles
-  const membership = await prisma.workspaceMember.findFirst({
-    where: {
-      workspaceId: workspace.id,
-      userId: session.user.id,
-    },
-    select: { role: true },
-  });
-
-  if (!membership || !['ADMIN', 'OWNER'].includes(membership.role)) {
-    redirect(`/${workspaceSlug}/dashboard`);
-  }
-
-  // Get AI usage stats and settings
-  const [stats, settings] = await Promise.all([
-    getAIUsageStats(workspace.id),
-    getWorkspaceAISettings(workspace.id),
-  ]);
 
   return (
-    <div className='container mx-auto p-6 space-y-6'>
-      {/* Header */}
-      <div>
-        <h1 className='text-3xl font-bold tracking-tight'>AI Management</h1>
-        <p className='text-muted-foreground mt-2'>
-          Monitor and manage AI usage, models, and costs for your workspace
-        </p>
+    <div className='space-y-6'>
+      {/* 1. Default AI Model */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Default AI Model</CardTitle>
+          <CardDescription>
+            The model used by default for all AI operations in this workspace
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className='max-w-sm'>
+            <Label htmlFor='default-model'>Model</Label>
+            <Select
+              value={settings.defaultModel}
+              onValueChange={value =>
+                setSettings(prev => ({ ...prev, defaultModel: value }))
+              }
+            >
+              <SelectTrigger id='default-model' className='mt-1.5'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='claude-opus-4'>Claude Opus 4</SelectItem>
+                <SelectItem value='claude-sonnet-4'>Claude Sonnet 4</SelectItem>
+                <SelectItem value='claude-haiku'>Claude Haiku</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 2. Organization Token Budget */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Organization Token Budget</CardTitle>
+          <CardDescription>
+            Monthly token budget and current usage for the entire organization
+          </CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-6'>
+          <div className='space-y-3'>
+            <div className='flex items-center justify-between'>
+              <Label>Monthly Budget</Label>
+              <span className='text-sm font-medium'>
+                {(settings.tokenBudget / 1000000).toFixed(1)}M tokens
+              </span>
+            </div>
+            <Slider
+              min={100000}
+              max={10000000}
+              step={100000}
+              value={[settings.tokenBudget]}
+              onValueChange={([value]) =>
+                setSettings(prev => ({ ...prev, tokenBudget: value }))
+              }
+            />
+            <div className='flex justify-between text-xs text-muted-foreground'>
+              <span>100K</span>
+              <span>10M</span>
+            </div>
+          </div>
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between text-sm'>
+              <span className='text-muted-foreground'>Current usage</span>
+              <span className='font-medium'>
+                {(settings.tokenUsage / 1000).toFixed(0)}K /{' '}
+                {(settings.tokenBudget / 1000000).toFixed(1)}M tokens (
+                {tokenBudgetPercent}%)
+              </span>
+            </div>
+            <Progress value={tokenBudgetPercent} className='h-2' />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 3. Auto-Spawn Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Auto-Spawn Configuration</CardTitle>
+          <CardDescription>
+            Control automatic agent spawning behaviour across the organization
+          </CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-5'>
+          <div className='flex items-center justify-between'>
+            <div>
+              <Label>Enable Auto-Spawn</Label>
+              <p className='text-sm text-muted-foreground mt-0.5'>
+                Automatically spawn agents based on triggers
+              </p>
+            </div>
+            <Switch
+              checked={settings.autoSpawn.enabled}
+              onCheckedChange={checked =>
+                setSettings(prev => ({
+                  ...prev,
+                  autoSpawn: { ...prev.autoSpawn, enabled: checked },
+                }))
+              }
+            />
+          </div>
+
+          <div className='space-y-2'>
+            <Label>Max Agents per Discipline</Label>
+            <div className='flex items-center gap-3'>
+              <Slider
+                min={1}
+                max={20}
+                step={1}
+                value={[settings.autoSpawn.maxAgentsPerDiscipline]}
+                onValueChange={([value]) =>
+                  setSettings(prev => ({
+                    ...prev,
+                    autoSpawn: {
+                      ...prev.autoSpawn,
+                      maxAgentsPerDiscipline: value,
+                    },
+                  }))
+                }
+                disabled={!settings.autoSpawn.enabled}
+                className='flex-1'
+              />
+              <span className='text-sm font-medium w-6 text-right'>
+                {settings.autoSpawn.maxAgentsPerDiscipline}
+              </span>
+            </div>
+          </div>
+
+          <div className='space-y-3'>
+            <Label>Spawn Triggers</Label>
+            <div className='space-y-2'>
+              {(
+                [
+                  ['onMessage', 'On Message'],
+                  ['onSchedule', 'On Schedule'],
+                  ['onEscalation', 'On Escalation'],
+                ] as const
+              ).map(([key, label]) => (
+                <div key={key} className='flex items-center gap-2'>
+                  <Checkbox
+                    id={`trigger-${key}`}
+                    checked={settings.autoSpawn.triggers[key]}
+                    disabled={!settings.autoSpawn.enabled}
+                    onCheckedChange={checked =>
+                      setSettings(prev => ({
+                        ...prev,
+                        autoSpawn: {
+                          ...prev.autoSpawn,
+                          triggers: {
+                            ...prev.autoSpawn.triggers,
+                            [key]: !!checked,
+                          },
+                        },
+                      }))
+                    }
+                  />
+                  <Label htmlFor={`trigger-${key}`} className='font-normal'>
+                    {label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 4. Traffic Manager Defaults */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Traffic Manager Defaults</CardTitle>
+          <CardDescription>
+            Default routing and escalation settings for AI traffic management
+          </CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-5'>
+          <div className='grid gap-5 sm:grid-cols-2'>
+            <div className='space-y-1.5'>
+              <Label>Default Routing Method</Label>
+              <Select
+                value={settings.trafficManager.defaultRoutingMethod}
+                onValueChange={value =>
+                  setSettings(prev => ({
+                    ...prev,
+                    trafficManager: {
+                      ...prev.trafficManager,
+                      defaultRoutingMethod: value,
+                    },
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='round-robin'>Round Robin</SelectItem>
+                  <SelectItem value='least-loaded'>Least Loaded</SelectItem>
+                  <SelectItem value='priority'>Priority</SelectItem>
+                  <SelectItem value='random'>Random</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className='space-y-1.5'>
+              <Label>Escalation Threshold Priority</Label>
+              <Select
+                value={settings.trafficManager.escalationThreshold}
+                onValueChange={value =>
+                  setSettings(prev => ({
+                    ...prev,
+                    trafficManager: {
+                      ...prev.trafficManager,
+                      escalationThreshold: value,
+                    },
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='low'>Low</SelectItem>
+                  <SelectItem value='medium'>Medium</SelectItem>
+                  <SelectItem value='high'>High</SelectItem>
+                  <SelectItem value='critical'>Critical</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className='space-y-1.5'>
+            <Label htmlFor='max-latency'>Max Routing Latency (ms)</Label>
+            <Input
+              id='max-latency'
+              type='number'
+              min={50}
+              max={10000}
+              value={settings.trafficManager.maxRoutingLatency}
+              onChange={e =>
+                setSettings(prev => ({
+                  ...prev,
+                  trafficManager: {
+                    ...prev.trafficManager,
+                    maxRoutingLatency: Number(e.target.value),
+                  },
+                }))
+              }
+              className='max-w-[200px]'
+            />
+          </div>
+
+          <div className='flex items-center justify-between'>
+            <div>
+              <Label>Enable Content Analysis</Label>
+              <p className='text-sm text-muted-foreground mt-0.5'>
+                Analyse message content to improve routing decisions
+              </p>
+            </div>
+            <Switch
+              checked={settings.trafficManager.enableContentAnalysis}
+              onCheckedChange={checked =>
+                setSettings(prev => ({
+                  ...prev,
+                  trafficManager: {
+                    ...prev.trafficManager,
+                    enableContentAnalysis: checked,
+                  },
+                }))
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 5. Daemon Connection */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Daemon Connection</CardTitle>
+          <CardDescription>
+            Configure the connection to your AI daemon service
+          </CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          <div className='space-y-1.5'>
+            <Label htmlFor='daemon-url'>Daemon URL</Label>
+            <Input
+              id='daemon-url'
+              type='text'
+              placeholder='https://daemon.example.com'
+              value={settings.daemonConnection.daemonUrl}
+              onChange={e =>
+                setSettings(prev => ({
+                  ...prev,
+                  daemonConnection: {
+                    ...prev.daemonConnection,
+                    daemonUrl: e.target.value,
+                  },
+                }))
+              }
+            />
+          </div>
+
+          <div className='space-y-1.5'>
+            <Label htmlFor='api-secret'>API Secret</Label>
+            <Input
+              id='api-secret'
+              type='password'
+              placeholder='Enter API secret'
+              value={settings.daemonConnection.apiSecret}
+              onChange={e =>
+                setSettings(prev => ({
+                  ...prev,
+                  daemonConnection: {
+                    ...prev.daemonConnection,
+                    apiSecret: e.target.value,
+                  },
+                }))
+              }
+            />
+          </div>
+
+          <Button
+            variant='outline'
+            onClick={handleTestConnection}
+            disabled={
+              isTestingConnection ||
+              !settings.daemonConnection.daemonUrl ||
+              !settings.daemonConnection.apiSecret
+            }
+          >
+            {isTestingConnection ? 'Testing...' : 'Test Connection'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* 6. Communication Defaults */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Communication Defaults</CardTitle>
+          <CardDescription>
+            Default notification channels and quiet hours for the organization
+          </CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-5'>
+          <div className='space-y-3'>
+            <Label>Default Notification Channels</Label>
+            <div className='flex flex-wrap gap-4'>
+              {NOTIFICATION_CHANNELS.map(channel => (
+                <div key={channel.id} className='flex items-center gap-2'>
+                  <Checkbox
+                    id={`channel-${channel.id}`}
+                    checked={settings.communicationDefaults.notificationChannels.includes(
+                      channel.id
+                    )}
+                    onCheckedChange={() =>
+                      toggleNotificationChannel(channel.id)
+                    }
+                  />
+                  <Label
+                    htmlFor={`channel-${channel.id}`}
+                    className='font-normal'
+                  >
+                    {channel.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className='grid gap-4 sm:grid-cols-2'>
+            <div className='space-y-1.5'>
+              <Label htmlFor='quiet-start'>Quiet Hours Start</Label>
+              <Input
+                id='quiet-start'
+                type='time'
+                value={settings.communicationDefaults.quietHoursStart}
+                onChange={e =>
+                  setSettings(prev => ({
+                    ...prev,
+                    communicationDefaults: {
+                      ...prev.communicationDefaults,
+                      quietHoursStart: e.target.value,
+                    },
+                  }))
+                }
+              />
+            </div>
+            <div className='space-y-1.5'>
+              <Label htmlFor='quiet-end'>Quiet Hours End</Label>
+              <Input
+                id='quiet-end'
+                type='time'
+                value={settings.communicationDefaults.quietHoursEnd}
+                onChange={e =>
+                  setSettings(prev => ({
+                    ...prev,
+                    communicationDefaults: {
+                      ...prev.communicationDefaults,
+                      quietHoursEnd: e.target.value,
+                    },
+                  }))
+                }
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Save Button */}
+      <div className='flex justify-end pb-6'>
+        <Button onClick={handleSave} disabled={isSaving}>
+          {isSaving ? 'Saving...' : 'Save Settings'}
+        </Button>
       </div>
-
-      {/* Summary Cards */}
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>24h Usage</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>
-              {(stats.summary.last24Hours.tokens / 1000).toFixed(1)}K
-            </div>
-            <p className='text-xs text-muted-foreground'>
-              tokens • ${stats.summary.last24Hours.cost.toFixed(2)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>7d Usage</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>
-              {(stats.summary.last7Days.tokens / 1000).toFixed(1)}K
-            </div>
-            <p className='text-xs text-muted-foreground'>
-              tokens • ${stats.summary.last7Days.cost.toFixed(2)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>30d Usage</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>
-              {(stats.summary.last30Days.tokens / 1000).toFixed(1)}K
-            </div>
-            <p className='text-xs text-muted-foreground'>
-              tokens • ${stats.summary.last30Days.cost.toFixed(2)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Total Requests
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>
-              {stats.summary.allTime.requests}
-            </div>
-            <p className='text-xs text-muted-foreground'>
-              ${stats.summary.allTime.cost.toFixed(2)} all time
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs */}
-      <Tabs defaultValue='usage' className='space-y-4'>
-        <TabsList>
-          <TabsTrigger value='usage'>Usage Analytics</TabsTrigger>
-          <TabsTrigger value='models'>Model Management</TabsTrigger>
-          <TabsTrigger value='costs'>Cost Analysis</TabsTrigger>
-        </TabsList>
-
-        {/* Usage Analytics Tab */}
-        <TabsContent value='usage' className='space-y-4'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Usage Trends</CardTitle>
-              <CardDescription>
-                Token usage and requests over the last 30 days
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AIUsageChart
-                data={stats.dailyUsage}
-                usageByModel={stats.usageByModel}
-                usageByUser={stats.usageByUser}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Model Management Tab */}
-        <TabsContent value='models' className='space-y-4'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Model Configuration</CardTitle>
-              <CardDescription>
-                Enable or disable AI models and configure rate limits
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AIModelManagement
-                workspaceId={workspace.id}
-                workspaceSlug={workspace.slug}
-                enabledModels={settings.enabledModels}
-                rateLimits={settings.rateLimits}
-                alerts={settings.alerts}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Cost Analysis Tab */}
-        <TabsContent value='costs' className='space-y-4'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Cost Breakdown</CardTitle>
-              <CardDescription>
-                Detailed cost analysis by model, user, and time period
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AICostBreakdown
-                summary={stats.summary}
-                usageByModel={stats.usageByModel}
-                usageByUser={stats.usageByUser}
-                workspaceSlug={workspace.slug}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }

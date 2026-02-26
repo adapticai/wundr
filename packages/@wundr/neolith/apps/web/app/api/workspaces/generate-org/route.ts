@@ -739,7 +739,47 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           });
         }
 
-        // 8.8. Return Workspace with Full Details
+        // 8.8. Create Agent-to-Agent DM Channels Between All Orchestrators
+        try {
+          const orchestratorUserIds = Array.from(orchestratorMap.values());
+          const dmChannelCreations: Promise<unknown>[] = [];
+
+          for (let i = 0; i < orchestratorUserIds.length; i++) {
+            for (let j = i + 1; j < orchestratorUserIds.length; j++) {
+              const [idA, idB] = [orchestratorUserIds[i], orchestratorUserIds[j]].sort();
+              const dmSlug = `agent-dm-${idA}-${idB}`;
+
+              dmChannelCreations.push(
+                tx.channel
+                  .create({
+                    data: {
+                      name: dmSlug,
+                      slug: dmSlug,
+                      type: 'DM',
+                      workspaceId: newWorkspace.id,
+                      createdById: session.user.id,
+                    },
+                  })
+                  .then(dmChannel =>
+                    Promise.all([
+                      tx.channelMember.create({
+                        data: { channelId: dmChannel.id, userId: idA, role: 'MEMBER' },
+                      }),
+                      tx.channelMember.create({
+                        data: { channelId: dmChannel.id, userId: idB, role: 'MEMBER' },
+                      }),
+                    ])
+                  )
+              );
+            }
+          }
+
+          await Promise.all(dmChannelCreations);
+        } catch (dmError) {
+          console.error('[generate-org] Failed to create agent DM channels (non-fatal):', dmError);
+        }
+
+        // 8.9. Return Workspace with Full Details
         return tx.workspace.findUnique({
           where: { id: newWorkspace.id },
           include: {

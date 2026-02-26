@@ -244,6 +244,17 @@ export interface GenerationMetadata {
 }
 
 /**
+ * Channel summary for preview display
+ */
+export interface ChannelSummary {
+  id: string;
+  name: string;
+  slug: string;
+  type: string;
+  memberCount: number;
+}
+
+/**
  * Organization generation response
  */
 export interface OrgGenerationResponse {
@@ -264,6 +275,9 @@ export interface OrgGenerationResponse {
 
   /** Generation metadata */
   metadata: GenerationMetadata;
+
+  /** Auto-created channels summary */
+  channels?: ChannelSummary[];
 
   /** Legacy organization structure (deprecated) */
   organization?: {

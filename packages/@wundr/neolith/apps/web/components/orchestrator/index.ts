@@ -21,3 +21,8 @@ export { OrchestratorThinkingIndicator } from './OrchestratorThinkingIndicator';
 export { SessionManagerList } from './session-manager-list';
 export { SubagentCreate } from './subagent-create';
 export { SubagentList } from './subagent-list';
+export {
+  AgentActivityTimeline,
+  type AgentActivityTimelineProps,
+  type ActivityEvent,
+} from './agent-activity-timeline';

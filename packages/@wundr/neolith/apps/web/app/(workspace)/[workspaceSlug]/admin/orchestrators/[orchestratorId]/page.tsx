@@ -8,6 +8,10 @@ import { OrchestratorActivity } from '@/components/admin/orchestrators/orchestra
 import { OrchestratorConfig } from '@/components/admin/orchestrators/orchestrator-config';
 import { OrchestratorMetrics } from '@/components/admin/orchestrators/orchestrator-metrics';
 import { OrchestratorStatusBadge } from '@/components/admin/orchestrators/orchestrator-status';
+import { AgentActivityTimeline } from '@/components/orchestrator/agent-activity-timeline';
+import { DaemonStatusWidget } from '@/components/orchestrator/daemon-status-widget';
+import { SessionManagerCreate } from '@/components/orchestrator/session-manager-create';
+import { SessionManagerList } from '@/components/orchestrator/session-manager-list';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +50,7 @@ export default function AdminOrchestratorDetailPage() {
 
   const [activeTab, setActiveTab] = useState('overview');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCreateSessionManager, setShowCreateSessionManager] = useState(false);
 
   const { orchestrator, isLoading, error, refetch } =
     useOrchestrator(orchestratorId);
@@ -238,11 +243,12 @@ export default function AdminOrchestratorDetailPage() {
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className='grid w-full grid-cols-4'>
+        <TabsList className='grid w-full grid-cols-5'>
           <TabsTrigger value='overview'>Overview</TabsTrigger>
           <TabsTrigger value='activity'>Activity</TabsTrigger>
           <TabsTrigger value='configuration'>Configuration</TabsTrigger>
           <TabsTrigger value='performance'>Performance</TabsTrigger>
+          <TabsTrigger value='daemon'>Daemon &amp; Sessions</TabsTrigger>
         </TabsList>
 
         <TabsContent value='overview' className='space-y-6 mt-6'>
@@ -358,6 +364,43 @@ export default function AdminOrchestratorDetailPage() {
             activeConversations={orchestrator.agentCount}
             avgResponseTime='2.3s'
             successRate='98.5%'
+          />
+        </TabsContent>
+
+        <TabsContent value='daemon' className='mt-6 space-y-6'>
+          {/* Daemon Status */}
+          <DaemonStatusWidget workspaceId={workspaceSlug} />
+
+          <div className='grid gap-6 lg:grid-cols-2'>
+            {/* Session Managers */}
+            <SessionManagerList
+              orchestratorId={orchestrator.id}
+              onCreateNew={() => setShowCreateSessionManager(true)}
+            />
+
+            {/* Activity Timeline */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Activity Timeline</CardTitle>
+                <CardDescription>
+                  Recent agent routing and task events
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AgentActivityTimeline
+                  workspaceId={workspaceSlug}
+                  orchestratorId={orchestrator.id}
+                  limit={20}
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          <SessionManagerCreate
+            orchestratorId={orchestrator.id}
+            open={showCreateSessionManager}
+            onOpenChange={setShowCreateSessionManager}
+            onCreated={() => setShowCreateSessionManager(false)}
           />
         </TabsContent>
       </Tabs>

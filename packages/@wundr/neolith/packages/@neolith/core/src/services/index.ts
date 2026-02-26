@@ -895,6 +895,34 @@ export {
 } from './communication-hub';
 
 // =============================================================================
+// Daemon Bridge
+// =============================================================================
+
+export {
+  // Service implementation
+  DaemonBridgeImpl,
+  createDaemonBridge,
+  initDaemonBridge,
+  getDaemonBridge,
+
+  // Interfaces
+  type IDaemonBridge,
+
+  // Types
+  type DaemonHealth,
+  type DaemonStatus,
+  type DaemonAgent,
+  type DaemonChannel,
+  type DaemonMetrics,
+  type AgentMetrics,
+
+  // Errors
+  DaemonBridgeError,
+  DaemonUnreachableError,
+  DaemonResponseError,
+} from './daemon-bridge';
+
+// =============================================================================
 // Alert Service
 // =============================================================================
 

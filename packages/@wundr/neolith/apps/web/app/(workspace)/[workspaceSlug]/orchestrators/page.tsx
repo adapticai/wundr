@@ -1,23 +1,29 @@
 /**
- * Orchestrators List Page
+ * Orchestrators Overview Page
  *
- * Displays all orchestrators (Orchestrators) in the workspace with
- * filtering, search, and creation capabilities.
+ * Workspace-level overview of all orchestrators with stats, filtering,
+ * search, and creation capabilities.
  *
  * @module app/(workspace)/[workspaceId]/orchestrators/page
  */
 'use client';
 
-import { Users, Plus, X, Search, AlertCircle } from 'lucide-react';
+import { Users, Plus, X, Search, AlertCircle, Bot } from 'lucide-react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 
 import { CreateOrchestratorDialog } from '@/components/orchestrator/create-orchestrator-dialog';
-import {
-  OrchestratorCard,
-  OrchestratorCardSkeleton,
-} from '@/components/orchestrator/orchestrator-card';
+import { OrchestratorCardSkeleton } from '@/components/orchestrator/orchestrator-card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { usePageHeader } from '@/contexts/page-header-context';
 import {
@@ -37,7 +43,7 @@ import type {
   CreateOrchestratorInput,
 } from '@/types/orchestrator';
 
-export default function OrchestratorsPage() {
+export default function OrchestratorOverviewPage() {
   const params = useParams();
   const router = useRouter();
   const workspaceSlug = params.workspaceSlug as string;
@@ -218,52 +224,62 @@ export default function OrchestratorsPage() {
 
   return (
     <div className='p-6 space-y-6'>
-      {/* Action Buttons */}
-      <div className='flex justify-end gap-2'>
-        <Button
-          type='button'
-          onClick={handleNewOrchestrator}
-          className='inline-flex items-center gap-2'
-        >
-          <Plus className='h-4 w-4' />
-          New Orchestrator
-        </Button>
-        <Button
-          type='button'
-          variant='outline'
-          onClick={() => setIsCreateDialogOpen(true)}
-          className='inline-flex items-center gap-2'
-        >
-          <Plus className='h-4 w-4' />
-          Quick Create
-        </Button>
+      {/* Page Header */}
+      <div className='flex items-center justify-between'>
+        <div>
+          <h1 className='text-2xl font-bold font-heading tracking-tight'>
+            Orchestrators
+          </h1>
+          <p className='text-sm text-muted-foreground mt-1'>
+            AI-powered orchestrators managing your workspace operations
+          </p>
+        </div>
+        <div className='flex gap-2'>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={() => setIsCreateDialogOpen(true)}
+            className='inline-flex items-center gap-2'
+          >
+            <Plus className='h-4 w-4' />
+            Quick Create
+          </Button>
+          <Button
+            type='button'
+            onClick={handleNewOrchestrator}
+            className='inline-flex items-center gap-2'
+          >
+            <Plus className='h-4 w-4' />
+            Create New
+          </Button>
+        </div>
       </div>
 
       {/* Stats Overview */}
       <div className='grid grid-cols-2 gap-4 sm:grid-cols-4'>
         <StatCard
+          label='Total Orchestrators'
+          value={isLoading ? '-' : totalCount}
+          color='text-foreground'
+          bgColor='bg-card'
+        />
+        <StatCard
           label='Online'
           value={orchestratorStats.online}
           color='text-green-600'
-          bgColor='bg-green-50'
-        />
-        <StatCard
-          label='Offline'
-          value={orchestratorStats.offline}
-          color='text-gray-600'
-          bgColor='bg-gray-50'
+          bgColor='bg-green-50 dark:bg-green-950/20'
         />
         <StatCard
           label='Busy'
           value={orchestratorStats.busy}
           color='text-yellow-600'
-          bgColor='bg-yellow-50'
+          bgColor='bg-yellow-50 dark:bg-yellow-950/20'
         />
         <StatCard
-          label='Away'
-          value={orchestratorStats.away}
-          color='text-orange-600'
-          bgColor='bg-orange-50'
+          label='Session Managers Active'
+          value={orchestratorStats.online + orchestratorStats.busy}
+          color='text-blue-600'
+          bgColor='bg-blue-50 dark:bg-blue-950/20'
         />
       </div>
 
@@ -412,10 +428,10 @@ export default function OrchestratorsPage() {
       {!isLoading && !error && orchestrators.length > 0 && (
         <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
           {orchestrators.map(orchestrator => (
-            <OrchestratorCard
+            <OrchestratorOverviewCard
               key={orchestrator.id}
               orchestrator={orchestrator}
-              workspaceId={workspaceSlug}
+              workspaceSlug={workspaceSlug}
               onToggleStatus={handleToggleStatus}
               onEditWithAI={handleEditWithAI}
               highlightText={highlightText}
@@ -443,7 +459,7 @@ function StatCard({
   bgColor,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   color: string;
   bgColor: string;
 }) {
@@ -452,5 +468,101 @@ function StatCard({
       <p className='text-sm font-medium text-muted-foreground'>{label}</p>
       <p className={cn('text-2xl font-bold', color)}>{value}</p>
     </div>
+  );
+}
+
+// Status dot component
+function StatusDot({ status }: { status: string }) {
+  const colorMap: Record<string, string> = {
+    ONLINE: 'bg-green-500',
+    OFFLINE: 'bg-gray-400',
+    BUSY: 'bg-yellow-500',
+    AWAY: 'bg-orange-400',
+  };
+  return (
+    <span
+      className={cn(
+        'inline-block h-2.5 w-2.5 rounded-full flex-shrink-0',
+        colorMap[status] ?? 'bg-gray-400'
+      )}
+    />
+  );
+}
+
+// Orchestrator Overview Card with admin "View Details" link
+function OrchestratorOverviewCard({
+  orchestrator,
+  workspaceSlug,
+  onToggleStatus,
+  onEditWithAI,
+  highlightText,
+}: {
+  orchestrator: Orchestrator;
+  workspaceSlug: string;
+  onToggleStatus?: (orchestrator: Orchestrator) => void;
+  onEditWithAI?: (orchestrator: Orchestrator) => void;
+  highlightText?: (text: string | null | undefined) => React.ReactNode;
+}) {
+  return (
+    <Card className='flex flex-col transition-all hover:border-primary/50 hover:shadow-md'>
+      <CardHeader className='pb-3'>
+        <div className='flex items-center gap-3'>
+          <StatusDot status={orchestrator.status} />
+          <div className='min-w-0 flex-1'>
+            <CardTitle className='text-base font-semibold truncate'>
+              {highlightText
+                ? highlightText(orchestrator.title)
+                : orchestrator.title}
+            </CardTitle>
+            {orchestrator.discipline && (
+              <Badge variant='secondary' className='mt-1 text-xs'>
+                {orchestrator.discipline}
+              </Badge>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className='flex-1 pb-3 space-y-2 text-sm text-muted-foreground'>
+        {orchestrator.description && (
+          <p className='line-clamp-2'>
+            {highlightText
+              ? highlightText(orchestrator.description)
+              : orchestrator.description}
+          </p>
+        )}
+        <div className='flex items-center gap-1'>
+          <Bot className='h-3.5 w-3.5' />
+          <span className='font-medium text-foreground'>
+            {orchestrator.agentCount}
+          </span>
+          <span>session managers</span>
+        </div>
+        <div className='flex items-center gap-1'>
+          <span className='text-xs'>Tasks:</span>
+          <span className='font-medium text-foreground'>
+            {orchestrator.messageCount}
+          </span>
+          <span className='text-xs'>messages</span>
+        </div>
+      </CardContent>
+      <CardFooter className='pt-3 border-t gap-2'>
+        <Button asChild className='flex-1' size='sm'>
+          <Link
+            href={`/${workspaceSlug}/admin/orchestrators/${orchestrator.id}`}
+          >
+            View Details
+          </Link>
+        </Button>
+        <Button
+          asChild
+          variant='outline'
+          size='sm'
+        >
+          <Link href={`/${workspaceSlug}/orchestrators/${orchestrator.id}`}>
+            Open
+          </Link>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }
