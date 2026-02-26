@@ -202,7 +202,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         },
       }),
 
-      // Audit logs for errors
+      // Audit logs for errors and latency metrics
       prisma.auditLog.findMany({
         where: {
           createdAt: { gte: startTime },
@@ -247,31 +247,54 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         items.filter(log => ['error', 'critical'].includes(log.severity)).length
     );
 
-    // Calculate latency metrics (extract from audit log metadata if available)
-    // For now, return placeholder data as response time tracking is not yet implemented
-    const latency: LatencyMetrics = {
-      p50: Array.from({ length: dataPoints }, (_, i) => ({
-        timestamp: new Date(
-          startTime.getTime() + i * intervalMinutes * 60 * 1000
-        ).toISOString(),
-        value: 0,
-      })),
-      p95: Array.from({ length: dataPoints }, (_, i) => ({
-        timestamp: new Date(
-          startTime.getTime() + i * intervalMinutes * 60 * 1000
-        ).toISOString(),
-        value: 0,
-      })),
-      p99: Array.from({ length: dataPoints }, (_, i) => ({
-        timestamp: new Date(
-          startTime.getTime() + i * intervalMinutes * 60 * 1000
-        ).toISOString(),
-        value: 0,
-      })),
-    };
+    // Calculate latency metrics from audit log metadata durationMs field.
+    // Logs that carry a numeric durationMs in their metadata represent timed
+    // API/orchestrator operations and are used to compute per-bucket percentiles.
+    const auditLogsWithDuration = auditLogs.filter(log => {
+      const meta = log.metadata as Record<string, unknown> | null;
+      return meta && typeof meta['durationMs'] === 'number';
+    });
 
-    // TODO: Implement actual latency tracking in audit logs
-    // Extract response times from audit log metadata and calculate percentiles
+    const intervalMs = intervalMinutes * 60 * 1000;
+
+    /**
+     * Build a per-bucket array of durationMs values, then apply a percentile
+     * extractor to produce a TimeSeriesMetric array.
+     */
+    function buildLatencyTimeSeries(p: number): TimeSeriesMetric[] {
+      // Pre-allocate bucket arrays
+      const bucketValues: Map<number, number[]> = new Map();
+      for (let i = 0; i < dataPoints; i++) {
+        bucketValues.set(startTime.getTime() + i * intervalMs, []);
+      }
+
+      for (const log of auditLogsWithDuration) {
+        const meta = log.metadata as Record<string, unknown>;
+        const duration = meta['durationMs'] as number;
+        const itemTime = log.createdAt.getTime();
+        const bucketIndex = Math.floor(
+          (itemTime - startTime.getTime()) / intervalMs
+        );
+        const bucketTime = startTime.getTime() + bucketIndex * intervalMs;
+        const bucket = bucketValues.get(bucketTime);
+        if (bucket !== undefined) {
+          bucket.push(duration);
+        }
+      }
+
+      return Array.from(bucketValues.entries())
+        .map(([timestamp, values]) => ({
+          timestamp: new Date(timestamp).toISOString(),
+          value: percentile(values, p),
+        }))
+        .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+    }
+
+    const latency: LatencyMetrics = {
+      p50: buildLatencyTimeSeries(50),
+      p95: buildLatencyTimeSeries(95),
+      p99: buildLatencyTimeSeries(99),
+    };
 
     const metricsData: MetricsChartData = {
       sessions,

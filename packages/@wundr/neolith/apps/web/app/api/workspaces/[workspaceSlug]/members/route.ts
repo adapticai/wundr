@@ -167,7 +167,22 @@ export async function GET(
       take: limit,
     });
 
+    // Map members to the shape expected by the useMembers hook
+    const mappedMembers = members.map(m => ({
+      id: m.id,
+      name: m.user.name,
+      email: m.user.email,
+      image: m.user.avatarUrl,
+      role: { id: m.role, name: m.role },
+      roleId: m.role,
+      status: 'active' as const,
+      joinedAt: m.joinedAt,
+    }));
+
     return NextResponse.json({
+      members: mappedMembers,
+      total: totalCount,
+      hasMore: offset + limit < totalCount,
       data: members,
       pagination: {
         limit,

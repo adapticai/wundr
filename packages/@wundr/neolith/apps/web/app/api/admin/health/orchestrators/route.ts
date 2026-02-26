@@ -144,32 +144,48 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Fetch token usage and error counts for each orchestrator
     const orchestratorIds = orchestrators.map(o => o.id);
 
-    const [tokenUsageByOrchestrator, errorCountsByOrchestrator] =
-      await Promise.all([
-        // Get hourly token usage for each orchestrator
-        prisma.tokenUsage.groupBy({
-          by: ['orchestratorId'],
-          where: {
-            orchestratorId: { in: orchestratorIds },
-            createdAt: { gte: oneHourAgo },
-          },
-          _sum: {
-            totalTokens: true,
-          },
-        }),
+    const [
+      tokenUsageByOrchestrator,
+      errorCountsByOrchestrator,
+      responseTimeAuditLogs,
+    ] = await Promise.all([
+      // Get hourly token usage for each orchestrator
+      prisma.tokenUsage.groupBy({
+        by: ['orchestratorId'],
+        where: {
+          orchestratorId: { in: orchestratorIds },
+          createdAt: { gte: oneHourAgo },
+        },
+        _sum: {
+          totalTokens: true,
+        },
+      }),
 
-        // Get error counts from audit logs
-        prisma.auditLog.groupBy({
-          by: ['actorId'],
-          where: {
-            actorId: { in: orchestratorIds },
-            actorType: 'orchestrator',
-            severity: { in: ['error', 'critical'] },
-            createdAt: { gte: oneDayAgo },
-          },
-          _count: true,
-        }),
-      ]);
+      // Get error counts from audit logs
+      prisma.auditLog.groupBy({
+        by: ['actorId'],
+        where: {
+          actorId: { in: orchestratorIds },
+          actorType: 'orchestrator',
+          severity: { in: ['error', 'critical'] },
+          createdAt: { gte: oneDayAgo },
+        },
+        _count: true,
+      }),
+
+      // Get recent audit logs with durationMs metadata for response time calculation
+      prisma.auditLog.findMany({
+        where: {
+          actorId: { in: orchestratorIds },
+          actorType: 'orchestrator',
+          createdAt: { gte: oneHourAgo },
+        },
+        select: {
+          actorId: true,
+          metadata: true,
+        },
+      }),
+    ]);
 
     // Create lookup maps
     const tokenUsageMap = new Map(
@@ -181,6 +197,33 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const errorCountMap = new Map(
       errorCountsByOrchestrator.map(e => [e.actorId, e._count])
+    );
+
+    // Build per-orchestrator average response time from audit log durationMs metadata
+    const responseTimeSumMap = new Map<
+      string,
+      { total: number; count: number }
+    >();
+    for (const log of responseTimeAuditLogs) {
+      const meta = log.metadata as Record<string, unknown> | null;
+      if (meta && typeof meta['durationMs'] === 'number') {
+        const existing = responseTimeSumMap.get(log.actorId);
+        if (existing) {
+          existing.total += meta['durationMs'] as number;
+          existing.count += 1;
+        } else {
+          responseTimeSumMap.set(log.actorId, {
+            total: meta['durationMs'] as number,
+            count: 1,
+          });
+        }
+      }
+    }
+
+    const responseTimeMap = new Map<string, number>(
+      Array.from(responseTimeSumMap.entries()).map(
+        ([actorId, { total, count }]) => [actorId, Math.round(total / count)]
+      )
     );
 
     // Transform to health status objects
@@ -229,7 +272,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             percent: Math.round(tokenPercent * 100) / 100,
           },
           lastActivity: orchestrator.updatedAt.toISOString(),
-          responseTime: 0, // TODO: Implement actual response time tracking
+          responseTime: responseTimeMap.get(orchestrator.id) ?? 0,
           errorCount: errorCountMap.get(orchestrator.id) || 0,
         };
       }

@@ -88,7 +88,6 @@ function createMockMessageStream(
       };
     },
     async finalMessage() {
-      resolved = true;
       if (options?.finalMessageError) {
         throw options.finalMessageError;
       }
