@@ -2,6 +2,7 @@
 
 import {
   Activity,
+  BarChart3,
   Bell,
   Bot,
   ChevronLeft,
@@ -202,6 +203,13 @@ export function AdminLayoutClient({
       href: `/${workspaceSlug}/admin/ai`,
       icon: <Sparkles className='h-4 w-4' />,
       description: 'Configure AI behaviour and models',
+      section: 'ai-organization',
+    },
+    {
+      title: 'Performance',
+      href: `/${workspaceSlug}/admin/performance`,
+      icon: <BarChart3 className='h-4 w-4' />,
+      description: 'Monitor system performance metrics',
       section: 'ai-organization',
     },
     {
