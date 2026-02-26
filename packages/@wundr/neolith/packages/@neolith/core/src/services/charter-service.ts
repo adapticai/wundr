@@ -1,41 +1,58 @@
 /**
  * @neolith/core - Charter Service
  *
- * Service layer for charter versioning management. Provides CRUD operations
- * for charter versions, version comparison, rollback capability, and active
- * version management.
+ * Service layer for organizational charter management. Provides CRUD operations
+ * for charters including versioning, active charter management, history tracking,
+ * and validation.
  *
  * @packageDocumentation
  */
 
 import { prisma } from '@neolith/database';
 
-import { GenesisError, OrchestratorNotFoundError } from '../errors';
+import { GenesisError } from '../errors';
 
-import type {
-  CharterDiff,
-  CharterVersion,
-  CreateCharterVersionInput,
-  GovernanceCharter,
-} from '../types/charter';
 import type { PrismaClient } from '@neolith/database';
+
+// =============================================================================
+// Charter Model Type
+// =============================================================================
+
+/**
+ * Charter record type matching the Prisma schema charter model.
+ * Defined locally until the @neolith/database package re-exports this type
+ * after prisma generate reflects the charter model.
+ */
+export interface Charter {
+  id: string;
+  name: string;
+  mission: string;
+  vision: string | null;
+  values: string[];
+  principles: string[];
+  governance: Record<string, unknown>;
+  security: Record<string, unknown>;
+  communication: Record<string, unknown>;
+  isActive: boolean;
+  version: number;
+  parentCharterId: string | null;
+  organizationId: string;
+  createdById: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // =============================================================================
 // Custom Errors
 // =============================================================================
 
 /**
- * Error thrown when a charter version is not found.
+ * Error thrown when a charter is not found.
  */
-export class CharterVersionNotFoundError extends GenesisError {
-  constructor(identifier: string, identifierType: 'id' | 'version' = 'id') {
-    super(
-      `Charter version not found with ${identifierType}: ${identifier}`,
-      'CHARTER_VERSION_NOT_FOUND',
-      404,
-      { identifier, identifierType }
-    );
-    this.name = 'CharterVersionNotFoundError';
+export class CharterNotFoundError extends GenesisError {
+  constructor(id: string) {
+    super(`Charter not found: ${id}`, 'CHARTER_NOT_FOUND', 404, { id });
+    this.name = 'CharterNotFoundError';
   }
 }
 
@@ -43,9 +60,9 @@ export class CharterVersionNotFoundError extends GenesisError {
  * Error thrown when charter validation fails.
  */
 export class CharterValidationError extends GenesisError {
-  public readonly errors: Record<string, string[]>;
+  public readonly errors: string[];
 
-  constructor(message: string, errors: Record<string, string[]>) {
+  constructor(message: string, errors: string[]) {
     super(message, 'CHARTER_VALIDATION_ERROR', 400, { errors });
     this.name = 'CharterValidationError';
     this.errors = errors;
@@ -63,85 +80,107 @@ export class CharterOperationError extends GenesisError {
 }
 
 // =============================================================================
+// Input Types
+// =============================================================================
+
+export interface CreateCharterInput {
+  name: string;
+  mission: string;
+  vision?: string;
+  values: string[];
+  principles?: string[];
+  governance?: Record<string, unknown>;
+  security?: Record<string, unknown>;
+  communication?: Record<string, unknown>;
+  organizationId: string;
+  parentCharterId?: string;
+  createdById?: string;
+}
+
+export interface UpdateCharterInput {
+  name?: string;
+  mission?: string;
+  vision?: string;
+  values?: string[];
+  principles?: string[];
+  governance?: Record<string, unknown>;
+  security?: Record<string, unknown>;
+  communication?: Record<string, unknown>;
+}
+
+export interface CharterValidationResult {
+  valid: boolean;
+  errors: string[];
+}
+
+// =============================================================================
 // Service Interface
 // =============================================================================
 
 /**
- * Interface for charter versioning operations.
+ * Interface for charter management operations.
  */
 export interface CharterService {
   /**
-   * Creates a new charter version.
+   * Creates a new charter for an organization, deactivating any existing active charter.
    *
-   * @param input - Charter version creation input
-   * @returns The created charter version
-   * @throws {OrchestratorNotFoundError} If the orchestrator doesn't exist
-   * @throws {CharterValidationError} If validation fails
+   * @param data - Charter creation input
+   * @returns The created charter
    */
-  createCharterVersion(
-    input: CreateCharterVersionInput
-  ): Promise<CharterVersion>;
+  createCharter(data: CreateCharterInput): Promise<Charter>;
 
   /**
-   * Gets a specific charter version by ID.
+   * Updates a charter by creating a new versioned copy and deactivating the current version.
    *
-   * @param id - The charter version ID
-   * @returns The charter version, or null if not found
+   * @param id - The charter ID
+   * @param data - Update data
+   * @returns The new charter version
+   * @throws {CharterNotFoundError} If the charter doesn't exist
    */
-  getCharterVersion(id: string): Promise<CharterVersion | null>;
+  updateCharter(id: string, data: UpdateCharterInput): Promise<Charter>;
 
   /**
-   * Lists all charter versions for an orchestrator.
+   * Gets a charter by ID.
    *
-   * @param orchestratorId - The orchestrator ID
-   * @param charterId - The charter ID (optional, filters to specific charter)
-   * @returns Array of charter versions, ordered by version descending
+   * @param id - The charter ID
+   * @returns The charter with organization info, or null if not found
    */
-  listCharterVersions(
-    orchestratorId: string,
-    charterId?: string
-  ): Promise<CharterVersion[]>;
+  getCharter(id: string): Promise<Charter | null>;
 
   /**
-   * Gets the currently active charter for an orchestrator.
+   * Gets the currently active charter for an organization.
    *
-   * @param orchestratorId - The orchestrator ID
-   * @returns The active charter version, or null if none active
+   * @param organizationId - The organization ID
+   * @returns The active charter, or null if none active
    */
-  getActiveCharter(orchestratorId: string): Promise<CharterVersion | null>;
+  getActiveCharter(organizationId: string): Promise<Charter | null>;
 
   /**
-   * Activates a charter version (deactivates all other versions).
+   * Gets the full version history of charters for an organization.
    *
-   * @param id - The charter version ID to activate
-   * @throws {CharterVersionNotFoundError} If the version doesn't exist
+   * @param organizationId - The organization ID
+   * @returns Array of charters ordered by version descending
    */
-  activateCharterVersion(id: string): Promise<CharterVersion>;
+  getCharterHistory(organizationId: string): Promise<Charter[]>;
 
   /**
-   * Rolls back to a specific charter version.
+   * Deletes a charter.
    *
-   * @param orchestratorId - The orchestrator ID
-   * @param charterId - The charter ID
-   * @param version - The version number to roll back to
-   * @returns The activated charter version
-   * @throws {CharterVersionNotFoundError} If the version doesn't exist
+   * @param id - The charter ID
+   * @throws {CharterNotFoundError} If the charter doesn't exist
    */
-  rollbackToVersion(
-    orchestratorId: string,
-    charterId: string,
-    version: number
-  ): Promise<CharterVersion>;
+  deleteCharter(id: string): Promise<void>;
 
   /**
-   * Compares two charter versions and generates a diff.
+   * Validates charter data for completeness and correctness.
    *
-   * @param v1Id - The first charter version ID
-   * @param v2Id - The second charter version ID
-   * @returns Array of differences between the versions
-   * @throws {CharterVersionNotFoundError} If either version doesn't exist
+   * @param data - Partial charter data to validate
+   * @returns Validation result with errors if any
    */
-  compareVersions(v1Id: string, v2Id: string): Promise<CharterDiff[]>;
+  validateCharter(data: {
+    mission?: string;
+    values?: string[];
+  }): CharterValidationResult;
 }
 
 // =============================================================================
@@ -151,30 +190,8 @@ export interface CharterService {
 /**
  * Charter service implementation.
  *
- * Manages charter versioning with CRUD operations, version comparison,
- * rollback capability, and active version management.
- *
- * NOTE: This service assumes a CharterVersion table exists in the database.
- * The table should be added via Prisma migration with the following structure:
- *
- * model charterVersion {
- *   id             String   @id @default(cuid())
- *   charterId      String   @map("charter_id")
- *   orchestratorId String   @map("orchestrator_id")
- *   version        Int
- *   charterData    Json     @map("charter_data")
- *   changeLog      String?  @map("change_log") @db.Text
- *   createdBy      String   @map("created_by")
- *   createdAt      DateTime @default(now()) @map("created_at")
- *   isActive       Boolean  @default(false) @map("is_active")
- *   orchestrator   orchestrator @relation(fields: [orchestratorId], references: [id], onDelete: Cascade)
- *
- *   @@unique([charterId, version])
- *   @@index([orchestratorId])
- *   @@index([charterId])
- *   @@index([isActive])
- *   @@map("charter_versions")
- * }
+ * Manages organizational charters with CRUD operations, version tracking,
+ * and active charter management.
  */
 export class CharterServiceImpl implements CharterService {
   private readonly db: PrismaClient;
@@ -188,490 +205,153 @@ export class CharterServiceImpl implements CharterService {
     this.db = database ?? prisma;
   }
 
-  // ===========================================================================
-  // Charter Version CRUD Operations
-  // ===========================================================================
-
-  /**
-   * Creates a new charter version.
-   */
-  async createCharterVersion(
-    input: CreateCharterVersionInput
-  ): Promise<CharterVersion> {
-    // Validate input
-    this.validateCreateInput(input);
-
-    // Verify orchestrator exists
-    const orchestrator = await this.db.orchestrator.findUnique({
-      where: { id: input.orchestratorId },
-    });
-
-    if (!orchestrator) {
-      throw new OrchestratorNotFoundError(input.orchestratorId);
-    }
-
-    // Get the latest version number for this charter
-    const latestVersion = await this.getLatestVersionNumber(
-      input.orchestratorId,
-      input.charterId
-    );
-    const newVersionNumber = latestVersion + 1;
-
-    // Build complete charter data
-    const charterData: GovernanceCharter = {
-      ...input.charterData,
-      id: input.charterId,
-      tier: 1,
-      version: newVersionNumber,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    // TODO: Once CharterVersion table is added to schema, use this implementation:
-    // const charterVersion = await this.db.charterVersion.create({
-    //   data: {
-    //     charterId: input.charterId,
-    //     orchestratorId: input.orchestratorId,
-    //     version: newVersionNumber,
-    //     charterData: charterData as unknown as Prisma.InputJsonValue,
-    //     changeLog: input.changeLog,
-    //     createdBy: 'system', // TODO: Get from auth context
-    //     isActive: false,
-    //   },
-    // });
-
-    // Temporary implementation: Store in orchestrator config
-    // This will be replaced once the CharterVersion table is added
-    const user = await this.db.user.findUnique({
-      where: { id: orchestrator.userId },
-    });
-
-    if (!user) {
-      throw new CharterOperationError('Associated user not found');
-    }
-
-    // For now, return a mock charter version
-    // This will be replaced with actual database queries once the table is added
-    return {
-      id: `cv_${Date.now()}`,
-      charterId: input.charterId,
-      orchestratorId: input.orchestratorId,
-      version: newVersionNumber,
-      charterData,
-      changeLog: input.changeLog,
-      createdBy: 'system',
-      createdAt: new Date(),
-      isActive: false,
-    };
-  }
-
-  /**
-   * Gets a specific charter version by ID.
-   */
-  async getCharterVersion(_id: string): Promise<CharterVersion | null> {
-    // TODO: Once CharterVersion table is added to schema, use this implementation:
-    // const charterVersion = await this.db.charterVersion.findUnique({
-    //   where: { id },
-    // });
-    //
-    // if (!charterVersion) {
-    //   return null;
-    // }
-    //
-    // return {
-    //   id: charterVersion.id,
-    //   charterId: charterVersion.charterId,
-    //   orchestratorId: charterVersion.orchestratorId,
-    //   version: charterVersion.version,
-    //   charterData: charterVersion.charterData as GovernanceCharter,
-    //   changeLog: charterVersion.changeLog ?? undefined,
-    //   createdBy: charterVersion.createdBy,
-    //   createdAt: charterVersion.createdAt,
-    //   isActive: charterVersion.isActive,
-    // };
-
-    // Temporary implementation
-    return null;
-  }
-
-  /**
-   * Lists all charter versions for an orchestrator.
-   */
-  async listCharterVersions(
-    orchestratorId: string,
-    _charterId?: string
-  ): Promise<CharterVersion[]> {
-    // Verify orchestrator exists
-    const orchestrator = await this.db.orchestrator.findUnique({
-      where: { id: orchestratorId },
-    });
-
-    if (!orchestrator) {
-      throw new OrchestratorNotFoundError(orchestratorId);
-    }
-
-    // TODO: Once CharterVersion table is added to schema, use this implementation:
-    // const where: Prisma.charterVersionWhereInput = {
-    //   orchestratorId,
-    // };
-    //
-    // if (charterId) {
-    //   where.charterId = charterId;
-    // }
-    //
-    // const versions = await this.db.charterVersion.findMany({
-    //   where,
-    //   orderBy: { version: 'desc' },
-    // });
-    //
-    // return versions.map((v) => ({
-    //   id: v.id,
-    //   charterId: v.charterId,
-    //   orchestratorId: v.orchestratorId,
-    //   version: v.version,
-    //   charterData: v.charterData as GovernanceCharter,
-    //   changeLog: v.changeLog ?? undefined,
-    //   createdBy: v.createdBy,
-    //   createdAt: v.createdAt,
-    //   isActive: v.isActive,
-    // }));
-
-    // Temporary implementation
-    return [];
-  }
-
-  /**
-   * Gets the currently active charter for an orchestrator.
-   */
-  async getActiveCharter(
-    orchestratorId: string
-  ): Promise<CharterVersion | null> {
-    // Verify orchestrator exists
-    const orchestrator = await this.db.orchestrator.findUnique({
-      where: { id: orchestratorId },
-    });
-
-    if (!orchestrator) {
-      throw new OrchestratorNotFoundError(orchestratorId);
-    }
-
-    // TODO: Once CharterVersion table is added to schema, use this implementation:
-    // const activeVersion = await this.db.charterVersion.findFirst({
-    //   where: {
-    //     orchestratorId,
-    //     isActive: true,
-    //   },
-    // });
-    //
-    // if (!activeVersion) {
-    //   return null;
-    // }
-    //
-    // return {
-    //   id: activeVersion.id,
-    //   charterId: activeVersion.charterId,
-    //   orchestratorId: activeVersion.orchestratorId,
-    //   version: activeVersion.version,
-    //   charterData: activeVersion.charterData as GovernanceCharter,
-    //   changeLog: activeVersion.changeLog ?? undefined,
-    //   createdBy: activeVersion.createdBy,
-    //   createdAt: activeVersion.createdAt,
-    //   isActive: activeVersion.isActive,
-    // };
-
-    // Temporary implementation
-    return null;
-  }
-
-  /**
-   * Activates a charter version (deactivates all other versions).
-   */
-  async activateCharterVersion(id: string): Promise<CharterVersion> {
-    // TODO: Once CharterVersion table is added to schema, use this implementation:
-    // const charterVersion = await this.db.charterVersion.findUnique({
-    //   where: { id },
-    // });
-    //
-    // if (!charterVersion) {
-    //   throw new CharterVersionNotFoundError(id);
-    // }
-    //
-    // // Deactivate all other versions for this orchestrator
-    // await this.db.charterVersion.updateMany({
-    //   where: {
-    //     orchestratorId: charterVersion.orchestratorId,
-    //     isActive: true,
-    //   },
-    //   data: { isActive: false },
-    // });
-    //
-    // // Activate this version
-    // const activated = await this.db.charterVersion.update({
-    //   where: { id },
-    //   data: { isActive: true },
-    // });
-    //
-    // return {
-    //   id: activated.id,
-    //   charterId: activated.charterId,
-    //   orchestratorId: activated.orchestratorId,
-    //   version: activated.version,
-    //   charterData: activated.charterData as GovernanceCharter,
-    //   changeLog: activated.changeLog ?? undefined,
-    //   createdBy: activated.createdBy,
-    //   createdAt: activated.createdAt,
-    //   isActive: activated.isActive,
-    // };
-
-    throw new CharterVersionNotFoundError(id);
-  }
-
-  /**
-   * Rolls back to a specific charter version.
-   */
-  async rollbackToVersion(
-    _orchestratorId: string,
-    _charterId: string,
-    version: number
-  ): Promise<CharterVersion> {
-    // Verify orchestrator exists
-    const orchestrator = await this.db.orchestrator.findUnique({
-      where: { id: _orchestratorId },
-    });
-
-    if (!orchestrator) {
-      throw new OrchestratorNotFoundError(_orchestratorId);
-    }
-
-    // TODO: Once CharterVersion table is added to schema, use this implementation:
-    // const targetVersion = await this.db.charterVersion.findFirst({
-    //   where: {
-    //     orchestratorId,
-    //     charterId,
-    //     version,
-    //   },
-    // });
-    //
-    // if (!targetVersion) {
-    //   throw new CharterVersionNotFoundError(version.toString(), 'version');
-    // }
-    //
-    // // Activate the target version
-    // return this.activateCharterVersion(targetVersion.id);
-
-    throw new CharterVersionNotFoundError(version.toString(), 'version');
-  }
-
-  /**
-   * Compares two charter versions and generates a diff.
-   */
-  async compareVersions(v1Id: string, v2Id: string): Promise<CharterDiff[]> {
-    const v1 = await this.getCharterVersion(v1Id);
-    const v2 = await this.getCharterVersion(v2Id);
-
-    if (!v1) {
-      throw new CharterVersionNotFoundError(v1Id);
-    }
-
-    if (!v2) {
-      throw new CharterVersionNotFoundError(v2Id);
-    }
-
-    return this.generateDiff(v1.charterData, v2.charterData);
+  // Accessor for the charter model delegate.
+  // Uses 'as any' because the @neolith/database dist types predate the
+  // charter model addition to the Prisma schema. Remove once prisma generate
+  // is run and the database package is rebuilt.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private get charterDelegate(): any {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (this.db as any).charter;
   }
 
   // ===========================================================================
-  // Private Helper Methods
+  // Charter CRUD Operations
   // ===========================================================================
 
   /**
-   * Gets the latest version number for a charter.
+   * Creates a new charter for an organization.
+   * Deactivates any existing active charter before creating the new one.
    */
-  private async getLatestVersionNumber(
-    _orchestratorId: string,
-    _charterId: string
-  ): Promise<number> {
-    // TODO: Once CharterVersion table is added to schema, use this implementation:
-    // const latestVersion = await this.db.charterVersion.findFirst({
-    //   where: {
-    //     orchestratorId,
-    //     charterId,
-    //   },
-    //   orderBy: { version: 'desc' },
-    //   select: { version: true },
-    // });
-    //
-    // return latestVersion?.version ?? 0;
+  async createCharter(data: CreateCharterInput): Promise<Charter> {
+    // Deactivate any existing active charter for this org
+    await this.charterDelegate.updateMany({
+      where: { organizationId: data.organizationId, isActive: true },
+      data: { isActive: false },
+    });
 
-    // Temporary implementation
-    return 0;
+    return this.charterDelegate.create({
+      data: {
+        name: data.name,
+        mission: data.mission,
+        vision: data.vision,
+        values: data.values,
+        principles: data.principles ?? [],
+        governance: data.governance ?? {},
+        security: data.security ?? {},
+        communication: data.communication ?? {},
+        organizationId: data.organizationId,
+        parentCharterId: data.parentCharterId,
+        createdById: data.createdById,
+        isActive: true,
+        version: 1,
+      },
+    });
   }
 
   /**
-   * Generates a diff between two charter objects.
+   * Updates a charter by creating a new versioned copy.
+   * Deactivates the current version and creates a new one with incremented version number.
    */
-  private generateDiff(
-    oldCharter: GovernanceCharter,
-    newCharter: GovernanceCharter
-  ): CharterDiff[] {
-    const diffs: CharterDiff[] = [];
-
-    // Compare top-level fields
-    const fields = [
-      'coreDirective',
-      'capabilities',
-      'mcpTools',
-      'resourceLimits',
-      'objectives',
-      'constraints',
-      'disciplineIds',
-    ] as const;
-
-    for (const field of fields) {
-      const oldValue = oldCharter[field];
-      const newValue = newCharter[field];
-
-      if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
-        diffs.push({
-          field,
-          oldValue,
-          newValue,
-          changeType: 'modified',
-        });
-      }
+  async updateCharter(id: string, data: UpdateCharterInput): Promise<Charter> {
+    const existing = await this.charterDelegate.findUnique({ where: { id } });
+    if (!existing) {
+      throw new CharterNotFoundError(id);
     }
 
-    // Compare identity fields
-    const identityFields = [
-      'name',
-      'slug',
-      'persona',
-      'slackHandle',
-      'email',
-      'avatarUrl',
-    ] as const;
+    // Deactivate current version
+    await this.charterDelegate.update({
+      where: { id },
+      data: { isActive: false },
+    });
 
-    for (const field of identityFields) {
-      const oldValue = oldCharter.identity[field];
-      const newValue = newCharter.identity[field];
-
-      if (oldValue !== newValue) {
-        diffs.push({
-          field: `identity.${field}`,
-          oldValue,
-          newValue,
-          changeType: 'modified',
-        });
-      }
-    }
-
-    // Deep compare capabilities
-    const oldCapabilities = new Map(
-      oldCharter.capabilities.map((c: { id: string }) => [c.id, c])
-    );
-    const newCapabilities = new Map(
-      newCharter.capabilities.map((c: { id: string }) => [c.id, c])
-    );
-
-    // Check for added capabilities
-    for (const [id, capability] of newCapabilities) {
-      if (!oldCapabilities.has(id)) {
-        diffs.push({
-          field: `capabilities.${id}`,
-          oldValue: null,
-          newValue: capability,
-          changeType: 'added',
-        });
-      }
-    }
-
-    // Check for removed capabilities
-    for (const [id, capability] of oldCapabilities) {
-      if (!newCapabilities.has(id)) {
-        diffs.push({
-          field: `capabilities.${id}`,
-          oldValue: capability,
-          newValue: null,
-          changeType: 'removed',
-        });
-      }
-    }
-
-    // Check for modified capabilities
-    for (const [id, newCap] of newCapabilities) {
-      const oldCap = oldCapabilities.get(id);
-      if (oldCap && JSON.stringify(oldCap) !== JSON.stringify(newCap)) {
-        diffs.push({
-          field: `capabilities.${id}`,
-          oldValue: oldCap,
-          newValue: newCap,
-          changeType: 'modified',
-        });
-      }
-    }
-
-    return diffs;
+    // Create new version
+    return this.charterDelegate.create({
+      data: {
+        name: data.name ?? existing.name,
+        mission: data.mission ?? existing.mission,
+        vision: data.vision ?? existing.vision,
+        values: data.values ?? existing.values,
+        principles: data.principles ?? existing.principles,
+        governance:
+          data.governance ??
+          (existing.governance as Record<string, unknown>),
+        security:
+          data.security ?? (existing.security as Record<string, unknown>),
+        communication:
+          data.communication ??
+          (existing.communication as Record<string, unknown>),
+        organizationId: existing.organizationId,
+        parentCharterId: existing.parentCharterId,
+        createdById: existing.createdById,
+        isActive: true,
+        version: existing.version + 1,
+      },
+    });
   }
 
   /**
-   * Validates create charter version input.
+   * Gets a charter by ID with organization info.
    */
-  private validateCreateInput(input: CreateCharterVersionInput): void {
-    const errors: Record<string, string[]> = {};
+  async getCharter(id: string): Promise<Charter | null> {
+    return this.charterDelegate.findUnique({
+      where: { id },
+      include: {
+        organization: { select: { id: true, name: true, slug: true } },
+      },
+    });
+  }
 
-    if (!input.orchestratorId) {
-      errors.orchestratorId = ['Orchestrator ID is required'];
+  /**
+   * Gets the currently active charter for an organization.
+   */
+  async getActiveCharter(organizationId: string): Promise<Charter | null> {
+    return this.charterDelegate.findFirst({
+      where: { organizationId, isActive: true },
+      orderBy: { version: 'desc' },
+    });
+  }
+
+  /**
+   * Gets the full version history of charters for an organization.
+   */
+  async getCharterHistory(organizationId: string): Promise<Charter[]> {
+    return this.charterDelegate.findMany({
+      where: { organizationId },
+      orderBy: { version: 'desc' },
+    });
+  }
+
+  /**
+   * Deletes a charter.
+   */
+  async deleteCharter(id: string): Promise<void> {
+    const existing = await this.charterDelegate.findUnique({ where: { id } });
+    if (!existing) {
+      throw new CharterNotFoundError(id);
     }
 
-    if (!input.charterId) {
-      errors.charterId = ['Charter ID is required'];
+    await this.charterDelegate.delete({ where: { id } });
+  }
+
+  /**
+   * Validates charter data for completeness and correctness.
+   */
+  validateCharter(data: {
+    mission?: string;
+    values?: string[];
+  }): CharterValidationResult {
+    const errors: string[] = [];
+
+    if (!data.mission || data.mission.length < 10) {
+      errors.push('Mission must be at least 10 characters');
     }
 
-    if (!input.charterData) {
-      errors.charterData = ['Charter data is required'];
-    } else {
-      // Validate charter data structure
-      if (!input.charterData.identity) {
-        errors['charterData.identity'] = ['Identity is required'];
-      } else {
-        if (!input.charterData.identity.name) {
-          errors['charterData.identity.name'] = ['Name is required'];
-        }
-        if (!input.charterData.identity.slug) {
-          errors['charterData.identity.slug'] = ['Slug is required'];
-        }
-        if (!input.charterData.identity.persona) {
-          errors['charterData.identity.persona'] = ['Persona is required'];
-        }
-      }
-
-      if (!input.charterData.coreDirective) {
-        errors['charterData.coreDirective'] = ['Core directive is required'];
-      }
-
-      if (!input.charterData.capabilities) {
-        errors['charterData.capabilities'] = ['Capabilities are required'];
-      }
-
-      if (!input.charterData.resourceLimits) {
-        errors['charterData.resourceLimits'] = ['Resource limits are required'];
-      }
-
-      if (!input.charterData.objectives) {
-        errors['charterData.objectives'] = ['Objectives are required'];
-      }
-
-      if (!input.charterData.constraints) {
-        errors['charterData.constraints'] = ['Constraints are required'];
-      }
+    if (!data.values || data.values.length < 1) {
+      errors.push('At least one value is required');
     }
 
-    if (Object.keys(errors).length > 0) {
-      throw new CharterValidationError(
-        'Charter version validation failed',
-        errors
-      );
-    }
+    return { valid: errors.length === 0, errors };
   }
 }
 
@@ -689,28 +369,19 @@ export class CharterServiceImpl implements CharterService {
  * ```typescript
  * const charterService = createCharterService();
  *
- * // Create a new charter version
- * const version = await charterService.createCharterVersion({
- *   orchestratorId: 'orch_123',
- *   charterId: 'charter_456',
- *   charterData: {
- *     identity: { name: 'Backend VP', slug: 'backend-vp', persona: 'Expert backend engineer' },
- *     coreDirective: 'Manage backend systems and APIs',
- *     capabilities: [],
- *     mcpTools: [],
- *     resourceLimits: DEFAULT_RESOURCE_LIMITS,
- *     objectives: DEFAULT_OBJECTIVES,
- *     constraints: DEFAULT_CONSTRAINTS,
- *     disciplineIds: [],
- *   },
- *   changeLog: 'Initial charter version',
+ * // Create a new charter
+ * const charter = await charterService.createCharter({
+ *   name: 'Engineering Charter',
+ *   mission: 'Build reliable, scalable systems that power the platform.',
+ *   values: ['quality', 'collaboration', 'ownership'],
+ *   organizationId: 'org_123',
  * });
  *
- * // Activate a charter version
- * await charterService.activateCharterVersion(version.id);
+ * // Get active charter
+ * const active = await charterService.getActiveCharter('org_123');
  *
- * // Compare two versions
- * const diffs = await charterService.compareVersions(v1Id, v2Id);
+ * // View history
+ * const history = await charterService.getCharterHistory('org_123');
  * ```
  */
 export function createCharterService(

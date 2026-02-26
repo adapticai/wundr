@@ -307,10 +307,39 @@ model organization {
   disciplines         discipline[]
   organizationMembers organizationMember[]
   orchestrators       orchestrator[] // Orchestrators in this organization
+  charters            charter[]
   workspaces          workspace[]
 
   @@index([slug])
   @@map("organizations")
+}
+
+/// Charter - Organizational charter defining mission, vision, values and governance
+model charter {
+  id              String        @id @default(cuid())
+  name            String
+  mission         String        @db.Text
+  vision          String?       @db.Text
+  values          String[]      @default([])
+  principles      String[]      @default([])
+  governance      Json          @default("{}")
+  security        Json          @default("{}")
+  communication   Json          @default("{}")
+  isActive        Boolean       @default(true) @map("is_active")
+  version         Int           @default(1)
+  parentCharterId String?       @map("parent_charter_id")
+  organizationId  String        @map("organization_id")
+  createdById     String?       @map("created_by_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  organization    organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  parentCharter   charter?      @relation("charterHierarchy", fields: [parentCharterId], references: [id])
+  childCharters   charter[]     @relation("charterHierarchy")
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@index([parentCharterId])
+  @@map("charters")
 }
 
 model pushSubscription {
@@ -435,6 +464,7 @@ model user {
   tasksAssignedTo        task[]               @relation("taskAssignedTo")
   tasksCreatedBy         task[]               @relation("taskCreatedBy")
   orchestrator           orchestrator? // Associated Orchestrator profile (if user is an Orchestrator)
+  agentIdentity          agentIdentity?
   workspaceMembers       workspaceMember[]
   webhooks                webhook[]
   savedItems              savedItem[]
@@ -447,6 +477,33 @@ model user {
   @@index([email])
   @@index([status])
   @@map("users")
+}
+
+/// AgentIdentity - External identity provisioning for orchestrator agents
+model agentIdentity {
+  id                    String   @id @default(cuid())
+  userId                String   @unique @map("user_id")
+  corporateEmail        String?  @unique @map("corporate_email")
+  emailDomain           String?  @map("email_domain")
+  emailVerified         Boolean  @default(false) @map("email_verified")
+  phoneNumber           String?  @unique @map("phone_number")
+  twilioPhoneSid        String?  @map("twilio_phone_sid")
+  whatsappNumber        String?  @map("whatsapp_number")
+  whatsappEnabled       Boolean  @default(false) @map("whatsapp_enabled")
+  voiceEnabled          Boolean  @default(false) @map("voice_enabled")
+  smsEnabled            Boolean  @default(false) @map("sms_enabled")
+  communicationChannels String[] @default([]) @map("communication_channels")
+  externalIdentifiers   Json     @default("{}") @map("external_identifiers")
+  credentials           Json     @default("{}")
+  provisioningStatus    String   @default("pending") @map("provisioning_status")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  user                  user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([corporateEmail])
+  @@index([phoneNumber])
+  @@index([provisioningStatus])
+  @@map("agent_identities")
 }
 
 model verificationToken {
@@ -1171,6 +1228,13 @@ model sessionManager {
 
   // Worktree configuration for Claude Code sessions
   worktreeConfig Json? @map("worktree_config") // Git worktree settings
+
+  // Plugin and skill configuration
+  pluginConfigs    Json     @default("[]") @map("plugin_configs")
+  skillDefinitions Json     @default("[]") @map("skill_definitions")
+  contextConfig    Json     @default("{}") @map("context_config")
+  mcpTools         String[] @default([]) @map("mcp_tools")
+  config           Json     @default("{}")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

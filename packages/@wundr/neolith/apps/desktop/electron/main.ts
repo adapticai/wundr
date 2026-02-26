@@ -28,6 +28,8 @@ interface NeolithConfig {
   theme: 'light' | 'dark' | 'system';
   autoUpdate: boolean;
   lastOpenedOrg?: string;
+  userType?: 'human' | 'orchestrator';
+  daemonEndpoint?: string;
 }
 
 // Store for persistent configuration
@@ -619,6 +621,42 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle('window:isMaximized', () => {
     return mainWindow?.isMaximized();
+  });
+
+  // User type management
+  ipcMain.handle('get-user-type', async () => {
+    return store.get('userType', null);
+  });
+
+  ipcMain.handle(
+    'set-user-type',
+    async (_event: IpcMainInvokeEvent, userType: 'human' | 'orchestrator') => {
+      store.set('userType', userType);
+
+      if (userType === 'orchestrator') {
+        if (tray) {
+          tray.setToolTip('Neolith - Orchestrator Mode');
+        }
+      } else {
+        if (tray) {
+          tray.setToolTip('Neolith');
+        }
+      }
+
+      return { success: true };
+    }
+  );
+
+  ipcMain.handle('get-daemon-status', async () => {
+    const userType = store.get('userType');
+    if (userType !== 'orchestrator') {
+      return { connected: false, reason: 'Not in orchestrator mode' };
+    }
+    return {
+      connected: true,
+      mode: 'orchestrator',
+      daemonEndpoint: store.get('daemonEndpoint', 'http://localhost:3847'),
+    };
   });
 
   // Updates

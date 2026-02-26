@@ -15,7 +15,7 @@ import { z } from 'zod';
 /**
  * Wizard step identifier
  */
-export type WizardStep = 'basic' | 'description' | 'config' | 'preview';
+export type WizardStep = 'basic' | 'description' | 'charter' | 'config' | 'preview';
 
 // =============================================================================
 // BASIC INFO SCHEMAS
@@ -117,10 +117,20 @@ export type OrgConfig = z.infer<typeof orgConfigSchema>;
 /**
  * Input for org generation API
  */
+const charterDataSchema = z.object({
+  mission: z.string(),
+  vision: z.string(),
+  values: z.array(z.string()),
+  principles: z.array(z.string()),
+  governanceStyle: z.string(),
+  communicationStyle: z.string(),
+});
+
 export const generateOrgInputSchema = z.object({
   basicInfo: orgBasicInfoSchema,
   description: orgDescriptionSchema,
   config: orgConfigSchema,
+  charterData: charterDataSchema.optional(),
 });
 
 export type GenerateOrgInput = z.infer<typeof generateOrgInputSchema>;

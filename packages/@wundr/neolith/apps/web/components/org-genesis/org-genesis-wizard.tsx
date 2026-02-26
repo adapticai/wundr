@@ -46,6 +46,7 @@ import {
   orgConfigSchema,
 } from '@/lib/validations/org-genesis';
 
+import { CharterStep } from './charter-step';
 import { OrgPreview } from './org-preview';
 
 /**
@@ -63,10 +64,26 @@ export function OrgGenesisWizard() {
   const [wizardData, setWizardData] = useState<{
     basicInfo: Partial<OrgBasicInfo>;
     description: Partial<OrgDescription>;
+    charterData: {
+      mission: string;
+      vision: string;
+      values: string[];
+      principles: string[];
+      governanceStyle: string;
+      communicationStyle: string;
+    };
     config: Partial<OrgConfig>;
   }>({
     basicInfo: {},
     description: {},
+    charterData: {
+      mission: '',
+      vision: '',
+      values: [] as string[],
+      principles: [] as string[],
+      governanceStyle: 'hierarchical',
+      communicationStyle: 'balanced',
+    },
     config: {},
   });
   const [generatedOrg, setGeneratedOrg] =
@@ -75,9 +92,10 @@ export function OrgGenesisWizard() {
   const [error, setError] = useState<string | null>(null);
 
   const stepProgress: Record<WizardStep, number> = {
-    basic: 25,
-    description: 50,
-    config: 75,
+    basic: 20,
+    description: 40,
+    charter: 60,
+    config: 80,
     preview: 100,
   };
 
@@ -88,7 +106,7 @@ export function OrgGenesisWizard() {
 
   const handleDescriptionSubmit = (data: OrgDescription) => {
     setWizardData(prev => ({ ...prev, description: data }));
-    setCurrentStep('config');
+    setCurrentStep('charter');
   };
 
   const handleConfigSubmit = async (data: OrgConfig) => {
@@ -99,6 +117,7 @@ export function OrgGenesisWizard() {
       basicInfo: wizardData.basicInfo as OrgBasicInfo,
       description: wizardData.description as OrgDescription,
       config: data,
+      charterData: wizardData.charterData,
     };
 
     await generateOrganization(fullInput);
@@ -155,6 +174,7 @@ export function OrgGenesisWizard() {
       basicInfo: wizardData.basicInfo as OrgBasicInfo,
       description: wizardData.description as OrgDescription,
       config: wizardData.config as OrgConfig,
+      charterData: wizardData.charterData,
     };
 
     await generateOrganization(fullInput);
@@ -194,10 +214,10 @@ export function OrgGenesisWizard() {
           <h2 className='text-2xl font-bold'>Create Organization</h2>
           <Badge variant='outline'>
             Step{' '}
-            {['basic', 'description', 'config', 'preview'].indexOf(
+            {['basic', 'description', 'charter', 'config', 'preview'].indexOf(
               currentStep
             ) + 1}{' '}
-            of 4
+            of 5
           </Badge>
         </div>
         <Progress value={stepProgress[currentStep]} className='h-2' />
@@ -226,11 +246,20 @@ export function OrgGenesisWizard() {
         />
       )}
 
+      {currentStep === 'charter' && (
+        <CharterStep
+          data={wizardData.charterData}
+          onChange={(charterData) => setWizardData(prev => ({ ...prev, charterData }))}
+          onNext={() => setCurrentStep('config')}
+          onBack={() => setCurrentStep('description')}
+        />
+      )}
+
       {currentStep === 'config' && (
         <ConfigStep
           initialData={wizardData.config}
           onSubmit={handleConfigSubmit}
-          onBack={() => setCurrentStep('description')}
+          onBack={() => setCurrentStep('charter')}
           isSubmitting={isGenerating}
         />
       )}

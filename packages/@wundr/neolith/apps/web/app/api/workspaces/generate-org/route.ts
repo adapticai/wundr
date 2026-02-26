@@ -245,8 +245,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 2. Parse & Validate Request Body
     // =========================================================================
     let body: unknown;
+    let charterData: {
+      mission?: string;
+      vision?: string;
+      values?: string[];
+      principles?: string[];
+      governanceStyle?: string;
+      communicationStyle?: string;
+      emailDomain?: string;
+    } | undefined;
     try {
-      body = await request.json();
+      const rawBody = await request.json();
+      // Extract charterData before schema validation (it's not part of the wizard schema)
+      if (rawBody && typeof rawBody === 'object' && 'charterData' in rawBody) {
+        charterData = (rawBody as Record<string, unknown>).charterData as typeof charterData;
+      }
+      body = rawBody;
     } catch {
       return NextResponse.json(
         createGenesisErrorResponse(
@@ -541,6 +555,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 disciplineCount: genesisResult.stats.disciplineCount,
                 agentCount: genesisResult.stats.agentCount,
               },
+              charter: charterData?.mission
+                ? { hasCharter: true, createdDuringGenesis: true }
+                : { hasCharter: false },
             } as Prisma.InputJsonValue,
           },
         });
@@ -584,7 +601,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           // Create User for Orchestrator
           const orchestratorUser = await tx.user.create({
             data: {
-              email: `${orchestrator.name.toLowerCase().replace(/\s+/g, '.')}@orchestrator.${input.workspaceSlug}.local`,
+              email: `${orchestrator.name.toLowerCase().replace(/\s+/g, '.')}@${charterData?.emailDomain || 'adaptic.ai'}`,
               name: orchestrator.name,
               displayName: orchestrator.title,
               isOrchestrator: true,
@@ -627,6 +644,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           });
 
           orchestratorMap.set(orchestrator.id, orchestratorUser.id);
+
+          // Create agent identity for each orchestrator
+          await tx.agentIdentity.create({
+            data: {
+              userId: orchestratorUser.id,
+              corporateEmail: orchestratorUser.email,
+              emailDomain: charterData?.emailDomain || 'adaptic.ai',
+              communicationChannels: ['EMAIL'],
+              provisioningStatus: 'active',
+            },
+          });
         }
 
         // 8.5. Create Channels for Disciplines
@@ -760,7 +788,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
 
     // =========================================================================
-    // 9. Return Success Response
+    // 9. Create Charter (if charterData provided)
+    // =========================================================================
+    if (charterData?.mission) {
+      await prisma.charter.create({
+        data: {
+          name: `${input.workspaceName} Charter`,
+          mission: charterData.mission,
+          vision: charterData.vision || null,
+          values: charterData.values || [],
+          principles: charterData.principles || [],
+          governance: charterData.governanceStyle ? { style: charterData.governanceStyle } : {},
+          security: {},
+          communication: charterData.communicationStyle ? { style: charterData.communicationStyle } : {},
+          organizationId: organization.id,
+          isActive: true,
+          version: 1,
+        },
+      });
+      console.log('[generate-org] Charter created for organization:', organization.id);
+    }
+
+    // =========================================================================
+    // 10. Return Success Response
     // =========================================================================
     const duration = Date.now() - startTime;
     console.log('[generate-org] Workspace created successfully:', {

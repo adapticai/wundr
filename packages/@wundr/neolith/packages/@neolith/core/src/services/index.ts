@@ -788,9 +788,12 @@ export {
 
   // Interfaces
   type CharterService,
+  type CreateCharterInput,
+  type UpdateCharterInput,
+  type CharterValidationResult,
 
   // Errors
-  CharterVersionNotFoundError,
+  CharterNotFoundError,
   CharterValidationError,
   CharterOperationError,
 } from './charter-service';
@@ -818,6 +821,29 @@ export {
 //   type OpenAIModel,
 //   type OpenAIResponseFormat,
 // } from './llm-service';
+
+// =============================================================================
+// Agent Identity Service
+// =============================================================================
+
+export {
+  // Service implementation
+  AgentIdentityServiceImpl,
+  createAgentIdentityService,
+  agentIdentityService,
+
+  // Interfaces
+  type AgentIdentityService,
+
+  // Input types
+  type CreateAgentIdentityInput,
+  type UpdateAgentIdentityInput,
+
+  // Errors
+  AgentIdentityNotFoundError,
+  AgentIdentityValidationError,
+  AgentIdentityOrchestratorNotFoundError,
+} from './agent-identity-service';
 
 // =============================================================================
 // Alert Service

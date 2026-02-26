@@ -8,6 +8,10 @@ export {
   getDefaultCharter,
   validateCharter,
   saveCharter,
+  loadOrganizationCharter,
+  cacheCharter,
+  loadCachedCharter,
+  getEffectiveCharter,
   type Charter,
 } from './loader.js';
 
@@ -18,4 +22,7 @@ export type {
   CharterOperationalSettings,
   CharterTier,
   CharterLoadOptions,
+  OrganizationCharter,
 } from './types.js';
+
+export { CharterSync } from './charter-sync.js';

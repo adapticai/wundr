@@ -58,6 +58,104 @@ export const updateCharterSchema = charterSchema
     changeLog: z.string().optional(),
   });
 
+// =============================================================================
+// GOVERNANCE & COMMUNICATION ENUMS
+// =============================================================================
+
+export const governanceStyleEnum = z.enum([
+  'democratic',
+  'hierarchical',
+  'consensus',
+  'delegated',
+  'hybrid',
+]);
+
+export const communicationStyleEnum = z.enum([
+  'formal',
+  'casual',
+  'balanced',
+  'technical',
+  'creative',
+]);
+
+// =============================================================================
+// COMPREHENSIVE CHARTER SCHEMAS
+// =============================================================================
+
+// Full charter create schema with governance, security, and communication
+export const createCharterInputSchema = z.object({
+  name: z.string().min(2, 'Charter name must be at least 2 characters').max(200),
+  mission: z.string().min(10, 'Mission must be at least 10 characters').max(2000),
+  vision: z.string().min(10).max(2000).optional(),
+  values: z
+    .array(z.string().min(1).max(100))
+    .min(1, 'At least one value is required')
+    .max(20),
+  principles: z.array(z.string().min(1).max(200)).max(20).optional(),
+  governance: z
+    .object({
+      style: governanceStyleEnum.optional(),
+      decisionMaking: z.string().optional(),
+      escalationPolicy: z.string().optional(),
+      reviewCadence: z.string().optional(),
+    })
+    .optional(),
+  security: z
+    .object({
+      dataClassification: z.string().optional(),
+      accessControl: z.string().optional(),
+      complianceRequirements: z.array(z.string()).optional(),
+    })
+    .optional(),
+  communication: z
+    .object({
+      style: communicationStyleEnum.optional(),
+      preferredChannels: z.array(z.string()).optional(),
+      responseTimeExpectation: z.string().optional(),
+      escalationThreshold: z.string().optional(),
+    })
+    .optional(),
+  organizationId: z.string().min(1),
+  parentCharterId: z.string().optional(),
+});
+
+// Partial update (omits organizationId)
+export const updateCharterInputSchema = createCharterInputSchema
+  .partial()
+  .omit({ organizationId: true });
+
+// Conversational charter input (from wizard)
+export const conversationalCharterInputSchema = z.object({
+  userPrompt: z
+    .string()
+    .min(10, 'Please describe your organization in at least 10 characters')
+    .max(5000),
+  industry: z.string().optional(),
+  organizationSize: z
+    .enum(['small', 'medium', 'large', 'enterprise'])
+    .optional(),
+  context: z.record(z.unknown()).optional(),
+});
+
+// Charter response schema
+export const charterResponseSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  mission: z.string(),
+  vision: z.string().nullable(),
+  values: z.array(z.string()),
+  principles: z.array(z.string()),
+  governance: z.record(z.unknown()),
+  security: z.record(z.unknown()),
+  communication: z.record(z.unknown()),
+  isActive: z.boolean(),
+  version: z.number(),
+  organizationId: z.string(),
+  parentCharterId: z.string().nullable(),
+  createdAt: z.string().or(z.date()),
+  updatedAt: z.string().or(z.date()),
+});
+
 export const charterObjectiveSchema = z.object({
   description: z.string(),
   priority: z.enum(['high', 'medium', 'low']),
@@ -176,6 +274,16 @@ export type CreateCharterVersionInput = z.infer<
 export type CharterVersionCreateInput = z.infer<
   typeof charterVersionCreateSchema
 >;
+
+// Comprehensive charter type exports
+export type GovernanceStyle = z.infer<typeof governanceStyleEnum>;
+export type CommunicationStyle = z.infer<typeof communicationStyleEnum>;
+export type CreateCharterInputFull = z.infer<typeof createCharterInputSchema>;
+export type UpdateCharterInputFull = z.infer<typeof updateCharterInputSchema>;
+export type ConversationalCharterInput = z.infer<
+  typeof conversationalCharterInputSchema
+>;
+export type CharterResponse = z.infer<typeof charterResponseSchema>;
 
 // Error response helper
 export const createErrorResponse = (

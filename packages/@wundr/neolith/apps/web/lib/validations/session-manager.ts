@@ -103,6 +103,58 @@ export const sessionManagerIdParamSchema = z.object({
 
 export type SessionManagerIdParam = z.infer<typeof sessionManagerIdParamSchema>;
 
+// Plugin type enum
+export const pluginTypeEnum = z.enum([
+  'MEMORY', 'TOOL', 'SKILL', 'CONTEXT', 'INTEGRATION', 'MONITORING', 'SECURITY'
+]);
+
+export type PluginType = z.infer<typeof pluginTypeEnum>;
+
+// Plugin config schema
+export const pluginConfigSchema = z.object({
+  name: z.string().min(1, 'Plugin name is required'),
+  type: pluginTypeEnum,
+  version: z.string().optional(),
+  configuration: z.record(z.unknown()).default({}),
+  enabled: z.boolean().default(true),
+  priority: z.number().int().min(0).max(100).default(50),
+});
+
+export type PluginConfig = z.infer<typeof pluginConfigSchema>;
+
+// Skill capability level
+export const capabilityLevelEnum = z.enum([
+  'beginner', 'intermediate', 'advanced', 'expert'
+]);
+
+export type CapabilityLevel = z.infer<typeof capabilityLevelEnum>;
+
+// Skill definition schema
+export const skillDefinitionSchema = z.object({
+  name: z.string().min(1, 'Skill name is required'),
+  description: z.string().min(1),
+  functionName: z.string().min(1),
+  parameters: z.record(z.unknown()).default({}),
+  capabilityLevel: capabilityLevelEnum.default('intermediate'),
+  requiredTools: z.array(z.string()).default([]),
+  estimatedTokens: z.number().int().positive().optional(),
+});
+
+export type SkillDefinition = z.infer<typeof skillDefinitionSchema>;
+
+// Context config schema
+export const contextConfigSchema = z.object({
+  systemPrompt: z.string().max(10000).optional(),
+  claudeMdContent: z.string().max(50000).optional(),
+  workspaceContext: z.string().max(10000).optional(),
+  customInstructions: z.string().max(10000).optional(),
+  environmentVariables: z.record(z.string()).optional(),
+  filePatterns: z.array(z.string()).optional(),
+  excludePatterns: z.array(z.string()).optional(),
+});
+
+export type ContextConfig = z.infer<typeof contextConfigSchema>;
+
 /**
  * Create session manager schema
  */
@@ -126,6 +178,10 @@ export const createSessionManagerSchema = z.object({
     })
     .optional(),
   metadata: z.record(z.unknown()).optional(),
+  pluginConfigs: z.array(pluginConfigSchema).default([]),
+  skillDefinitions: z.array(skillDefinitionSchema).default([]),
+  contextConfig: contextConfigSchema.optional(),
+  mcpTools: z.array(z.string()).default([]),
 });
 
 export type CreateSessionManagerInput = z.infer<

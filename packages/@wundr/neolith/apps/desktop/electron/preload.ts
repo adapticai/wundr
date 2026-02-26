@@ -169,6 +169,26 @@ const neolithAPI = {
   },
 
   // ============================================
+  // User Type & Orchestrator Mode
+  // ============================================
+  userType: {
+    get: (): Promise<'human' | 'orchestrator' | null> => {
+      return ipcRenderer.invoke('get-user-type');
+    },
+    set: (type: 'human' | 'orchestrator'): Promise<{ success: boolean }> => {
+      return ipcRenderer.invoke('set-user-type', type);
+    },
+    getDaemonStatus: (): Promise<{
+      connected: boolean;
+      reason?: string;
+      mode?: string;
+      daemonEndpoint?: string;
+    }> => {
+      return ipcRenderer.invoke('get-daemon-status');
+    },
+  },
+
+  // ============================================
   // Event Listeners
   // ============================================
   on: {

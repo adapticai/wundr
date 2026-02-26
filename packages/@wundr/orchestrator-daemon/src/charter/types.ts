@@ -49,3 +49,32 @@ export type CharterTier = 1 | 2 | 3;
 export interface CharterLoadOptions {
   useEnvOverrides?: boolean;
 }
+
+export interface OrganizationCharter {
+  id: string;
+  name: string;
+  mission: string;
+  vision?: string;
+  values: string[];
+  principles: string[];
+  governance: {
+    style: 'democratic' | 'hierarchical' | 'consensus' | 'delegated' | 'hybrid';
+    decisionMaking?: string;
+    escalationPolicy?: string;
+    reviewCadence?: string;
+  };
+  security: {
+    dataClassification?: string;
+    accessControl?: string;
+    complianceRequirements?: string[];
+  };
+  communication: {
+    style: 'formal' | 'casual' | 'balanced' | 'technical' | 'creative';
+    preferredChannels?: string[];
+    responseTimeExpectation?: string;
+    escalationThreshold?: string;
+  };
+  organizationId: string;
+  version: number;
+  isActive: boolean;
+}

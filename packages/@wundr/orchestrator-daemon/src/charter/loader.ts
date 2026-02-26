@@ -4,6 +4,8 @@ import * as path from 'path';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { z } from 'zod';
 
+import type { OrganizationCharter } from './types.js';
+
 /**
  * Charter schema validation using Zod
  */
@@ -310,4 +312,79 @@ export async function saveCharter(charter: Charter, filePath: string): Promise<v
   const absolutePath = path.resolve(filePath);
   await fs.mkdir(path.dirname(absolutePath), { recursive: true });
   await fs.writeFile(absolutePath, yamlContent, 'utf-8');
+}
+
+const DEFAULT_CACHE_DIR = path.join(process.cwd(), '.charter-cache');
+
+/**
+ * Fetch organization charter from Neolith API
+ */
+export async function loadOrganizationCharter(
+  orgId: string,
+  apiBaseUrl: string = process.env.NEOLITH_API_URL ?? 'http://localhost:3000',
+): Promise<OrganizationCharter> {
+  const url = `${apiBaseUrl}/api/organizations/${encodeURIComponent(orgId)}/charter`;
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(process.env.NEOLITH_API_KEY ? { Authorization: `Bearer ${process.env.NEOLITH_API_KEY}` } : {}),
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch organization charter for ${orgId}: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json() as OrganizationCharter;
+  return data;
+}
+
+/**
+ * Cache organization charter locally for offline operation
+ */
+export async function cacheCharter(
+  charter: OrganizationCharter,
+  cachePath: string = DEFAULT_CACHE_DIR,
+): Promise<void> {
+  const absoluteCachePath = path.resolve(cachePath);
+  await fs.mkdir(absoluteCachePath, { recursive: true });
+  const filePath = path.join(absoluteCachePath, `${charter.organizationId}.json`);
+  await fs.writeFile(filePath, JSON.stringify(charter, null, 2), 'utf-8');
+}
+
+/**
+ * Load organization charter from local cache
+ */
+export async function loadCachedCharter(
+  orgId: string,
+  cachePath: string = DEFAULT_CACHE_DIR,
+): Promise<OrganizationCharter> {
+  const absoluteCachePath = path.resolve(cachePath);
+  const filePath = path.join(absoluteCachePath, `${orgId}.json`);
+  try {
+    const content = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(content) as OrganizationCharter;
+  } catch (error) {
+    throw new Error(`No cached charter found for organization ${orgId}: ${error}`);
+  }
+}
+
+/**
+ * Get the effective organization charter: try API first, fall back to cache
+ */
+export async function getEffectiveCharter(
+  orgId: string,
+  apiBaseUrl?: string,
+): Promise<OrganizationCharter> {
+  try {
+    const charter = await loadOrganizationCharter(orgId, apiBaseUrl);
+    // Fire-and-forget cache update — don't let caching errors surface
+    cacheCharter(charter).catch((err) => {
+      console.warn(`Failed to cache charter for ${orgId}:`, err);
+    });
+    return charter;
+  } catch (apiError) {
+    console.warn(`API unavailable for org charter ${orgId}, falling back to cache:`, apiError);
+    return loadCachedCharter(orgId);
+  }
 }
