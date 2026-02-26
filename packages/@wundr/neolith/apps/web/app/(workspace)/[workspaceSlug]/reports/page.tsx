@@ -87,68 +87,8 @@ interface ReportTemplate {
   sectionsCount: number;
 }
 
-// Mock data for demo
-const mockReports: Report[] = [
-  {
-    id: '1',
-    title: 'Q4 2024 Performance Report',
-    description: 'Comprehensive quarterly performance analysis',
-    type: 'performance',
-    createdAt: new Date('2024-12-01'),
-    updatedAt: new Date('2024-12-05'),
-    createdBy: { id: '1', name: 'John Doe' },
-    status: 'published',
-    sections: 8,
-    lastViewed: new Date('2024-12-06'),
-  },
-  {
-    id: '2',
-    title: 'User Engagement Analytics',
-    description: 'Monthly user engagement and retention metrics',
-    type: 'engagement',
-    createdAt: new Date('2024-11-28'),
-    updatedAt: new Date('2024-12-02'),
-    createdBy: { id: '2', name: 'Jane Smith' },
-    status: 'published',
-    sections: 5,
-    lastViewed: new Date('2024-12-05'),
-  },
-  {
-    id: '3',
-    title: 'Revenue Growth Analysis',
-    description: 'Year-over-year revenue comparison and projections',
-    type: 'revenue',
-    createdAt: new Date('2024-11-25'),
-    updatedAt: new Date('2024-11-30'),
-    createdBy: { id: '3', name: 'Mike Johnson' },
-    status: 'scheduled',
-    scheduledFor: new Date('2024-12-10'),
-    sections: 6,
-  },
-  {
-    id: '4',
-    title: 'Weekly Traffic Report',
-    description: 'Website traffic and conversion metrics',
-    type: 'analytics',
-    createdAt: new Date('2024-12-04'),
-    updatedAt: new Date('2024-12-06'),
-    createdBy: { id: '1', name: 'John Doe' },
-    status: 'draft',
-    sections: 4,
-  },
-  {
-    id: '5',
-    title: 'Customer Satisfaction Survey',
-    description: 'Q4 customer feedback and satisfaction scores',
-    type: 'custom',
-    createdAt: new Date('2024-11-20'),
-    updatedAt: new Date('2024-11-28'),
-    createdBy: { id: '4', name: 'Sarah Williams' },
-    status: 'published',
-    sections: 7,
-    lastViewed: new Date('2024-12-03'),
-  },
-];
+// No mock data - reports are loaded from the API
+const mockReports: Report[] = [];
 
 const reportTemplates: ReportTemplate[] = [
   {
@@ -206,7 +146,6 @@ export default function ReportsPage() {
   const [creatorFilter, setCreatorFilter] = useState<string>('all');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   // Filter and search logic
   const filteredReports = useMemo(() => {
@@ -258,13 +197,11 @@ export default function ReportsPage() {
   };
 
   const handleScheduleReport = (reportId: string) => {
-    // In a real app, this would open a schedule dialog
-    console.log('Schedule report:', reportId);
+    router.push(`/${workspaceSlug}/reports/${reportId}/schedule`);
   };
 
   const handleExportReport = (reportId: string) => {
-    // In a real app, this would trigger an export
-    console.log('Export report:', reportId);
+    router.push(`/${workspaceSlug}/reports/${reportId}/export`);
   };
 
   const handleCreateFromTemplate = (templateId: string) => {
@@ -471,9 +408,21 @@ export default function ReportsPage() {
                   <TableCell colSpan={6} className='text-center py-8'>
                     <div className='flex flex-col items-center gap-2'>
                       <FileText className='h-8 w-8 text-muted-foreground' />
-                      <p className='text-muted-foreground'>
-                        No reports found. Create your first report to get
-                        started.
+                      <p className='font-medium text-foreground'>
+                        {searchQuery ||
+                        typeFilter !== 'all' ||
+                        statusFilter !== 'all' ||
+                        creatorFilter !== 'all'
+                          ? 'No reports match your filters'
+                          : 'No reports yet'}
+                      </p>
+                      <p className='text-sm text-muted-foreground'>
+                        {searchQuery ||
+                        typeFilter !== 'all' ||
+                        statusFilter !== 'all' ||
+                        creatorFilter !== 'all'
+                          ? 'Try adjusting your search or filters to find what you are looking for.'
+                          : 'Create your first report using a template above or start from scratch.'}
                       </p>
                     </div>
                   </TableCell>

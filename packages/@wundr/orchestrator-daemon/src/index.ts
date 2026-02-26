@@ -190,6 +190,63 @@ export * from './tasks';
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
+// AI Reasoning Engine (reasoning, planning, tool registry)
+// ---------------------------------------------------------------------------
+export {
+  ReasoningEngine,
+  createReasoningEngine,
+  DefaultToolRegistry,
+  createToolRegistry,
+  Planner,
+  createPlanner,
+} from './ai';
+
+export type {
+  ReasoningConfig,
+  ReasoningStep,
+  ReasoningResult,
+  ToolRegistry,
+  ToolHandler,
+  ToolDescription,
+  TaskPlan,
+  PlanStep,
+  PlanConstraints,
+} from './ai';
+
+// ---------------------------------------------------------------------------
+// Workflow Engine (definitions, execution, storage)
+// ---------------------------------------------------------------------------
+export {
+  WorkflowEngine,
+  InMemoryWorkflowStore,
+  WorkflowError,
+  WorkflowNotFoundError,
+  ExecutionNotFoundError,
+  WorkflowInactiveError,
+  WorkflowCircularDependencyError,
+  StepTimeoutError,
+  WorkflowErrorCode,
+} from './workflows';
+
+export type {
+  WorkflowDefinition,
+  WorkflowStep,
+  WorkflowTrigger,
+  WorkflowExecution,
+  StepResult,
+  WorkflowStatus,
+  ExecutionStatus,
+  StepType,
+  WorkflowEngineConfig,
+  WorkflowEventMap,
+  IWorkflowStore,
+  StepCondition,
+  TriggerCondition,
+  // RetryConfig conflicts with ./models/retry -- exported as WorkflowRetryConfig
+  RetryConfig as WorkflowRetryConfig,
+} from './workflows';
+
+// ---------------------------------------------------------------------------
 // Auth (JWT, authenticator, middleware, rate-limiter)
 // ---------------------------------------------------------------------------
 export * from './auth';

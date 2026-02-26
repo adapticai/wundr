@@ -43,7 +43,8 @@ export function OrgPreview({
   >('overview');
   const { manifest, orchestrators, disciplines, agents, channels } = orgData;
 
-  const disciplineChannels = channels?.filter(ch => ch.type === 'PUBLIC' && ch.name !== 'general') ?? [];
+  const disciplineChannels =
+    channels?.filter(ch => ch.type === 'PUBLIC' && ch.name !== 'general') ?? [];
   const generalChannel = channels?.find(ch => ch.name === 'general') ?? null;
   const dmChannels = channels?.filter(ch => ch.type === 'DM') ?? [];
 
@@ -147,37 +148,57 @@ export function OrgPreview({
               <CardHeader>
                 <CardTitle>Channels Created</CardTitle>
                 <CardDescription>
-                  {channels.length} channel{channels.length !== 1 ? 's' : ''} auto-created for your organization
+                  {channels.length} channel{channels.length !== 1 ? 's' : ''}{' '}
+                  auto-created for your organization
                 </CardDescription>
               </CardHeader>
               <CardContent className='space-y-3'>
                 {generalChannel && (
                   <div className='flex items-center justify-between rounded-lg border bg-muted/50 px-3 py-2'>
                     <div className='flex items-center gap-2'>
-                      <span className='text-sm font-medium text-muted-foreground'>#</span>
-                      <span className='text-sm font-medium'>{generalChannel.name}</span>
-                      <Badge variant='outline' className='text-xs'>general</Badge>
+                      <span className='text-sm font-medium text-muted-foreground'>
+                        #
+                      </span>
+                      <span className='text-sm font-medium'>
+                        {generalChannel.name}
+                      </span>
+                      <Badge variant='outline' className='text-xs'>
+                        general
+                      </Badge>
                     </div>
-                    <span className='text-xs text-muted-foreground'>{generalChannel.memberCount} members</span>
+                    <span className='text-xs text-muted-foreground'>
+                      {generalChannel.memberCount} members
+                    </span>
                   </div>
                 )}
                 {disciplineChannels.length > 0 && (
                   <div className='space-y-1'>
-                    <p className='text-xs font-semibold uppercase tracking-wide text-muted-foreground'>Discipline Channels</p>
+                    <p className='text-xs font-semibold uppercase tracking-wide text-muted-foreground'>
+                      Discipline Channels
+                    </p>
                     {disciplineChannels.map(ch => (
-                      <div key={ch.id} className='flex items-center justify-between rounded-lg border px-3 py-2'>
+                      <div
+                        key={ch.id}
+                        className='flex items-center justify-between rounded-lg border px-3 py-2'
+                      >
                         <div className='flex items-center gap-2'>
-                          <span className='text-sm font-medium text-muted-foreground'>#</span>
+                          <span className='text-sm font-medium text-muted-foreground'>
+                            #
+                          </span>
                           <span className='text-sm'>{ch.name}</span>
                         </div>
-                        <span className='text-xs text-muted-foreground'>{ch.memberCount} members</span>
+                        <span className='text-xs text-muted-foreground'>
+                          {ch.memberCount} members
+                        </span>
                       </div>
                     ))}
                   </div>
                 )}
                 {dmChannels.length > 0 && (
                   <p className='text-xs text-muted-foreground'>
-                    + {dmChannels.length} agent DM channel{dmChannels.length !== 1 ? 's' : ''} created between orchestrators
+                    + {dmChannels.length} agent DM channel
+                    {dmChannels.length !== 1 ? 's' : ''} created between
+                    orchestrators
                   </p>
                 )}
               </CardContent>

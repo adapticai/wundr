@@ -23,21 +23,64 @@ import type { NextRequest } from 'next/server';
  * Discipline keyword matching for content-based routing
  */
 const DISCIPLINE_KEYWORDS: Record<string, string[]> = {
-  engineering: ['deploy', 'code', 'bug', 'api', 'database', 'server', 'build', 'test', 'CI', 'pipeline', 'git'],
+  engineering: [
+    'deploy',
+    'code',
+    'bug',
+    'api',
+    'database',
+    'server',
+    'build',
+    'test',
+    'CI',
+    'pipeline',
+    'git',
+  ],
   design: ['design', 'UI', 'UX', 'wireframe', 'mockup', 'figma', 'prototype'],
-  marketing: ['campaign', 'SEO', 'analytics', 'funnel', 'conversion', 'brand', 'content'],
-  finance: ['budget', 'invoice', 'expense', 'revenue', 'forecast', 'cost', 'payment'],
-  hr: ['hiring', 'onboarding', 'performance review', 'PTO', 'benefits', 'compensation'],
+  marketing: [
+    'campaign',
+    'SEO',
+    'analytics',
+    'funnel',
+    'conversion',
+    'brand',
+    'content',
+  ],
+  finance: [
+    'budget',
+    'invoice',
+    'expense',
+    'revenue',
+    'forecast',
+    'cost',
+    'payment',
+  ],
+  hr: [
+    'hiring',
+    'onboarding',
+    'performance review',
+    'PTO',
+    'benefits',
+    'compensation',
+  ],
   legal: ['contract', 'compliance', 'NDA', 'terms', 'policy', 'regulation'],
   operations: ['process', 'workflow', 'SOP', 'vendor', 'logistics'],
-  product: ['roadmap', 'feature', 'backlog', 'user story', 'requirement', 'milestone', 'release'],
+  product: [
+    'roadmap',
+    'feature',
+    'backlog',
+    'user story',
+    'requirement',
+    'milestone',
+    'release',
+  ],
 };
 
 function detectDisciplines(content: string): string[] {
   const lower = content.toLowerCase();
   const matches: string[] = [];
   for (const [discipline, keywords] of Object.entries(DISCIPLINE_KEYWORDS)) {
-    if (keywords.some((kw) => lower.includes(kw.toLowerCase()))) {
+    if (keywords.some(kw => lower.includes(kw.toLowerCase()))) {
       matches.push(discipline);
     }
   }
@@ -46,9 +89,18 @@ function detectDisciplines(content: string): string[] {
 
 function detectUrgency(content: string): string {
   const lower = content.toLowerCase();
-  if (['emergency', 'down', 'outage', 'critical', 'broken'].some((w) => lower.includes(w))) return 'CRITICAL';
-  if (['urgent', 'asap', 'immediately', 'blocking'].some((w) => lower.includes(w))) return 'URGENT';
-  if (['important', 'priority', 'soon'].some((w) => lower.includes(w))) return 'HIGH';
+  if (
+    ['emergency', 'down', 'outage', 'critical', 'broken'].some(w =>
+      lower.includes(w)
+    )
+  )
+    return 'CRITICAL';
+  if (
+    ['urgent', 'asap', 'immediately', 'blocking'].some(w => lower.includes(w))
+  )
+    return 'URGENT';
+  if (['important', 'priority', 'soon'].some(w => lower.includes(w)))
+    return 'HIGH';
   return 'NORMAL';
 }
 
@@ -60,7 +112,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TRAFFIC_MANAGER_ERROR_CODES.UNAUTHORIZED),
+        createErrorResponse(
+          'Authentication required',
+          TRAFFIC_MANAGER_ERROR_CODES.UNAUTHORIZED
+        ),
         { status: 401 }
       );
     }
@@ -70,7 +125,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', TRAFFIC_MANAGER_ERROR_CODES.VALIDATION_ERROR),
+        createErrorResponse(
+          'Invalid JSON body',
+          TRAFFIC_MANAGER_ERROR_CODES.VALIDATION_ERROR
+        ),
         { status: 400 }
       );
     }
@@ -78,9 +136,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const parseResult = routeMessageInputSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        createErrorResponse('Validation failed', TRAFFIC_MANAGER_ERROR_CODES.VALIDATION_ERROR, {
-          errors: parseResult.error.flatten().fieldErrors,
-        }),
+        createErrorResponse(
+          'Validation failed',
+          TRAFFIC_MANAGER_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: parseResult.error.flatten().fieldErrors,
+          }
+        ),
         { status: 400 }
       );
     }
@@ -89,7 +151,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const startMs = Date.now();
 
     // Check for direct mention in metadata
-    const directMention = (input.metadata as Record<string, unknown>)?.directMention as string | undefined;
+    const directMention = (input.metadata as Record<string, unknown>)
+      ?.directMention as string | undefined;
 
     // Get available orchestrator agents in the channel
     const channelMembers = await prisma.channelMember.findMany({
@@ -104,7 +167,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             name: true,
             displayName: true,
             orchestratorConfig: {
-              select: { id: true, discipline: true, role: true, capabilities: true, status: true },
+              select: {
+                id: true,
+                discipline: true,
+                role: true,
+                capabilities: true,
+                status: true,
+              },
             },
           },
         },
@@ -113,7 +182,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (channelMembers.length === 0) {
       return NextResponse.json(
-        createErrorResponse('No agents available in channel', TRAFFIC_MANAGER_ERROR_CODES.AGENT_NOT_FOUND),
+        createErrorResponse(
+          'No agents available in channel',
+          TRAFFIC_MANAGER_ERROR_CODES.AGENT_NOT_FOUND
+        ),
         { status: 404 }
       );
     }
@@ -126,7 +198,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // 1. Direct mention
     if (directMention) {
-      const mentioned = channelMembers.find((m) => m.userId === directMention);
+      const mentioned = channelMembers.find(m => m.userId === directMention);
       if (mentioned) {
         selectedAgent = mentioned;
         matchedBy = 'direct_mention';
@@ -139,13 +211,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (matchedBy === 'fallback') {
       const disciplines = detectDisciplines(input.messageContent);
       if (disciplines.length > 0) {
-        const disciplineMatch = channelMembers.find((m) =>
+        const disciplineMatch = channelMembers.find(m =>
           disciplines.some(
-            (d) =>
+            d =>
               m.user.orchestratorConfig?.discipline?.toLowerCase() === d ||
-              (m.user.orchestratorConfig?.capabilities as string[] | null)?.some(
-                (c: string) => c.toLowerCase().includes(d)
-              )
+              (
+                m.user.orchestratorConfig?.capabilities as string[] | null
+              )?.some((c: string) => c.toLowerCase().includes(d))
           )
         );
         if (disciplineMatch) {
@@ -161,8 +233,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const urgency = detectUrgency(input.messageContent);
     if (urgency === 'CRITICAL' || urgency === 'URGENT') {
       const vpAgent = channelMembers.find(
-        (m) => m.user.orchestratorConfig?.role?.toLowerCase().includes('vp') ||
-               m.user.orchestratorConfig?.role?.toLowerCase().includes('chief')
+        m =>
+          m.user.orchestratorConfig?.role?.toLowerCase().includes('vp') ||
+          m.user.orchestratorConfig?.role?.toLowerCase().includes('chief')
       );
       if (vpAgent && vpAgent.userId !== selectedAgent.userId) {
         selectedAgent = vpAgent;
@@ -183,7 +256,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     await (prisma as any).routingDecision.create({
       data: {
-        messageId: (input.metadata as Record<string, unknown>)?.messageId as string || null,
+        messageId:
+          ((input.metadata as Record<string, unknown>)?.messageId as string) ||
+          null,
         organizationId: channel?.workspace?.organizationId ?? '',
         agentId: selectedAgent.userId,
         agentName: selectedAgent.user.displayName || selectedAgent.user.name,
@@ -199,9 +274,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     const fallbackChain = channelMembers
-      .filter((m) => m.userId !== selectedAgent.userId)
+      .filter(m => m.userId !== selectedAgent.userId)
       .slice(0, 3)
-      .map((m) => m.userId);
+      .map(m => m.userId);
 
     return NextResponse.json({
       data: {
@@ -218,7 +293,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[POST /api/traffic-manager/route-message] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TRAFFIC_MANAGER_ERROR_CODES.INTERNAL_ERROR),
+      createErrorResponse(
+        'An internal error occurred',
+        TRAFFIC_MANAGER_ERROR_CODES.INTERNAL_ERROR
+      ),
       { status: 500 }
     );
   }

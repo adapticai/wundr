@@ -412,9 +412,12 @@ export function ImportExportSettings() {
   return (
     <div className='space-y-6'>
       <div>
-        <h1 className='text-2xl font-bold'>Import/Export & Backup</h1>
+        <h1 className='text-2xl font-bold tracking-tight'>
+          Import/Export & Backup
+        </h1>
         <p className='mt-1 text-muted-foreground'>
-          Manage your settings backups and data exports
+          Export your settings, import from backups, and configure automatic
+          backups
         </p>
       </div>
 

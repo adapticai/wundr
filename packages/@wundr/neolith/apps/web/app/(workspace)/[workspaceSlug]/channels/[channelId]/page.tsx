@@ -153,20 +153,6 @@ export default function ChannelPage() {
     addOptimisticReply,
   } = useThread(activeThreadId || '');
 
-  // Debug: log thread state changes
-  useEffect(() => {
-    console.log('[Channel] Thread state:', {
-      activeThreadId,
-      thread: thread
-        ? {
-            parentId: thread.parentMessage?.id,
-            messagesCount: thread.messages?.length,
-          }
-        : null,
-      isThreadLoading,
-    });
-  }, [activeThreadId, thread, isThreadLoading]);
-
   // Mark channel as read when opened
   useEffect(() => {
     if (channelId && currentUser && !isMessagesLoading) {
@@ -656,14 +642,6 @@ export default function ChannelPage() {
 
   // Handle open thread
   const handleOpenThread = useCallback((message: Message) => {
-    console.log(
-      '[Channel] handleOpenThread called with message:',
-      message.id,
-      'replyCount:',
-      message.replyCount,
-      'content:',
-      message.content?.slice(0, 50)
-    );
     setActiveThreadId(message.id);
   }, []);
 
@@ -1026,13 +1004,25 @@ export default function ChannelPage() {
           onSummarize={() => setShowAIAssistant(true)}
           onEditNotifications={() => setShowNotificationsDialog(true)}
           onAddTemplate={() =>
-            console.log('Add template - feature coming soon')
+            toast({
+              title: 'Coming Soon',
+              description:
+                'Message templates are under development. Stay tuned!',
+            })
           }
           onAddWorkflow={() =>
-            console.log('Add workflow - feature coming soon')
+            toast({
+              title: 'Coming Soon',
+              description:
+                'Channel workflows are under development. Stay tuned!',
+            })
           }
           onSearchInChannel={() =>
-            console.log('Search in channel - feature coming soon')
+            toast({
+              title: 'Coming Soon',
+              description:
+                'In-channel search is under development. Stay tuned!',
+            })
           }
           onInvite={() => setShowDetailsPanel(true)}
           onViewPins={

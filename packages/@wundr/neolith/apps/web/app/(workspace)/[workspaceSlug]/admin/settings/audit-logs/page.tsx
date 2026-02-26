@@ -37,6 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -66,7 +67,15 @@ type DateRangeFilter = 'today' | '7d' | '30d' | '90d' | 'all';
 export default function AuditLogsPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
+  const { setPageHeader } = usePageHeader();
   const { toast } = useToast();
+
+  useEffect(() => {
+    setPageHeader(
+      'Audit Logs',
+      'Track all activities and changes in your workspace'
+    );
+  }, [setPageHeader]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [actionTypeFilter, setActionTypeFilter] =
@@ -226,13 +235,6 @@ export default function AuditLogsPage() {
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-bold'>Audit Logs</h1>
-        <p className='mt-1 text-muted-foreground'>
-          Track all activities and changes in your workspace
-        </p>
-      </div>
-
       <Card>
         <CardHeader>
           <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>

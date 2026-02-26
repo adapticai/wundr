@@ -142,6 +142,17 @@ export default function AdminUsersPage() {
     targetRole?: UserRole;
   }>({ open: false, action: null });
 
+  // Invite modal
+  const [showInviteModal, setShowInviteModal] = useState(false);
+
+  // Change role dialog
+  const [changeRoleDialog, setChangeRoleDialog] = useState<{
+    open: boolean;
+    userId: string | null;
+    currentRole: UserRole | null;
+    selectedRole: UserRole;
+  }>({ open: false, userId: null, currentRole: null, selectedRole: 'MEMBER' });
+
   useEffect(() => {
     setPageHeader('User Management', 'Manage workspace users and permissions');
   }, [setPageHeader]);
@@ -530,7 +541,14 @@ export default function AdminUsersPage() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => handleUpdateRole(user.userId, 'ADMIN')}
+                onClick={() =>
+                  setChangeRoleDialog({
+                    open: true,
+                    userId: user.userId,
+                    currentRole: user.role,
+                    selectedRole: user.role,
+                  })
+                }
               >
                 Change Role
               </DropdownMenuItem>
@@ -632,7 +650,7 @@ export default function AdminUsersPage() {
             <Download className='mr-2 h-4 w-4' />
             Export
           </Button>
-          <Button size='sm'>
+          <Button size='sm' onClick={() => setShowInviteModal(true)}>
             <UserPlus className='mr-2 h-4 w-4' />
             Invite Users
           </Button>
@@ -832,15 +850,51 @@ export default function AdminUsersPage() {
                 {/* Quick Actions */}
                 <div className='space-y-2'>
                   <h4 className='text-sm font-medium'>Quick Actions</h4>
-                  <div className='grid grid-cols-2 gap-2'>
-                    <Button variant='outline' size='sm' className='w-full'>
-                      <Mail className='mr-2 h-4 w-4' />
-                      Send Email
-                    </Button>
-                    <Button variant='outline' size='sm' className='w-full'>
+                  <div className='flex flex-col gap-2'>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      className='w-full justify-start'
+                      onClick={() => {
+                        setChangeRoleDialog({
+                          open: true,
+                          userId: selectedUser.userId,
+                          currentRole: selectedUser.role,
+                          selectedRole: selectedUser.role,
+                        });
+                        setSelectedUser(null);
+                      }}
+                    >
                       <Shield className='mr-2 h-4 w-4' />
                       Change Role
                     </Button>
+                    {selectedUser.status === 'ACTIVE' ? (
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        className='w-full justify-start text-yellow-600 hover:text-yellow-700'
+                        onClick={() => {
+                          handleSuspendUser(selectedUser.userId);
+                          setSelectedUser(null);
+                        }}
+                      >
+                        <Ban className='mr-2 h-4 w-4' />
+                        Suspend User
+                      </Button>
+                    ) : (
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        className='w-full justify-start text-green-600 hover:text-green-700'
+                        onClick={() => {
+                          handleActivateUser(selectedUser.userId);
+                          setSelectedUser(null);
+                        }}
+                      >
+                        <CheckCircle className='mr-2 h-4 w-4' />
+                        Activate User
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -935,6 +989,98 @@ export default function AdminUsersPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleBulkAction}>
               Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Change Role Dialog */}
+      <AlertDialog
+        open={changeRoleDialog.open}
+        onOpenChange={open =>
+          !open &&
+          setChangeRoleDialog({
+            open: false,
+            userId: null,
+            currentRole: null,
+            selectedRole: 'MEMBER',
+          })
+        }
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change User Role</AlertDialogTitle>
+            <AlertDialogDescription>
+              Select a new role for this user.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className='py-4'>
+            <Select
+              value={changeRoleDialog.selectedRole}
+              onValueChange={value =>
+                setChangeRoleDialog(prev => ({
+                  ...prev,
+                  selectedRole: value as UserRole,
+                }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder='Select role' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='OWNER'>Owner</SelectItem>
+                <SelectItem value='ADMIN'>Admin</SelectItem>
+                <SelectItem value='MEMBER'>Member</SelectItem>
+                <SelectItem value='GUEST'>Guest</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (changeRoleDialog.userId && changeRoleDialog.selectedRole) {
+                  await handleUpdateRole(
+                    changeRoleDialog.userId,
+                    changeRoleDialog.selectedRole
+                  );
+                  setChangeRoleDialog({
+                    open: false,
+                    userId: null,
+                    currentRole: null,
+                    selectedRole: 'MEMBER',
+                  });
+                }
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Invite Users Modal */}
+      <AlertDialog
+        open={showInviteModal}
+        onOpenChange={open => !open && setShowInviteModal(false)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Invite Users</AlertDialogTitle>
+            <AlertDialogDescription>
+              To invite new members to this workspace, go to the Members page
+              where you can send email invitations and assign roles.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowInviteModal(false);
+                window.location.href = `/${workspaceSlug}/admin/members?invite=true`;
+              }}
+            >
+              Go to Members
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

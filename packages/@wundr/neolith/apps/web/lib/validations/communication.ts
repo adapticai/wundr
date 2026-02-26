@@ -5,16 +5,30 @@ import { z } from 'zod';
 // ============================================================================
 
 export const communicationChannelEnum = z.enum([
-  'email', 'sms', 'whatsapp', 'voice', 'slack', 'internal'
+  'email',
+  'sms',
+  'whatsapp',
+  'voice',
+  'slack',
+  'internal',
 ]);
 
 export const communicationDirectionEnum = z.enum(['inbound', 'outbound']);
 
 export const communicationStatusEnum = z.enum([
-  'pending', 'sent', 'delivered', 'failed', 'bounced'
+  'pending',
+  'sent',
+  'delivered',
+  'failed',
+  'bounced',
 ]);
 
-export const notificationLevelEnum = z.enum(['all', 'mentions', 'urgent', 'none']);
+export const notificationLevelEnum = z.enum([
+  'all',
+  'mentions',
+  'urgent',
+  'none',
+]);
 
 // ============================================================================
 // Communication Log Schemas
@@ -130,11 +144,21 @@ export const communicationStatsResponseSchema = z.object({
 // Type Exports
 // ============================================================================
 
-export type CreateCommunicationLogInput = z.infer<typeof createCommunicationLogSchema>;
-export type UpdateCommunicationLogInput = z.infer<typeof updateCommunicationLogSchema>;
-export type CommunicationLogFilterInput = z.infer<typeof communicationLogFilterSchema>;
-export type UpdateCommunicationPreferenceInput = z.infer<typeof updateCommunicationPreferenceSchema>;
-export type CommunicationStatsFilterInput = z.infer<typeof communicationStatsFilterSchema>;
+export type CreateCommunicationLogInput = z.infer<
+  typeof createCommunicationLogSchema
+>;
+export type UpdateCommunicationLogInput = z.infer<
+  typeof updateCommunicationLogSchema
+>;
+export type CommunicationLogFilterInput = z.infer<
+  typeof communicationLogFilterSchema
+>;
+export type UpdateCommunicationPreferenceInput = z.infer<
+  typeof updateCommunicationPreferenceSchema
+>;
+export type CommunicationStatsFilterInput = z.infer<
+  typeof communicationStatsFilterSchema
+>;
 
 // ============================================================================
 // Error Codes & Helpers
@@ -150,7 +174,11 @@ export const COMMUNICATION_ERROR_CODES = {
   INTERNAL_ERROR: 'COMMUNICATION_INTERNAL_ERROR',
 } as const;
 
-export function createErrorResponse(message: string, code: string, details?: Record<string, unknown>) {
+export function createErrorResponse(
+  message: string,
+  code: string,
+  details?: Record<string, unknown>
+) {
   return { error: { message, code, ...(details && { details }) } };
 }
 

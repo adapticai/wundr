@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input } from '@neolith/ui';
+import { Button, Input, Label } from '@neolith/ui';
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -193,50 +193,68 @@ function RegisterForm() {
 
       {/* Error Message */}
       {error && (
-        <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
+        <div
+          role='alert'
+          aria-live='polite'
+          className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'
+        >
           {error}
         </div>
       )}
 
       {/* Email/Password Form */}
       <form onSubmit={handleEmailSignUp} className='space-y-4'>
-        <Input
-          type='text'
-          placeholder='Full name'
-          value={name}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setName(e.target.value)
-          }
-          disabled={isLoading}
-          autoComplete='name'
-          required
-        />
-        <Input
-          type='email'
-          placeholder='Email address'
-          value={email}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setEmail(e.target.value)
-          }
-          disabled={isLoading}
-          autoComplete='email'
-          required
-        />
         <div className='space-y-2'>
+          <Label htmlFor='name'>Full name</Label>
+          <Input
+            id='name'
+            type='text'
+            placeholder='Jane Smith'
+            value={name}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setName(e.target.value)
+            }
+            disabled={isLoading}
+            autoComplete='name'
+            required
+            aria-label='Full name'
+          />
+        </div>
+        <div className='space-y-2'>
+          <Label htmlFor='register-email'>Email address</Label>
+          <Input
+            id='register-email'
+            type='email'
+            placeholder='you@example.com'
+            value={email}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setEmail(e.target.value)
+            }
+            disabled={isLoading}
+            autoComplete='email'
+            required
+            aria-label='Email address'
+          />
+        </div>
+        <div className='space-y-2'>
+          <Label htmlFor='register-password'>Password</Label>
           <div className='relative'>
             <Input
+              id='register-password'
               type={showPassword ? 'text' : 'password'}
-              placeholder='Password'
+              placeholder='Create a password'
               value={password}
               onChange={handlePasswordChange}
               disabled={isLoading}
               autoComplete='new-password'
               required
+              aria-label='Password'
+              className='pr-10'
             />
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+              className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors'
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? (
@@ -247,16 +265,24 @@ function RegisterForm() {
             </button>
           </div>
           {password && (
-            <div className='space-y-1 rounded-md bg-muted/50 p-3 text-xs'>
+            <div
+              className='space-y-1 rounded-md bg-muted/50 p-3 text-xs'
+              aria-label='Password requirements'
+              role='status'
+            >
               <p className='font-medium text-muted-foreground mb-1'>
                 Password requirements:
               </p>
-              <div className='space-y-1'>
-                <div className='flex items-center gap-2'>
+              <ul className='space-y-1'>
+                <li className='flex items-center gap-2'>
                   {passwordValidation.minLength ? (
-                    <span className='text-green-600'>✓</span>
+                    <span className='text-green-600' aria-hidden='true'>
+                      ✓
+                    </span>
                   ) : (
-                    <span className='text-destructive'>✗</span>
+                    <span className='text-destructive' aria-hidden='true'>
+                      ✗
+                    </span>
                   )}
                   <span
                     className={
@@ -267,12 +293,16 @@ function RegisterForm() {
                   >
                     At least 8 characters
                   </span>
-                </div>
-                <div className='flex items-center gap-2'>
+                </li>
+                <li className='flex items-center gap-2'>
                   {passwordValidation.hasUppercase ? (
-                    <span className='text-green-600'>✓</span>
+                    <span className='text-green-600' aria-hidden='true'>
+                      ✓
+                    </span>
                   ) : (
-                    <span className='text-destructive'>✗</span>
+                    <span className='text-destructive' aria-hidden='true'>
+                      ✗
+                    </span>
                   )}
                   <span
                     className={
@@ -283,12 +313,16 @@ function RegisterForm() {
                   >
                     One uppercase letter
                   </span>
-                </div>
-                <div className='flex items-center gap-2'>
+                </li>
+                <li className='flex items-center gap-2'>
                   {passwordValidation.hasLowercase ? (
-                    <span className='text-green-600'>✓</span>
+                    <span className='text-green-600' aria-hidden='true'>
+                      ✓
+                    </span>
                   ) : (
-                    <span className='text-destructive'>✗</span>
+                    <span className='text-destructive' aria-hidden='true'>
+                      ✗
+                    </span>
                   )}
                   <span
                     className={
@@ -299,12 +333,16 @@ function RegisterForm() {
                   >
                     One lowercase letter
                   </span>
-                </div>
-                <div className='flex items-center gap-2'>
+                </li>
+                <li className='flex items-center gap-2'>
                   {passwordValidation.hasNumber ? (
-                    <span className='text-green-600'>✓</span>
+                    <span className='text-green-600' aria-hidden='true'>
+                      ✓
+                    </span>
                   ) : (
-                    <span className='text-destructive'>✗</span>
+                    <span className='text-destructive' aria-hidden='true'>
+                      ✗
+                    </span>
                   )}
                   <span
                     className={
@@ -315,35 +353,45 @@ function RegisterForm() {
                   >
                     One number
                   </span>
-                </div>
-              </div>
+                </li>
+              </ul>
             </div>
           )}
         </div>
-        <div className='relative'>
-          <Input
-            type={showConfirmPassword ? 'text' : 'password'}
-            placeholder='Confirm password'
-            value={confirmPassword}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setConfirmPassword(e.target.value)
-            }
-            disabled={isLoading}
-            autoComplete='new-password'
-            required
-          />
-          <button
-            type='button'
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
-            aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-          >
-            {showConfirmPassword ? (
-              <EyeOff className='h-5 w-5' />
-            ) : (
-              <Eye className='h-5 w-5' />
-            )}
-          </button>
+        <div className='space-y-2'>
+          <Label htmlFor='confirm-password'>Confirm password</Label>
+          <div className='relative'>
+            <Input
+              id='confirm-password'
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder='Repeat your password'
+              value={confirmPassword}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setConfirmPassword(e.target.value)
+              }
+              disabled={isLoading}
+              autoComplete='new-password'
+              required
+              aria-label='Confirm password'
+              className='pr-10'
+            />
+            <button
+              type='button'
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors'
+              aria-label={
+                showConfirmPassword
+                  ? 'Hide confirm password'
+                  : 'Show confirm password'
+              }
+            >
+              {showConfirmPassword ? (
+                <EyeOff className='h-5 w-5' />
+              ) : (
+                <Eye className='h-5 w-5' />
+              )}
+            </button>
+          </div>
         </div>
         <Button type='submit' className='w-full' disabled={isLoading}>
           {isLoading ? 'Creating account...' : 'Create account'}

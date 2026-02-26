@@ -7,6 +7,8 @@ import {
   Trash2,
   type LucideIcon,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 import {
   DropdownMenu,
@@ -35,6 +37,12 @@ export function NavProjects({
   }[];
 }) {
   const { isMobile } = useSidebar();
+  const params = useParams();
+  const workspaceSlug = params?.workspaceSlug as string | undefined;
+
+  const resolveUrl = (url: string) => {
+    return workspaceSlug ? `/${workspaceSlug}${url}` : url;
+  };
 
   return (
     <SidebarGroup className='group-data-[collapsible=icon]:hidden'>
@@ -43,10 +51,10 @@ export function NavProjects({
         {projects.map(item => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
+              <Link href={resolveUrl(item.url)}>
                 <item.icon />
                 <span>{item.name}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -60,17 +68,19 @@ export function NavProjects({
                 side={isMobile ? 'bottom' : 'right'}
                 align={isMobile ? 'end' : 'start'}
               >
-                <DropdownMenuItem>
-                  <Folder className='text-muted-foreground' />
-                  <span>View Project</span>
+                <DropdownMenuItem asChild>
+                  <Link href={resolveUrl(item.url)}>
+                    <Folder className='text-muted-foreground' />
+                    <span>View Project</span>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Forward className='text-muted-foreground' />
                   <span>Share Project</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Trash2 className='text-muted-foreground' />
+                <DropdownMenuItem className='text-destructive focus:text-destructive'>
+                  <Trash2 className='text-destructive' />
                   <span>Delete Project</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>

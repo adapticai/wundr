@@ -15,7 +15,12 @@ import { z } from 'zod';
 /**
  * Wizard step identifier
  */
-export type WizardStep = 'basic' | 'description' | 'charter' | 'config' | 'preview';
+export type WizardStep =
+  | 'basic'
+  | 'description'
+  | 'charter'
+  | 'config'
+  | 'preview';
 
 // =============================================================================
 // BASIC INFO SCHEMAS

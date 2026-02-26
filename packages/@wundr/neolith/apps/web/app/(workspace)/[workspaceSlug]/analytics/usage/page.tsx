@@ -11,7 +11,13 @@ export default function UsageAnalyticsPage(): JSX.Element {
   const workspaceSlug = params?.workspaceSlug as string | undefined;
   const { setPageHeader } = usePageHeader();
 
-  // Guard against missing workspace slug
+  useEffect(() => {
+    setPageHeader(
+      'Usage Analytics',
+      'Monitor resource usage, costs, and feature adoption'
+    );
+  }, [setPageHeader]);
+
   if (!workspaceSlug) {
     return (
       <div className='min-h-screen bg-background flex items-center justify-center'>
@@ -26,14 +32,6 @@ export default function UsageAnalyticsPage(): JSX.Element {
       </div>
     );
   }
-
-  // Set page header
-  useEffect(() => {
-    setPageHeader(
-      'Usage Analytics',
-      'Monitor resource usage, costs, and feature adoption'
-    );
-  }, [setPageHeader]);
 
   return (
     <div className='min-h-screen bg-background'>

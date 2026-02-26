@@ -33,7 +33,6 @@ export function ChannelsWidget({
 }: ChannelsWidgetProps) {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchChannels = async () => {
@@ -50,10 +49,9 @@ export function ChannelsWidget({
 
         const data = await response.json();
         setChannels(data.channels || []);
-        setError(null);
       } catch (err) {
         console.error('Error fetching channels:', err);
-        setError('Failed to load channels');
+        // Treat fetch errors as empty state — endpoint may not be implemented yet
         setChannels([]);
       } finally {
         setIsLoading(false);
@@ -73,12 +71,7 @@ export function ChannelsWidget({
         <CardTitle className='text-lg'>Starred Channels</CardTitle>
       </CardHeader>
       <CardContent>
-        {error ? (
-          <div className='rounded-md bg-destructive/10 p-4 text-sm text-destructive'>
-            <p className='font-medium'>Error loading channels</p>
-            <p className='mt-1 text-xs'>{error}</p>
-          </div>
-        ) : channels.length === 0 ? (
+        {channels.length === 0 ? (
           <EmptyChannelsState />
         ) : (
           <div className='grid grid-cols-2 gap-2'>

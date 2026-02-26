@@ -13,7 +13,6 @@ import {
   UserCog,
   AlertTriangle,
   Clock,
-  Languages,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useEffect, useRef } from 'react';
@@ -95,6 +94,9 @@ export default function GeneralSettingsPage() {
   const [messageRetentionDays, setMessageRetentionDays] = useState('');
   const [fileRetentionDays, setFileRetentionDays] = useState('');
 
+  // Channels for default channel selection
+  const [channels, setChannels] = useState<{ id: string; name: string }[]>([]);
+
   // Danger Zone State
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [transferUserId, setTransferUserId] = useState('');
@@ -145,6 +147,24 @@ export default function GeneralSettingsPage() {
       );
     }
   }, [settings]);
+
+  // Fetch channels for default channel selector
+  useEffect(() => {
+    const fetchChannels = async () => {
+      try {
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/channels?limit=100`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setChannels(data.channels || []);
+        }
+      } catch {
+        // Non-critical — leave channels empty
+      }
+    };
+    fetchChannels();
+  }, [workspaceSlug]);
 
   // Auto-detect timezone on mount
   useEffect(() => {
@@ -650,9 +670,17 @@ export default function GeneralSettingsPage() {
                 <SelectValue placeholder='Select default channel' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='general'>general</SelectItem>
-                <SelectItem value='random'>random</SelectItem>
-                <SelectItem value='announcements'>announcements</SelectItem>
+                {channels.length === 0 ? (
+                  <SelectItem value='' disabled>
+                    No channels available
+                  </SelectItem>
+                ) : (
+                  channels.map(channel => (
+                    <SelectItem key={channel.id} value={channel.id}>
+                      {channel.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
             <p className='text-xs text-muted-foreground'>
@@ -778,25 +806,11 @@ export default function GeneralSettingsPage() {
                 Let people find this workspace in the directory
               </p>
             </div>
-            <Button
-              type='button'
-              role='switch'
-              aria-checked={allowDiscovery}
-              variant='ghost'
-              size='sm'
-              onClick={() => setAllowDiscovery(!allowDiscovery)}
-              className={cn(
-                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-                allowDiscovery ? 'bg-primary' : 'bg-muted'
-              )}
-            >
-              <span
-                className={cn(
-                  'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-                  allowDiscovery ? 'translate-x-6' : 'translate-x-1'
-                )}
-              />
-            </Button>
+            <Switch
+              id='allow-discovery'
+              checked={allowDiscovery}
+              onCheckedChange={setAllowDiscovery}
+            />
           </div>
 
           <div className='flex justify-end pt-4 border-t'>

@@ -24,6 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -52,7 +53,15 @@ interface InstalledApp {
 export default function InstalledAppsPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
+  const { setPageHeader } = usePageHeader();
   const { toast } = useToast();
+
+  useEffect(() => {
+    setPageHeader(
+      'Installed Apps',
+      'Manage integrations and apps for your workspace'
+    );
+  }, [setPageHeader]);
 
   const [apps, setApps] = useState<InstalledApp[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -142,14 +151,6 @@ export default function InstalledAppsPage() {
 
   const handleRemoveApp = useCallback(
     async (appId: string, appName: string) => {
-      if (
-        !confirm(
-          `Are you sure you want to remove ${appName}? This action cannot be undone.`
-        )
-      ) {
-        return;
-      }
-
       setProcessingAppId(appId);
 
       try {
@@ -194,13 +195,7 @@ export default function InstalledAppsPage() {
 
   return (
     <div className='space-y-6'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <h1 className='text-2xl font-bold'>Installed Apps</h1>
-          <p className='mt-1 text-muted-foreground'>
-            Manage integrations and apps for your workspace
-          </p>
-        </div>
+      <div className='flex items-center justify-end'>
         <Link href={`/${workspaceSlug}/admin/settings/apps/browse`}>
           <Button>
             <Puzzle className='h-4 w-4 mr-2' />

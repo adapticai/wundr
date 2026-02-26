@@ -40,12 +40,12 @@ const AGENT_TYPES: AgentType[] = [
 ];
 
 const AVAILABLE_MODELS: ReadonlyArray<{ value: string; label: string }> = [
-  { value: 'claude-3-opus', label: 'Claude 3 Opus' },
-  { value: 'claude-3-sonnet', label: 'Claude 3 Sonnet' },
-  { value: 'claude-3-haiku', label: 'Claude 3 Haiku' },
-  { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
-  { value: 'gpt-4', label: 'GPT-4' },
-  { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
+  { value: 'claude-opus-4-6', label: 'Claude Opus 4.6' },
+  { value: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6' },
+  { value: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5' },
+  { value: 'gpt-4o', label: 'GPT-4o' },
+  { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
+  { value: 'o1', label: 'OpenAI o1' },
 ] as const;
 
 export function CreateAgentModal({
@@ -58,7 +58,9 @@ export function CreateAgentModal({
   const [type, setType] = useState<AgentType>('task');
   const [description, setDescription] = useState('');
   const [systemPrompt, setSystemPrompt] = useState('');
-  const [selectedModel, setSelectedModel] = useState('claude-3-haiku');
+  const [selectedModel, setSelectedModel] = useState(
+    'claude-haiku-4-5-20251001'
+  );
   const [temperature, setTemperature] = useState(0.5);
   const [maxTokens, setMaxTokens] = useState(2048);
   const [selectedTools, setSelectedTools] = useState<AvailableTool[]>([]);
@@ -68,7 +70,7 @@ export function CreateAgentModal({
     setType('task');
     setDescription('');
     setSystemPrompt('');
-    setSelectedModel('claude-3-haiku');
+    setSelectedModel('claude-haiku-4-5-20251001');
     setTemperature(0.5);
     setMaxTokens(2048);
     setSelectedTools([]);

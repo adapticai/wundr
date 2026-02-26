@@ -69,9 +69,7 @@ export default function InvitationsSettingsPage() {
       }
       const data = await response.json();
       setInvitations(data.invitations || []);
-      setInviteLink(
-        data.inviteLink || `https://app.wundr.ai/invite/${workspaceSlug}/abc123`
-      );
+      setInviteLink(data.inviteLink || '');
     } catch (error) {
       toast({
         title: 'Error',
@@ -265,12 +263,20 @@ export default function InvitationsSettingsPage() {
   const pendingInvitations = invitations.filter(
     inv => inv.status === 'pending'
   );
+
   const acceptedInvitations = invitations.filter(
     inv => inv.status === 'accepted'
   );
 
   return (
     <div className='space-y-6'>
+      <div>
+        <h1 className='text-2xl font-bold'>Invitations</h1>
+        <p className='mt-1 text-muted-foreground'>
+          Send invitations and manage pending requests to join this workspace
+        </p>
+      </div>
+
       {/* Bulk Invite Section */}
       <div className='rounded-lg border bg-card'>
         <div className='border-b px-6 py-4'>
@@ -342,51 +348,66 @@ export default function InvitationsSettingsPage() {
         </div>
 
         <div className='p-6 space-y-4'>
-          <div className='flex items-center gap-2'>
-            <input
-              type='text'
-              value={inviteLink}
-              readOnly
-              className={cn(
-                'flex-1 rounded-md border border-input bg-muted px-3 py-2 text-sm',
-                'focus:outline-none'
-              )}
-            />
-            <button
-              onClick={handleCopyLink}
-              className={cn(
-                'inline-flex items-center gap-2 rounded-md border border-input bg-background',
-                'px-3 py-2 text-sm font-medium hover:bg-accent'
-              )}
-            >
-              <Copy className='h-4 w-4' />
-              Copy
-            </button>
-          </div>
+          {inviteLink ? (
+            <>
+              <div className='flex items-center gap-2'>
+                <input
+                  type='text'
+                  value={inviteLink}
+                  readOnly
+                  className={cn(
+                    'flex-1 rounded-md border border-input bg-muted px-3 py-2 text-sm',
+                    'focus:outline-none'
+                  )}
+                />
+                <button
+                  onClick={handleCopyLink}
+                  className={cn(
+                    'inline-flex items-center gap-2 rounded-md border border-input bg-background',
+                    'px-3 py-2 text-sm font-medium hover:bg-accent'
+                  )}
+                >
+                  <Copy className='h-4 w-4' />
+                  Copy
+                </button>
+              </div>
 
-          <button
-            onClick={handleRegenerateLink}
-            disabled={isRegeneratingLink}
-            className={cn(
-              'inline-flex items-center gap-2 text-sm text-primary hover:underline',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
-            )}
-          >
-            {isRegeneratingLink ? (
-              <>
-                <Loader2 className='h-4 w-4 animate-spin' />
-                Regenerating...
-              </>
-            ) : (
-              <>
-                <RefreshCw className='h-4 w-4' />
-                Regenerate link
-              </>
-            )}
-          </button>
-          <p className='text-xs text-muted-foreground'>
-            Regenerating will invalidate the current link
-          </p>
+              <button
+                onClick={handleRegenerateLink}
+                disabled={isRegeneratingLink}
+                className={cn(
+                  'inline-flex items-center gap-2 text-sm text-primary hover:underline',
+                  'disabled:opacity-50 disabled:cursor-not-allowed'
+                )}
+              >
+                {isRegeneratingLink ? (
+                  <>
+                    <Loader2 className='h-4 w-4 animate-spin' />
+                    Regenerating...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className='h-4 w-4' />
+                    Regenerate link
+                  </>
+                )}
+              </button>
+              <p className='text-xs text-muted-foreground'>
+                Regenerating will immediately invalidate the current link
+              </p>
+            </>
+          ) : (
+            <p className='text-sm text-muted-foreground'>
+              Shareable invite links are disabled. Enable them in{' '}
+              <a
+                href={`/${params.workspaceSlug}/admin/settings/members`}
+                className='text-primary hover:underline'
+              >
+                Members settings
+              </a>
+              .
+            </p>
+          )}
         </div>
       </div>
 

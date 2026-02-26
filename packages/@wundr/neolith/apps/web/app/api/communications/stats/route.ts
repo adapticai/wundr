@@ -30,7 +30,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', COMMUNICATION_ERROR_CODES.UNAUTHORIZED),
+        createErrorResponse(
+          'Authentication required',
+          COMMUNICATION_ERROR_CODES.UNAUTHORIZED
+        ),
         { status: 401 }
       );
     }
@@ -39,9 +42,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const parseResult = communicationStatsFilterSchema.safeParse(searchParams);
     if (!parseResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid query parameters', COMMUNICATION_ERROR_CODES.VALIDATION_ERROR, {
-          errors: parseResult.error.flatten().fieldErrors,
-        }),
+        createErrorResponse(
+          'Invalid query parameters',
+          COMMUNICATION_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: parseResult.error.flatten().fieldErrors,
+          }
+        ),
         { status: 400 }
       );
     }
@@ -96,7 +103,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       byStatus[row.status] = row._count._all;
     }
 
-    const totalMessages = Object.values(byStatus).reduce((sum, n) => sum + n, 0);
+    const totalMessages = Object.values(byStatus).reduce(
+      (sum, n) => sum + n,
+      0
+    );
 
     // Delivery rate = delivered / (sent + delivered + failed + bounced)
     const delivered = byStatus['delivered'] ?? 0;
@@ -120,7 +130,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[GET /api/communications/stats] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', COMMUNICATION_ERROR_CODES.INTERNAL_ERROR),
+      createErrorResponse(
+        'An internal error occurred',
+        COMMUNICATION_ERROR_CODES.INTERNAL_ERROR
+      ),
       { status: 500 }
     );
   }

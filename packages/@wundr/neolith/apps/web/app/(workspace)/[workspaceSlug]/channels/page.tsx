@@ -420,8 +420,17 @@ export default function ChannelsPage() {
 
       {/* Error State */}
       {error && (
-        <div className='rounded-lg border border-red-200 bg-red-50 p-4'>
-          <p className='text-sm text-red-600'>Failed to load channels</p>
+        <div className='rounded-lg border border-destructive/50 bg-destructive/10 p-4 flex items-center justify-between gap-4'>
+          <p className='text-sm text-destructive'>
+            Unable to load channels. Please check your connection and try again.
+          </p>
+          <button
+            type='button'
+            onClick={() => refresh()}
+            className='shrink-0 rounded-md border border-destructive/50 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10'
+          >
+            Retry
+          </button>
         </div>
       )}
 

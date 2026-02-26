@@ -157,13 +157,21 @@ export function OrgGenesisWizard() {
           configHash: '',
           durationMs: result.durationMs || 0,
         },
-        channels: workspaceChannels.map((ch: { id: string; name: string; slug: string; type: string; _count?: { channelMembers?: number } }) => ({
-          id: ch.id,
-          name: ch.name,
-          slug: ch.slug,
-          type: ch.type,
-          memberCount: ch._count?.channelMembers ?? 0,
-        })),
+        channels: workspaceChannels.map(
+          (ch: {
+            id: string;
+            name: string;
+            slug: string;
+            type: string;
+            _count?: { channelMembers?: number };
+          }) => ({
+            id: ch.id,
+            name: ch.name,
+            slug: ch.slug,
+            type: ch.type,
+            memberCount: ch._count?.channelMembers ?? 0,
+          })
+        ),
       };
       setGeneratedOrg(orgData as OrgGenerationResponse);
       setCurrentStep('preview');
@@ -257,7 +265,9 @@ export function OrgGenesisWizard() {
       {currentStep === 'charter' && (
         <CharterStep
           data={wizardData.charterData}
-          onChange={(charterData) => setWizardData(prev => ({ ...prev, charterData }))}
+          onChange={charterData =>
+            setWizardData(prev => ({ ...prev, charterData }))
+          }
           onNext={() => setCurrentStep('config')}
           onBack={() => setCurrentStep('description')}
         />

@@ -9,6 +9,16 @@ import {
   DeploymentCardSkeleton,
 } from '@/components/deployments/deployment-card';
 import { DeploymentLogsPanel } from '@/components/deployments/deployment-logs-panel';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useDeployments, useDeploymentLogs } from '@/hooks/use-deployments';
 
@@ -38,6 +48,8 @@ export default function DeploymentsPage() {
   const [selectedDeploymentId, setSelectedDeploymentId] = useState<
     string | null
   >(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const { deployments, isLoading, error, createDeployment, mutate } =
     useDeployments(workspaceSlug, {
@@ -66,6 +78,7 @@ export default function DeploymentsPage() {
   };
 
   const handleRestart = async (deploymentId: string) => {
+    setActionError(null);
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/deployments/${deploymentId}/restart`,
@@ -79,11 +92,12 @@ export default function DeploymentsPage() {
       mutate();
     } catch (error) {
       console.error('Failed to restart deployment:', error);
-      alert('Failed to restart deployment. Please try again.');
+      setActionError('Failed to restart deployment. Please try again.');
     }
   };
 
   const handleStop = async (deploymentId: string) => {
+    setActionError(null);
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/deployments/${deploymentId}/stop`,
@@ -97,22 +111,20 @@ export default function DeploymentsPage() {
       mutate();
     } catch (error) {
       console.error('Failed to stop deployment:', error);
-      alert('Failed to stop deployment. Please try again.');
+      setActionError('Failed to stop deployment. Please try again.');
     }
   };
 
-  const handleDelete = async (deploymentId: string) => {
-    if (
-      !confirm(
-        'Are you sure you want to delete this deployment? This action cannot be undone.'
-      )
-    ) {
-      return;
-    }
+  const handleDelete = (deploymentId: string) => {
+    setDeleteTargetId(deploymentId);
+  };
 
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setActionError(null);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/deployments/${deploymentId}`,
+        `/api/workspaces/${workspaceSlug}/deployments/${deleteTargetId}`,
         { method: 'DELETE' }
       );
 
@@ -120,10 +132,12 @@ export default function DeploymentsPage() {
         throw new Error('Failed to delete deployment');
       }
 
+      setDeleteTargetId(null);
       mutate();
     } catch (error) {
       console.error('Failed to delete deployment:', error);
-      alert('Failed to delete deployment. Please try again.');
+      setDeleteTargetId(null);
+      setActionError('Failed to delete deployment. Please try again.');
     }
   };
 
@@ -142,8 +156,14 @@ export default function DeploymentsPage() {
 
   return (
     <div className='space-y-6'>
-      {/* Action Button */}
-      <div className='flex justify-end'>
+      {/* Page Header */}
+      <div className='flex items-center justify-between'>
+        <div>
+          <h1 className='text-2xl font-bold text-foreground'>Deployments</h1>
+          <p className='mt-1 text-sm text-muted-foreground'>
+            Monitor and manage your deployed services and agents
+          </p>
+        </div>
         <button
           type='button'
           onClick={() => setIsCreateModalOpen(true)}
@@ -322,6 +342,47 @@ export default function DeploymentsPage() {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateDeployment}
       />
+
+      {/* Action Error */}
+      {actionError && (
+        <div className='rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300'>
+          {actionError}
+          <button
+            type='button'
+            onClick={() => setActionError(null)}
+            className='ml-2 font-medium underline hover:no-underline'
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={!!deleteTargetId}
+        onOpenChange={open => !open && setDeleteTargetId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Deployment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this deployment? This action
+              cannot be undone and any running services will be terminated.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteTargetId(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Logs Panel */}
       {selectedDeploymentId && (

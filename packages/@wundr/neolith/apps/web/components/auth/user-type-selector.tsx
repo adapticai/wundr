@@ -45,7 +45,9 @@ export function UserTypeSelector({
   onSelect,
   isLoading = false,
 }: UserTypeSelectorProps) {
-  const [selected, setSelected] = useState<'human' | 'orchestrator' | null>(null);
+  const [selected, setSelected] = useState<'human' | 'orchestrator' | null>(
+    null
+  );
 
   function handleSelect(type: 'human' | 'orchestrator') {
     if (isLoading) return;
@@ -58,8 +60,12 @@ export function UserTypeSelector({
       <div className='w-full max-w-3xl space-y-8'>
         {/* Header */}
         <div className='space-y-2 text-center'>
-          <h1 className='text-3xl font-bold tracking-tight'>Welcome to Neolith</h1>
-          <p className='text-muted-foreground'>Choose how you&apos;ll use this workspace</p>
+          <h1 className='text-3xl font-bold tracking-tight'>
+            Welcome to Neolith
+          </h1>
+          <p className='text-muted-foreground'>
+            Choose how you&apos;ll use this workspace
+          </p>
           <p className='text-sm text-muted-foreground'>{userEmail}</p>
         </div>
 
@@ -83,15 +89,19 @@ export function UserTypeSelector({
                 </div>
                 <CardTitle className='text-xl'>Team Member</CardTitle>
                 <CardDescription>
-                  Join as a human collaborator to work alongside AI orchestrators. Access channels,
-                  calls, and manage your organization.
+                  Join as a human collaborator to work alongside AI
+                  orchestrators. Access channels, calls, and manage your
+                  organization.
                 </CardDescription>
               </CardHeader>
 
               <CardContent className='flex-1'>
                 <ul className='space-y-2'>
-                  {HUMAN_FEATURES.map((feature) => (
-                    <li key={feature} className='flex items-center gap-2 text-sm'>
+                  {HUMAN_FEATURES.map(feature => (
+                    <li
+                      key={feature}
+                      className='flex items-center gap-2 text-sm'
+                    >
                       <Check className='h-4 w-4 shrink-0 text-primary' />
                       <span>{feature}</span>
                     </li>
@@ -104,12 +114,14 @@ export function UserTypeSelector({
                   className='w-full'
                   disabled={isLoading}
                   variant={selected === 'human' ? 'default' : 'outline'}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     handleSelect('human');
                   }}
                 >
-                  {selected === 'human' ? 'Selected' : 'Continue as Team Member'}
+                  {selected === 'human'
+                    ? 'Selected'
+                    : 'Continue as Team Member'}
                 </Button>
               </CardFooter>
             </Card>
@@ -126,10 +138,13 @@ export function UserTypeSelector({
                 isOrchestratorEligible
                   ? 'cursor-pointer hover:shadow-lg'
                   : 'cursor-not-allowed opacity-60',
-                selected === 'orchestrator' && 'border-primary ring-2 ring-primary'
+                selected === 'orchestrator' &&
+                  'border-primary ring-2 ring-primary'
               )}
               onClick={() =>
-                isOrchestratorEligible && !isLoading && handleSelect('orchestrator')
+                isOrchestratorEligible &&
+                !isLoading &&
+                handleSelect('orchestrator')
               }
             >
               <CardHeader>
@@ -145,19 +160,25 @@ export function UserTypeSelector({
                 </div>
                 <CardTitle className='text-xl'>Orchestrator Agent</CardTitle>
                 <CardDescription>
-                  This device will run as an autonomous orchestrator daemon. It will process tasks,
-                  respond to messages, and manage its discipline.
+                  This device will run as an autonomous orchestrator daemon. It
+                  will process tasks, respond to messages, and manage its
+                  discipline.
                 </CardDescription>
               </CardHeader>
 
               <CardContent className='flex-1'>
                 <ul className='space-y-2'>
-                  {ORCHESTRATOR_FEATURES.map((feature) => (
-                    <li key={feature} className='flex items-center gap-2 text-sm'>
+                  {ORCHESTRATOR_FEATURES.map(feature => (
+                    <li
+                      key={feature}
+                      className='flex items-center gap-2 text-sm'
+                    >
                       <Check
                         className={cn(
                           'h-4 w-4 shrink-0',
-                          isOrchestratorEligible ? 'text-primary' : 'text-muted-foreground'
+                          isOrchestratorEligible
+                            ? 'text-primary'
+                            : 'text-muted-foreground'
                         )}
                       />
                       <span>{feature}</span>
@@ -181,8 +202,10 @@ export function UserTypeSelector({
                     <Button
                       className='w-full'
                       disabled={isLoading}
-                      variant={selected === 'orchestrator' ? 'default' : 'outline'}
-                      onClick={(e) => {
+                      variant={
+                        selected === 'orchestrator' ? 'default' : 'outline'
+                      }
+                      onClick={e => {
                         e.stopPropagation();
                         handleSelect('orchestrator');
                       }}

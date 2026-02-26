@@ -1,6 +1,13 @@
 'use client';
 
-import { ArrowLeft, Pause, Play, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  GitBranch,
+  MessageSquare,
+  Pause,
+  Play,
+  Trash2,
+} from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 
@@ -10,6 +17,8 @@ import { OrchestratorMetrics } from '@/components/admin/orchestrators/orchestrat
 import { OrchestratorStatusBadge } from '@/components/admin/orchestrators/orchestrator-status';
 import { AgentActivityTimeline } from '@/components/orchestrator/agent-activity-timeline';
 import { DaemonStatusWidget } from '@/components/orchestrator/daemon-status-widget';
+import { DelegationChainVisualization } from '@/components/orchestrator/delegation-chain-visualization';
+import { OrchestratorConversationThread } from '@/components/orchestrator/orchestrator-conversation-thread';
 import { SessionManagerCreate } from '@/components/orchestrator/session-manager-create';
 import { SessionManagerList } from '@/components/orchestrator/session-manager-list';
 import {
@@ -50,7 +59,8 @@ export default function AdminOrchestratorDetailPage() {
 
   const [activeTab, setActiveTab] = useState('overview');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showCreateSessionManager, setShowCreateSessionManager] = useState(false);
+  const [showCreateSessionManager, setShowCreateSessionManager] =
+    useState(false);
 
   const { orchestrator, isLoading, error, refetch } =
     useOrchestrator(orchestratorId);
@@ -143,27 +153,6 @@ export default function AdminOrchestratorDetailPage() {
     );
   }
 
-  const mockActivities = [
-    {
-      id: '1',
-      type: 'message' as const,
-      description: 'Processed 15 new messages in #engineering channel',
-      timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-    },
-    {
-      id: '2',
-      type: 'config' as const,
-      description: 'System prompt updated',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    },
-    {
-      id: '3',
-      type: 'assignment' as const,
-      description: 'Assigned to 3 new channels',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-    },
-  ];
-
   return (
     <div className='space-y-6'>
       {/* Header */}
@@ -229,13 +218,16 @@ export default function AdminOrchestratorDetailPage() {
               <CardDescription className='mt-2'>
                 {orchestrator.description || 'No description provided'}
               </CardDescription>
-              <div className='mt-4 flex flex-wrap gap-2'>
-                {orchestrator.capabilities?.map((capability, index) => (
-                  <Badge key={index} variant='secondary'>
-                    {capability}
-                  </Badge>
-                ))}
-              </div>
+              {Array.isArray(orchestrator.capabilities) &&
+                orchestrator.capabilities.length > 0 && (
+                  <div className='mt-4 flex flex-wrap gap-2'>
+                    {orchestrator.capabilities.map((capability, index) => (
+                      <Badge key={index} variant='secondary'>
+                        {capability}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
             </div>
           </div>
         </CardHeader>
@@ -243,12 +235,14 @@ export default function AdminOrchestratorDetailPage() {
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className='grid w-full grid-cols-5'>
+        <TabsList className='grid w-full grid-cols-7'>
           <TabsTrigger value='overview'>Overview</TabsTrigger>
           <TabsTrigger value='activity'>Activity</TabsTrigger>
           <TabsTrigger value='configuration'>Configuration</TabsTrigger>
           <TabsTrigger value='performance'>Performance</TabsTrigger>
           <TabsTrigger value='daemon'>Daemon &amp; Sessions</TabsTrigger>
+          <TabsTrigger value='conversations'>Conversations</TabsTrigger>
+          <TabsTrigger value='delegation'>Delegation</TabsTrigger>
         </TabsList>
 
         <TabsContent value='overview' className='space-y-6 mt-6'>
@@ -343,10 +337,7 @@ export default function AdminOrchestratorDetailPage() {
         </TabsContent>
 
         <TabsContent value='activity' className='mt-6'>
-          <OrchestratorActivity
-            orchestratorId={orchestrator.id}
-            activities={mockActivities}
-          />
+          <OrchestratorActivity orchestratorId={orchestrator.id} />
         </TabsContent>
 
         <TabsContent value='configuration' className='mt-6'>
@@ -362,8 +353,6 @@ export default function AdminOrchestratorDetailPage() {
             orchestratorId={orchestrator.id}
             totalMessages={orchestrator.messageCount}
             activeConversations={orchestrator.agentCount}
-            avgResponseTime='2.3s'
-            successRate='98.5%'
           />
         </TabsContent>
 
@@ -402,6 +391,31 @@ export default function AdminOrchestratorDetailPage() {
             onOpenChange={setShowCreateSessionManager}
             onCreated={() => setShowCreateSessionManager(false)}
           />
+        </TabsContent>
+        <TabsContent value='conversations' className='mt-6'>
+          <section className='space-y-3'>
+            <div className='flex items-center gap-2'>
+              <MessageSquare className='h-5 w-5 text-muted-foreground' />
+              <h2 className='text-base font-semibold'>Conversations</h2>
+            </div>
+            <OrchestratorConversationThread
+              orchestratorId={orchestratorId}
+              maxHeight='500px'
+            />
+          </section>
+        </TabsContent>
+
+        <TabsContent value='delegation' className='mt-6'>
+          <section className='space-y-3'>
+            <div className='flex items-center gap-2'>
+              <GitBranch className='h-5 w-5 text-muted-foreground' />
+              <h2 className='text-base font-semibold'>Delegation Chain</h2>
+            </div>
+            <DelegationChainVisualization
+              workspaceId={workspaceSlug}
+              orchestratorId={orchestratorId}
+            />
+          </section>
         </TabsContent>
       </Tabs>
 

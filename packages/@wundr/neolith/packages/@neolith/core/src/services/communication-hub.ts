@@ -16,7 +16,13 @@ import { getAgentChannelService } from './agent-channel-service';
 // Types
 // =============================================================================
 
-export type CommunicationChannel = 'email' | 'sms' | 'whatsapp' | 'voice' | 'slack' | 'internal';
+export type CommunicationChannel =
+  | 'email'
+  | 'sms'
+  | 'whatsapp'
+  | 'voice'
+  | 'slack'
+  | 'internal';
 
 export interface UnifiedOutboundMessage {
   channel: CommunicationChannel;
@@ -62,7 +68,7 @@ export class CommunicationHubError extends Error {
   constructor(
     message: string,
     public channel?: CommunicationChannel,
-    public originalError?: Error,
+    public originalError?: Error
   ) {
     super(message);
     this.name = 'CommunicationHubError';
@@ -91,7 +97,7 @@ export interface ICommunicationHub {
     orchestratorId: string,
     recipientIds: string[],
     content: string,
-    channel?: CommunicationChannel,
+    channel?: CommunicationChannel
   ): Promise<DeliveryResult[]>;
 
   /**
@@ -103,7 +109,7 @@ export interface ICommunicationHub {
    */
   getDeliveryStatus(
     messageId: string,
-    channel: CommunicationChannel,
+    channel: CommunicationChannel
   ): Promise<DeliveryResult | null>;
 
   /**
@@ -124,7 +130,10 @@ class CommunicationHubImpl implements ICommunicationHub {
       if (message.fallbackChannels?.length) {
         for (const fallbackChannel of message.fallbackChannels) {
           try {
-            const result = await this.sendViaChannel({ ...message, channel: fallbackChannel });
+            const result = await this.sendViaChannel({
+              ...message,
+              channel: fallbackChannel,
+            });
             return { ...result, fallbackUsed: true, fallbackChannel };
           } catch {
             continue;
@@ -133,18 +142,22 @@ class CommunicationHubImpl implements ICommunicationHub {
       }
 
       const errorMessage =
-        primaryError instanceof Error ? primaryError.message : String(primaryError);
+        primaryError instanceof Error
+          ? primaryError.message
+          : String(primaryError);
       return { success: false, channel: message.channel, error: errorMessage };
     }
   }
 
-  private async sendViaChannel(message: UnifiedOutboundMessage): Promise<DeliveryResult> {
+  private async sendViaChannel(
+    message: UnifiedOutboundMessage
+  ): Promise<DeliveryResult> {
     switch (message.channel) {
       case 'email': {
         if (!message.recipientAddress) {
           throw new CommunicationHubError(
             'recipientAddress is required for email channel',
-            'email',
+            'email'
           );
         }
         const result = await emailService.sendEmail(message.orchestratorId, {
@@ -153,35 +166,51 @@ class CommunicationHubImpl implements ICommunicationHub {
           body: message.content,
           metadata: message.metadata,
         });
-        return { success: true, channel: 'email', messageId: result.messageId, sentAt: new Date() };
+        return {
+          success: true,
+          channel: 'email',
+          messageId: result.messageId,
+          sentAt: new Date(),
+        };
       }
 
       case 'sms': {
         if (!message.recipientAddress) {
           throw new CommunicationHubError(
             'recipientAddress is required for sms channel',
-            'sms',
+            'sms'
           );
         }
-        const result = await getTwilioService().sendSMS(message.orchestratorId, {
-          to: message.recipientAddress,
-          body: message.content,
-          metadata: message.metadata,
-        });
-        return { success: true, channel: 'sms', externalId: result.sid, sentAt: new Date() };
+        const result = await getTwilioService().sendSMS(
+          message.orchestratorId,
+          {
+            to: message.recipientAddress,
+            body: message.content,
+            metadata: message.metadata,
+          }
+        );
+        return {
+          success: true,
+          channel: 'sms',
+          externalId: result.sid,
+          sentAt: new Date(),
+        };
       }
 
       case 'whatsapp': {
         if (!message.recipientAddress) {
           throw new CommunicationHubError(
             'recipientAddress is required for whatsapp channel',
-            'whatsapp',
+            'whatsapp'
           );
         }
-        const result = await getTwilioService().sendWhatsApp(message.orchestratorId, {
-          to: message.recipientAddress,
-          body: message.content,
-        });
+        const result = await getTwilioService().sendWhatsApp(
+          message.orchestratorId,
+          {
+            to: message.recipientAddress,
+            body: message.content,
+          }
+        );
         return {
           success: true,
           channel: 'whatsapp',
@@ -194,21 +223,26 @@ class CommunicationHubImpl implements ICommunicationHub {
         if (!message.recipientId) {
           throw new CommunicationHubError(
             'recipientId is required for internal channel',
-            'internal',
+            'internal'
           );
         }
         const msg = await getAgentChannelService().sendAgentMessage(
           message.orchestratorId,
           message.recipientId,
-          message.content,
+          message.content
         );
-        return { success: true, channel: 'internal', messageId: msg.id, sentAt: new Date() };
+        return {
+          success: true,
+          channel: 'internal',
+          messageId: msg.id,
+          sentAt: new Date(),
+        };
       }
 
       default:
         throw new CommunicationHubError(
           `Unsupported channel: ${message.channel}`,
-          message.channel,
+          message.channel
         );
     }
   }
@@ -217,12 +251,12 @@ class CommunicationHubImpl implements ICommunicationHub {
     orchestratorId: string,
     recipientIds: string[],
     content: string,
-    channel: CommunicationChannel = 'internal',
+    channel: CommunicationChannel = 'internal'
   ): Promise<DeliveryResult[]> {
     const results = await Promise.allSettled(
-      recipientIds.map((recipientId) =>
-        this.send({ channel, orchestratorId, recipientId, content }),
-      ),
+      recipientIds.map(recipientId =>
+        this.send({ channel, orchestratorId, recipientId, content })
+      )
     );
 
     return results.map((result, index): DeliveryResult => {
@@ -241,20 +275,31 @@ class CommunicationHubImpl implements ICommunicationHub {
 
   async getDeliveryStatus(
     messageId: string,
-    channel: CommunicationChannel,
+    channel: CommunicationChannel
   ): Promise<DeliveryResult | null> {
     switch (channel) {
       case 'email': {
         const status = await emailService.getDeliveryStatus(messageId);
         if (!status) return null;
-        return { success: status.status !== 'failed', channel: 'email', messageId: status.messageId, sentAt: status.sentAt };
+        return {
+          success: status.status !== 'failed',
+          channel: 'email',
+          messageId: status.messageId,
+          sentAt: status.sentAt,
+        };
       }
 
       case 'sms':
       case 'whatsapp': {
         const status = await getTwilioService().getMessageStatus(messageId);
         if (!status) return null;
-        return { success: status.status !== 'failed' && status.status !== 'undelivered', channel, externalId: status.sid, sentAt: status.sentAt };
+        return {
+          success:
+            status.status !== 'failed' && status.status !== 'undelivered',
+          channel,
+          externalId: status.sid,
+          sentAt: status.sentAt,
+        };
       }
 
       default:
@@ -263,11 +308,34 @@ class CommunicationHubImpl implements ICommunicationHub {
   }
 
   async getChannelHealth(): Promise<ChannelHealth[]> {
-    const checks: Array<{ channel: CommunicationChannel; check: () => Promise<void> }> = [
-      { channel: 'email', check: async () => { await emailService.listSentEmails('health-check', { limit: 0 }); } },
-      { channel: 'sms', check: async () => { await getTwilioService().getMessageStatus('health-check'); } },
-      { channel: 'whatsapp', check: async () => { await getTwilioService().getMessageStatus('health-check'); } },
-      { channel: 'internal', check: async () => { await getAgentChannelService().listAgentChannels('health-check'); } },
+    const checks: Array<{
+      channel: CommunicationChannel;
+      check: () => Promise<void>;
+    }> = [
+      {
+        channel: 'email',
+        check: async () => {
+          await emailService.listSentEmails('health-check', { limit: 0 });
+        },
+      },
+      {
+        channel: 'sms',
+        check: async () => {
+          await getTwilioService().getMessageStatus('health-check');
+        },
+      },
+      {
+        channel: 'whatsapp',
+        check: async () => {
+          await getTwilioService().getMessageStatus('health-check');
+        },
+      },
+      {
+        channel: 'internal',
+        check: async () => {
+          await getAgentChannelService().listAgentChannels('health-check');
+        },
+      },
     ];
 
     const results = await Promise.all(
@@ -284,7 +352,7 @@ class CommunicationHubImpl implements ICommunicationHub {
             lastError: err instanceof Error ? err.message : String(err),
           };
         }
-      }),
+      })
     );
 
     return results;

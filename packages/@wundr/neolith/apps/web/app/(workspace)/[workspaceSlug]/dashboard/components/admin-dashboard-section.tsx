@@ -59,16 +59,16 @@ export function AdminDashboardSection({
           const data = await response.json();
           setStats(data.data);
         } else {
-          // If endpoint doesn't exist yet, use mock data
+          // API not available yet - use zero-state defaults
           setStats({
-            pendingInvites: 3,
-            totalMembers: 12,
-            securityEvents: 2,
-            billingStatus: 'active',
+            pendingInvites: 0,
+            totalMembers: 0,
+            securityEvents: 0,
+            billingStatus: null,
             memberGrowth: {
-              current: 12,
-              previous: 10,
-              percentage: 20,
+              current: 0,
+              previous: 0,
+              percentage: 0,
             },
             workspaceHealth: {
               status: 'healthy',

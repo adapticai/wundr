@@ -8,6 +8,7 @@ import {
   MoreHorizontal,
   Power,
   DollarSign,
+  BarChart2,
   Users,
   Settings,
   Trash2,
@@ -27,9 +28,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,6 +62,8 @@ import { BudgetSettingsDialog } from './components/budget-settings-dialog';
 import { DefaultSettingsDialog } from './components/default-settings-dialog';
 import { OrchestratorAnalytics } from './components/orchestrator-analytics';
 import { PermissionsDialog } from './components/permissions-dialog';
+
+import { OrchestratorStatusBadge } from '@/components/admin/orchestrators/orchestrator-status';
 
 import type { OrchestratorStatus } from '@/types/orchestrator';
 
@@ -385,17 +388,6 @@ export default function AdminOrchestratorsManagementPage() {
     return Array.from(disciplines).sort();
   }, [orchestrators]);
 
-  const getStatusBadge = (status: OrchestratorStatus) => {
-    const config = {
-      ONLINE: { label: 'Online', variant: 'default' as const },
-      OFFLINE: { label: 'Offline', variant: 'secondary' as const },
-      BUSY: { label: 'Busy', variant: 'default' as const },
-      AWAY: { label: 'Away', variant: 'outline' as const },
-    };
-    const { label, variant } = config[status];
-    return <Badge variant={variant}>{label}</Badge>;
-  };
-
   return (
     <div className='space-y-6'>
       {/* Stats Overview */}
@@ -480,7 +472,9 @@ export default function AdminOrchestratorsManagementPage() {
               Defaults
             </Button>
             <Button
-              onClick={() => router.push(`/${workspaceSlug}/orchestrators/new`)}
+              onClick={() =>
+                router.push(`/${workspaceSlug}/admin/orchestrators/new`)
+              }
             >
               <Plus className='h-4 w-4 mr-2' />
               New Orchestrator
@@ -549,15 +543,54 @@ export default function AdminOrchestratorsManagementPage() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={9} className='text-center py-8'>
-                  Loading...
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <Skeleton className='h-4 w-4' />
+                  </TableCell>
+                  <TableCell>
+                    <div className='flex items-center gap-3'>
+                      <Skeleton className='h-10 w-10 rounded-lg' />
+                      <div className='space-y-1'>
+                        <Skeleton className='h-4 w-32' />
+                        <Skeleton className='h-3 w-24' />
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className='h-4 w-20' />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className='h-4 w-24' />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className='h-6 w-16 rounded-full' />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className='h-4 w-28' />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className='h-4 w-12 ml-auto' />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className='h-4 w-16 ml-auto' />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className='h-8 w-8 ml-auto' />
+                  </TableCell>
+                </TableRow>
+              ))
             ) : filteredOrchestrators.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className='text-center py-8'>
-                  No orchestrators found
+                <TableCell
+                  colSpan={9}
+                  className='text-center py-12 text-muted-foreground'
+                >
+                  {searchQuery ||
+                  statusFilter !== 'all' ||
+                  disciplineFilter !== 'all'
+                    ? 'No orchestrators match the current filters.'
+                    : 'No orchestrators found. Create one to get started.'}
                 </TableCell>
               </TableRow>
             ) : (
@@ -596,7 +629,12 @@ export default function AdminOrchestratorsManagementPage() {
                   <TableCell>
                     <span className='text-sm'>{orchestrator.role}</span>
                   </TableCell>
-                  <TableCell>{getStatusBadge(orchestrator.status)}</TableCell>
+                  <TableCell>
+                    <OrchestratorStatusBadge
+                      status={orchestrator.status}
+                      size='sm'
+                    />
+                  </TableCell>
                   <TableCell>
                     <div>
                       <p className='text-sm font-medium'>
@@ -653,7 +691,7 @@ export default function AdminOrchestratorsManagementPage() {
                             setAnalyticsDialogOpen(true);
                           }}
                         >
-                          <DollarSign className='h-4 w-4 mr-2' />
+                          <BarChart2 className='h-4 w-4 mr-2' />
                           Analytics
                         </DropdownMenuItem>
                         <DropdownMenuItem

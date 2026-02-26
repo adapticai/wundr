@@ -16,7 +16,6 @@ import {
   ChevronDown,
   ArrowUpDown,
   Clock,
-  User,
   CheckCircle2,
   XCircle,
   Activity,
@@ -34,7 +33,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
@@ -53,53 +51,21 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { usePageHeader } from '@/contexts/page-header-context';
-import {
-  useWorkflows,
-  useWorkflowTemplates,
-  useWorkflowExecutions,
-  useWorkflowBuilder,
-} from '@/hooks/use-workflows';
+import { useWorkflows, useWorkflowTemplates } from '@/hooks/use-workflows';
 import { cn } from '@/lib/utils';
 import {
   WORKFLOW_STATUS_CONFIG,
   TRIGGER_TYPE_CONFIG,
-  ACTION_TYPE_CONFIG,
-  EXECUTION_STATUS_CONFIG,
   TEMPLATE_CATEGORY_CONFIG,
-  DEFAULT_ACTION_CONFIGS,
 } from '@/types/workflow';
 
 import type {
   Workflow,
-  WorkflowId,
-  ActionId,
   WorkflowStatus,
   WorkflowTemplate,
   WorkflowTemplateCategory,
-  CreateWorkflowInput,
-  TriggerConfig,
-  ActionConfig,
   TriggerType,
 } from '@/types/workflow';
-
-// =============================================================================
-// Default Trigger Configurations
-// =============================================================================
-
-const DEFAULT_TRIGGER_CONFIGS: Record<TriggerConfig['type'], TriggerConfig> = {
-  message: { type: 'message', message: {} },
-  reaction: { type: 'reaction', reaction: {} },
-  webhook: { type: 'webhook', webhook: {} },
-  mention: { type: 'mention', mention: {} },
-  schedule: { type: 'schedule', schedule: { cron: '0 9 * * 1-5' } },
-  keyword: {
-    type: 'keyword',
-    keyword: { keywords: [], matchType: 'contains' },
-  },
-  channel_join: { type: 'channel_join', channel: {} },
-  channel_leave: { type: 'channel_leave', channel: {} },
-  user_join: { type: 'user_join' },
-};
 
 // =============================================================================
 // Types
@@ -141,14 +107,6 @@ export default function WorkflowsPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [selectedWorkflows, setSelectedWorkflows] = useState<Set<string>>(
     new Set()
-  );
-  const [showBuilder, setShowBuilder] = useState(false);
-  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(
-    null
-  );
-  const [showHistory, setShowHistory] = useState(false);
-  const [historyWorkflowId, setHistoryWorkflowId] = useState<string | null>(
-    null
   );
   const [showTemplates, setShowTemplates] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -262,70 +220,24 @@ export default function WorkflowsPage() {
   }, [workflows]);
 
   // Handlers
-  const handleCreateWorkflow = useCallback(
-    async (input: CreateWorkflowInput) => {
-      const workflow = await createWorkflow(input);
-      if (workflow) {
-        setShowBuilder(false);
-        setShowTemplates(false);
-        mutate();
-      }
+  const handleEditWorkflow = useCallback(
+    (workflow: Workflow) => {
+      router.push(`/${workspaceSlug}/workflows/${workflow.id}/edit`);
     },
-    [createWorkflow, mutate]
+    [router, workspaceSlug]
   );
 
-  const handleEditWorkflow = useCallback((workflow: Workflow) => {
-    setSelectedWorkflow(workflow);
-    setShowBuilder(true);
-  }, []);
-
-  const handleViewHistory = useCallback((workflowId: string) => {
-    setHistoryWorkflowId(workflowId);
-    setShowHistory(true);
-  }, []);
-
-  const handleCloseBuilder = useCallback(() => {
-    setShowBuilder(false);
-    setSelectedWorkflow(null);
-  }, []);
-
-  const handleCloseHistory = useCallback(() => {
-    setShowHistory(false);
-    setHistoryWorkflowId(null);
-  }, []);
-
-  const handleSelectTemplate = useCallback(
-    (template: WorkflowTemplate) => {
-      // Create temporary workflow object from template for UI builder
-      // Note: createdBy will be set by API from session when actually saved
-      setSelectedWorkflow({
-        id: '' as WorkflowId,
-        workspaceId: workspaceSlug,
-        name: template.name,
-        description: template.description,
-        status: 'draft',
-        trigger: {
-          ...template.trigger,
-          type: template.trigger.type,
-        } as TriggerConfig,
-        actions: template.actions.map(
-          (a, i) =>
-            ({ ...a, id: `temp_${i}` as ActionId, order: i }) as ActionConfig
-        ),
-        variables:
-          template.variables?.map(v => ({ ...v, source: 'custom' as const })) ??
-          [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: '', // Temporary - API sets from session.user.id on save
-        runCount: 0,
-        errorCount: 0,
-      });
-      setShowTemplates(false);
-      setShowBuilder(true);
+  const handleViewHistory = useCallback(
+    (workflowId: string) => {
+      router.push(`/${workspaceSlug}/workflows/${workflowId}/history`);
     },
-    [workspaceSlug]
+    [router, workspaceSlug]
   );
+
+  const handleSelectTemplate = useCallback(() => {
+    setShowTemplates(false);
+    router.push(`/${workspaceSlug}/workflows/new`);
+  }, [router, workspaceSlug]);
 
   // Bulk operation handlers
   const handleSelectAll = useCallback(() => {
@@ -786,15 +698,6 @@ export default function WorkflowsPage() {
           />
         )}
 
-      {/* Workflow Builder Modal */}
-      {showBuilder && (
-        <WorkflowBuilderModal
-          workflow={selectedWorkflow}
-          onClose={handleCloseBuilder}
-          onSave={handleCreateWorkflow}
-        />
-      )}
-
       {/* Template Selection Modal */}
       {showTemplates && (
         <TemplateSelectionModal
@@ -802,14 +705,6 @@ export default function WorkflowsPage() {
           isLoading={templatesLoading}
           onClose={() => setShowTemplates(false)}
           onSelect={handleSelectTemplate}
-        />
-      )}
-
-      {/* Execution History Drawer */}
-      {showHistory && historyWorkflowId && (
-        <ExecutionHistoryDrawer
-          workflowId={historyWorkflowId}
-          onClose={handleCloseHistory}
         />
       )}
     </div>
@@ -1262,266 +1157,6 @@ function WorkflowTable({
 }
 
 // =============================================================================
-// Workflow Builder Modal
-// =============================================================================
-
-interface WorkflowBuilderModalProps {
-  workflow: Workflow | null;
-  onClose: () => void;
-  onSave: (input: CreateWorkflowInput) => Promise<void>;
-}
-
-function WorkflowBuilderModal({
-  workflow,
-  onClose,
-  onSave,
-}: WorkflowBuilderModalProps) {
-  const [name, setName] = useState(workflow?.name ?? '');
-  const [description, setDescription] = useState(workflow?.description ?? '');
-  const [isSaving, setIsSaving] = useState(false);
-
-  const {
-    trigger,
-    actions,
-    variables,
-    errors,
-    setTrigger,
-    addAction,
-    updateAction,
-    removeAction,
-    validate,
-  } = useWorkflowBuilder(workflow ?? undefined);
-
-  const handleSave = async () => {
-    if (!validate()) {
-      return;
-    }
-    if (!trigger) {
-      return;
-    }
-    if (!name.trim()) {
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      await onSave({
-        name: name.trim(),
-        description: description.trim() || undefined,
-        trigger,
-        actions: actions.map(({ id: _id, ...rest }) => rest),
-        variables: variables.map(({ source: _source, ...rest }) => rest),
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
-      <div className='max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-background p-6'>
-        <div className='flex items-center justify-between border-b border-border pb-4'>
-          <h2 className='text-xl font-semibold'>
-            {workflow?.id ? 'Edit Workflow' : 'Create Workflow'}
-          </h2>
-          <button
-            type='button'
-            onClick={onClose}
-            className='rounded-md p-2 hover:bg-accent'
-          >
-            <XIcon className='h-5 w-5' />
-          </button>
-        </div>
-
-        <div className='mt-6 space-y-6'>
-          {/* Basic Info */}
-          <div className='space-y-4'>
-            <div>
-              <label htmlFor='wf-name' className='block text-sm font-medium'>
-                Name
-              </label>
-              <input
-                id='wf-name'
-                type='text'
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder='My Workflow'
-                className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-              />
-            </div>
-            <div>
-              <label htmlFor='wf-desc' className='block text-sm font-medium'>
-                Description (optional)
-              </label>
-              <textarea
-                id='wf-desc'
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder='Describe what this workflow does...'
-                rows={2}
-                className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-              />
-            </div>
-          </div>
-
-          {/* Trigger Section */}
-          <div className='rounded-lg border p-4'>
-            <h3 className='mb-4 font-semibold'>Trigger</h3>
-            {errors.trigger && (
-              <p className='mb-2 text-sm text-red-600'>{errors.trigger}</p>
-            )}
-            <TriggerSelector value={trigger} onChange={setTrigger} />
-          </div>
-
-          {/* Actions Section */}
-          <div className='rounded-lg border p-4'>
-            <h3 className='mb-4 font-semibold'>Actions</h3>
-            {errors.actions && (
-              <p className='mb-2 text-sm text-red-600'>{errors.actions}</p>
-            )}
-            <ActionList
-              actions={actions}
-              onUpdate={updateAction}
-              onRemove={removeAction}
-            />
-            <button
-              type='button'
-              onClick={() =>
-                addAction({
-                  type: 'send_message',
-                  config: { channelId: '', message: '' },
-                })
-              }
-              className='mt-4 inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80'
-            >
-              <PlusIcon className='h-4 w-4' />
-              Add Action
-            </button>
-          </div>
-        </div>
-
-        <div className='mt-6 flex justify-end gap-3 border-t border-border pt-4'>
-          <button
-            type='button'
-            onClick={onClose}
-            className='rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-accent'
-          >
-            Cancel
-          </button>
-          <button
-            type='button'
-            onClick={handleSave}
-            disabled={isSaving || !name.trim()}
-            className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50'
-          >
-            {isSaving ? 'Saving...' : 'Save Workflow'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// =============================================================================
-// Trigger Selector
-// =============================================================================
-
-interface TriggerSelectorProps {
-  value: TriggerConfig | null;
-  onChange: (trigger: TriggerConfig) => void;
-}
-
-function TriggerSelector({ value, onChange }: TriggerSelectorProps) {
-  const triggerTypes = Object.entries(TRIGGER_TYPE_CONFIG);
-
-  return (
-    <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
-      {triggerTypes.map(([type, config]) => (
-        <button
-          key={type}
-          type='button'
-          onClick={() =>
-            onChange(DEFAULT_TRIGGER_CONFIGS[type as TriggerConfig['type']])
-          }
-          className={cn(
-            'rounded-lg border p-3 text-left transition-colors hover:border-primary',
-            value?.type === type
-              ? 'border-primary bg-primary/5'
-              : 'border-border'
-          )}
-        >
-          <p className='font-medium text-sm'>{config.label}</p>
-          <p className='mt-1 text-xs text-muted-foreground'>
-            {config.description}
-          </p>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// =============================================================================
-// Action List
-// =============================================================================
-
-interface ActionListProps {
-  actions: ActionConfig[];
-  onUpdate: (id: string, config: Partial<ActionConfig>) => void;
-  onRemove: (id: string) => void;
-}
-
-function ActionList({ actions, onUpdate, onRemove }: ActionListProps) {
-  if (actions.length === 0) {
-    return (
-      <p className='text-sm text-muted-foreground'>
-        No actions added yet. Add an action to define what happens when this
-        workflow runs.
-      </p>
-    );
-  }
-
-  return (
-    <div className='space-y-2'>
-      {actions.map((action, index) => (
-        <div
-          key={action.id}
-          className='flex items-center gap-3 rounded-lg border border-border p-3'
-        >
-          <span className='flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium'>
-            {index + 1}
-          </span>
-          <div className='flex-1'>
-            <select
-              value={action.type}
-              onChange={e => {
-                const newType = e.target.value as ActionConfig['type'];
-                onUpdate(action.id, {
-                  type: newType,
-                  config: DEFAULT_ACTION_CONFIGS[newType] || {},
-                } as Partial<ActionConfig>);
-              }}
-              className='rounded-md border border-input bg-background px-2 py-1 text-sm'
-            >
-              {Object.entries(ACTION_TYPE_CONFIG).map(([key, cfg]) => (
-                <option key={key} value={key}>
-                  {cfg.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button
-            type='button'
-            onClick={() => onRemove(action.id)}
-            className='text-muted-foreground hover:text-red-600'
-          >
-            <TrashIcon className='h-4 w-4' />
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // =============================================================================
 // Template Selection Modal
 // =============================================================================
@@ -1638,117 +1273,6 @@ function TemplateSelectionModal({
             </div>
           )}
         </div>
-      </div>
-    </div>
-  );
-}
-
-// =============================================================================
-// Execution History Drawer
-// =============================================================================
-
-interface ExecutionHistoryDrawerProps {
-  workflowId: string;
-  onClose: () => void;
-}
-
-function ExecutionHistoryDrawer({
-  workflowId,
-  onClose,
-}: ExecutionHistoryDrawerProps) {
-  const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
-  const { executions, isLoading, hasMore, loadMore, cancelExecution } =
-    useWorkflowExecutions(workspaceSlug, workflowId, { limit: 20 });
-
-  return (
-    <div className='fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-background shadow-xl'>
-      <div className='flex items-center justify-between border-b border-border p-4'>
-        <h2 className='text-lg font-semibold'>Execution History</h2>
-        <button
-          type='button'
-          onClick={onClose}
-          className='rounded-md p-2 hover:bg-accent'
-        >
-          <XIcon className='h-5 w-5' />
-        </button>
-      </div>
-
-      <div className='flex-1 overflow-y-auto p-4'>
-        {isLoading && executions.length === 0 ? (
-          <div className='space-y-4'>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className='h-20 animate-pulse rounded-lg bg-muted' />
-            ))}
-          </div>
-        ) : executions.length === 0 ? (
-          <p className='py-8 text-center text-muted-foreground'>
-            No executions yet. This workflow hasn&apos;t been triggered.
-          </p>
-        ) : (
-          <div className='space-y-3'>
-            {executions.map(exec => {
-              const statusConfig = EXECUTION_STATUS_CONFIG[exec.status];
-              return (
-                <div
-                  key={exec.id}
-                  className='rounded-lg border border-border p-3'
-                >
-                  <div className='flex items-center justify-between'>
-                    <span
-                      className={cn(
-                        'rounded-full px-2 py-0.5 text-xs font-medium',
-                        statusConfig.bgColor,
-                        statusConfig.color
-                      )}
-                    >
-                      {statusConfig.label}
-                    </span>
-                    <span className='text-xs text-muted-foreground'>
-                      {new Date(exec.startedAt).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className='mt-2 text-sm'>
-                    <p>
-                      Actions:{' '}
-                      {
-                        exec.actionResults.filter(a => a.status === 'completed')
-                          .length
-                      }
-                      /{exec.actionResults.length} completed
-                    </p>
-                    {exec.duration && (
-                      <p className='text-muted-foreground'>
-                        Duration: {exec.duration}ms
-                      </p>
-                    )}
-                  </div>
-                  {exec.status === 'running' && (
-                    <button
-                      type='button'
-                      onClick={() => cancelExecution(exec.id)}
-                      className='mt-2 text-xs text-red-600 hover:text-red-700'
-                    >
-                      Cancel
-                    </button>
-                  )}
-                  {exec.error && (
-                    <p className='mt-2 text-xs text-red-600'>{exec.error}</p>
-                  )}
-                </div>
-              );
-            })}
-            {hasMore && (
-              <button
-                type='button'
-                onClick={loadMore}
-                className='w-full rounded-md border border-border py-2 text-sm hover:bg-accent'
-              >
-                Load More
-              </button>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

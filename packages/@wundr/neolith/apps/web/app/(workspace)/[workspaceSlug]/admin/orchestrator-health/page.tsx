@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 
 import {
@@ -8,6 +8,7 @@ import {
   OrchestratorStatusCardSkeleton,
 } from '@/components/presence/orchestrator-status-card';
 import { usePageHeader } from '@/contexts/page-header-context';
+import { useToast } from '@/hooks/use-toast';
 import { useWorkspaceOrchestratorHealthList } from '@/hooks/use-presence';
 import { cn } from '@/lib/utils';
 
@@ -22,17 +23,19 @@ const filterOptions: { value: FilterStatus; label: string }[] = [
 
 export default function OrchestratorHealthDashboardPage() {
   const params = useParams();
+  const router = useRouter();
   const workspaceSlug = params.workspaceSlug as string;
   const { setPageHeader } = usePageHeader();
 
   // Set page header
   useEffect(() => {
     setPageHeader(
-      'OrchestratorHealth Dashboard',
-      'Monitor the health and status of all Orchestrators in your workspace'
+      'Orchestrator Health',
+      'Monitor the health and status of all orchestrators in your workspace'
     );
   }, [setPageHeader]);
 
+  const { toast } = useToast();
   const [filter, setFilter] = useState<FilterStatus>('all');
   const [isCheckingHealth, setIsCheckingHealth] = useState(false);
 
@@ -80,42 +83,64 @@ export default function OrchestratorHealthDashboardPage() {
   const handleHealthCheck = useCallback(async () => {
     setIsCheckingHealth(true);
     try {
-      await fetch(
+      const response = await fetch(
         `/api/workspaces/${workspaceSlug}/orchestrators/health-check`,
-        {
-          method: 'POST',
-        }
+        { method: 'POST' }
       );
+      if (!response.ok) {
+        throw new Error('Health check request failed');
+      }
       await refetch();
+      toast({
+        title: 'Health check complete',
+        description: 'Orchestrator statuses have been refreshed.',
+      });
     } catch {
-      // Silently fail
+      toast({
+        title: 'Health check failed',
+        description: 'Could not complete the health check. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsCheckingHealth(false);
     }
-  }, [workspaceSlug, refetch]);
+  }, [workspaceSlug, refetch, toast]);
 
   // Handle Orchestrator details view
   const handleViewDetails = useCallback(
     (orchestratorId: string) => {
-      window.location.href = `/${workspaceSlug}/orchestrators/${orchestratorId}`;
+      router.push(`/${workspaceSlug}/admin/orchestrators/${orchestratorId}`);
     },
-    [workspaceSlug]
+    [router, workspaceSlug]
   );
 
   // Handle daemon restart
   const handleRestartDaemon = useCallback(
     async (orchestratorId: string) => {
       try {
-        await fetch(`/api/orchestrators/${orchestratorId}/daemon/restart`, {
-          method: 'POST',
+        const response = await fetch(
+          `/api/orchestrators/${orchestratorId}/daemon/restart`,
+          { method: 'POST' }
+        );
+        if (!response.ok) {
+          throw new Error('Daemon restart request failed');
+        }
+        toast({
+          title: 'Daemon restarting',
+          description:
+            'The daemon will restart shortly. Status will refresh automatically.',
         });
         // Refetch after a short delay to allow restart
         setTimeout(refetch, 2000);
       } catch {
-        // Silently fail
+        toast({
+          title: 'Restart failed',
+          description: 'Could not restart the daemon. Please try again.',
+          variant: 'destructive',
+        });
       }
     },
-    [refetch]
+    [refetch, toast]
   );
 
   return (

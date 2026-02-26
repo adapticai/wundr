@@ -93,7 +93,9 @@ export const createAgentIdentitySchema = z.object({
   externalIdentifiers: z.record(z.string()).optional(),
 });
 
-export type CreateAgentIdentityInput = z.infer<typeof createAgentIdentitySchema>;
+export type CreateAgentIdentityInput = z.infer<
+  typeof createAgentIdentitySchema
+>;
 
 /**
  * Update agent identity input schema
@@ -102,7 +104,9 @@ export const updateAgentIdentitySchema = createAgentIdentitySchema
   .partial()
   .omit({ userId: true });
 
-export type UpdateAgentIdentityInput = z.infer<typeof updateAgentIdentitySchema>;
+export type UpdateAgentIdentityInput = z.infer<
+  typeof updateAgentIdentitySchema
+>;
 
 // =============================================================================
 // PROVISIONING SCHEMAS
@@ -131,7 +135,9 @@ export const provisionPhoneNumberSchema = z.object({
     .default(['voice', 'sms']),
 });
 
-export type ProvisionPhoneNumberInput = z.infer<typeof provisionPhoneNumberSchema>;
+export type ProvisionPhoneNumberInput = z.infer<
+  typeof provisionPhoneNumberSchema
+>;
 
 // =============================================================================
 // RESPONSE SCHEMAS

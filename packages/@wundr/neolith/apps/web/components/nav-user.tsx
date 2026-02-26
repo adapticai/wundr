@@ -8,6 +8,8 @@ import {
   LogOut,
   Sparkles,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 import {
   DropdownMenu,
@@ -37,8 +39,13 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const params = useParams();
+  const workspaceSlug = params?.workspaceSlug as string | undefined;
 
-  // Map the 'avatar' prop to 'image' for UserAvatar compatibility
+  const settingsBase = workspaceSlug
+    ? `/${workspaceSlug}/settings`
+    : '/settings';
+
   const avatarUser = {
     name: user.name,
     image: user.avatar,
@@ -89,30 +96,40 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
+              <DropdownMenuItem asChild>
+                <Link href={`${settingsBase}/billing`}>
+                  <Sparkles />
+                  Upgrade Plan
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
+              <DropdownMenuItem asChild>
+                <Link href={`${settingsBase}/profile`}>
+                  <BadgeCheck />
+                  Account
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
+              <DropdownMenuItem asChild>
+                <Link href={`${settingsBase}/billing`}>
+                  <CreditCard />
+                  Billing
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
+              <DropdownMenuItem asChild>
+                <Link href={`${settingsBase}/notifications`}>
+                  <Bell />
+                  Notifications
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
+            <DropdownMenuItem asChild>
+              <Link href='/api/auth/signout'>
+                <LogOut />
+                Log out
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

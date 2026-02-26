@@ -50,5 +50,5 @@ export default async function DashboardPage() {
 
   // Redirect to most recently accessed workspace dashboard
   const mostRecentWorkspace = workspaceMemberships[0].workspace;
-  redirect(`/${mostRecentWorkspace.id}/dashboard`);
+  redirect(`/${mostRecentWorkspace.slug}/dashboard`);
 }

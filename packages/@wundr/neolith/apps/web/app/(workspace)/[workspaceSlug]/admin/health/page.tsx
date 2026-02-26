@@ -1,11 +1,13 @@
 'use client';
 
 import { AlertCircle, RefreshCw } from 'lucide-react';
+import { useEffect } from 'react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePageHeader } from '@/contexts/page-header-context';
 import {
   useHealthDashboard,
   useOrchestratorHealthList,
@@ -30,15 +32,19 @@ export default function HealthDashboardPage() {
   const { orchestrators } = useOrchestratorHealthList();
   const { chartData } = useMetricsChart();
   const { alerts } = useHealthAlerts();
+  const { setPageHeader } = usePageHeader();
+
+  useEffect(() => {
+    setPageHeader(
+      'Health Dashboard',
+      'Monitor orchestrator health and system performance'
+    );
+  }, [setPageHeader]);
 
   // Loading state
   if (isLoading) {
     return (
-      <div className='space-y-6 p-6'>
-        <div>
-          <Skeleton className='h-8 w-64' />
-          <Skeleton className='mt-2 h-4 w-96' />
-        </div>
+      <div className='space-y-6'>
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
           {[...Array(4)].map((_, i) => (
             <Card key={i}>
@@ -56,13 +62,7 @@ export default function HealthDashboardPage() {
   // Error state
   if (error) {
     return (
-      <div className='space-y-6 p-6'>
-        <div>
-          <h1 className='text-2xl font-bold'>Health Dashboard</h1>
-          <p className='mt-1 text-muted-foreground'>
-            Monitor orchestrator health and system performance
-          </p>
-        </div>
+      <div className='space-y-6'>
         <Alert variant='destructive'>
           <AlertCircle className='h-4 w-4' />
           <AlertDescription>
@@ -80,18 +80,12 @@ export default function HealthDashboardPage() {
   // No data state
   if (!overview) {
     return (
-      <div className='space-y-6 p-6'>
-        <div>
-          <h1 className='text-2xl font-bold'>Health Dashboard</h1>
-          <p className='mt-1 text-muted-foreground'>
-            Monitor orchestrator health and system performance
-          </p>
-        </div>
+      <div className='space-y-6'>
         <Alert>
           <AlertCircle className='h-4 w-4' />
           <AlertDescription>
             No health data available. The monitoring system may not be
-            configured.
+            configured yet.
           </AlertDescription>
         </Alert>
       </div>
@@ -162,41 +156,31 @@ export default function HealthDashboardPage() {
     activeOrchestrators: overview.healthyOrchestrators,
     totalSessions: overview.totalOrchestrators,
     tokenUsage: {
-      hourly: 500,
-      daily: 5000,
-      monthly: 150000,
-      limit: 10000,
-      percentUsed: 50,
+      hourly: overview.tokenUsageHourly ?? 0,
+      daily: overview.tokenUsageDaily ?? 0,
+      monthly: overview.tokenUsageMonthly ?? 0,
+      limit: overview.tokenUsageLimit ?? 0,
+      percentUsed: overview.tokenUsagePercent ?? 0,
     },
     errorRate: 100 - overview.uptime,
-    uptime: Date.now() - 86400000, // 24 hours in ms
+    uptime: overview.uptimeMs ?? 0,
   };
 
   return (
-    <div className='space-y-6 p-6'>
-      {/* Header */}
-      <div className='flex items-center justify-between'>
-        <div>
-          <h1 className='text-2xl font-bold'>Health Dashboard</h1>
-          <p className='mt-1 text-muted-foreground'>
-            Monitor orchestrator health and system performance
-          </p>
-        </div>
-        <div className='flex items-center space-x-2'>
-          <span className='text-sm text-muted-foreground'>
-            Last updated: {overview.lastUpdated.toLocaleTimeString()}
-          </span>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={refetch}
-            disabled={isLoading}
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
-            />
-          </Button>
-        </div>
+    <div className='space-y-6'>
+      {/* Refresh control */}
+      <div className='flex items-center justify-end space-x-2'>
+        <span className='text-sm text-muted-foreground'>
+          Last updated: {overview.lastUpdated.toLocaleTimeString()}
+        </span>
+        <Button
+          variant='outline'
+          size='sm'
+          onClick={refetch}
+          disabled={isLoading}
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+        </Button>
       </div>
 
       {/* System Overview */}

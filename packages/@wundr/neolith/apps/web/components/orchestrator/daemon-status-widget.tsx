@@ -51,7 +51,11 @@ function formatUptime(seconds: number): string {
 
 function formatHeartbeat(iso: string): string {
   const date = new Date(iso);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return date.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
 }
 
 function StatusDot({ connected }: { connected: boolean }) {
@@ -115,7 +119,9 @@ export function DaemonStatusWidget({
   if (unreachable || !status) {
     if (compact) {
       return (
-        <div className={cn('flex items-center gap-2 text-sm font-sans', className)}>
+        <div
+          className={cn('flex items-center gap-2 text-sm font-sans', className)}
+        >
           <StatusDot connected={false} />
           <span className='text-muted-foreground'>Daemon not connected</span>
         </div>
@@ -125,7 +131,9 @@ export function DaemonStatusWidget({
       <Card className={cn('border-destructive/50 bg-destructive/5', className)}>
         <CardContent className='flex items-center gap-2 p-4'>
           <StatusDot connected={false} />
-          <span className='text-sm font-sans text-destructive'>Daemon Unreachable</span>
+          <span className='text-sm font-sans text-destructive'>
+            Daemon Unreachable
+          </span>
         </CardContent>
       </Card>
     );
@@ -133,7 +141,9 @@ export function DaemonStatusWidget({
 
   if (compact) {
     return (
-      <div className={cn('flex items-center gap-3 text-sm font-sans', className)}>
+      <div
+        className={cn('flex items-center gap-3 text-sm font-sans', className)}
+      >
         <StatusDot connected={status.connected} />
         <span className='text-foreground'>
           Daemon: {status.connected ? 'Connected' : 'Disconnected'}
@@ -141,7 +151,9 @@ export function DaemonStatusWidget({
         <Badge variant='secondary' className='text-xs'>
           {status.activeAgents} agents
         </Badge>
-        <span className='text-muted-foreground'>{status.messagesPerMin} msg/min</span>
+        <span className='text-muted-foreground'>
+          {status.messagesPerMin} msg/min
+        </span>
       </div>
     );
   }
@@ -158,7 +170,9 @@ export function DaemonStatusWidget({
             <span
               className={cn(
                 'text-xs font-sans font-medium',
-                status.connected ? 'text-green-600 dark:text-green-400' : 'text-red-500'
+                status.connected
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-red-500'
               )}
             >
               {status.connected ? 'Connected' : 'Disconnected'}
@@ -178,7 +192,9 @@ export function DaemonStatusWidget({
 
         {/* Health bar */}
         <div>
-          <p className='mb-1.5 text-xs font-sans text-muted-foreground'>Components</p>
+          <p className='mb-1.5 text-xs font-sans text-muted-foreground'>
+            Components
+          </p>
           <div className='flex gap-1.5'>
             {(
               Object.entries(status.components) as [
@@ -206,20 +222,27 @@ export function DaemonStatusWidget({
             ))}
           </div>
           <div className='mt-1 flex gap-1.5'>
-            {(Object.keys(status.components) as Array<keyof DaemonStatus['components']>).map(
-              name => (
-                <p key={name} className='flex-1 text-center text-xs font-sans text-muted-foreground capitalize'>
-                  {name}
-                </p>
-              )
-            )}
+            {(
+              Object.keys(status.components) as Array<
+                keyof DaemonStatus['components']
+              >
+            ).map(name => (
+              <p
+                key={name}
+                className='flex-1 text-center text-xs font-sans text-muted-foreground capitalize'
+              >
+                {name}
+              </p>
+            ))}
           </div>
         </div>
 
         {/* Last heartbeat */}
         <p className='text-xs font-sans text-muted-foreground'>
           Last heartbeat:{' '}
-          <span className='text-foreground'>{formatHeartbeat(status.lastHeartbeat)}</span>
+          <span className='text-foreground'>
+            {formatHeartbeat(status.lastHeartbeat)}
+          </span>
         </p>
       </CardContent>
     </Card>
@@ -230,7 +253,9 @@ function StatCell({ label, value }: { label: string; value: string }) {
   return (
     <div className='rounded-md border bg-background px-2 py-1.5 text-center'>
       <p className='text-xs font-sans text-muted-foreground'>{label}</p>
-      <p className='text-sm font-heading font-semibold text-foreground'>{value}</p>
+      <p className='text-sm font-heading font-semibold text-foreground'>
+        {value}
+      </p>
     </div>
   );
 }

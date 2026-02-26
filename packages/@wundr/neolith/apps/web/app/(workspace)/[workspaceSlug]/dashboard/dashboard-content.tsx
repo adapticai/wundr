@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { DashboardSkeleton } from '@/components/skeletons/dashboard-skeleton';
@@ -67,30 +66,13 @@ interface WorkspaceStats {
   };
 }
 
-interface Channel {
-  id: string;
-  name: string;
-  description?: string | null;
-  type: string;
-  unreadCount?: number;
-}
-
-interface DashboardErrors {
-  activities?: string;
-  stats?: string;
-  channels?: string;
-}
-
 export function DashboardContent({ workspaceId }: DashboardContentProps) {
   const { setPageHeader } = usePageHeader();
   const { user, role } = useAuth();
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [stats, setStats] = useState<WorkspaceStats | null>(null);
-  const [channels, setChannels] = useState<Channel[]>([]);
   const [isLoadingActivities, setIsLoadingActivities] = useState(true);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
-  const [isLoadingChannels, setIsLoadingChannels] = useState(true);
-  const [errors, setErrors] = useState<DashboardErrors>({});
   const [activityFilter, setActivityFilter] = useState<
     'all' | 'channels' | 'dms'
   >('all');
@@ -127,16 +109,8 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
         }
         const result = await response.json();
         setActivities(result.data || []);
-        setErrors(prev => ({ ...prev, activities: undefined }));
       } catch (error) {
         console.error('Failed to fetch activities:', error);
-        setErrors(prev => ({
-          ...prev,
-          activities:
-            error instanceof Error
-              ? error.message
-              : 'Failed to load recent activity',
-        }));
         setActivities([]);
       } finally {
         setIsLoadingActivities(false);
@@ -155,50 +129,15 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
         }
         const result = await response.json();
         setStats(result.data);
-        setErrors(prev => ({ ...prev, stats: undefined }));
       } catch (error) {
         console.error('Failed to fetch stats:', error);
-        setErrors(prev => ({
-          ...prev,
-          stats:
-            error instanceof Error
-              ? error.message
-              : 'Failed to load workspace statistics',
-        }));
       } finally {
         setIsLoadingStats(false);
       }
     };
 
-    const fetchChannels = async () => {
-      try {
-        const response = await fetch(
-          `/api/workspaces/${workspaceId}/channels?limit=6`
-        );
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch channels: ${response.status} ${response.statusText}`
-          );
-        }
-        const result = await response.json();
-        setChannels(result.data || []);
-        setErrors(prev => ({ ...prev, channels: undefined }));
-      } catch (error) {
-        console.error('Failed to fetch channels:', error);
-        setErrors(prev => ({
-          ...prev,
-          channels:
-            error instanceof Error ? error.message : 'Failed to load channels',
-        }));
-        setChannels([]);
-      } finally {
-        setIsLoadingChannels(false);
-      }
-    };
-
     fetchActivities();
     fetchStats();
-    fetchChannels();
   }, [workspaceId]);
 
   const formatActivityTime = (dateString: string): string => {
@@ -241,7 +180,7 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
     return true;
   });
 
-  const isLoading = isLoadingActivities || isLoadingStats || isLoadingChannels;
+  const isLoading = isLoadingActivities || isLoadingStats;
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -313,12 +252,7 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
                 </div>
               </CardHeader>
               <CardContent>
-                {errors.activities ? (
-                  <div className='rounded-md bg-destructive/10 p-4 text-sm text-destructive'>
-                    <p className='font-medium'>Error loading activity</p>
-                    <p className='mt-1 text-xs'>{errors.activities}</p>
-                  </div>
-                ) : filteredActivities.length > 0 ? (
+                {filteredActivities.length > 0 ? (
                   <div className='space-y-4'>
                     {filteredActivities.map(activity => (
                       <div
@@ -470,82 +404,3 @@ function ActivityIcon({ className }: { className?: string }) {
   );
 }
 
-function HashIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <line x1='4' x2='20' y1='9' y2='9' />
-      <line x1='4' x2='20' y1='15' y2='15' />
-      <line x1='10' x2='8' y1='3' y2='21' />
-      <line x1='16' x2='14' y1='3' y2='21' />
-    </svg>
-  );
-}
-
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M5 12h14' />
-      <path d='M12 5v14' />
-    </svg>
-  );
-}
-
-function UsersIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
-      <circle cx='9' cy='7' r='4' />
-      <path d='M22 21v-2a4 4 0 0 0-3-3.87' />
-      <path d='M16 3.13a4 4 0 0 1 0 7.75' />
-    </svg>
-  );
-}
-
-function BotIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M12 8V4H8' />
-      <rect width='16' height='12' x='4' y='8' rx='2' />
-      <path d='M2 14h2' />
-      <path d='M20 14h2' />
-      <path d='M15 13v2' />
-      <path d='M9 13v2' />
-    </svg>
-  );
-}

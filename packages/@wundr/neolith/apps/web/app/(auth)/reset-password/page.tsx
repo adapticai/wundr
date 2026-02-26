@@ -303,6 +303,7 @@ function ResetPasswordContent() {
                 onClick={() => setShowPassword(!showPassword)}
                 className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors'
                 tabIndex={-1}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
                   <EyeOff className='h-4 w-4' />
@@ -333,6 +334,11 @@ function ResetPasswordContent() {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors'
                 tabIndex={-1}
+                aria-label={
+                  showConfirmPassword
+                    ? 'Hide confirm password'
+                    : 'Show confirm password'
+                }
               >
                 {showConfirmPassword ? (
                   <EyeOff className='h-4 w-4' />

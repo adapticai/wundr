@@ -9,11 +9,21 @@ import {
   ChevronDown,
   ChevronUp,
   Check,
-  X,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -319,14 +329,6 @@ export default function RolesSettingsPage() {
 
   const handleDeleteRole = useCallback(
     async (roleId: string) => {
-      if (
-        !confirm(
-          'Are you sure you want to delete this role? Members with this role will be reassigned.'
-        )
-      ) {
-        return;
-      }
-
       setIsSaving(true);
       try {
         const response = await fetch(
@@ -343,8 +345,9 @@ export default function RolesSettingsPage() {
         setRoles(prev => prev.filter(r => r.id !== roleId));
 
         toast({
-          title: 'Success',
-          description: 'Role deleted successfully',
+          title: 'Role deleted',
+          description:
+            'Members previously assigned this role have been reassigned to the default role.',
         });
       } catch (error) {
         toast({
@@ -561,19 +564,44 @@ export default function RolesSettingsPage() {
                         >
                           <Edit2 className='h-4 w-4' />
                         </Button>
-                        <Button
-                          variant='ghost'
-                          size='icon'
-                          onClick={() => handleDeleteRole(role.id)}
-                          disabled={isSaving || role.memberCount > 0}
-                          title={
-                            role.memberCount > 0
-                              ? 'Cannot delete role with members'
-                              : 'Delete role'
-                          }
-                        >
-                          <Trash2 className='h-4 w-4' />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant='ghost'
+                              size='icon'
+                              disabled={isSaving || role.memberCount > 0}
+                              title={
+                                role.memberCount > 0
+                                  ? 'Cannot delete a role that has members assigned to it'
+                                  : 'Delete role'
+                              }
+                            >
+                              <Trash2 className='h-4 w-4' />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete role</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete the{' '}
+                                <span className='font-semibold'>
+                                  {role.name}
+                                </span>{' '}
+                                role? Members assigned this role will be
+                                reassigned to the default Member role.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteRole(role.id)}
+                                className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                              >
+                                Delete Role
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </>
                     )}
                     <Button

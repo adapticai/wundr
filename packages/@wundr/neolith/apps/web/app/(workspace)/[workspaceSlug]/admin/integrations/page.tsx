@@ -291,7 +291,6 @@ export default function AdminIntegrationsPage() {
       if (!response.ok) {
         throw new Error('Failed to connect integration');
       }
-      const data = await response.json();
 
       toast.success('Integration connected successfully');
       setShowConfigModal(false);
@@ -390,7 +389,9 @@ export default function AdminIntegrationsPage() {
         throw new Error('Failed to create webhook');
       }
       const data = await response.json();
-      toast.success(`Webhook created. Secret: ${data.secret}`);
+      toast.success(
+        'Webhook created. Copy the signing secret from the webhook details.'
+      );
       setShowWebhookModal(false);
       setWebhookForm({ name: '', url: '', events: [] });
       fetchWebhooks();
@@ -448,7 +449,9 @@ export default function AdminIntegrationsPage() {
         throw new Error('Failed to create API key');
       }
       const data = await response.json();
-      toast.success(`API Key created: ${data.key}`);
+      toast.success(
+        'API key generated. Copy it now — it will not be shown again.'
+      );
       setShowApiKeyModal(false);
       setApiKeyForm({ name: '', expiresInDays: 90 });
       fetchApiKeys();
@@ -722,59 +725,68 @@ export default function AdminIntegrationsPage() {
           </div>
 
           <div className='space-y-4'>
-            {webhooks.map(webhook => (
-              <Card key={webhook.id}>
-                <CardHeader>
-                  <div className='flex items-start justify-between'>
+            {webhooks.length === 0 ? (
+              <div className='py-12 text-center text-muted-foreground'>
+                No webhooks configured. Create one to start receiving event
+                notifications.
+              </div>
+            ) : (
+              webhooks.map(webhook => (
+                <Card key={webhook.id}>
+                  <CardHeader>
+                    <div className='flex items-start justify-between'>
+                      <div>
+                        <CardTitle className='text-base'>
+                          {webhook.name}
+                        </CardTitle>
+                        <CardDescription className='font-mono text-xs'>
+                          {webhook.url}
+                        </CardDescription>
+                      </div>
+                      <Badge
+                        variant={
+                          webhook.status === 'ACTIVE'
+                            ? 'default'
+                            : 'destructive'
+                        }
+                      >
+                        {webhook.status}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className='space-y-3'>
                     <div>
-                      <CardTitle className='text-base'>
-                        {webhook.name}
-                      </CardTitle>
-                      <CardDescription className='font-mono text-xs'>
-                        {webhook.url}
-                      </CardDescription>
+                      <Label className='text-xs text-muted-foreground'>
+                        Events
+                      </Label>
+                      <div className='mt-1 flex flex-wrap gap-1'>
+                        {webhook.events.map(event => (
+                          <Badge key={event} variant='outline'>
+                            {event}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                    <Badge
-                      variant={
-                        webhook.status === 'ACTIVE' ? 'default' : 'destructive'
-                      }
-                    >
-                      {webhook.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className='space-y-3'>
-                  <div>
-                    <Label className='text-xs text-muted-foreground'>
-                      Events
-                    </Label>
-                    <div className='mt-1 flex flex-wrap gap-1'>
-                      {webhook.events.map(event => (
-                        <Badge key={event} variant='outline'>
-                          {event}
-                        </Badge>
-                      ))}
+                    <div className='flex gap-2'>
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        onClick={() => handleTestWebhook(webhook.id)}
+                      >
+                        Test
+                      </Button>
+                      <Button
+                        size='sm'
+                        variant='destructive'
+                        onClick={() => handleDeleteWebhook(webhook.id)}
+                      >
+                        Delete
+                      </Button>
                     </div>
-                  </div>
-                  <div className='flex gap-2'>
-                    <Button
-                      size='sm'
-                      variant='outline'
-                      onClick={() => handleTestWebhook(webhook.id)}
-                    >
-                      Test
-                    </Button>
-                    <Button
-                      size='sm'
-                      variant='destructive'
-                      onClick={() => handleDeleteWebhook(webhook.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
 
@@ -793,44 +805,50 @@ export default function AdminIntegrationsPage() {
           </div>
 
           <div className='space-y-4'>
-            {apiKeys.map(key => (
-              <Card key={key.id}>
-                <CardHeader>
-                  <div className='flex items-start justify-between'>
-                    <div>
-                      <CardTitle className='text-base'>{key.name}</CardTitle>
-                      <CardDescription className='font-mono text-xs'>
-                        {key.prefix}...
-                      </CardDescription>
+            {apiKeys.length === 0 ? (
+              <div className='py-12 text-center text-muted-foreground'>
+                No API keys yet. Generate one to enable programmatic access.
+              </div>
+            ) : (
+              apiKeys.map(key => (
+                <Card key={key.id}>
+                  <CardHeader>
+                    <div className='flex items-start justify-between'>
+                      <div>
+                        <CardTitle className='text-base'>{key.name}</CardTitle>
+                        <CardDescription className='font-mono text-xs'>
+                          {key.prefix}...
+                        </CardDescription>
+                      </div>
+                      <Button
+                        size='sm'
+                        variant='destructive'
+                        onClick={() => handleRevokeApiKey(key.id)}
+                      >
+                        Revoke
+                      </Button>
                     </div>
-                    <Button
-                      size='sm'
-                      variant='destructive'
-                      onClick={() => handleRevokeApiKey(key.id)}
-                    >
-                      Revoke
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className='space-y-1 text-sm'>
-                    {key.lastUsed && (
+                  </CardHeader>
+                  <CardContent>
+                    <div className='space-y-1 text-sm'>
+                      {key.lastUsed && (
+                        <p className='text-muted-foreground'>
+                          Last used: {new Date(key.lastUsed).toLocaleString()}
+                        </p>
+                      )}
+                      {key.expiresAt && (
+                        <p className='text-muted-foreground'>
+                          Expires: {new Date(key.expiresAt).toLocaleString()}
+                        </p>
+                      )}
                       <p className='text-muted-foreground'>
-                        Last used: {new Date(key.lastUsed).toLocaleString()}
+                        Created: {new Date(key.createdAt).toLocaleString()}
                       </p>
-                    )}
-                    {key.expiresAt && (
-                      <p className='text-muted-foreground'>
-                        Expires: {new Date(key.expiresAt).toLocaleString()}
-                      </p>
-                    )}
-                    <p className='text-muted-foreground'>
-                      Created: {new Date(key.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
 

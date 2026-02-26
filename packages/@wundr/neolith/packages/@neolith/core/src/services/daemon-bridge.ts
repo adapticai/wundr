@@ -108,7 +108,9 @@ export interface IDaemonBridge {
 
   // Channel Management
   listChannels(): Promise<DaemonChannel[]>;
-  getChannelHealth(channelId: string): Promise<{ healthy: boolean; latency: number }>;
+  getChannelHealth(
+    channelId: string
+  ): Promise<{ healthy: boolean; latency: number }>;
 
   // Metrics
   getMetrics(): Promise<DaemonMetrics>;
@@ -220,7 +222,10 @@ export class DaemonBridgeImpl implements IDaemonBridge {
   }
 
   getAgent(agentId: string): Promise<DaemonAgent> {
-    return this.request<DaemonAgent>('GET', `/api/agents/${encodeURIComponent(agentId)}`);
+    return this.request<DaemonAgent>(
+      'GET',
+      `/api/agents/${encodeURIComponent(agentId)}`
+    );
   }
 
   async restartAgent(agentId: string): Promise<void> {
@@ -250,7 +255,9 @@ export class DaemonBridgeImpl implements IDaemonBridge {
     return this.request<DaemonChannel[]>('GET', '/api/channels');
   }
 
-  getChannelHealth(channelId: string): Promise<{ healthy: boolean; latency: number }> {
+  getChannelHealth(
+    channelId: string
+  ): Promise<{ healthy: boolean; latency: number }> {
     return this.request<{ healthy: boolean; latency: number }>(
       'GET',
       `/api/channels/${encodeURIComponent(channelId)}/health`

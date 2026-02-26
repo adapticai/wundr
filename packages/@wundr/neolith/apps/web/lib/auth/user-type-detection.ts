@@ -40,7 +40,8 @@ export async function detectUserType(email: string): Promise<UserTypeResult> {
         userType: 'orchestrator',
         isOrchestrator: true,
         orchestratorId: user.orchestrator.id,
-        orchestratorConfig: user.orchestratorConfig as Record<string, unknown> ?? {},
+        orchestratorConfig:
+          (user.orchestratorConfig as Record<string, unknown>) ?? {},
       };
     }
 
@@ -53,7 +54,9 @@ export async function detectUserType(email: string): Promise<UserTypeResult> {
 /**
  * Detect user type from a NextAuth session
  */
-export async function detectUserTypeFromSession(session: { user?: { email?: string | null } } | null): Promise<UserTypeResult> {
+export async function detectUserTypeFromSession(
+  session: { user?: { email?: string | null } } | null
+): Promise<UserTypeResult> {
   const email = session?.user?.email;
   if (!email) {
     return { userType: 'human', isOrchestrator: false };

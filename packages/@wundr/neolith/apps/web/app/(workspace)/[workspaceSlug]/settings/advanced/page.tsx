@@ -22,7 +22,6 @@ import {
   Database,
   FlaskConical,
   Network,
-  Rocket,
   Server,
   Settings2,
   Terminal,
@@ -31,7 +30,7 @@ import {
   WifiOff,
   Zap,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   SettingsGroup,
@@ -138,6 +137,7 @@ export default function AdvancedSettingsPage() {
 
   const [clearCacheDialog, setClearCacheDialog] = useState(false);
   const [resetSettingsDialog, setResetSettingsDialog] = useState(false);
+  const metricsIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setPageHeader(
@@ -149,28 +149,26 @@ export default function AdvancedSettingsPage() {
     const savedSettings = localStorage.getItem('advanced-settings');
     if (savedSettings) {
       try {
-        setSettings(JSON.parse(savedSettings));
+        const parsed = JSON.parse(savedSettings) as AdvancedSettings;
+        setSettings(parsed);
+
+        if (parsed.performanceMetrics) {
+          startMetricsTracking();
+        }
       } catch (error) {
         console.error('Failed to load advanced settings:', error);
       }
-    }
-
-    // Initialize metrics tracking
-    if (settings.performanceMetrics) {
-      startMetricsTracking();
     }
 
     // Check WebSocket status
     checkWebSocketStatus();
 
     return () => {
-      if (metricsInterval) {
-        clearInterval(metricsInterval);
+      if (metricsIntervalRef.current) {
+        clearInterval(metricsIntervalRef.current);
       }
     };
   }, [setPageHeader]);
-
-  let metricsInterval: NodeJS.Timeout | null = null;
 
   // Update settings and save to localStorage
   const updateSettings = (updates: Partial<AdvancedSettings>) => {
@@ -186,14 +184,17 @@ export default function AdvancedSettingsPage() {
 
   // Start performance metrics tracking
   const startMetricsTracking = () => {
-    metricsInterval = setInterval(() => {
-      const performance = window.performance;
-      const memory = (performance as any).memory;
+    if (metricsIntervalRef.current) {
+      clearInterval(metricsIntervalRef.current);
+    }
+    metricsIntervalRef.current = setInterval(() => {
+      const perf = window.performance;
+      const memory = (perf as any).memory;
 
       setMetrics({
-        fps: Math.round(1000 / (performance.now() % 1000)),
+        fps: Math.round(1000 / (perf.now() % 1000)),
         memory: memory ? Math.round(memory.usedJSHeapSize / 1048576) : 0,
-        renderTime: Math.round(performance.now() % 100),
+        renderTime: Math.round(perf.now() % 100),
         apiCalls: parseInt(localStorage.getItem('api-call-count') || '0'),
         cacheSize: calculateCacheSize(),
       });
@@ -213,13 +214,13 @@ export default function AdvancedSettingsPage() {
 
   // Check WebSocket connection status
   const checkWebSocketStatus = () => {
-    // Mock WebSocket status - replace with actual WebSocket implementation
-    setWsStatus({
-      connected: Math.random() > 0.5,
-      url: 'wss://ws.neolith.app',
-      reconnectAttempts: Math.floor(Math.random() * 3),
-      lastPing: Date.now() - Math.floor(Math.random() * 5000),
-    });
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'wss://ws.neolith.app';
+    setWsStatus(prev => ({
+      connected: navigator.onLine,
+      url: wsUrl,
+      reconnectAttempts: prev.reconnectAttempts,
+      lastPing: Date.now(),
+    }));
   };
 
   // Clear cache handler
@@ -443,8 +444,9 @@ export default function AdvancedSettingsPage() {
                 updateSettings({ performanceMetrics: checked });
                 if (checked) {
                   startMetricsTracking();
-                } else if (metricsInterval) {
-                  clearInterval(metricsInterval);
+                } else if (metricsIntervalRef.current) {
+                  clearInterval(metricsIntervalRef.current);
+                  metricsIntervalRef.current = null;
                 }
               }}
             />
@@ -577,29 +579,42 @@ export default function AdvancedSettingsPage() {
         description='Enable or disable specific features'
       >
         <SettingsGroup>
-          {Object.entries(settings.featureFlags).map(([key, value]) => (
-            <SettingsRow
-              key={key}
-              label={key
-                .replace(/([A-Z])/g, ' $1')
-                .replace(/^./, str => str.toUpperCase())}
-              description={`Toggle the ${key} feature flag`}
-              htmlFor={`flag-${key}`}
-            >
-              <Switch
-                id={`flag-${key}`}
-                checked={value}
-                onCheckedChange={checked =>
-                  updateSettings({
-                    featureFlags: {
-                      ...settings.featureFlags,
-                      [key]: checked,
-                    },
-                  })
+          {Object.entries(settings.featureFlags).map(([key, value]) => {
+            const flagDescriptions: Record<string, string> = {
+              newUI:
+                'Enable the redesigned interface with updated navigation and layout',
+              betaFeatures:
+                'Access features currently in beta testing before general release',
+              advancedSearch:
+                'Enable full-text search with filters, date ranges, and saved queries',
+            };
+            return (
+              <SettingsRow
+                key={key}
+                label={key
+                  .replace(/([A-Z])/g, ' $1')
+                  .replace(/^./, str => str.toUpperCase())}
+                description={
+                  flagDescriptions[key] ??
+                  `Enable the ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} feature`
                 }
-              />
-            </SettingsRow>
-          ))}
+                htmlFor={`flag-${key}`}
+              >
+                <Switch
+                  id={`flag-${key}`}
+                  checked={value}
+                  onCheckedChange={checked =>
+                    updateSettings({
+                      featureFlags: {
+                        ...settings.featureFlags,
+                        [key]: checked,
+                      },
+                    })
+                  }
+                />
+              </SettingsRow>
+            );
+          })}
         </SettingsGroup>
       </SettingsSection>
 
@@ -623,6 +638,17 @@ export default function AdvancedSettingsPage() {
               .replace(/([A-Z])/g, ' $1')
               .replace(/^./, str => str.toUpperCase());
 
+            const experimentalDescriptions: Record<string, string> = {
+              aiAssistant:
+                'AI-powered writing assistance and smart reply suggestions in the message composer',
+              realtimeCollaboration:
+                'Live co-editing of documents and messages with presence indicators',
+              offlineMode:
+                'Continue working without an internet connection; sync when reconnected',
+              customThemes:
+                'Create and share custom color themes for the interface',
+            };
+
             return (
               <div
                 key={key}
@@ -641,7 +667,8 @@ export default function AdvancedSettingsPage() {
                     </Badge>
                   </div>
                   <p className='text-sm text-muted-foreground leading-relaxed'>
-                    Enable the experimental {key} feature
+                    {experimentalDescriptions[key] ??
+                      `Enable the experimental ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} feature`}
                   </p>
                 </div>
                 <div className='flex items-center sm:flex-shrink-0'>
@@ -729,7 +756,15 @@ export default function AdvancedSettingsPage() {
               <Separator />
               <div className='flex justify-between'>
                 <span className='text-muted-foreground'>Platform:</span>
-                <span>{navigator.platform}</span>
+                <span>
+                  {navigator.userAgentData?.platform ??
+                    navigator.userAgent
+                      .split(' ')
+                      .find(s =>
+                        ['Win', 'Mac', 'Linux'].some(p => s.startsWith(p))
+                      ) ??
+                    'Unknown'}
+                </span>
               </div>
               <Separator />
               <div className='flex justify-between'>

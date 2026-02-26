@@ -11,7 +11,8 @@ import {
   AlertCircle,
   Plus,
   Trash2,
-  GripVertical,
+  ChevronUp,
+  ChevronDown as ChevronDownIcon,
   CheckCircle,
   Workflow as WorkflowIcon,
   Layout,
@@ -742,15 +743,15 @@ function ActionEditor({
     <div className='rounded-lg border border-border bg-muted/50 p-4'>
       <div className='flex items-start gap-3'>
         {/* Order controls */}
-        <div className='flex flex-col gap-1'>
+        <div className='flex flex-col items-center gap-1'>
           <button
             type='button'
             onClick={onMoveUp}
             disabled={isFirst}
             className='rounded p-1 hover:bg-accent disabled:opacity-30'
-            aria-label='Move up'
+            aria-label='Move action up'
           >
-            <GripVertical className='h-4 w-4' />
+            <ChevronUp className='h-4 w-4' />
           </button>
           <span className='flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground'>
             {index + 1}
@@ -760,9 +761,9 @@ function ActionEditor({
             onClick={onMoveDown}
             disabled={isLast}
             className='rounded p-1 hover:bg-accent disabled:opacity-30'
-            aria-label='Move down'
+            aria-label='Move action down'
           >
-            <GripVertical className='h-4 w-4' />
+            <ChevronDownIcon className='h-4 w-4' />
           </button>
         </div>
 
@@ -815,16 +816,30 @@ function ActionEditor({
             </select>
           </div>
 
-          {/* Simple config display - In a real implementation, this would be type-specific editors */}
+          {/* Action description */}
           <div className='rounded-md bg-background/50 p-3'>
             <p className='text-xs text-muted-foreground'>
               {actionConfig.description}
             </p>
-            <p className='mt-2 text-xs italic text-muted-foreground'>
-              Configuration details:{' '}
-              {JSON.stringify(action.config).slice(0, 100)}
-              {JSON.stringify(action.config).length > 100 ? '...' : ''}
-            </p>
+            {Object.keys(action.config as Record<string, unknown>).length >
+              0 && (
+              <div className='mt-2 space-y-1'>
+                {Object.entries(action.config as Record<string, unknown>)
+                  .filter(([, v]) => v !== '' && v !== null && v !== undefined)
+                  .map(([key, value]) => (
+                    <div key={key} className='flex items-start gap-2 text-xs'>
+                      <span className='shrink-0 font-medium capitalize text-foreground'>
+                        {key.replace(/([A-Z])/g, ' $1').trim()}:
+                      </span>
+                      <span className='truncate text-muted-foreground'>
+                        {typeof value === 'object'
+                          ? JSON.stringify(value)
+                          : String(value)}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

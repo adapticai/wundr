@@ -41,6 +41,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -82,11 +83,17 @@ const AVAILABLE_EVENTS = [
 export default function WebhooksSettingsPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
+  const { setPageHeader } = usePageHeader();
   const { toast } = useToast();
+
+  useEffect(() => {
+    setPageHeader('Webhooks', 'Manage outgoing webhooks for workspace events');
+  }, [setPageHeader]);
 
   const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
 
   // Create/Edit Dialog State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -104,12 +111,7 @@ export default function WebhooksSettingsPage() {
   const [deliveryLogs, setDeliveryLogs] = useState<DeliveryLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
 
-  // Load webhooks
-  useEffect(() => {
-    loadWebhooks();
-  }, [workspaceSlug]);
-
-  const loadWebhooks = async () => {
+  const loadWebhooks = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/workspaces/${workspaceSlug}/webhooks`);
@@ -128,7 +130,12 @@ export default function WebhooksSettingsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [workspaceSlug, toast]);
+
+  // Load webhooks
+  useEffect(() => {
+    loadWebhooks();
+  }, [loadWebhooks]);
 
   const openCreateDialog = useCallback(() => {
     setEditingWebhook(null);
@@ -202,10 +209,6 @@ export default function WebhooksSettingsPage() {
   };
 
   const handleDeleteWebhook = async (webhookId: string) => {
-    if (!confirm('Are you sure you want to delete this webhook?')) {
-      return;
-    }
-
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}`,
@@ -235,7 +238,7 @@ export default function WebhooksSettingsPage() {
   };
 
   const handleTestWebhook = async (webhookId: string) => {
-    setIsSaving(true);
+    setIsTesting(true);
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/test`,
@@ -251,8 +254,8 @@ export default function WebhooksSettingsPage() {
 
       const result = await response.json();
       toast({
-        title: 'Test Sent',
-        description: `Status: ${result.status || 'Unknown'}`,
+        title: 'Test payload sent',
+        description: `Response status: ${result.status || 'Unknown'}`,
       });
     } catch (error) {
       toast({
@@ -262,7 +265,7 @@ export default function WebhooksSettingsPage() {
         variant: 'destructive',
       });
     } finally {
-      setIsSaving(false);
+      setIsTesting(false);
     }
   };
 
@@ -312,13 +315,6 @@ export default function WebhooksSettingsPage() {
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-bold'>Webhooks</h1>
-        <p className='mt-1 text-muted-foreground'>
-          Manage outgoing webhooks for workspace events
-        </p>
-      </div>
-
       <Card>
         <CardHeader>
           <div className='flex items-center justify-between'>
@@ -418,7 +414,7 @@ export default function WebhooksSettingsPage() {
                           variant='ghost'
                           size='sm'
                           onClick={() => handleTestWebhook(webhook.id)}
-                          disabled={isSaving}
+                          disabled={isTesting}
                           title='Send test payload'
                         >
                           <Send className='h-4 w-4' />
@@ -508,7 +504,7 @@ export default function WebhooksSettingsPage() {
                   value={formSecret}
                   onChange={e => setFormSecret(e.target.value)}
                   className='font-mono text-xs'
-                  readOnly
+                  placeholder='Enter or generate a secret'
                 />
                 <Button
                   variant='outline'

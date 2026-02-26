@@ -81,6 +81,7 @@ export default function ChannelSettingsPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -89,15 +90,17 @@ export default function ChannelSettingsPage() {
           `/api/workspaces/${workspaceSlug}/admin/settings/channels`
         );
         if (!response.ok) {
-          throw new Error('Failed to load settings');
+          throw new Error('Failed to load channel settings');
         }
         const data = await response.json();
         setSettings(data);
       } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Failed to load settings';
+        setLoadError(message);
         toast({
           title: 'Error',
-          description:
-            error instanceof Error ? error.message : 'Failed to load settings',
+          description: message,
           variant: 'destructive',
         });
       } finally {
@@ -151,6 +154,22 @@ export default function ChannelSettingsPage() {
 
   if (isLoading) {
     return <LoadingSkeleton />;
+  }
+
+  if (loadError) {
+    return (
+      <div className='space-y-6'>
+        <div>
+          <h1 className='text-2xl font-bold'>Channel Settings</h1>
+          <p className='mt-1 text-muted-foreground'>
+            Configure workspace-wide channel policies and permissions
+          </p>
+        </div>
+        <div className='rounded-lg border border-red-500/50 bg-red-50 p-4 dark:bg-red-900/10'>
+          <p className='text-sm text-red-800 dark:text-red-200'>{loadError}</p>
+        </div>
+      </div>
+    );
   }
 
   return (

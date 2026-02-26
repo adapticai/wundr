@@ -46,7 +46,10 @@ export async function GET(): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TRAFFIC_MANAGER_ERROR_CODES.UNAUTHORIZED),
+        createErrorResponse(
+          'Authentication required',
+          TRAFFIC_MANAGER_ERROR_CODES.UNAUTHORIZED
+        ),
         { status: 401 }
       );
     }
@@ -57,7 +60,10 @@ export async function GET(): Promise<NextResponse> {
 
     if (!orgMembership) {
       return NextResponse.json(
-        createErrorResponse('Organization not found', TRAFFIC_MANAGER_ERROR_CODES.CONFIG_NOT_FOUND),
+        createErrorResponse(
+          'Organization not found',
+          TRAFFIC_MANAGER_ERROR_CODES.CONFIG_NOT_FOUND
+        ),
         { status: 404 }
       );
     }
@@ -104,7 +110,10 @@ export async function GET(): Promise<NextResponse> {
   } catch (error) {
     console.error('[GET /api/traffic-manager/agents] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TRAFFIC_MANAGER_ERROR_CODES.INTERNAL_ERROR),
+      createErrorResponse(
+        'An internal error occurred',
+        TRAFFIC_MANAGER_ERROR_CODES.INTERNAL_ERROR
+      ),
       { status: 500 }
     );
   }

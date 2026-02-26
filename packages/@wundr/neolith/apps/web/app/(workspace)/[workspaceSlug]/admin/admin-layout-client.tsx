@@ -85,7 +85,12 @@ interface NavItem {
   icon: React.ReactNode;
   description?: string;
   badge?: string;
-  section: 'overview' | 'management' | 'ai-organization' | 'settings' | 'security';
+  section:
+    | 'overview'
+    | 'management'
+    | 'ai-organization'
+    | 'settings'
+    | 'security';
 }
 
 /**

@@ -65,8 +65,6 @@ export function OrchestratorMetrics({
           <MetricCard
             title='Total Messages'
             value={totalMessages.toLocaleString()}
-            change='+12%'
-            trend='up'
             icon={<MessageSquare className='h-4 w-4' />}
           />
           <MetricCard
@@ -77,15 +75,11 @@ export function OrchestratorMetrics({
           <MetricCard
             title='Avg Response Time'
             value={avgResponseTime}
-            change='-5%'
-            trend='up'
             icon={<Activity className='h-4 w-4' />}
           />
           <MetricCard
             title='Success Rate'
             value={successRate}
-            change='+2%'
-            trend='up'
             icon={<TrendingUp className='h-4 w-4' />}
           />
         </div>

@@ -7,6 +7,16 @@ import { useState, useCallback, useEffect } from 'react';
 import { AgentCard } from '@/components/agents/agent-card';
 import { AgentDetailPanel } from '@/components/agents/agent-detail-panel';
 import { CreateAgentModal } from '@/components/agents/create-agent-modal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -39,6 +49,7 @@ export default function AgentsPage() {
   const [typeFilter, setTypeFilter] = useState<AgentType | 'all'>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [agentToDelete, setAgentToDelete] = useState<Agent | null>(null);
 
   const { agents, isLoading, error, refetch, filteredCount, totalCount } =
     useAgents(workspaceSlug, {
@@ -107,12 +118,14 @@ export default function AgentsPage() {
         });
         refetch();
         setSelectedAgent(null);
+        setAgentToDelete(null);
       } else {
         toast({
           title: 'Error',
           description: 'Failed to delete agent. Please try again.',
           variant: 'destructive',
         });
+        setAgentToDelete(null);
       }
     },
     [deleteAgent, refetch, toast]
@@ -306,10 +319,7 @@ export default function AgentsPage() {
               onEdit={agent => setSelectedAgent(agent)}
               onPause={handlePauseAgent}
               onResume={handleResumeAgent}
-              onDelete={agent => {
-                setSelectedAgent(agent);
-                // The delete will be triggered from the detail panel
-              }}
+              onDelete={agent => setAgentToDelete(agent)}
             />
           ))}
         </div>
@@ -330,10 +340,49 @@ export default function AgentsPage() {
           isOpen={!!selectedAgent}
           onClose={() => setSelectedAgent(null)}
           onUpdate={handleUpdateAgent}
-          onDelete={handleDeleteAgent}
+          onDelete={id => {
+            const agent = agents.find(a => a.id === id);
+            if (agent) {
+              setSelectedAgent(null);
+              setAgentToDelete(agent);
+            }
+          }}
           isLoading={isMutating}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={!!agentToDelete}
+        onOpenChange={open => {
+          if (!open) setAgentToDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete agent?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete{' '}
+              <span className='font-medium text-foreground'>
+                {agentToDelete?.name}
+              </span>{' '}
+              and all associated data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isMutating}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                agentToDelete && handleDeleteAgent(agentToDelete.id)
+              }
+              disabled={isMutating}
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            >
+              {isMutating ? 'Deleting...' : 'Delete agent'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -60,19 +60,18 @@ export default function NotFound() {
 
         {/* Quick Links */}
         <div className='pt-6 border-t border-border'>
-          <p className='text-sm text-muted-foreground mb-3'>Popular pages:</p>
+          <p className='text-sm text-muted-foreground mb-3'>
+            Try one of these:
+          </p>
           <div className='flex flex-wrap gap-2 justify-center'>
             <Button asChild variant='ghost' size='sm'>
-              <Link href='/dashboard/workflows'>Workflows</Link>
+              <Link href='/workspaces'>Workspaces</Link>
             </Button>
             <Button asChild variant='ghost' size='sm'>
-              <Link href='/dashboard/agents'>Agents</Link>
+              <Link href='/settings/profile'>Profile</Link>
             </Button>
             <Button asChild variant='ghost' size='sm'>
-              <Link href='/dashboard/org-chart'>Organization</Link>
-            </Button>
-            <Button asChild variant='ghost' size='sm'>
-              <Link href='/dashboard/settings'>Settings</Link>
+              <Link href='/settings'>Settings</Link>
             </Button>
           </div>
         </div>

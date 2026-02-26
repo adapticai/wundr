@@ -24,7 +24,9 @@ export class AgentChannelError extends Error {
 
 export class AgentChannelNotFoundError extends AgentChannelError {
   constructor(agent1Id: string, agent2Id: string) {
-    super(`Agent channel not found between agents: ${agent1Id} and ${agent2Id}`);
+    super(
+      `Agent channel not found between agents: ${agent1Id} and ${agent2Id}`
+    );
     this.name = 'AgentChannelNotFoundError';
   }
 }
@@ -57,12 +59,32 @@ export interface AgentMessage {
 // =============================================================================
 
 export interface IAgentChannelService {
-  createAgentChannel(agent1Id: string, agent2Id: string, workspaceId: string): Promise<AgentChannel>;
-  getOrCreateChannel(agent1Id: string, agent2Id: string, workspaceId: string): Promise<AgentChannel>;
-  sendAgentMessage(fromAgentId: string, toAgentId: string, content: string, type?: string): Promise<AgentMessage>;
-  getAgentConversation(agent1Id: string, agent2Id: string, options?: { limit?: number; cursor?: string }): Promise<{ messages: AgentMessage[]; hasMore: boolean }>;
+  createAgentChannel(
+    agent1Id: string,
+    agent2Id: string,
+    workspaceId: string
+  ): Promise<AgentChannel>;
+  getOrCreateChannel(
+    agent1Id: string,
+    agent2Id: string,
+    workspaceId: string
+  ): Promise<AgentChannel>;
+  sendAgentMessage(
+    fromAgentId: string,
+    toAgentId: string,
+    content: string,
+    type?: string
+  ): Promise<AgentMessage>;
+  getAgentConversation(
+    agent1Id: string,
+    agent2Id: string,
+    options?: { limit?: number; cursor?: string }
+  ): Promise<{ messages: AgentMessage[]; hasMore: boolean }>;
   listAgentChannels(agentId: string): Promise<AgentChannel[]>;
-  createAllPairwiseChannels(agentIds: string[], workspaceId: string): Promise<AgentChannel[]>;
+  createAllPairwiseChannels(
+    agentIds: string[],
+    workspaceId: string
+  ): Promise<AgentChannel[]>;
 }
 
 // =============================================================================
@@ -109,11 +131,15 @@ export class AgentChannelServiceImpl implements IAgentChannelService {
   // Channel Operations
   // ===========================================================================
 
-  async createAgentChannel(agent1Id: string, agent2Id: string, workspaceId: string): Promise<AgentChannel> {
+  async createAgentChannel(
+    agent1Id: string,
+    agent2Id: string,
+    workspaceId: string
+  ): Promise<AgentChannel> {
     const channelName = this.getChannelName(agent1Id, agent2Id);
     const channelSlug = this.getChannelSlug(agent1Id, agent2Id);
 
-    const channel = await this.db.$transaction(async (tx) => {
+    const channel = await this.db.$transaction(async tx => {
       const created = await tx.channel.create({
         data: {
           name: channelName,
@@ -134,7 +160,11 @@ export class AgentChannelServiceImpl implements IAgentChannelService {
     return this.toAgentChannel(channel, agent1Id, agent2Id);
   }
 
-  async getOrCreateChannel(agent1Id: string, agent2Id: string, workspaceId: string): Promise<AgentChannel> {
+  async getOrCreateChannel(
+    agent1Id: string,
+    agent2Id: string,
+    workspaceId: string
+  ): Promise<AgentChannel> {
     const channelName = this.getChannelName(agent1Id, agent2Id);
 
     const existing = await this.db.channel.findFirst({
@@ -218,7 +248,7 @@ export class AgentChannelServiceImpl implements IAgentChannelService {
     const page = hasMore ? messages.slice(0, limit) : messages;
 
     return {
-      messages: page.map((msg) => ({
+      messages: page.map(msg => ({
         id: msg.id,
         fromAgentId: msg.authorId,
         toAgentId: msg.authorId === agent1Id ? agent2Id : agent1Id,
@@ -250,9 +280,9 @@ export class AgentChannelServiceImpl implements IAgentChannelService {
       },
     });
 
-    return memberships.map((membership) => {
+    return memberships.map(membership => {
       const otherMember = membership.channel.channelMembers.find(
-        (m) => m.userId !== agentId
+        m => m.userId !== agentId
       );
       const otherAgentId = otherMember?.userId ?? agentId;
 
@@ -260,12 +290,17 @@ export class AgentChannelServiceImpl implements IAgentChannelService {
     });
   }
 
-  async createAllPairwiseChannels(agentIds: string[], workspaceId: string): Promise<AgentChannel[]> {
+  async createAllPairwiseChannels(
+    agentIds: string[],
+    workspaceId: string
+  ): Promise<AgentChannel[]> {
     const channels: AgentChannel[] = [];
 
     for (let i = 0; i < agentIds.length; i++) {
       for (let j = i + 1; j < agentIds.length; j++) {
-        channels.push(await this.getOrCreateChannel(agentIds[i], agentIds[j], workspaceId));
+        channels.push(
+          await this.getOrCreateChannel(agentIds[i], agentIds[j], workspaceId)
+        );
       }
     }
 
@@ -294,7 +329,9 @@ export class AgentChannelServiceImpl implements IAgentChannelService {
  * );
  * ```
  */
-export function createAgentChannelService(database?: PrismaClient): AgentChannelServiceImpl {
+export function createAgentChannelService(
+  database?: PrismaClient
+): AgentChannelServiceImpl {
   return new AgentChannelServiceImpl(database);
 }
 

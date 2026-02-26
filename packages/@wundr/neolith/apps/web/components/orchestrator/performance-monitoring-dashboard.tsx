@@ -171,7 +171,11 @@ interface TrendIndicatorProps {
   className?: string;
 }
 
-function TrendIndicator({ value, goodDirection, className }: TrendIndicatorProps) {
+function TrendIndicator({
+  value,
+  goodDirection,
+  className,
+}: TrendIndicatorProps) {
   if (value === 0) {
     return <Minus className={cn('h-3 w-3 text-muted-foreground', className)} />;
   }
@@ -179,11 +183,19 @@ function TrendIndicator({ value, goodDirection, className }: TrendIndicatorProps
   const isGood = goodDirection === 'up' ? isPositive : !isPositive;
   return isPositive ? (
     <ArrowUp
-      className={cn('h-3 w-3', isGood ? 'text-green-500' : 'text-red-500', className)}
+      className={cn(
+        'h-3 w-3',
+        isGood ? 'text-green-500' : 'text-red-500',
+        className
+      )}
     />
   ) : (
     <ArrowDown
-      className={cn('h-3 w-3', isGood ? 'text-green-500' : 'text-red-500', className)}
+      className={cn(
+        'h-3 w-3',
+        isGood ? 'text-green-500' : 'text-red-500',
+        className
+      )}
     />
   );
 }
@@ -211,17 +223,26 @@ function StatCard({
     <Card>
       <CardContent className='p-4'>
         <div className='flex items-start justify-between'>
-          <div className='flex items-center gap-2 text-muted-foreground'>{icon}</div>
+          <div className='flex items-center gap-2 text-muted-foreground'>
+            {icon}
+          </div>
           {trend !== undefined && (
             <TrendIndicator value={trend} goodDirection={goodDirection} />
           )}
         </div>
         <div className='mt-2'>
           <p className='text-xs font-sans text-muted-foreground'>{label}</p>
-          <p className={cn('text-2xl font-heading font-semibold text-foreground', valueClassName)}>
+          <p
+            className={cn(
+              'text-2xl font-heading font-semibold text-foreground',
+              valueClassName
+            )}
+          >
             {value}
           </p>
-          <p className='mt-0.5 text-xs font-sans text-muted-foreground'>{subtitle}</p>
+          <p className='mt-0.5 text-xs font-sans text-muted-foreground'>
+            {subtitle}
+          </p>
         </div>
       </CardContent>
     </Card>
@@ -299,7 +320,9 @@ export function PerformanceMonitoringDashboard({
 }: PerformanceMonitoringDashboardProps) {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const [agentMetrics, setAgentMetrics] = useState<AgentMetric[]>([]);
-  const [routingDistribution, setRoutingDistribution] = useState<Record<string, number>>({});
+  const [routingDistribution, setRoutingDistribution] = useState<
+    Record<string, number>
+  >({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -319,9 +342,7 @@ export function PerformanceMonitoringDashboard({
           fetch(
             `/api/traffic-manager/metrics?workspaceId=${workspaceId}&timeRange=${timeRange}`
           ),
-          fetch(
-            `/api/workspaces/${workspaceId}/admin/orchestrators?limit=100`
-          ),
+          fetch(`/api/workspaces/${workspaceId}/admin/orchestrators?limit=100`),
         ]);
 
         if (metricsRes.ok) {
@@ -344,7 +365,8 @@ export function PerformanceMonitoringDashboard({
 
         if (orchestratorsRes.ok) {
           const orchData = await orchestratorsRes.json();
-          const rawList: RawOrchestrator[] = orchData.orchestrators ?? orchData.data ?? [];
+          const rawList: RawOrchestrator[] =
+            orchData.orchestrators ?? orchData.data ?? [];
           const agents: AgentMetric[] = rawList.map(o => ({
             id: o.id,
             name: o.name,
@@ -367,7 +389,8 @@ export function PerformanceMonitoringDashboard({
             prev
               ? {
                   ...prev,
-                  activeAgents: agents.filter(a => a.status === 'active').length,
+                  activeAgents: agents.filter(a => a.status === 'active')
+                    .length,
                   totalAgents: agents.length,
                 }
               : prev
@@ -407,7 +430,8 @@ export function PerformanceMonitoringDashboard({
   // Derived values
   const avgUtilization =
     agentMetrics.length > 0
-      ? agentMetrics.reduce((sum, a) => sum + a.utilization, 0) / agentMetrics.length
+      ? agentMetrics.reduce((sum, a) => sum + a.utilization, 0) /
+        agentMetrics.length
       : 0;
 
   const tokenPct =
@@ -437,7 +461,10 @@ export function PerformanceMonitoringDashboard({
 
         <div className='flex items-center gap-2'>
           {/* Time range */}
-          <Select value={timeRange} onValueChange={v => setTimeRange(v as TimeRange)}>
+          <Select
+            value={timeRange}
+            onValueChange={v => setTimeRange(v as TimeRange)}
+          >
             <SelectTrigger className='w-28'>
               <SelectValue />
             </SelectTrigger>
@@ -494,10 +521,10 @@ export function PerformanceMonitoringDashboard({
               icon={<Clock className='h-4 w-4' />}
               label='Avg Latency'
               value={metrics ? `${metrics.avgLatencyMs}ms` : '—'}
-              subtitle={
-                metrics ? `p95: ${metrics.p95LatencyMs}ms` : 'No data'
+              subtitle={metrics ? `p95: ${metrics.p95LatencyMs}ms` : 'No data'}
+              valueClassName={
+                metrics ? latencyColor(metrics.avgLatencyMs) : undefined
               }
-              valueClassName={metrics ? latencyColor(metrics.avgLatencyMs) : undefined}
               goodDirection='down'
             />
 
@@ -515,7 +542,9 @@ export function PerformanceMonitoringDashboard({
                       : 'Critical'
                   : 'No data'
               }
-              valueClassName={metrics ? errorRateColor(metrics.errorRate) : undefined}
+              valueClassName={
+                metrics ? errorRateColor(metrics.errorRate) : undefined
+              }
               goodDirection='down'
             />
 
@@ -532,19 +561,13 @@ export function PerformanceMonitoringDashboard({
             <StatCard
               icon={<Coins className='h-4 w-4' />}
               label='Token Usage'
-              value={
-                metrics
-                  ? `${Math.round(tokenPct)}%`
-                  : '—'
-              }
+              value={metrics ? `${Math.round(tokenPct)}%` : '—'}
               subtitle={
                 metrics
                   ? `${formatNumber(metrics.tokenUsage.used)} / ${formatNumber(metrics.tokenUsage.budget)}`
                   : 'No data'
               }
-              valueClassName={
-                metrics ? utilizationColor(tokenPct) : undefined
-              }
+              valueClassName={metrics ? utilizationColor(tokenPct) : undefined}
               goodDirection='down'
             />
 
@@ -591,7 +614,9 @@ export function PerformanceMonitoringDashboard({
                     <span
                       className={cn(
                         'text-2xl font-heading font-semibold',
-                        metrics ? errorRateColor(metrics.escalationRate) : 'text-foreground'
+                        metrics
+                          ? errorRateColor(metrics.escalationRate)
+                          : 'text-foreground'
                       )}
                     >
                       {metrics ? formatPercent(metrics.escalationRate) : '—'}
@@ -631,7 +656,9 @@ export function PerformanceMonitoringDashboard({
                     <span
                       className={cn(
                         'text-2xl font-heading font-semibold',
-                        metrics ? errorRateColor(metrics.fallbackRate) : 'text-foreground'
+                        metrics
+                          ? errorRateColor(metrics.fallbackRate)
+                          : 'text-foreground'
                       )}
                     >
                       {metrics ? formatPercent(metrics.fallbackRate) : '—'}
@@ -674,7 +701,9 @@ export function PerformanceMonitoringDashboard({
                         utilizationColor(avgUtilization)
                       )}
                     >
-                      {agentMetrics.length > 0 ? `${Math.round(avgUtilization)}%` : '—'}
+                      {agentMetrics.length > 0
+                        ? `${Math.round(avgUtilization)}%`
+                        : '—'}
                     </span>
                     <span className='text-xs font-sans text-muted-foreground pb-0.5'>
                       average
@@ -722,7 +751,8 @@ export function PerformanceMonitoringDashboard({
                     No agents found
                   </p>
                   <p className='text-xs font-sans text-muted-foreground mt-1'>
-                    Agents will appear here once they are active in this workspace
+                    Agents will appear here once they are active in this
+                    workspace
                   </p>
                 </div>
               ) : (
@@ -770,7 +800,9 @@ export function PerformanceMonitoringDashboard({
                         <TableCell
                           className={cn(
                             'text-right font-sans tabular-nums text-sm',
-                            agent.errorCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-foreground'
+                            agent.errorCount > 0
+                              ? 'text-red-600 dark:text-red-400'
+                              : 'text-foreground'
                           )}
                         >
                           {agent.errorCount}
@@ -905,7 +937,9 @@ export function PerformanceMonitoringDashboard({
                 <div className='space-y-4'>
                   <div className='flex items-end justify-between'>
                     <div>
-                      <p className='text-xs font-sans text-muted-foreground'>Used</p>
+                      <p className='text-xs font-sans text-muted-foreground'>
+                        Used
+                      </p>
                       <p
                         className={cn(
                           'text-3xl font-heading font-semibold',
@@ -916,7 +950,9 @@ export function PerformanceMonitoringDashboard({
                       </p>
                     </div>
                     <div className='text-right'>
-                      <p className='text-xs font-sans text-muted-foreground'>Budget</p>
+                      <p className='text-xs font-sans text-muted-foreground'>
+                        Budget
+                      </p>
                       <p className='text-lg font-heading font-semibold text-foreground'>
                         {formatNumber(metrics.tokenUsage.budget)}
                       </p>
@@ -939,7 +975,10 @@ export function PerformanceMonitoringDashboard({
                     <span>{Math.round(tokenPct)}% consumed</span>
                     <span>
                       {formatNumber(
-                        Math.max(0, metrics.tokenUsage.budget - metrics.tokenUsage.used)
+                        Math.max(
+                          0,
+                          metrics.tokenUsage.budget - metrics.tokenUsage.used
+                        )
                       )}{' '}
                       remaining
                     </span>

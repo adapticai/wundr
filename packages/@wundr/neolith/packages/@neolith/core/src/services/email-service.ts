@@ -49,7 +49,11 @@ export interface EmailMessage {
   replyTo?: string;
   cc?: string[];
   bcc?: string[];
-  attachments?: Array<{ filename: string; content: string; contentType: string }>;
+  attachments?: Array<{
+    filename: string;
+    content: string;
+    contentType: string;
+  }>;
   metadata?: Record<string, unknown>;
 }
 
@@ -78,7 +82,8 @@ export const EMAIL_BUILT_IN_TEMPLATES: Record<string, EmailTemplate> = {
     id: 'task-notification',
     name: 'Task Notification',
     subject: 'New task assigned: {taskTitle}',
-    htmlTemplate: '<p>You have been assigned a new task: <strong>{taskTitle}</strong></p>',
+    htmlTemplate:
+      '<p>You have been assigned a new task: <strong>{taskTitle}</strong></p>',
     variables: ['taskTitle'],
   },
   'status-report': {
@@ -92,7 +97,8 @@ export const EMAIL_BUILT_IN_TEMPLATES: Record<string, EmailTemplate> = {
     id: 'agent-welcome',
     name: 'Agent Welcome',
     subject: 'Welcome to {orgName}, {agentName}',
-    htmlTemplate: '<p>Welcome to <strong>{orgName}</strong>, {agentName}! We are glad to have you.</p>',
+    htmlTemplate:
+      '<p>Welcome to <strong>{orgName}</strong>, {agentName}! We are glad to have you.</p>',
     variables: ['orgName', 'agentName'],
   },
 };
@@ -110,7 +116,10 @@ export interface IEmailService {
    * @returns Delivery status with a message ID
    * @throws {EmailDeliveryError} If the daemon rejects or fails to send the email
    */
-  sendEmail(orchestratorId: string, message: EmailMessage): Promise<EmailDeliveryStatus>;
+  sendEmail(
+    orchestratorId: string,
+    message: EmailMessage
+  ): Promise<EmailDeliveryStatus>;
 
   /**
    * Send a bulk email to multiple recipients using a template.
@@ -203,7 +212,10 @@ export class EmailServiceImpl implements IEmailService {
    *
    * @throws {EmailTemplateError} If required variables are missing from data
    */
-  private renderTemplate(template: EmailTemplate, data: Record<string, string>): {
+  private renderTemplate(
+    template: EmailTemplate,
+    data: Record<string, string>
+  ): {
     subject: string;
     html: string;
   } {
@@ -228,7 +240,10 @@ export class EmailServiceImpl implements IEmailService {
   // IEmailService Methods
   // ===========================================================================
 
-  async sendEmail(orchestratorId: string, message: EmailMessage): Promise<EmailDeliveryStatus> {
+  async sendEmail(
+    orchestratorId: string,
+    message: EmailMessage
+  ): Promise<EmailDeliveryStatus> {
     const endpoint = await this.getDaemonEndpoint(orchestratorId);
 
     let response: Response;
@@ -263,7 +278,7 @@ export class EmailServiceImpl implements IEmailService {
     const { subject, html } = this.renderTemplate(template, data);
 
     const results = await Promise.allSettled(
-      recipients.map((to) =>
+      recipients.map(to =>
         this.sendEmail(orchestratorId, { to, subject, body: html, html })
       )
     );
@@ -275,12 +290,17 @@ export class EmailServiceImpl implements IEmailService {
       return {
         messageId: `failed-${Date.now()}-${index}`,
         status: 'failed',
-        error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+        error:
+          result.reason instanceof Error
+            ? result.reason.message
+            : String(result.reason),
       };
     });
   }
 
-  async getDeliveryStatus(_messageId: string): Promise<EmailDeliveryStatus | null> {
+  async getDeliveryStatus(
+    _messageId: string
+  ): Promise<EmailDeliveryStatus | null> {
     // In-memory delivery status is tracked by the daemon; query it via a generic
     // endpoint. Without a known orchestrator ID we fall back to null — callers
     // that need status should use listSentEmails instead.
@@ -294,8 +314,10 @@ export class EmailServiceImpl implements IEmailService {
     const endpoint = await this.getDaemonEndpoint(orchestratorId);
 
     const params = new URLSearchParams();
-    if (filters?.limit !== undefined) params.set('limit', String(filters.limit));
-    if (filters?.offset !== undefined) params.set('offset', String(filters.offset));
+    if (filters?.limit !== undefined)
+      params.set('limit', String(filters.limit));
+    if (filters?.offset !== undefined)
+      params.set('offset', String(filters.offset));
     if (filters?.status) params.set('status', filters.status);
 
     const url = `${endpoint}/api/channels/email/sent${params.size > 0 ? `?${params}` : ''}`;

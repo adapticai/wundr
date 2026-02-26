@@ -108,7 +108,9 @@ function mapDecisionsToEvents(decisions: TrafficDecision[]): ActivityEvent[] {
 
 type DateGroup = 'Today' | 'Yesterday' | 'This Week' | 'Older';
 
-function groupByDate(events: ActivityEvent[]): Record<DateGroup, ActivityEvent[]> {
+function groupByDate(
+  events: ActivityEvent[]
+): Record<DateGroup, ActivityEvent[]> {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today.getTime() - 86400000);
@@ -151,7 +153,12 @@ function formatTime(timestamp: string): string {
   });
 }
 
-const DATE_GROUP_ORDER: DateGroup[] = ['Today', 'Yesterday', 'This Week', 'Older'];
+const DATE_GROUP_ORDER: DateGroup[] = [
+  'Today',
+  'Yesterday',
+  'This Week',
+  'Older',
+];
 
 export function AgentActivityTimeline({
   workspaceId,

@@ -281,9 +281,7 @@ function isUserOnline(lastActiveAt: Date | null): boolean {
  * @param preferences - User preferences JSON
  * @returns Presence status or null
  */
-function getPresenceFromPreferences(
-  preferences: JsonValue
-): UserPreferences {
+function getPresenceFromPreferences(preferences: JsonValue): UserPreferences {
   if (
     typeof preferences === 'object' &&
     preferences !== null &&

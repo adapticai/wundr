@@ -116,7 +116,7 @@ export function AudioVideoSettings() {
   const animationFrameRef = React.useRef<number | null>(null);
   const testAudioRef = React.useRef<HTMLAudioElement | null>(null);
 
-  const [preferences, setPreferences] = React.useState<AudioVideoPreferences>({
+  const DEFAULT_PREFERENCES: AudioVideoPreferences = {
     microphoneId: 'default',
     microphoneVolume: 80,
     noiseCancellation: true,
@@ -133,7 +133,10 @@ export function AudioVideoSettings() {
     hardwareAcceleration: true,
     sampleRate: 48000,
     echoCancellationType: 'browser',
-  });
+  };
+
+  const [preferences, setPreferences] =
+    React.useState<AudioVideoPreferences>(DEFAULT_PREFERENCES);
 
   const [permissionsGranted, setPermissionsGranted] = React.useState({
     microphone: false,
@@ -500,9 +503,10 @@ export function AudioVideoSettings() {
   return (
     <div className='space-y-6'>
       <div>
-        <h2 className='text-2xl font-bold'>Audio & Video Settings</h2>
+        <h1 className='text-2xl font-bold'>Audio & Video</h1>
         <p className='text-muted-foreground'>
-          Configure your audio and video devices for meetings and calls.
+          Configure your microphone, speakers, and camera for meetings and
+          calls.
         </p>
       </div>
 
@@ -1021,7 +1025,7 @@ export function AudioVideoSettings() {
               </div>
               <div className='text-xs text-muted-foreground space-y-1'>
                 <div className='flex items-center gap-2'>
-                  {permissionsGranted.microphone ? (
+                  {speakers.length > 0 ? (
                     <CheckCircle2 className='h-3 w-3 text-green-500' />
                   ) : (
                     <XCircle className='h-3 w-3 text-red-500' />
@@ -1066,8 +1070,27 @@ export function AudioVideoSettings() {
 
       {/* Save Button */}
       <div className='flex justify-end gap-3'>
-        <Button variant='outline' onClick={() => window.location.reload()}>
-          Cancel
+        <Button
+          variant='outline'
+          onClick={() => {
+            cleanupStreams();
+            setIsMicTesting(false);
+            setIsSpeakerTesting(false);
+            setIsCameraPreviewActive(false);
+            setMicLevel(0);
+            const saved = localStorage.getItem('audio-video-preferences');
+            if (saved) {
+              try {
+                setPreferences(JSON.parse(saved));
+              } catch {
+                setPreferences(DEFAULT_PREFERENCES);
+              }
+            } else {
+              setPreferences(DEFAULT_PREFERENCES);
+            }
+          }}
+        >
+          Reset Changes
         </Button>
         <Button onClick={handleSavePreferences} disabled={isSaving}>
           {isSaving ? 'Saving...' : 'Save All Changes'}

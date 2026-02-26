@@ -625,14 +625,17 @@ export async function POST(
           channelId: params.channelId,
           user: { isOrchestrator: true },
         },
-        select: { userId: true, user: { select: { name: true, displayName: true } } },
+        select: {
+          userId: true,
+          user: { select: { name: true, displayName: true } },
+        },
       });
 
       if (orchestratorMembers.length > 0) {
         // Check if message @mentions a specific orchestrator
-        const mentionedOrchestrators = orchestratorMembers.filter((om) =>
+        const mentionedOrchestrators = orchestratorMembers.filter(om =>
           mentionedUsernames.some(
-            (u) =>
+            u =>
               u === om.user.name?.toLowerCase() ||
               u === om.user.displayName?.toLowerCase()
           )
@@ -646,17 +649,21 @@ export async function POST(
           threadId: input.parentId || undefined,
           metadata: {
             messageId: message.id,
-            directMention: mentionedOrchestrators.length > 0
-              ? mentionedOrchestrators[0].userId
-              : undefined,
+            directMention:
+              mentionedOrchestrators.length > 0
+                ? mentionedOrchestrators[0].userId
+                : undefined,
           },
         };
 
-        fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/traffic-manager/route-message`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(routePayload),
-        }).catch((err: unknown) => {
+        fetch(
+          `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/traffic-manager/route-message`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(routePayload),
+          }
+        ).catch((err: unknown) => {
           console.error(
             '[POST /api/channels/:channelId/messages] Failed to route through traffic manager:',
             err

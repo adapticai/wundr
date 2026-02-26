@@ -37,7 +37,7 @@ import {
   Webhook,
   XCircle,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -143,62 +143,48 @@ export function ConnectedApps({
   const [showWebhookDialog, setShowWebhookDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock data for personal API keys (in production, fetch from API)
-  const [apiKeys] = useState<PersonalAPIKey[]>([
-    {
-      id: '1',
-      name: 'Development Key',
-      prefix: 'nlt_dev_',
-      scopes: ['read:messages', 'write:messages', 'read:channels'],
-      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      lastUsedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: '2',
-      name: 'Production API',
-      prefix: 'nlt_prod_',
-      scopes: ['read:*', 'write:*'],
-      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-      lastUsedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-      expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ]);
+  const [apiKeys, setApiKeys] = useState<PersonalAPIKey[]>([]);
+  const [isLoadingApiKeys, setIsLoadingApiKeys] = useState(false);
 
-  // Mock activity log (in production, fetch from API)
-  const [activityLog] = useState<ActivityLogEntry[]>([
-    {
-      id: '1',
-      appName: 'Google Calendar',
-      action: 'Event Sync',
-      description: 'Synced 15 calendar events',
-      timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-      severity: 'info',
-    },
-    {
-      id: '2',
-      appName: 'Slack',
-      action: 'Message Sent',
-      description: 'Posted notification to #general',
-      timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-      severity: 'info',
-    },
-    {
-      id: '3',
-      appName: 'GitHub',
-      action: 'Access Token Refreshed',
-      description: 'OAuth token renewed successfully',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      severity: 'info',
-    },
-    {
-      id: '4',
-      appName: 'Dropbox',
-      action: 'Connection Error',
-      description: 'Failed to sync files - invalid credentials',
-      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-      severity: 'error',
-    },
-  ]);
+  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
+  const [isLoadingActivity, setIsLoadingActivity] = useState(false);
+
+  useEffect(() => {
+    const loadApiKeys = async () => {
+      setIsLoadingApiKeys(true);
+      try {
+        const res = await fetch(`/api/workspaces/${workspaceId}/api-keys`);
+        if (res.ok) {
+          const data = await res.json();
+          setApiKeys(data.apiKeys ?? []);
+        }
+      } catch {
+        // silent — empty state shown
+      } finally {
+        setIsLoadingApiKeys(false);
+      }
+    };
+
+    const loadActivityLog = async () => {
+      setIsLoadingActivity(true);
+      try {
+        const res = await fetch(
+          `/api/workspaces/${workspaceId}/integrations/activity`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setActivityLog(data.activity ?? []);
+        }
+      } catch {
+        // silent — empty state shown
+      } finally {
+        setIsLoadingActivity(false);
+      }
+    };
+
+    void loadApiKeys();
+    void loadActivityLog();
+  }, [workspaceId]);
 
   const handleDisconnect = useCallback(
     async (integration: IntegrationConfig) => {
@@ -469,7 +455,11 @@ export function ConnectedApps({
 
           <Card>
             <CardContent className='p-0'>
-              {apiKeys.length === 0 ? (
+              {isLoadingApiKeys ? (
+                <div className='flex items-center justify-center py-12'>
+                  <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+                </div>
+              ) : apiKeys.length === 0 ? (
                 <div className='flex flex-col items-center justify-center py-12'>
                   <Key className='h-12 w-12 text-muted-foreground/50 mb-4' />
                   <h3 className='font-medium text-foreground mb-2'>
@@ -548,14 +538,18 @@ export function ConnectedApps({
           <Card>
             <CardContent className='p-0'>
               <ScrollArea className='h-[500px]'>
-                {activityLog.length === 0 ? (
+                {isLoadingActivity ? (
+                  <div className='flex items-center justify-center py-12'>
+                    <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+                  </div>
+                ) : activityLog.length === 0 ? (
                   <div className='flex flex-col items-center justify-center py-12'>
                     <Clock className='h-12 w-12 text-muted-foreground/50 mb-4' />
                     <h3 className='font-medium text-foreground mb-2'>
                       No Activity
                     </h3>
                     <p className='text-sm text-muted-foreground'>
-                      App activity will appear here
+                      Activity from connected apps will appear here
                     </p>
                   </div>
                 ) : (
@@ -593,6 +587,13 @@ export function ConnectedApps({
         isOpen={showAPIKeyDialog}
         onClose={() => setShowAPIKeyDialog(false)}
         workspaceId={workspaceId}
+        onCreated={async () => {
+          const res = await fetch(`/api/workspaces/${workspaceId}/api-keys`);
+          if (res.ok) {
+            const data = await res.json();
+            setApiKeys(data.apiKeys ?? []);
+          }
+        }}
       />
 
       {/* Webhook Dialog */}
@@ -964,7 +965,6 @@ function AppDetailsDialog({
   onDisconnect,
   onRefresh,
 }: AppDetailsDialogProps) {
-  // Mock permissions (in production, fetch from API)
   const permissions: AppPermission[] = [
     {
       id: '1',
@@ -1230,15 +1230,19 @@ interface CreateAPIKeyDialogProps {
   isOpen: boolean;
   onClose: () => void;
   workspaceId: string;
+  onCreated?: () => void;
 }
 
 function CreateAPIKeyDialog({
   isOpen,
   onClose,
   workspaceId,
+  onCreated,
 }: CreateAPIKeyDialogProps) {
   const [name, setName] = useState('');
   const [selectedScopes, setSelectedScopes] = useState<string[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newKey, setNewKey] = useState<string | null>(null);
   const { toast } = useToast();
 
   const availableScopes = [
@@ -1260,82 +1264,135 @@ function CreateAPIKeyDialog({
       return;
     }
 
-    // In production, make API call here
-    toast({
-      title: 'API Key Created',
-      description: 'Your new API key has been generated successfully.',
-    });
+    setIsCreating(true);
+    try {
+      const res = await fetch(`/api/workspaces/${workspaceId}/api-keys`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, scopes: selectedScopes }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to create API key');
+      }
+
+      const data = await res.json();
+      setNewKey(data.key ?? null);
+      onCreated?.();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to create API key',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleClose = () => {
+    setName('');
+    setSelectedScopes([]);
+    setNewKey(null);
     onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Generate API Key</DialogTitle>
           <DialogDescription>
-            Create a new API key for programmatic access
+            Create a new API key for programmatic access to your account
           </DialogDescription>
         </DialogHeader>
 
-        <div className='space-y-4'>
-          <div>
-            <Label htmlFor='key-name'>Key Name</Label>
-            <Input
-              id='key-name'
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder='e.g., Development Key'
-              className='mt-1'
-            />
-          </div>
-
-          <div>
-            <Label>Scopes</Label>
-            <div className='mt-2 space-y-2 max-h-64 overflow-y-auto rounded-lg border p-3'>
-              {availableScopes.map(scope => (
-                <div key={scope.id} className='flex items-start gap-2'>
-                  <input
-                    type='checkbox'
-                    id={scope.id}
-                    checked={selectedScopes.includes(scope.id)}
-                    onChange={e => {
-                      if (e.target.checked) {
-                        setSelectedScopes([...selectedScopes, scope.id]);
-                      } else {
-                        setSelectedScopes(
-                          selectedScopes.filter(s => s !== scope.id)
-                        );
-                      }
-                    }}
-                    className='mt-1 h-4 w-4 rounded'
-                  />
-                  <label htmlFor={scope.id} className='flex-1 cursor-pointer'>
-                    <div className='font-medium text-sm'>{scope.label}</div>
-                    <div className='text-xs text-muted-foreground'>
-                      {scope.category}
-                    </div>
-                  </label>
-                </div>
-              ))}
+        {newKey ? (
+          <div className='space-y-4 py-2'>
+            <Alert>
+              <Shield className='h-4 w-4' />
+              <AlertTitle>API Key Generated</AlertTitle>
+              <AlertDescription className='text-xs'>
+                Copy your API key now. It will not be shown again.
+              </AlertDescription>
+            </Alert>
+            <div className='rounded-lg border bg-muted p-3 font-mono text-sm break-all select-all'>
+              {newKey}
             </div>
           </div>
+        ) : (
+          <div className='space-y-4'>
+            <div>
+              <Label htmlFor='key-name'>Key Name</Label>
+              <Input
+                id='key-name'
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder='e.g., Development Key'
+                className='mt-1'
+              />
+            </div>
 
-          <Alert>
-            <Shield className='h-4 w-4' />
-            <AlertTitle>Security Notice</AlertTitle>
-            <AlertDescription className='text-xs'>
-              Keep your API key secure. It will only be shown once after
-              creation. Store it in a secure location.
-            </AlertDescription>
-          </Alert>
-        </div>
+            <div>
+              <Label>Permissions</Label>
+              <div className='mt-2 space-y-2 max-h-64 overflow-y-auto rounded-lg border p-3'>
+                {availableScopes.map(scope => (
+                  <div key={scope.id} className='flex items-start gap-2'>
+                    <input
+                      type='checkbox'
+                      id={scope.id}
+                      checked={selectedScopes.includes(scope.id)}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          setSelectedScopes([...selectedScopes, scope.id]);
+                        } else {
+                          setSelectedScopes(
+                            selectedScopes.filter(s => s !== scope.id)
+                          );
+                        }
+                      }}
+                      className='mt-1 h-4 w-4 rounded'
+                    />
+                    <label htmlFor={scope.id} className='flex-1 cursor-pointer'>
+                      <div className='font-medium text-sm'>{scope.label}</div>
+                      <div className='text-xs text-muted-foreground'>
+                        {scope.category}
+                      </div>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Alert>
+              <Shield className='h-4 w-4' />
+              <AlertTitle>Security Notice</AlertTitle>
+              <AlertDescription className='text-xs'>
+                Your API key will only be shown once after creation. Store it in
+                a secure location and never commit it to source control.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
 
         <DialogFooter>
-          <Button variant='outline' onClick={onClose}>
-            Cancel
+          <Button variant='outline' onClick={handleClose}>
+            {newKey ? 'Done' : 'Cancel'}
           </Button>
-          <Button onClick={handleCreate}>Generate Key</Button>
+          {!newKey && (
+            <Button onClick={handleCreate} disabled={isCreating}>
+              {isCreating ? (
+                <>
+                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  Generating...
+                </>
+              ) : (
+                'Generate Key'
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -1346,34 +1403,66 @@ interface CreateWebhookDialogProps {
   isOpen: boolean;
   onClose: () => void;
   workspaceId: string;
+  onCreated?: () => void;
 }
 
 function CreateWebhookDialog({
   isOpen,
   onClose,
   workspaceId,
+  onCreated,
 }: CreateWebhookDialogProps) {
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
 
   const handleCreate = async () => {
     if (!name || !url) {
       toast({
         title: 'Validation Error',
-        description: 'Please provide a name and URL',
+        description: 'Please provide a name and endpoint URL',
         variant: 'destructive',
       });
       return;
     }
 
-    // In production, make API call here
-    toast({
-      title: 'Webhook Created',
-      description: 'Your webhook has been configured successfully.',
-    });
-    onClose();
+    setIsCreating(true);
+    try {
+      const res = await fetch(
+        `/api/workspaces/${workspaceId}/integrations/webhooks`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, url, description }),
+        }
+      );
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to create webhook');
+      }
+
+      toast({
+        title: 'Webhook Created',
+        description: 'Your webhook has been configured successfully.',
+      });
+      onCreated?.();
+      setName('');
+      setUrl('');
+      setDescription('');
+      onClose();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to create webhook',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -1424,10 +1513,19 @@ function CreateWebhookDialog({
         </div>
 
         <DialogFooter>
-          <Button variant='outline' onClick={onClose}>
+          <Button variant='outline' onClick={onClose} disabled={isCreating}>
             Cancel
           </Button>
-          <Button onClick={handleCreate}>Create Webhook</Button>
+          <Button onClick={handleCreate} disabled={isCreating}>
+            {isCreating ? (
+              <>
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                Creating...
+              </>
+            ) : (
+              'Create Webhook'
+            )}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

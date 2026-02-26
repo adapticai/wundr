@@ -74,7 +74,7 @@ export default function AccountOverviewPage() {
   const hasAvatar = !!session?.user?.image;
   const hasName = !!session?.user?.name;
   const hasEmail = !!session?.user?.email;
-  const isEmailVerified = !!session?.user?.emailVerified;
+  const isEmailVerified = !!(session?.user as any)?.emailVerified;
 
   const completionItems = [
     { label: 'Profile picture', completed: hasAvatar },
@@ -243,7 +243,7 @@ export default function AccountOverviewPage() {
         </div>
       </div>
 
-      {/* Security Score (Optional - can be expanded later) */}
+      {/* Security Status */}
       <Card>
         <CardHeader>
           <CardTitle>Security Status</CardTitle>
@@ -253,9 +253,21 @@ export default function AccountOverviewPage() {
           <div className='space-y-3'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
-                <CheckCircle2 className='h-5 w-5 text-green-600 dark:text-green-500' />
-                <span className='text-sm font-medium'>Strong password</span>
+                {isEmailVerified ? (
+                  <CheckCircle2 className='h-5 w-5 text-green-600 dark:text-green-500' />
+                ) : (
+                  <AlertCircle className='h-5 w-5 text-amber-600 dark:text-amber-500' />
+                )}
+                <span className='text-sm font-medium'>Email verified</span>
               </div>
+              {!isEmailVerified && (
+                <Link
+                  href={`/${workspaceSlug}/settings/security`}
+                  className='text-sm text-primary hover:underline'
+                >
+                  Verify
+                </Link>
+              )}
             </div>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
@@ -270,12 +282,6 @@ export default function AccountOverviewPage() {
               >
                 Enable
               </Link>
-            </div>
-            <div className='flex items-center justify-between'>
-              <div className='flex items-center gap-2'>
-                <CheckCircle2 className='h-5 w-5 text-green-600 dark:text-green-500' />
-                <span className='text-sm font-medium'>Email verified</span>
-              </div>
             </div>
           </div>
         </CardContent>

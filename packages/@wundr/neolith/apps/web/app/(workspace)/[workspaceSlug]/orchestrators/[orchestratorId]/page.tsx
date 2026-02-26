@@ -29,7 +29,6 @@ import {
   AlertCircle,
   ListTodo,
   GitBranch,
-  Database,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useCallback, useEffect } from 'react';
@@ -40,7 +39,6 @@ import { BacklogList } from '@/components/orchestrator/backlog-list';
 import { DelegationDialog } from '@/components/orchestrator/delegation-dialog';
 import { DelegationHistory } from '@/components/orchestrator/delegation-history';
 import { DelegationRules } from '@/components/orchestrator/delegation-rules';
-import { MemoryManagement } from '@/components/orchestrator/memory-management';
 import { SessionManagerCreate } from '@/components/orchestrator/session-manager-create';
 import { SessionManagerList } from '@/components/orchestrator/session-manager-list';
 import { SubagentCreate } from '@/components/orchestrator/subagent-create';
@@ -470,10 +468,10 @@ export default function OrchestratorDetailPage() {
               <Button
                 variant='outline'
                 onClick={handlePause}
-                disabled={isMutating}
+                disabled={isMutating || orchestrator.status === 'BUSY'}
               >
-                <Clock className='h-4 w-4 mr-2' />
-                Mark as Busy
+                <Pause className='h-4 w-4 mr-2' />
+                Pause Activity
               </Button>
               <Button variant='outline' onClick={handleConfigure}>
                 <Settings className='h-4 w-4 mr-2' />
@@ -485,41 +483,56 @@ export default function OrchestratorDetailPage() {
 
         {/* Tabbed Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className='grid w-full grid-cols-9'>
-            <TabsTrigger value='overview'>
-              <Activity className='h-4 w-4 mr-2' />
+          <TabsList className='flex w-full flex-wrap gap-1 h-auto p-1'>
+            <TabsTrigger value='overview' className='flex items-center gap-1.5'>
+              <Activity className='h-4 w-4' />
               Overview
             </TabsTrigger>
-            <TabsTrigger value='backlog'>
-              <ListTodo className='h-4 w-4 mr-2' />
+            <TabsTrigger value='backlog' className='flex items-center gap-1.5'>
+              <ListTodo className='h-4 w-4' />
               Backlog
             </TabsTrigger>
-            <TabsTrigger value='delegation'>
-              <GitBranch className='h-4 w-4 mr-2' />
+            <TabsTrigger
+              value='delegation'
+              className='flex items-center gap-1.5'
+            >
+              <GitBranch className='h-4 w-4' />
               Delegation
             </TabsTrigger>
-            <TabsTrigger value='charter'>
-              <FileText className='h-4 w-4 mr-2' />
+            <TabsTrigger value='charter' className='flex items-center gap-1.5'>
+              <FileText className='h-4 w-4' />
               Charter
             </TabsTrigger>
-            <TabsTrigger value='session-managers'>
-              <Users className='h-4 w-4 mr-2' />
+            <TabsTrigger
+              value='session-managers'
+              className='flex items-center gap-1.5'
+            >
+              <Users className='h-4 w-4' />
               Session Managers
             </TabsTrigger>
-            <TabsTrigger value='subagents'>
-              <Brain className='h-4 w-4 mr-2' />
+            <TabsTrigger
+              value='subagents'
+              className='flex items-center gap-1.5'
+            >
+              <Brain className='h-4 w-4' />
               Subagents
             </TabsTrigger>
-            <TabsTrigger value='configuration'>
-              <Settings className='h-4 w-4 mr-2' />
+            <TabsTrigger
+              value='configuration'
+              className='flex items-center gap-1.5'
+            >
+              <Settings className='h-4 w-4' />
               Configuration
             </TabsTrigger>
-            <TabsTrigger value='activity'>
-              <TrendingUp className='h-4 w-4 mr-2' />
+            <TabsTrigger value='activity' className='flex items-center gap-1.5'>
+              <TrendingUp className='h-4 w-4' />
               Activity
             </TabsTrigger>
-            <TabsTrigger value='capabilities'>
-              <Zap className='h-4 w-4 mr-2' />
+            <TabsTrigger
+              value='capabilities'
+              className='flex items-center gap-1.5'
+            >
+              <Zap className='h-4 w-4' />
               Capabilities
             </TabsTrigger>
           </TabsList>
@@ -1230,14 +1243,6 @@ function SessionManagersTab({ orchestratorId }: { orchestratorId: string }) {
             coordination between subagents.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-            <MetricCard label='Total Session Managers' value='0' />
-            <MetricCard label='Active Sessions' value='0' />
-            <MetricCard label='Total Subagents' value='0' />
-            <MetricCard label='Token Budget/hr' value='0' />
-          </div>
-        </CardContent>
       </Card>
 
       <SessionManagerList
@@ -1271,7 +1276,6 @@ function SubagentsTab() {
 
   const handleCreateNew = () => {
     if (!selectedSessionManager) {
-      alert('Please select a Session Manager first');
       return;
     }
     setIsCreateDialogOpen(true);

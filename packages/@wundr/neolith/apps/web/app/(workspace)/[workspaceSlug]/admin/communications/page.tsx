@@ -1,6 +1,12 @@
 'use client';
 
-import { ExternalLink, Webhook } from 'lucide-react';
+import {
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  Webhook,
+  XCircle,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
@@ -8,14 +14,32 @@ import { AgentCommLogViewer } from '@/components/orchestrator/agent-comm-log-vie
 import { CommunicationPreferences } from '@/components/settings/communication-preferences';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const webhookEndpoints = [
-  { provider: 'Twilio', path: '/api/webhooks/twilio', description: 'SMS & WhatsApp inbound' },
-  { provider: 'SendGrid', path: '/api/webhooks/sendgrid', description: 'Email inbound parse' },
-  { provider: 'Email (SES)', path: '/api/webhooks/email', description: 'AWS SES notifications' },
+const INBOUND_WEBHOOK_ENDPOINTS = [
+  {
+    provider: 'Twilio',
+    path: '/api/webhooks/twilio',
+    description: 'Receive inbound SMS and WhatsApp messages',
+  },
+  {
+    provider: 'SendGrid',
+    path: '/api/webhooks/sendgrid',
+    description: 'Parse inbound emails from SendGrid',
+  },
+  {
+    provider: 'Email (SES)',
+    path: '/api/webhooks/email',
+    description: 'AWS SES delivery and bounce notifications',
+  },
 ];
 
 interface WebhookRowProps {
@@ -26,13 +50,19 @@ interface WebhookRowProps {
 
 function WebhookRow({ provider, path, description }: WebhookRowProps) {
   const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
+  const [testResult, setTestResult] = useState<'success' | 'error' | null>(
+    null
+  );
 
   async function handleTest() {
     setTesting(true);
     setTestResult(null);
     try {
-      const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ test: true }) });
+      const res = await fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test: true }),
+      });
       setTestResult(res.ok ? 'success' : 'error');
     } catch {
       setTestResult('error');
@@ -48,22 +78,56 @@ function WebhookRow({ provider, path, description }: WebhookRowProps) {
         <div>
           <div className='flex items-center gap-2'>
             <p className='text-sm font-medium'>{provider}</p>
-            <Badge variant='outline' className='border-green-500 text-green-600 text-xs'>Active</Badge>
-            {testResult === 'success' && <Badge variant='outline' className='border-green-500 text-green-600 text-xs'>OK</Badge>}
-            {testResult === 'error' && <Badge variant='outline' className='border-destructive text-destructive text-xs'>Failed</Badge>}
+            {testResult === 'success' && (
+              <Badge
+                variant='outline'
+                className='border-green-500 text-green-600 text-xs gap-1'
+              >
+                <CheckCircle2 className='h-3 w-3' />
+                Reachable
+              </Badge>
+            )}
+            {testResult === 'error' && (
+              <Badge
+                variant='outline'
+                className='border-destructive text-destructive text-xs gap-1'
+              >
+                <XCircle className='h-3 w-3' />
+                Unreachable
+              </Badge>
+            )}
           </div>
           <p className='text-xs text-muted-foreground'>{description}</p>
-          <p className='mt-0.5 font-mono text-xs text-muted-foreground'>{path}</p>
+          <p className='mt-0.5 font-mono text-xs text-muted-foreground'>
+            {path}
+          </p>
         </div>
       </div>
       <div className='flex items-center gap-2'>
         <Button variant='ghost' size='sm' className='h-8 w-8 p-0' asChild>
-          <a href={path} target='_blank' rel='noreferrer' aria-label={`Open ${provider} webhook`}>
+          <a
+            href={path}
+            target='_blank'
+            rel='noreferrer'
+            aria-label={`Open ${provider} webhook endpoint`}
+          >
             <ExternalLink className='h-3.5 w-3.5' />
           </a>
         </Button>
-        <Button variant='outline' size='sm' onClick={handleTest} disabled={testing}>
-          {testing ? 'Testing...' : 'Test'}
+        <Button
+          variant='outline'
+          size='sm'
+          onClick={handleTest}
+          disabled={testing}
+        >
+          {testing ? (
+            <>
+              <Loader2 className='h-3 w-3 mr-1.5 animate-spin' />
+              Testing...
+            </>
+          ) : (
+            'Test'
+          )}
         </Button>
       </div>
     </div>
@@ -76,22 +140,29 @@ export default function CommunicationsPage() {
 
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     if (!workspaceSlug) return;
     fetch(`/api/workspaces/${workspaceSlug}`)
-      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(res => (res.ok ? res.json() : Promise.reject()))
       .then(data => setWorkspaceId(data.id ?? null))
-      .catch(() => setWorkspaceId(null))
+      .catch(() => {
+        setWorkspaceId(null);
+        setLoadError(true);
+      })
       .finally(() => setIsLoading(false));
   }, [workspaceSlug]);
 
   return (
-    <div className='space-y-6 p-6'>
+    <div className='space-y-6'>
       <div>
-        <h1 className='text-2xl font-semibold tracking-tight'>Communications</h1>
+        <h1 className='text-2xl font-semibold tracking-tight'>
+          Communications
+        </h1>
         <p className='mt-1 text-sm text-muted-foreground'>
-          Monitor message logs, configure channel preferences, and manage webhook endpoints for this workspace.
+          Monitor message logs, configure channel preferences, and manage
+          inbound webhook endpoints for this workspace.
         </p>
       </div>
 
@@ -99,7 +170,7 @@ export default function CommunicationsPage() {
         <TabsList>
           <TabsTrigger value='logs'>Message Log</TabsTrigger>
           <TabsTrigger value='preferences'>Preferences</TabsTrigger>
-          <TabsTrigger value='webhooks'>Webhooks</TabsTrigger>
+          <TabsTrigger value='webhooks'>Inbound Webhooks</TabsTrigger>
         </TabsList>
 
         <TabsContent value='logs' className='mt-4'>
@@ -111,7 +182,11 @@ export default function CommunicationsPage() {
           ) : workspaceId ? (
             <AgentCommLogViewer workspaceId={workspaceId} />
           ) : (
-            <p className='text-sm text-muted-foreground'>Unable to load workspace.</p>
+            <p className='text-sm text-muted-foreground'>
+              {loadError
+                ? 'Failed to load workspace data. Please refresh and try again.'
+                : 'No workspace data available.'}
+            </p>
           )}
         </TabsContent>
 
@@ -123,20 +198,28 @@ export default function CommunicationsPage() {
           ) : workspaceId ? (
             <CommunicationPreferences orchestratorId={workspaceId} />
           ) : (
-            <p className='text-sm text-muted-foreground'>Unable to load workspace.</p>
+            <p className='text-sm text-muted-foreground'>
+              {loadError
+                ? 'Failed to load workspace data. Please refresh and try again.'
+                : 'No workspace data available.'}
+            </p>
           )}
         </TabsContent>
 
         <TabsContent value='webhooks' className='mt-4'>
           <Card>
             <CardHeader>
-              <CardTitle className='text-base'>Webhook Endpoints</CardTitle>
+              <CardTitle className='text-base'>
+                Inbound Webhook Endpoints
+              </CardTitle>
               <CardDescription>
-                Configured inbound webhook endpoints for external communication providers.
+                These endpoints receive inbound messages from external
+                communication providers. Use the Test button to verify each
+                endpoint is reachable.
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-3'>
-              {webhookEndpoints.map(endpoint => (
+              {INBOUND_WEBHOOK_ENDPOINTS.map(endpoint => (
                 <WebhookRow key={endpoint.path} {...endpoint} />
               ))}
             </CardContent>

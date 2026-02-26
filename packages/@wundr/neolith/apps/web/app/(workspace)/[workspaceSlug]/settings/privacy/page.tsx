@@ -42,6 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -976,10 +977,10 @@ export default function PrivacySettingsPage() {
                 <Label htmlFor='delete-confirm' className='text-sm'>
                   Type <strong>DELETE MY DATA</strong> to confirm
                 </Label>
-                <input
+                <Input
                   id='delete-confirm'
                   type='text'
-                  className='w-full mt-2 px-3 py-2 border rounded-md'
+                  className='mt-2'
                   placeholder='DELETE MY DATA'
                   onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     if (e.key === 'Enter') {

@@ -36,7 +36,6 @@ export function ThreadsWidget({
 }: ThreadsWidgetProps) {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -55,10 +54,9 @@ export function ThreadsWidget({
         const data = await response.json();
         setThreads(data.threads || []);
         setUnreadCount(data.unreadCount || 0);
-        setError(null);
       } catch (err) {
         console.error('Error fetching threads:', err);
-        setError('Failed to load threads');
+        // Treat fetch errors as empty state — endpoint may not be implemented yet
         setThreads([]);
       } finally {
         setIsLoading(false);
@@ -85,12 +83,7 @@ export function ThreadsWidget({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {error ? (
-          <div className='rounded-md bg-destructive/10 p-4 text-sm text-destructive'>
-            <p className='font-medium'>Error loading threads</p>
-            <p className='mt-1 text-xs'>{error}</p>
-          </div>
-        ) : threads.length === 0 ? (
+        {threads.length === 0 ? (
           <EmptyThreadsState />
         ) : (
           <div className='space-y-3'>

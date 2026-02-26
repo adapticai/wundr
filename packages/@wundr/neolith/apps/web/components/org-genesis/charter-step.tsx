@@ -239,7 +239,11 @@ export function CharterStep({
           )}
 
           {errors.values && (
-            <p className='text-sm text-destructive' role='alert' aria-live='polite'>
+            <p
+              className='text-sm text-destructive'
+              role='alert'
+              aria-live='polite'
+            >
               {errors.values}
             </p>
           )}

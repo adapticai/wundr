@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckSquare, Edit2, Trash2, ArrowUpDown } from 'lucide-react';
+import { CheckSquare, ArrowUpDown } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -144,10 +144,10 @@ const STATUS_CONFIG = {
 } as const;
 
 const PRIORITY_CONFIG = {
-  CRITICAL: { label: 'Critical', color: 'text-red-600', icon: '!' },
+  CRITICAL: { label: 'Critical', color: 'text-red-600', icon: '!!' },
   HIGH: { label: 'High', color: 'text-orange-600', icon: '!' },
-  MEDIUM: { label: 'Medium', color: 'text-yellow-600', icon: '!' },
-  LOW: { label: 'Low', color: 'text-green-600', icon: '!' },
+  MEDIUM: { label: 'Medium', color: 'text-yellow-600', icon: '~' },
+  LOW: { label: 'Low', color: 'text-green-600', icon: '↓' },
 } as const;
 
 const SORT_OPTIONS = [
@@ -640,6 +640,7 @@ function CreateTaskDialog({
   onSuccess,
 }: CreateTaskDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [orchestrators, setOrchestrators] = useState<
     Array<{ id: string; role: string; userId: string }>
   >([]);
@@ -661,7 +662,7 @@ function CreateTaskDialog({
   });
 
   // Fetch orchestrators when dialog opens
-  useMemo(() => {
+  useEffect(() => {
     if (open && !orchestrators.length) {
       setOrchestratorsLoading(true);
       fetch(`/api/orchestrators?workspaceSlug=${workspaceSlug}`)
@@ -678,10 +679,12 @@ function CreateTaskDialog({
         .catch(err => console.error('Failed to fetch orchestrators:', err))
         .finally(() => setOrchestratorsLoading(false));
     }
-  }, [open, orchestrators.length, workspaceSlug, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const onSubmit = async (values: CreateTaskFormValues) => {
     setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
       // Parse tags from comma-separated string
@@ -723,8 +726,9 @@ function CreateTaskDialog({
       onSuccess();
     } catch (error) {
       console.error('Failed to create task:', error);
-      // You could add toast notification here
-      alert(error instanceof Error ? error.message : 'Failed to create task');
+      setSubmitError(
+        error instanceof Error ? error.message : 'Failed to create task'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -742,6 +746,12 @@ function CreateTaskDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            {/* Submit Error */}
+            {submitError && (
+              <div className='rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300'>
+                {submitError}
+              </div>
+            )}
             {/* Title */}
             <FormField
               control={form.control}

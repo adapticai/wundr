@@ -310,37 +310,37 @@ export const DEFAULT_MODEL_CONFIGS: Readonly<
   Record<AgentType, AgentModelConfig>
 > = {
   task: {
-    model: 'claude-3-haiku',
+    model: 'claude-haiku-4-5-20251001',
     temperature: 0.5,
     maxTokens: 2048,
   },
   research: {
-    model: 'claude-3-sonnet',
+    model: 'claude-sonnet-4-6',
     temperature: 0.3,
     maxTokens: 4096,
   },
   coding: {
-    model: 'claude-3-sonnet',
+    model: 'claude-sonnet-4-6',
     temperature: 0.2,
     maxTokens: 8192,
   },
   data: {
-    model: 'claude-3-sonnet',
+    model: 'claude-sonnet-4-6',
     temperature: 0.1,
     maxTokens: 4096,
   },
   qa: {
-    model: 'claude-3-haiku',
+    model: 'claude-haiku-4-5-20251001',
     temperature: 0.7,
     maxTokens: 2048,
   },
   support: {
-    model: 'claude-3-haiku',
+    model: 'claude-haiku-4-5-20251001',
     temperature: 0.6,
     maxTokens: 2048,
   },
   custom: {
-    model: 'claude-3-haiku',
+    model: 'claude-haiku-4-5-20251001',
     temperature: 0.5,
     maxTokens: 2048,
   },

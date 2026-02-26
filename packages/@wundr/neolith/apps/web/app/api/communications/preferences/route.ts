@@ -30,7 +30,10 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', COMMUNICATION_ERROR_CODES.UNAUTHORIZED),
+        createErrorResponse(
+          'Authentication required',
+          COMMUNICATION_ERROR_CODES.UNAUTHORIZED
+        ),
         { status: 401 }
       );
     }
@@ -72,7 +75,10 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[GET /api/communications/preferences] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', COMMUNICATION_ERROR_CODES.INTERNAL_ERROR),
+      createErrorResponse(
+        'An internal error occurred',
+        COMMUNICATION_ERROR_CODES.INTERNAL_ERROR
+      ),
       { status: 500 }
     );
   }
@@ -88,7 +94,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', COMMUNICATION_ERROR_CODES.UNAUTHORIZED),
+        createErrorResponse(
+          'Authentication required',
+          COMMUNICATION_ERROR_CODES.UNAUTHORIZED
+        ),
         { status: 401 }
       );
     }
@@ -114,7 +123,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', COMMUNICATION_ERROR_CODES.VALIDATION_ERROR),
+        createErrorResponse(
+          'Invalid JSON body',
+          COMMUNICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
         { status: 400 }
       );
     }
@@ -122,9 +134,13 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const parseResult = updateCommunicationPreferenceSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        createErrorResponse('Validation failed', COMMUNICATION_ERROR_CODES.VALIDATION_ERROR, {
-          errors: parseResult.error.flatten().fieldErrors,
-        }),
+        createErrorResponse(
+          'Validation failed',
+          COMMUNICATION_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: parseResult.error.flatten().fieldErrors,
+          }
+        ),
         { status: 400 }
       );
     }
@@ -142,11 +158,17 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       update: parseResult.data,
     });
 
-    return NextResponse.json({ data: preferences, message: 'Preferences updated' });
+    return NextResponse.json({
+      data: preferences,
+      message: 'Preferences updated',
+    });
   } catch (error) {
     console.error('[PUT /api/communications/preferences] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', COMMUNICATION_ERROR_CODES.INTERNAL_ERROR),
+      createErrorResponse(
+        'An internal error occurred',
+        COMMUNICATION_ERROR_CODES.INTERNAL_ERROR
+      ),
       { status: 500 }
     );
   }

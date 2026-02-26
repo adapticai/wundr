@@ -31,7 +31,10 @@ export async function GET(): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TRAFFIC_MANAGER_ERROR_CODES.UNAUTHORIZED),
+        createErrorResponse(
+          'Authentication required',
+          TRAFFIC_MANAGER_ERROR_CODES.UNAUTHORIZED
+        ),
         { status: 401 }
       );
     }
@@ -52,7 +55,10 @@ export async function GET(): Promise<NextResponse> {
 
     if (!orgMembership) {
       return NextResponse.json(
-        createErrorResponse('Organization not found', TRAFFIC_MANAGER_ERROR_CODES.CONFIG_NOT_FOUND),
+        createErrorResponse(
+          'Organization not found',
+          TRAFFIC_MANAGER_ERROR_CODES.CONFIG_NOT_FOUND
+        ),
         { status: 404 }
       );
     }
@@ -71,7 +77,10 @@ export async function GET(): Promise<NextResponse> {
   } catch (error) {
     console.error('[GET /api/traffic-manager] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TRAFFIC_MANAGER_ERROR_CODES.INTERNAL_ERROR),
+      createErrorResponse(
+        'An internal error occurred',
+        TRAFFIC_MANAGER_ERROR_CODES.INTERNAL_ERROR
+      ),
       { status: 500 }
     );
   }
@@ -88,7 +97,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', TRAFFIC_MANAGER_ERROR_CODES.UNAUTHORIZED),
+        createErrorResponse(
+          'Authentication required',
+          TRAFFIC_MANAGER_ERROR_CODES.UNAUTHORIZED
+        ),
         { status: 401 }
       );
     }
@@ -98,7 +110,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', TRAFFIC_MANAGER_ERROR_CODES.VALIDATION_ERROR),
+        createErrorResponse(
+          'Invalid JSON body',
+          TRAFFIC_MANAGER_ERROR_CODES.VALIDATION_ERROR
+        ),
         { status: 400 }
       );
     }
@@ -106,9 +121,13 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const parseResult = updateTrafficManagerConfigSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        createErrorResponse('Validation failed', TRAFFIC_MANAGER_ERROR_CODES.VALIDATION_ERROR, {
-          errors: parseResult.error.flatten().fieldErrors,
-        }),
+        createErrorResponse(
+          'Validation failed',
+          TRAFFIC_MANAGER_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: parseResult.error.flatten().fieldErrors,
+          }
+        ),
         { status: 400 }
       );
     }
@@ -129,7 +148,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 
     if (!orgMembership) {
       return NextResponse.json(
-        createErrorResponse('Organization not found', TRAFFIC_MANAGER_ERROR_CODES.CONFIG_NOT_FOUND),
+        createErrorResponse(
+          'Organization not found',
+          TRAFFIC_MANAGER_ERROR_CODES.CONFIG_NOT_FOUND
+        ),
         { status: 404 }
       );
     }
@@ -137,16 +159,24 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const workspace = orgMembership.organization.workspaces[0];
     if (!workspace) {
       return NextResponse.json(
-        createErrorResponse('Workspace not found', TRAFFIC_MANAGER_ERROR_CODES.CONFIG_NOT_FOUND),
+        createErrorResponse(
+          'Workspace not found',
+          TRAFFIC_MANAGER_ERROR_CODES.CONFIG_NOT_FOUND
+        ),
         { status: 404 }
       );
     }
 
-    const currentSettings = (workspace.settings ?? {}) as Record<string, unknown>;
+    const currentSettings = (workspace.settings ?? {}) as Record<
+      string,
+      unknown
+    >;
     const updatedSettings = {
       ...currentSettings,
       trafficManager: {
-        ...(currentSettings.trafficManager as Record<string, unknown> | undefined ?? {}),
+        ...((currentSettings.trafficManager as
+          | Record<string, unknown>
+          | undefined) ?? {}),
         ...parseResult.data,
       },
     };
@@ -169,7 +199,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[PUT /api/traffic-manager] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', TRAFFIC_MANAGER_ERROR_CODES.INTERNAL_ERROR),
+      createErrorResponse(
+        'An internal error occurred',
+        TRAFFIC_MANAGER_ERROR_CODES.INTERNAL_ERROR
+      ),
       { status: 500 }
     );
   }

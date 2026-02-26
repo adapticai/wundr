@@ -84,8 +84,14 @@ export const communicationStyleEnum = z.enum([
 
 // Full charter create schema with governance, security, and communication
 export const createCharterInputSchema = z.object({
-  name: z.string().min(2, 'Charter name must be at least 2 characters').max(200),
-  mission: z.string().min(10, 'Mission must be at least 10 characters').max(2000),
+  name: z
+    .string()
+    .min(2, 'Charter name must be at least 2 characters')
+    .max(200),
+  mission: z
+    .string()
+    .min(10, 'Mission must be at least 10 characters')
+    .max(2000),
   vision: z.string().min(10).max(2000).optional(),
   values: z
     .array(z.string().min(1).max(100))

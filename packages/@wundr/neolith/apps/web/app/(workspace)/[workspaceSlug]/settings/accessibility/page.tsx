@@ -103,7 +103,6 @@ export default function AccessibilitySettingsPage() {
   const [settings, setSettings] =
     useState<AccessibilitySettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
 
   // Detect system prefers-reduced-motion setting
   useEffect(() => {
@@ -706,11 +705,9 @@ export default function AccessibilitySettingsPage() {
         <CardContent className='space-y-6'>
           <div className='space-y-3'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor='font-scale'>
-                Font size: {settings.fontScale}%
-              </Label>
+              <Label htmlFor='font-scale'>Font size</Label>
               <span
-                className='text-sm text-muted-foreground'
+                className='text-sm text-muted-foreground tabular-nums'
                 aria-label={`Font size is ${settings.fontScale} percent`}
               >
                 {settings.fontScale}%
@@ -740,11 +737,9 @@ export default function AccessibilitySettingsPage() {
 
           <div className='space-y-3'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor='line-height'>
-                Line height: {settings.lineHeight}%
-              </Label>
+              <Label htmlFor='line-height'>Line height</Label>
               <span
-                className='text-sm text-muted-foreground'
+                className='text-sm text-muted-foreground tabular-nums'
                 aria-label={`Line height is ${settings.lineHeight} percent`}
               >
                 {settings.lineHeight}%
@@ -774,12 +769,9 @@ export default function AccessibilitySettingsPage() {
 
           <div className='space-y-3'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor='letter-spacing'>
-                Letter spacing: {settings.letterSpacing > 0 ? '+' : ''}
-                {settings.letterSpacing}
-              </Label>
+              <Label htmlFor='letter-spacing'>Letter spacing</Label>
               <span
-                className='text-sm text-muted-foreground'
+                className='text-sm text-muted-foreground tabular-nums'
                 aria-label={`Letter spacing is ${settings.letterSpacing}`}
               >
                 {settings.letterSpacing > 0 ? '+' : ''}

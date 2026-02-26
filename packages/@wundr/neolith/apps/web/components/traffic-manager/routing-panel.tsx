@@ -27,7 +27,13 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 
-const PRIORITY_LEVELS = ['LOW', 'NORMAL', 'HIGH', 'URGENT', 'CRITICAL'] as const;
+const PRIORITY_LEVELS = [
+  'LOW',
+  'NORMAL',
+  'HIGH',
+  'URGENT',
+  'CRITICAL',
+] as const;
 type PriorityLevel = (typeof PRIORITY_LEVELS)[number];
 
 const routingRuleSchema = z.object({
@@ -113,7 +119,9 @@ function RoutingRuleForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{initialValues ? 'Edit Rule' : 'New Routing Rule'}</CardTitle>
+        <CardTitle>
+          {initialValues ? 'Edit Rule' : 'New Routing Rule'}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -126,7 +134,10 @@ function RoutingRuleForm({
                   <FormItem>
                     <FormLabel>Rule Name</FormLabel>
                     <FormControl>
-                      <Input placeholder='e.g., Urgent to Lead Agent' {...field} />
+                      <Input
+                        placeholder='e.g., Urgent to Lead Agent'
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -154,7 +165,10 @@ function RoutingRuleForm({
               render={({ field }) => (
                 <FormItem className='flex items-center gap-3'>
                   <FormControl>
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
                   </FormControl>
                   <FormLabel className='!mt-0'>Enabled</FormLabel>
                 </FormItem>
@@ -183,7 +197,10 @@ function RoutingRuleForm({
                   <FormItem>
                     <FormLabel>Sender Pattern</FormLabel>
                     <FormControl>
-                      <Input placeholder='e.g., bot-* or user@example.com' {...field} />
+                      <Input
+                        placeholder='e.g., bot-* or user@example.com'
+                        {...field}
+                      />
                     </FormControl>
                     <FormDescription>Glob pattern, optional.</FormDescription>
                     <FormMessage />
@@ -211,7 +228,11 @@ function RoutingRuleForm({
                           }
                         }}
                       />
-                      <Button type='button' variant='outline' onClick={addKeyword}>
+                      <Button
+                        type='button'
+                        variant='outline'
+                        onClick={addKeyword}
+                      >
                         Add
                       </Button>
                     </div>
@@ -247,7 +268,10 @@ function RoutingRuleForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Min Priority</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder='Select priority' />
@@ -271,7 +295,10 @@ function RoutingRuleForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Target Agent</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder='Select agent' />
@@ -374,7 +401,8 @@ function RoutingRuleList({
                 <p className='font-medium'>{rule.name}</p>
                 <p className='text-xs text-muted-foreground'>
                   Target: {agentName(rule.targetAgent)}
-                  {rule.fallbackAgent && ` · Fallback: ${agentName(rule.fallbackAgent)}`}
+                  {rule.fallbackAgent &&
+                    ` · Fallback: ${agentName(rule.fallbackAgent)}`}
                 </p>
               </div>
             </div>
@@ -422,7 +450,10 @@ function RoutingRuleList({
   );
 }
 
-export function RoutingPanel({ workspaceId: _workspaceId, agents }: RoutingPanelProps) {
+export function RoutingPanel({
+  workspaceId: _workspaceId,
+  agents,
+}: RoutingPanelProps) {
   const [rules, setRules] = useState<RoutingRule[]>([]);
   const [editingRule, setEditingRule] = useState<RoutingRule | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -433,14 +464,13 @@ export function RoutingPanel({ workspaceId: _workspaceId, agents }: RoutingPanel
     (values: RoutingRuleFormValues) => {
       if (editingRule) {
         setRules(prev =>
-          prev.map(r => (r.id === editingRule.id ? { ...values, id: editingRule.id } : r))
+          prev.map(r =>
+            r.id === editingRule.id ? { ...values, id: editingRule.id } : r
+          )
         );
         setEditingRule(null);
       } else {
-        setRules(prev => [
-          ...prev,
-          { ...values, id: crypto.randomUUID() },
-        ]);
+        setRules(prev => [...prev, { ...values, id: crypto.randomUUID() }]);
         setIsAdding(false);
       }
     },
@@ -467,7 +497,8 @@ export function RoutingPanel({ workspaceId: _workspaceId, agents }: RoutingPanel
         .map(k => k.trim())
         .filter(Boolean);
       const matches =
-        keywords.length === 0 || keywords.some(kw => lower.includes(kw.toLowerCase()));
+        keywords.length === 0 ||
+        keywords.some(kw => lower.includes(kw.toLowerCase()));
       if (matches) {
         const agent = agents.find(a => a.id === rule.targetAgent);
         setTestResult(

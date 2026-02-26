@@ -396,8 +396,7 @@ function DelegationNodeCard({ node, isLast }: DelegationNodeCardProps) {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>
-                        Delegated:{' '}
-                        {new Date(node.delegatedAt).toLocaleString()}
+                        Delegated: {new Date(node.delegatedAt).toLocaleString()}
                       </p>
                       {node.completedAt && (
                         <p>
@@ -580,8 +579,7 @@ function RootNodeCard({ node }: RootNodeCardProps) {
                     </p>
                     {node.completedAt && (
                       <p>
-                        Completed:{' '}
-                        {new Date(node.completedAt).toLocaleString()}
+                        Completed: {new Date(node.completedAt).toLocaleString()}
                       </p>
                     )}
                   </TooltipContent>
@@ -803,9 +801,7 @@ export function DelegationChainVisualization({
             disabled={isLoading}
             aria-label='Refresh delegation chain'
           >
-            <RefreshCw
-              className={cn('h-4 w-4', isLoading && 'animate-spin')}
-            />
+            <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
           </Button>
         </div>
       </CardHeader>

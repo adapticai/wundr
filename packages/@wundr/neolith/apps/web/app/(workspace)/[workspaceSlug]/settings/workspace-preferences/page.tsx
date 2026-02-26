@@ -4,15 +4,16 @@ import {
   Bell,
   BellOff,
   Calendar,
-  ChevronDown,
-  Clock,
   Eye,
   EyeOff,
+  Hash,
   LayoutList,
   Layout,
   CalendarDays,
   Info,
   Loader2,
+  MessageSquare,
+  Star,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
@@ -25,12 +26,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -216,12 +211,19 @@ export default function WorkspacePreferencesPage() {
     [settings.autoJoinChannels, handleFieldChange]
   );
 
-  const toggleMuteWorkspace = useCallback(() => {
-    const newMutedUntil = settings.mutedUntil
-      ? null
-      : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
-    handleFieldChange('mutedUntil', newMutedUntil);
-  }, [settings.mutedUntil, handleFieldChange]);
+  const muteWorkspace = useCallback(
+    (durationHours: number) => {
+      const newMutedUntil = new Date(
+        Date.now() + durationHours * 60 * 60 * 1000
+      ).toISOString();
+      handleFieldChange('mutedUntil', newMutedUntil);
+    },
+    [handleFieldChange]
+  );
+
+  const unmuteWorkspace = useCallback(() => {
+    handleFieldChange('mutedUntil', null);
+  }, [handleFieldChange]);
 
   if (isLoading) {
     return (
@@ -394,26 +396,53 @@ export default function WorkspacePreferencesPage() {
         </CardHeader>
         <CardContent className='space-y-6'>
           {/* Mute Workspace */}
-          <div className='flex items-center justify-between rounded-lg border p-4'>
-            <div className='flex items-center gap-3'>
-              {settings.mutedUntil ? (
-                <BellOff className='h-5 w-5 text-muted-foreground' />
-              ) : (
-                <Bell className='h-5 w-5 text-muted-foreground' />
-              )}
-              <div>
-                <p className='font-medium'>Mute Workspace</p>
-                <p className='text-xs text-muted-foreground'>
-                  {settings.mutedUntil
-                    ? `Muted until ${new Date(settings.mutedUntil).toLocaleString()}`
-                    : 'Temporarily disable all notifications from this workspace'}
-                </p>
+          <div className='rounded-lg border p-4 space-y-3'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-3'>
+                {settings.mutedUntil ? (
+                  <BellOff className='h-5 w-5 text-muted-foreground' />
+                ) : (
+                  <Bell className='h-5 w-5 text-muted-foreground' />
+                )}
+                <div>
+                  <p className='font-medium'>Mute Workspace</p>
+                  <p className='text-xs text-muted-foreground'>
+                    {settings.mutedUntil
+                      ? `Muted until ${new Date(settings.mutedUntil).toLocaleString()}`
+                      : 'Temporarily disable all notifications from this workspace'}
+                  </p>
+                </div>
               </div>
+              {settings.mutedUntil && (
+                <button
+                  type='button'
+                  onClick={unmuteWorkspace}
+                  className='text-sm text-primary hover:underline'
+                >
+                  Unmute
+                </button>
+              )}
             </div>
-            <Switch
-              checked={!!settings.mutedUntil}
-              onCheckedChange={toggleMuteWorkspace}
-            />
+            {!settings.mutedUntil && (
+              <div className='flex flex-wrap gap-2 pt-1'>
+                {[
+                  { label: '30 minutes', hours: 0.5 },
+                  { label: '1 hour', hours: 1 },
+                  { label: '4 hours', hours: 4 },
+                  { label: '24 hours', hours: 24 },
+                  { label: 'Until I turn it on', hours: 24 * 365 },
+                ].map(option => (
+                  <button
+                    key={option.label}
+                    type='button'
+                    onClick={() => muteWorkspace(option.hours)}
+                    className='rounded-md border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent'
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -432,17 +461,27 @@ export default function WorkspacePreferencesPage() {
               {
                 key: 'starred' as const,
                 label: 'Starred Items',
-                icon: '⭐',
+                icon: <Star className='h-4 w-4 text-muted-foreground' />,
               },
-              { key: 'channels' as const, label: 'Channels', icon: '#' },
-              { key: 'dms' as const, label: 'Direct Messages', icon: '💬' },
+              {
+                key: 'channels' as const,
+                label: 'Channels',
+                icon: <Hash className='h-4 w-4 text-muted-foreground' />,
+              },
+              {
+                key: 'dms' as const,
+                label: 'Direct Messages',
+                icon: (
+                  <MessageSquare className='h-4 w-4 text-muted-foreground' />
+                ),
+              },
             ].map(section => (
               <div
                 key={section.key}
                 className='flex items-center justify-between rounded-lg border p-3'
               >
                 <div className='flex items-center gap-3'>
-                  <span className='text-lg'>{section.icon}</span>
+                  {section.icon}
                   <span className='font-medium'>{section.label}</span>
                 </div>
                 <div className='flex items-center gap-2'>

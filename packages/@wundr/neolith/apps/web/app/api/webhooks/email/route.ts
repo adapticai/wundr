@@ -11,7 +11,7 @@ import type { NextRequest } from 'next/server';
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
 
     const messageType = request.headers.get('x-amz-sns-message-type');
 
@@ -21,7 +21,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (subscribeUrl) {
         // Confirm the subscription by fetching the provided URL
         fetch(subscribeUrl).catch(err =>
-          console.error('[Email Webhook] Failed to confirm SNS subscription:', err)
+          console.error(
+            '[Email Webhook] Failed to confirm SNS subscription:',
+            err
+          )
         );
         console.info('[Email Webhook] SNS subscription confirmation initiated');
       }
@@ -54,7 +57,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const newStatus = statusMap[notificationType];
     if (!newStatus) {
-      console.warn(`[Email Webhook] Unhandled notificationType: ${notificationType}`);
+      console.warn(
+        `[Email Webhook] Unhandled notificationType: ${notificationType}`
+      );
       return NextResponse.json({ received: true }, { status: 200 });
     }
 
@@ -63,11 +68,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (notificationType === 'Bounce') {
       const bounce = sesEvent.bounce as Record<string, unknown> | undefined;
-      const bouncedRecipients = bounce?.bouncedRecipients as Array<{ emailAddress: string }> | undefined;
+      const bouncedRecipients = bounce?.bouncedRecipients as
+        | Array<{ emailAddress: string }>
+        | undefined;
       messageIds = (bouncedRecipients ?? []).map(r => r.emailAddress);
     } else if (notificationType === 'Complaint') {
-      const complaint = sesEvent.complaint as Record<string, unknown> | undefined;
-      const complainedRecipients = complaint?.complainedRecipients as Array<{ emailAddress: string }> | undefined;
+      const complaint = sesEvent.complaint as
+        | Record<string, unknown>
+        | undefined;
+      const complainedRecipients = complaint?.complainedRecipients as
+        | Array<{ emailAddress: string }>
+        | undefined;
       messageIds = (complainedRecipients ?? []).map(r => r.emailAddress);
     } else if (notificationType === 'Delivery') {
       const delivery = sesEvent.delivery as Record<string, unknown> | undefined;
@@ -84,7 +95,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         where: { externalId: sesMessageId },
         data: {
           status: newStatus,
-          ...(notificationType === 'Delivery' ? { deliveredAt: new Date() } : {}),
+          ...(notificationType === 'Delivery'
+            ? { deliveredAt: new Date() }
+            : {}),
         },
       });
     } else if (messageIds.length > 0) {
@@ -95,7 +108,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
     }
 
-    console.info(`[Email Webhook] Processed ${notificationType} for ${messageIds.join(', ')}`);
+    console.info(
+      `[Email Webhook] Processed ${notificationType} for ${messageIds.join(', ')}`
+    );
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (error) {
     console.error('[Email Webhook] Error:', error);

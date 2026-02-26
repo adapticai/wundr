@@ -20,7 +20,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const from = body.From as string;
     const to = body.To as string;
     const messageBody = body.Body as string;
-    const numMedia = parseInt(body.NumMedia as string || '0', 10);
+    const numMedia = parseInt((body.NumMedia as string) || '0', 10);
 
     // Determine channel: SMS vs WhatsApp (WhatsApp numbers start with "whatsapp:")
     const isWhatsApp = (from as string)?.startsWith('whatsapp:');
@@ -37,16 +37,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!agentIdentity) {
       console.warn(`[Twilio Webhook] No agent found for number: ${cleanTo}`);
       // Return 200 to prevent Twilio retries
-      return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
-        status: 200,
-        headers: { 'Content-Type': 'text/xml' },
-      });
+      return new NextResponse(
+        '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+        {
+          status: 200,
+          headers: { 'Content-Type': 'text/xml' },
+        }
+      );
     }
 
     // Log the inbound communication
     await (prisma as any).communicationLog.create({
       data: {
-        orchestratorId: agentIdentity.user?.orchestratorConfig?.id || agentIdentity.userId,
+        orchestratorId:
+          agentIdentity.user?.orchestratorConfig?.id || agentIdentity.userId,
         channel,
         direction: 'inbound',
         externalId: messageSid,
@@ -59,16 +63,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     // Route through traffic manager (non-blocking)
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/traffic-manager/route-message`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        channelId: `twilio-${channel}`,
-        messageContent: messageBody || '',
-        senderId: cleanFrom,
-        metadata: { messageSid, numMedia, channel },
-      }),
-    }).catch(err => console.error('[Twilio Webhook] Failed to route message:', err));
+    fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/traffic-manager/route-message`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channelId: `twilio-${channel}`,
+          messageContent: messageBody || '',
+          senderId: cleanFrom,
+          metadata: { messageSid, numMedia, channel },
+        }),
+      }
+    ).catch(err =>
+      console.error('[Twilio Webhook] Failed to route message:', err)
+    );
 
     // Return TwiML response (empty = no auto-reply, agent will respond through daemon)
     return new NextResponse(

@@ -49,11 +49,7 @@ const COMMUNICATION_CHANNELS = [
 
 type ChannelId = (typeof COMMUNICATION_CHANNELS)[number]['id'];
 
-const EMAIL_DOMAINS = [
-  'adaptic.ai',
-  'wundr.io',
-  'company.com',
-] as const;
+const EMAIL_DOMAINS = ['adaptic.ai', 'wundr.io', 'company.com'] as const;
 
 type ProvisioningStatus = 'none' | 'pending' | 'active' | 'failed';
 
@@ -119,11 +115,7 @@ function ProvisioningStatusBadge({ status }: { status: ProvisioningStatus }) {
       </Badge>
     );
   }
-  return (
-    <Badge variant='destructive'>
-      Failed
-    </Badge>
-  );
+  return <Badge variant='destructive'>Failed</Badge>;
 }
 
 export function AgentIdentityForm({
@@ -287,10 +279,7 @@ export function AgentIdentityForm({
                     <FormItem className='flex-1'>
                       <FormLabel>Email Address</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder='agent.name'
-                          {...field}
-                        />
+                        <Input placeholder='agent.name' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -363,8 +352,7 @@ export function AgentIdentityForm({
                   variant='outline'
                   onClick={handleProvisionPhone}
                   disabled={
-                    isProvisioningPhone ||
-                    phoneProvisioningStatus === 'pending'
+                    isProvisioningPhone || phoneProvisioningStatus === 'pending'
                   }
                   className='gap-2'
                 >
@@ -394,7 +382,9 @@ export function AgentIdentityForm({
           {/* Communication Channels Section */}
           <Card>
             <CardHeader>
-              <CardTitle className='text-base'>Communication Channels</CardTitle>
+              <CardTitle className='text-base'>
+                Communication Channels
+              </CardTitle>
               <CardDescription>
                 Enable the channels this agent can use to communicate
               </CardDescription>
@@ -420,18 +410,14 @@ export function AgentIdentityForm({
                           <FormControl>
                             <Switch
                               checked={isEnabled}
-                              onCheckedChange={() =>
-                                toggleChannel(channel.id)
-                              }
+                              onCheckedChange={() => toggleChannel(channel.id)}
                               aria-label={`Toggle ${channel.label}`}
                             />
                           </FormControl>
                         </FormItem>
                       )}
                     />
-                    {index < COMMUNICATION_CHANNELS.length - 1 && (
-                      <Separator />
-                    )}
+                    {index < COMMUNICATION_CHANNELS.length - 1 && <Separator />}
                   </div>
                 );
               })}

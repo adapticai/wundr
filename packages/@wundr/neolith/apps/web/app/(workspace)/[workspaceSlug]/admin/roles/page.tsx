@@ -3,6 +3,16 @@
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect, useMemo } from 'react';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -72,6 +82,9 @@ export default function AdminRolesPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  const [deleteConfirmRole, setDeleteConfirmRole] = useState<
+    (Role & { memberCount: number }) | null
+  >(null);
 
   // Calculate member counts for each role
   const roleMembers = useMemo(() => {
@@ -108,29 +121,23 @@ export default function AdminRolesPage() {
   );
 
   const handleDelete = useCallback(
-    async (roleId: string) => {
+    (roleId: string) => {
       const role = rolesWithCounts.find(r => r.id === roleId);
       if (!role) {
         return;
       }
-
-      if (role.memberCount > 0) {
-        alert(
-          `Cannot delete role "${role.name}". ${role.memberCount} member(s) are assigned to this role. Please reassign them first.`
-        );
-        return;
-      }
-
-      if (
-        window.confirm(
-          `Are you sure you want to delete the "${role.name}" role? This action cannot be undone.`
-        )
-      ) {
-        await deleteRole(roleId);
-      }
+      setDeleteConfirmRole(role);
     },
-    [deleteRole, rolesWithCounts]
+    [rolesWithCounts]
   );
+
+  const confirmDelete = useCallback(async () => {
+    if (!deleteConfirmRole) {
+      return;
+    }
+    await deleteRole(deleteConfirmRole.id);
+    setDeleteConfirmRole(null);
+  }, [deleteConfirmRole, deleteRole]);
 
   // Define permission categories
   const permissionCategories: PermissionCategory[] = [
@@ -527,6 +534,36 @@ export default function AdminRolesPage() {
           onClose={() => setSelectedRoleId(null)}
         />
       )}
+
+      {/* Delete Role Confirmation Dialog */}
+      <AlertDialog
+        open={deleteConfirmRole !== null}
+        onOpenChange={open => !open && setDeleteConfirmRole(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Role</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteConfirmRole?.memberCount &&
+              deleteConfirmRole.memberCount > 0
+                ? `Cannot delete "${deleteConfirmRole?.name}". ${deleteConfirmRole?.memberCount} member(s) are currently assigned to this role. Reassign them before deleting.`
+                : `Are you sure you want to delete the "${deleteConfirmRole?.name}" role? This action cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            {(!deleteConfirmRole?.memberCount ||
+              deleteConfirmRole.memberCount === 0) && (
+              <AlertDialogAction
+                onClick={confirmDelete}
+                className='bg-red-600 hover:bg-red-700'
+              >
+                Delete
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -930,32 +967,96 @@ function RoleEditorModal({
               />
             </div>
 
-            {/* Inherit From */}
-            <div>
-              <label
-                htmlFor='inheritFrom'
-                className='block text-sm font-medium text-foreground'
-              >
-                Inherit Permissions From
-              </label>
-              <select
-                id='inheritFrom'
-                value={inheritFrom}
-                onChange={e => setInheritFrom(e.target.value)}
-                className={cn(
-                  'mt-1 block w-full rounded-md border border-input bg-background',
-                  'px-3 py-2 text-sm',
-                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-                )}
-              >
-                <option value='none'>None - Start from scratch</option>
-                <option value='member'>Member - Standard access</option>
-                <option value='admin'>Admin - Administrative access</option>
-              </select>
-              <p className='mt-1 text-xs text-muted-foreground'>
-                Start with permissions from an existing role
-              </p>
-            </div>
+            {/* Inherit From — only shown when creating a new role */}
+            {!role && (
+              <div>
+                <label
+                  htmlFor='inheritFrom'
+                  className='block text-sm font-medium text-foreground'
+                >
+                  Start From Template
+                </label>
+                <select
+                  id='inheritFrom'
+                  value={inheritFrom}
+                  onChange={e => {
+                    const value = e.target.value;
+                    setInheritFrom(value);
+                    // Apply preset permissions based on template
+                    if (value === 'none') {
+                      setPermissions([]);
+                    } else if (value === 'member') {
+                      setPermissions([
+                        { resource: 'channels', actions: ['read'] },
+                        {
+                          resource: 'messages',
+                          actions: ['create', 'read', 'update'],
+                        },
+                        { resource: 'files', actions: ['create', 'read'] },
+                      ]);
+                    } else if (value === 'admin') {
+                      setPermissions([
+                        {
+                          resource: 'channels',
+                          actions: [
+                            'create',
+                            'read',
+                            'update',
+                            'delete',
+                            'manage',
+                          ],
+                        },
+                        {
+                          resource: 'messages',
+                          actions: [
+                            'create',
+                            'read',
+                            'update',
+                            'delete',
+                            'manage',
+                          ],
+                        },
+                        {
+                          resource: 'files',
+                          actions: ['create', 'read', 'manage', 'delete'],
+                        },
+                        {
+                          resource: 'members',
+                          actions: [
+                            'create',
+                            'read',
+                            'update',
+                            'delete',
+                            'manage',
+                          ],
+                        },
+                        {
+                          resource: 'workflows',
+                          actions: ['create', 'read', 'update', 'manage'],
+                        },
+                        { resource: 'settings', actions: ['read', 'update'] },
+                      ]);
+                    }
+                  }}
+                  className={cn(
+                    'mt-1 block w-full rounded-md border border-input bg-background',
+                    'px-3 py-2 text-sm',
+                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                  )}
+                >
+                  <option value='none'>None - Start from scratch</option>
+                  <option value='member'>
+                    Member - Standard read/write access
+                  </option>
+                  <option value='admin'>
+                    Admin - Full administrative access
+                  </option>
+                </select>
+                <p className='mt-1 text-xs text-muted-foreground'>
+                  Pre-populate permissions from a template, then customise below
+                </p>
+              </div>
+            )}
 
             {/* Permissions by Category */}
             <div>

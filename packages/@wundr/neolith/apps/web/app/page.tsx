@@ -3,7 +3,8 @@
  *
  * This page redirects users based on their authentication status:
  * - Unauthenticated users → /login
- * - Authenticated users → their last-visited workspace dashboard (or first workspace)
+ * - Authenticated users with workspaces → their last-visited workspace dashboard
+ * - Authenticated users without workspaces → /workspaces (selection/creation)
  *
  * @module app/page
  */
@@ -12,9 +13,6 @@ import { prisma } from '@neolith/database';
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
-
-// Default workspace for users without any workspaces
-const DEFAULT_WORKSPACE = 'neolith';
 
 export default async function HomePage() {
   // Check if user is authenticated
@@ -74,15 +72,15 @@ export default async function HomePage() {
       redirect(`/${workspaceSlug}/dashboard`);
     }
 
-    // No workspace found - redirect to default workspace
-    redirect(`/${DEFAULT_WORKSPACE}/dashboard`);
+    // No workspace found - send user to workspace selection/creation
+    redirect('/workspaces');
   } catch (error) {
     // Check if it's a redirect error (which is expected)
     if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
       throw error; // Re-throw redirect errors
     }
-    // If there's an actual error fetching workspaces, redirect to default workspace
+    // If there's an actual error fetching workspaces, send to workspace selection
     console.error('Error fetching user workspaces:', error);
-    redirect(`/${DEFAULT_WORKSPACE}/dashboard`);
+    redirect('/workspaces');
   }
 }

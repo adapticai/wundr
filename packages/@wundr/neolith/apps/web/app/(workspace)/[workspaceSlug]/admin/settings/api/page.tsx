@@ -185,14 +185,6 @@ export default function ApiSettingsPage() {
 
   const handleRevokeKey = useCallback(
     async (keyId: string) => {
-      if (
-        !confirm(
-          'Are you sure you want to revoke this API key? This action cannot be undone.'
-        )
-      ) {
-        return;
-      }
-
       try {
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/api-keys/${keyId}`,

@@ -45,7 +45,10 @@ interface SessionManagerDetail {
 
 const statusConfig: Record<
   SessionManagerDetail['status'],
-  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+  {
+    label: string;
+    variant: 'default' | 'secondary' | 'destructive' | 'outline';
+  }
 > = {
   ACTIVE: { label: 'Active', variant: 'default' },
   INACTIVE: { label: 'Inactive', variant: 'secondary' },
@@ -78,9 +81,7 @@ export default function SessionManagerDetailPage() {
   async function fetchSessionManager() {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/session-managers/${sessionManagerId}`
-      );
+      const response = await fetch(`/api/session-managers/${sessionManagerId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch session manager');
       }
@@ -144,9 +145,7 @@ export default function SessionManagerDetailPage() {
         title: 'Success',
         description: 'Session manager deleted successfully',
       });
-      router.push(
-        `/${workspaceSlug}/admin/orchestrators/${orchestratorId}`
-      );
+      router.push(`/${workspaceSlug}/admin/orchestrators/${orchestratorId}`);
     } catch (error) {
       toast({
         title: 'Error',
@@ -179,11 +178,24 @@ export default function SessionManagerDetailPage() {
 
   if (!sessionManager) {
     return (
-      <Card>
-        <CardContent className='pt-6 text-center text-muted-foreground'>
-          Session manager not found.
-        </CardContent>
-      </Card>
+      <div className='flex flex-col items-center justify-center py-12'>
+        <Card className='max-w-md w-full'>
+          <CardContent className='pt-6 text-center space-y-4'>
+            <p className='text-muted-foreground'>Session manager not found.</p>
+            <Button
+              variant='outline'
+              onClick={() =>
+                router.push(
+                  `/${workspaceSlug}/admin/orchestrators/${orchestratorId}`
+                )
+              }
+            >
+              <ArrowLeft className='mr-2 h-4 w-4' />
+              Back to Orchestrator
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 

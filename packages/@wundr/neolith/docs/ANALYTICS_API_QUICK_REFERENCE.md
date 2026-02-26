@@ -1,35 +1,40 @@
 # Analytics API Quick Reference Guide
 
 ## Base URL
+
 ```
 /api/workspaces/[workspaceId]/analytics
 ```
 
 ## Authentication
+
 All endpoints require authentication. Include session cookie in requests.
 
 ## Common Error Codes
-| Code | Status | Description |
-|------|--------|-------------|
-| `AUTH_REQUIRED` | 401 | Missing or invalid authentication |
-| `INVALID_ID` | 400 | Invalid workspace UUID format |
-| `FORBIDDEN` | 403 | Access denied to workspace |
-| `INVALID_PERIOD` | 400 | Invalid period parameter |
-| `INVALID_DATE` | 400 | Invalid date format (use ISO 8601) |
-| `INVALID_RANGE` | 400 | Start date must be before end date |
-| `MISSING_DATES` | 400 | Custom period requires both dates |
-| `INVALID_METRIC` | 400 | Invalid metric name |
-| `INVALID_BODY` | 400 | Malformed JSON request body |
-| `INTERNAL_ERROR` | 500 | Server error |
+
+| Code             | Status | Description                        |
+| ---------------- | ------ | ---------------------------------- |
+| `AUTH_REQUIRED`  | 401    | Missing or invalid authentication  |
+| `INVALID_ID`     | 400    | Invalid workspace UUID format      |
+| `FORBIDDEN`      | 403    | Access denied to workspace         |
+| `INVALID_PERIOD` | 400    | Invalid period parameter           |
+| `INVALID_DATE`   | 400    | Invalid date format (use ISO 8601) |
+| `INVALID_RANGE`  | 400    | Start date must be before end date |
+| `MISSING_DATES`  | 400    | Custom period requires both dates  |
+| `INVALID_METRIC` | 400    | Invalid metric name                |
+| `INVALID_BODY`   | 400    | Malformed JSON request body        |
+| `INTERNAL_ERROR` | 500    | Server error                       |
 
 ## Endpoints Overview
 
 ### 1. Main Analytics
+
 ```http
 GET /api/workspaces/{workspaceId}/analytics
 ```
 
 **Query Parameters:**
+
 - `startDate` (optional): ISO 8601 date (e.g., "2025-01-01")
 - `endDate` (optional): ISO 8601 date (default: now)
 - `granularity` (optional): `daily` | `weekly` | `monthly` (default: `daily`)
@@ -37,6 +42,7 @@ GET /api/workspaces/{workspaceId}/analytics
 - `limit` (optional): Items per page (default: 100, max: 1000)
 
 **Response:**
+
 ```json
 {
   "workspace": { "id": "uuid", "name": "string" },
@@ -65,11 +71,13 @@ GET /api/workspaces/{workspaceId}/analytics
 ```
 
 ### 2. Metrics
+
 ```http
 GET /api/workspaces/{workspaceId}/analytics/metrics
 ```
 
 **Query Parameters:**
+
 - `period` (optional): `day` | `week` | `month` | `quarter` | `year` | `custom` (default: `month`)
 - `from` (required for custom): ISO 8601 date
 - `to` (required for custom): ISO 8601 date
@@ -78,11 +86,13 @@ GET /api/workspaces/{workspaceId}/analytics/metrics
 - `limit` (optional): Items per page (default: 100, max: 1000)
 
 **Example:**
+
 ```bash
 curl "https://api.example.com/api/workspaces/abc-123/analytics/metrics?period=week&metrics=messages,users"
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -107,14 +117,17 @@ curl "https://api.example.com/api/workspaces/abc-123/analytics/metrics?period=we
 ```
 
 ### 3. Insights
+
 ```http
 GET /api/workspaces/{workspaceId}/analytics/insights
 ```
 
 **Query Parameters:**
+
 - `period` (optional): `day` | `week` | `month` | `quarter` | `year` (default: `month`)
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -148,20 +161,25 @@ GET /api/workspaces/{workspaceId}/analytics/insights
 ```
 
 ### 4. Trends
+
 ```http
 GET /api/workspaces/{workspaceId}/analytics/trends
 ```
 
 **Query Parameters:**
-- `metric` (optional): `messages` | `active_users` | `files` | `channels` | `tasks` | `workflows` (default: `messages`)
+
+- `metric` (optional): `messages` | `active_users` | `files` | `channels` | `tasks` | `workflows`
+  (default: `messages`)
 - `period` (optional): `day` | `week` | `month` | `quarter` | `year` (default: `week`)
 
 **Example:**
+
 ```bash
 curl "https://api.example.com/api/workspaces/abc-123/analytics/trends?metric=messages&period=week"
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -187,12 +205,14 @@ curl "https://api.example.com/api/workspaces/abc-123/analytics/trends?metric=mes
 ### 5. Real-time Stats
 
 #### Snapshot Mode (Polling)
+
 ```http
 GET /api/workspaces/{workspaceId}/analytics/realtime
 Accept: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -221,12 +241,14 @@ Accept: application/json
 ```
 
 #### SSE Streaming Mode
+
 ```http
 GET /api/workspaces/{workspaceId}/analytics/realtime
 Accept: text/event-stream
 ```
 
 **Events Received:**
+
 ```
 event: connected
 data: {"connectionId":"conn_123","workspaceId":"uuid","timestamp":"ISO"}
@@ -242,39 +264,42 @@ data: {"eventType":"message.sent","userId":"uuid","timestamp":"ISO"}
 ```
 
 **JavaScript Example:**
+
 ```javascript
 const eventSource = new EventSource('/api/workspaces/abc-123/analytics/realtime');
 
-eventSource.addEventListener('connected', (e) => {
+eventSource.addEventListener('connected', e => {
   console.log('Connected:', JSON.parse(e.data));
 });
 
-eventSource.addEventListener('stats', (e) => {
+eventSource.addEventListener('stats', e => {
   const stats = JSON.parse(e.data);
   console.log('Real-time stats:', stats);
 });
 
-eventSource.addEventListener('ping', (e) => {
+eventSource.addEventListener('ping', e => {
   console.log('Heartbeat:', JSON.parse(e.data));
 });
 
-eventSource.addEventListener('event', (e) => {
+eventSource.addEventListener('event', e => {
   const event = JSON.parse(e.data);
   console.log('User event:', event);
 });
 
-eventSource.onerror = (error) => {
+eventSource.onerror = error => {
   console.error('SSE error:', error);
 };
 ```
 
 #### Track Real-time Events
+
 ```http
 POST /api/workspaces/{workspaceId}/analytics/realtime
 Content-Type: application/json
 ```
 
 **Body:**
+
 ```json
 {
   "eventType": "user.action",
@@ -287,6 +312,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -298,11 +324,13 @@ Content-Type: application/json
 ```
 
 #### Close SSE Connections (Admin)
+
 ```http
 DELETE /api/workspaces/{workspaceId}/analytics/realtime
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -313,12 +341,14 @@ DELETE /api/workspaces/{workspaceId}/analytics/realtime
 ```
 
 ### 6. Track Events
+
 ```http
 POST /api/workspaces/{workspaceId}/analytics/track
 Content-Type: application/json
 ```
 
 **Body:**
+
 ```json
 {
   "eventType": "message.sent",
@@ -334,10 +364,12 @@ Content-Type: application/json
 ```
 
 **Event Type Format:**
+
 - Alphanumeric characters, dots, underscores, dashes
 - Examples: `message.sent`, `user-login`, `file_uploaded`
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -350,11 +382,13 @@ Content-Type: application/json
 ### 7. Export Data
 
 #### Export Analytics Data
+
 ```http
 GET /api/workspaces/{workspaceId}/analytics/export
 ```
 
 **Query Parameters:**
+
 - `format` (optional): `csv` | `json` (default: `json`)
 - `from` (optional): ISO 8601 date (default: 30 days ago)
 - `to` (optional): ISO 8601 date (default: now)
@@ -362,18 +396,21 @@ GET /api/workspaces/{workspaceId}/analytics/export
 - `stream` (optional): `true` | `false` (default: `false`)
 
 **Example CSV Export:**
+
 ```bash
 curl "https://api.example.com/api/workspaces/abc-123/analytics/export?format=csv&from=2025-01-01&to=2025-01-31&metrics=messages,users" \
   -o analytics-export.csv
 ```
 
 **Example JSON Export:**
+
 ```bash
 curl "https://api.example.com/api/workspaces/abc-123/analytics/export?format=json&from=2025-01-01" \
   | jq '.'
 ```
 
 **CSV Response:**
+
 ```csv
 # Analytics Export
 # Date Range: 2025-01-01T00:00:00.000Z to 2025-01-31T23:59:59.999Z
@@ -387,6 +424,7 @@ Users,Active Users,45
 ```
 
 **JSON Response:**
+
 ```json
 {
   "workspaceId": "uuid",
@@ -403,12 +441,14 @@ Users,Active Users,45
 ```
 
 #### Create Scheduled Export
+
 ```http
 POST /api/workspaces/{workspaceId}/analytics/export
 Content-Type: application/json
 ```
 
 **Body:**
+
 ```json
 {
   "frequency": "weekly",
@@ -420,6 +460,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Scheduled export created successfully",
@@ -441,18 +482,21 @@ Content-Type: application/json
 ## Common Use Cases
 
 ### 1. Get Last Week's Analytics
+
 ```bash
 curl -X GET "https://api.example.com/api/workspaces/abc-123/analytics/metrics?period=week" \
   -H "Cookie: session=your_session_cookie"
 ```
 
 ### 2. Compare This Month vs Last Month
+
 ```bash
 curl -X GET "https://api.example.com/api/workspaces/abc-123/analytics/trends?metric=messages&period=month" \
   -H "Cookie: session=your_session_cookie"
 ```
 
 ### 3. Get Real-time Dashboard Data
+
 ```bash
 curl -X GET "https://api.example.com/api/workspaces/abc-123/analytics/realtime" \
   -H "Accept: application/json" \
@@ -460,6 +504,7 @@ curl -X GET "https://api.example.com/api/workspaces/abc-123/analytics/realtime" 
 ```
 
 ### 4. Track Custom Event
+
 ```bash
 curl -X POST "https://api.example.com/api/workspaces/abc-123/analytics/track" \
   -H "Content-Type: application/json" \
@@ -474,6 +519,7 @@ curl -X POST "https://api.example.com/api/workspaces/abc-123/analytics/track" \
 ```
 
 ### 5. Export Last Quarter's Data
+
 ```bash
 curl -X GET "https://api.example.com/api/workspaces/abc-123/analytics/export?format=csv&period=quarter" \
   -H "Cookie: session=your_session_cookie" \
@@ -481,6 +527,7 @@ curl -X GET "https://api.example.com/api/workspaces/abc-123/analytics/export?for
 ```
 
 ### 6. Get Actionable Insights
+
 ```bash
 curl -X GET "https://api.example.com/api/workspaces/abc-123/analytics/insights?period=month" \
   -H "Cookie: session=your_session_cookie" \
@@ -490,6 +537,7 @@ curl -X GET "https://api.example.com/api/workspaces/abc-123/analytics/insights?p
 ## Rate Limits
 
 Recommended rate limits (to be implemented):
+
 - Standard endpoints: 100 requests/minute
 - Real-time polling: 60 requests/minute (use SSE instead!)
 - SSE connections: 5 concurrent connections per user
@@ -499,7 +547,9 @@ Recommended rate limits (to be implemented):
 ## Best Practices
 
 ### 1. Use SSE for Real-time Updates
+
 Instead of polling the real-time endpoint every few seconds, use SSE streaming:
+
 ```javascript
 // ❌ Don't do this
 setInterval(() => {
@@ -508,12 +558,13 @@ setInterval(() => {
 
 // ✅ Do this instead
 const eventSource = new EventSource('/api/workspaces/abc-123/analytics/realtime');
-eventSource.addEventListener('stats', (e) => {
+eventSource.addEventListener('stats', e => {
   updateDashboard(JSON.parse(e.data));
 });
 ```
 
 ### 2. Use Pagination for Large Datasets
+
 ```javascript
 // ✅ Good - paginated requests
 async function getAllAnalytics() {
@@ -522,9 +573,7 @@ async function getAllAnalytics() {
   let allData = [];
 
   while (true) {
-    const response = await fetch(
-      `/api/workspaces/abc-123/analytics?page=${page}&limit=${limit}`
-    );
+    const response = await fetch(`/api/workspaces/abc-123/analytics?page=${page}&limit=${limit}`);
     const data = await response.json();
 
     if (data.length === 0) break;
@@ -537,11 +586,10 @@ async function getAllAnalytics() {
 ```
 
 ### 3. Use Streaming for Large Exports
+
 ```javascript
 // ✅ Good - streaming export
-const response = await fetch(
-  '/api/workspaces/abc-123/analytics/export?format=csv&stream=true'
-);
+const response = await fetch('/api/workspaces/abc-123/analytics/export?format=csv&stream=true');
 
 const reader = response.body.getReader();
 const chunks = [];
@@ -557,6 +605,7 @@ saveAs(blob, 'analytics-export.csv');
 ```
 
 ### 4. Cache Insights and Trends
+
 ```javascript
 // ✅ Good - cache insights for 1 hour
 const getCachedInsights = memoize(
@@ -567,6 +616,7 @@ const getCachedInsights = memoize(
 ```
 
 ### 5. Batch Event Tracking
+
 ```javascript
 // ✅ Good - batch multiple events
 const eventQueue = [];
@@ -587,7 +637,7 @@ async function flushEvents() {
     events.map(event =>
       fetch('/api/workspaces/abc-123/analytics/track', {
         method: 'POST',
-        body: JSON.stringify(event)
+        body: JSON.stringify(event),
       })
     )
   );
@@ -603,9 +653,7 @@ window.addEventListener('beforeunload', flushEvents);
 async function getAnalytics(workspaceId, params) {
   try {
     const queryString = new URLSearchParams(params).toString();
-    const response = await fetch(
-      `/api/workspaces/${workspaceId}/analytics/metrics?${queryString}`
-    );
+    const response = await fetch(`/api/workspaces/${workspaceId}/analytics/metrics?${queryString}`);
 
     if (!response.ok) {
       const error = await response.json();
@@ -703,6 +751,7 @@ interface ErrorResponse {
 ## Support
 
 For issues or questions about the Analytics API:
+
 - Documentation: `/docs/ANALYTICS_API_AUDIT_SUMMARY.md`
 - GitHub Issues: [Your repository issues page]
 - Email: support@example.com

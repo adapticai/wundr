@@ -17,7 +17,7 @@ import { auth } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Welcome to Neolith - Create Your Organization',
+  title: 'Get started — Neolith',
   description:
     'Set up your organization and workspace to get started with Neolith.',
 };
@@ -50,8 +50,8 @@ export default async function OnboardingPage() {
               Welcome to Neolith
             </h1>
             <p className='mt-2 text-stone-400'>
-              Let&apos;s set up your organization and get you started with
-              AI-powered collaboration.
+              Let&apos;s create your organization and first workspace. This only
+              takes a couple of minutes.
             </p>
           </div>
 
@@ -61,7 +61,15 @@ export default async function OnboardingPage() {
 
       <footer className='border-t border-stone-800 px-6 py-4'>
         <div className='mx-auto max-w-4xl text-center text-sm text-stone-500'>
-          <p>Need help? Contact support@neolith.ai</p>
+          <p>
+            Need help?{' '}
+            <a
+              href='mailto:support@neolith.ai'
+              className='text-stone-400 underline-offset-4 hover:text-stone-200 hover:underline'
+            >
+              Contact support
+            </a>
+          </p>
         </div>
       </footer>
     </div>

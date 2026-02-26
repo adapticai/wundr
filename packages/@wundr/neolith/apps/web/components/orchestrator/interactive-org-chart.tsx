@@ -51,7 +51,10 @@ const STATUS_BADGE_VARIANTS: Record<
 function StatusDot({ status }: { status: OrgChartNode['status'] }) {
   return (
     <span
-      className={cn('inline-block h-2.5 w-2.5 rounded-full flex-shrink-0', STATUS_STYLES[status])}
+      className={cn(
+        'inline-block h-2.5 w-2.5 rounded-full flex-shrink-0',
+        STATUS_STYLES[status]
+      )}
     />
   );
 }
@@ -75,7 +78,10 @@ function NodeHoverCard({ node }: { node: OrgChartNode }) {
           </div>
           <div className='flex items-center gap-1.5'>
             <span className='font-medium text-foreground'>Status: </span>
-            <Badge variant={STATUS_BADGE_VARIANTS[node.status]} className='text-xs py-0'>
+            <Badge
+              variant={STATUS_BADGE_VARIANTS[node.status]}
+              className='text-xs py-0'
+            >
               {node.status}
             </Badge>
           </div>
@@ -83,15 +89,21 @@ function NodeHoverCard({ node }: { node: OrgChartNode }) {
         {node.metrics && (
           <div className='border-t pt-2 grid grid-cols-3 gap-1 text-center'>
             <div>
-              <div className='text-sm font-bold'>{node.metrics.tasksCompleted}</div>
+              <div className='text-sm font-bold'>
+                {node.metrics.tasksCompleted}
+              </div>
               <div className='text-xs text-muted-foreground'>Done</div>
             </div>
             <div>
-              <div className='text-sm font-bold'>{node.metrics.activeTasks}</div>
+              <div className='text-sm font-bold'>
+                {node.metrics.activeTasks}
+              </div>
               <div className='text-xs text-muted-foreground'>Active</div>
             </div>
             <div>
-              <div className='text-sm font-bold'>{node.metrics.messagesRouted}</div>
+              <div className='text-sm font-bold'>
+                {node.metrics.messagesRouted}
+              </div>
               <div className='text-xs text-muted-foreground'>Msgs</div>
             </div>
           </div>
@@ -139,13 +151,10 @@ function OrgChartNodeCard({
   const [hovered, setHovered] = useState(false);
   const hasChildren = node.children.length > 0;
 
-  const handleToggle = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setExpanded(prev => !prev);
-    },
-    []
-  );
+  const handleToggle = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpanded(prev => !prev);
+  }, []);
 
   const handleClick = useCallback(() => {
     onNodeClick?.(node);
@@ -172,7 +181,9 @@ function OrgChartNodeCard({
           <StatusDot status={node.status} />
           <div className='flex-1 min-w-0'>
             <div className='text-sm font-semibold truncate'>{node.name}</div>
-            <div className='text-xs text-muted-foreground truncate'>{node.title}</div>
+            <div className='text-xs text-muted-foreground truncate'>
+              {node.title}
+            </div>
           </div>
           {hasChildren && (
             <Button
@@ -199,7 +210,10 @@ function OrgChartNodeCard({
           <div className='h-6 w-px bg-border' />
           <div className='flex items-start gap-6'>
             {node.children.map((child, idx) => (
-              <div key={child.id} className='flex flex-col items-center relative'>
+              <div
+                key={child.id}
+                className='flex flex-col items-center relative'
+              >
                 {/* Horizontal connector dots */}
                 {node.children.length > 1 && (
                   <div
@@ -207,7 +221,9 @@ function OrgChartNodeCard({
                       'absolute top-0 h-px bg-border',
                       idx === 0 && 'left-1/2 right-0',
                       idx === node.children.length - 1 && 'left-0 right-1/2',
-                      idx > 0 && idx < node.children.length - 1 && 'left-0 right-0'
+                      idx > 0 &&
+                        idx < node.children.length - 1 &&
+                        'left-0 right-0'
                     )}
                   />
                 )}
@@ -305,7 +321,12 @@ export function InteractiveOrgChart({
 
   if (loading) {
     return (
-      <div className={cn('flex min-h-[300px] items-center justify-center', className)}>
+      <div
+        className={cn(
+          'flex min-h-[300px] items-center justify-center',
+          className
+        )}
+      >
         <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent' />
       </div>
     );
@@ -313,7 +334,12 @@ export function InteractiveOrgChart({
 
   if (error) {
     return (
-      <div className={cn('rounded-lg border border-destructive p-6 text-center', className)}>
+      <div
+        className={cn(
+          'rounded-lg border border-destructive p-6 text-center',
+          className
+        )}
+      >
         <p className='text-sm text-destructive'>{error}</p>
       </div>
     );
@@ -331,7 +357,9 @@ export function InteractiveOrgChart({
       <div className='grid grid-cols-3 gap-4 rounded-lg border bg-muted/50 p-4'>
         <div className='text-center'>
           <div className='text-2xl font-bold text-primary'>{nodes.length}</div>
-          <div className='text-xs text-muted-foreground'>Total Orchestrators</div>
+          <div className='text-xs text-muted-foreground'>
+            Total Orchestrators
+          </div>
         </div>
         <div className='text-center'>
           <div className='text-2xl font-bold text-green-600 dark:text-green-400'>
@@ -340,7 +368,9 @@ export function InteractiveOrgChart({
           <div className='text-xs text-muted-foreground'>Online</div>
         </div>
         <div className='text-center'>
-          <div className='text-2xl font-bold text-primary'>{totalSessionManagers}</div>
+          <div className='text-2xl font-bold text-primary'>
+            {totalSessionManagers}
+          </div>
           <div className='text-xs text-muted-foreground'>Session Managers</div>
         </div>
       </div>

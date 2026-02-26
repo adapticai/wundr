@@ -19,7 +19,7 @@ import type { PrismaClient } from '@neolith/database';
 export class TwilioServiceError extends Error {
   constructor(
     message: string,
-    public code?: string,
+    public code?: string
   ) {
     super(message);
     this.name = 'TwilioServiceError';
@@ -87,17 +87,17 @@ export interface MessageDeliveryStatus {
 export interface ITwilioService {
   sendSMS(
     orchestratorId: string,
-    message: SMSMessage,
+    message: SMSMessage
   ): Promise<MessageDeliveryStatus>;
 
   sendWhatsApp(
     orchestratorId: string,
-    message: WhatsAppMessage,
+    message: WhatsAppMessage
   ): Promise<MessageDeliveryStatus>;
 
   initiateCall(
     orchestratorId: string,
-    request: VoiceCallRequest,
+    request: VoiceCallRequest
   ): Promise<{ callSid: string; status: string }>;
 
   getPhoneNumbers(orchestratorId: string): Promise<PhoneNumberInfo[]>;
@@ -108,12 +108,12 @@ export interface ITwilioService {
       areaCode?: string;
       country?: string;
       capabilities?: string[];
-    },
+    }
   ): Promise<PhoneNumberInfo>;
 
   releaseNumber(
     orchestratorId: string,
-    phoneNumberSid: string,
+    phoneNumberSid: string
   ): Promise<boolean>;
 
   getMessageStatus(messageSid: string): Promise<MessageDeliveryStatus | null>;
@@ -143,7 +143,7 @@ class TwilioServiceImpl implements ITwilioService {
     if (!orchestrator?.daemonEndpoint) {
       throw new TwilioServiceError(
         `No daemon endpoint registered for orchestrator: ${orchestratorId}`,
-        'DAEMON_ENDPOINT_NOT_FOUND',
+        'DAEMON_ENDPOINT_NOT_FOUND'
       );
     }
 
@@ -160,7 +160,10 @@ class TwilioServiceImpl implements ITwilioService {
     if (!response.ok) {
       let errorMessage = `Daemon request failed: ${response.status} ${response.statusText}`;
       try {
-        const errorBody = (await response.json()) as { error?: string; message?: string };
+        const errorBody = (await response.json()) as {
+          error?: string;
+          message?: string;
+        };
         errorMessage = errorBody.error ?? errorBody.message ?? errorMessage;
       } catch {
         // ignore JSON parse errors
@@ -180,7 +183,10 @@ class TwilioServiceImpl implements ITwilioService {
     if (!response.ok) {
       let errorMessage = `Daemon request failed: ${response.status} ${response.statusText}`;
       try {
-        const errorBody = (await response.json()) as { error?: string; message?: string };
+        const errorBody = (await response.json()) as {
+          error?: string;
+          message?: string;
+        };
         errorMessage = errorBody.error ?? errorBody.message ?? errorMessage;
       } catch {
         // ignore JSON parse errors
@@ -197,41 +203,41 @@ class TwilioServiceImpl implements ITwilioService {
 
   async sendSMS(
     orchestratorId: string,
-    message: SMSMessage,
+    message: SMSMessage
   ): Promise<MessageDeliveryStatus> {
     const endpoint = await this.getDaemonEndpoint(orchestratorId);
     return this.daemonPost<MessageDeliveryStatus>(
       `${endpoint}/api/channels/twilio/sms`,
-      message,
+      message
     );
   }
 
   async sendWhatsApp(
     orchestratorId: string,
-    message: WhatsAppMessage,
+    message: WhatsAppMessage
   ): Promise<MessageDeliveryStatus> {
     const endpoint = await this.getDaemonEndpoint(orchestratorId);
     return this.daemonPost<MessageDeliveryStatus>(
       `${endpoint}/api/channels/twilio/whatsapp`,
-      message,
+      message
     );
   }
 
   async initiateCall(
     orchestratorId: string,
-    request: VoiceCallRequest,
+    request: VoiceCallRequest
   ): Promise<{ callSid: string; status: string }> {
     const endpoint = await this.getDaemonEndpoint(orchestratorId);
     return this.daemonPost<{ callSid: string; status: string }>(
       `${endpoint}/api/channels/twilio/calls`,
-      request,
+      request
     );
   }
 
   async getPhoneNumbers(orchestratorId: string): Promise<PhoneNumberInfo[]> {
     const endpoint = await this.getDaemonEndpoint(orchestratorId);
     return this.daemonGet<PhoneNumberInfo[]>(
-      `${endpoint}/api/channels/twilio/numbers`,
+      `${endpoint}/api/channels/twilio/numbers`
     );
   }
 
@@ -241,18 +247,18 @@ class TwilioServiceImpl implements ITwilioService {
       areaCode?: string;
       country?: string;
       capabilities?: string[];
-    },
+    }
   ): Promise<PhoneNumberInfo> {
     const endpoint = await this.getDaemonEndpoint(orchestratorId);
     const result = await this.daemonPost<PhoneNumberInfo>(
       `${endpoint}/api/channels/twilio/numbers/provision`,
-      options ?? {},
+      options ?? {}
     );
 
     if (!result.sid) {
       throw new TwilioProvisioningError(
         'Daemon returned invalid provisioning response',
-        'INVALID_PROVISION_RESPONSE',
+        'INVALID_PROVISION_RESPONSE'
       );
     }
 
@@ -261,17 +267,19 @@ class TwilioServiceImpl implements ITwilioService {
 
   async releaseNumber(
     orchestratorId: string,
-    phoneNumberSid: string,
+    phoneNumberSid: string
   ): Promise<boolean> {
     const endpoint = await this.getDaemonEndpoint(orchestratorId);
     await this.daemonPost<{ released: boolean }>(
       `${endpoint}/api/channels/twilio/numbers/${phoneNumberSid}/release`,
-      {},
+      {}
     );
     return true;
   }
 
-  async getMessageStatus(messageSid: string): Promise<MessageDeliveryStatus | null> {
+  async getMessageStatus(
+    messageSid: string
+  ): Promise<MessageDeliveryStatus | null> {
     // Message status lookups go directly to the daemon's shared status endpoint
     // without an orchestrator scope since SIDs are globally unique.
     // Callers who need this with an orchestrator context should use the daemon

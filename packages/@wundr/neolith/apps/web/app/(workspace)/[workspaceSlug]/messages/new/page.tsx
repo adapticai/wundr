@@ -480,12 +480,12 @@ export default function NewMessagePage() {
     [recipients, currentUser, workspaceSlug, router]
   );
 
-  // Auto-save indicator
+  // Auto-save indicator - only triggers when recipients are added
   useEffect(() => {
-    if (recipients.length > 0 || searchQuery) {
+    if (recipients.length > 0) {
       setLastSaved(new Date());
     }
-  }, [recipients, searchQuery]);
+  }, [recipients]);
 
   if (isAuthLoading) {
     return (
@@ -893,10 +893,7 @@ function MultiRecipientIntro({ recipients }: { recipients: Recipient[] }) {
       <p className='text-sm text-muted-foreground'>
         You'll be notified for{' '}
         <span className='font-medium'>every new message</span> in this
-        conversation.{' '}
-        <button className='text-primary hover:underline'>
-          Change this setting
-        </button>
+        conversation.
       </p>
     </div>
   );

@@ -206,15 +206,7 @@ export default function OrchestratorAnalyticsPage() {
   // Prepare chart data
   const chartData = useMemo(() => {
     if (!trends?.trends || trends.trends.length === 0) {
-      // Return sample data for visualization
-      return Array.from({ length: 7 }, (_, i) => ({
-        date: new Date(
-          Date.now() - (6 - i) * 24 * 60 * 60 * 1000
-        ).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        tasksCompleted: Math.floor(Math.random() * 50) + 10,
-        successRate: Math.floor(Math.random() * 20) + 75,
-        avgDuration: Math.floor(Math.random() * 30) + 15,
-      }));
+      return [];
     }
 
     return trends.trends.map(trend => ({
@@ -398,34 +390,38 @@ export default function OrchestratorAnalyticsPage() {
                 <CardDescription>Daily task completion volume</CardDescription>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={performanceChartConfig}>
-                  <BarChart data={chartData}>
-                    <CartesianGrid
-                      strokeDasharray='3 3'
-                      className='stroke-muted'
-                    />
-                    <XAxis
-                      dataKey='date'
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent />}
-                    />
-                    <Bar
-                      dataKey='tasksCompleted'
-                      fill='var(--color-tasksCompleted)'
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
+                {chartData.length === 0 ? (
+                  <NoDataPlaceholder label='No task completion data yet' />
+                ) : (
+                  <ChartContainer config={performanceChartConfig}>
+                    <BarChart data={chartData}>
+                      <CartesianGrid
+                        strokeDasharray='3 3'
+                        className='stroke-muted'
+                      />
+                      <XAxis
+                        dataKey='date'
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent />}
+                      />
+                      <Bar
+                        dataKey='tasksCompleted'
+                        fill='var(--color-tasksCompleted)'
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ChartContainer>
+                )}
               </CardContent>
             </Card>
 
@@ -438,38 +434,42 @@ export default function OrchestratorAnalyticsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={successRateChartConfig}>
-                  <AreaChart data={chartData}>
-                    <CartesianGrid
-                      strokeDasharray='3 3'
-                      className='stroke-muted'
-                    />
-                    <XAxis
-                      dataKey='date'
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                      domain={[0, 100]}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent />}
-                    />
-                    <Area
-                      type='monotone'
-                      dataKey='successRate'
-                      fill='var(--color-successRate)'
-                      fillOpacity={0.2}
-                      stroke='var(--color-successRate)'
-                      strokeWidth={2}
-                    />
-                  </AreaChart>
-                </ChartContainer>
+                {chartData.length === 0 ? (
+                  <NoDataPlaceholder label='No success rate data yet' />
+                ) : (
+                  <ChartContainer config={successRateChartConfig}>
+                    <AreaChart data={chartData}>
+                      <CartesianGrid
+                        strokeDasharray='3 3'
+                        className='stroke-muted'
+                      />
+                      <XAxis
+                        dataKey='date'
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                        axisLine={false}
+                        domain={[0, 100]}
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent />}
+                      />
+                      <Area
+                        type='monotone'
+                        dataKey='successRate'
+                        fill='var(--color-successRate)'
+                        fillOpacity={0.2}
+                        stroke='var(--color-successRate)'
+                        strokeWidth={2}
+                      />
+                    </AreaChart>
+                  </ChartContainer>
+                )}
               </CardContent>
             </Card>
 
@@ -480,37 +480,41 @@ export default function OrchestratorAnalyticsPage() {
                 <CardDescription>Average task completion time</CardDescription>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={durationChartConfig}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid
-                      strokeDasharray='3 3'
-                      className='stroke-muted'
-                    />
-                    <XAxis
-                      dataKey='date'
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent />}
-                    />
-                    <Line
-                      type='monotone'
-                      dataKey='avgDuration'
-                      stroke='var(--color-avgDuration)'
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ChartContainer>
+                {chartData.length === 0 ? (
+                  <NoDataPlaceholder label='No response time data yet' />
+                ) : (
+                  <ChartContainer config={durationChartConfig}>
+                    <LineChart data={chartData}>
+                      <CartesianGrid
+                        strokeDasharray='3 3'
+                        className='stroke-muted'
+                      />
+                      <XAxis
+                        dataKey='date'
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent />}
+                      />
+                      <Line
+                        type='monotone'
+                        dataKey='avgDuration'
+                        stroke='var(--color-avgDuration)'
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ChartContainer>
+                )}
               </CardContent>
             </Card>
 
@@ -607,10 +611,7 @@ export default function OrchestratorAnalyticsPage() {
         <TabsContent value='budget' className='space-y-6 mt-6'>
           <div className='grid gap-6 md:grid-cols-2'>
             {/* Budget Overview */}
-            <BudgetOverview
-              usage={budgetData}
-              onViewChange={period => console.log('View changed to:', period)}
-            />
+            <BudgetOverview usage={budgetData} onViewChange={() => undefined} />
 
             {/* Budget Allocation Chart */}
             <Card>
@@ -652,63 +653,67 @@ export default function OrchestratorAnalyticsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ChartContainer
-                config={{
-                  budget: {
-                    label: 'Budget',
-                    color: 'hsl(var(--chart-4))',
-                  },
-                  actual: {
-                    label: 'Actual',
-                    color: 'hsl(var(--chart-5))',
-                  },
-                }}
-              >
-                <LineChart
-                  data={chartData.map((d, i) => ({
-                    date: d.date,
-                    budget: budgetData.limit / 7,
-                    actual:
-                      (budgetData.current / 7) * (1 + Math.random() * 0.2),
-                  }))}
+              {chartData.length === 0 ? (
+                <NoDataPlaceholder label='No budget usage data yet' />
+              ) : (
+                <ChartContainer
+                  config={{
+                    budget: {
+                      label: 'Budget',
+                      color: 'hsl(var(--chart-4))',
+                    },
+                    actual: {
+                      label: 'Actual',
+                      color: 'hsl(var(--chart-5))',
+                    },
+                  }}
                 >
-                  <CartesianGrid
-                    strokeDasharray='3 3'
-                    className='stroke-muted'
-                  />
-                  <XAxis
-                    dataKey='date'
-                    tick={{ fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent />}
-                  />
-                  <Line
-                    type='monotone'
-                    dataKey='budget'
-                    stroke='var(--color-budget)'
-                    strokeWidth={2}
-                    strokeDasharray='5 5'
-                    dot={false}
-                  />
-                  <Line
-                    type='monotone'
-                    dataKey='actual'
-                    stroke='var(--color-actual)'
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ChartContainer>
+                  <LineChart
+                    data={chartData.map(d => ({
+                      date: d.date,
+                      budget: budgetData.limit / Math.max(chartData.length, 1),
+                      actual:
+                        budgetData.current / Math.max(chartData.length, 1),
+                    }))}
+                  >
+                    <CartesianGrid
+                      strokeDasharray='3 3'
+                      className='stroke-muted'
+                    />
+                    <XAxis
+                      dataKey='date'
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent />}
+                    />
+                    <Line
+                      type='monotone'
+                      dataKey='budget'
+                      stroke='var(--color-budget)'
+                      strokeWidth={2}
+                      strokeDasharray='5 5'
+                      dot={false}
+                    />
+                    <Line
+                      type='monotone'
+                      dataKey='actual'
+                      stroke='var(--color-actual)'
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ChartContainer>
+              )}
             </CardContent>
           </Card>
 
@@ -934,6 +939,19 @@ function BudgetAllocationBar({
           style={{ width: `${Math.min(percentage, 100)}%` }}
         />
       </div>
+    </div>
+  );
+}
+
+// No Data Placeholder Component
+function NoDataPlaceholder({ label }: { label: string }) {
+  return (
+    <div className='flex flex-col items-center justify-center h-[200px] text-center'>
+      <BarChart3 className='h-8 w-8 text-muted-foreground/40 mb-3' />
+      <p className='text-sm text-muted-foreground'>{label}</p>
+      <p className='text-xs text-muted-foreground/70 mt-1'>
+        Data will appear as tasks are completed
+      </p>
     </div>
   );
 }

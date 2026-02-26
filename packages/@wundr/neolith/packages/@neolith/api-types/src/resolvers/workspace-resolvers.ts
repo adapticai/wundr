@@ -939,8 +939,7 @@ export const workspaceMutations = {
           slug,
           description: input.description ?? null,
           avatarUrl: input.avatarUrl ?? null,
-          visibility:
-            (input.visibility as any) ?? 'PRIVATE',
+          visibility: (input.visibility as any) ?? 'PRIVATE',
           settings: {},
           organizationId: input.organizationId,
           workspaceMembers: {

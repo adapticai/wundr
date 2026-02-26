@@ -3,8 +3,11 @@ import { Logo } from '@/components/ui/Logo';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Authentication',
-  description: 'Sign in to your Neolith account',
+  title: {
+    default: 'Sign in',
+    template: '%s | Neolith',
+  },
+  description: 'Sign in or create your Neolith account to get started.',
 };
 
 export default function AuthLayout({

@@ -112,6 +112,8 @@ export function AppearanceSettings() {
   const { toast } = useToast();
   const [mounted, setMounted] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [savedPreferences, setSavedPreferences] =
+    React.useState<AppearancePreferences | null>(null);
 
   const [preferences, setPreferences] = React.useState<AppearancePreferences>({
     accentColor: '#3b82f6',
@@ -135,10 +137,12 @@ export function AppearanceSettings() {
   React.useEffect(() => {
     setMounted(true);
     // Load saved preferences from localStorage or API
-    const savedPreferences = localStorage.getItem('appearance-preferences');
-    if (savedPreferences) {
+    const stored = localStorage.getItem('appearance-preferences');
+    if (stored) {
       try {
-        setPreferences(JSON.parse(savedPreferences));
+        const parsed = JSON.parse(stored);
+        setPreferences(parsed);
+        setSavedPreferences(parsed);
       } catch (error) {
         console.error('Failed to parse saved preferences:', error);
       }
@@ -215,6 +219,7 @@ export function AppearanceSettings() {
         throw new Error('Failed to save preferences');
       }
 
+      setSavedPreferences(preferences);
       toast({
         title: 'Saved',
         description: 'Appearance preferences saved successfully',
@@ -849,7 +854,15 @@ export function AppearanceSettings() {
 
         {/* Save Button */}
         <div className='flex justify-end gap-3'>
-          <Button variant='outline' onClick={() => window.location.reload()}>
+          <Button
+            variant='outline'
+            onClick={() => {
+              if (savedPreferences) {
+                setPreferences(savedPreferences);
+              }
+            }}
+            disabled={isSaving}
+          >
             Cancel
           </Button>
           <Button onClick={handleSavePreferences} disabled={isSaving}>

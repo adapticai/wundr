@@ -56,10 +56,12 @@ function VerifyEmailContent() {
   const [resendSuccess, setResendSuccess] = useState(false);
   const [resendError, setResendError] = useState('');
   const [token, setToken] = useState('');
+  const [email, setEmail] = useState('');
 
-  // Extract token from URL on mount and verify
+  // Extract token and email from URL on mount and verify
   useEffect(() => {
     const tokenParam = searchParams.get('token');
+    const emailParam = searchParams.get('email');
     if (!tokenParam) {
       setStatus('invalid');
       setError(
@@ -69,6 +71,9 @@ function VerifyEmailContent() {
     }
 
     setToken(tokenParam);
+    if (emailParam) {
+      setEmail(emailParam);
+    }
     verifyEmail(tokenParam);
   }, [searchParams]);
 
@@ -129,10 +134,15 @@ function VerifyEmailContent() {
     setResendError('');
 
     try {
+      // The resend endpoint expects an email address per the API schema.
+      // We use the email from the URL param if available, otherwise fall back
+      // to the token so the server can look up the associated email.
+      const body = email ? { email } : { token };
+
       const response = await fetch('/api/auth/resend-verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify(body),
       });
 
       const data = await response.json();
@@ -229,7 +239,6 @@ function VerifyEmailContent() {
               onClick={handleResendEmail}
               disabled={isResending || resendSuccess}
               className='w-full'
-              variant='primary'
             >
               {isResending ? (
                 <>

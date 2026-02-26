@@ -1,6 +1,13 @@
 'use client';
 
-import { Send, Square, RotateCcw, Loader2, AlertCircle } from 'lucide-react';
+import {
+  Send,
+  Square,
+  RotateCcw,
+  Loader2,
+  AlertCircle,
+  ChevronUp,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -25,11 +32,14 @@ export function AIChatInterface({
 }: AIChatInterfaceProps) {
   const {
     messages,
+    isLoading,
     isSending,
     error,
     sendMessage,
     regenerate,
     stop,
+    loadHistory,
+    hasMoreHistory,
     draft,
     setDraft,
   } = useAIChat({
@@ -39,6 +49,7 @@ export function AIChatInterface({
   });
 
   const [input, setInput] = useState('');
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -46,6 +57,14 @@ export function AIChatInterface({
   useEffect(() => {
     setInput(draft);
   }, [draft]);
+
+  // Load history on mount for existing conversations
+  useEffect(() => {
+    if (conversationId && loadHistory) {
+      loadHistory();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -81,41 +100,117 @@ export function AIChatInterface({
     setDraft(value);
   };
 
+  const handleLoadMore = async () => {
+    if (isLoadingHistory || !hasMoreHistory) return;
+    const firstMessageId = messages[0]?.id;
+    setIsLoadingHistory(true);
+    try {
+      await loadHistory(firstMessageId);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const visibleMessages = messages.filter(
+    m => m.role === 'user' || m.role === 'assistant'
+  );
+
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* Messages Area */}
       <ScrollArea ref={scrollAreaRef} className='flex-1 px-4'>
         <div className='max-w-3xl mx-auto py-8 space-y-6'>
-          {messages.length === 0 && (
+          {/* Load More History */}
+          {conversationId && hasMoreHistory && (
+            <div className='flex justify-center'>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={handleLoadMore}
+                disabled={isLoadingHistory}
+                className='text-muted-foreground'
+              >
+                {isLoadingHistory ? (
+                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                ) : (
+                  <ChevronUp className='mr-2 h-4 w-4' />
+                )}
+                Load earlier messages
+              </Button>
+            </div>
+          )}
+
+          {/* Initial loading state for existing conversations */}
+          {isLoading && conversationId && visibleMessages.length === 0 && (
+            <div className='space-y-4'>
+              {[1, 2, 3].map(i => (
+                <div
+                  key={i}
+                  className={cn(
+                    'flex gap-3',
+                    i % 2 === 0 ? 'justify-end' : 'justify-start'
+                  )}
+                >
+                  <div className='h-8 w-8 rounded-full bg-muted animate-pulse' />
+                  <div className='flex flex-col gap-2 max-w-[60%]'>
+                    <div className='h-10 rounded-2xl bg-muted animate-pulse' />
+                    <div className='h-3 w-20 rounded bg-muted animate-pulse' />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Empty state for new conversations */}
+          {visibleMessages.length === 0 && !isLoading && (
             <div className='flex flex-col items-center justify-center py-12 text-center'>
               <div className='rounded-full bg-primary/10 p-6 mb-4'>
                 <MessageSquarePlusIcon className='h-12 w-12 text-primary' />
               </div>
               <h3 className='text-xl font-semibold mb-2'>
-                Start a conversation
+                How can I help you today?
               </h3>
-              <p className='text-muted-foreground max-w-md'>
-                Ask me anything about your workspace, or let me help you create
-                orchestrators, workflows, and more.
+              <p className='text-muted-foreground max-w-md mb-6'>
+                Ask me about your portfolio performance, market analysis, risk
+                exposure, or let me help you configure orchestrators and
+                workflows.
               </p>
+              <div className='grid grid-cols-2 gap-2 max-w-sm w-full'>
+                {[
+                  "Summarise today's portfolio performance",
+                  'Analyse risk exposure across funds',
+                  'Create a new workflow',
+                  'Show recent trade activity',
+                ].map(suggestion => (
+                  <button
+                    key={suggestion}
+                    type='button'
+                    onClick={() => {
+                      setInput(suggestion);
+                      textareaRef.current?.focus();
+                    }}
+                    className='rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-left text-muted-foreground hover:bg-muted hover:text-foreground transition-colors'
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
-          {messages
-            .filter(m => m.role === 'user' || m.role === 'assistant')
-            .map((message, index) => (
-              <MessageBubble
-                key={message.id || message.localId || index}
-                message={{
-                  id: message.id || message.localId || `msg-${index}`,
-                  role: message.role as 'user' | 'assistant',
-                  content: message.content,
-                  createdAt: message.createdAt,
-                  status: message.status,
-                }}
-                isLatest={index === messages.length - 1}
-              />
-            ))}
+          {visibleMessages.map((message, index) => (
+            <MessageBubble
+              key={message.id || message.localId || index}
+              message={{
+                id: message.id || message.localId || `msg-${index}`,
+                role: message.role as 'user' | 'assistant',
+                content: message.content,
+                createdAt: message.createdAt ?? new Date(),
+                status: message.status,
+              }}
+              isLatest={index === visibleMessages.length - 1}
+            />
+          ))}
 
           {error && (
             <Alert variant='destructive'>
@@ -147,7 +242,7 @@ export function AIChatInterface({
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder='Ask me anything...'
+              placeholder='Ask about your portfolio, funds, or workflows...'
               className='min-h-[80px] pr-24 resize-none'
               disabled={isSending}
             />
@@ -160,6 +255,7 @@ export function AIChatInterface({
                     variant='ghost'
                     onClick={stop}
                     className='h-8 w-8'
+                    title='Stop generating'
                   >
                     <Square className='h-4 w-4' />
                   </Button>
@@ -167,7 +263,7 @@ export function AIChatInterface({
                 </>
               ) : (
                 <>
-                  {messages.length > 0 && (
+                  {visibleMessages.length > 0 && (
                     <Button
                       type='button'
                       size='icon'
@@ -184,6 +280,7 @@ export function AIChatInterface({
                     size='icon'
                     disabled={!input.trim() || isSending}
                     className='h-8 w-8'
+                    title='Send message'
                   >
                     <Send className='h-4 w-4' />
                   </Button>
@@ -211,7 +308,7 @@ interface MessageBubbleProps {
   isLatest: boolean;
 }
 
-function MessageBubble({ message, isLatest }: MessageBubbleProps) {
+function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const isStreaming = message.status === 'streaming';
   const hasError = message.status === 'error';
@@ -219,7 +316,7 @@ function MessageBubble({ message, isLatest }: MessageBubbleProps) {
   return (
     <div className={cn('flex gap-3', isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
-        <Avatar className='h-8 w-8 mt-1'>
+        <Avatar className='h-8 w-8 mt-1 flex-shrink-0'>
           <AvatarFallback className='bg-primary text-primary-foreground text-xs'>
             AI
           </AvatarFallback>
@@ -236,16 +333,26 @@ function MessageBubble({ message, isLatest }: MessageBubbleProps) {
             hasError && 'border border-destructive'
           )}
         >
-          <div className='prose prose-sm dark:prose-invert max-w-none'>
-            {message.content ||
-              (isStreaming && (
-                <span className='inline-flex items-center gap-1'>
-                  <span className='animate-bounce'>●</span>
-                  <span className='animate-bounce delay-75'>●</span>
-                  <span className='animate-bounce delay-150'>●</span>
-                </span>
-              ))}
-          </div>
+          {isStreaming && !message.content ? (
+            <span className='inline-flex items-center gap-1 py-0.5'>
+              <span
+                className='h-1.5 w-1.5 rounded-full bg-current animate-bounce'
+                style={{ animationDelay: '0ms' }}
+              />
+              <span
+                className='h-1.5 w-1.5 rounded-full bg-current animate-bounce'
+                style={{ animationDelay: '150ms' }}
+              />
+              <span
+                className='h-1.5 w-1.5 rounded-full bg-current animate-bounce'
+                style={{ animationDelay: '300ms' }}
+              />
+            </span>
+          ) : (
+            <div className='prose prose-sm dark:prose-invert max-w-none'>
+              {message.content}
+            </div>
+          )}
         </div>
 
         <div className='flex items-center gap-2 px-1'>
@@ -255,14 +362,14 @@ function MessageBubble({ message, isLatest }: MessageBubbleProps) {
           {hasError && (
             <span className='text-xs text-destructive'>Failed to send</span>
           )}
-          {isStreaming && (
+          {isStreaming && message.content && (
             <span className='text-xs text-muted-foreground'>Generating...</span>
           )}
         </div>
       </div>
 
       {isUser && (
-        <Avatar className='h-8 w-8 mt-1'>
+        <Avatar className='h-8 w-8 mt-1 flex-shrink-0'>
           <AvatarFallback className='bg-secondary text-xs'>U</AvatarFallback>
         </Avatar>
       )}

@@ -11,7 +11,13 @@ export default function PerformanceAnalyticsPage(): JSX.Element {
   const workspaceSlug = params?.workspaceSlug as string | undefined;
   const { setPageHeader } = usePageHeader();
 
-  // Guard against missing workspace slug
+  useEffect(() => {
+    setPageHeader(
+      'Performance Analytics',
+      'Monitor page load metrics, API response times, and system throughput'
+    );
+  }, [setPageHeader]);
+
   if (!workspaceSlug) {
     return (
       <div className='min-h-screen bg-background flex items-center justify-center'>
@@ -27,14 +33,6 @@ export default function PerformanceAnalyticsPage(): JSX.Element {
       </div>
     );
   }
-
-  // Set page header
-  useEffect(() => {
-    setPageHeader(
-      'Performance Analytics',
-      'Monitor page load metrics, API response times, and system throughput'
-    );
-  }, [setPageHeader]);
 
   return (
     <div className='min-h-screen bg-background'>

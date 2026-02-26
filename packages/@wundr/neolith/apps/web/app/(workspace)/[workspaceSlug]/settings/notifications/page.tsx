@@ -773,15 +773,17 @@ export default function NotificationsSettingsPage() {
                       }
                       onCheckedChange={() => handleTypeToggle(type, 'enabled')}
                       disabled={!settings.enabled || !settings.desktop}
+                      aria-label={`In-app notifications for ${config.label}`}
                     />
                   </TableCell>
                   <TableCell className='text-center'>
                     <Switch
                       checked={
-                        settings.preferences[type].enabled && settings.email
+                        settings.preferences[type].sound && settings.email
                       }
-                      onCheckedChange={() => handleTypeToggle(type, 'enabled')}
+                      onCheckedChange={() => handleTypeToggle(type, 'sound')}
                       disabled={!settings.enabled || !settings.email}
+                      aria-label={`Email notifications for ${config.label}`}
                     />
                   </TableCell>
                   <TableCell className='text-center'>
@@ -791,6 +793,7 @@ export default function NotificationsSettingsPage() {
                       }
                       onCheckedChange={() => handleTypeToggle(type, 'desktop')}
                       disabled={!settings.enabled || !settings.mobile}
+                      aria-label={`Push notifications for ${config.label}`}
                     />
                   </TableCell>
                 </TableRow>

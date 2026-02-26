@@ -475,7 +475,7 @@ function OverviewTab({
           <label className='mb-1 block text-sm font-medium text-foreground'>
             Visibility
           </label>
-          <div className='flex items-center gap-2 rounded-md border border-input bg-stone/30 px-3 py-2'>
+          <div className='flex items-center gap-2 rounded-md border border-input bg-muted/30 px-3 py-2'>
             {channel.type === 'private' ? (
               <>
                 <LockIcon className='h-4 w-4 text-muted-foreground' />
@@ -821,72 +821,61 @@ interface PermissionsTabProps {
 }
 
 function PermissionsTab({ channelType, permissions }: PermissionsTabProps) {
-  const [postingPermission, setPostingPermission] = useState('everyone');
-  const [mentionPermission, setMentionPermission] = useState('everyone');
-
   return (
     <div className='max-w-xl space-y-6'>
       <div>
         <h2 className='text-lg font-semibold text-foreground'>Permissions</h2>
         <p className='text-sm text-muted-foreground'>
-          Control what members can do in this channel
+          Your current permissions and access level in this channel.
         </p>
       </div>
 
-      <div className='space-y-6'>
-        {/* Posting permission */}
-        <div>
-          <label className='mb-2 block text-sm font-medium text-foreground'>
-            Who can post messages?
-          </label>
-          <div className='space-y-2'>
-            {['everyone', 'admins'].map(option => (
-              <label
-                key={option}
-                className='flex cursor-pointer items-center gap-3'
-              >
-                <input
-                  type='radio'
-                  name='posting'
-                  value={option}
-                  checked={postingPermission === option}
-                  onChange={e => setPostingPermission(e.target.value)}
-                  disabled={!permissions.canEdit}
-                  className='h-4 w-4 border-gray-300 text-primary focus:ring-primary'
-                />
-                <span className='text-sm text-foreground capitalize'>
-                  {option}
-                </span>
-              </label>
-            ))}
+      <div className='space-y-4'>
+        <div className='rounded-lg border border-border bg-muted/30 p-4 space-y-3'>
+          <div className='flex items-center justify-between'>
+            <span className='text-sm font-medium text-foreground'>
+              Post messages
+            </span>
+            <span
+              className={cn(
+                'text-xs font-medium px-2 py-0.5 rounded-full',
+                permissions.canEdit
+                  ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+                  : 'bg-muted text-muted-foreground'
+              )}
+            >
+              {permissions.canEdit ? 'Allowed' : 'View only'}
+            </span>
           </div>
-        </div>
-
-        {/* Mention permission */}
-        <div>
-          <label className='mb-2 block text-sm font-medium text-foreground'>
-            Who can use @channel and @here?
-          </label>
-          <div className='space-y-2'>
-            {['everyone', 'admins', 'no one'].map(option => (
-              <label
-                key={option}
-                className='flex cursor-pointer items-center gap-3'
-              >
-                <input
-                  type='radio'
-                  name='mention'
-                  value={option}
-                  checked={mentionPermission === option}
-                  onChange={e => setMentionPermission(e.target.value)}
-                  disabled={!permissions.canEdit}
-                  className='h-4 w-4 border-gray-300 text-primary focus:ring-primary'
-                />
-                <span className='text-sm text-foreground capitalize'>
-                  {option}
-                </span>
-              </label>
-            ))}
+          <div className='flex items-center justify-between'>
+            <span className='text-sm font-medium text-foreground'>
+              Invite members
+            </span>
+            <span
+              className={cn(
+                'text-xs font-medium px-2 py-0.5 rounded-full',
+                permissions.canEdit
+                  ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+                  : 'bg-muted text-muted-foreground'
+              )}
+            >
+              {permissions.canEdit ? 'Allowed' : 'Not allowed'}
+            </span>
+          </div>
+          <div className='flex items-center justify-between'>
+            <span className='text-sm font-medium text-foreground'>
+              Edit channel settings
+            </span>
+            <span
+              className={cn(
+                'text-xs font-medium px-2 py-0.5 rounded-full',
+                permissions.canEdit
+                  ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+                  : 'bg-muted text-muted-foreground'
+              )}
+            >
+              {permissions.canEdit ? 'Allowed' : 'Not allowed'}
+            </span>
           </div>
         </div>
 
@@ -895,6 +884,15 @@ function PermissionsTab({ channelType, permissions }: PermissionsTabProps) {
             <p className='text-sm text-muted-foreground'>
               This is a public channel. Anyone in the workspace can join and
               view messages.
+            </p>
+          </div>
+        )}
+
+        {channelType === 'private' && (
+          <div className='rounded-md border border-border bg-muted/30 p-4'>
+            <p className='text-sm text-muted-foreground'>
+              This is a private channel. Only invited members can see and access
+              conversations.
             </p>
           </div>
         )}

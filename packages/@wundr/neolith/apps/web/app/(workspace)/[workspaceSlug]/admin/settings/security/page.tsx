@@ -3,8 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 
-import { usePageHeader } from '@/contexts/page-header-context';
-import { useWorkspaceSettings } from '@/hooks/use-admin';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 /**
@@ -21,53 +20,93 @@ import { cn } from '@/lib/utils';
 export default function SecurityCompliancePage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
-  const { setPageHeader } = usePageHeader();
+  const { toast } = useToast();
 
-  // Set page header
-  useEffect(() => {
-    setPageHeader(
-      'Security & Compliance',
-      'Configure workspace security policies and compliance settings'
-    );
-  }, [setPageHeader]);
-
-  const { settings, isLoading, updateSettings, error } =
-    useWorkspaceSettings(workspaceSlug);
+  const [settings, setSettings] = useState<Partial<SecuritySettings> | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/admin/settings/security`
+        );
+        if (!response.ok) {
+          throw new Error('Failed to load security settings');
+        }
+        const data = await response.json();
+        setSettings(data.settings ?? data);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'Failed to load settings';
+        setLoadError(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, [workspaceSlug]);
 
   const handleSave = useCallback(
     async (updates: Partial<SecuritySettings>) => {
       setIsSaving(true);
-      setSuccessMessage(null);
 
       try {
-        await updateSettings(updates);
-        setSuccessMessage('Security settings saved successfully');
-        setTimeout(() => setSuccessMessage(null), 3000);
-      } catch {
-        // Error is handled by the hook
+        const response = await fetch(
+          `/api/workspaces/${workspaceSlug}/admin/settings/security`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates),
+          }
+        );
+
+        if (!response.ok) {
+          const error = await response
+            .json()
+            .catch(() => ({ message: 'Failed to save settings' }));
+          throw new Error(error.message || 'Failed to save settings');
+        }
+
+        const data = await response.json();
+        setSettings(prev => ({ ...prev, ...(data.settings ?? updates) }));
+
+        toast({
+          title: 'Settings saved',
+          description: 'Security settings updated successfully',
+        });
+      } catch (err) {
+        toast({
+          title: 'Error',
+          description:
+            err instanceof Error ? err.message : 'Failed to save settings',
+          variant: 'destructive',
+        });
       } finally {
         setIsSaving(false);
       }
     },
-    [updateSettings]
+    [workspaceSlug, toast]
   );
 
   return (
     <div className='space-y-6'>
-      {/* Success/Error Messages */}
-      {successMessage && (
-        <div className='flex items-center gap-2 rounded-lg border border-green-500/50 bg-green-50 px-4 py-3 text-green-800 dark:bg-green-900/10 dark:text-green-200'>
-          <CheckIcon className='h-4 w-4' />
-          {successMessage}
-        </div>
-      )}
+      <div>
+        <h1 className='text-2xl font-bold'>Security & Compliance</h1>
+        <p className='mt-1 text-muted-foreground'>
+          Configure workspace security policies and compliance settings
+        </p>
+      </div>
 
-      {error && (
+      {loadError && (
         <div className='flex items-center gap-2 rounded-lg border border-red-500/50 bg-red-50 px-4 py-3 text-red-800 dark:bg-red-900/10 dark:text-red-200'>
           <AlertIcon className='h-4 w-4' />
-          {error.message}
+          {loadError}
         </div>
       )}
 
@@ -1308,23 +1347,6 @@ function CodeIcon({ className }: { className?: string }) {
     >
       <polyline points='16 18 22 12 16 6' />
       <polyline points='8 6 2 12 8 18' />
-    </svg>
-  );
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <polyline points='20 6 9 17 4 12' />
     </svg>
   );
 }

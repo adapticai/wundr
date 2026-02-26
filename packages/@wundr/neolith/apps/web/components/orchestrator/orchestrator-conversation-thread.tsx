@@ -1,6 +1,13 @@
 'use client';
 
-import { Bot, MessageSquare, Send, RefreshCw, Filter, Clock } from 'lucide-react';
+import {
+  Bot,
+  MessageSquare,
+  Send,
+  RefreshCw,
+  Filter,
+  Clock,
+} from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -50,7 +57,8 @@ const FILTER_TABS: { label: string; value: FilterType }[] = [
 ];
 
 const PRIORITY_BADGE_CLASSES: Record<string, string> = {
-  urgent: 'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/20 dark:text-red-400',
+  urgent:
+    'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/20 dark:text-red-400',
   high: 'border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-800 dark:bg-orange-950/20 dark:text-orange-400',
 };
 
@@ -92,8 +100,10 @@ function filterMessages(
 ): ConversationMessage[] {
   if (filter === 'all') return messages;
   if (filter === 'messages') return messages.filter(m => m.type === 'message');
-  if (filter === 'escalations') return messages.filter(m => m.type === 'escalation');
-  if (filter === 'delegations') return messages.filter(m => m.type === 'delegation');
+  if (filter === 'escalations')
+    return messages.filter(m => m.type === 'escalation');
+  if (filter === 'delegations')
+    return messages.filter(m => m.type === 'delegation');
   return messages;
 }
 
@@ -119,7 +129,9 @@ function SystemMessage({ message }: { message: ConversationMessage }) {
       <div className='flex items-center gap-2 rounded-full bg-muted/60 px-3 py-1 text-xs text-muted-foreground'>
         <Clock className='h-3 w-3' />
         <span>{message.content}</span>
-        <span className='text-muted-foreground/60'>{formatTimestamp(message.timestamp)}</span>
+        <span className='text-muted-foreground/60'>
+          {formatTimestamp(message.timestamp)}
+        </span>
       </div>
     </div>
   );
@@ -153,7 +165,9 @@ function MessageBubble({ message }: { message: ConversationMessage }) {
 
       <div className='flex-1 min-w-0 space-y-1'>
         <div className='flex flex-wrap items-center gap-2'>
-          <span className='text-sm font-medium leading-none'>{message.senderName}</span>
+          <span className='text-sm font-medium leading-none'>
+            {message.senderName}
+          </span>
 
           {message.senderRole && (
             <Badge variant='secondary' className='h-4 px-1.5 text-xs'>
@@ -164,7 +178,10 @@ function MessageBubble({ message }: { message: ConversationMessage }) {
           {showPriorityBadge && (
             <Badge
               variant='outline'
-              className={cn('h-4 px-1.5 text-xs', PRIORITY_BADGE_CLASSES[message.priority!])}
+              className={cn(
+                'h-4 px-1.5 text-xs',
+                PRIORITY_BADGE_CLASSES[message.priority!]
+              )}
             >
               {message.priority}
             </Badge>
@@ -200,7 +217,8 @@ function MessageBubble({ message }: { message: ConversationMessage }) {
             {message.threadCount != null && message.threadCount > 0 && (
               <span className='flex items-center gap-1 text-xs text-muted-foreground'>
                 <MessageSquare className='h-3 w-3' />
-                {message.threadCount} {message.threadCount === 1 ? 'reply' : 'replies'}
+                {message.threadCount}{' '}
+                {message.threadCount === 1 ? 'reply' : 'replies'}
               </span>
             )}
           </div>
@@ -227,7 +245,9 @@ export function OrchestratorConversationThread({
   const [newMessage, setNewMessage] = useState('');
 
   const bottomRef = useRef<HTMLDivElement>(null);
-  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -354,7 +374,9 @@ export function OrchestratorConversationThread({
             disabled={loading}
             aria-label='Refresh conversations'
           >
-            <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} />
+            <RefreshCw
+              className={cn('h-3.5 w-3.5', loading && 'animate-spin')}
+            />
           </Button>
         </div>
 

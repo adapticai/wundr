@@ -82,7 +82,7 @@ export default function WorkflowTemplatesPage() {
         <Button
           variant='ghost'
           size='sm'
-          onClick={() => router.push('/workflows')}
+          onClick={() => router.back()}
           className='mb-4'
         >
           <ArrowLeft className='mr-2 h-4 w-4' />

@@ -173,16 +173,8 @@ export default function WorkflowHistoryPage() {
         </div>
       )}
 
-      {/* Execution History Table */}
-      <ExecutionHistory
-        executions={executions}
-        isLoading={executionsLoading}
-        onRefresh={refetchExecutions}
-        onExport={handleExport}
-      />
-
-      {/* Stats Card */}
-      {executions.length > 0 && (
+      {/* Stats Summary (shown above table when data is available) */}
+      {!executionsLoading && executions.length > 0 && (
         <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
           <StatsCard
             label='Total Executions'
@@ -207,6 +199,14 @@ export default function WorkflowHistoryPage() {
           />
         </div>
       )}
+
+      {/* Execution History Table */}
+      <ExecutionHistory
+        executions={executions}
+        isLoading={executionsLoading}
+        onRefresh={refetchExecutions}
+        onExport={handleExport}
+      />
     </div>
   );
 }

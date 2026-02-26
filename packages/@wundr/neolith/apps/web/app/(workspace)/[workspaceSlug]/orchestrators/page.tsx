@@ -241,7 +241,6 @@ export default function OrchestratorOverviewPage() {
             onClick={() => setIsCreateDialogOpen(true)}
             className='inline-flex items-center gap-2'
           >
-            <Plus className='h-4 w-4' />
             Quick Create
           </Button>
           <Button
@@ -250,7 +249,7 @@ export default function OrchestratorOverviewPage() {
             className='inline-flex items-center gap-2'
           >
             <Plus className='h-4 w-4' />
-            Create New
+            New Orchestrator
           </Button>
         </div>
       </div>
@@ -276,10 +275,10 @@ export default function OrchestratorOverviewPage() {
           bgColor='bg-yellow-50 dark:bg-yellow-950/20'
         />
         <StatCard
-          label='Session Managers Active'
-          value={orchestratorStats.online + orchestratorStats.busy}
-          color='text-blue-600'
-          bgColor='bg-blue-50 dark:bg-blue-950/20'
+          label='Offline'
+          value={orchestratorStats.offline}
+          color='text-muted-foreground'
+          bgColor='bg-muted/50'
         />
       </div>
 
@@ -547,19 +546,15 @@ function OrchestratorOverviewCard({
       </CardContent>
       <CardFooter className='pt-3 border-t gap-2'>
         <Button asChild className='flex-1' size='sm'>
-          <Link
-            href={`/${workspaceSlug}/admin/orchestrators/${orchestrator.id}`}
-          >
-            View Details
-          </Link>
-        </Button>
-        <Button
-          asChild
-          variant='outline'
-          size='sm'
-        >
           <Link href={`/${workspaceSlug}/orchestrators/${orchestrator.id}`}>
             Open
+          </Link>
+        </Button>
+        <Button asChild variant='outline' size='sm'>
+          <Link
+            href={`/${workspaceSlug}/orchestrators/${orchestrator.id}/analytics`}
+          >
+            Analytics
           </Link>
         </Button>
       </CardFooter>

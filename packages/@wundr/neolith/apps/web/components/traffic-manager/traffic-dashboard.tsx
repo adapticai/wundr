@@ -99,10 +99,18 @@ const METHOD_LABELS: Record<string, string> = {
 
 function confidenceBadge(confidence: number) {
   if (confidence >= 0.8)
-    return <Badge variant="default" className="bg-green-600">{(confidence * 100).toFixed(0)}%</Badge>;
+    return (
+      <Badge variant='default' className='bg-green-600'>
+        {(confidence * 100).toFixed(0)}%
+      </Badge>
+    );
   if (confidence >= 0.5)
-    return <Badge variant="default" className="bg-yellow-600">{(confidence * 100).toFixed(0)}%</Badge>;
-  return <Badge variant="destructive">{(confidence * 100).toFixed(0)}%</Badge>;
+    return (
+      <Badge variant='default' className='bg-yellow-600'>
+        {(confidence * 100).toFixed(0)}%
+      </Badge>
+    );
+  return <Badge variant='destructive'>{(confidence * 100).toFixed(0)}%</Badge>;
 }
 
 // ---------------------------------------------------------------------------
@@ -150,8 +158,8 @@ export function TrafficDashboard({ workspaceId }: TrafficDashboardProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <div className="text-muted-foreground">Loading traffic manager...</div>
+      <div className='flex items-center justify-center p-12'>
+        <div className='text-muted-foreground'>Loading traffic manager...</div>
       </div>
     );
   }
@@ -159,8 +167,8 @@ export function TrafficDashboard({ workspaceId }: TrafficDashboardProps) {
   if (error) {
     return (
       <Card>
-        <CardContent className="p-6">
-          <p className="text-destructive">Error: {error}</p>
+        <CardContent className='p-6'>
+          <p className='text-destructive'>Error: {error}</p>
         </CardContent>
       </Card>
     );
@@ -174,37 +182,37 @@ export function TrafficDashboard({ workspaceId }: TrafficDashboardProps) {
     : 0;
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Stats Bar */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className='pb-2'>
             <CardDescription>Messages / min</CardDescription>
-            <CardTitle className="text-2xl">
+            <CardTitle className='text-2xl'>
               {metrics?.messagesPerMinute.toFixed(1) ?? '0'}
             </CardTitle>
           </CardHeader>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className='pb-2'>
             <CardDescription>Avg Latency</CardDescription>
-            <CardTitle className="text-2xl">
+            <CardTitle className='text-2xl'>
               {metrics?.averageRoutingLatencyMs.toFixed(0) ?? '0'}ms
             </CardTitle>
           </CardHeader>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className='pb-2'>
             <CardDescription>Escalation Rate</CardDescription>
-            <CardTitle className="text-2xl">
+            <CardTitle className='text-2xl'>
               {((metrics?.escalationRate ?? 0) * 100).toFixed(1)}%
             </CardTitle>
           </CardHeader>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className='pb-2'>
             <CardDescription>Fallback Rate</CardDescription>
-            <CardTitle className="text-2xl">
+            <CardTitle className='text-2xl'>
               {((metrics?.fallbackRate ?? 0) * 100).toFixed(1)}%
             </CardTitle>
           </CardHeader>
@@ -216,39 +224,39 @@ export function TrafficDashboard({ workspaceId }: TrafficDashboardProps) {
         <CardHeader>
           <CardTitle>Agent Status</CardTitle>
           <CardDescription>
-            {agents.filter((a) => a.status === 'available').length} of{' '}
+            {agents.filter(a => a.status === 'available').length} of{' '}
             {agents.length} agents online
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {agents.map((agent) => (
+          <div className='grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3'>
+            {agents.map(agent => (
               <div
                 key={agent.id}
-                className="flex items-center gap-3 rounded-lg border p-3"
+                className='flex items-center gap-3 rounded-lg border p-3'
               >
                 <div
                   className={`h-3 w-3 rounded-full ${STATUS_COLORS[agent.status] ?? 'bg-gray-400'}`}
                 />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium truncate">
+                <div className='flex-1 min-w-0'>
+                  <div className='flex items-center gap-2'>
+                    <span className='text-sm font-medium truncate'>
                       {agent.name}
                     </span>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant='outline' className='text-xs'>
                       {agent.discipline}
                     </Badge>
                   </div>
-                  <div className="mt-1 flex items-center gap-2">
+                  <div className='mt-1 flex items-center gap-2'>
                     <Progress
                       value={agent.currentLoad * 100}
-                      className="h-1.5 flex-1"
+                      className='h-1.5 flex-1'
                     />
-                    <span className="text-xs text-muted-foreground">
+                    <span className='text-xs text-muted-foreground'>
                       {(agent.currentLoad * 100).toFixed(0)}%
                     </span>
                   </div>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className='mt-1 flex items-center gap-2 text-xs text-muted-foreground'>
                     <span>{STATUS_LABELS[agent.status]}</span>
                     <span>&middot;</span>
                     <span>{agent.messagesHandled} handled</span>
@@ -257,7 +265,7 @@ export function TrafficDashboard({ workspaceId }: TrafficDashboardProps) {
               </div>
             ))}
             {agents.length === 0 && (
-              <p className="col-span-full text-sm text-muted-foreground">
+              <p className='col-span-full text-sm text-muted-foreground'>
                 No agents registered
               </p>
             )}
@@ -271,11 +279,12 @@ export function TrafficDashboard({ workspaceId }: TrafficDashboardProps) {
           <CardHeader>
             <CardTitle>Routing Distribution</CardTitle>
             <CardDescription>
-              How messages are being routed ({metrics.totalMessagesRouted} total)
+              How messages are being routed ({metrics.totalMessagesRouted}{' '}
+              total)
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
+            <div className='space-y-2'>
               {Object.entries(metrics.routingMethodDistribution)
                 .sort(([, a], [, b]) => b - a)
                 .map(([method, count]) => {
@@ -284,17 +293,17 @@ export function TrafficDashboard({ workspaceId }: TrafficDashboardProps) {
                       ? (count / totalDistribution) * 100
                       : 0;
                   return (
-                    <div key={method} className="flex items-center gap-3">
-                      <span className="w-36 text-sm truncate">
+                    <div key={method} className='flex items-center gap-3'>
+                      <span className='w-36 text-sm truncate'>
                         {METHOD_LABELS[method] ?? method}
                       </span>
-                      <div className="flex-1 h-4 rounded bg-muted overflow-hidden">
+                      <div className='flex-1 h-4 rounded bg-muted overflow-hidden'>
                         <div
                           className={`h-full rounded ${METHOD_COLORS[method] ?? 'bg-gray-500'}`}
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <span className="w-16 text-right text-sm text-muted-foreground">
+                      <span className='w-16 text-right text-sm text-muted-foreground'>
                         {pct.toFixed(1)}%
                       </span>
                     </div>
@@ -323,17 +332,17 @@ export function TrafficDashboard({ workspaceId }: TrafficDashboardProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recentDecisions.map((d) => (
+              {recentDecisions.map(d => (
                 <TableRow key={d.id}>
-                  <TableCell className="text-xs text-muted-foreground">
+                  <TableCell className='text-xs text-muted-foreground'>
                     {new Date(d.timestamp).toLocaleTimeString()}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{d.channelId}</Badge>
+                    <Badge variant='outline'>{d.channelId}</Badge>
                   </TableCell>
-                  <TableCell className="font-medium">{d.agentName}</TableCell>
+                  <TableCell className='font-medium'>{d.agentName}</TableCell>
                   <TableCell>{confidenceBadge(d.confidence)}</TableCell>
-                  <TableCell className="text-xs">
+                  <TableCell className='text-xs'>
                     {METHOD_LABELS[d.matchedBy] ?? d.matchedBy}
                   </TableCell>
                 </TableRow>
@@ -342,7 +351,7 @@ export function TrafficDashboard({ workspaceId }: TrafficDashboardProps) {
                 <TableRow>
                   <TableCell
                     colSpan={5}
-                    className="text-center text-muted-foreground"
+                    className='text-center text-muted-foreground'
                   >
                     No routing decisions yet
                   </TableCell>

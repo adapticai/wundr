@@ -245,20 +245,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 2. Parse & Validate Request Body
     // =========================================================================
     let body: unknown;
-    let charterData: {
-      mission?: string;
-      vision?: string;
-      values?: string[];
-      principles?: string[];
-      governanceStyle?: string;
-      communicationStyle?: string;
-      emailDomain?: string;
-    } | undefined;
+    let charterData:
+      | {
+          mission?: string;
+          vision?: string;
+          values?: string[];
+          principles?: string[];
+          governanceStyle?: string;
+          communicationStyle?: string;
+          emailDomain?: string;
+        }
+      | undefined;
     try {
       const rawBody = await request.json();
       // Extract charterData before schema validation (it's not part of the wizard schema)
       if (rawBody && typeof rawBody === 'object' && 'charterData' in rawBody) {
-        charterData = (rawBody as Record<string, unknown>).charterData as typeof charterData;
+        charterData = (rawBody as Record<string, unknown>)
+          .charterData as typeof charterData;
       }
       body = rawBody;
     } catch {
@@ -746,7 +749,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
           for (let i = 0; i < orchestratorUserIds.length; i++) {
             for (let j = i + 1; j < orchestratorUserIds.length; j++) {
-              const [idA, idB] = [orchestratorUserIds[i], orchestratorUserIds[j]].sort();
+              const [idA, idB] = [
+                orchestratorUserIds[i],
+                orchestratorUserIds[j],
+              ].sort();
               const dmSlug = `agent-dm-${idA}-${idB}`;
 
               dmChannelCreations.push(
@@ -763,10 +769,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                   .then(dmChannel =>
                     Promise.all([
                       tx.channelMember.create({
-                        data: { channelId: dmChannel.id, userId: idA, role: 'MEMBER' },
+                        data: {
+                          channelId: dmChannel.id,
+                          userId: idA,
+                          role: 'MEMBER',
+                        },
                       }),
                       tx.channelMember.create({
-                        data: { channelId: dmChannel.id, userId: idB, role: 'MEMBER' },
+                        data: {
+                          channelId: dmChannel.id,
+                          userId: idB,
+                          role: 'MEMBER',
+                        },
                       }),
                     ])
                   )
@@ -776,7 +790,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
           await Promise.all(dmChannelCreations);
         } catch (dmError) {
-          console.error('[generate-org] Failed to create agent DM channels (non-fatal):', dmError);
+          console.error(
+            '[generate-org] Failed to create agent DM channels (non-fatal):',
+            dmError
+          );
         }
 
         // 8.9. Return Workspace with Full Details
@@ -838,15 +855,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           vision: charterData.vision || null,
           values: charterData.values || [],
           principles: charterData.principles || [],
-          governance: charterData.governanceStyle ? { style: charterData.governanceStyle } : {},
+          governance: charterData.governanceStyle
+            ? { style: charterData.governanceStyle }
+            : {},
           security: {},
-          communication: charterData.communicationStyle ? { style: charterData.communicationStyle } : {},
+          communication: charterData.communicationStyle
+            ? { style: charterData.communicationStyle }
+            : {},
           organizationId: organization.id,
           isActive: true,
           version: 1,
         },
       });
-      console.log('[generate-org] Charter created for organization:', organization.id);
+      console.log(
+        '[generate-org] Charter created for organization:',
+        organization.id
+      );
     }
 
     // =========================================================================

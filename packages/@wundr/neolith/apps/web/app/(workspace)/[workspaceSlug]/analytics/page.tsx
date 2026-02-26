@@ -11,7 +11,10 @@ export default function AnalyticsPage(): JSX.Element {
   const workspaceSlug = params?.workspaceSlug as string | undefined;
   const { setPageHeader } = usePageHeader();
 
-  // Guard against missing workspace slug
+  useEffect(() => {
+    setPageHeader('Analytics', 'View workspace analytics and insights');
+  }, [setPageHeader]);
+
   if (!workspaceSlug) {
     return (
       <div className='min-h-screen bg-background flex items-center justify-center'>
@@ -26,11 +29,6 @@ export default function AnalyticsPage(): JSX.Element {
       </div>
     );
   }
-
-  // Set page header
-  useEffect(() => {
-    setPageHeader('Analytics', 'View workspace analytics and insights');
-  }, [setPageHeader]);
 
   return (
     <div className='min-h-screen bg-background'>

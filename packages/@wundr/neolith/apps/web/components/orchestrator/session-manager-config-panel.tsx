@@ -17,12 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type {
@@ -49,10 +44,21 @@ interface SessionManagerConfigPanelProps {
 }
 
 const PLUGIN_TYPES = [
-  'MEMORY', 'TOOL', 'SKILL', 'CONTEXT', 'INTEGRATION', 'MONITORING', 'SECURITY',
+  'MEMORY',
+  'TOOL',
+  'SKILL',
+  'CONTEXT',
+  'INTEGRATION',
+  'MONITORING',
+  'SECURITY',
 ] as const;
 
-const CAPABILITY_LEVELS = ['beginner', 'intermediate', 'advanced', 'expert'] as const;
+const CAPABILITY_LEVELS = [
+  'beginner',
+  'intermediate',
+  'advanced',
+  'expert',
+] as const;
 
 function TagInput({
   values,
@@ -79,7 +85,12 @@ function TagInput({
         <Input
           value={input}
           onChange={e => setInput(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              addTag();
+            }
+          }}
           placeholder={placeholder}
         />
         <Button type='button' variant='outline' size='sm' onClick={addTag}>
@@ -91,7 +102,10 @@ function TagInput({
           {values.map(v => (
             <Badge key={v} variant='secondary' className='gap-1'>
               {v}
-              <button type='button' onClick={() => onChange(values.filter(x => x !== v))}>
+              <button
+                type='button'
+                onClick={() => onChange(values.filter(x => x !== v))}
+              >
                 <X className='h-3 w-3' />
               </button>
             </Badge>
@@ -138,7 +152,14 @@ export function SessionManagerConfigPanel({
   function addPlugin() {
     setPlugins(prev => [
       ...prev,
-      { name: '', type: 'TOOL', version: '', configuration: {}, enabled: true, priority: 50 },
+      {
+        name: '',
+        type: 'TOOL',
+        version: '',
+        configuration: {},
+        enabled: true,
+        priority: 50,
+      },
     ]);
   }
 
@@ -147,7 +168,9 @@ export function SessionManagerConfigPanel({
   }
 
   function updatePlugin(index: number, patch: Partial<PluginConfig>) {
-    setPlugins(prev => prev.map((p, i) => (i === index ? { ...p, ...patch } : p)));
+    setPlugins(prev =>
+      prev.map((p, i) => (i === index ? { ...p, ...patch } : p))
+    );
   }
 
   function addSkill() {
@@ -170,37 +193,52 @@ export function SessionManagerConfigPanel({
   }
 
   function updateSkill(index: number, patch: Partial<SkillDefinition>) {
-    setSkills(prev => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
+    setSkills(prev =>
+      prev.map((s, i) => (i === index ? { ...s, ...patch } : s))
+    );
   }
 
   async function handleSave() {
     if (!general.name) {
-      toast({ title: 'Error', description: 'Name is required', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'Name is required',
+        variant: 'destructive',
+      });
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/session-managers/${sessionManagerId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...general,
-          pluginConfigs: plugins,
-          skillDefinitions: skills,
-          contextConfig: context,
-          mcpTools,
-        }),
-      });
+      const response = await fetch(
+        `/api/session-managers/${sessionManagerId}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...general,
+            pluginConfigs: plugins,
+            skillDefinitions: skills,
+            contextConfig: context,
+            mcpTools,
+          }),
+        }
+      );
 
       if (!response.ok) throw new Error('Failed to save configuration');
 
-      toast({ title: 'Success', description: 'Configuration saved successfully' });
+      toast({
+        title: 'Success',
+        description: 'Configuration saved successfully',
+      });
       onSave?.();
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to save configuration',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to save configuration',
         variant: 'destructive',
       });
     } finally {
@@ -222,7 +260,9 @@ export function SessionManagerConfigPanel({
         {/* General Tab */}
         <TabsContent value='general' className='space-y-4 pt-4'>
           <div className='grid gap-2'>
-            <Label htmlFor='name'>Name <span className='text-destructive'>*</span></Label>
+            <Label htmlFor='name'>
+              Name <span className='text-destructive'>*</span>
+            </Label>
             <Input
               id='name'
               value={general.name}
@@ -236,34 +276,55 @@ export function SessionManagerConfigPanel({
             <Textarea
               id='description'
               value={general.description}
-              onChange={e => setGeneral({ ...general, description: e.target.value })}
+              onChange={e =>
+                setGeneral({ ...general, description: e.target.value })
+              }
               placeholder='Manages engineering tasks and code development'
               rows={2}
               disabled={loading}
             />
           </div>
           <div className='grid gap-2'>
-            <Label>Max Concurrent Subagents: {general.maxConcurrentSubagents}</Label>
+            <Label>
+              Max Concurrent Subagents: {general.maxConcurrentSubagents}
+            </Label>
             <Slider
               value={[general.maxConcurrentSubagents]}
-              onValueChange={([v]) => setGeneral({ ...general, maxConcurrentSubagents: v })}
-              min={1} max={50} step={1} disabled={loading}
+              onValueChange={([v]) =>
+                setGeneral({ ...general, maxConcurrentSubagents: v })
+              }
+              min={1}
+              max={50}
+              step={1}
+              disabled={loading}
             />
           </div>
           <div className='grid gap-2'>
-            <Label>Token Budget Per Hour: {general.tokenBudgetPerHour.toLocaleString()}</Label>
+            <Label>
+              Token Budget Per Hour:{' '}
+              {general.tokenBudgetPerHour.toLocaleString()}
+            </Label>
             <Slider
               value={[general.tokenBudgetPerHour]}
-              onValueChange={([v]) => setGeneral({ ...general, tokenBudgetPerHour: v })}
-              min={10000} max={500000} step={10000} disabled={loading}
+              onValueChange={([v]) =>
+                setGeneral({ ...general, tokenBudgetPerHour: v })
+              }
+              min={10000}
+              max={500000}
+              step={10000}
+              disabled={loading}
             />
           </div>
           <div className='flex items-center justify-between'>
-            <Label htmlFor='isGlobal'>Global (available to all orchestrators)</Label>
+            <Label htmlFor='isGlobal'>
+              Global (available to all orchestrators)
+            </Label>
             <Switch
               id='isGlobal'
               checked={general.isGlobal}
-              onCheckedChange={checked => setGeneral({ ...general, isGlobal: checked })}
+              onCheckedChange={checked =>
+                setGeneral({ ...general, isGlobal: checked })
+              }
               disabled={loading}
             />
           </div>
@@ -271,14 +332,27 @@ export function SessionManagerConfigPanel({
 
         {/* Plugins Tab */}
         <TabsContent value='plugins' className='space-y-4 pt-4'>
-          <Button type='button' variant='outline' size='sm' onClick={addPlugin} disabled={loading}>
+          <Button
+            type='button'
+            variant='outline'
+            size='sm'
+            onClick={addPlugin}
+            disabled={loading}
+          >
             <Plus className='mr-2 h-4 w-4' /> Add Plugin
           </Button>
           {plugins.map((plugin, i) => (
             <Card key={i}>
               <CardHeader className='flex flex-row items-center justify-between pb-2 pt-3 px-4'>
-                <CardTitle className='text-sm font-medium'>Plugin {i + 1}</CardTitle>
-                <Button type='button' variant='ghost' size='sm' onClick={() => removePlugin(i)}>
+                <CardTitle className='text-sm font-medium'>
+                  Plugin {i + 1}
+                </CardTitle>
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='sm'
+                  onClick={() => removePlugin(i)}
+                >
                   <X className='h-4 w-4' />
                 </Button>
               </CardHeader>
@@ -296,12 +370,18 @@ export function SessionManagerConfigPanel({
                     <Label>Type</Label>
                     <Select
                       value={plugin.type}
-                      onValueChange={v => updatePlugin(i, { type: v as PluginConfig['type'] })}
+                      onValueChange={v =>
+                        updatePlugin(i, { type: v as PluginConfig['type'] })
+                      }
                     >
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         {PLUGIN_TYPES.map(t => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                          <SelectItem key={t} value={t}>
+                            {t}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -310,19 +390,33 @@ export function SessionManagerConfigPanel({
                 <div className='grid grid-cols-2 gap-3'>
                   <div className='grid gap-1'>
                     <Label>Version</Label>
-                    <Input value={plugin.version ?? ''} placeholder='1.0.0'
-                      onChange={e => updatePlugin(i, { version: e.target.value })} />
+                    <Input
+                      value={plugin.version ?? ''}
+                      placeholder='1.0.0'
+                      onChange={e =>
+                        updatePlugin(i, { version: e.target.value })
+                      }
+                    />
                   </div>
                   <div className='flex items-center justify-between pt-5'>
                     <Label>Enabled</Label>
-                    <Switch checked={plugin.enabled}
-                      onCheckedChange={checked => updatePlugin(i, { enabled: checked })} />
+                    <Switch
+                      checked={plugin.enabled}
+                      onCheckedChange={checked =>
+                        updatePlugin(i, { enabled: checked })
+                      }
+                    />
                   </div>
                 </div>
                 <div className='grid gap-1'>
                   <Label>Priority: {plugin.priority}</Label>
-                  <Slider value={[plugin.priority]} min={0} max={100} step={1}
-                    onValueChange={([v]) => updatePlugin(i, { priority: v })} />
+                  <Slider
+                    value={[plugin.priority]}
+                    min={0}
+                    max={100}
+                    step={1}
+                    onValueChange={([v]) => updatePlugin(i, { priority: v })}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -331,14 +425,27 @@ export function SessionManagerConfigPanel({
 
         {/* Skills Tab */}
         <TabsContent value='skills' className='space-y-4 pt-4'>
-          <Button type='button' variant='outline' size='sm' onClick={addSkill} disabled={loading}>
+          <Button
+            type='button'
+            variant='outline'
+            size='sm'
+            onClick={addSkill}
+            disabled={loading}
+          >
             <Plus className='mr-2 h-4 w-4' /> Add Skill
           </Button>
           {skills.map((skill, i) => (
             <Card key={i}>
               <CardHeader className='flex flex-row items-center justify-between pb-2 pt-3 px-4'>
-                <CardTitle className='text-sm font-medium'>Skill {i + 1}</CardTitle>
-                <Button type='button' variant='ghost' size='sm' onClick={() => removeSkill(i)}>
+                <CardTitle className='text-sm font-medium'>
+                  Skill {i + 1}
+                </CardTitle>
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='sm'
+                  onClick={() => removeSkill(i)}
+                >
                   <X className='h-4 w-4' />
                 </Button>
               </CardHeader>
@@ -346,42 +453,81 @@ export function SessionManagerConfigPanel({
                 <div className='grid grid-cols-2 gap-3'>
                   <div className='grid gap-1'>
                     <Label>Name</Label>
-                    <Input value={skill.name} placeholder='code-review'
-                      onChange={e => updateSkill(i, { name: e.target.value })} />
+                    <Input
+                      value={skill.name}
+                      placeholder='code-review'
+                      onChange={e => updateSkill(i, { name: e.target.value })}
+                    />
                   </div>
                   <div className='grid gap-1'>
                     <Label>Function Name</Label>
-                    <Input value={skill.functionName} placeholder='performCodeReview'
-                      onChange={e => updateSkill(i, { functionName: e.target.value })} />
+                    <Input
+                      value={skill.functionName}
+                      placeholder='performCodeReview'
+                      onChange={e =>
+                        updateSkill(i, { functionName: e.target.value })
+                      }
+                    />
                   </div>
                 </div>
                 <div className='grid gap-1'>
                   <Label>Description</Label>
-                  <Textarea value={skill.description} rows={2}
+                  <Textarea
+                    value={skill.description}
+                    rows={2}
                     placeholder='Reviews code for quality and correctness'
-                    onChange={e => updateSkill(i, { description: e.target.value })} />
+                    onChange={e =>
+                      updateSkill(i, { description: e.target.value })
+                    }
+                  />
                 </div>
                 <div className='grid grid-cols-2 gap-3'>
                   <div className='grid gap-1'>
                     <Label>Capability Level</Label>
-                    <Select value={skill.capabilityLevel}
-                      onValueChange={v => updateSkill(i, { capabilityLevel: v as SkillDefinition['capabilityLevel'] })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select
+                      value={skill.capabilityLevel}
+                      onValueChange={v =>
+                        updateSkill(i, {
+                          capabilityLevel:
+                            v as SkillDefinition['capabilityLevel'],
+                        })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
-                        {CAPABILITY_LEVELS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                        {CAPABILITY_LEVELS.map(l => (
+                          <SelectItem key={l} value={l}>
+                            {l}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className='grid gap-1'>
                     <Label>Estimated Tokens</Label>
-                    <Input type='number' value={skill.estimatedTokens ?? ''} placeholder='1000'
-                      onChange={e => updateSkill(i, { estimatedTokens: e.target.value ? Number(e.target.value) : undefined })} />
+                    <Input
+                      type='number'
+                      value={skill.estimatedTokens ?? ''}
+                      placeholder='1000'
+                      onChange={e =>
+                        updateSkill(i, {
+                          estimatedTokens: e.target.value
+                            ? Number(e.target.value)
+                            : undefined,
+                        })
+                      }
+                    />
                   </div>
                 </div>
                 <div className='grid gap-1'>
                   <Label>Required Tools</Label>
-                  <TagInput values={skill.requiredTools} placeholder='Add tool name'
-                    onChange={v => updateSkill(i, { requiredTools: v })} />
+                  <TagInput
+                    values={skill.requiredTools}
+                    placeholder='Add tool name'
+                    onChange={v => updateSkill(i, { requiredTools: v })}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -394,7 +540,9 @@ export function SessionManagerConfigPanel({
             <Label>System Prompt</Label>
             <Textarea
               value={context.systemPrompt ?? ''}
-              onChange={e => setContext({ ...context, systemPrompt: e.target.value })}
+              onChange={e =>
+                setContext({ ...context, systemPrompt: e.target.value })
+              }
               placeholder='You are a helpful assistant...'
               rows={4}
               disabled={loading}
@@ -404,7 +552,9 @@ export function SessionManagerConfigPanel({
             <Label>CLAUDE.md Content</Label>
             <Textarea
               value={context.claudeMdContent ?? ''}
-              onChange={e => setContext({ ...context, claudeMdContent: e.target.value })}
+              onChange={e =>
+                setContext({ ...context, claudeMdContent: e.target.value })
+              }
               placeholder='# Project instructions...'
               rows={4}
               className='font-mono text-sm'
@@ -413,44 +563,96 @@ export function SessionManagerConfigPanel({
           </div>
           <div className='grid gap-2'>
             <Label>Workspace Context</Label>
-            <Textarea value={context.workspaceContext ?? ''} rows={3} disabled={loading}
-              onChange={e => setContext({ ...context, workspaceContext: e.target.value })} />
+            <Textarea
+              value={context.workspaceContext ?? ''}
+              rows={3}
+              disabled={loading}
+              onChange={e =>
+                setContext({ ...context, workspaceContext: e.target.value })
+              }
+            />
           </div>
           <div className='grid gap-2'>
             <Label>Custom Instructions</Label>
-            <Textarea value={context.customInstructions ?? ''} rows={3} disabled={loading}
-              onChange={e => setContext({ ...context, customInstructions: e.target.value })} />
+            <Textarea
+              value={context.customInstructions ?? ''}
+              rows={3}
+              disabled={loading}
+              onChange={e =>
+                setContext({ ...context, customInstructions: e.target.value })
+              }
+            />
           </div>
           <div className='grid gap-2'>
             <Label>File Patterns</Label>
-            <TagInput values={context.filePatterns ?? []} placeholder='**/*.ts'
-              onChange={v => setContext({ ...context, filePatterns: v })} />
+            <TagInput
+              values={context.filePatterns ?? []}
+              placeholder='**/*.ts'
+              onChange={v => setContext({ ...context, filePatterns: v })}
+            />
           </div>
           <div className='grid gap-2'>
             <Label>Exclude Patterns</Label>
-            <TagInput values={context.excludePatterns ?? []} placeholder='node_modules/**'
-              onChange={v => setContext({ ...context, excludePatterns: v })} />
+            <TagInput
+              values={context.excludePatterns ?? []}
+              placeholder='node_modules/**'
+              onChange={v => setContext({ ...context, excludePatterns: v })}
+            />
           </div>
           <div className='grid gap-2'>
             <Label>Environment Variables</Label>
             <div className='space-y-2'>
-              {Object.entries(context.environmentVariables ?? {}).map(([key, value]) => (
-                <div key={key} className='flex gap-2 items-center'>
-                  <Input value={key} readOnly className='flex-1' />
-                  <Input value={value} className='flex-1'
-                    onChange={e => setContext({ ...context, environmentVariables: { ...(context.environmentVariables ?? {}), [key]: e.target.value } })}
-                  />
-                  <Button type='button' variant='ghost' size='sm' onClick={() => {
-                    const next = { ...(context.environmentVariables ?? {}) };
-                    delete next[key];
-                    setContext({ ...context, environmentVariables: next });
-                  }}><X className='h-4 w-4' /></Button>
-                </div>
-              ))}
-              <Button type='button' variant='outline' size='sm' onClick={() => {
-                const key = `VAR_${Date.now()}`;
-                setContext({ ...context, environmentVariables: { ...(context.environmentVariables ?? {}), [key]: '' } });
-              }}><Plus className='mr-2 h-4 w-4' /> Add Variable</Button>
+              {Object.entries(context.environmentVariables ?? {}).map(
+                ([key, value]) => (
+                  <div key={key} className='flex gap-2 items-center'>
+                    <Input value={key} readOnly className='flex-1' />
+                    <Input
+                      value={value}
+                      className='flex-1'
+                      onChange={e =>
+                        setContext({
+                          ...context,
+                          environmentVariables: {
+                            ...(context.environmentVariables ?? {}),
+                            [key]: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                    <Button
+                      type='button'
+                      variant='ghost'
+                      size='sm'
+                      onClick={() => {
+                        const next = {
+                          ...(context.environmentVariables ?? {}),
+                        };
+                        delete next[key];
+                        setContext({ ...context, environmentVariables: next });
+                      }}
+                    >
+                      <X className='h-4 w-4' />
+                    </Button>
+                  </div>
+                )
+              )}
+              <Button
+                type='button'
+                variant='outline'
+                size='sm'
+                onClick={() => {
+                  const key = `VAR_${Date.now()}`;
+                  setContext({
+                    ...context,
+                    environmentVariables: {
+                      ...(context.environmentVariables ?? {}),
+                      [key]: '',
+                    },
+                  });
+                }}
+              >
+                <Plus className='mr-2 h-4 w-4' /> Add Variable
+              </Button>
             </div>
           </div>
         </TabsContent>
@@ -462,16 +664,29 @@ export function SessionManagerConfigPanel({
               <div key={i} className='flex gap-2 items-center'>
                 <Input
                   value={tool}
-                  onChange={e => setMcpTools(prev => prev.map((t, idx) => idx === i ? e.target.value : t))}
+                  onChange={e =>
+                    setMcpTools(prev =>
+                      prev.map((t, idx) => (idx === i ? e.target.value : t))
+                    )
+                  }
                   placeholder='mcp__tool-name'
                 />
-                <Button type='button' variant='ghost' size='sm' onClick={() => setMcpTools(prev => prev.filter((_, idx) => idx !== i))}>
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='sm'
+                  onClick={() =>
+                    setMcpTools(prev => prev.filter((_, idx) => idx !== i))
+                  }
+                >
                   <X className='h-4 w-4' />
                 </Button>
               </div>
             ))}
             <Button
-              type='button' variant='outline' size='sm'
+              type='button'
+              variant='outline'
+              size='sm'
               onClick={() => setMcpTools(prev => [...prev, ''])}
               disabled={loading}
             >

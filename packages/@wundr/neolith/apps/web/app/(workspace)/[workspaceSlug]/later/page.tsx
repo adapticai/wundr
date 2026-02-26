@@ -631,12 +631,12 @@ function SavedMessageCard({
                 <Copy className='h-4 w-4' />
               </button>
 
-              {/* Forward/Share */}
+              {/* Forward/Share - opens message in context */}
               <button
                 type='button'
-                onClick={handleCopyLink}
+                onClick={handleOpenInNewTab}
                 className='rounded p-1.5 hover:bg-muted'
-                title='Share message'
+                title='Open message'
               >
                 <Forward className='h-4 w-4' />
               </button>
@@ -695,28 +695,14 @@ function SavedMessageCard({
                       <button
                         type='button'
                         onClick={() => {
-                          handleCopyLink();
+                          handleOpenInNewTab();
                           setShowMenu(false);
                         }}
                         className='flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent'
                       >
                         <Forward className='h-4 w-4' />
-                        Share message...
+                        Open message
                       </button>
-                      <button
-                        type='button'
-                        onClick={() => {
-                          handleRemoveFromLater();
-                          setShowMenu(false);
-                        }}
-                        className='flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent'
-                      >
-                        <BookmarkCheck className='h-4 w-4 text-primary fill-primary' />
-                        Save for later
-                      </button>
-
-                      <div className='my-1 h-px bg-border' />
-
                       {/* Status Actions */}
                       {onMarkComplete && !isArchived && !isCompleted && (
                         <button
@@ -764,13 +750,13 @@ function SavedMessageCard({
                       <button
                         type='button'
                         onClick={() => {
-                          onDelete(item.id);
+                          handleRemoveFromLater();
                           setShowMenu(false);
                         }}
                         className='flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive hover:bg-accent'
                       >
                         <Trash2 className='h-4 w-4' />
-                        Remove
+                        Remove from Later
                       </button>
                     </div>
                   </>
@@ -1124,20 +1110,6 @@ function SavedFileCard({
                         <Forward className='h-4 w-4' />
                         Share file...
                       </button>
-                      <button
-                        type='button'
-                        onClick={() => {
-                          handleRemoveFromLater();
-                          setShowMenu(false);
-                        }}
-                        className='flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent'
-                      >
-                        <BookmarkCheck className='h-4 w-4 text-primary fill-primary' />
-                        Save for later
-                      </button>
-
-                      <div className='my-1 h-px bg-border' />
-
                       {/* Status Actions */}
                       {onMarkComplete && !isArchived && !isCompleted && (
                         <button
@@ -1185,13 +1157,13 @@ function SavedFileCard({
                       <button
                         type='button'
                         onClick={() => {
-                          onDelete(item.id);
+                          handleRemoveFromLater();
                           setShowMenu(false);
                         }}
                         className='flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive hover:bg-accent'
                       >
                         <Trash2 className='h-4 w-4' />
-                        Delete file
+                        Remove from Later
                       </button>
                     </div>
                   </>

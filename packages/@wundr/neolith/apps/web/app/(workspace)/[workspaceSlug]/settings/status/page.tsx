@@ -97,7 +97,21 @@ const DAYS_OF_WEEK = [
   { key: 'sunday', label: 'Sunday' },
 ];
 
-const TIMEZONES = Intl.supportedValuesOf('timeZone').slice(0, 50);
+const TIMEZONES = Intl.supportedValuesOf('timeZone');
+
+interface CurrentStatus {
+  emoji: string;
+  message: string;
+  type: string;
+  expiresAt?: string;
+}
+
+interface StatusHistoryItem {
+  emoji: string;
+  message: string;
+  type: 'available' | 'busy' | 'away' | 'dnd';
+  createdAt: string;
+}
 
 export default function StatusSettingsPage() {
   const { data: session } = useSession();
@@ -105,8 +119,10 @@ export default function StatusSettingsPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState<any>(null);
-  const [statusHistory, setStatusHistory] = useState<any[]>([]);
+  const [currentStatus, setCurrentStatus] = useState<CurrentStatus | null>(
+    null
+  );
+  const [statusHistory, setStatusHistory] = useState<StatusHistoryItem[]>([]);
   const [scheduledStatuses, setScheduledStatuses] = useState<
     ScheduledStatusInput[]
   >([]);

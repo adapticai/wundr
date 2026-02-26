@@ -68,6 +68,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 
 interface StorageBreakdown {
@@ -156,6 +157,7 @@ export default function AdminStoragePage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const { toast } = useToast();
+  const { setPageHeader } = usePageHeader();
 
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<StorageData | null>(null);
@@ -169,6 +171,13 @@ export default function AdminStoragePage() {
   const [retentionDays, setRetentionDays] = useState(365);
   const [autoCleanup, setAutoCleanup] = useState(false);
   const [warningThreshold, setWarningThreshold] = useState(80);
+
+  useEffect(() => {
+    setPageHeader(
+      'Storage Management',
+      'Monitor and manage workspace storage usage'
+    );
+  }, [setPageHeader]);
 
   useEffect(() => {
     loadStorageData();
@@ -329,13 +338,7 @@ export default function AdminStoragePage() {
 
   return (
     <div className='space-y-6'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <h1 className='text-2xl font-bold'>Storage Management</h1>
-          <p className='mt-1 text-muted-foreground'>
-            Monitor and manage workspace storage usage
-          </p>
-        </div>
+      <div className='flex items-center justify-end'>
         <Button onClick={() => setShowSettingsDialog(true)}>
           <Settings className='mr-2 h-4 w-4' />
           Settings
@@ -654,11 +657,8 @@ export default function AdminStoragePage() {
                   </p>
                 </div>
                 <Switch
-                  checked={data.settings.autoCleanup}
-                  onCheckedChange={checked => {
-                    setAutoCleanup(checked);
-                    handleUpdateSettings();
-                  }}
+                  checked={autoCleanup}
+                  onCheckedChange={setAutoCleanup}
                 />
               </div>
 
@@ -671,7 +671,7 @@ export default function AdminStoragePage() {
                     <Label>Delete files older than (days)</Label>
                     <Input
                       type='number'
-                      value={data.settings.retentionDays}
+                      value={retentionDays}
                       onChange={e =>
                         setRetentionDays(parseInt(e.target.value, 10))
                       }

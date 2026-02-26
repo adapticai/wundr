@@ -608,12 +608,6 @@ export default function DMPage() {
 
   // Handle open thread
   const handleOpenThread = useCallback((message: Message) => {
-    console.log(
-      '[DM] handleOpenThread called with message:',
-      message.id,
-      'replyCount:',
-      message.replyCount
-    );
     setActiveThreadId(message.id);
   }, []);
 
@@ -903,15 +897,6 @@ export default function DMPage() {
     toast.info(`Adding ${tabType} tab coming soon`);
   }, []);
 
-  // Debug: log thread state changes
-  useEffect(() => {
-    console.log('[DM] Thread state:', {
-      activeThreadId,
-      thread,
-      isThreadLoading,
-    });
-  }, [activeThreadId, thread, isThreadLoading]);
-
   const isLoading = isChannelLoading || isMessagesLoading || isAuthLoading;
 
   if (isLoading) {
@@ -929,6 +914,26 @@ export default function DMPage() {
         <p className='text-muted-foreground'>
           Please sign in to view this conversation.
         </p>
+      </div>
+    );
+  }
+
+  // Conversation not found or user does not have access
+  if (!channel && !isChannelLoading) {
+    return (
+      <div className='flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4'>
+        <p className='text-lg font-semibold'>Conversation not found</p>
+        <p className='text-sm text-muted-foreground'>
+          This conversation may have been deleted or you may not have access to
+          it.
+        </p>
+        <button
+          type='button'
+          onClick={() => router.push(`/${workspaceSlug}/messages`)}
+          className='text-sm text-primary hover:underline'
+        >
+          Back to messages
+        </button>
       </div>
     );
   }

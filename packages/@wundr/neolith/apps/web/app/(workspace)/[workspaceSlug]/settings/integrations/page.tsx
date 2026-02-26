@@ -470,11 +470,7 @@ function AccountCard({ integration, onClick }: AccountCardProps) {
   const statusConfig = INTEGRATION_STATUS_CONFIG[integration.status];
 
   return (
-    <button
-      type='button'
-      onClick={onClick}
-      className='flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-accent/50'
-    >
+    <div className='flex w-full items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-accent/50'>
       <div className='flex h-12 w-12 items-center justify-center rounded-full bg-muted text-sm font-bold'>
         {providerInfo?.icon ||
           integration.provider.substring(0, 2).toUpperCase()}
@@ -505,15 +501,12 @@ function AccountCard({ integration, onClick }: AccountCardProps) {
       </div>
       <button
         type='button'
-        onClick={e => {
-          e.stopPropagation();
-          onClick();
-        }}
+        onClick={onClick}
         className='rounded-md border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent'
       >
         Manage
       </button>
-    </button>
+    </div>
   );
 }
 

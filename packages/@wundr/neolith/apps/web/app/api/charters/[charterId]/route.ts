@@ -99,7 +99,9 @@ export async function GET(
 
     // Validate charterId parameter
     const params = await context.params;
-    const paramResult = charterIdParamSchema.safeParse({ id: params.charterId });
+    const paramResult = charterIdParamSchema.safeParse({
+      id: params.charterId,
+    });
     if (!paramResult.success) {
       return NextResponse.json(
         createErrorResponse(
@@ -179,7 +181,9 @@ export async function PATCH(
 
     // Validate charterId parameter
     const params = await context.params;
-    const paramResult = charterIdParamSchema.safeParse({ id: params.charterId });
+    const paramResult = charterIdParamSchema.safeParse({
+      id: params.charterId,
+    });
     if (!paramResult.success) {
       return NextResponse.json(
         createErrorResponse(
@@ -314,7 +318,9 @@ export async function DELETE(
 
     // Validate charterId parameter
     const params = await context.params;
-    const paramResult = charterIdParamSchema.safeParse({ id: params.charterId });
+    const paramResult = charterIdParamSchema.safeParse({
+      id: params.charterId,
+    });
     if (!paramResult.success) {
       return NextResponse.json(
         createErrorResponse(

@@ -42,11 +42,15 @@ export default function PerformancePage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+      <div className='space-y-4'>
+        <Skeleton className='h-8 w-48' />
+        <div className='grid gap-4 grid-cols-2 lg:grid-cols-3'>
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <Card key={i}><CardContent className="py-6"><Skeleton className="h-16 w-full" /></CardContent></Card>
+            <Card key={i}>
+              <CardContent className='py-6'>
+                <Skeleton className='h-16 w-full' />
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -55,17 +59,19 @@ export default function PerformancePage() {
 
   if (!workspaceId) {
     return (
-      <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">
-        Workspace not found.
-      </CardContent></Card>
+      <Card>
+        <CardContent className='py-10 text-center text-sm text-muted-foreground'>
+          Workspace not found.
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <BarChart3 className="h-5 w-5 text-muted-foreground" />
-        <h2 className="text-base font-semibold">System Performance</h2>
+    <div className='space-y-6'>
+      <div className='flex items-center gap-2'>
+        <BarChart3 className='h-5 w-5 text-muted-foreground' />
+        <h2 className='text-base font-semibold'>System Performance</h2>
       </div>
       <PerformanceMonitoringDashboard workspaceId={workspaceId} />
     </div>

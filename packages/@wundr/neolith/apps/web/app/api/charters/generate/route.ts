@@ -54,7 +54,13 @@ const generatedCharterSchema = z.object({
   governance: z
     .object({
       style: z
-        .enum(['democratic', 'hierarchical', 'consensus', 'delegated', 'hybrid'])
+        .enum([
+          'democratic',
+          'hierarchical',
+          'consensus',
+          'delegated',
+          'hybrid',
+        ])
         .describe('Decision-making governance style'),
       decisionMaking: z
         .string()
@@ -164,7 +170,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const provider = process.env.DEFAULT_LLM_PROVIDER || 'openai';
 
     if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
-      console.error('[POST /api/charters/generate] OPENAI_API_KEY not configured');
+      console.error(
+        '[POST /api/charters/generate] OPENAI_API_KEY not configured'
+      );
       return NextResponse.json(
         createErrorResponse(
           CHARTER_ERROR_CODES.INTERNAL_ERROR,
@@ -213,9 +221,7 @@ The charter should be specific, actionable, and tailored to the organization's u
       contextParts.push(`Organization size: ${input.organizationSize}`);
     }
     if (input.context && Object.keys(input.context).length > 0) {
-      contextParts.push(
-        `Additional context: ${JSON.stringify(input.context)}`
-      );
+      contextParts.push(`Additional context: ${JSON.stringify(input.context)}`);
     }
 
     const userMessage = contextParts.join('\n\n');

@@ -105,7 +105,13 @@ export type SessionManagerIdParam = z.infer<typeof sessionManagerIdParamSchema>;
 
 // Plugin type enum
 export const pluginTypeEnum = z.enum([
-  'MEMORY', 'TOOL', 'SKILL', 'CONTEXT', 'INTEGRATION', 'MONITORING', 'SECURITY'
+  'MEMORY',
+  'TOOL',
+  'SKILL',
+  'CONTEXT',
+  'INTEGRATION',
+  'MONITORING',
+  'SECURITY',
 ]);
 
 export type PluginType = z.infer<typeof pluginTypeEnum>;
@@ -124,7 +130,10 @@ export type PluginConfig = z.infer<typeof pluginConfigSchema>;
 
 // Skill capability level
 export const capabilityLevelEnum = z.enum([
-  'beginner', 'intermediate', 'advanced', 'expert'
+  'beginner',
+  'intermediate',
+  'advanced',
+  'expert',
 ]);
 
 export type CapabilityLevel = z.infer<typeof capabilityLevelEnum>;

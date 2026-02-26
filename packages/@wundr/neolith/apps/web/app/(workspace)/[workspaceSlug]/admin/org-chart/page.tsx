@@ -93,23 +93,21 @@ export default function OrgChartPage() {
   }
 
   return (
-    <div className='min-h-screen bg-stone-950 p-6'>
-      <div className='max-w-7xl mx-auto space-y-6'>
-        <div>
-          <h1 className='text-3xl font-bold text-stone-100'>
-            Organization Chart
-          </h1>
-          <p className='text-stone-400 mt-2'>
-            Visualize and manage your organization&apos;s Orchestrator hierarchy
-          </p>
-        </div>
-
-        <OrgChart
-          workspaceId={workspaceId}
-          orgName={workspace?.name || 'Organization'}
-          orchestrators={vps}
-        />
+    <div className='space-y-6'>
+      <div>
+        <h1 className='text-2xl font-semibold tracking-tight'>
+          Organization Chart
+        </h1>
+        <p className='mt-1 text-sm text-muted-foreground'>
+          Visualize and manage your organization&apos;s Orchestrator hierarchy
+        </p>
       </div>
+
+      <OrgChart
+        workspaceId={workspaceId}
+        orgName={workspace?.name || 'Organization'}
+        orchestrators={vps}
+      />
     </div>
   );
 }

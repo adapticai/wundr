@@ -115,9 +115,7 @@ export default function AISettingsPage() {
   const fetchSettings = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/workspaces/${workspaceSlug}/settings`
-      );
+      const response = await fetch(`/api/workspaces/${workspaceSlug}/settings`);
       if (!response.ok) {
         throw new Error('Failed to load settings');
       }

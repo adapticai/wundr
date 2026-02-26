@@ -86,12 +86,7 @@ export const trafficManagerConfigSchema = z.object({
   escalationThreshold: messagePriorityEnum.default('HIGH'),
   enableContentAnalysis: z.boolean().default(true),
   enableLoadBalancing: z.boolean().default(true),
-  maxRoutingLatencyMs: z
-    .number()
-    .int()
-    .min(100)
-    .max(30000)
-    .default(5000),
+  maxRoutingLatencyMs: z.number().int().min(100).max(30000).default(5000),
   fallbackBehavior: fallbackBehaviorEnum.default('default_agent'),
 });
 

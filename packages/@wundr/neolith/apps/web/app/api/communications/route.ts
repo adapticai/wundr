@@ -31,7 +31,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', COMMUNICATION_ERROR_CODES.UNAUTHORIZED),
+        createErrorResponse(
+          'Authentication required',
+          COMMUNICATION_ERROR_CODES.UNAUTHORIZED
+        ),
         { status: 401 }
       );
     }
@@ -40,15 +43,30 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const parseResult = communicationLogFilterSchema.safeParse(searchParams);
     if (!parseResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid query parameters', COMMUNICATION_ERROR_CODES.VALIDATION_ERROR, {
-          errors: parseResult.error.flatten().fieldErrors,
-        }),
+        createErrorResponse(
+          'Invalid query parameters',
+          COMMUNICATION_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: parseResult.error.flatten().fieldErrors,
+          }
+        ),
         { status: 400 }
       );
     }
 
     const filters = parseResult.data;
-    const { page, limit, sortBy, sortOrder, orchestratorId, channel, direction, status, dateFrom, dateTo } = filters;
+    const {
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      orchestratorId,
+      channel,
+      direction,
+      status,
+      dateFrom,
+      dateTo,
+    } = filters;
     const skip = (page - 1) * limit;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -88,7 +106,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error('[GET /api/communications] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', COMMUNICATION_ERROR_CODES.INTERNAL_ERROR),
+      createErrorResponse(
+        'An internal error occurred',
+        COMMUNICATION_ERROR_CODES.INTERNAL_ERROR
+      ),
       { status: 500 }
     );
   }
@@ -104,7 +125,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', COMMUNICATION_ERROR_CODES.UNAUTHORIZED),
+        createErrorResponse(
+          'Authentication required',
+          COMMUNICATION_ERROR_CODES.UNAUTHORIZED
+        ),
         { status: 401 }
       );
     }
@@ -114,7 +138,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', COMMUNICATION_ERROR_CODES.VALIDATION_ERROR),
+        createErrorResponse(
+          'Invalid JSON body',
+          COMMUNICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
         { status: 400 }
       );
     }
@@ -122,9 +149,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const parseResult = createCommunicationLogSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        createErrorResponse('Validation failed', COMMUNICATION_ERROR_CODES.VALIDATION_ERROR, {
-          errors: parseResult.error.flatten().fieldErrors,
-        }),
+        createErrorResponse(
+          'Validation failed',
+          COMMUNICATION_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: parseResult.error.flatten().fieldErrors,
+          }
+        ),
         { status: 400 }
       );
     }
@@ -139,11 +170,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    return NextResponse.json({ data: log, message: 'Communication log created' }, { status: 201 });
+    return NextResponse.json(
+      { data: log, message: 'Communication log created' },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('[POST /api/communications] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', COMMUNICATION_ERROR_CODES.INTERNAL_ERROR),
+      createErrorResponse(
+        'An internal error occurred',
+        COMMUNICATION_ERROR_CODES.INTERNAL_ERROR
+      ),
       { status: 500 }
     );
   }

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
   Area,
   AreaChart,
@@ -183,54 +184,50 @@ export default function AdminBillingPage() {
   }, [setPageHeader]);
 
   // Fetch billing data
-  useEffect(() => {
-    const fetchBillingData = async () => {
-      try {
-        setIsLoading(true);
-        const [billingRes, paymentsRes, invoicesRes, usageRes, alertsRes] =
-          await Promise.all([
-            fetch(`/api/workspaces/${workspaceSlug}/admin/billing`),
-            fetch(
-              `/api/workspaces/${workspaceSlug}/admin/billing/payment-methods`
-            ),
-            fetch(`/api/workspaces/${workspaceSlug}/admin/billing/invoices`),
-            fetch(
-              `/api/workspaces/${workspaceSlug}/admin/billing/usage-history`
-            ),
-            fetch(
-              `/api/workspaces/${workspaceSlug}/admin/billing/budget-alerts`
-            ),
-          ]);
+  const fetchBillingData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const [billingRes, paymentsRes, invoicesRes, usageRes, alertsRes] =
+        await Promise.all([
+          fetch(`/api/workspaces/${workspaceSlug}/admin/billing`),
+          fetch(
+            `/api/workspaces/${workspaceSlug}/admin/billing/payment-methods`
+          ),
+          fetch(`/api/workspaces/${workspaceSlug}/admin/billing/invoices`),
+          fetch(`/api/workspaces/${workspaceSlug}/admin/billing/usage-history`),
+          fetch(`/api/workspaces/${workspaceSlug}/admin/billing/budget-alerts`),
+        ]);
 
-        if (billingRes.ok) {
-          const data = await billingRes.json();
-          setBilling(data.billing);
-        }
-        if (paymentsRes.ok) {
-          const data = await paymentsRes.json();
-          setPaymentMethods(data.paymentMethods || []);
-        }
-        if (invoicesRes.ok) {
-          const data = await invoicesRes.json();
-          setInvoices(data.invoices || []);
-        }
-        if (usageRes.ok) {
-          const data = await usageRes.json();
-          setUsageHistory(data.history || []);
-        }
-        if (alertsRes.ok) {
-          const data = await alertsRes.json();
-          setBudgetAlerts(data.alerts || []);
-        }
-      } catch (error) {
-        console.error('Failed to fetch billing data:', error);
-      } finally {
-        setIsLoading(false);
+      if (billingRes.ok) {
+        const data = await billingRes.json();
+        setBilling(data.billing);
       }
-    };
-
-    void fetchBillingData();
+      if (paymentsRes.ok) {
+        const data = await paymentsRes.json();
+        setPaymentMethods(data.paymentMethods || []);
+      }
+      if (invoicesRes.ok) {
+        const data = await invoicesRes.json();
+        setInvoices(data.invoices || []);
+      }
+      if (usageRes.ok) {
+        const data = await usageRes.json();
+        setUsageHistory(data.history || []);
+      }
+      if (alertsRes.ok) {
+        const data = await alertsRes.json();
+        setBudgetAlerts(data.alerts || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch billing data:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [workspaceSlug]);
+
+  useEffect(() => {
+    void fetchBillingData();
+  }, [fetchBillingData]);
 
   const handleUpgrade = useCallback(
     async (planId: PlanTier) => {
@@ -263,7 +260,7 @@ export default function AdminBillingPage() {
         }
       } catch (error) {
         console.error('Upgrade failed:', error);
-        alert('Failed to upgrade plan. Please try again.');
+        toast.error('Failed to upgrade plan. Please try again.');
       } finally {
         setIsUpgrading(false);
       }
@@ -289,7 +286,7 @@ export default function AdminBillingPage() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download failed:', error);
-      alert('Failed to download invoice. Please try again.');
+      toast.error('Failed to download invoice. Please try again.');
     }
   };
 
@@ -533,7 +530,6 @@ export default function AdminBillingPage() {
               title='Current Spend'
               value={`$${currentPlan.priceMonthly * (billing?.usage.members || 1)}`}
               description='This billing period'
-              trend='+12%'
             />
             <StatsCard
               title='Total Invoices'
@@ -544,13 +540,11 @@ export default function AdminBillingPage() {
               title='Storage Used'
               value={`${billing?.usage.storage || 0} GB`}
               description={`of ${billing?.usage.storageLimit || 0} GB`}
-              trend='+5%'
             />
             <StatsCard
               title='API Calls'
               value={formatNumber(billing?.usage.apiCalls || 0)}
               description='This month'
-              trend='+23%'
             />
           </div>
         </TabsContent>
@@ -900,6 +894,7 @@ export default function AdminBillingPage() {
       <PaymentMethodDialog
         open={showPaymentDialog}
         onClose={() => setShowPaymentDialog(false)}
+        onSuccess={fetchBillingData}
         workspaceSlug={workspaceSlug}
       />
 
@@ -914,6 +909,7 @@ export default function AdminBillingPage() {
       <BudgetAlertDialog
         open={showBudgetDialog}
         onClose={() => setShowBudgetDialog(false)}
+        onSuccess={fetchBillingData}
         workspaceSlug={workspaceSlug}
       />
     </div>
@@ -1140,7 +1136,7 @@ function UpgradeModal({
         </DialogHeader>
         <div className='space-y-4 py-4'>
           <div className='rounded-lg bg-muted p-4'>
-            <h4 className='font-medium'>Whats included:</h4>
+            <h4 className='font-medium'>What&apos;s included:</h4>
             <ul className='mt-2 space-y-1'>
               {plan.features.slice(0, 5).map((feature, index) => (
                 <li key={index} className='text-sm text-muted-foreground'>
@@ -1166,10 +1162,12 @@ function UpgradeModal({
 function PaymentMethodDialog({
   open,
   onClose,
+  onSuccess,
   workspaceSlug,
 }: {
   open: boolean;
   onClose: () => void;
+  onSuccess: () => void;
   workspaceSlug: string;
 }) {
   const [cardNumber, setCardNumber] = useState('');
@@ -1193,11 +1191,12 @@ function PaymentMethodDialog({
         throw new Error('Failed to add payment method');
       }
 
+      toast.success('Payment method added successfully');
       onClose();
-      window.location.reload();
+      void onSuccess();
     } catch (error) {
       console.error('Failed to add payment method:', error);
-      alert('Failed to add payment method. Please try again.');
+      toast.error('Failed to add payment method. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -1290,11 +1289,13 @@ function EnterpriseContactDialog({
         throw new Error('Failed to send request');
       }
 
-      alert('Thank you! Our enterprise team will contact you within 24 hours.');
+      toast.success(
+        'Thank you! Our enterprise team will contact you within 24 hours.'
+      );
       onClose();
     } catch (error) {
       console.error('Failed to send request:', error);
-      alert('Failed to send request. Please try again.');
+      toast.error('Failed to send request. Please try again.');
     } finally {
       setIsSending(false);
     }
@@ -1394,10 +1395,12 @@ function EnterpriseContactDialog({
 function BudgetAlertDialog({
   open,
   onClose,
+  onSuccess,
   workspaceSlug,
 }: {
   open: boolean;
   onClose: () => void;
+  onSuccess: () => void;
   workspaceSlug: string;
 }) {
   const [threshold, setThreshold] = useState('100');
@@ -1425,11 +1428,12 @@ function BudgetAlertDialog({
         throw new Error('Failed to create alert');
       }
 
+      toast.success('Budget alert created');
       onClose();
-      window.location.reload();
+      void onSuccess();
     } catch (error) {
       console.error('Failed to create alert:', error);
-      alert('Failed to create alert. Please try again.');
+      toast.error('Failed to create alert. Please try again.');
     } finally {
       setIsSaving(false);
     }

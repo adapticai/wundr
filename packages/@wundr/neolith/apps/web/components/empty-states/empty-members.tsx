@@ -11,14 +11,25 @@ import { EmptyState } from '@/components/ui/empty-state';
 
 interface EmptyMembersProps {
   onInviteMembers?: () => void;
+  filtered?: boolean;
 }
 
-export function EmptyMembers({ onInviteMembers }: EmptyMembersProps) {
+export function EmptyMembers({ onInviteMembers, filtered }: EmptyMembersProps) {
+  if (filtered) {
+    return (
+      <EmptyState
+        icon={Users}
+        title='No members found'
+        description='No members match your search or filter. Try adjusting your criteria.'
+      />
+    );
+  }
+
   return (
     <EmptyState
       icon={Users}
       title='No team members yet'
-      description='Invite team members to collaborate and work together on projects.'
+      description='Invite team members to collaborate and work together in this workspace.'
       action={
         onInviteMembers
           ? {

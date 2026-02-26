@@ -15,12 +15,7 @@ import {
 import useSWR from 'swr';
 
 import { usePageHeader } from '@/contexts/page-header-context';
-import {
-  useMembers,
-  useRoles,
-  useBilling,
-  useAdminActivity,
-} from '@/hooks/use-admin';
+import { useMembers, useAdminActivity } from '@/hooks/use-admin';
 import { cn, getInitials } from '@/lib/utils';
 
 /**
@@ -100,8 +95,6 @@ export default function AdminPage() {
     total: memberCount,
     isLoading: membersLoading,
   } = useMembers(workspaceSlug, { limit: 5 });
-  const { roles, isLoading: rolesLoading } = useRoles(workspaceSlug);
-  const { billing, isLoading: billingLoading } = useBilling(workspaceSlug);
   const {
     activities,
     total: activityCount,

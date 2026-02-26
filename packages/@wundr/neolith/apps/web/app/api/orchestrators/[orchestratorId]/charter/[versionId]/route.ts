@@ -12,7 +12,10 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { createErrorResponse, CHARTER_ERROR_CODES } from '@/lib/validations/charter';
+import {
+  createErrorResponse,
+  CHARTER_ERROR_CODES,
+} from '@/lib/validations/charter';
 
 import type { NextRequest } from 'next/server';
 
@@ -65,7 +68,10 @@ export async function GET(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse(CHARTER_ERROR_CODES.UNAUTHORIZED, 'Authentication required'),
+        createErrorResponse(
+          CHARTER_ERROR_CODES.UNAUTHORIZED,
+          'Authentication required'
+        ),
         { status: 401 }
       );
     }
@@ -75,19 +81,28 @@ export async function GET(
 
     if (!orchestratorId) {
       return NextResponse.json(
-        createErrorResponse(CHARTER_ERROR_CODES.VALIDATION_ERROR, 'Orchestrator ID is required'),
+        createErrorResponse(
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Orchestrator ID is required'
+        ),
         { status: 400 }
       );
     }
 
     if (!versionId) {
       return NextResponse.json(
-        createErrorResponse(CHARTER_ERROR_CODES.VALIDATION_ERROR, 'Version ID is required'),
+        createErrorResponse(
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Version ID is required'
+        ),
         { status: 400 }
       );
     }
 
-    const access = await checkOrchestratorAccess(orchestratorId, session.user.id);
+    const access = await checkOrchestratorAccess(
+      orchestratorId,
+      session.user.id
+    );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
@@ -138,7 +153,10 @@ export async function GET(
       error
     );
     return NextResponse.json(
-      createErrorResponse(CHARTER_ERROR_CODES.INTERNAL_ERROR, 'An internal error occurred'),
+      createErrorResponse(
+        CHARTER_ERROR_CODES.INTERNAL_ERROR,
+        'An internal error occurred'
+      ),
       { status: 500 }
     );
   }
@@ -158,7 +176,10 @@ export async function POST(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse(CHARTER_ERROR_CODES.UNAUTHORIZED, 'Authentication required'),
+        createErrorResponse(
+          CHARTER_ERROR_CODES.UNAUTHORIZED,
+          'Authentication required'
+        ),
         { status: 401 }
       );
     }
@@ -168,19 +189,28 @@ export async function POST(
 
     if (!orchestratorId) {
       return NextResponse.json(
-        createErrorResponse(CHARTER_ERROR_CODES.VALIDATION_ERROR, 'Orchestrator ID is required'),
+        createErrorResponse(
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Orchestrator ID is required'
+        ),
         { status: 400 }
       );
     }
 
     if (!versionId) {
       return NextResponse.json(
-        createErrorResponse(CHARTER_ERROR_CODES.VALIDATION_ERROR, 'Version ID is required'),
+        createErrorResponse(
+          CHARTER_ERROR_CODES.VALIDATION_ERROR,
+          'Version ID is required'
+        ),
         { status: 400 }
       );
     }
 
-    const access = await checkOrchestratorAccess(orchestratorId, session.user.id);
+    const access = await checkOrchestratorAccess(
+      orchestratorId,
+      session.user.id
+    );
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
@@ -264,7 +294,10 @@ export async function POST(
       error
     );
     return NextResponse.json(
-      createErrorResponse(CHARTER_ERROR_CODES.INTERNAL_ERROR, 'An internal error occurred'),
+      createErrorResponse(
+        CHARTER_ERROR_CODES.INTERNAL_ERROR,
+        'An internal error occurred'
+      ),
       { status: 500 }
     );
   }

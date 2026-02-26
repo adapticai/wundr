@@ -17,18 +17,10 @@ import {
   Line,
   BarChart,
   Bar,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
   Legend,
-  ResponsiveContainer,
-  Cell,
 } from 'recharts';
 
 import { Leaderboard } from '@/components/analytics/leaderboard';
@@ -295,6 +287,12 @@ export default function TeamAnalyticsPage(): JSX.Element {
   return (
     <div className='min-h-screen bg-background'>
       <div className='max-w-7xl mx-auto px-4 py-8'>
+        {/* Data notice */}
+        <div className='mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400'>
+          Team analytics integration is coming soon. The data shown below is
+          illustrative and does not reflect actual workspace activity.
+        </div>
+
         {/* Time Range Selector */}
         <div className='flex justify-end mb-6'>
           <Tabs
@@ -319,11 +317,6 @@ export default function TeamAnalyticsPage(): JSX.Element {
             icon={<Users className='w-5 h-5' />}
             format='number'
             isLoading={isLoading}
-            change={{
-              value: 2,
-              percent: 11.1,
-              trend: 'up',
-            }}
           />
           <MetricCard
             title='Total Tasks Completed'
@@ -331,11 +324,6 @@ export default function TeamAnalyticsPage(): JSX.Element {
             icon={<Target className='w-5 h-5' />}
             format='number'
             isLoading={isLoading}
-            change={{
-              value: 47,
-              percent: 15.2,
-              trend: 'up',
-            }}
           />
           <MetricCard
             title='Avg Productivity'
@@ -343,11 +331,6 @@ export default function TeamAnalyticsPage(): JSX.Element {
             icon={<TrendingUp className='w-5 h-5' />}
             format='percent'
             isLoading={isLoading}
-            change={{
-              value: 5.3,
-              percent: 7.1,
-              trend: 'up',
-            }}
           />
           <MetricCard
             title='Avg Response Time'
@@ -355,11 +338,6 @@ export default function TeamAnalyticsPage(): JSX.Element {
             icon={<Clock className='w-5 h-5' />}
             format='duration'
             isLoading={isLoading}
-            change={{
-              value: -8,
-              percent: -12.5,
-              trend: 'down',
-            }}
           />
         </div>
 

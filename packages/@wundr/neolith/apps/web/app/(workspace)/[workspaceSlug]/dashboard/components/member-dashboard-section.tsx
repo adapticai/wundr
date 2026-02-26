@@ -81,7 +81,7 @@ export function MemberDashboardSection({
           const result = await response.json();
           setData(result.data);
         } else {
-          // Mock data for now
+          // API not available yet - use empty data with default checklist
           setData({
             isNewMember: true,
             joinedDate: new Date().toISOString(),
@@ -90,7 +90,7 @@ export function MemberDashboardSection({
                 id: '1',
                 label: 'Complete your profile',
                 completed: false,
-                href: '/profile',
+                href: '/settings/profile',
               },
               {
                 id: '2',
@@ -106,56 +106,9 @@ export function MemberDashboardSection({
                 href: `/${workspaceId}/orchestrators`,
               },
             ],
-            suggestedChannels: [
-              {
-                id: 'ch_1',
-                name: 'general',
-                description: 'General discussion and announcements',
-                memberCount: 42,
-              },
-              {
-                id: 'ch_2',
-                name: 'introductions',
-                description: 'Introduce yourself to the team',
-                memberCount: 28,
-              },
-              {
-                id: 'ch_3',
-                name: 'random',
-                description: 'Off-topic conversations',
-                memberCount: 35,
-              },
-            ],
-            recommendedOrchestrators: [
-              {
-                id: 'orch_1',
-                name: 'Project Assistant',
-                description: 'Help manage project tasks and deadlines',
-                category: 'Productivity',
-              },
-              {
-                id: 'orch_2',
-                name: 'Code Reviewer',
-                description: 'Automated code review and suggestions',
-                category: 'Development',
-              },
-            ],
-            teamSpotlight: [
-              {
-                id: 'user_1',
-                name: 'Sarah Chen',
-                displayName: 'Sarah',
-                avatarUrl: null,
-                role: 'Product Manager',
-              },
-              {
-                id: 'user_2',
-                name: 'Alex Rivera',
-                displayName: 'Alex',
-                avatarUrl: null,
-                role: 'Engineering Lead',
-              },
-            ],
+            suggestedChannels: [],
+            recommendedOrchestrators: [],
+            teamSpotlight: [],
           });
         }
       } catch (error) {
@@ -263,50 +216,92 @@ export function MemberDashboardSection({
         <CardHeader>
           <CardTitle className='text-base flex items-center gap-2'>
             <HashIcon className='h-4 w-4' />
-            Suggested Channels
+            Channels
           </CardTitle>
           <CardDescription>
-            Popular channels you might want to join
+            Browse and join channels in your workspace
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className='space-y-3'>
-            {data.suggestedChannels.map(channel => (
+          {data.suggestedChannels.length === 0 ? (
+            <div className='flex flex-col items-center justify-center py-6 text-center'>
+              <div className='rounded-full bg-muted p-3 mb-3'>
+                <HashIcon className='h-5 w-5 text-muted-foreground' />
+              </div>
+              <p className='text-sm font-medium text-muted-foreground'>
+                No channels yet
+              </p>
+              <p className='text-xs text-muted-foreground mt-1'>
+                Channels will appear here once they are created
+              </p>
               <a
-                key={channel.id}
-                href={`/${workspaceId}/channels/${channel.id}`}
-                className='flex items-start justify-between p-3 rounded-lg border hover:bg-accent transition-colors'
+                href={`/${workspaceId}/channels`}
+                className='text-xs text-primary hover:underline mt-3'
               >
-                <div className='flex-1 min-w-0'>
-                  <div className='flex items-center gap-2'>
-                    <span className='font-medium text-sm'>#{channel.name}</span>
-                    <Badge variant='secondary' className='text-xs'>
-                      {channel.memberCount} members
-                    </Badge>
-                  </div>
-                  <p className='text-xs text-muted-foreground mt-1'>
-                    {channel.description}
-                  </p>
-                </div>
+                Browse all channels
               </a>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className='space-y-3'>
+              {data.suggestedChannels.map(channel => (
+                <a
+                  key={channel.id}
+                  href={`/${workspaceId}/channels/${channel.id}`}
+                  className='flex items-start justify-between p-3 rounded-lg border hover:bg-accent transition-colors'
+                >
+                  <div className='flex-1 min-w-0'>
+                    <div className='flex items-center gap-2'>
+                      <span className='font-medium text-sm'>
+                        #{channel.name}
+                      </span>
+                      {channel.memberCount > 0 && (
+                        <Badge variant='secondary' className='text-xs'>
+                          {channel.memberCount} members
+                        </Badge>
+                      )}
+                    </div>
+                    <p className='text-xs text-muted-foreground mt-1'>
+                      {channel.description}
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Recommended Orchestrators */}
-      {data.recommendedOrchestrators.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-base flex items-center gap-2'>
-              <MessageSquareIcon className='h-4 w-4' />
-              Recommended Orchestrators
-            </CardTitle>
-            <CardDescription>
-              AI assistants to help you work faster
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className='text-base flex items-center gap-2'>
+            <MessageSquareIcon className='h-4 w-4' />
+            Orchestrators
+          </CardTitle>
+          <CardDescription>
+            AI assistants available in your workspace
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {data.recommendedOrchestrators.length === 0 ? (
+            <div className='flex flex-col items-center justify-center py-6 text-center'>
+              <div className='rounded-full bg-muted p-3 mb-3'>
+                <MessageSquareIcon className='h-5 w-5 text-muted-foreground' />
+              </div>
+              <p className='text-sm font-medium text-muted-foreground'>
+                No orchestrators yet
+              </p>
+              <p className='text-xs text-muted-foreground mt-1'>
+                Orchestrators will appear here once they are set up
+              </p>
+              <a
+                href={`/${workspaceId}/orchestrators`}
+                className='text-xs text-primary hover:underline mt-3'
+              >
+                Browse orchestrators
+              </a>
+            </div>
+          ) : (
             <div className='space-y-3'>
               {data.recommendedOrchestrators.map(orchestrator => (
                 <a
@@ -330,21 +325,33 @@ export function MemberDashboardSection({
                 </a>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
 
       {/* Team Spotlight */}
-      {data.teamSpotlight.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-base flex items-center gap-2'>
-              <UsersIcon className='h-4 w-4' />
-              Team Spotlight
-            </CardTitle>
-            <CardDescription>Get to know your teammates</CardDescription>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className='text-base flex items-center gap-2'>
+            <UsersIcon className='h-4 w-4' />
+            Team Members
+          </CardTitle>
+          <CardDescription>Meet your workspace teammates</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {data.teamSpotlight.length === 0 ? (
+            <div className='flex flex-col items-center justify-center py-6 text-center'>
+              <div className='rounded-full bg-muted p-3 mb-3'>
+                <UsersIcon className='h-5 w-5 text-muted-foreground' />
+              </div>
+              <p className='text-sm font-medium text-muted-foreground'>
+                No other members yet
+              </p>
+              <p className='text-xs text-muted-foreground mt-1'>
+                Invite teammates to get started
+              </p>
+            </div>
+          ) : (
             <div className='grid gap-4 md:grid-cols-2'>
               {data.teamSpotlight.map(member => (
                 <div
@@ -369,9 +376,9 @@ export function MemberDashboardSection({
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

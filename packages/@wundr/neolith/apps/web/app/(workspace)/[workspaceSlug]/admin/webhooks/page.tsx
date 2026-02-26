@@ -21,6 +21,16 @@ import {
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -155,6 +165,10 @@ export default function AdminWebhooksPage() {
   const [isSecretDialogOpen, setIsSecretDialogOpen] = useState(false);
   const [secretWebhook, setSecretWebhook] = useState<Webhook | null>(null);
   const [copiedSecret, setCopiedSecret] = useState(false);
+
+  // Delete Confirmation State
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [webhookToDelete, setWebhookToDelete] = useState<string | null>(null);
 
   // Filter State
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -298,10 +312,6 @@ export default function AdminWebhooksPage() {
   };
 
   const handleDeleteWebhook = async (webhookId: string) => {
-    if (!confirm('Are you sure you want to delete this webhook?')) {
-      return;
-    }
-
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/webhooks/${webhookId}`,
@@ -677,7 +687,10 @@ export default function AdminWebhooksPage() {
                         <Button
                           variant='ghost'
                           size='sm'
-                          onClick={() => handleDeleteWebhook(webhook.id)}
+                          onClick={() => {
+                            setWebhookToDelete(webhook.id);
+                            setDeleteDialogOpen(true);
+                          }}
                           title='Delete webhook'
                         >
                           <Trash2 className='h-4 w-4 text-red-500' />
@@ -1137,6 +1150,35 @@ const isValid = verifyWebhook(
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Webhook</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this webhook? This will
+              permanently remove the endpoint and all associated delivery
+              history. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+              onClick={() => {
+                if (webhookToDelete) {
+                  handleDeleteWebhook(webhookToDelete);
+                  setDeleteDialogOpen(false);
+                  setWebhookToDelete(null);
+                }
+              }}
+            >
+              Delete Webhook
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

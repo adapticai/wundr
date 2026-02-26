@@ -6,6 +6,8 @@ import {
   ShareIcon,
   type LucideIcon,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 import {
   DropdownMenu,
@@ -33,6 +35,12 @@ export function NavDocuments({
   }[];
 }) {
   const { isMobile } = useSidebar();
+  const params = useParams();
+  const workspaceSlug = params?.workspaceSlug as string | undefined;
+
+  const resolveUrl = (url: string) => {
+    return workspaceSlug ? `/${workspaceSlug}${url}` : url;
+  };
 
   return (
     <SidebarGroup className='group-data-[collapsible=icon]:hidden'>
@@ -41,10 +49,10 @@ export function NavDocuments({
         {items.map(item => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
+              <Link href={resolveUrl(item.url)}>
                 <item.icon />
                 <span>{item.name}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -61,9 +69,11 @@ export function NavDocuments({
                 side={isMobile ? 'bottom' : 'right'}
                 align={isMobile ? 'end' : 'start'}
               >
-                <DropdownMenuItem>
-                  <FolderIcon />
-                  <span>Open</span>
+                <DropdownMenuItem asChild>
+                  <Link href={resolveUrl(item.url)}>
+                    <FolderIcon />
+                    <span>Open</span>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <ShareIcon />

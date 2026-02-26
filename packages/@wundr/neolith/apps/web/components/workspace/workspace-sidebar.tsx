@@ -2,13 +2,14 @@
 
 import {
   LayoutDashboard,
-  Users,
+  Network,
   Bot,
   Workflow,
   Rocket,
   Bookmark,
   Settings,
-  HelpCircle,
+  BarChart3,
+  FileText,
   LogOut,
   Bell,
   ChevronsUpDown,
@@ -72,11 +73,10 @@ const navItems = [
     title: 'Dashboard',
     icon: LayoutDashboard,
     url: '/dashboard',
-    isActive: true,
   },
   {
     title: 'Orchestrators',
-    icon: Users,
+    icon: Network,
     url: '/orchestrators',
   },
   {
@@ -90,12 +90,22 @@ const navItems = [
     url: '/workflows',
   },
   {
+    title: 'Analytics',
+    icon: BarChart3,
+    url: '/analytics/overview',
+  },
+  {
+    title: 'Reports',
+    icon: FileText,
+    url: '/reports',
+  },
+  {
     title: 'Deployments',
     icon: Rocket,
     url: '/deployments',
   },
   {
-    title: 'Later',
+    title: 'Saved',
     icon: Bookmark,
     url: '/later',
   },
@@ -105,12 +115,7 @@ const secondaryItems = [
   {
     title: 'Workspace Settings',
     icon: Settings,
-    url: '/admin/settings',
-  },
-  {
-    title: 'Help & Support',
-    icon: HelpCircle,
-    url: '/help',
+    url: '/admin/settings/general',
   },
 ];
 
@@ -174,10 +179,6 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
   // Handle channel star toggle with optimistic updates
   const handleChannelStarChange = React.useCallback(
     (channelId: string, isStarred: boolean) => {
-      console.log('[WorkspaceSidebar] handleChannelStarChange:', {
-        channelId,
-        isStarred,
-      });
       const channel = allChannels.find(c => c.id === channelId);
       updateChannelStarStatus(channelId, isStarred, channel);
     },
@@ -187,10 +188,6 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
   // Handle DM star toggle with optimistic updates
   const handleDMStarChange = React.useCallback(
     (dmId: string, isStarred: boolean) => {
-      console.log('[WorkspaceSidebar] handleDMStarChange:', {
-        dmId,
-        isStarred,
-      });
       const dm = directMessages.find(d => d.id === dmId);
       updateDMStarStatus(dmId, isStarred, dm);
     },
@@ -227,7 +224,14 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
 
   const isActive = (url: string) => {
     const fullUrl = `/${workspaceId}${url}`;
-    return pathname === fullUrl || pathname?.startsWith(`${fullUrl}/`);
+    // For items that point to a sub-page, also match the parent segment
+    const parentSegment = url.split('/').slice(0, 2).join('/');
+    const parentUrl = `/${workspaceId}${parentSegment}`;
+    return (
+      pathname === fullUrl ||
+      pathname?.startsWith(`${fullUrl}/`) ||
+      (parentSegment !== url && pathname?.startsWith(`${parentUrl}/`))
+    );
   };
 
   return (
@@ -414,7 +418,7 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
                     <DropdownMenuItem asChild>
-                      <Link href={`/${workspaceId}/admin/billing`}>
+                      <Link href={`/${workspaceId}/settings/billing`}>
                         <CreditCard className='mr-2 h-4 w-4' />
                         Billing
                       </Link>

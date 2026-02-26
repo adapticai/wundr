@@ -22,7 +22,7 @@ interface AgentDetailPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (id: string, input: UpdateAgentInput) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
+  onDelete: (id: string) => void;
   isLoading?: boolean;
 }
 
@@ -35,7 +35,6 @@ export function AgentDetailPanel({
   isLoading = false,
 }: AgentDetailPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const [name, setName] = useState(agent.name);
   const [type, setType] = useState(agent.type);
@@ -89,15 +88,8 @@ export function AgentDetailPanel({
     setIsEditing(false);
   };
 
-  const handleDelete = async () => {
-    try {
-      await onDelete(agent.id);
-      setShowDeleteConfirm(false);
-      onClose();
-    } catch (error) {
-      console.error('Failed to delete agent:', error);
-      setShowDeleteConfirm(false);
-    }
+  const handleDelete = () => {
+    onDelete(agent.id);
   };
 
   const handleToolToggle = (tool: AvailableTool) => {
@@ -402,31 +394,7 @@ export function AgentDetailPanel({
 
         {/* Footer */}
         <div className='border-t px-6 py-4'>
-          {showDeleteConfirm ? (
-            <div className='flex items-center justify-between'>
-              <p className='text-sm text-foreground'>
-                Are you sure you want to delete this agent?
-              </p>
-              <div className='flex gap-2'>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={isLoading}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant='destructive'
-                  size='sm'
-                  onClick={handleDelete}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Deleting...' : 'Delete'}
-                </Button>
-              </div>
-            </div>
-          ) : isEditing ? (
+          {isEditing ? (
             <div className='flex items-center justify-end gap-2'>
               <Button
                 variant='outline'
@@ -443,7 +411,7 @@ export function AgentDetailPanel({
             <div className='flex items-center justify-between'>
               <Button
                 variant='destructive'
-                onClick={() => setShowDeleteConfirm(true)}
+                onClick={handleDelete}
                 disabled={isLoading}
               >
                 Delete Agent

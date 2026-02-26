@@ -1077,7 +1077,14 @@ export const adminQueries = {
     });
 
     return members.map(
-      (m: { id: string; userId: string; workspaceId: string; role: string; joinedAt: Date; user: unknown }) => ({
+      (m: {
+        id: string;
+        userId: string;
+        workspaceId: string;
+        role: string;
+        joinedAt: Date;
+        user: unknown;
+      }) => ({
         id: m.id,
         userId: m.userId,
         workspaceId: m.workspaceId,

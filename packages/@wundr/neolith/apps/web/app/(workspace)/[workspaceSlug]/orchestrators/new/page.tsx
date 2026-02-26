@@ -1,7 +1,7 @@
 /**
- * New OrchestratorCreation Page
+ * New Orchestrator Creation Page
  *
- * Conversational wizard for creating new Orchestrators (VPs).
+ * Conversational wizard for creating new Orchestrators.
  * Guides users through defining role, goals, capabilities, personality, and communication style.
  *
  * @module app/(workspace)/[workspaceId]/orchestrators/new/page
@@ -138,20 +138,19 @@ export default function NewOrchestratorPage() {
       <div className='mb-6 flex items-center gap-4'>
         <Button
           variant='ghost'
-          size='icon'
           onClick={handleCancel}
           disabled={isCreating}
-          aria-label='Back to orchestrators list'
+          className='gap-2'
         >
-          <ArrowLeft className='h-5 w-5' />
+          <ArrowLeft className='h-4 w-4' />
+          Orchestrators
         </Button>
-        <div>
-          <p className='text-sm text-muted-foreground'>
-            {viewMode === 'conversation'
-              ? 'Chat with AI to define your orchestrator'
-              : 'Review and finalize your orchestrator configuration'}
-          </p>
-        </div>
+        <span className='text-muted-foreground'>/</span>
+        <p className='text-sm text-muted-foreground'>
+          {viewMode === 'conversation'
+            ? 'Define via conversation'
+            : 'Review configuration'}
+        </p>
       </div>
 
       {/* Error Display */}

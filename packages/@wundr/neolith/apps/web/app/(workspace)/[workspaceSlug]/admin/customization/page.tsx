@@ -46,6 +46,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -126,6 +127,7 @@ export default function CustomizationPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const { toast } = useToast();
+  const { setPageHeader } = usePageHeader();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -198,6 +200,14 @@ export default function CustomizationPage() {
   const faviconInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader(
+      'Customization',
+      'Customize your workspace branding, appearance, and features'
+    );
+  }, [setPageHeader]);
 
   // Load settings
   useEffect(() => {
@@ -396,13 +406,7 @@ export default function CustomizationPage() {
 
   return (
     <div className='space-y-6'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <h1 className='text-2xl font-bold'>Customization</h1>
-          <p className='mt-1 text-muted-foreground'>
-            Customize your workspace branding, appearance, and features
-          </p>
-        </div>
+      <div className='flex items-center justify-end'>
         <Button onClick={handleSave} disabled={isSaving}>
           {isSaving ? (
             <>

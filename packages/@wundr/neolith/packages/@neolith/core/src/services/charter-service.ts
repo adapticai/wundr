@@ -274,8 +274,7 @@ export class CharterServiceImpl implements CharterService {
         values: data.values ?? existing.values,
         principles: data.principles ?? existing.principles,
         governance:
-          data.governance ??
-          (existing.governance as Record<string, unknown>),
+          data.governance ?? (existing.governance as Record<string, unknown>),
         security:
           data.security ?? (existing.security as Record<string, unknown>),
         communication:

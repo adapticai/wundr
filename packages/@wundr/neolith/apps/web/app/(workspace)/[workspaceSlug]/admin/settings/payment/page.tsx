@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 
 interface PaymentMethod {
@@ -67,7 +68,15 @@ interface Invoice {
 export default function PaymentMethodsPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
+  const { setPageHeader } = usePageHeader();
   const { toast } = useToast();
+
+  useEffect(() => {
+    setPageHeader(
+      'Payment Methods',
+      'Manage payment methods and view billing history'
+    );
+  }, [setPageHeader]);
 
   // Data State
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
@@ -269,7 +278,7 @@ export default function PaymentMethodsPage() {
     return groups ? groups.join(' ') : cleaned;
   };
 
-  const getCardBrandIcon = (_brand: string) => {
+  const getCardBrandIcon = () => {
     return <CreditCard className='h-5 w-5' />;
   };
 
@@ -279,13 +288,6 @@ export default function PaymentMethodsPage() {
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-bold'>Payment Methods</h1>
-        <p className='mt-1 text-muted-foreground'>
-          Manage payment methods and view billing history
-        </p>
-      </div>
-
       {/* Payment Methods */}
       <Card>
         <CardHeader>
@@ -317,7 +319,7 @@ export default function PaymentMethodsPage() {
                   className='flex items-center justify-between rounded-lg border p-4'
                 >
                   <div className='flex items-center gap-4'>
-                    {getCardBrandIcon(method.brand)}
+                    {getCardBrandIcon()}
                     <div>
                       <div className='flex items-center gap-2'>
                         <p className='font-medium'>

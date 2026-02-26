@@ -1,5 +1,6 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
@@ -21,13 +22,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import { useToast } from '@/components/ui/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 import { TrafficDashboard } from '@/components/traffic-manager/traffic-dashboard';
 import { RoutingPanel } from '@/components/traffic-manager/routing-panel';
 
@@ -50,7 +46,13 @@ interface TrafficConfig {
   fallbackBehavior: 'default_agent' | 'round_robin' | 'queue';
 }
 
-const ESCALATION_LEVELS = ['LOW', 'NORMAL', 'HIGH', 'URGENT', 'CRITICAL'] as const;
+const ESCALATION_LEVELS = [
+  'LOW',
+  'NORMAL',
+  'HIGH',
+  'URGENT',
+  'CRITICAL',
+] as const;
 const FALLBACK_OPTIONS = [
   { value: 'default_agent', label: 'Default Agent' },
   { value: 'round_robin', label: 'Round Robin' },
@@ -89,22 +91,34 @@ function SettingsTab({
       .then(data => {
         if (data?.data) setConfig({ ...DEFAULT_CONFIG, ...data.data });
       })
-      .catch(() => {/* use defaults */})
+      .catch(() => {
+        /* use defaults */
+      })
       .finally(() => setLoading(false));
   }, [workspaceId]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/traffic-manager?workspaceId=${workspaceId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
-      });
+      const res = await fetch(
+        `/api/traffic-manager?workspaceId=${workspaceId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config),
+        }
+      );
       if (!res.ok) throw new Error('Save failed');
-      toast({ title: 'Settings saved', description: 'Traffic manager configuration updated.' });
+      toast({
+        title: 'Settings saved',
+        description: 'Traffic manager configuration updated.',
+      });
     } catch {
-      toast({ title: 'Error', description: 'Failed to save settings.', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'Failed to save settings.',
+        variant: 'destructive',
+      });
     } finally {
       setSaving(false);
     }
@@ -112,8 +126,8 @@ function SettingsTab({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <div className="text-muted-foreground">Loading settings...</div>
+      <div className='flex items-center justify-center p-12'>
+        <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
       </div>
     );
   }
@@ -126,23 +140,27 @@ function SettingsTab({
           Configure how messages are routed across your workspace.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className='space-y-6'>
         {/* Default Agent */}
-        <div className="space-y-2">
-          <Label htmlFor="default-agent">Default Agent</Label>
+        <div className='space-y-2'>
+          <Label htmlFor='default-agent'>Default Agent</Label>
           <Select
             value={config.defaultAgentId}
-            onValueChange={val => setConfig(prev => ({ ...prev, defaultAgentId: val }))}
+            onValueChange={val =>
+              setConfig(prev => ({ ...prev, defaultAgentId: val }))
+            }
           >
-            <SelectTrigger id="default-agent">
-              <SelectValue placeholder="Select default agent" />
+            <SelectTrigger id='default-agent'>
+              <SelectValue placeholder='Select default agent' />
             </SelectTrigger>
             <SelectContent>
               {orchestrators.map(o => (
                 <SelectItem key={o.id} value={o.id}>
                   {o.name}
                   {o.discipline && (
-                    <span className="ml-1 text-xs text-muted-foreground">({o.discipline})</span>
+                    <span className='ml-1 text-xs text-muted-foreground'>
+                      ({o.discipline})
+                    </span>
                   )}
                 </SelectItem>
               ))}
@@ -151,11 +169,11 @@ function SettingsTab({
         </div>
 
         {/* Toggles */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+        <div className='space-y-4'>
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
               <Label>Content Analysis</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className='text-sm text-muted-foreground'>
                 Analyse message content to improve routing accuracy.
               </p>
             </div>
@@ -166,10 +184,10 @@ function SettingsTab({
               }
             />
           </div>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+          <div className='flex items-center justify-between'>
+            <div className='space-y-0.5'>
               <Label>Load Balancing</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className='text-sm text-muted-foreground'>
                 Distribute messages evenly across available agents.
               </p>
             </div>
@@ -183,11 +201,11 @@ function SettingsTab({
         </div>
 
         {/* Max Latency */}
-        <div className="space-y-2">
-          <Label htmlFor="max-latency">Max Routing Latency (ms)</Label>
+        <div className='space-y-2'>
+          <Label htmlFor='max-latency'>Max Routing Latency (ms)</Label>
           <Input
-            id="max-latency"
-            type="number"
+            id='max-latency'
+            type='number'
             min={0}
             value={config.maxRoutingLatencyMs}
             onChange={e =>
@@ -196,23 +214,24 @@ function SettingsTab({
                 maxRoutingLatencyMs: Number(e.target.value),
               }))
             }
-            className="max-w-xs"
+            className='max-w-xs'
           />
         </div>
 
         {/* Escalation Threshold */}
-        <div className="space-y-2">
-          <Label htmlFor="escalation-threshold">Escalation Threshold</Label>
+        <div className='space-y-2'>
+          <Label htmlFor='escalation-threshold'>Escalation Threshold</Label>
           <Select
             value={config.escalationThreshold}
             onValueChange={val =>
               setConfig(prev => ({
                 ...prev,
-                escalationThreshold: val as TrafficConfig['escalationThreshold'],
+                escalationThreshold:
+                  val as TrafficConfig['escalationThreshold'],
               }))
             }
           >
-            <SelectTrigger id="escalation-threshold" className="max-w-xs">
+            <SelectTrigger id='escalation-threshold' className='max-w-xs'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -226,8 +245,8 @@ function SettingsTab({
         </div>
 
         {/* Fallback Behavior */}
-        <div className="space-y-2">
-          <Label htmlFor="fallback-behavior">Fallback Behavior</Label>
+        <div className='space-y-2'>
+          <Label htmlFor='fallback-behavior'>Fallback Behavior</Label>
           <Select
             value={config.fallbackBehavior}
             onValueChange={val =>
@@ -237,7 +256,7 @@ function SettingsTab({
               }))
             }
           >
-            <SelectTrigger id="fallback-behavior" className="max-w-xs">
+            <SelectTrigger id='fallback-behavior' className='max-w-xs'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -250,7 +269,7 @@ function SettingsTab({
           </Select>
         </div>
 
-        <div className="pt-2">
+        <div className='pt-2'>
           <Button onClick={handleSave} disabled={saving}>
             {saving ? 'Saving...' : 'Save Settings'}
           </Button>
@@ -287,46 +306,51 @@ export default function TrafficManagerPage() {
   }, [workspaceSlug]);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className='flex flex-col gap-6'>
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Traffic Manager</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h1 className='text-2xl font-semibold tracking-tight'>
+          Traffic Manager
+        </h1>
+        <p className='mt-1 text-sm text-muted-foreground'>
           Monitor routing activity, manage rules, and configure how messages are
           dispatched to agents across your workspace.
         </p>
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="dashboard">
+      <Tabs defaultValue='dashboard'>
         <TabsList>
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="routing">Routing Rules</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value='dashboard'>Dashboard</TabsTrigger>
+          <TabsTrigger value='routing'>Routing Rules</TabsTrigger>
+          <TabsTrigger value='settings'>Settings</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dashboard" className="mt-6">
+        <TabsContent value='dashboard' className='mt-6'>
           {workspaceId ? (
             <TrafficDashboard workspaceId={workspaceId} />
           ) : (
-            <div className="flex items-center justify-center p-12">
-              <div className="text-muted-foreground">Loading workspace...</div>
+            <div className='flex items-center justify-center p-12'>
+              <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
             </div>
           )}
         </TabsContent>
 
-        <TabsContent value="routing" className="mt-6">
+        <TabsContent value='routing' className='mt-6'>
           {workspaceId ? (
             <RoutingPanel workspaceId={workspaceId} agents={orchestrators} />
           ) : (
-            <div className="flex items-center justify-center p-12">
-              <div className="text-muted-foreground">Loading workspace...</div>
+            <div className='flex items-center justify-center p-12'>
+              <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
             </div>
           )}
         </TabsContent>
 
-        <TabsContent value="settings" className="mt-6">
-          <SettingsTab workspaceId={workspaceId} orchestrators={orchestrators} />
+        <TabsContent value='settings' className='mt-6'>
+          <SettingsTab
+            workspaceId={workspaceId}
+            orchestrators={orchestrators}
+          />
         </TabsContent>
       </Tabs>
     </div>

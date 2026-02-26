@@ -11,31 +11,21 @@ import { EmptyState } from '@/components/ui/empty-state';
 
 interface EmptyOrchestratorsProps {
   onCreateOrchestrator?: () => void;
-  onBrowseTemplates?: () => void;
 }
 
 export function EmptyOrchestrators({
   onCreateOrchestrator,
-  onBrowseTemplates,
 }: EmptyOrchestratorsProps) {
   return (
     <EmptyState
       icon={Bot}
       title='No Orchestrators yet'
-      description="Create your first Orchestrator to automate workflows and enhance your team's capabilities."
+      description='Create your first Orchestrator to automate workflows and coordinate tasks across your workspace.'
       action={
         onCreateOrchestrator
           ? {
               label: 'Create Orchestrator',
               onClick: onCreateOrchestrator,
-            }
-          : undefined
-      }
-      secondaryAction={
-        onBrowseTemplates
-          ? {
-              label: 'Browse Templates',
-              onClick: onBrowseTemplates,
             }
           : undefined
       }

@@ -8,6 +8,8 @@ import {
   Mail,
   Users,
   AlertCircle,
+  UserCircle,
+  ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -311,7 +313,7 @@ export default function InvitePage({ params }: InvitePageProps) {
 
           {invitation?.inviterName && (
             <div className='flex items-start gap-3'>
-              <CheckCircle className='h-5 w-5 text-muted-foreground mt-0.5' />
+              <UserCircle className='h-5 w-5 text-muted-foreground mt-0.5' />
               <div>
                 <p className='text-sm font-medium'>Invited by</p>
                 <p className='text-sm text-muted-foreground'>
@@ -323,7 +325,7 @@ export default function InvitePage({ params }: InvitePageProps) {
           )}
 
           <div className='flex items-start gap-3'>
-            <AlertCircle className='h-5 w-5 text-muted-foreground mt-0.5' />
+            <ShieldCheck className='h-5 w-5 text-muted-foreground mt-0.5' />
             <div>
               <p className='text-sm font-medium'>Role</p>
               <p className='text-sm text-muted-foreground capitalize'>
@@ -393,11 +395,11 @@ export default function InvitePage({ params }: InvitePageProps) {
       ) : (
         <div className='space-y-3'>
           <Button className='w-full' asChild>
-            <Link href={`/register?invite=${token}`}>Create Account</Link>
+            <Link href={`/register?invite=${token}`}>Create an account</Link>
           </Button>
           <Button variant='outline' className='w-full' asChild>
             <Link href={`/login?invite=${token}`}>
-              Already have an account? Sign in
+              Sign in to existing account
             </Link>
           </Button>
         </div>

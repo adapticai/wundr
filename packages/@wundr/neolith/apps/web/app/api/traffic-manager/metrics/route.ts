@@ -69,45 +69,85 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
     // Total and aggregations (last hour)
-    const [totalCount, methodDistribution, agentCounts, avgLatency, escalatedCount, fallbackCount, recentDecisions] =
-      await Promise.all([
-        // Total messages routed
-        routingDecisionModel.count({
-          where: { organizationId: workspace.organizationId, createdAt: { gte: oneHourAgo } },
-        }).catch(() => 0),
+    const [
+      totalCount,
+      methodDistribution,
+      agentCounts,
+      avgLatency,
+      escalatedCount,
+      fallbackCount,
+      recentDecisions,
+    ] = await Promise.all([
+      // Total messages routed
+      routingDecisionModel
+        .count({
+          where: {
+            organizationId: workspace.organizationId,
+            createdAt: { gte: oneHourAgo },
+          },
+        })
+        .catch(() => 0),
 
-        // Distribution by matchedBy
-        routingDecisionModel.groupBy({
+      // Distribution by matchedBy
+      routingDecisionModel
+        .groupBy({
           by: ['matchedBy'],
-          where: { organizationId: workspace.organizationId, createdAt: { gte: oneHourAgo } },
+          where: {
+            organizationId: workspace.organizationId,
+            createdAt: { gte: oneHourAgo },
+          },
           _count: { id: true },
-        }).catch(() => []),
+        })
+        .catch(() => []),
 
-        // Per-agent counts
-        routingDecisionModel.groupBy({
+      // Per-agent counts
+      routingDecisionModel
+        .groupBy({
           by: ['agentId'],
-          where: { organizationId: workspace.organizationId, createdAt: { gte: oneHourAgo } },
+          where: {
+            organizationId: workspace.organizationId,
+            createdAt: { gte: oneHourAgo },
+          },
           _count: { id: true },
-        }).catch(() => []),
+        })
+        .catch(() => []),
 
-        // Average routing latency
-        routingDecisionModel.aggregate({
-          where: { organizationId: workspace.organizationId, createdAt: { gte: oneHourAgo } },
+      // Average routing latency
+      routingDecisionModel
+        .aggregate({
+          where: {
+            organizationId: workspace.organizationId,
+            createdAt: { gte: oneHourAgo },
+          },
           _avg: { routingLatencyMs: true },
-        }).catch(() => ({ _avg: { routingLatencyMs: null } })),
+        })
+        .catch(() => ({ _avg: { routingLatencyMs: null } })),
 
-        // Escalation count
-        routingDecisionModel.count({
-          where: { organizationId: workspace.organizationId, createdAt: { gte: oneHourAgo }, escalated: true },
-        }).catch(() => 0),
+      // Escalation count
+      routingDecisionModel
+        .count({
+          where: {
+            organizationId: workspace.organizationId,
+            createdAt: { gte: oneHourAgo },
+            escalated: true,
+          },
+        })
+        .catch(() => 0),
 
-        // Fallback count
-        routingDecisionModel.count({
-          where: { organizationId: workspace.organizationId, createdAt: { gte: oneHourAgo }, fallbackUsed: true },
-        }).catch(() => 0),
+      // Fallback count
+      routingDecisionModel
+        .count({
+          where: {
+            organizationId: workspace.organizationId,
+            createdAt: { gte: oneHourAgo },
+            fallbackUsed: true,
+          },
+        })
+        .catch(() => 0),
 
-        // Recent 20 decisions
-        routingDecisionModel.findMany({
+      // Recent 20 decisions
+      routingDecisionModel
+        .findMany({
           where: { organizationId: workspace.organizationId },
           orderBy: { createdAt: 'desc' },
           take: 20,
@@ -122,32 +162,45 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             routingLatencyMs: true,
             createdAt: true,
           },
-        }).catch(() => []),
-      ]);
+        })
+        .catch(() => []),
+    ]);
 
     // Build distribution map
     const routingMethodDistribution: Record<string, number> = {};
-    for (const row of methodDistribution as Array<{ matchedBy: string; _count: { id: number } }>) {
+    for (const row of methodDistribution as Array<{
+      matchedBy: string;
+      _count: { id: number };
+    }>) {
       routingMethodDistribution[row.matchedBy] = row._count.id;
     }
 
     // Build agent utilization map
     const agentUtilization: Record<string, number> = {};
     const total = (totalCount as number) || 1;
-    for (const row of agentCounts as Array<{ agentId: string; _count: { id: number } }>) {
+    for (const row of agentCounts as Array<{
+      agentId: string;
+      _count: { id: number };
+    }>) {
       agentUtilization[row.agentId] = row._count.id / total;
     }
 
     // Messages per minute (last 5 min window)
-    const recentCount = await routingDecisionModel.count({
-      where: { organizationId: workspace.organizationId, createdAt: { gte: fiveMinutesAgo } },
-    }).catch(() => 0);
+    const recentCount = await routingDecisionModel
+      .count({
+        where: {
+          organizationId: workspace.organizationId,
+          createdAt: { gte: fiveMinutesAgo },
+        },
+      })
+      .catch(() => 0);
     const messagesPerMinute = (recentCount as number) / 5;
 
     return NextResponse.json({
       data: {
         totalMessagesRouted: totalCount as number,
-        averageRoutingLatencyMs: (avgLatency as any)?._avg?.routingLatencyMs ?? 0,
+        averageRoutingLatencyMs:
+          (avgLatency as any)?._avg?.routingLatencyMs ?? 0,
         messagesPerMinute,
         escalationRate: total > 0 ? (escalatedCount as number) / total : 0,
         fallbackRate: total > 0 ? (fallbackCount as number) / total : 0,

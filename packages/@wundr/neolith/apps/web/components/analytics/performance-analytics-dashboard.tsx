@@ -415,6 +415,12 @@ export function PerformanceAnalyticsDashboard({
 
   return (
     <div className='space-y-6'>
+      {/* Data notice */}
+      <div className='rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400'>
+        Performance monitoring integration is coming soon. The metrics shown
+        below are illustrative and do not reflect actual system performance.
+      </div>
+
       {/* Header with Status Badge */}
       <div className='flex items-center justify-between'>
         <div>

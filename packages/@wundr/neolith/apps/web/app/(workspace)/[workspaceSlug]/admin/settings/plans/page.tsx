@@ -23,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -110,11 +111,19 @@ const AVAILABLE_PLANS: Plan[] = [
 export default function PlansUsagePage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
+  const { setPageHeader } = usePageHeader();
   const { toast } = useToast();
+
+  useEffect(() => {
+    setPageHeader(
+      'Plans & Usage',
+      'Manage your workspace plan and monitor usage'
+    );
+  }, [setPageHeader]);
 
   const [currentPlan, setCurrentPlan] = useState<CurrentPlan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isUpgrading, setIsUpgrading] = useState(false);
+  const [upgradingPlanId, setUpgradingPlanId] = useState<string | null>(null);
 
   // Load current plan and usage
   useEffect(() => {
@@ -144,7 +153,7 @@ export default function PlansUsagePage() {
   }, [workspaceSlug, toast]);
 
   const handleUpgrade = async (planId: string) => {
-    setIsUpgrading(true);
+    setUpgradingPlanId(planId);
     try {
       const response = await fetch(
         `/api/workspaces/${workspaceSlug}/billing/upgrade`,
@@ -156,25 +165,25 @@ export default function PlansUsagePage() {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to upgrade plan');
+        throw new Error('Failed to change plan');
       }
 
       const data = await response.json();
       setCurrentPlan(data);
 
       toast({
-        title: 'Success',
-        description: 'Plan upgraded successfully',
+        title: 'Plan updated',
+        description: 'Your workspace plan has been updated successfully',
       });
     } catch (error) {
       toast({
         title: 'Error',
         description:
-          error instanceof Error ? error.message : 'Failed to upgrade plan',
+          error instanceof Error ? error.message : 'Failed to change plan',
         variant: 'destructive',
       });
     } finally {
-      setIsUpgrading(false);
+      setUpgradingPlanId(null);
     }
   };
 
@@ -197,13 +206,6 @@ export default function PlansUsagePage() {
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-bold'>Plans & Usage</h1>
-        <p className='mt-1 text-muted-foreground'>
-          Manage your workspace plan and monitor usage
-        </p>
-      </div>
-
       {/* Current Plan */}
       <Card>
         <CardHeader>
@@ -235,11 +237,23 @@ export default function PlansUsagePage() {
             </div>
             {plan.id !== 'enterprise' && (
               <Button
-                onClick={() => handleUpgrade('enterprise')}
-                disabled={isUpgrading}
+                onClick={() => {
+                  const nextPlan = plan.id === 'free' ? 'pro' : 'enterprise';
+                  handleUpgrade(nextPlan);
+                }}
+                disabled={upgradingPlanId !== null}
               >
-                <ArrowUpCircle className='h-4 w-4 mr-2' />
-                Upgrade Plan
+                {upgradingPlanId !== null ? (
+                  <>
+                    <ArrowUpCircle className='h-4 w-4 mr-2 animate-spin' />
+                    Upgrading...
+                  </>
+                ) : (
+                  <>
+                    <ArrowUpCircle className='h-4 w-4 mr-2' />
+                    Upgrade Plan
+                  </>
+                )}
               </Button>
             )}
           </div>
@@ -338,7 +352,7 @@ export default function PlansUsagePage() {
                 plan={availablePlan}
                 isCurrentPlan={plan.id === availablePlan.id}
                 onUpgrade={handleUpgrade}
-                isUpgrading={isUpgrading}
+                isUpgrading={upgradingPlanId === availablePlan.id}
               />
             ))}
           </div>

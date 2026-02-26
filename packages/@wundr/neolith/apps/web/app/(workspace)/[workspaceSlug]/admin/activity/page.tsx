@@ -344,13 +344,13 @@ function ActivityRow({
   return (
     <>
       {showDate && (
-        <div className='border-t bg-stone/50 px-4 py-2 text-xs font-medium text-muted-foreground'>
+        <div className='border-t bg-muted/50 px-4 py-2 text-xs font-medium text-muted-foreground'>
           {formatDate(timestamp)}
         </div>
       )}
       <div className='flex items-start gap-4 px-4 py-4'>
         {/* Actor Avatar */}
-        <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-stone'>
+        <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-muted'>
           <UserIcon className='h-5 w-5 text-muted-foreground' />
         </div>
 

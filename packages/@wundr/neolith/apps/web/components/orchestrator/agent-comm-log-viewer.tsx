@@ -97,13 +97,7 @@ function formatTime(iso: string): string {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-function StatCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) {
+function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
     <Card>
       <CardContent className='pt-4 pb-3'>
@@ -206,7 +200,13 @@ export function AgentCommLogViewer({
     fetchLogs(true);
     fetchStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workspaceId, orchestratorId, channelFilter, directionFilter, statusFilter]);
+  }, [
+    workspaceId,
+    orchestratorId,
+    channelFilter,
+    directionFilter,
+    statusFilter,
+  ]);
 
   const filteredLogs = search
     ? logs.filter(
@@ -224,10 +224,7 @@ export function AgentCommLogViewer({
       {stats && (
         <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
           <StatCard label='Total Messages' value={stats.totalMessages} />
-          <StatCard
-            label='Delivery Rate'
-            value={`${stats.deliveryRate}%`}
-          />
+          <StatCard label='Delivery Rate' value={`${stats.deliveryRate}%`} />
           <StatCard label='Avg Response Time' value={stats.avgResponseTime} />
           <StatCard label='Active Channels' value={stats.activeChannels} />
         </div>
@@ -364,8 +361,8 @@ export function AgentCommLogViewer({
                     <TableCell className='text-xs'>
                       <span className='text-muted-foreground'>
                         {log.direction === 'inbound'
-                          ? log.senderName ?? 'Unknown'
-                          : log.recipientName ?? 'Unknown'}
+                          ? (log.senderName ?? 'Unknown')
+                          : (log.recipientName ?? 'Unknown')}
                       </span>
                     </TableCell>
                     <TableCell className='max-w-[260px]'>

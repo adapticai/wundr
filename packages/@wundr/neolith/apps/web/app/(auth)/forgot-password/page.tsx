@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input } from '@neolith/ui';
+import { Button, Input, Label } from '@neolith/ui';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -79,7 +79,11 @@ export default function ForgotPasswordPage() {
 
       {/* Error Message */}
       {error && (
-        <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
+        <div
+          role='alert'
+          aria-live='polite'
+          className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'
+        >
           {error}
         </div>
       )}
@@ -87,18 +91,23 @@ export default function ForgotPasswordPage() {
       {/* Email Form */}
       {!success && (
         <form onSubmit={handleSubmit} className='space-y-4'>
-          <Input
-            type='email'
-            placeholder='Email address'
-            value={email}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setEmail(e.target.value)
-            }
-            disabled={isLoading}
-            autoComplete='email'
-            autoFocus
-            required
-          />
+          <div className='space-y-2'>
+            <Label htmlFor='forgot-email'>Email address</Label>
+            <Input
+              id='forgot-email'
+              type='email'
+              placeholder='you@example.com'
+              value={email}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setEmail(e.target.value)
+              }
+              disabled={isLoading}
+              autoComplete='email'
+              autoFocus
+              required
+              aria-label='Email address'
+            />
+          </div>
           <Button type='submit' className='w-full' disabled={isLoading}>
             {isLoading ? 'Sending...' : 'Send reset link'}
           </Button>

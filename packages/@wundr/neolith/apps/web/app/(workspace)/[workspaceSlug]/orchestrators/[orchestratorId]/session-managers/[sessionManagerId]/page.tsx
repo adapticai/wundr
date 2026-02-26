@@ -115,6 +115,7 @@ export default function SessionManagerDetailPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [isCreateSubagentOpen, setIsCreateSubagentOpen] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch session manager data
@@ -167,6 +168,7 @@ export default function SessionManagerDetailPage() {
     const action =
       sessionManager.status === 'ACTIVE' ? 'deactivate' : 'activate';
     setIsActivating(true);
+    setActionError(null);
 
     try {
       const response = await fetch(
@@ -180,8 +182,12 @@ export default function SessionManagerDetailPage() {
 
       await fetchSessionManager();
     } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : `Failed to ${action} session manager`;
+      setActionError(message);
       console.error(`Failed to ${action} session manager:`, err);
-      alert(`Failed to ${action} session manager`);
     } finally {
       setIsActivating(false);
     }
@@ -338,7 +344,10 @@ export default function SessionManagerDetailPage() {
                   </>
                 )}
               </Button>
-              <Button variant='outline'>
+              <Button
+                variant='outline'
+                onClick={() => setActiveTab('configuration')}
+              >
                 <Settings className='h-4 w-4 mr-2' />
                 Configure
               </Button>
@@ -346,6 +355,20 @@ export default function SessionManagerDetailPage() {
           </div>
         </CardHeader>
       </Card>
+
+      {/* Action Error */}
+      {actionError && (
+        <div className='rounded-lg border border-red-200 bg-red-50 p-3 flex items-center justify-between'>
+          <p className='text-sm text-red-700'>{actionError}</p>
+          <button
+            type='button'
+            onClick={() => setActionError(null)}
+            className='text-red-500 hover:text-red-700 text-xs underline'
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Stats Overview */}
       <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
@@ -505,9 +528,7 @@ export default function SessionManagerDetailPage() {
                     </span>
                   </div>
                   <p className='text-xs text-muted-foreground'>
-                    Estimated usage: ~
-                    {Math.round(activeSubagents * 5000).toLocaleString()}{' '}
-                    tokens/hr
+                    Budget limit per hour for all subagents combined
                   </p>
                 </div>
               </div>

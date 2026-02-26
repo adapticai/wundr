@@ -166,7 +166,7 @@ export default function CallPage() {
       fetchCallDetails();
     } else if (!isAuthLoading && !user) {
       // Redirect to login
-      router.push(`/login?redirect=/workspace/${workspaceId}/call/${callId}`);
+      router.push(`/login?redirect=/${workspaceId}/call/${callId}`);
     }
   }, [isAuthLoading, user, fetchCallDetails, router, workspaceId, callId]);
 

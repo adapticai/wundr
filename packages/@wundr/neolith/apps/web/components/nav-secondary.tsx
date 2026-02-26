@@ -1,5 +1,8 @@
 'use client';
 
+import type { LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useParams } from 'next/navigation';
 import * as React from 'react';
 
 import {
@@ -9,8 +12,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-
-import type { LucideIcon } from 'lucide-react';
 
 export function NavSecondary({
   items,
@@ -22,17 +23,30 @@ export function NavSecondary({
     icon: LucideIcon;
   }[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+  const pathname = usePathname();
+  const params = useParams();
+  const workspaceSlug = params?.workspaceSlug as string | undefined;
+
+  const isActive = (url: string) => {
+    const fullUrl = workspaceSlug ? `/${workspaceSlug}${url}` : url;
+    return pathname === fullUrl || pathname?.startsWith(`${fullUrl}/`);
+  };
+
+  const resolveUrl = (url: string) => {
+    return workspaceSlug ? `/${workspaceSlug}${url}` : url;
+  };
+
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map(item => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild>
-                <a href={item.url}>
+              <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                <Link href={resolveUrl(item.url)}>
                   <item.icon />
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

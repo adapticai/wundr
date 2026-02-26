@@ -9,6 +9,7 @@ import {
   Loader2,
   History,
 } from 'lucide-react';
+import { useEffect } from 'react';
 import { useState } from 'react';
 
 import { DangerZone } from '@/components/settings/security/DangerZone';
@@ -57,6 +58,27 @@ export default function SecuritySettingsPage() {
     showReadReceipts: true,
     loginAlerts: true,
   });
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+
+  // Load security settings from API
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await fetch('/api/user/security');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.settings) {
+            setSettings(prev => ({ ...prev, ...data.settings }));
+          }
+        }
+      } catch {
+        // Settings will use defaults on failure
+      } finally {
+        setIsLoadingSettings(false);
+      }
+    };
+    loadSettings();
+  }, []);
 
   // Use custom hooks for data fetching
   const {
@@ -259,12 +281,20 @@ export default function SecuritySettingsPage() {
     }
   };
 
+  if (isLoadingSettings) {
+    return (
+      <div className='flex items-center justify-center min-h-[400px]'>
+        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+      </div>
+    );
+  }
+
   return (
     <div className='space-y-6'>
       <div>
         <h1 className='text-2xl font-bold'>Security Settings</h1>
         <p className='mt-1 text-muted-foreground'>
-          Comprehensive account security and privacy management
+          Manage your account security and authentication methods
         </p>
       </div>
 

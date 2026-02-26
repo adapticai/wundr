@@ -178,31 +178,16 @@ export default function ActivityPage() {
             )}
           </p>
         </div>
-        <div className='flex gap-2'>
-          <button
-            type='button'
-            onClick={pollNow}
-            disabled={isLoading}
-            className='inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50'
-            title='Check for new activities'
-          >
-            <RefreshIcon
-              className={cn('h-4 w-4', isLoading && 'animate-spin')}
-            />
-            Check Now
-          </button>
-          <button
-            type='button'
-            onClick={refresh}
-            disabled={isLoading}
-            className='inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50'
-          >
-            <RefreshIcon
-              className={cn('h-4 w-4', isLoading && 'animate-spin')}
-            />
-            Refresh
-          </button>
-        </div>
+        <button
+          type='button'
+          onClick={refresh}
+          disabled={isLoading}
+          className='inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50'
+          title='Refresh activity feed'
+        >
+          <RefreshIcon className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+          Refresh
+        </button>
       </div>
 
       {/* Filters */}
@@ -314,20 +299,28 @@ export default function ActivityPage() {
       {!isLoading && !error && activities.length === 0 && (
         <EmptyState
           icon={Activity}
-          title='No Activity Yet'
-          description={
-            typeFilter === 'all'
-              ? 'Activity will appear here as your team works in this workspace.'
-              : `No ${typeFilter} activities found for the selected time period. Try adjusting your filters.`
+          title={
+            typeFilter === 'all' && dateRange === 'all'
+              ? 'No activity yet'
+              : 'No activity found'
           }
-          action={{
-            label: 'Clear Filters',
-            onClick: () => {
-              setTypeFilter('all');
-              setDateRange('all');
-            },
-            variant: 'outline',
-          }}
+          description={
+            typeFilter === 'all' && dateRange === 'all'
+              ? 'Activity will appear here as your team works in this workspace.'
+              : 'No activities match your current filters. Try adjusting the type or time range.'
+          }
+          action={
+            typeFilter !== 'all' || dateRange !== 'all'
+              ? {
+                  label: 'Clear filters',
+                  onClick: () => {
+                    setTypeFilter('all');
+                    setDateRange('all');
+                  },
+                  variant: 'outline',
+                }
+              : undefined
+          }
         />
       )}
 

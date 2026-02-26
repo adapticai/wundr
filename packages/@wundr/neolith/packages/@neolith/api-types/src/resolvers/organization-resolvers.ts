@@ -355,7 +355,9 @@ function parseCursor(cursor: string): { timestamp: Date; id: string } | null {
 /**
  * Create success payload
  */
-function createSuccessPayload(organization: OrganizationEntity): OrganizationPayload {
+function createSuccessPayload(
+  organization: OrganizationEntity
+): OrganizationPayload {
   return { organization, errors: [] };
 }
 

@@ -38,7 +38,10 @@ export async function GET(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', COMMUNICATION_ERROR_CODES.UNAUTHORIZED),
+        createErrorResponse(
+          'Authentication required',
+          COMMUNICATION_ERROR_CODES.UNAUTHORIZED
+        ),
         { status: 401 }
       );
     }
@@ -47,7 +50,10 @@ export async function GET(
     const paramResult = logIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid log ID', COMMUNICATION_ERROR_CODES.VALIDATION_ERROR),
+        createErrorResponse(
+          'Invalid log ID',
+          COMMUNICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
         { status: 400 }
       );
     }
@@ -60,7 +66,10 @@ export async function GET(
 
     if (!log) {
       return NextResponse.json(
-        createErrorResponse('Communication log not found', COMMUNICATION_ERROR_CODES.LOG_NOT_FOUND),
+        createErrorResponse(
+          'Communication log not found',
+          COMMUNICATION_ERROR_CODES.LOG_NOT_FOUND
+        ),
         { status: 404 }
       );
     }
@@ -69,7 +78,10 @@ export async function GET(
   } catch (error) {
     console.error('[GET /api/communications/:logId] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', COMMUNICATION_ERROR_CODES.INTERNAL_ERROR),
+      createErrorResponse(
+        'An internal error occurred',
+        COMMUNICATION_ERROR_CODES.INTERNAL_ERROR
+      ),
       { status: 500 }
     );
   }
@@ -88,7 +100,10 @@ export async function PATCH(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', COMMUNICATION_ERROR_CODES.UNAUTHORIZED),
+        createErrorResponse(
+          'Authentication required',
+          COMMUNICATION_ERROR_CODES.UNAUTHORIZED
+        ),
         { status: 401 }
       );
     }
@@ -97,7 +112,10 @@ export async function PATCH(
     const paramResult = logIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
-        createErrorResponse('Invalid log ID', COMMUNICATION_ERROR_CODES.VALIDATION_ERROR),
+        createErrorResponse(
+          'Invalid log ID',
+          COMMUNICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
         { status: 400 }
       );
     }
@@ -107,7 +125,10 @@ export async function PATCH(
       body = await request.json();
     } catch {
       return NextResponse.json(
-        createErrorResponse('Invalid JSON body', COMMUNICATION_ERROR_CODES.VALIDATION_ERROR),
+        createErrorResponse(
+          'Invalid JSON body',
+          COMMUNICATION_ERROR_CODES.VALIDATION_ERROR
+        ),
         { status: 400 }
       );
     }
@@ -115,9 +136,13 @@ export async function PATCH(
     const parseResult = updateCommunicationLogSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        createErrorResponse('Validation failed', COMMUNICATION_ERROR_CODES.VALIDATION_ERROR, {
-          errors: parseResult.error.flatten().fieldErrors,
-        }),
+        createErrorResponse(
+          'Validation failed',
+          COMMUNICATION_ERROR_CODES.VALIDATION_ERROR,
+          {
+            errors: parseResult.error.flatten().fieldErrors,
+          }
+        ),
         { status: 400 }
       );
     }
@@ -130,7 +155,10 @@ export async function PATCH(
 
     if (!existing) {
       return NextResponse.json(
-        createErrorResponse('Communication log not found', COMMUNICATION_ERROR_CODES.LOG_NOT_FOUND),
+        createErrorResponse(
+          'Communication log not found',
+          COMMUNICATION_ERROR_CODES.LOG_NOT_FOUND
+        ),
         { status: 404 }
       );
     }
@@ -145,11 +173,17 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json({ data: updated, message: 'Communication log updated' });
+    return NextResponse.json({
+      data: updated,
+      message: 'Communication log updated',
+    });
   } catch (error) {
     console.error('[PATCH /api/communications/:logId] Error:', error);
     return NextResponse.json(
-      createErrorResponse('An internal error occurred', COMMUNICATION_ERROR_CODES.INTERNAL_ERROR),
+      createErrorResponse(
+        'An internal error occurred',
+        COMMUNICATION_ERROR_CODES.INTERNAL_ERROR
+      ),
       { status: 500 }
     );
   }
