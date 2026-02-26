@@ -114,7 +114,7 @@ export default function ApiSettingsPage() {
           usageRes.json(),
         ]);
 
-        setApiKeys(keysData);
+        setApiKeys(Array.isArray(keysData) ? keysData : keysData.data || []);
         setUsage(usageData);
       } catch (error) {
         toast({
@@ -151,7 +151,12 @@ export default function ApiSettingsPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: newKeyName,
-            scopes: selectedScopes,
+            permissions: selectedScopes,
+            rateLimit: {
+              requestsPerMinute: 60,
+              requestsPerHour: 1000,
+              requestsPerDay: 10000,
+            },
           }),
         }
       );
@@ -162,8 +167,9 @@ export default function ApiSettingsPage() {
 
       const data = await response.json();
 
-      setApiKeys(prev => [...prev, data.apiKey]);
-      setCreatedKey(data.apiKey.key);
+      const newKey = data.apiKey || data.data || data;
+      setApiKeys(prev => [...prev, newKey]);
+      setCreatedKey(newKey.key);
       setNewKeyName('');
       setSelectedScopes([]);
 
