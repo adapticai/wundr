@@ -201,7 +201,7 @@ export function AudioVideoSettings() {
       const devices = await navigator.mediaDevices.enumerateDevices();
 
       const mics = devices
-        .filter(d => d.kind === 'audioinput')
+        .filter(d => d.kind === 'audioinput' && d.deviceId)
         .map(d => ({
           deviceId: d.deviceId,
           groupId: d.groupId,
@@ -210,7 +210,7 @@ export function AudioVideoSettings() {
         }));
 
       const spkrs = devices
-        .filter(d => d.kind === 'audiooutput')
+        .filter(d => d.kind === 'audiooutput' && d.deviceId)
         .map(d => ({
           deviceId: d.deviceId,
           groupId: d.groupId,
@@ -219,7 +219,7 @@ export function AudioVideoSettings() {
         }));
 
       const cams = devices
-        .filter(d => d.kind === 'videoinput')
+        .filter(d => d.kind === 'videoinput' && d.deviceId)
         .map(d => ({
           deviceId: d.deviceId,
           groupId: d.groupId,
@@ -537,7 +537,7 @@ export function AudioVideoSettings() {
             htmlFor='microphone-select'
           >
             <Select
-              value={preferences.microphoneId}
+              value={preferences.microphoneId || 'default'}
               onValueChange={value => updatePreference('microphoneId', value)}
             >
               <SelectTrigger id='microphone-select' className='w-64'>
@@ -689,7 +689,7 @@ export function AudioVideoSettings() {
             htmlFor='speaker-select'
           >
             <Select
-              value={preferences.speakerId}
+              value={preferences.speakerId || 'default'}
               onValueChange={value => updatePreference('speakerId', value)}
             >
               <SelectTrigger id='speaker-select' className='w-64'>
@@ -764,7 +764,7 @@ export function AudioVideoSettings() {
             htmlFor='camera-select'
           >
             <Select
-              value={preferences.cameraId}
+              value={preferences.cameraId || 'default'}
               onValueChange={value => updatePreference('cameraId', value)}
             >
               <SelectTrigger id='camera-select' className='w-64'>

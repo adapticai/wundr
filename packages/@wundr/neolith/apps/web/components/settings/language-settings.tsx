@@ -209,16 +209,7 @@ export function LanguageSettings() {
     });
   };
 
-  if (!mounted) {
-    return null;
-  }
-
-  const selectedLocale = LOCALES.find(l => l.code === preferences.locale);
-  const selectedTimezone = TIMEZONES.find(
-    t => t.value === preferences.timezone
-  );
-
-  // Group locales by region
+  // Group locales by region - must be before early return to keep hooks consistent
   const localesByRegion = React.useMemo(() => {
     const regions = getLocaleRegions();
     return regions.map(region => ({
@@ -276,6 +267,14 @@ export function LanguageSettings() {
       .filter(group => group.timezones.length > 0);
   }, [timezonesByRegion, timezoneSearch]);
 
+  if (!mounted) {
+    return null;
+  }
+
+  const selectedLocale = LOCALES.find(l => l.code === preferences.locale);
+  const selectedTimezone = TIMEZONES.find(
+    t => t.value === preferences.timezone
+  );
   const selectedDateFormat = DATE_FORMATS.find(
     f => f.value === preferences.dateFormat
   );
