@@ -169,7 +169,7 @@ describe('Processing Stores Service', () => {
       await storeData('ttl-store', 'ephemeral', 'short-lived');
 
       // Wait past the TTL
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       const result = await retrieveData('ttl-store', 'ephemeral');
       expect(result).toBeNull();
@@ -179,7 +179,7 @@ describe('Processing Stores Service', () => {
       await initializeStore('ttl-store2', { ttlMs: 1 });
       await storeData('ttl-store2', 'temp', 'value');
 
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       const keys = await listKeys('ttl-store2');
       expect(keys).toHaveLength(0);
@@ -189,7 +189,7 @@ describe('Processing Stores Service', () => {
       await initializeStore('ttl-store3', { ttlMs: 1 });
       await storeData('ttl-store3', 'temp', 'value');
 
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       const stats = await getStoreStats('ttl-store3');
       expect(stats!.totalKeys).toBe(0);
@@ -199,7 +199,7 @@ describe('Processing Stores Service', () => {
       await initializeStore('no-ttl', {});
       await storeData('no-ttl', 'permanent', 'stays');
 
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       const result = await retrieveData('no-ttl', 'permanent');
       expect(result).toBe('stays');

@@ -198,7 +198,11 @@ describe('Task Service', () => {
 
   describe('getTaskStatus', () => {
     it('should return id, status, and updatedAt', async () => {
-      const status = { id: 'task_1', status: 'completed', updatedAt: new Date() };
+      const status = {
+        id: 'task_1',
+        status: 'completed',
+        updatedAt: new Date(),
+      };
       mockPrisma.task.findUnique.mockResolvedValue(status);
 
       const result = await getTaskStatus('task_1');
@@ -296,7 +300,9 @@ describe('Task Service', () => {
       const result = await canTransitionToStatus('task_1', 'pending');
 
       expect(result.allowed).toBe(false);
-      expect(result.reason).toContain("Cannot transition from 'completed' to 'pending'");
+      expect(result.reason).toContain(
+        "Cannot transition from 'completed' to 'pending'"
+      );
     });
 
     it('should reject cancelled -> in_progress (terminal state)', async () => {
@@ -334,7 +340,11 @@ describe('Task Service', () => {
 
   describe('validateTaskDependencies', () => {
     it('should detect self-dependency', async () => {
-      const result = await validateTaskDependencies('task_1', ['task_1'], 'ws1');
+      const result = await validateTaskDependencies(
+        'task_1',
+        ['task_1'],
+        'ws1'
+      );
 
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('Task cannot depend on itself');
@@ -367,11 +377,7 @@ describe('Task Service', () => {
         { id: 'dep_A', dependencies: ['task_1'] },
       ]);
 
-      const result = await validateTaskDependencies(
-        'task_1',
-        ['dep_A'],
-        'ws1'
-      );
+      const result = await validateTaskDependencies('task_1', ['dep_A'], 'ws1');
 
       expect(result.valid).toBe(false);
       expect(result.circularDependencies).toContain('dep_A');
@@ -409,11 +415,7 @@ describe('Task Service', () => {
     it('should handle database errors gracefully', async () => {
       mockPrisma.task.findMany.mockRejectedValue(new Error('DB fail'));
 
-      const result = await validateTaskDependencies(
-        'task_1',
-        ['dep_1'],
-        'ws1'
-      );
+      const result = await validateTaskDependencies('task_1', ['dep_1'], 'ws1');
 
       expect(result.valid).toBe(false);
       expect(result.errors).toContain(
@@ -449,7 +451,9 @@ describe('Task Service', () => {
 
     it('should return zero completionRate when total is 0', async () => {
       mockPrisma.task.groupBy.mockResolvedValue([]);
-      mockPrisma.task.aggregate.mockResolvedValue({ _avg: { durationMs: null } });
+      mockPrisma.task.aggregate.mockResolvedValue({
+        _avg: { durationMs: null },
+      });
 
       const result = await getTaskMetrics();
 
@@ -482,7 +486,9 @@ describe('Task Service', () => {
       const endDate = new Date('2025-12-31');
 
       mockPrisma.task.groupBy.mockResolvedValue([]);
-      mockPrisma.task.aggregate.mockResolvedValue({ _avg: { durationMs: null } });
+      mockPrisma.task.aggregate.mockResolvedValue({
+        _avg: { durationMs: null },
+      });
 
       await getTaskMetrics({ startDate, endDate });
 
@@ -499,7 +505,9 @@ describe('Task Service', () => {
       mockPrisma.task.groupBy.mockResolvedValue([
         { status: 'completed', _count: { status: 5 } },
       ]);
-      mockPrisma.task.aggregate.mockRejectedValue(new Error('no durationMs column'));
+      mockPrisma.task.aggregate.mockRejectedValue(
+        new Error('no durationMs column')
+      );
 
       const result = await getTaskMetrics();
 
