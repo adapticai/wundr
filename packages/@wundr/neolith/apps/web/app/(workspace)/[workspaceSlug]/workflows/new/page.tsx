@@ -43,12 +43,12 @@ interface WorkflowSpec {
   suggestions: string[];
 }
 
-const GREETING_MESSAGE = `Hi! I'll help you create a new Workflow. Workflows automate tasks and processes based on triggers and actions.
+const GREETING_MESSAGE = `I'll help you create a new workflow. Workflows automate tasks and processes based on triggers and actions.
 
-Let's start by understanding what you want to automate. For example:
+To get started, describe what you want to automate. For example:
 - "Send a welcome message when someone joins a channel"
-- "Notify my team when a keyword is mentioned"
-- "Create a daily summary at 9 AM"
+- "Notify my team when a specific keyword is mentioned"
+- "Post a daily summary every morning at 9 AM"
 
 What would you like your workflow to do?`;
 
@@ -115,7 +115,6 @@ export default function ConversationalWorkflowCreationPage() {
           messages: [...messages, userMsg],
           workspaceContext: {
             id: workspaceId,
-            name: 'Current Workspace',
           },
           existingSpec: generatedSpec,
         }),
@@ -422,7 +421,7 @@ export default function ConversationalWorkflowCreationPage() {
           <div>
             <h1 className='text-xl font-semibold'>Create Workflow</h1>
             <p className='text-sm text-muted-foreground'>
-              Chat with AI to generate your workflow specification
+              Describe what you want to automate and we will build it for you
             </p>
           </div>
           <Button type='button' onClick={handleCancel} variant='ghost'>
@@ -497,7 +496,7 @@ export default function ConversationalWorkflowCreationPage() {
                 onClick={handleSwitchToReview}
                 disabled={isLoading}
               >
-                Switch to Review
+                {generatedSpec?.trigger ? 'Review & Create' : 'Skip to Review'}
                 <ArrowRight className='ml-2 h-4 w-4' />
               </Button>
 
@@ -505,8 +504,8 @@ export default function ConversationalWorkflowCreationPage() {
                 <div className='flex items-center gap-2 text-sm text-muted-foreground'>
                   <GitBranch className='h-4 w-4' />
                   <span>
-                    Workflow spec ready: {generatedSpec.actions.length} action
-                    {generatedSpec.actions.length !== 1 ? 's' : ''}
+                    {generatedSpec.actions.length} action
+                    {generatedSpec.actions.length !== 1 ? 's' : ''} configured
                   </span>
                 </div>
               )}

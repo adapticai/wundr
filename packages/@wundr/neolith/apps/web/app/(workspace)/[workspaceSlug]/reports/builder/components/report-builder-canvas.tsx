@@ -97,9 +97,7 @@ export function ReportBuilderCanvas() {
     [widgets]
   );
 
-  const handleDragOver = useCallback((event: DragOverEvent) => {
-    // Could add visual feedback here
-  }, []);
+  const handleDragOver = useCallback((_event: DragOverEvent) => {}, []);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {

@@ -51,7 +51,7 @@ export function QuickActionsWidget({
     if (onInviteMemberClick) {
       onInviteMemberClick();
     } else {
-      router.push(`/${workspaceSlug}/admin/members`);
+      router.push(`/${workspaceSlug}/admin/invitations`);
     }
   };
 

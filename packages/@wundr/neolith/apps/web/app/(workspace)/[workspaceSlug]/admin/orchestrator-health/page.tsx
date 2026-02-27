@@ -1,5 +1,13 @@
 'use client';
 
+import {
+  AlertTriangle,
+  CheckCircle,
+  RefreshCw,
+  ServerCrash,
+  Users,
+  XCircle,
+} from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 
@@ -7,6 +15,7 @@ import {
   OrchestratorStatusCard,
   OrchestratorStatusCardSkeleton,
 } from '@/components/presence/orchestrator-status-card';
+import { Button } from '@/components/ui/button';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { useWorkspaceOrchestratorHealthList } from '@/hooks/use-presence';
@@ -154,7 +163,7 @@ export default function OrchestratorHealthDashboardPage() {
           )}
           role='alert'
         >
-          <AlertTriangleIcon className='h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400' />
+          <AlertTriangle className='h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400' />
           <div className='flex-1'>
             <p className='font-medium text-red-800 dark:text-red-200'>
               {unhealthyCount} Orchestrator{unhealthyCount > 1 ? 's' : ''}{' '}
@@ -166,17 +175,14 @@ export default function OrchestratorHealthDashboardPage() {
               consider restarting their daemons.
             </p>
           </div>
-          <button
-            type='button'
+          <Button
+            size='sm'
+            variant='outline'
             onClick={() => setFilter('unhealthy')}
-            className={cn(
-              'rounded-md px-3 py-1.5 text-sm font-medium',
-              'bg-red-100 text-red-800 hover:bg-red-200',
-              'dark:bg-red-900/30 dark:text-red-200 dark:hover:bg-red-900/50'
-            )}
+            className='border-red-300 bg-red-100 text-red-800 hover:bg-red-200 dark:border-red-800 dark:bg-red-900/30 dark:text-red-200 dark:hover:bg-red-900/50'
           >
             View Issues
-          </button>
+          </Button>
         </div>
       )}
 
@@ -207,21 +213,16 @@ export default function OrchestratorHealthDashboardPage() {
         </div>
 
         {/* Actions */}
-        <button
-          type='button'
+        <Button
+          variant='outline'
           onClick={handleHealthCheck}
           disabled={isCheckingHealth || isLoading}
-          className={cn(
-            'inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium',
-            'transition-colors hover:bg-accent',
-            'disabled:cursor-not-allowed disabled:opacity-50'
-          )}
         >
-          <RefreshIcon
+          <RefreshCw
             className={cn('h-4 w-4', isCheckingHealth && 'animate-spin')}
           />
           {isCheckingHealth ? 'Checking...' : 'Run Health Check'}
-        </button>
+        </Button>
       </div>
 
       {/* Stats Summary */}
@@ -229,7 +230,7 @@ export default function OrchestratorHealthDashboardPage() {
         <StatCard
           label='Total Orchestrators'
           value={orchestratorList.length}
-          icon={UsersIcon}
+          icon={Users}
         />
         <StatCard
           label='Online'
@@ -240,7 +241,7 @@ export default function OrchestratorHealthDashboardPage() {
                 orchestrator.connectionStatus === 'connected'
             ).length
           }
-          icon={CheckCircleIcon}
+          icon={CheckCircle}
           valueColor='text-green-600 dark:text-green-400'
         />
         <StatCard
@@ -250,7 +251,7 @@ export default function OrchestratorHealthDashboardPage() {
               orchestrator => orchestrator.daemonHealth === 'degraded'
             ).length
           }
-          icon={AlertTriangleIcon}
+          icon={AlertTriangle}
           valueColor='text-yellow-600 dark:text-yellow-400'
         />
         <StatCard
@@ -260,7 +261,7 @@ export default function OrchestratorHealthDashboardPage() {
               orchestrator => orchestrator.daemonHealth === 'unhealthy'
             ).length
           }
-          icon={XCircleIcon}
+          icon={XCircle}
           valueColor='text-red-600 dark:text-red-400'
         />
       </div>
@@ -274,11 +275,11 @@ export default function OrchestratorHealthDashboardPage() {
         </div>
       ) : filteredOrchestrators.length === 0 ? (
         <div className='flex flex-col items-center justify-center rounded-lg border border-dashed py-12'>
-          <EmptyIcon className='h-12 w-12 text-muted-foreground/50' />
+          <ServerCrash className='h-12 w-12 text-muted-foreground/50' />
           <p className='mt-2 text-sm text-muted-foreground'>
             {filter === 'all'
-              ? 'No Orchestrators found in this workspace'
-              : `No ${filter} Orchestrators found`}
+              ? 'No orchestrators found in this workspace'
+              : `No ${filter} orchestrators found`}
           </p>
           {filter !== 'all' && (
             <button
@@ -286,7 +287,7 @@ export default function OrchestratorHealthDashboardPage() {
               onClick={() => setFilter('all')}
               className='mt-2 text-sm text-primary hover:underline'
             >
-              View all Orchestrators
+              View all orchestrators
             </button>
           )}
         </div>
@@ -310,7 +311,7 @@ export default function OrchestratorHealthDashboardPage() {
 interface StatCardProps {
   label: string;
   value: number;
-  icon: typeof UsersIcon;
+  icon: React.ComponentType<{ className?: string }>;
   valueColor?: string;
 }
 
@@ -323,122 +324,5 @@ function StatCard({ label, value, icon: Icon, valueColor }: StatCardProps) {
       </div>
       <p className={cn('mt-1 text-2xl font-bold', valueColor)}>{value}</p>
     </div>
-  );
-}
-
-// Icons
-function AlertTriangleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z' />
-      <path d='M12 9v4' />
-      <path d='M12 17h.01' />
-    </svg>
-  );
-}
-
-function RefreshIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8' />
-      <path d='M21 3v5h-5' />
-      <path d='M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16' />
-      <path d='M8 16H3v5' />
-    </svg>
-  );
-}
-
-function UsersIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
-      <circle cx='9' cy='7' r='4' />
-      <path d='M22 21v-2a4 4 0 0 0-3-3.87' />
-      <path d='M16 3.13a4 4 0 0 1 0 7.75' />
-    </svg>
-  );
-}
-
-function CheckCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='12' cy='12' r='10' />
-      <path d='m9 12 2 2 4-4' />
-    </svg>
-  );
-}
-
-function XCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='12' cy='12' r='10' />
-      <path d='m15 9-6 6' />
-      <path d='m9 9 6 6' />
-    </svg>
-  );
-}
-
-function EmptyIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <rect width='18' height='18' x='3' y='3' rx='2' />
-      <path d='M9 9h.01' />
-      <path d='M15 9h.01' />
-      <path d='M9 15c.6.6 1.4 1 2.5 1s1.9-.4 2.5-1' />
-    </svg>
   );
 }

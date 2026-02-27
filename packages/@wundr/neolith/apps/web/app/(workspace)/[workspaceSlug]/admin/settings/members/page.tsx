@@ -13,6 +13,19 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { usePageHeader } from '@/contexts/page-header-context';
+import { useRoles } from '@/hooks/use-admin';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -53,6 +66,14 @@ export default function MembersSettingsPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const { toast } = useToast();
+  const { setPageHeader } = usePageHeader();
+
+  useEffect(() => {
+    setPageHeader(
+      'Members & Permissions',
+      'Configure workspace member settings and access controls'
+    );
+  }, [setPageHeader]);
 
   const [settings, setSettings] = useState<MemberSettings>({
     invitationsEnabled: true,
@@ -67,6 +88,8 @@ export default function MembersSettingsPage() {
     guestAccountExpiration: 30,
     currentMemberCount: 0,
   });
+
+  const { roles } = useRoles(workspaceSlug);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -231,9 +254,9 @@ export default function MembersSettingsPage() {
             Configure workspace member settings and access controls
           </p>
         </div>
-        <div className='flex items-start gap-3 rounded-lg border border-red-500/50 bg-red-50 p-4 dark:bg-red-900/10'>
-          <AlertTriangle className='h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5' />
-          <p className='text-sm text-red-800 dark:text-red-200'>{error}</p>
+        <div className='flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4'>
+          <AlertTriangle className='h-5 w-5 text-destructive flex-shrink-0 mt-0.5' />
+          <p className='text-sm text-destructive'>{error}</p>
         </div>
       </div>
     );
@@ -287,27 +310,24 @@ export default function MembersSettingsPage() {
           {settings.invitationsEnabled && (
             <>
               <div className='border-t pt-6'>
-                <label className='block text-sm font-medium text-foreground mb-2'>
-                  Who can invite members
-                </label>
-                <select
+                <Label className='mb-2 block'>Who can invite members</Label>
+                <Select
                   value={settings.whoCanInvite}
-                  onChange={e =>
-                    handleSelectChange('whoCanInvite', e.target.value)
+                  onValueChange={value =>
+                    handleSelectChange('whoCanInvite', value)
                   }
                   disabled={isSaving}
-                  className={cn(
-                    'block w-full rounded-md border border-input bg-background',
-                    'px-3 py-2 text-sm',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-                    'disabled:cursor-not-allowed disabled:opacity-50'
-                  )}
                 >
-                  <option value='everyone'>
-                    Everyone (all workspace members)
-                  </option>
-                  <option value='admins'>Admins only</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='everyone'>
+                      Everyone (all workspace members)
+                    </SelectItem>
+                    <SelectItem value='admins'>Admins only</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Invitation Link */}
@@ -331,32 +351,34 @@ export default function MembersSettingsPage() {
                 {settings.invitationLinkEnabled && settings.inviteLink && (
                   <div className='rounded-lg border bg-muted/30 p-4 space-y-3'>
                     <div className='flex items-center gap-2'>
-                      <input
-                        type='text'
+                      <Input
                         value={settings.inviteLink}
                         readOnly
-                        className='flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm'
+                        className='flex-1 bg-background'
                       />
-                      <button
+                      <Button
                         type='button'
+                        variant='outline'
+                        size='sm'
                         onClick={copyInviteLink}
-                        className='inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium hover:bg-accent'
                       >
-                        <Copy className='h-4 w-4' />
+                        <Copy className='h-4 w-4 mr-2' />
                         Copy
-                      </button>
+                      </Button>
                     </div>
-                    <button
+                    <Button
                       type='button'
+                      variant='ghost'
+                      size='sm'
                       onClick={regenerateInviteLink}
                       disabled={isRegeneratingLink}
-                      className='inline-flex items-center gap-2 text-sm text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed'
+                      className='text-primary hover:text-primary px-0'
                     >
-                      <RefreshCw className='h-4 w-4' />
+                      <RefreshCw className='h-4 w-4 mr-2' />
                       {isRegeneratingLink
                         ? 'Regenerating...'
                         : 'Regenerate link'}
-                    </button>
+                    </Button>
                     <p className='text-xs text-muted-foreground'>
                       Regenerating will immediately invalidate the current link
                     </p>
@@ -464,14 +486,11 @@ export default function MembersSettingsPage() {
 
           {settings.allowDomainJoin && (
             <div className='border-t pt-6'>
-              <label className='block text-sm font-medium text-foreground mb-2'>
-                Allowed email domains
-              </label>
+              <Label className='mb-2 block'>Allowed email domains</Label>
               <p className='text-sm text-muted-foreground mb-3'>
                 Users with these email domains can join without an invitation
               </p>
-              <input
-                type='text'
+              <Input
                 value={settings.allowedDomains?.join(', ') || ''}
                 onChange={e => {
                   const domains = e.target.value
@@ -481,11 +500,6 @@ export default function MembersSettingsPage() {
                   handleSelectChange('allowedDomains', domains);
                 }}
                 placeholder='example.com, company.org'
-                className={cn(
-                  'block w-full rounded-md border border-input bg-background',
-                  'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-                )}
               />
             </div>
           )}
@@ -509,29 +523,31 @@ export default function MembersSettingsPage() {
 
           {/* Auto-assign Role */}
           <div className='border-t pt-6'>
-            <label className='block text-sm font-medium text-foreground mb-2'>
-              Default role for new members
-            </label>
+            <Label className='mb-2 block'>Default role for new members</Label>
             <p className='text-sm text-muted-foreground mb-3'>
               Automatically assign this role when a new member joins
             </p>
-            <select
+            <Select
               value={settings.autoAssignRoleId || ''}
-              onChange={e =>
-                handleSelectChange('autoAssignRoleId', e.target.value)
+              onValueChange={value =>
+                handleSelectChange('autoAssignRoleId', value)
               }
               disabled={isSaving}
-              className={cn(
-                'block w-full rounded-md border border-input bg-background',
-                'px-3 py-2 text-sm',
-                'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-                'disabled:cursor-not-allowed disabled:opacity-50'
-              )}
             >
-              <option value=''>Member (default)</option>
-              <option value='guest'>Guest</option>
-              <option value='contributor'>Contributor</option>
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder='Select a default role' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value=''>Member (default)</SelectItem>
+                {roles
+                  .filter(r => !r.isSystem)
+                  .map(role => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
@@ -571,64 +587,57 @@ export default function MembersSettingsPage() {
             <>
               {/* Guest Channel Access */}
               <div className='border-t pt-6'>
-                <label className='block text-sm font-medium text-foreground mb-2'>
-                  Guest channel access
-                </label>
+                <Label className='mb-2 block'>Guest channel access</Label>
                 <p className='text-sm text-muted-foreground mb-3'>
                   Which channels guests can access by default
                 </p>
-                <select
+                <Select
                   value={settings.guestChannelAccess}
-                  onChange={e =>
-                    handleSelectChange('guestChannelAccess', e.target.value)
+                  onValueChange={value =>
+                    handleSelectChange('guestChannelAccess', value)
                   }
                   disabled={isSaving}
-                  className={cn(
-                    'block w-full rounded-md border border-input bg-background',
-                    'px-3 py-2 text-sm',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-                    'disabled:cursor-not-allowed disabled:opacity-50'
-                  )}
                 >
-                  <option value='none'>
-                    No channels (invite to specific channels only)
-                  </option>
-                  <option value='specific'>Specific channels only</option>
-                  <option value='all'>All public channels</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='none'>
+                      No channels (invite to specific channels only)
+                    </SelectItem>
+                    <SelectItem value='specific'>
+                      Specific channels only
+                    </SelectItem>
+                    <SelectItem value='all'>All public channels</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Guest Account Expiration */}
               <div className='border-t pt-6'>
-                <label className='block text-sm font-medium text-foreground mb-2'>
-                  Guest account expiration
-                </label>
+                <Label className='mb-2 block'>Guest account expiration</Label>
                 <p className='text-sm text-muted-foreground mb-3'>
                   Guest accounts will be automatically deactivated after this
                   period of inactivity
                 </p>
-                <select
-                  value={settings.guestAccountExpiration}
-                  onChange={e =>
-                    handleSelectChange(
-                      'guestAccountExpiration',
-                      Number(e.target.value)
-                    )
+                <Select
+                  value={settings.guestAccountExpiration.toString()}
+                  onValueChange={value =>
+                    handleSelectChange('guestAccountExpiration', Number(value))
                   }
                   disabled={isSaving}
-                  className={cn(
-                    'block w-full rounded-md border border-input bg-background',
-                    'px-3 py-2 text-sm',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-                    'disabled:cursor-not-allowed disabled:opacity-50'
-                  )}
                 >
-                  <option value={7}>7 days</option>
-                  <option value={30}>30 days</option>
-                  <option value={60}>60 days</option>
-                  <option value={90}>90 days</option>
-                  <option value={0}>Never expire</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='7'>7 days</SelectItem>
+                    <SelectItem value='30'>30 days</SelectItem>
+                    <SelectItem value='60'>60 days</SelectItem>
+                    <SelectItem value='90'>90 days</SelectItem>
+                    <SelectItem value='0'>Never expire</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </>
           )}
@@ -706,7 +715,7 @@ export default function MembersSettingsPage() {
   );
 }
 
-// Toggle Switch Component
+// Toggle Switch Component — delegates to shadcn Switch
 function ToggleSwitch({
   checked,
   onChange,
@@ -717,25 +726,7 @@ function ToggleSwitch({
   disabled?: boolean;
 }) {
   return (
-    <button
-      type='button'
-      role='switch'
-      aria-checked={checked}
-      onClick={onChange}
-      disabled={disabled}
-      className={cn(
-        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-        checked ? 'bg-primary' : 'bg-muted-foreground/30',
-        disabled && 'cursor-not-allowed opacity-50'
-      )}
-    >
-      <span
-        className={cn(
-          'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-          checked ? 'translate-x-6' : 'translate-x-1'
-        )}
-      />
-    </button>
+    <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} />
   );
 }
 

@@ -20,8 +20,14 @@ function LoginFormLoading() {
         <p className='text-sm text-muted-foreground'>Loading...</p>
       </div>
       <div className='space-y-3'>
-        <div className='h-12 w-full animate-pulse rounded-md bg-muted' />
-        <div className='h-12 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
+      </div>
+      <div className='h-px w-full bg-muted' />
+      <div className='space-y-4'>
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
       </div>
     </div>
   );
@@ -73,14 +79,13 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        setError('Invalid email or password');
+        setError('Incorrect email or password. Please try again.');
         setIsLoading(false);
       } else if (result?.ok) {
-        // Redirect based on invite token or default to dashboard
         window.location.href = callbackUrl;
       }
     } catch {
-      setError('An error occurred. Please try again.');
+      setError('Something went wrong. Please try again.');
       setIsLoading(false);
     }
   };
@@ -105,8 +110,9 @@ function LoginForm() {
           className='w-full'
           onClick={() => handleOAuthSignIn('github')}
           disabled={isLoading}
+          aria-label='Continue with GitHub'
         >
-          <GitHubIcon className='mr-2 h-5 w-5' />
+          <GitHubIcon className='mr-2 h-5 w-5' aria-hidden='true' />
           Continue with GitHub
         </Button>
 
@@ -116,14 +122,15 @@ function LoginForm() {
           className='w-full'
           onClick={() => handleOAuthSignIn('google')}
           disabled={isLoading}
+          aria-label='Continue with Google'
         >
-          <GoogleIcon className='mr-2 h-5 w-5' />
+          <GoogleIcon className='mr-2 h-5 w-5' aria-hidden='true' />
           Continue with Google
         </Button>
       </div>
 
       {/* Divider */}
-      <div className='relative'>
+      <div className='relative' role='separator' aria-hidden='true'>
         <div className='absolute inset-0 flex items-center'>
           <span className='w-full border-t border-border' />
         </div>
@@ -146,13 +153,13 @@ function LoginForm() {
       )}
 
       {/* Email/Password Form */}
-      <form onSubmit={handleEmailSignIn} className='space-y-4'>
+      <form onSubmit={handleEmailSignIn} className='space-y-4' noValidate>
         <div className='space-y-2'>
-          <Label htmlFor='email'>Email</Label>
+          <Label htmlFor='email'>Email address</Label>
           <Input
             id='email'
             type='email'
-            placeholder='Enter your email'
+            placeholder='you@example.com'
             value={email}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setEmail(e.target.value)
@@ -160,11 +167,19 @@ function LoginForm() {
             disabled={isLoading}
             autoComplete='email'
             required
-            aria-label='Email address'
           />
         </div>
         <div className='space-y-2'>
-          <Label htmlFor='password'>Password</Label>
+          <div className='flex items-center justify-between'>
+            <Label htmlFor='password'>Password</Label>
+            <Link
+              href='/forgot-password'
+              className='text-xs text-muted-foreground hover:text-primary transition-colors'
+              tabIndex={0}
+            >
+              Forgot password?
+            </Link>
+          </div>
           <div className='relative'>
             <Input
               id='password'
@@ -177,18 +192,18 @@ function LoginForm() {
               disabled={isLoading}
               autoComplete='current-password'
               required
-              aria-label='Password'
+              className='pr-10'
             />
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+              className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors'
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? (
-                <EyeOff className='h-4 w-4' />
+                <EyeOff className='h-4 w-4' aria-hidden='true' />
               ) : (
-                <Eye className='h-4 w-4' />
+                <Eye className='h-4 w-4' aria-hidden='true' />
               )}
             </button>
           </div>
@@ -198,16 +213,6 @@ function LoginForm() {
         </Button>
       </form>
 
-      {/* Forgot Password Link */}
-      <div className='text-center'>
-        <Link
-          href='/forgot-password'
-          className='text-sm text-muted-foreground hover:text-primary transition-colors'
-        >
-          Forgot your password?
-        </Link>
-      </div>
-
       {/* Register Link */}
       <p className='text-center text-sm text-muted-foreground'>
         Don&apos;t have an account?{' '}
@@ -215,7 +220,7 @@ function LoginForm() {
           href='/register'
           className='font-medium text-primary hover:underline'
         >
-          Sign up
+          Create an account
         </Link>
       </p>
     </div>
@@ -227,9 +232,8 @@ function LoginForm() {
  *
  * Provides multiple authentication methods:
  * - OAuth providers (GitHub, Google)
- * - Email/password form (for future implementation)
+ * - Email/password credentials
  *
- * Features a modern, responsive design with dark mode support.
  * Supports invitation flow via ?invite=token query parameter.
  */
 export default function LoginPage() {

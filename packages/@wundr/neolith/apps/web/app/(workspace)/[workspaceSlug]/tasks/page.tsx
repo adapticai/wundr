@@ -1,22 +1,22 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckSquare, ArrowUpDown } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowUpDown,
+  Calendar,
+  CheckSquare,
+  Plus,
+  Search,
+  User,
+  UserPlus,
+  X,
+} from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -56,7 +56,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useTasks } from '@/hooks/use-tasks';
 import { cn } from '@/lib/utils';
-import { createTaskSchema } from '@/lib/validations/task';
 
 import type { TaskPriorityType, TaskStatusType } from '@/lib/validations/task';
 
@@ -96,7 +95,7 @@ interface Task {
   assignedToId: string | null;
   createdAt: Date;
   updatedAt: Date;
-  vp?: {
+  orchestrator?: {
     id: string;
     role: string;
     user: {
@@ -313,7 +312,7 @@ export default function TasksPage() {
           </p>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <PlusIcon className='h-4 w-4' />
+          <Plus className='h-4 w-4' />
           Create Task
         </Button>
       </div>
@@ -357,47 +356,55 @@ export default function TasksPage() {
         <div className='flex flex-col gap-4 sm:flex-row sm:items-center'>
           {/* Search */}
           <div className='relative flex-1'>
-            <SearchIcon className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
-            <input
+            <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+            <Input
               type='text'
               placeholder='Search tasks by title or description...'
               value={searchQuery}
               onChange={e => handleSearchChange(e.target.value)}
-              className='w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              className='pl-10'
             />
           </div>
 
           {/* Status Filter */}
-          <select
+          <Select
             value={statusFilter}
-            onChange={e =>
-              setStatusFilter(e.target.value as TaskStatusType | 'all')
+            onValueChange={value =>
+              setStatusFilter(value as TaskStatusType | 'all')
             }
-            className='rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
           >
-            <option value='all'>All Status</option>
-            {Object.entries(STATUS_CONFIG).map(([status, config]) => (
-              <option key={status} value={status}>
-                {config.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className='w-[140px]'>
+              <SelectValue placeholder='All Status' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='all'>All Status</SelectItem>
+              {Object.entries(STATUS_CONFIG).map(([status, config]) => (
+                <SelectItem key={status} value={status}>
+                  {config.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* Priority Filter */}
-          <select
+          <Select
             value={priorityFilter}
-            onChange={e =>
-              setPriorityFilter(e.target.value as TaskPriorityType | 'all')
+            onValueChange={value =>
+              setPriorityFilter(value as TaskPriorityType | 'all')
             }
-            className='rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
           >
-            <option value='all'>All Priority</option>
-            {Object.entries(PRIORITY_CONFIG).map(([priority, config]) => (
-              <option key={priority} value={priority}>
-                {config.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className='w-[140px]'>
+              <SelectValue placeholder='All Priority' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='all'>All Priority</SelectItem>
+              {Object.entries(PRIORITY_CONFIG).map(([priority, config]) => (
+                <SelectItem key={priority} value={priority}>
+                  {config.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* Sort Dropdown */}
           <Select value={sortValue} onValueChange={setSortValue}>
@@ -418,14 +425,16 @@ export default function TasksPage() {
 
           {/* Clear Filters */}
           {activeFiltersCount > 0 && (
-            <button
+            <Button
               type='button'
+              variant='ghost'
+              size='sm'
               onClick={handleClearFilters}
-              className='inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground'
+              className='gap-1 text-muted-foreground'
             >
-              <XIcon className='h-4 w-4' />
+              <X className='h-4 w-4' />
               Clear ({activeFiltersCount})
-            </button>
+            </Button>
           )}
         </div>
 
@@ -441,18 +450,16 @@ export default function TasksPage() {
 
       {/* Error State */}
       {error && (
-        <div className='rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20'>
-          <div className='flex items-center gap-2 text-red-800 dark:text-red-200'>
-            <AlertIcon className='h-5 w-5' />
+        <div className='rounded-lg border border-destructive/50 bg-destructive/10 p-4'>
+          <div className='flex items-center gap-2 text-destructive'>
+            <AlertCircle className='h-5 w-5' />
             <p className='text-sm font-medium'>Failed to load tasks</p>
           </div>
-          <p className='mt-1 text-sm text-red-600 dark:text-red-300'>
-            {error.message}
-          </p>
+          <p className='mt-1 text-sm text-destructive/80'>{error.message}</p>
           <button
             type='button'
             onClick={refetch}
-            className='mt-2 text-sm font-medium text-red-800 hover:text-red-900 dark:text-red-200'
+            className='mt-2 text-sm font-medium text-destructive hover:text-destructive/80'
           >
             Try again
           </button>
@@ -1027,23 +1034,25 @@ function TaskCard({ task }: TaskCardProps) {
 
       {/* Task Details */}
       <div className='mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground'>
-        {task.vp && (
+        {task.orchestrator && (
           <div className='flex items-center gap-1'>
-            <UserIcon className='h-3.5 w-3.5' />
-            <span>{task.vp.user.name || task.vp.user.email}</span>
+            <User className='h-3.5 w-3.5' />
+            <span>
+              {task.orchestrator.user.name || task.orchestrator.user.email}
+            </span>
           </div>
         )}
 
         {task.assignedTo && (
           <div className='flex items-center gap-1'>
-            <AssignIcon className='h-3.5 w-3.5' />
+            <UserPlus className='h-3.5 w-3.5' />
             <span>{task.assignedTo.name || task.assignedTo.email}</span>
           </div>
         )}
 
         {task.dueDate && (
           <div className='flex items-center gap-1'>
-            <CalendarIcon className='h-3.5 w-3.5' />
+            <Calendar className='h-3.5 w-3.5' />
             <span>{new Date(task.dueDate).toLocaleDateString()}</span>
           </div>
         )}
@@ -1112,117 +1121,5 @@ function StatCard({
       <p className='text-sm font-medium text-muted-foreground'>{label}</p>
       <p className={cn('text-2xl font-bold', color)}>{value}</p>
     </div>
-  );
-}
-
-// =============================================================================
-// Icons
-// =============================================================================
-
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <path d='M5 12h14M12 5v14' />
-    </svg>
-  );
-}
-
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <circle cx='11' cy='11' r='8' />
-      <path d='m21 21-4.3-4.3' />
-    </svg>
-  );
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <path d='M18 6 6 18M6 6l12 12' />
-    </svg>
-  );
-}
-
-function AlertIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <circle cx='12' cy='12' r='10' />
-      <line x1='12' x2='12' y1='8' y2='12' />
-      <line x1='12' x2='12.01' y1='16' y2='16' />
-    </svg>
-  );
-}
-
-function UserIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <path d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2' />
-      <circle cx='12' cy='7' r='4' />
-    </svg>
-  );
-}
-
-function AssignIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
-      <circle cx='9' cy='7' r='4' />
-      <line x1='19' x2='19' y1='8' y2='14' />
-      <line x1='22' x2='16' y1='11' y2='11' />
-    </svg>
-  );
-}
-
-function CalendarIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <rect width='18' height='18' x='3' y='4' rx='2' ry='2' />
-      <line x1='16' x2='16' y1='2' y2='6' />
-      <line x1='8' x2='8' y1='2' y2='6' />
-      <line x1='3' x2='21' y1='10' y2='10' />
-    </svg>
   );
 }

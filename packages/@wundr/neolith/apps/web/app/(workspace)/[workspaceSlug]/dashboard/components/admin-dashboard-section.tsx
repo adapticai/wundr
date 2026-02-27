@@ -23,6 +23,7 @@ import { DashboardStatsCard } from './dashboard-stats-card';
 
 interface AdminDashboardSectionProps {
   workspaceId: string;
+  workspaceSlug: string;
 }
 
 interface AdminStats {
@@ -43,6 +44,7 @@ interface AdminStats {
 
 export function AdminDashboardSection({
   workspaceId,
+  workspaceSlug,
 }: AdminDashboardSectionProps) {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -170,7 +172,7 @@ export function AdminDashboardSection({
           label='Pending Invitations'
           value={stats.pendingInvites}
           icon={MailIcon}
-          href={`/${workspaceId}/admin/invites`}
+          href={`/${workspaceSlug}/admin/invitations`}
           description={
             stats.pendingInvites > 0 ? 'Action required' : 'All caught up'
           }
@@ -180,7 +182,7 @@ export function AdminDashboardSection({
           label='Member Growth'
           value={stats.memberGrowth.current}
           icon={UsersIcon}
-          href={`/${workspaceId}/admin/members`}
+          href={`/${workspaceSlug}/admin/members`}
           trend={{
             direction:
               stats.memberGrowth.percentage > 0
@@ -197,7 +199,7 @@ export function AdminDashboardSection({
           label='Security Events'
           value={stats.securityEvents}
           icon={ShieldCheckIcon}
-          href={`/${workspaceId}/admin/security`}
+          href={`/${workspaceSlug}/admin/security`}
           description={
             stats.securityEvents > 0 ? 'Recent activity' : 'No issues detected'
           }
@@ -270,28 +272,28 @@ export function AdminDashboardSection({
         <CardContent>
           <div className='grid gap-2 md:grid-cols-2'>
             <a
-              href={`/${workspaceId}/admin/members`}
+              href={`/${workspaceSlug}/admin/members`}
               className='flex items-center justify-between rounded-lg border p-3 text-sm hover:bg-accent transition-colors'
             >
               <span>Manage Members</span>
               <UsersIcon className='h-4 w-4 text-muted-foreground' />
             </a>
             <a
-              href={`/${workspaceId}/admin/invites`}
+              href={`/${workspaceSlug}/admin/invitations`}
               className='flex items-center justify-between rounded-lg border p-3 text-sm hover:bg-accent transition-colors'
             >
               <span>View Invitations</span>
               <MailIcon className='h-4 w-4 text-muted-foreground' />
             </a>
             <a
-              href={`/${workspaceId}/admin/settings`}
+              href={`/${workspaceSlug}/admin/settings`}
               className='flex items-center justify-between rounded-lg border p-3 text-sm hover:bg-accent transition-colors'
             >
               <span>Workspace Settings</span>
               <ShieldCheckIcon className='h-4 w-4 text-muted-foreground' />
             </a>
             <a
-              href={`/${workspaceId}/admin/activity`}
+              href={`/${workspaceSlug}/admin/audit-log`}
               className='flex items-center justify-between rounded-lg border p-3 text-sm hover:bg-accent transition-colors'
             >
               <span>Audit Log</span>

@@ -27,34 +27,34 @@ const errorMessages: Record<string, { title: string; description: string }> = {
       'The verification link may have expired or already been used. Please try signing in again.',
   },
   OAuthSignin: {
-    title: 'OAuth Sign-in Error',
+    title: 'Sign-in Error',
     description:
-      'There was a problem signing in with the selected provider. Please try again.',
+      'There was a problem initiating sign-in with the selected provider. Please try again.',
   },
   OAuthCallback: {
-    title: 'OAuth Callback Error',
+    title: 'Authentication Error',
     description:
-      'There was a problem completing the authentication. Please try signing in again.',
+      'There was a problem completing authentication. Please try signing in again.',
   },
   OAuthCreateAccount: {
     title: 'Account Creation Error',
     description:
-      'There was a problem creating your account with the selected provider. Please try again or use a different method.',
+      'There was a problem creating your account with the selected provider. Please try again or use a different sign-in method.',
   },
   EmailCreateAccount: {
     title: 'Account Creation Error',
     description:
-      'There was a problem creating your account. The email may already be in use.',
+      'There was a problem creating your account. The email address may already be in use.',
   },
   Callback: {
-    title: 'Callback Error',
+    title: 'Authentication Error',
     description:
       'There was a problem with the authentication callback. Please try again.',
   },
   OAuthAccountNotLinked: {
     title: 'Account Not Linked',
     description:
-      'This email is already associated with another account. Please sign in with the original provider.',
+      'This email is already associated with another sign-in method. Please sign in using your original provider.',
   },
   EmailSignin: {
     title: 'Email Sign-in Error',
@@ -64,10 +64,10 @@ const errorMessages: Record<string, { title: string; description: string }> = {
   CredentialsSignin: {
     title: 'Sign-in Failed',
     description:
-      'The credentials you provided are incorrect. Please check your email and password and try again.',
+      'The email or password you entered is incorrect. Please try again.',
   },
   SessionRequired: {
-    title: 'Session Required',
+    title: 'Sign-in Required',
     description:
       'You need to be signed in to access this page. Please sign in to continue.',
   },
@@ -84,7 +84,7 @@ const errorMessages: Record<string, { title: string; description: string }> = {
 function ErrorContent() {
   const searchParams = useSearchParams();
   const errorType = searchParams.get('error') || 'Default';
-  const errorInfo = errorMessages[errorType] || errorMessages.Default;
+  const errorInfo = errorMessages[errorType] ?? errorMessages.Default;
 
   return (
     <div className='space-y-6' role='alert' aria-live='assertive'>
@@ -100,17 +100,17 @@ function ErrorContent() {
 
       {/* Error Message */}
       <div className='space-y-2 text-center'>
-        <h2 className='text-2xl font-semibold tracking-tight text-destructive'>
+        <h2 className='text-2xl font-semibold tracking-tight'>
           {errorInfo.title}
         </h2>
         <p className='text-sm text-muted-foreground'>{errorInfo.description}</p>
       </div>
 
-      {/* Error Code (for debugging) */}
+      {/* Error Code */}
       {errorType !== 'Default' && (
         <div className='text-center'>
           <code className='rounded bg-muted px-2 py-1 text-xs text-muted-foreground'>
-            Error code: {errorType}
+            Error: {errorType}
           </code>
         </div>
       )}
@@ -131,7 +131,7 @@ function ErrorContent() {
       <p className='text-center text-sm text-muted-foreground'>
         Need help?{' '}
         <Link
-          href='/support'
+          href='mailto:support@adaptic.ai'
           className='font-medium text-primary hover:underline'
         >
           Contact support

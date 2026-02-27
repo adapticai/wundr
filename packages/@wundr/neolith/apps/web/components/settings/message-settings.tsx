@@ -979,9 +979,10 @@ function MessagePreview({ preferences }: MessagePreviewProps) {
     ? "Check out this **important update**! We just launched _something amazing_. Here's a quick example: `npm install awesome-package`"
     : "Check out this important update! We just launched something amazing. Here's a quick example: npm install awesome-package";
 
+  const rawEmojiText = 'Great work :) Looking forward to this! :D';
   const convertedEmoji = preferences.emojiAutoConvert
-    ? 'Great work :) Looking forward to this! :D'
-    : 'Great work :) Looking forward to this! :D';
+    ? rawEmojiText.replace(/:D/g, '😄').replace(/:\)/g, '🙂')
+    : rawEmojiText;
 
   const compactClass = preferences.compactMode ? 'space-y-1' : 'space-y-3';
 

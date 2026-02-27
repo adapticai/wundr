@@ -1,12 +1,13 @@
 'use client';
 
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 
 import { AgentCard } from '@/components/agents/agent-card';
 import { AgentDetailPanel } from '@/components/agents/agent-detail-panel';
 import { CreateAgentModal } from '@/components/agents/create-agent-modal';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -174,19 +175,36 @@ export default function AgentsPage() {
   if (error) {
     return (
       <div className='space-y-6'>
-        <div className='rounded-lg border border-red-800 bg-red-900/20 p-4'>
-          <p className='text-sm text-red-400'>Error: {error.message}</p>
+        <div className='flex items-center justify-between'>
+          <div>
+            <h1 className='text-2xl font-bold text-foreground'>Agents</h1>
+            <p className='mt-1 text-sm text-muted-foreground'>
+              Manage your AI agents and their configurations
+            </p>
+          </div>
         </div>
+        <Alert variant='destructive'>
+          <AlertCircle className='h-4 w-4' />
+          <AlertDescription>
+            Failed to load agents. {error.message}
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
 
   return (
     <div className='space-y-6'>
-      {/* Action Button */}
-      <div className='flex justify-end'>
+      {/* Header */}
+      <div className='flex items-center justify-between'>
+        <div>
+          <h1 className='text-2xl font-bold text-foreground'>Agents</h1>
+          <p className='mt-1 text-sm text-muted-foreground'>
+            Manage your AI agents and their configurations
+          </p>
+        </div>
         <Button onClick={() => setIsCreateModalOpen(true)}>
-          <Plus className='mr-2 h-4 w-4' />
+          <Plus className='h-4 w-4' />
           Create Agent
         </Button>
       </div>

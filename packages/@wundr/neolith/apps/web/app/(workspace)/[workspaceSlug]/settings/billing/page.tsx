@@ -16,7 +16,6 @@ import {
   Trash2,
   TrendingUp,
   Users,
-  X,
   Zap,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -63,6 +62,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 
@@ -130,84 +136,13 @@ interface TaxInfo {
   businessName: string;
 }
 
-const PLANS: Plan[] = [
-  {
-    id: 'free',
-    name: 'Free',
-    description: 'Perfect for getting started',
-    price: 0,
-    interval: 'month',
-    features: [
-      'Up to 3 team members',
-      '5 GB storage',
-      '5 projects',
-      '1,000 API calls/month',
-      'Basic support',
-      'Community access',
-    ],
-    limits: {
-      users: 3,
-      storage: 5,
-      projects: 5,
-      apiCalls: 1000,
-    },
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    description: 'For growing teams',
-    price: 29,
-    interval: 'month',
-    features: [
-      'Up to 10 team members',
-      '100 GB storage',
-      'Unlimited projects',
-      '50,000 API calls/month',
-      'Priority support',
-      'Advanced analytics',
-      'Custom integrations',
-      'Team collaboration tools',
-    ],
-    limits: {
-      users: 10,
-      storage: 100,
-      projects: -1,
-      apiCalls: 50000,
-    },
-    popular: true,
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    description: 'For large organizations',
-    price: 99,
-    interval: 'month',
-    features: [
-      'Unlimited team members',
-      '1 TB storage',
-      'Unlimited projects',
-      'Unlimited API calls',
-      '24/7 premium support',
-      'Advanced security features',
-      'Custom SLA',
-      'Dedicated account manager',
-      'On-premise deployment option',
-      'Custom contract terms',
-    ],
-    limits: {
-      users: -1,
-      storage: 1000,
-      projects: -1,
-      apiCalls: -1,
-    },
-  },
-];
-
 export default function BillingSettingsPage() {
   const { data: session } = useSession();
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(true);
+  const [availablePlans, setAvailablePlans] = useState<Plan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<Plan | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
@@ -217,21 +152,24 @@ export default function BillingSettingsPage() {
     null
   );
   const [taxInfo, setTaxInfo] = useState<TaxInfo | null>(null);
+  const [selectedTaxIdType, setSelectedTaxIdType] =
+    useState<TaxInfo['taxIdType']>('vat');
   const [billingEmail, setBillingEmail] = useState('');
   const [sendInvoiceEmails, setSendInvoiceEmails] = useState(true);
 
   const [showPlanDialog, setShowPlanDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [showAddCardDialog, setShowAddCardDialog] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [showRetentionOffer, setShowRetentionOffer] = useState(false);
   const [showAddressDialog, setShowAddressDialog] = useState(false);
   const [showTaxDialog, setShowTaxDialog] = useState(false);
 
   const [processingAction, setProcessingAction] = useState<string | null>(null);
+  const [showAddCardDialog, setShowAddCardDialog] = useState(false);
+  const [showRetentionOffer, setShowRetentionOffer] = useState(false);
 
   useEffect(() => {
     loadBillingData();
+    loadAvailablePlans();
   }, []);
 
   const loadBillingData = async () => {
@@ -254,10 +192,9 @@ export default function BillingSettingsPage() {
       if (subscriptionRes.ok) {
         const subData = await subscriptionRes.json();
         setSubscription(subData.subscription);
-        const plan = PLANS.find(p => p.id === subData.subscription?.planId);
-        setCurrentPlan(plan || PLANS[0]);
-      } else {
-        setCurrentPlan(PLANS[0]);
+        if (subData.currentPlan) {
+          setCurrentPlan(subData.currentPlan);
+        }
       }
 
       if (paymentMethodsRes.ok) {
@@ -293,6 +230,21 @@ export default function BillingSettingsPage() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadAvailablePlans = async () => {
+    setPlansLoading(true);
+    try {
+      const response = await fetch('/api/billing/plans');
+      if (response.ok) {
+        const data = await response.json();
+        setAvailablePlans(data.plans || []);
+      }
+    } catch (error) {
+      console.error('Failed to load plans:', error);
+    } finally {
+      setPlansLoading(false);
     }
   };
 
@@ -333,48 +285,31 @@ export default function BillingSettingsPage() {
     }
   };
 
-  const handleAddPaymentMethod = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
-    e.preventDefault();
-    setProcessingAction('addCard');
-
-    const formData = new FormData(e.currentTarget);
-    const cardData = {
-      number: formData.get('cardNumber'),
-      expiryMonth: formData.get('expiryMonth'),
-      expiryYear: formData.get('expiryYear'),
-      cvc: formData.get('cvc'),
-      name: formData.get('cardholderName'),
-      setAsDefault: formData.get('setAsDefault') === 'on',
-    };
-
+  const handleManagePaymentMethod = async () => {
+    setProcessingAction('managePayment');
     try {
-      const response = await fetch('/api/billing/payment-methods', {
+      const response = await fetch('/api/billing/portal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cardData),
+        body: JSON.stringify({ returnUrl: window.location.href }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to add payment method');
+        throw new Error(error.message || 'Failed to open billing portal');
       }
 
-      toast({
-        title: 'Success',
-        description: 'Payment method added successfully',
-      });
-
-      await loadBillingData();
-      setShowAddCardDialog(false);
+      const { url } = await response.json();
+      if (url) {
+        window.location.href = url;
+      }
     } catch (error) {
       toast({
         title: 'Error',
         description:
           error instanceof Error
             ? error.message
-            : 'Failed to add payment method',
+            : 'Failed to open billing portal',
         variant: 'destructive',
       });
     } finally {
@@ -452,7 +387,7 @@ export default function BillingSettingsPage() {
   };
 
   const handleCancelSubscription = async () => {
-    setShowRetentionOffer(true);
+    setShowCancelDialog(true);
   };
 
   const handleConfirmCancellation = async () => {
@@ -475,7 +410,6 @@ export default function BillingSettingsPage() {
 
       await loadBillingData();
       setShowCancelDialog(false);
-      setShowRetentionOffer(false);
     } catch (error) {
       toast({
         title: 'Error',
@@ -546,7 +480,7 @@ export default function BillingSettingsPage() {
     const formData = new FormData(e.currentTarget);
     const tax: TaxInfo = {
       taxId: formData.get('taxId') as string,
-      taxIdType: formData.get('taxIdType') as 'vat' | 'ein' | 'gst' | 'other',
+      taxIdType: selectedTaxIdType,
       businessName: formData.get('businessName') as string,
     };
 
@@ -944,9 +878,14 @@ export default function BillingSettingsPage() {
                       <Button
                         variant='outline'
                         size='sm'
-                        onClick={() => setShowAddCardDialog(true)}
+                        onClick={handleManagePaymentMethod}
+                        disabled={processingAction === 'managePayment'}
                       >
-                        Update
+                        {processingAction === 'managePayment' ? (
+                          <Loader2 className='h-4 w-4 animate-spin' />
+                        ) : (
+                          'Manage'
+                        )}
                       </Button>
                     </div>
                   );
@@ -957,87 +896,116 @@ export default function BillingSettingsPage() {
         </TabsContent>
 
         <TabsContent value='plans' className='space-y-6'>
-          <div className='grid gap-6 md:grid-cols-3'>
-            {PLANS.map(plan => (
-              <Card
-                key={plan.id}
-                className={
-                  plan.id === currentPlan?.id
-                    ? 'border-primary shadow-lg'
-                    : plan.popular
-                      ? 'border-purple-500 shadow-md'
-                      : ''
-                }
-              >
-                <CardHeader>
-                  <div className='flex items-start justify-between'>
-                    <div>
-                      <CardTitle className='flex items-center gap-2'>
-                        {plan.name === 'Enterprise' && (
-                          <Crown className='h-5 w-5 text-amber-500' />
-                        )}
-                        {plan.name === 'Pro' && (
-                          <Sparkles className='h-5 w-5 text-purple-500' />
-                        )}
-                        {plan.name}
-                      </CardTitle>
-                      <CardDescription>{plan.description}</CardDescription>
+          {plansLoading ? (
+            <div className='flex items-center justify-center py-12'>
+              <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+            </div>
+          ) : availablePlans.length === 0 ? (
+            <Card>
+              <CardContent className='flex flex-col items-center justify-center py-12 text-center'>
+                <TrendingUp className='h-12 w-12 text-muted-foreground mb-4' />
+                <h3 className='text-lg font-semibold mb-2'>
+                  Plans unavailable
+                </h3>
+                <p className='text-sm text-muted-foreground mb-4 max-w-sm'>
+                  Plan information could not be loaded. Please try again or
+                  contact support to discuss available options.
+                </p>
+                <div className='flex gap-2'>
+                  <Button variant='outline' onClick={loadAvailablePlans}>
+                    Try Again
+                  </Button>
+                  <Button asChild>
+                    <a href='mailto:support@adaptic.ai'>Contact Support</a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className='grid gap-6 md:grid-cols-3'>
+              {availablePlans.map(plan => (
+                <Card
+                  key={plan.id}
+                  className={
+                    plan.id === currentPlan?.id
+                      ? 'border-primary shadow-lg'
+                      : plan.popular
+                        ? 'border-purple-500 shadow-md'
+                        : ''
+                  }
+                >
+                  <CardHeader>
+                    <div className='flex items-start justify-between'>
+                      <div>
+                        <CardTitle className='flex items-center gap-2'>
+                          {plan.name === 'Enterprise' && (
+                            <Crown className='h-5 w-5 text-amber-500' />
+                          )}
+                          {plan.name === 'Pro' && (
+                            <Sparkles className='h-5 w-5 text-purple-500' />
+                          )}
+                          {plan.name}
+                        </CardTitle>
+                        <CardDescription>{plan.description}</CardDescription>
+                      </div>
+                      {plan.popular && (
+                        <Badge variant='secondary'>Popular</Badge>
+                      )}
+                      {plan.id === currentPlan?.id && (
+                        <Badge variant='default'>Current</Badge>
+                      )}
                     </div>
-                    {plan.popular && <Badge variant='secondary'>Popular</Badge>}
-                    {plan.id === currentPlan?.id && (
-                      <Badge variant='default'>Current</Badge>
+                  </CardHeader>
+                  <CardContent className='space-y-4'>
+                    <div className='flex items-baseline gap-2'>
+                      <span className='text-3xl font-bold'>
+                        {formatCurrency(plan.price)}
+                      </span>
+                      <span className='text-muted-foreground'>
+                        /{plan.interval}
+                      </span>
+                    </div>
+
+                    <Separator />
+
+                    <ul className='space-y-2 text-sm'>
+                      {plan.features.map((feature, index) => (
+                        <li key={index} className='flex items-start gap-2'>
+                          <Check className='h-4 w-4 text-green-500 mt-0.5 shrink-0' />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    {plan.id === currentPlan?.id ? (
+                      <Button className='w-full' disabled>
+                        Current Plan
+                      </Button>
+                    ) : (
+                      <Button
+                        className='w-full'
+                        variant={
+                          plan.price > (currentPlan?.price || 0)
+                            ? 'default'
+                            : 'outline'
+                        }
+                        onClick={() => {
+                          setSelectedPlan(plan);
+                          setShowPlanDialog(true);
+                        }}
+                      >
+                        {plan.price > (currentPlan?.price || 0)
+                          ? 'Upgrade'
+                          : 'Downgrade'}
+                        <ChevronRight className='ml-2 h-4 w-4' />
+                      </Button>
                     )}
-                  </div>
-                </CardHeader>
-                <CardContent className='space-y-4'>
-                  <div className='flex items-baseline gap-2'>
-                    <span className='text-3xl font-bold'>
-                      {formatCurrency(plan.price)}
-                    </span>
-                    <span className='text-muted-foreground'>
-                      /{plan.interval}
-                    </span>
-                  </div>
-
-                  <Separator />
-
-                  <ul className='space-y-2 text-sm'>
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className='flex items-start gap-2'>
-                        <Check className='h-4 w-4 text-green-500 mt-0.5 shrink-0' />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  {plan.id === currentPlan?.id ? (
-                    <Button className='w-full' disabled>
-                      Current Plan
-                    </Button>
-                  ) : (
-                    <Button
-                      className='w-full'
-                      variant={
-                        plan.price > (currentPlan?.price || 0)
-                          ? 'default'
-                          : 'outline'
-                      }
-                      onClick={() => {
-                        setSelectedPlan(plan);
-                        setShowPlanDialog(true);
-                      }}
-                    >
-                      {plan.price > (currentPlan?.price || 0)
-                        ? 'Upgrade'
-                        : 'Downgrade'}
-                      <ChevronRight className='ml-2 h-4 w-4' />
-                    </Button>
-                  )}
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value='payment' className='space-y-6'>
@@ -1050,9 +1018,16 @@ export default function BillingSettingsPage() {
                     Manage your credit cards and payment options
                   </CardDescription>
                 </div>
-                <Button onClick={() => setShowAddCardDialog(true)}>
-                  <CreditCard className='mr-2 h-4 w-4' />
-                  Add Card
+                <Button
+                  onClick={handleManagePaymentMethod}
+                  disabled={processingAction === 'managePayment'}
+                >
+                  {processingAction === 'managePayment' ? (
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  ) : (
+                    <ExternalLink className='mr-2 h-4 w-4' />
+                  )}
+                  Manage in Portal
                 </Button>
               </div>
             </CardHeader>
@@ -1064,10 +1039,19 @@ export default function BillingSettingsPage() {
                     No payment methods
                   </h3>
                   <p className='text-sm text-muted-foreground mb-4'>
-                    Add a payment method to enable automatic billing
+                    Add a payment method to enable automatic billing. You will
+                    be redirected to our secure payment portal.
                   </p>
-                  <Button onClick={() => setShowAddCardDialog(true)}>
-                    Add Your First Card
+                  <Button
+                    onClick={handleManagePaymentMethod}
+                    disabled={processingAction === 'managePayment'}
+                  >
+                    {processingAction === 'managePayment' ? (
+                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                    ) : (
+                      <ExternalLink className='mr-2 h-4 w-4' />
+                    )}
+                    Add Payment Method
                   </Button>
                 </div>
               ) : (
@@ -1321,7 +1305,10 @@ export default function BillingSettingsPage() {
                 </div>
                 <Button
                   variant='outline'
-                  onClick={() => setShowTaxDialog(true)}
+                  onClick={() => {
+                    setSelectedTaxIdType(taxInfo?.taxIdType || 'vat');
+                    setShowTaxDialog(true);
+                  }}
                 >
                   {taxInfo ? 'Update' : 'Add'} Tax Info
                 </Button>
@@ -1420,101 +1407,6 @@ export default function BillingSettingsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Add Card Dialog */}
-      <Dialog open={showAddCardDialog} onOpenChange={setShowAddCardDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Payment Method</DialogTitle>
-            <DialogDescription>
-              Add a credit or debit card to your account
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleAddPaymentMethod} className='space-y-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='cardholderName'>Cardholder Name</Label>
-              <Input
-                id='cardholderName'
-                name='cardholderName'
-                placeholder='John Doe'
-                required
-              />
-            </div>
-            <div className='space-y-2'>
-              <Label htmlFor='cardNumber'>Card Number</Label>
-              <Input
-                id='cardNumber'
-                name='cardNumber'
-                placeholder='4242 4242 4242 4242'
-                required
-              />
-            </div>
-            <div className='grid grid-cols-3 gap-4'>
-              <div className='space-y-2'>
-                <Label htmlFor='expiryMonth'>Month</Label>
-                <Input
-                  id='expiryMonth'
-                  name='expiryMonth'
-                  placeholder='MM'
-                  maxLength={2}
-                  required
-                />
-              </div>
-              <div className='space-y-2'>
-                <Label htmlFor='expiryYear'>Year</Label>
-                <Input
-                  id='expiryYear'
-                  name='expiryYear'
-                  placeholder='YY'
-                  maxLength={2}
-                  required
-                />
-              </div>
-              <div className='space-y-2'>
-                <Label htmlFor='cvc'>CVC</Label>
-                <Input
-                  id='cvc'
-                  name='cvc'
-                  placeholder='123'
-                  maxLength={4}
-                  required
-                />
-              </div>
-            </div>
-            <div className='flex items-center space-x-2'>
-              <input
-                type='checkbox'
-                id='setAsDefault'
-                name='setAsDefault'
-                className='h-4 w-4 rounded border-gray-300'
-              />
-              <Label htmlFor='setAsDefault' className='text-sm font-normal'>
-                Set as default payment method
-              </Label>
-            </div>
-            <DialogFooter>
-              <Button
-                type='button'
-                variant='outline'
-                onClick={() => setShowAddCardDialog(false)}
-                disabled={processingAction === 'addCard'}
-              >
-                Cancel
-              </Button>
-              <Button type='submit' disabled={processingAction === 'addCard'}>
-                {processingAction === 'addCard' ? (
-                  <>
-                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                    Adding...
-                  </>
-                ) : (
-                  'Add Card'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
       {/* Cancel Subscription Dialog */}
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent>
@@ -1528,63 +1420,9 @@ export default function BillingSettingsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleCancelSubscription}
-              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
-            >
-              Cancel Subscription
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Retention Offer Dialog */}
-      <Dialog open={showRetentionOffer} onOpenChange={setShowRetentionOffer}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Before You Go...</DialogTitle>
-            <DialogDescription>
-              We'd hate to see you leave! Here's a special offer just for you.
-            </DialogDescription>
-          </DialogHeader>
-          <div className='space-y-4'>
-            <div className='rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 p-6 text-center'>
-              <Sparkles className='h-12 w-12 mx-auto mb-4 text-purple-500' />
-              <h3 className='text-2xl font-bold mb-2'>20% Off for 3 Months</h3>
-              <p className='text-sm text-muted-foreground mb-4'>
-                Stay subscribed and get 20% off your next 3 billing cycles
-              </p>
-              <div className='flex items-baseline justify-center gap-2'>
-                <span className='text-3xl font-bold'>
-                  {formatCurrency((currentPlan?.price || 0) * 0.8)}
-                </span>
-                <span className='text-sm text-muted-foreground line-through'>
-                  {formatCurrency(currentPlan?.price || 0)}
-                </span>
-                <span className='text-muted-foreground'>/month</span>
-              </div>
-            </div>
-            <p className='text-sm text-muted-foreground text-center'>
-              This offer is only available if you keep your subscription active
-            </p>
-          </div>
-          <DialogFooter className='flex-col sm:flex-col gap-2'>
-            <Button
-              onClick={() => {
-                setShowRetentionOffer(false);
-                toast({
-                  title: 'Discount Applied!',
-                  description: '20% off has been applied to your next 3 months',
-                });
-              }}
-              className='w-full'
-            >
-              Accept Offer
-            </Button>
-            <Button
-              variant='ghost'
               onClick={handleConfirmCancellation}
               disabled={processingAction === 'cancelSubscription'}
-              className='w-full'
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
             >
               {processingAction === 'cancelSubscription' ? (
                 <>
@@ -1592,12 +1430,12 @@ export default function BillingSettingsPage() {
                   Processing...
                 </>
               ) : (
-                'Continue Cancellation'
+                'Cancel Subscription'
               )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Billing Address Dialog */}
       <Dialog open={showAddressDialog} onOpenChange={setShowAddressDialog}>
@@ -1725,18 +1563,22 @@ export default function BillingSettingsPage() {
             </div>
             <div className='space-y-2'>
               <Label htmlFor='taxIdType'>Tax ID Type</Label>
-              <select
-                id='taxIdType'
-                name='taxIdType'
-                defaultValue={taxInfo?.taxIdType || 'vat'}
-                className='w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm'
-                required
+              <Select
+                value={selectedTaxIdType}
+                onValueChange={(value: TaxInfo['taxIdType']) =>
+                  setSelectedTaxIdType(value)
+                }
               >
-                <option value='vat'>VAT</option>
-                <option value='ein'>EIN</option>
-                <option value='gst'>GST</option>
-                <option value='other'>Other</option>
-              </select>
+                <SelectTrigger id='taxIdType'>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='vat'>VAT</SelectItem>
+                  <SelectItem value='ein'>EIN</SelectItem>
+                  <SelectItem value='gst'>GST</SelectItem>
+                  <SelectItem value='other'>Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className='space-y-2'>
               <Label htmlFor='taxId'>Tax ID Number</Label>

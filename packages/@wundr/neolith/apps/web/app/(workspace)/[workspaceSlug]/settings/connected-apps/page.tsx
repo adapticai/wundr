@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useCallback } from 'react';
 
 import { ConnectedApps } from '@/components/settings/connected-apps';
@@ -16,9 +16,8 @@ import type { IntegrationProvider } from '@/types/integration';
 
 export default function ConnectedAppsPage() {
   const params = useParams();
-  const router = useRouter();
   const { toast } = useToast();
-  const workspaceId = params?.workspaceSlug as string;
+  const workspaceSlug = params?.workspaceSlug as string;
 
   // Fetch integrations and webhooks
   const {
@@ -26,13 +25,13 @@ export default function ConnectedAppsPage() {
     isLoading: integrationsLoading,
     error: integrationsError,
     refetch: refetchIntegrations,
-  } = useIntegrations(workspaceId);
+  } = useIntegrations(workspaceSlug);
 
   const {
     webhooks,
     isLoading: webhooksLoading,
     error: webhooksError,
-  } = useWebhooks(workspaceId);
+  } = useWebhooks(workspaceSlug);
 
   const { initiateOAuth } = useIntegrationMutations();
 
@@ -40,9 +39,8 @@ export default function ConnectedAppsPage() {
   const handleConnectApp = useCallback(
     async (provider: IntegrationProvider) => {
       try {
-        const result = await initiateOAuth(workspaceId, provider);
+        const result = await initiateOAuth(workspaceSlug, provider);
         if (result?.authUrl) {
-          // Redirect to OAuth provider
           window.location.href = result.authUrl;
         }
       } catch (error) {
@@ -55,7 +53,7 @@ export default function ConnectedAppsPage() {
         throw error;
       }
     },
-    [workspaceId, initiateOAuth, toast]
+    [workspaceSlug, initiateOAuth, toast]
   );
 
   // Disconnect an app
@@ -63,7 +61,7 @@ export default function ConnectedAppsPage() {
     async (integrationId: string) => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/integrations/${integrationId}`,
+          `/api/workspaces/${workspaceSlug}/integrations/${integrationId}`,
           {
             method: 'DELETE',
           }
@@ -85,7 +83,7 @@ export default function ConnectedAppsPage() {
         throw error;
       }
     },
-    [workspaceId, refetchIntegrations, toast]
+    [workspaceSlug, refetchIntegrations, toast]
   );
 
   // Refresh an app connection
@@ -93,7 +91,7 @@ export default function ConnectedAppsPage() {
     async (integrationId: string) => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/integrations/${integrationId}/sync`,
+          `/api/workspaces/${workspaceSlug}/integrations/${integrationId}/sync`,
           {
             method: 'POST',
           }
@@ -117,7 +115,7 @@ export default function ConnectedAppsPage() {
         throw error;
       }
     },
-    [workspaceId, refetchIntegrations, toast]
+    [workspaceSlug, refetchIntegrations, toast]
   );
 
   const isLoading = integrationsLoading || webhooksLoading;
@@ -125,7 +123,7 @@ export default function ConnectedAppsPage() {
 
   if (isLoading) {
     return (
-      <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
+      <div className='flex items-center justify-center py-24'>
         <LoadingSpinner size='lg' />
       </div>
     );
@@ -133,58 +131,37 @@ export default function ConnectedAppsPage() {
 
   if (error) {
     return (
-      <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
+      <div className='flex items-center justify-center py-24'>
         <div className='text-center'>
           <h3 className='text-lg font-semibold text-foreground mb-2'>
-            Failed to Load Apps
+            Failed to Load Connected Apps
           </h3>
           <p className='text-sm text-muted-foreground mb-4'>{error.message}</p>
-          <button
-            onClick={() => router.push(`/${workspaceId}/settings`)}
-            className='text-sm text-primary hover:underline'
-          >
-            Return to Settings
-          </button>
+          <p className='text-xs text-muted-foreground'>
+            Please refresh the page or contact support if the problem persists.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className='flex h-[calc(100vh-4rem)] flex-col'>
-      {/* Header */}
-      <div className='border-b px-6 py-4'>
-        <div className='flex items-center gap-2 text-sm mb-2'>
-          <button
-            onClick={() => router.push(`/${workspaceId}/settings`)}
-            className='text-muted-foreground hover:text-foreground'
-          >
-            Settings
-          </button>
-          <span className='text-muted-foreground'>/</span>
-          <span className='font-medium text-foreground'>Connected Apps</span>
-        </div>
-        <div>
-          <h1 className='text-2xl font-bold text-foreground'>Connected Apps</h1>
-          <p className='mt-1 text-sm text-muted-foreground'>
-            Manage third-party applications, API keys, and webhooks
-          </p>
-        </div>
+    <div className='space-y-6'>
+      <div>
+        <h1 className='text-3xl font-bold tracking-tight'>Connected Apps</h1>
+        <p className='text-muted-foreground'>
+          Manage third-party applications, personal API keys, and webhooks.
+        </p>
       </div>
 
-      {/* Content */}
-      <div className='flex-1 overflow-y-auto'>
-        <div className='mx-auto max-w-6xl p-6'>
-          <ConnectedApps
-            workspaceId={workspaceId}
-            integrations={integrations}
-            webhooks={webhooks}
-            onConnectApp={handleConnectApp}
-            onDisconnectApp={handleDisconnectApp}
-            onRefreshConnection={handleRefreshConnection}
-          />
-        </div>
-      </div>
+      <ConnectedApps
+        workspaceId={workspaceSlug}
+        integrations={integrations}
+        webhooks={webhooks}
+        onConnectApp={handleConnectApp}
+        onDisconnectApp={handleDisconnectApp}
+        onRefreshConnection={handleRefreshConnection}
+      />
     </div>
   );
 }

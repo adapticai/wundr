@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 
 // ---------------------------------------------------------------------------
@@ -391,10 +392,18 @@ function MessageLogTab({ workspaceId }: { workspaceId: string | null }) {
 
 export default function CommunicationsPage() {
   const { workspaceSlug } = useParams<{ workspaceSlug: string }>();
+  const { setPageHeader } = usePageHeader();
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [wsLoading, setWsLoading] = useState(true);
   const [stats, setStats] = useState<CommStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    setPageHeader(
+      'Communications',
+      'Monitor message logs, configure channel preferences, and manage inbound webhook endpoints'
+    );
+  }, [setPageHeader]);
 
   useEffect(() => {
     if (!workspaceSlug) return;
@@ -431,16 +440,6 @@ export default function CommunicationsPage() {
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-semibold tracking-tight'>
-          Communications
-        </h1>
-        <p className='mt-1 text-sm text-muted-foreground'>
-          Monitor message logs, configure channel preferences, and manage
-          inbound webhook endpoints for this workspace.
-        </p>
-      </div>
-
       <Tabs defaultValue='overview'>
         <TabsList>
           <TabsTrigger value='overview'>Overview</TabsTrigger>

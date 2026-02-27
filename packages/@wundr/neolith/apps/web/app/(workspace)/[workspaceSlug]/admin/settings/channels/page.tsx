@@ -1,10 +1,29 @@
 'use client';
 
+import {
+  PlusCircle,
+  Tag,
+  MessageSquare,
+  Archive,
+  Settings,
+  Info,
+} from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
 // Type definitions for channel settings
 type WhoCanCreate = 'everyone' | 'admins' | 'members';
@@ -60,6 +79,14 @@ export default function ChannelSettingsPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const { toast } = useToast();
+  const { setPageHeader } = usePageHeader();
+
+  useEffect(() => {
+    setPageHeader(
+      'Channel Settings',
+      'Configure workspace-wide channel policies and permissions'
+    );
+  }, [setPageHeader]);
 
   const [settings, setSettings] = useState<ChannelSettings>({
     whoCanCreatePublic: 'everyone',
@@ -158,29 +185,14 @@ export default function ChannelSettingsPage() {
 
   if (loadError) {
     return (
-      <div className='space-y-6'>
-        <div>
-          <h1 className='text-2xl font-bold'>Channel Settings</h1>
-          <p className='mt-1 text-muted-foreground'>
-            Configure workspace-wide channel policies and permissions
-          </p>
-        </div>
-        <div className='rounded-lg border border-red-500/50 bg-red-50 p-4 dark:bg-red-900/10'>
-          <p className='text-sm text-red-800 dark:text-red-200'>{loadError}</p>
-        </div>
+      <div className='rounded-lg border border-destructive/50 bg-destructive/10 p-4'>
+        <p className='text-sm text-destructive'>{loadError}</p>
       </div>
     );
   }
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-bold'>Channel Settings</h1>
-        <p className='mt-1 text-muted-foreground'>
-          Configure workspace-wide channel policies and permissions
-        </p>
-      </div>
-
       <CreationPermissionsSection
         settings={settings}
         onSave={handleSave}
@@ -225,7 +237,7 @@ function CreationPermissionsSection({
     <div className='rounded-lg border bg-card'>
       <div className='border-b px-6 py-4'>
         <div className='flex items-center gap-2'>
-          <PlusCircleIcon className='h-5 w-5 text-primary' />
+          <PlusCircle className='h-5 w-5 text-primary' />
           <h2 className='text-lg font-semibold text-foreground'>
             Channel Creation Permissions
           </h2>
@@ -236,64 +248,56 @@ function CreationPermissionsSection({
       </div>
 
       <div className='space-y-6 p-6'>
-        <div>
-          <label
-            htmlFor='createPublic'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Who can create public channels
-          </label>
-          <select
-            id='createPublic'
+        <div className='space-y-2'>
+          <Label htmlFor='createPublic'>Who can create public channels</Label>
+          <Select
             value={settings.whoCanCreatePublic}
-            onChange={e => {
-              const value = e.target.value;
+            onValueChange={value => {
               if (isWhoCanCreate(value)) {
                 onSave({ whoCanCreatePublic: value });
               }
             }}
             disabled={isSaving}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'disabled:cursor-not-allowed disabled:opacity-50'
-            )}
           >
-            <option value='everyone'>Everyone (all workspace members)</option>
-            <option value='members'>Members (excluding guests)</option>
-            <option value='admins'>Admins only</option>
-          </select>
+            <SelectTrigger id='createPublic'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='everyone'>
+                Everyone (all workspace members)
+              </SelectItem>
+              <SelectItem value='members'>
+                Members (excluding guests)
+              </SelectItem>
+              <SelectItem value='admins'>Admins only</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className='border-t pt-6'>
-          <label
-            htmlFor='createPrivate'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Who can create private channels
-          </label>
-          <select
-            id='createPrivate'
+        <div className='space-y-2 border-t pt-6'>
+          <Label htmlFor='createPrivate'>Who can create private channels</Label>
+          <Select
             value={settings.whoCanCreatePrivate}
-            onChange={e => {
-              const value = e.target.value;
+            onValueChange={value => {
               if (isWhoCanCreate(value)) {
                 onSave({ whoCanCreatePrivate: value });
               }
             }}
             disabled={isSaving}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'disabled:cursor-not-allowed disabled:opacity-50'
-            )}
           >
-            <option value='everyone'>Everyone (all workspace members)</option>
-            <option value='members'>Members (excluding guests)</option>
-            <option value='admins'>Admins only</option>
-          </select>
+            <SelectTrigger id='createPrivate'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='everyone'>
+                Everyone (all workspace members)
+              </SelectItem>
+              <SelectItem value='members'>
+                Members (excluding guests)
+              </SelectItem>
+              <SelectItem value='admins'>Admins only</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>
@@ -314,7 +318,7 @@ function NamingConventionsSection({
     <div className='rounded-lg border bg-card'>
       <div className='border-b px-6 py-4'>
         <div className='flex items-center gap-2'>
-          <TagIcon className='h-5 w-5 text-primary' />
+          <Tag className='h-5 w-5 text-primary' />
           <h2 className='text-lg font-semibold text-foreground'>
             Naming Conventions
           </h2>
@@ -343,113 +347,80 @@ function NamingConventionsSection({
 
         {settings.enforceNamingConvention && (
           <>
-            <div className='border-t pt-6'>
-              <label
-                htmlFor='prefix'
-                className='block text-sm font-medium text-foreground mb-2'
-              >
-                Required prefix
-              </label>
-              <p className='text-sm text-muted-foreground mb-3'>
+            <div className='space-y-2 border-t pt-6'>
+              <Label htmlFor='prefix'>Required prefix</Label>
+              <p className='text-sm text-muted-foreground'>
                 All channels must start with this prefix (e.g., "team-",
                 "proj-")
               </p>
               <div className='flex gap-2'>
-                <input
-                  type='text'
+                <Input
                   id='prefix'
                   value={localPrefix}
                   onChange={e => setLocalPrefix(e.target.value)}
                   placeholder='team-'
-                  className={cn(
-                    'flex-1 rounded-md border border-input bg-background',
-                    'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-                  )}
+                  className='flex-1'
                 />
-                <button
+                <Button
                   type='button'
+                  variant='outline'
                   onClick={() => onSave({ requiredPrefix: localPrefix })}
                   disabled={isSaving}
-                  className={cn(
-                    'rounded-md border border-input bg-background px-4 py-2 text-sm font-medium',
-                    'hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50'
-                  )}
                 >
                   Save
-                </button>
+                </Button>
               </div>
             </div>
 
-            <div className='border-t pt-6'>
-              <label
-                htmlFor='pattern'
-                className='block text-sm font-medium text-foreground mb-2'
-              >
-                Naming pattern (regex)
-              </label>
-              <p className='text-sm text-muted-foreground mb-3'>
-                Advanced: Define a regex pattern for channel names
+            <div className='space-y-2 border-t pt-6'>
+              <Label htmlFor='pattern'>Naming pattern (regex)</Label>
+              <p className='text-sm text-muted-foreground'>
+                Advanced: define a regex pattern that all channel names must
+                match
               </p>
               <div className='flex gap-2'>
-                <input
-                  type='text'
+                <Input
                   id='pattern'
                   value={localPattern}
                   onChange={e => setLocalPattern(e.target.value)}
                   placeholder='^[a-z][a-z0-9-]*$'
-                  className={cn(
-                    'flex-1 rounded-md border border-input bg-background',
-                    'px-3 py-2 text-sm font-mono placeholder:text-muted-foreground',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-                  )}
+                  className='flex-1 font-mono'
                 />
-                <button
+                <Button
                   type='button'
+                  variant='outline'
                   onClick={() => onSave({ namingPattern: localPattern })}
                   disabled={isSaving}
-                  className={cn(
-                    'rounded-md border border-input bg-background px-4 py-2 text-sm font-medium',
-                    'hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50'
-                  )}
                 >
                   Save
-                </button>
+                </Button>
               </div>
             </div>
 
-            <div className='border-t pt-6'>
-              <label
-                htmlFor='allowedChars'
-                className='block text-sm font-medium text-foreground mb-2'
-              >
-                Allowed characters
-              </label>
-              <select
-                id='allowedChars'
+            <div className='space-y-2 border-t pt-6'>
+              <Label htmlFor='allowedChars'>Allowed characters</Label>
+              <Select
                 value={settings.allowedCharacters}
-                onChange={e => {
-                  const value = e.target.value;
+                onValueChange={value => {
                   if (isAllowedCharacters(value)) {
                     onSave({ allowedCharacters: value });
                   }
                 }}
                 disabled={isSaving}
-                className={cn(
-                  'block w-full rounded-md border border-input bg-background',
-                  'px-3 py-2 text-sm',
-                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-                  'disabled:cursor-not-allowed disabled:opacity-50'
-                )}
               >
-                <option value='alphanumeric'>
-                  Alphanumeric only (a-z, 0-9)
-                </option>
-                <option value='alphanumeric-dash'>
-                  Alphanumeric + dash (a-z, 0-9, -)
-                </option>
-                <option value='any'>Any characters</option>
-              </select>
+                <SelectTrigger id='allowedChars'>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='alphanumeric'>
+                    Alphanumeric only (a-z, 0-9)
+                  </SelectItem>
+                  <SelectItem value='alphanumeric-dash'>
+                    Alphanumeric + dash (a-z, 0-9, -)
+                  </SelectItem>
+                  <SelectItem value='any'>Any characters</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </>
         )}
@@ -467,7 +438,7 @@ function PostingPermissionsSection({
     <div className='rounded-lg border bg-card'>
       <div className='border-b px-6 py-4'>
         <div className='flex items-center gap-2'>
-          <MessageSquareIcon className='h-5 w-5 text-primary' />
+          <MessageSquare className='h-5 w-5 text-primary' />
           <h2 className='text-lg font-semibold text-foreground'>
             Default Posting Permissions
           </h2>
@@ -478,39 +449,35 @@ function PostingPermissionsSection({
       </div>
 
       <div className='space-y-6 p-6'>
-        <div>
-          <label
-            htmlFor='postingPerm'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Default posting permission
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
+        <div className='space-y-2'>
+          <Label htmlFor='postingPerm'>Default posting permission</Label>
+          <p className='text-sm text-muted-foreground'>
             Who can post messages in new channels by default
           </p>
-          <select
-            id='postingPerm'
+          <Select
             value={settings.defaultPostingPermission}
-            onChange={e => {
-              const value = e.target.value;
+            onValueChange={value => {
               if (isPostingPermission(value)) {
                 onSave({ defaultPostingPermission: value });
               }
             }}
             disabled={isSaving}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'disabled:cursor-not-allowed disabled:opacity-50'
-            )}
           >
-            <option value='everyone'>Everyone (all channel members)</option>
-            <option value='approved-members'>Approved members only</option>
-            <option value='admins-only'>
-              Admins only (announcement channels)
-            </option>
-          </select>
+            <SelectTrigger id='postingPerm'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='everyone'>
+                Everyone (all channel members)
+              </SelectItem>
+              <SelectItem value='approved-members'>
+                Approved members only
+              </SelectItem>
+              <SelectItem value='admins-only'>
+                Admins only (announcement channels)
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className='flex items-center justify-between border-t pt-6'>
@@ -554,7 +521,7 @@ function ArchivalSettingsSection({ settings, onSave, isSaving }: SectionProps) {
     <div className='rounded-lg border bg-card'>
       <div className='border-b px-6 py-4'>
         <div className='flex items-center gap-2'>
-          <ArchiveIcon className='h-5 w-5 text-primary' />
+          <Archive className='h-5 w-5 text-primary' />
           <h2 className='text-lg font-semibold text-foreground'>
             Channel Archival
           </h2>
@@ -565,67 +532,58 @@ function ArchivalSettingsSection({ settings, onSave, isSaving }: SectionProps) {
       </div>
 
       <div className='space-y-6 p-6'>
-        <div>
-          <label
-            htmlFor='autoArchive'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
+        <div className='space-y-2'>
+          <Label htmlFor='autoArchive'>
             Auto-archive inactive channels after
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
+          </Label>
+          <p className='text-sm text-muted-foreground'>
             Channels with no activity will be automatically archived
           </p>
-          <select
-            id='autoArchive'
-            value={settings.autoArchiveInactiveDays}
-            onChange={e =>
-              onSave({ autoArchiveInactiveDays: Number(e.target.value) })
+          <Select
+            value={settings.autoArchiveInactiveDays.toString()}
+            onValueChange={value =>
+              onSave({ autoArchiveInactiveDays: Number(value) })
             }
             disabled={isSaving}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'disabled:cursor-not-allowed disabled:opacity-50'
-            )}
           >
-            <option value={0}>Never (disabled)</option>
-            <option value={30}>30 days</option>
-            <option value={60}>60 days</option>
-            <option value={90}>90 days</option>
-            <option value={180}>180 days</option>
-            <option value={365}>1 year</option>
-          </select>
+            <SelectTrigger id='autoArchive'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='0'>Never (disabled)</SelectItem>
+              <SelectItem value='30'>30 days</SelectItem>
+              <SelectItem value='60'>60 days</SelectItem>
+              <SelectItem value='90'>90 days</SelectItem>
+              <SelectItem value='180'>180 days</SelectItem>
+              <SelectItem value='365'>1 year</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className='border-t pt-6'>
-          <label
-            htmlFor='whoArchive'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Who can manually archive channels
-          </label>
-          <select
-            id='whoArchive'
+        <div className='space-y-2 border-t pt-6'>
+          <Label htmlFor='whoArchive'>Who can manually archive channels</Label>
+          <Select
             value={settings.whoCanArchive}
-            onChange={e => {
-              const value = e.target.value;
+            onValueChange={value => {
               if (isWhoCanArchive(value)) {
                 onSave({ whoCanArchive: value });
               }
             }}
             disabled={isSaving}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'disabled:cursor-not-allowed disabled:opacity-50'
-            )}
           >
-            <option value='everyone'>Everyone (all channel members)</option>
-            <option value='channel-creator'>Channel creator only</option>
-            <option value='admins'>Admins only</option>
-          </select>
+            <SelectTrigger id='whoArchive'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='everyone'>
+                Everyone (all channel members)
+              </SelectItem>
+              <SelectItem value='channel-creator'>
+                Channel creator only
+              </SelectItem>
+              <SelectItem value='admins'>Admins only</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className='flex items-center justify-between border-t pt-6'>
@@ -659,7 +617,7 @@ function ChannelLimitsSection({ settings, onSave, isSaving }: SectionProps) {
     <div className='rounded-lg border bg-card'>
       <div className='border-b px-6 py-4'>
         <div className='flex items-center gap-2'>
-          <SettingsIcon className='h-5 w-5 text-primary' />
+          <Settings className='h-5 w-5 text-primary' />
           <h2 className='text-lg font-semibold text-foreground'>
             Channel Limits
           </h2>
@@ -702,7 +660,7 @@ function ChannelLimitsSection({ settings, onSave, isSaving }: SectionProps) {
 
         <div className='rounded-md bg-blue-50 p-4 dark:bg-blue-900/10 border-t'>
           <div className='flex items-start gap-2'>
-            <InfoIcon className='h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5' />
+            <Info className='h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5' />
             <p className='text-sm text-blue-800 dark:text-blue-200'>
               Additional channel limits can be configured based on your
               workspace plan. Contact support to adjust workspace-wide or
@@ -725,25 +683,7 @@ function ToggleSwitch({
   disabled?: boolean;
 }) {
   return (
-    <button
-      type='button'
-      role='switch'
-      aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      disabled={disabled}
-      className={cn(
-        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-        checked ? 'bg-primary' : 'bg-muted-foreground/30',
-        disabled && 'cursor-not-allowed opacity-50'
-      )}
-    >
-      <span
-        className={cn(
-          'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-          checked ? 'translate-x-6' : 'translate-x-1'
-        )}
-      />
-    </button>
+    <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} />
   );
 }
 
@@ -764,116 +704,5 @@ function LoadingSkeleton() {
         </div>
       ))}
     </div>
-  );
-}
-
-// Icons
-function PlusCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='12' cy='12' r='10' />
-      <path d='M8 12h8' />
-      <path d='M12 8v8' />
-    </svg>
-  );
-}
-
-function TagIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z' />
-      <path d='M7 7h.01' />
-    </svg>
-  );
-}
-
-function MessageSquareIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' />
-    </svg>
-  );
-}
-
-function ArchiveIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <rect width='20' height='5' x='2' y='3' rx='1' />
-      <path d='M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8' />
-      <path d='M10 12h4' />
-    </svg>
-  );
-}
-
-function SettingsIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z' />
-      <circle cx='12' cy='12' r='3' />
-    </svg>
-  );
-}
-
-function InfoIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='12' cy='12' r='10' />
-      <path d='M12 16v-4' />
-      <path d='M12 8h.01' />
-    </svg>
   );
 }

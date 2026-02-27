@@ -124,9 +124,7 @@ export function StatusWidget({
     if (onSetCustomStatus) {
       onSetCustomStatus();
     } else {
-      // Open a modal or navigate to status settings
-      // For now, just log
-      console.log('Open custom status dialog');
+      window.location.href = `/${workspaceSlug}/settings/status`;
     }
   };
 

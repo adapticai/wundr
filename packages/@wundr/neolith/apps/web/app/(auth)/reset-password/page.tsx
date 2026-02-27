@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input } from '@neolith/ui';
+import { Button, Input, Label } from '@neolith/ui';
 import { Eye, EyeOff, Check, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -38,9 +38,15 @@ function PasswordRequirements({ password }: { password: string }) {
         {requirements.map((req, index) => (
           <li key={index} className='flex items-center gap-2 text-xs'>
             {req.met ? (
-              <Check className='h-3.5 w-3.5 text-green-600 dark:text-green-400' />
+              <Check
+                className='h-3.5 w-3.5 text-green-600 dark:text-green-400'
+                aria-hidden='true'
+              />
             ) : (
-              <X className='h-3.5 w-3.5 text-muted-foreground' />
+              <X
+                className='h-3.5 w-3.5 text-muted-foreground'
+                aria-hidden='true'
+              />
             )}
             <span
               className={
@@ -93,7 +99,7 @@ function PasswordStrength({ password }: { password: string }) {
       return { score: 1, label: 'Weak', color: 'bg-red-500' };
     }
     if (score <= 4) {
-      return { score: 2, label: 'Medium', color: 'bg-yellow-500' };
+      return { score: 2, label: 'Fair', color: 'bg-yellow-500' };
     }
     return { score: 3, label: 'Strong', color: 'bg-green-500' };
   };
@@ -105,17 +111,21 @@ function PasswordStrength({ password }: { password: string }) {
   }
 
   return (
-    <div className='space-y-2'>
-      <div className='flex gap-2'>
+    <div
+      className='space-y-1.5'
+      aria-live='polite'
+      aria-label={`Password strength: ${strength.label}`}
+    >
+      <div className='flex gap-1.5'>
         {[1, 2, 3].map(level => (
           <div
             key={level}
-            className={`h-1 flex-1 rounded ${level <= strength.score ? strength.color : 'bg-muted'}`}
+            className={`h-1 flex-1 rounded-full transition-colors ${level <= strength.score ? strength.color : 'bg-muted'}`}
           />
         ))}
       </div>
       <p className='text-xs text-muted-foreground'>
-        Password strength: <span className='font-medium'>{strength.label}</span>
+        Strength: <span className='font-medium'>{strength.label}</span>
       </p>
     </div>
   );
@@ -134,9 +144,10 @@ function ResetPasswordLoading() {
         <p className='text-sm text-muted-foreground'>Loading...</p>
       </div>
       <div className='space-y-4'>
-        <div className='h-10 w-full animate-pulse rounded bg-muted' />
-        <div className='h-10 w-full animate-pulse rounded bg-muted' />
-        <div className='h-10 w-full animate-pulse rounded bg-muted' />
+        <div className='h-16 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
       </div>
     </div>
   );
@@ -155,9 +166,10 @@ function ResetPasswordContent() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const passwordsMatch = confirmPassword === '' || password === confirmPassword;
 
   // Extract token from URL on mount
   useEffect(() => {
@@ -165,52 +177,45 @@ function ResetPasswordContent() {
     if (tokenParam) {
       setToken(tokenParam);
     } else {
-      setError('No reset token provided. Please use the link from your email.');
+      setError(
+        'This link appears to be invalid. Please request a new password reset from the login page.'
+      );
     }
   }, [searchParams]);
 
-  // Check if passwords match
-  useEffect(() => {
-    if (confirmPassword) {
-      setPasswordsMatch(password === confirmPassword);
-    } else {
-      setPasswordsMatch(true);
-    }
-  }, [password, confirmPassword]);
-
   /**
    * Handles password reset form submission.
-   * Sends the new password to the API along with the reset token.
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess(false);
 
-    // Validation
     if (!token) {
-      setError('No reset token provided. Please use the link from your email.');
+      setError(
+        'This link appears to be invalid. Please request a new password reset.'
+      );
       return;
     }
 
     if (!password || !confirmPassword) {
-      setError('Please fill in all fields');
+      setError('Please fill in all fields.');
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Passwords do not match. Please check and try again.');
       return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError('Password must be at least 8 characters.');
       return;
     }
 
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
       setError(
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+        'Password must contain at least one uppercase letter, one lowercase letter, and one number.'
       );
       return;
     }
@@ -227,7 +232,9 @@ function ResetPasswordContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to reset password');
+        throw new Error(
+          data.error || 'Failed to reset password. Please try again.'
+        );
       }
 
       setSuccess(true);
@@ -239,7 +246,11 @@ function ResetPasswordContent() {
         router.push('/login');
       }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to reset password');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to reset password. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -253,41 +264,56 @@ function ResetPasswordContent() {
           Set new password
         </h2>
         <p className='text-sm text-muted-foreground'>
-          Enter your new password below
+          {success
+            ? 'Your password has been updated successfully.'
+            : 'Choose a strong password to secure your account.'}
         </p>
-        {token && (
-          <p className='text-xs text-muted-foreground/80'>
-            Link valid for 1 hour
-          </p>
-        )}
       </div>
 
       {/* Success Message */}
       {success && (
-        <div className='rounded-md bg-green-500/10 p-4 text-sm text-green-600 dark:text-green-400'>
-          <p className='font-medium'>Password reset successful!</p>
-          <p className='mt-1 text-xs'>Redirecting to login page...</p>
+        <div
+          role='status'
+          aria-live='polite'
+          className='rounded-md bg-green-500/10 p-4 text-center text-sm text-green-600 dark:text-green-400'
+        >
+          <p className='font-medium'>Password updated</p>
+          <p className='mt-1 text-xs'>Redirecting you to the login page...</p>
         </div>
       )}
 
       {/* Error Message */}
       {error && (
-        <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
+        <div
+          role='alert'
+          aria-live='polite'
+          className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'
+        >
           {error}
+          {!token && (
+            <Link
+              href='/forgot-password'
+              className='ml-1 font-medium underline hover:no-underline'
+            >
+              Request a new link
+            </Link>
+          )}
         </div>
       )}
 
       {/* Password Reset Form */}
       {!success && token && (
-        <form onSubmit={handleSubmit} className='space-y-4'>
-          {/* Password Requirements - Always Visible */}
+        <form onSubmit={handleSubmit} className='space-y-4' noValidate>
+          {/* Password Requirements */}
           <PasswordRequirements password={password} />
 
           <div className='space-y-2'>
+            <Label htmlFor='new-password'>New password</Label>
             <div className='relative'>
               <Input
+                id='new-password'
                 type={showPassword ? 'text' : 'password'}
-                placeholder='New password'
+                placeholder='Enter new password'
                 value={password}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setPassword(e.target.value)
@@ -297,6 +323,7 @@ function ResetPasswordContent() {
                 autoFocus
                 required
                 className='pr-10'
+                aria-describedby='password-strength'
               />
               <button
                 type='button'
@@ -306,20 +333,24 @@ function ResetPasswordContent() {
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
-                  <EyeOff className='h-4 w-4' />
+                  <EyeOff className='h-4 w-4' aria-hidden='true' />
                 ) : (
-                  <Eye className='h-4 w-4' />
+                  <Eye className='h-4 w-4' aria-hidden='true' />
                 )}
               </button>
             </div>
-            <PasswordStrength password={password} />
+            <div id='password-strength'>
+              <PasswordStrength password={password} />
+            </div>
           </div>
 
           <div className='space-y-2'>
+            <Label htmlFor='confirm-new-password'>Confirm new password</Label>
             <div className='relative'>
               <Input
+                id='confirm-new-password'
                 type={showConfirmPassword ? 'text' : 'password'}
-                placeholder='Confirm new password'
+                placeholder='Repeat new password'
                 value={confirmPassword}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setConfirmPassword(e.target.value)
@@ -328,6 +359,11 @@ function ResetPasswordContent() {
                 autoComplete='new-password'
                 required
                 className='pr-10'
+                aria-describedby={
+                  !passwordsMatch && confirmPassword
+                    ? 'confirm-password-error'
+                    : undefined
+                }
               />
               <button
                 type='button'
@@ -341,14 +377,20 @@ function ResetPasswordContent() {
                 }
               >
                 {showConfirmPassword ? (
-                  <EyeOff className='h-4 w-4' />
+                  <EyeOff className='h-4 w-4' aria-hidden='true' />
                 ) : (
-                  <Eye className='h-4 w-4' />
+                  <Eye className='h-4 w-4' aria-hidden='true' />
                 )}
               </button>
             </div>
             {!passwordsMatch && confirmPassword && (
-              <p className='text-xs text-destructive'>Passwords do not match</p>
+              <p
+                id='confirm-password-error'
+                className='text-xs text-destructive'
+                role='alert'
+              >
+                Passwords do not match
+              </p>
             )}
           </div>
 
@@ -359,7 +401,7 @@ function ResetPasswordContent() {
               isLoading || !passwordsMatch || !password || !confirmPassword
             }
           >
-            {isLoading ? 'Resetting password...' : 'Reset password'}
+            {isLoading ? 'Updating password...' : 'Update password'}
           </Button>
         </form>
       )}
@@ -373,19 +415,6 @@ function ResetPasswordContent() {
           Back to login
         </Link>
       </div>
-
-      {/* Register Link */}
-      {!success && (
-        <p className='text-center text-sm text-muted-foreground'>
-          Don&apos;t have an account?{' '}
-          <Link
-            href='/register'
-            className='font-medium text-primary hover:underline'
-          >
-            Sign up
-          </Link>
-        </p>
-      )}
     </div>
   );
 }
@@ -394,10 +423,7 @@ function ResetPasswordContent() {
  * Reset Password page component for completing password reset.
  *
  * Allows users to set a new password using the reset token from their email.
- * Includes password strength validation and confirmation matching.
- *
- * Features a modern, responsive design with dark mode support matching
- * the existing authentication pages.
+ * Includes password strength feedback and confirmation matching.
  */
 export default function ResetPasswordPage() {
   return (

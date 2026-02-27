@@ -21,6 +21,7 @@ import {
 
 interface MemberDashboardSectionProps {
   workspaceId: string;
+  workspaceSlug: string;
 }
 
 interface MemberData {
@@ -66,6 +67,7 @@ function getInitials(name: string): string {
 
 export function MemberDashboardSection({
   workspaceId,
+  workspaceSlug,
 }: MemberDashboardSectionProps) {
   const [data, setData] = useState<MemberData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -90,20 +92,20 @@ export function MemberDashboardSection({
                 id: '1',
                 label: 'Complete your profile',
                 completed: false,
-                href: '/settings/profile',
+                href: `/${workspaceSlug}/settings/profile`,
               },
               {
                 id: '2',
                 label: 'Join your first channel',
                 completed: false,
-                href: `/${workspaceId}/channels`,
+                href: `/${workspaceSlug}/channels`,
               },
               { id: '3', label: 'Send your first message', completed: false },
               {
                 id: '4',
                 label: 'Explore orchestrators',
                 completed: false,
-                href: `/${workspaceId}/orchestrators`,
+                href: `/${workspaceSlug}/orchestrators`,
               },
             ],
             suggestedChannels: [],
@@ -235,7 +237,7 @@ export function MemberDashboardSection({
                 Channels will appear here once they are created
               </p>
               <a
-                href={`/${workspaceId}/channels`}
+                href={`/${workspaceSlug}/channels`}
                 className='text-xs text-primary hover:underline mt-3'
               >
                 Browse all channels
@@ -246,7 +248,7 @@ export function MemberDashboardSection({
               {data.suggestedChannels.map(channel => (
                 <a
                   key={channel.id}
-                  href={`/${workspaceId}/channels/${channel.id}`}
+                  href={`/${workspaceSlug}/channels/${channel.id}`}
                   className='flex items-start justify-between p-3 rounded-lg border hover:bg-accent transition-colors'
                 >
                   <div className='flex-1 min-w-0'>
@@ -295,7 +297,7 @@ export function MemberDashboardSection({
                 Orchestrators will appear here once they are set up
               </p>
               <a
-                href={`/${workspaceId}/orchestrators`}
+                href={`/${workspaceSlug}/orchestrators`}
                 className='text-xs text-primary hover:underline mt-3'
               >
                 Browse orchestrators
@@ -306,7 +308,7 @@ export function MemberDashboardSection({
               {data.recommendedOrchestrators.map(orchestrator => (
                 <a
                   key={orchestrator.id}
-                  href={`/${workspaceId}/orchestrators/${orchestrator.id}`}
+                  href={`/${workspaceSlug}/orchestrators/${orchestrator.id}`}
                   className='flex items-start justify-between p-3 rounded-lg border hover:bg-accent transition-colors'
                 >
                   <div className='flex-1 min-w-0'>

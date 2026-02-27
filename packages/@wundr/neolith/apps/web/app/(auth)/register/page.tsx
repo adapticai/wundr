@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, Input, Label } from '@neolith/ui';
-import { Eye, EyeOff } from 'lucide-react';
+import { Check, X, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
@@ -22,10 +22,43 @@ function RegisterFormLoading() {
         <p className='text-sm text-muted-foreground'>Loading...</p>
       </div>
       <div className='space-y-3'>
-        <div className='h-12 w-full animate-pulse rounded-md bg-muted' />
-        <div className='h-12 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
+      </div>
+      <div className='h-px w-full bg-muted' />
+      <div className='space-y-4'>
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
+        <div className='h-10 w-full animate-pulse rounded-md bg-muted' />
       </div>
     </div>
+  );
+}
+
+/**
+ * Password requirements checklist item
+ */
+function RequirementItem({ met, label }: { met: boolean; label: string }) {
+  return (
+    <li className='flex items-center gap-2 text-xs'>
+      {met ? (
+        <Check
+          className='h-3.5 w-3.5 text-green-600 dark:text-green-400'
+          aria-hidden='true'
+        />
+      ) : (
+        <X className='h-3.5 w-3.5 text-muted-foreground' aria-hidden='true' />
+      )}
+      <span
+        className={
+          met ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'
+        }
+      >
+        {label}
+      </span>
+    </li>
   );
 }
 
@@ -93,7 +126,6 @@ function RegisterForm() {
 
   /**
    * Handles email/password registration form submission.
-   * Currently a placeholder for future credential-based registration.
    */
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,22 +133,20 @@ function RegisterForm() {
 
     // Validate passwords match
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Passwords do not match. Please check and try again.');
       return;
     }
 
-    // Validate password strength - must match backend requirements
+    // Validate password strength
     if (!validatePassword(password)) {
       setError(
-        'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number'
+        'Your password does not meet all the requirements listed below.'
       );
       return;
     }
 
     setIsLoading(true);
     try {
-      // In a real implementation, this would call a registration API
-      // then sign in the user
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -125,7 +155,9 @@ function RegisterForm() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || 'Registration failed');
+        throw new Error(
+          data.message || 'Registration failed. Please try again.'
+        );
       }
 
       // Sign in after successful registration
@@ -135,10 +167,17 @@ function RegisterForm() {
         callbackUrl,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Registration failed. Please try again.'
+      );
       setIsLoading(false);
     }
   };
+
+  const passwordsMatch = confirmPassword === '' || password === confirmPassword;
+  const allRequirementsMet = Object.values(passwordValidation).every(Boolean);
 
   return (
     <div className='space-y-6'>
@@ -150,7 +189,7 @@ function RegisterForm() {
         <p className='text-sm text-muted-foreground'>
           {inviteToken
             ? 'Create an account to accept your workspace invitation'
-            : 'Get started with Neolith today'}
+            : 'Get started — it only takes a minute'}
         </p>
       </div>
 
@@ -162,8 +201,9 @@ function RegisterForm() {
           className='w-full'
           onClick={() => handleOAuthSignUp('github')}
           disabled={isLoading}
+          aria-label='Sign up with GitHub'
         >
-          <GitHubIcon className='mr-2 h-5 w-5' />
+          <GitHubIcon className='mr-2 h-5 w-5' aria-hidden='true' />
           Sign up with GitHub
         </Button>
 
@@ -173,14 +213,15 @@ function RegisterForm() {
           className='w-full'
           onClick={() => handleOAuthSignUp('google')}
           disabled={isLoading}
+          aria-label='Sign up with Google'
         >
-          <GoogleIcon className='mr-2 h-5 w-5' />
+          <GoogleIcon className='mr-2 h-5 w-5' aria-hidden='true' />
           Sign up with Google
         </Button>
       </div>
 
       {/* Divider */}
-      <div className='relative'>
+      <div className='relative' role='separator' aria-hidden='true'>
         <div className='absolute inset-0 flex items-center'>
           <span className='w-full border-t border-border' />
         </div>
@@ -203,7 +244,7 @@ function RegisterForm() {
       )}
 
       {/* Email/Password Form */}
-      <form onSubmit={handleEmailSignUp} className='space-y-4'>
+      <form onSubmit={handleEmailSignUp} className='space-y-4' noValidate>
         <div className='space-y-2'>
           <Label htmlFor='name'>Full name</Label>
           <Input
@@ -217,7 +258,6 @@ function RegisterForm() {
             disabled={isLoading}
             autoComplete='name'
             required
-            aria-label='Full name'
           />
         </div>
         <div className='space-y-2'>
@@ -233,7 +273,6 @@ function RegisterForm() {
             disabled={isLoading}
             autoComplete='email'
             required
-            aria-label='Email address'
           />
         </div>
         <div className='space-y-2'>
@@ -248,8 +287,8 @@ function RegisterForm() {
               disabled={isLoading}
               autoComplete='new-password'
               required
-              aria-label='Password'
               className='pr-10'
+              aria-describedby={password ? 'password-requirements' : undefined}
             />
             <button
               type='button'
@@ -258,102 +297,39 @@ function RegisterForm() {
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? (
-                <EyeOff className='h-5 w-5' />
+                <EyeOff className='h-4 w-4' aria-hidden='true' />
               ) : (
-                <Eye className='h-5 w-5' />
+                <Eye className='h-4 w-4' aria-hidden='true' />
               )}
             </button>
           </div>
           {password && (
             <div
-              className='space-y-1 rounded-md bg-muted/50 p-3 text-xs'
-              aria-label='Password requirements'
+              id='password-requirements'
+              className='space-y-1 rounded-md bg-muted/50 p-3'
               role='status'
+              aria-label='Password requirements'
             >
-              <p className='font-medium text-muted-foreground mb-1'>
-                Password requirements:
+              <p className='text-xs font-medium text-muted-foreground mb-1'>
+                Password must contain:
               </p>
               <ul className='space-y-1'>
-                <li className='flex items-center gap-2'>
-                  {passwordValidation.minLength ? (
-                    <span className='text-green-600' aria-hidden='true'>
-                      ✓
-                    </span>
-                  ) : (
-                    <span className='text-destructive' aria-hidden='true'>
-                      ✗
-                    </span>
-                  )}
-                  <span
-                    className={
-                      passwordValidation.minLength
-                        ? 'text-green-600'
-                        : 'text-muted-foreground'
-                    }
-                  >
-                    At least 8 characters
-                  </span>
-                </li>
-                <li className='flex items-center gap-2'>
-                  {passwordValidation.hasUppercase ? (
-                    <span className='text-green-600' aria-hidden='true'>
-                      ✓
-                    </span>
-                  ) : (
-                    <span className='text-destructive' aria-hidden='true'>
-                      ✗
-                    </span>
-                  )}
-                  <span
-                    className={
-                      passwordValidation.hasUppercase
-                        ? 'text-green-600'
-                        : 'text-muted-foreground'
-                    }
-                  >
-                    One uppercase letter
-                  </span>
-                </li>
-                <li className='flex items-center gap-2'>
-                  {passwordValidation.hasLowercase ? (
-                    <span className='text-green-600' aria-hidden='true'>
-                      ✓
-                    </span>
-                  ) : (
-                    <span className='text-destructive' aria-hidden='true'>
-                      ✗
-                    </span>
-                  )}
-                  <span
-                    className={
-                      passwordValidation.hasLowercase
-                        ? 'text-green-600'
-                        : 'text-muted-foreground'
-                    }
-                  >
-                    One lowercase letter
-                  </span>
-                </li>
-                <li className='flex items-center gap-2'>
-                  {passwordValidation.hasNumber ? (
-                    <span className='text-green-600' aria-hidden='true'>
-                      ✓
-                    </span>
-                  ) : (
-                    <span className='text-destructive' aria-hidden='true'>
-                      ✗
-                    </span>
-                  )}
-                  <span
-                    className={
-                      passwordValidation.hasNumber
-                        ? 'text-green-600'
-                        : 'text-muted-foreground'
-                    }
-                  >
-                    One number
-                  </span>
-                </li>
+                <RequirementItem
+                  met={passwordValidation.minLength}
+                  label='At least 8 characters'
+                />
+                <RequirementItem
+                  met={passwordValidation.hasUppercase}
+                  label='One uppercase letter'
+                />
+                <RequirementItem
+                  met={passwordValidation.hasLowercase}
+                  label='One lowercase letter'
+                />
+                <RequirementItem
+                  met={passwordValidation.hasNumber}
+                  label='One number'
+                />
               </ul>
             </div>
           )}
@@ -372,8 +348,12 @@ function RegisterForm() {
               disabled={isLoading}
               autoComplete='new-password'
               required
-              aria-label='Confirm password'
               className='pr-10'
+              aria-describedby={
+                !passwordsMatch && confirmPassword
+                  ? 'confirm-password-error'
+                  : undefined
+              }
             />
             <button
               type='button'
@@ -386,14 +366,29 @@ function RegisterForm() {
               }
             >
               {showConfirmPassword ? (
-                <EyeOff className='h-5 w-5' />
+                <EyeOff className='h-4 w-4' aria-hidden='true' />
               ) : (
-                <Eye className='h-5 w-5' />
+                <Eye className='h-4 w-4' aria-hidden='true' />
               )}
             </button>
           </div>
+          {!passwordsMatch && confirmPassword && (
+            <p
+              id='confirm-password-error'
+              className='text-xs text-destructive'
+              role='alert'
+            >
+              Passwords do not match
+            </p>
+          )}
         </div>
-        <Button type='submit' className='w-full' disabled={isLoading}>
+        <Button
+          type='submit'
+          className='w-full'
+          disabled={
+            isLoading || !passwordsMatch || (!!password && !allRequirementsMet)
+          }
+        >
           {isLoading ? 'Creating account...' : 'Create account'}
         </Button>
       </form>
@@ -417,9 +412,8 @@ function RegisterForm() {
  *
  * Provides multiple registration methods:
  * - OAuth providers (GitHub, Google)
- * - Email/password form (for future implementation)
+ * - Email/password credentials
  *
- * Features a modern, responsive design with dark mode support.
  * Supports invitation flow via ?invite=token query parameter.
  */
 export default function RegisterPage() {

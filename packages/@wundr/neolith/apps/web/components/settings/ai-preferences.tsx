@@ -123,7 +123,10 @@ export function AIPreferences({
     <div className='space-y-6'>
       {/* Model Configuration */}
       <div>
-        <h3 className='text-base font-medium mb-4'>Default Model Settings</h3>
+        <p className='text-sm font-medium mb-1'>Default Model</p>
+        <p className='text-sm text-muted-foreground mb-4'>
+          Select the AI model and parameters used for all new conversations
+        </p>
         <ModelConfigPanel
           config={config}
           onChange={setConfig}
@@ -152,7 +155,7 @@ export function AIPreferences({
           </SelectContent>
         </Select>
         <p className='text-sm text-muted-foreground'>
-          How long to keep your AI conversation history
+          Conversations older than this will be automatically deleted
         </p>
       </div>
 
@@ -161,7 +164,8 @@ export function AIPreferences({
         <div className='space-y-0.5'>
           <Label htmlFor='context-memory'>Context Memory</Label>
           <p className='text-sm text-muted-foreground'>
-            Allow AI to remember context across conversations
+            Allow AI to retain context from previous conversations to provide
+            more relevant responses
           </p>
         </div>
         <Switch
@@ -174,9 +178,9 @@ export function AIPreferences({
       {/* AI Suggestions */}
       <div className='flex items-center justify-between'>
         <div className='space-y-0.5'>
-          <Label htmlFor='suggestions'>AI Suggestions</Label>
+          <Label htmlFor='suggestions'>Smart Suggestions</Label>
           <p className='text-sm text-muted-foreground'>
-            Enable smart suggestions and auto-completion
+            Show inline AI suggestions and auto-completions while typing
           </p>
         </div>
         <Switch
@@ -189,9 +193,10 @@ export function AIPreferences({
       {/* Share Usage Data */}
       <div className='flex items-center justify-between'>
         <div className='space-y-0.5'>
-          <Label htmlFor='share-data'>Share Usage Data</Label>
+          <Label htmlFor='share-data'>Share Anonymized Usage Data</Label>
           <p className='text-sm text-muted-foreground'>
-            Help improve AI models by sharing anonymized usage data
+            Help improve AI model quality by sharing anonymized usage patterns.
+            No personal data is ever shared.
           </p>
         </div>
         <Switch

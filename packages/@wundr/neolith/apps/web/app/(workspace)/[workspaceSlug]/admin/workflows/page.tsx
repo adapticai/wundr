@@ -35,6 +35,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -606,15 +607,54 @@ export default function AdminWorkflowsManagementPage() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={9} className='text-center py-8'>
-                  Loading...
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <Skeleton className='h-4 w-4' />
+                  </TableCell>
+                  <TableCell>
+                    <div className='space-y-1.5'>
+                      <Skeleton className='h-4 w-36' />
+                      <Skeleton className='h-3 w-56' />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className='h-5 w-20' />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className='h-5 w-16' />
+                  </TableCell>
+                  <TableCell>
+                    <div className='space-y-1.5'>
+                      <Skeleton className='h-4 w-24' />
+                      <Skeleton className='h-3 w-32' />
+                    </div>
+                  </TableCell>
+                  <TableCell className='text-right'>
+                    <Skeleton className='h-4 w-8 ml-auto' />
+                  </TableCell>
+                  <TableCell className='text-right'>
+                    <Skeleton className='h-4 w-6 ml-auto' />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className='h-4 w-28' />
+                  </TableCell>
+                  <TableCell className='text-right'>
+                    <Skeleton className='h-8 w-8 ml-auto' />
+                  </TableCell>
+                </TableRow>
+              ))
             ) : filteredWorkflows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className='text-center py-8'>
-                  No workflows found
+                <TableCell colSpan={9} className='py-16 text-center'>
+                  <p className='text-sm font-medium text-foreground'>
+                    No workflows found
+                  </p>
+                  <p className='mt-1 text-sm text-muted-foreground'>
+                    {searchQuery
+                      ? 'Try adjusting your search or filters.'
+                      : 'Create your first workflow to get started.'}
+                  </p>
                 </TableCell>
               </TableRow>
             ) : (

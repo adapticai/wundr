@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -66,6 +66,8 @@ export default function WorkflowEditPage() {
   const [showPreview, setShowPreview] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [viewMode, setViewMode] = useState<'form' | 'canvas'>('canvas');
+  const [showDiscardModal, setShowDiscardModal] = useState(false);
+  const pendingNavigationRef = useRef<(() => void) | null>(null);
 
   // Initialize state from workflow
   useEffect(() => {
@@ -91,71 +93,107 @@ export default function WorkflowEditPage() {
     setHasChanges(changed);
   }, [name, description, trigger, actions, workflow]);
 
-  // Handlers
-  const handleSave = useCallback(async () => {
-    if (!trigger) {
-      setError('A trigger is required');
-      return;
-    }
-
-    if (actions.length === 0) {
-      setError('At least one action is required');
-      return;
-    }
-
-    if (!name.trim()) {
-      setError('Workflow name is required');
-      return;
-    }
-
-    setIsSaving(true);
-    setError(null);
-
-    try {
-      const updateData: UpdateWorkflowInput = {
-        name: name.trim(),
-        description: description.trim() || undefined,
-        trigger,
-        actions: actions.map((action, index) => ({
-          ...action,
-          order: index,
-        })),
-      };
-
-      const updated = await updateWorkflow(updateData);
-
-      if (updated) {
-        router.push(`/${workspaceSlug}/workflows/${workflowId}`);
+  // Navigate with unsaved-changes guard
+  const navigateAway = useCallback(
+    (destination: () => void) => {
+      if (hasChanges) {
+        pendingNavigationRef.current = destination;
+        setShowDiscardModal(true);
       } else {
-        setError('Failed to update workflow');
+        destination();
       }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to update workflow';
-      setError(errorMessage);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [
-    name,
-    description,
-    trigger,
-    actions,
-    updateWorkflow,
-    router,
-    workspaceSlug,
-    workflowId,
-  ]);
+    },
+    [hasChanges]
+  );
+
+  const handleConfirmDiscard = useCallback(() => {
+    setShowDiscardModal(false);
+    pendingNavigationRef.current?.();
+    pendingNavigationRef.current = null;
+  }, []);
+
+  const handleCancelDiscard = useCallback(() => {
+    setShowDiscardModal(false);
+    pendingNavigationRef.current = null;
+  }, []);
+
+  // Handlers
+  const handleSave = useCallback(
+    async (overrides?: {
+      name: string;
+      description: string;
+      trigger: TriggerConfig | null;
+      actions: ActionConfig[];
+    }) => {
+      const saveName = overrides?.name ?? name;
+      const saveTrigger = overrides?.trigger ?? trigger;
+      const saveActions = overrides?.actions ?? actions;
+      const saveDescription = overrides?.description ?? description;
+
+      if (!saveTrigger) {
+        setError('A trigger is required');
+        return false;
+      }
+
+      if (saveActions.length === 0) {
+        setError('At least one action is required');
+        return false;
+      }
+
+      if (!saveName.trim()) {
+        setError('Workflow name is required');
+        return false;
+      }
+
+      setIsSaving(true);
+      setError(null);
+
+      try {
+        const updateData: UpdateWorkflowInput = {
+          name: saveName.trim(),
+          description: saveDescription.trim() || undefined,
+          trigger: saveTrigger,
+          actions: saveActions.map((action, index) => ({
+            ...action,
+            order: index,
+          })),
+        };
+
+        const updated = await updateWorkflow(updateData);
+
+        if (updated) {
+          router.push(`/${workspaceSlug}/workflows/${workflowId}`);
+          return true;
+        } else {
+          setError('Failed to update workflow');
+          return false;
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to update workflow';
+        setError(errorMessage);
+        return false;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [
+      name,
+      description,
+      trigger,
+      actions,
+      updateWorkflow,
+      router,
+      workspaceSlug,
+      workflowId,
+    ]
+  );
 
   const handleCancel = useCallback(() => {
-    if (
-      hasChanges &&
-      !confirm('You have unsaved changes. Are you sure you want to leave?')
-    ) {
-      return;
-    }
-    router.push(`/${workspaceSlug}/workflows/${workflowId}`);
-  }, [hasChanges, router, workspaceSlug, workflowId]);
+    navigateAway(() =>
+      router.push(`/${workspaceSlug}/workflows/${workflowId}`)
+    );
+  }, [navigateAway, router, workspaceSlug, workflowId]);
 
   const handleAddAction = useCallback(() => {
     const newAction: ActionConfig = {
@@ -286,22 +324,17 @@ export default function WorkflowEditPage() {
         <WorkflowCanvas
           workflow={workflow}
           onSave={async workflowInput => {
-            setName(workflowInput.name);
-            setDescription(workflowInput.description || '');
-            setTrigger(workflowInput.trigger);
-            setActions(workflowInput.actions as ActionConfig[]);
-            await handleSave();
+            await handleSave({
+              name: workflowInput.name,
+              description: workflowInput.description || '',
+              trigger: workflowInput.trigger,
+              actions: workflowInput.actions as ActionConfig[],
+            });
           }}
           onCancel={() => {
-            if (
-              hasChanges &&
-              !confirm(
-                'You have unsaved changes. Are you sure you want to leave?'
-              )
-            ) {
-              return;
-            }
-            router.push(`/${workspaceSlug}/workflows/${workflowId}`);
+            navigateAway(() =>
+              router.push(`/${workspaceSlug}/workflows/${workflowId}`)
+            );
           }}
           isLoading={isSaving}
         />
@@ -318,6 +351,14 @@ export default function WorkflowEditPage() {
             Switch to Form View
           </Button>
         </div>
+
+        {/* Discard Changes Modal */}
+        {showDiscardModal && (
+          <DiscardChangesModal
+            onConfirm={handleConfirmDiscard}
+            onCancel={handleCancelDiscard}
+          />
+        )}
       </div>
     );
   }
@@ -349,7 +390,7 @@ export default function WorkflowEditPage() {
             </Button>
             <Button
               type='button'
-              onClick={handleSave}
+              onClick={() => handleSave()}
               disabled={isSaving || !hasChanges}
             >
               {isSaving ? 'Saving...' : 'Save Changes'}
@@ -386,13 +427,14 @@ export default function WorkflowEditPage() {
       {/* Header */}
       <div className='flex items-center justify-between'>
         <div className='flex items-center gap-3'>
-          <Link
-            href={`/${workspaceSlug}/workflows/${workflowId}`}
+          <button
+            type='button'
+            onClick={handleCancel}
             className='rounded-md p-2 hover:bg-accent'
             aria-label='Back to workflow details'
           >
             <ArrowLeft className='h-5 w-5' />
-          </Link>
+          </button>
           <h1 className='text-2xl font-bold'>Edit Workflow</h1>
           {hasChanges && (
             <span className='rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200'>
@@ -426,7 +468,7 @@ export default function WorkflowEditPage() {
           </Button>
           <Button
             type='button'
-            onClick={handleSave}
+            onClick={() => handleSave()}
             disabled={isSaving || !hasChanges}
           >
             <Save className='mr-2 h-4 w-4' />
@@ -502,8 +544,11 @@ export default function WorkflowEditPage() {
                 onRemove={() => setTrigger(null)}
               />
             ) : (
-              <div className='text-center text-sm text-muted-foreground'>
-                <p>No trigger configured</p>
+              <div className='rounded-lg border-2 border-dashed border-border py-8 text-center'>
+                <p className='text-sm text-muted-foreground'>
+                  No trigger configured. A trigger determines when your workflow
+                  runs.
+                </p>
                 <Button
                   type='button'
                   variant='outline'
@@ -541,9 +586,21 @@ export default function WorkflowEditPage() {
             </div>
 
             {actions.length === 0 ? (
-              <div className='py-8 text-center text-sm text-muted-foreground'>
-                <p>No actions configured yet.</p>
-                <p className='mt-1'>Add at least one action to continue.</p>
+              <div className='rounded-lg border-2 border-dashed border-border py-8 text-center'>
+                <p className='text-sm text-muted-foreground'>
+                  No actions configured yet. Actions define what happens when
+                  your workflow is triggered.
+                </p>
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  className='mt-3'
+                  onClick={handleAddAction}
+                >
+                  <Plus className='mr-2 h-4 w-4' />
+                  Add First Action
+                </Button>
               </div>
             ) : (
               <div className='space-y-3'>
@@ -573,7 +630,8 @@ export default function WorkflowEditPage() {
               <div className='flex items-start gap-2'>
                 <CheckCircle className='mt-0.5 h-4 w-4 shrink-0 text-green-600' />
                 <p className='text-muted-foreground'>
-                  Use the preview button to see how your workflow will look
+                  Use the Preview button to visualize your workflow before
+                  saving
                 </p>
               </div>
               <div className='flex items-start gap-2'>
@@ -585,20 +643,21 @@ export default function WorkflowEditPage() {
               <div className='flex items-start gap-2'>
                 <CheckCircle className='mt-0.5 h-4 w-4 shrink-0 text-green-600' />
                 <p className='text-muted-foreground'>
-                  Configure error handling for critical actions
+                  Switch to Canvas View for a visual drag-and-drop editor
                 </p>
               </div>
               <div className='flex items-start gap-2'>
                 <CheckCircle className='mt-0.5 h-4 w-4 shrink-0 text-green-600' />
                 <p className='text-muted-foreground'>
-                  Test your workflow after making changes
+                  Test your workflow after saving by using the Execute button on
+                  the detail page
                 </p>
               </div>
             </div>
           </div>
 
           <div className='rounded-lg border bg-card p-6'>
-            <h2 className='mb-4 text-lg font-semibold'>Original Workflow</h2>
+            <h2 className='mb-4 text-lg font-semibold'>Workflow Info</h2>
             <div className='space-y-3 text-sm'>
               <div>
                 <p className='text-muted-foreground'>Created</p>
@@ -616,8 +675,74 @@ export default function WorkflowEditPage() {
                 <p className='text-muted-foreground'>Status</p>
                 <p className='font-medium capitalize'>{workflow.status}</p>
               </div>
+              <div>
+                <p className='text-muted-foreground'>Total Runs</p>
+                <p className='font-medium'>{workflow.runCount}</p>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Discard Changes Modal */}
+      {showDiscardModal && (
+        <DiscardChangesModal
+          onConfirm={handleConfirmDiscard}
+          onCancel={handleCancelDiscard}
+        />
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Discard Changes Modal
+// =============================================================================
+
+interface DiscardChangesModalProps {
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function DiscardChangesModal({
+  onConfirm,
+  onCancel,
+}: DiscardChangesModalProps) {
+  return (
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
+      <div className='w-full max-w-md rounded-lg bg-background p-6 shadow-lg'>
+        <div className='flex items-center gap-3'>
+          <div className='rounded-full bg-yellow-100 p-3 dark:bg-yellow-900/30'>
+            <AlertCircle className='h-6 w-6 text-yellow-600 dark:text-yellow-400' />
+          </div>
+          <div>
+            <h2 className='text-lg font-semibold'>Discard Changes?</h2>
+            <p className='text-sm text-muted-foreground'>
+              You have unsaved changes.
+            </p>
+          </div>
+        </div>
+
+        <p className='mt-4 text-sm text-muted-foreground'>
+          If you leave now, your changes will be lost. Do you want to discard
+          them and continue?
+        </p>
+
+        <div className='mt-6 flex justify-end gap-3'>
+          <button
+            type='button'
+            onClick={onCancel}
+            className='rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-accent'
+          >
+            Keep Editing
+          </button>
+          <button
+            type='button'
+            onClick={onConfirm}
+            className='rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90'
+          >
+            Discard Changes
+          </button>
         </div>
       </div>
     </div>
@@ -670,7 +795,6 @@ function TriggerEditor({ trigger, onChange, onRemove }: TriggerEditorProps) {
           value={trigger.type}
           onChange={e => {
             const newType = e.target.value as TriggerConfig['type'];
-            // Create a new trigger config based on type
             let newTrigger: TriggerConfig;
             switch (newType) {
               case 'schedule':
@@ -693,6 +817,21 @@ function TriggerEditor({ trigger, onChange, onRemove }: TriggerEditorProps) {
                 break;
               case 'webhook':
                 newTrigger = { type: 'webhook', webhook: {} };
+                break;
+              case 'channel_join':
+                newTrigger = { type: 'channel_join', channel: {} };
+                break;
+              case 'channel_leave':
+                newTrigger = { type: 'channel_leave', channel: {} };
+                break;
+              case 'user_join':
+                newTrigger = { type: 'user_join' };
+                break;
+              case 'reaction':
+                newTrigger = { type: 'reaction', reaction: {} };
+                break;
+              case 'mention':
+                newTrigger = { type: 'mention', mention: {} };
                 break;
               default:
                 newTrigger = { type: newType } as TriggerConfig;
@@ -790,16 +929,47 @@ function ActionEditor({
               value={action.type}
               onChange={e => {
                 const newType = e.target.value as ActionConfig['type'];
-                // Create default config based on action type
                 let defaultConfig: Record<string, unknown> = {};
-                if (newType === 'send_message') {
-                  defaultConfig = { channelId: '', message: '' };
-                } else if (newType === 'send_dm') {
-                  defaultConfig = { userId: '', message: '' };
-                } else if (newType === 'create_channel') {
-                  defaultConfig = { channelName: '', channelType: 'public' };
-                } else if (newType === 'http_request') {
-                  defaultConfig = { url: '', method: 'GET' };
+                switch (newType) {
+                  case 'send_message':
+                    defaultConfig = { channelId: '', message: '' };
+                    break;
+                  case 'send_dm':
+                    defaultConfig = { userId: '', message: '' };
+                    break;
+                  case 'create_channel':
+                    defaultConfig = {
+                      channelName: '',
+                      channelType: 'public',
+                    };
+                    break;
+                  case 'http_request':
+                    defaultConfig = { url: '', method: 'GET' };
+                    break;
+                  case 'invite_to_channel':
+                    defaultConfig = { channelId: '', userId: '' };
+                    break;
+                  case 'assign_role':
+                    defaultConfig = { roleId: '', userId: '' };
+                    break;
+                  case 'add_reaction':
+                    defaultConfig = { emoji: '' };
+                    break;
+                  case 'wait':
+                    defaultConfig = { duration: 5, unit: 'minutes' };
+                    break;
+                  case 'condition':
+                    defaultConfig = {
+                      condition: {
+                        field: '',
+                        operator: 'contains',
+                        value: '',
+                      },
+                    };
+                    break;
+                  case 'notify_orchestrator':
+                    defaultConfig = { orchestratorId: '', message: '' };
+                    break;
                 }
                 onUpdate({
                   type: newType,
@@ -817,30 +987,9 @@ function ActionEditor({
           </div>
 
           {/* Action description */}
-          <div className='rounded-md bg-background/50 p-3'>
-            <p className='text-xs text-muted-foreground'>
-              {actionConfig.description}
-            </p>
-            {Object.keys(action.config as Record<string, unknown>).length >
-              0 && (
-              <div className='mt-2 space-y-1'>
-                {Object.entries(action.config as Record<string, unknown>)
-                  .filter(([, v]) => v !== '' && v !== null && v !== undefined)
-                  .map(([key, value]) => (
-                    <div key={key} className='flex items-start gap-2 text-xs'>
-                      <span className='shrink-0 font-medium capitalize text-foreground'>
-                        {key.replace(/([A-Z])/g, ' $1').trim()}:
-                      </span>
-                      <span className='truncate text-muted-foreground'>
-                        {typeof value === 'object'
-                          ? JSON.stringify(value)
-                          : String(value)}
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            )}
-          </div>
+          <p className='text-xs text-muted-foreground'>
+            {actionConfig.description}
+          </p>
         </div>
       </div>
     </div>

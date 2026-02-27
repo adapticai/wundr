@@ -51,9 +51,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
   enhancedProfileSchema,
   PROFILE_LIMITS,
-  VISIBILITY_OPTIONS,
   type EnhancedProfileInput,
-  type ProfileVisibility,
 } from '@/lib/validations/profile';
 
 const PRONOUN_OPTIONS = [
@@ -64,36 +62,7 @@ const PRONOUN_OPTIONS = [
   { value: 'prefer-not-to-say', label: 'Prefer not to say' },
 ];
 
-const TIMEZONES = Intl.supportedValuesOf('timeZone').slice(0, 50);
-
-interface UserProfile {
-  name: string;
-  displayName: string;
-  username: string;
-  email: string;
-  avatarUrl: string;
-  bio: string;
-  location: string;
-  timezone: string;
-  title: string;
-  pronouns: string;
-  customPronouns: string;
-  statusMessage: string;
-  socialLinks: {
-    linkedin: string;
-    github: string;
-    twitter: string;
-    website: string;
-    portfolio: string;
-  };
-  visibility: {
-    profileVisibility: ProfileVisibility;
-    showEmail: boolean;
-    showLocation: boolean;
-    showSocialLinks: boolean;
-    showBio: boolean;
-  };
-}
+const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
 export default function EnhancedProfilePage() {
   const { data: session, update: updateSession } = useSession();
@@ -630,11 +599,11 @@ export default function EnhancedProfilePage() {
                 name='bio'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bio / Description</FormLabel>
+                    <FormLabel>Bio</FormLabel>
                     <FormControl>
                       <div className='relative'>
                         <Textarea
-                          placeholder='Tell us a little about yourself...'
+                          placeholder='Share a bit about yourself, your work, or what you are focused on...'
                           rows={4}
                           {...field}
                           maxLength={PROFILE_LIMITS.BIO_MAX}
@@ -645,7 +614,7 @@ export default function EnhancedProfilePage() {
                       </div>
                     </FormControl>
                     <FormDescription>
-                      A short bio that appears on your profile.
+                      A short bio visible on your public profile.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -1091,7 +1060,7 @@ export default function EnhancedProfilePage() {
             <div className='flex items-center gap-2'>
               <Info className='h-4 w-4 text-muted-foreground' />
               <p className='text-sm text-muted-foreground'>
-                Make sure all information is accurate before saving.
+                Changes are visible to others based on your privacy settings.
               </p>
             </div>
             <div className='flex gap-3'>
@@ -1101,7 +1070,7 @@ export default function EnhancedProfilePage() {
                 onClick={() => form.reset()}
                 disabled={isSaving}
               >
-                Cancel
+                Discard
               </Button>
               <Button type='submit' disabled={isSaving}>
                 {isSaving ? (

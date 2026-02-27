@@ -17,7 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -51,6 +51,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -113,6 +114,7 @@ export default function AuditLogPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const { toast } = useToast();
+  const { setPageHeader } = usePageHeader();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<ActionCategory>('all');
@@ -129,8 +131,14 @@ export default function AuditLogPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
-  const [enableInfiniteScroll, setEnableInfiniteScroll] = useState(false);
-  const observerTarget = useRef<HTMLDivElement>(null);
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader(
+      'Audit Log',
+      'Comprehensive audit trail of all admin actions and system events'
+    );
+  }, [setPageHeader]);
 
   // Fetch logs
   useEffect(() => {
@@ -188,11 +196,7 @@ export default function AuditLogPage() {
 
         const data = await response.json();
 
-        if (enableInfiniteScroll && currentPage > 1) {
-          setLogs(prev => [...prev, ...(data.entries || [])]);
-        } else {
-          setLogs(data.entries || []);
-        }
+        setLogs(data.entries || []);
         setTotalCount(data.total || 0);
       } catch (error) {
         toast({
@@ -219,45 +223,18 @@ export default function AuditLogPage() {
     customStartDate,
     customEndDate,
     searchQuery,
-    enableInfiniteScroll,
     toast,
   ]);
 
-  // Infinite scroll observer
+  // Real-time updates (poll every 30 seconds when on first page)
   useEffect(() => {
-    if (!enableInfiniteScroll) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (
-          entries[0]?.isIntersecting &&
-          !isLoading &&
-          logs.length < totalCount
-        ) {
-          setCurrentPage(prev => prev + 1);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => observer.disconnect();
-  }, [enableInfiniteScroll, isLoading, logs.length, totalCount]);
-
-  // Real-time updates (poll every 30 seconds)
-  useEffect(() => {
-    if (!enableInfiniteScroll && currentPage === 1) {
+    if (currentPage === 1) {
       const interval = setInterval(() => {
-        setCurrentPage(1);
+        setCurrentPage(prev => prev);
       }, 30000);
       return () => clearInterval(interval);
     }
-  }, [enableInfiniteScroll, currentPage]);
+  }, [currentPage]);
 
   // Handle export
   const handleExport = useCallback(async () => {
@@ -405,13 +382,6 @@ export default function AuditLogPage() {
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-bold'>Audit Log</h1>
-        <p className='mt-1 text-muted-foreground'>
-          Comprehensive audit trail of all admin actions and system events
-        </p>
-      </div>
-
       {/* Filters Card */}
       <Card>
         <CardHeader>
@@ -420,33 +390,24 @@ export default function AuditLogPage() {
               <Filter className='h-5 w-5 text-muted-foreground' />
               <CardTitle className='text-base'>Filters</CardTitle>
             </div>
-            <div className='flex gap-2'>
-              <Button
-                onClick={() => setEnableInfiniteScroll(!enableInfiniteScroll)}
-                variant='outline'
-                size='sm'
-              >
-                {enableInfiniteScroll ? 'Pagination' : 'Infinite Scroll'}
-              </Button>
-              <Button
-                onClick={handleExport}
-                disabled={isExporting || logs.length === 0}
-                variant='outline'
-                size='sm'
-              >
-                {isExporting ? (
-                  <>
-                    <Loader2 className='h-4 w-4 mr-2 animate-spin' />
-                    Exporting...
-                  </>
-                ) : (
-                  <>
-                    <Download className='h-4 w-4 mr-2' />
-                    Export CSV
-                  </>
-                )}
-              </Button>
-            </div>
+            <Button
+              onClick={handleExport}
+              disabled={isExporting || logs.length === 0}
+              variant='outline'
+              size='sm'
+            >
+              {isExporting ? (
+                <>
+                  <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className='h-4 w-4 mr-2' />
+                  Export CSV
+                </>
+              )}
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -696,7 +657,7 @@ export default function AuditLogPage() {
               </div>
 
               {/* Pagination or Infinite Scroll Trigger */}
-              {!enableInfiniteScroll && totalPages > 1 && (
+              {totalPages > 1 && (
                 <div className='mt-4 flex items-center justify-between border-t pt-4'>
                   <p className='text-sm text-muted-foreground'>
                     Page {currentPage} of {totalPages}
@@ -723,18 +684,6 @@ export default function AuditLogPage() {
                       Next
                     </Button>
                   </div>
-                </div>
-              )}
-
-              {enableInfiniteScroll && logs.length < totalCount && (
-                <div ref={observerTarget} className='mt-4 text-center py-4'>
-                  {isLoading ? (
-                    <Loader2 className='h-6 w-6 animate-spin mx-auto text-muted-foreground' />
-                  ) : (
-                    <p className='text-sm text-muted-foreground'>
-                      Scroll to load more...
-                    </p>
-                  )}
                 </div>
               )}
             </>

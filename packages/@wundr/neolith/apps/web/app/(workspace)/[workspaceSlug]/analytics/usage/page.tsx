@@ -20,7 +20,7 @@ export default function UsageAnalyticsPage(): JSX.Element {
 
   if (!workspaceSlug) {
     return (
-      <div className='min-h-screen bg-background flex items-center justify-center'>
+      <div className='flex items-center justify-center py-16'>
         <div className='text-center'>
           <p className='text-lg font-medium text-foreground'>
             Invalid workspace
@@ -33,11 +33,5 @@ export default function UsageAnalyticsPage(): JSX.Element {
     );
   }
 
-  return (
-    <div className='min-h-screen bg-background'>
-      <div className='max-w-7xl mx-auto px-4 py-8'>
-        <UsageAnalyticsDashboard workspaceId={workspaceSlug} />
-      </div>
-    </div>
-  );
+  return <UsageAnalyticsDashboard workspaceId={workspaceSlug} />;
 }

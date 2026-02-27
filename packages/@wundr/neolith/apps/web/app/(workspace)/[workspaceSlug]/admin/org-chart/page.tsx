@@ -34,6 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -422,15 +423,7 @@ export default function OrgChartPage() {
   return (
     <div className='space-y-6'>
       {/* Top bar */}
-      <div className='flex flex-wrap items-center justify-between gap-3'>
-        <div>
-          <h1 className='text-2xl font-semibold tracking-tight'>
-            Organization Chart
-          </h1>
-          <p className='mt-1 text-sm text-muted-foreground'>
-            Visualize and manage your organization&apos;s Orchestrator hierarchy
-          </p>
-        </div>
+      <div className='flex flex-wrap items-center justify-end gap-3'>
         <div className='flex items-center gap-2'>
           {isEditMode ? (
             <>

@@ -39,12 +39,11 @@ export default function WorkflowTemplatesPage() {
     clearTemplate,
     createAndEdit,
   } = useWorkflowTemplate({
-    onWorkflowCreated: workflowId => {
+    onWorkflowCreated: () => {
       toast({
         title: 'Workflow created',
         description: 'Your workflow has been created from the template.',
       });
-      // Navigation will be handled by createAndEdit
     },
     onError: error => {
       toast({

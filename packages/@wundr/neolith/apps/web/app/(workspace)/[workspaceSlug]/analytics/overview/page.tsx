@@ -14,6 +14,7 @@ import {
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -192,13 +193,10 @@ export default function AnalyticsOverviewPage() {
               Failed to load overview
             </p>
             <p className='text-sm text-muted-foreground mb-4'>{error}</p>
-            <button
-              onClick={fetchData}
-              className='inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors'
-            >
-              <RefreshCw className='h-4 w-4' />
+            <Button onClick={fetchData} size='sm'>
+              <RefreshCw className='h-4 w-4 mr-2' />
               Retry
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -284,51 +282,53 @@ export default function AnalyticsOverviewPage() {
         </Card>
       )}
 
-      {/* Charts placeholder — shown when data exists */}
+      {/* Activity summary — shown when data exists */}
       {!isLoading && hasData && (
-        <div className='grid gap-4 lg:grid-cols-2'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Message Volume</CardTitle>
-              <CardDescription>
-                Daily messages over the selected period
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className='text-xs text-muted-foreground'>
-                Visit the{' '}
-                <a
-                  href='../analytics'
-                  className='underline underline-offset-2 hover:text-foreground'
-                >
-                  Analytics Dashboard
-                </a>{' '}
-                for detailed time-series charts.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Task Completion</CardTitle>
-              <CardDescription>
-                Tasks completed over the selected period
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className='text-xs text-muted-foreground'>
-                Visit the{' '}
-                <a
-                  href='../analytics'
-                  className='underline underline-offset-2 hover:text-foreground'
-                >
-                  Analytics Dashboard
-                </a>{' '}
-                for detailed time-series charts.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Activity Summary</CardTitle>
+            <CardDescription>
+              Workspace activity broken down by resource type
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+              <div className='space-y-1'>
+                <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                  Messaging
+                </p>
+                <p className='text-2xl font-semibold'>
+                  {data?.summary.totalMessages.toLocaleString() ?? 0}
+                </p>
+                <p className='text-xs text-muted-foreground'>
+                  messages across {data?.summary.totalChannels ?? 0} channels
+                </p>
+              </div>
+              <div className='space-y-1'>
+                <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                  Automation
+                </p>
+                <p className='text-2xl font-semibold'>
+                  {data?.summary.successfulWorkflows.toLocaleString() ?? 0}
+                </p>
+                <p className='text-xs text-muted-foreground'>
+                  workflows completed successfully
+                </p>
+              </div>
+              <div className='space-y-1'>
+                <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                  Tasks
+                </p>
+                <p className='text-2xl font-semibold'>
+                  {data?.summary.completedTasks.toLocaleString() ?? 0}
+                </p>
+                <p className='text-xs text-muted-foreground'>
+                  tasks completed this period
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

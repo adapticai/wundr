@@ -13,13 +13,8 @@ import {
   Square,
   CheckCircle2,
   XCircle,
-  MonitorSpeaker,
   Waves,
-  Sparkles,
   Gauge,
-  MicOff,
-  Zap,
-  Image as ImageIcon,
 } from 'lucide-react';
 import * as React from 'react';
 
@@ -115,6 +110,11 @@ export function AudioVideoSettings() {
   const analyserRef = React.useRef<AnalyserNode | null>(null);
   const animationFrameRef = React.useRef<number | null>(null);
   const testAudioRef = React.useRef<HTMLAudioElement | null>(null);
+  // Keep stream refs in sync to avoid stale closures in cleanup
+  const audioStreamRef = React.useRef<MediaStream | null>(null);
+  const videoStreamRef = React.useRef<MediaStream | null>(null);
+  // Use a ref to track mic testing state inside animation frame callbacks
+  const isMicTestingRef = React.useRef(false);
 
   const DEFAULT_PREFERENCES: AudioVideoPreferences = {
     microphoneId: 'default',
@@ -241,21 +241,28 @@ export function AudioVideoSettings() {
   };
 
   const cleanupStreams = () => {
-    if (audioStream) {
-      audioStream.getTracks().forEach(track => track.stop());
+    isMicTestingRef.current = false;
+    if (audioStreamRef.current) {
+      audioStreamRef.current.getTracks().forEach(track => track.stop());
+      audioStreamRef.current = null;
     }
-    if (videoStream) {
-      videoStream.getTracks().forEach(track => track.stop());
+    if (videoStreamRef.current) {
+      videoStreamRef.current.getTracks().forEach(track => track.stop());
+      videoStreamRef.current = null;
     }
     if (audioContextRef.current) {
       audioContextRef.current.close();
+      audioContextRef.current = null;
     }
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     }
     if (testAudioRef.current) {
       testAudioRef.current.pause();
     }
+    setAudioStream(null);
+    setVideoStream(null);
   };
 
   const updatePreference = <K extends keyof AudioVideoPreferences>(
@@ -271,7 +278,7 @@ export function AudioVideoSettings() {
 
   const handleMicrophoneTest = async () => {
     if (isMicTesting) {
-      // Stop testing
+      isMicTestingRef.current = false;
       setIsMicTesting(false);
       cleanupStreams();
       setMicLevel(0);
@@ -279,6 +286,7 @@ export function AudioVideoSettings() {
     }
 
     try {
+      isMicTestingRef.current = true;
       setIsMicTesting(true);
 
       const constraints: MediaStreamConstraints = {
@@ -295,6 +303,7 @@ export function AudioVideoSettings() {
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      audioStreamRef.current = stream;
       setAudioStream(stream);
 
       // Set up audio analysis
@@ -308,7 +317,7 @@ export function AudioVideoSettings() {
       const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
 
       const checkLevel = () => {
-        if (!analyserRef.current || !isMicTesting) {
+        if (!analyserRef.current || !isMicTestingRef.current) {
           return;
         }
 
@@ -332,6 +341,7 @@ export function AudioVideoSettings() {
       });
     } catch (error) {
       console.error('Microphone test failed:', error);
+      isMicTestingRef.current = false;
       setIsMicTesting(false);
       toast({
         title: 'Microphone Error',
@@ -394,10 +404,10 @@ export function AudioVideoSettings() {
 
   const handleCameraPreview = async () => {
     if (isCameraPreviewActive) {
-      // Stop preview
       setIsCameraPreviewActive(false);
-      if (videoStream) {
-        videoStream.getTracks().forEach(track => track.stop());
+      if (videoStreamRef.current) {
+        videoStreamRef.current.getTracks().forEach(track => track.stop());
+        videoStreamRef.current = null;
         setVideoStream(null);
       }
       if (videoPreviewRef.current) {
@@ -427,6 +437,7 @@ export function AudioVideoSettings() {
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      videoStreamRef.current = stream;
       setVideoStream(stream);
 
       if (videoPreviewRef.current) {

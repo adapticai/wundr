@@ -66,6 +66,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -136,6 +137,7 @@ export default function AdminWebhooksPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const { toast } = useToast();
+  const { setPageHeader } = usePageHeader();
 
   const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -174,12 +176,15 @@ export default function AdminWebhooksPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [eventFilter, setEventFilter] = useState<string>('all');
 
-  // Load webhooks
+  // Set page header
   useEffect(() => {
-    loadWebhooks();
-  }, [workspaceSlug]);
+    setPageHeader(
+      'Webhooks',
+      'Send real-time event notifications to external services'
+    );
+  }, [setPageHeader]);
 
-  const loadWebhooks = async () => {
+  const loadWebhooks = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/workspaces/${workspaceSlug}/webhooks`);
@@ -198,7 +203,12 @@ export default function AdminWebhooksPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [workspaceSlug, toast]);
+
+  // Load webhooks on mount
+  useEffect(() => {
+    loadWebhooks();
+  }, [loadWebhooks]);
 
   const openCreateDialog = useCallback(() => {
     setEditingWebhook(null);
@@ -504,13 +514,6 @@ export default function AdminWebhooksPage() {
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-bold'>Webhooks</h1>
-        <p className='mt-1 text-muted-foreground'>
-          Manage outgoing webhooks for workspace events
-        </p>
-      </div>
-
       {/* Filters */}
       <div className='flex flex-wrap gap-3'>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -562,17 +565,24 @@ export default function AdminWebhooksPage() {
         </CardHeader>
         <CardContent>
           {filteredWebhooks.length === 0 ? (
-            <div className='text-center py-12'>
-              <Globe className='h-12 w-12 mx-auto text-muted-foreground mb-3' />
-              <p className='text-muted-foreground mb-4'>
+            <div className='flex flex-col items-center justify-center py-16 text-center'>
+              <Globe className='mb-4 h-12 w-12 text-muted-foreground' />
+              <h3 className='mb-1 text-lg font-semibold'>
                 {statusFilter !== 'all' || eventFilter !== 'all'
                   ? 'No webhooks match the selected filters'
-                  : 'No webhooks configured yet'}
+                  : 'No webhooks configured'}
+              </h3>
+              <p className='mb-6 max-w-sm text-sm text-muted-foreground'>
+                {statusFilter !== 'all' || eventFilter !== 'all'
+                  ? 'Try adjusting your filters to see more results.'
+                  : 'Add a webhook to start receiving real-time event notifications in your external services.'}
               </p>
-              <Button onClick={openCreateDialog} variant='outline'>
-                <Plus className='h-4 w-4 mr-2' />
-                Create Your First Webhook
-              </Button>
+              {statusFilter === 'all' && eventFilter === 'all' && (
+                <Button onClick={openCreateDialog}>
+                  <Plus className='mr-2 h-4 w-4' />
+                  Add Your First Webhook
+                </Button>
+              )}
             </div>
           ) : (
             <Table>

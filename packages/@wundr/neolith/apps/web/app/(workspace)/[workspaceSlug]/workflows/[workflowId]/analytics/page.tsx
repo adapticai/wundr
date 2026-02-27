@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Download, Calendar } from 'lucide-react';
+import { ArrowLeft, Download, Calendar, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
@@ -57,8 +57,8 @@ export default function WorkflowAnalyticsPage() {
   useEffect(() => {
     if (workflow) {
       setPageHeader(
-        `${workflow.name} - Analytics`,
-        'View performance metrics and insights for this workflow'
+        workflow.name,
+        'Performance metrics and execution insights'
       );
     }
   }, [workflow, setPageHeader]);
@@ -281,44 +281,22 @@ export default function WorkflowAnalyticsPage() {
       {executions.length > 0 && (
         <div className='rounded-lg border bg-muted/50 p-4'>
           <div className='flex items-start gap-2'>
-            <InfoIcon className='h-5 w-5 text-muted-foreground' />
-            <div className='flex-1'>
-              <p className='text-sm font-medium'>Analytics Insights</p>
-              <p className='mt-1 text-sm text-muted-foreground'>
-                This dashboard shows aggregated metrics from {executions.length}{' '}
-                execution
-                {executions.length !== 1 ? 's' : ''}. Use the time range filter
-                to focus on specific periods. Export data for deeper analysis in
-                external tools.
-              </p>
-            </div>
+            <Info
+              className='mt-0.5 h-4 w-4 shrink-0 text-muted-foreground'
+              aria-hidden='true'
+            />
+            <p className='text-sm text-muted-foreground'>
+              Showing aggregated metrics from{' '}
+              <span className='font-medium text-foreground'>
+                {executions.length} execution
+                {executions.length !== 1 ? 's' : ''}
+              </span>
+              . Use the time range filter to focus on specific periods, or
+              export the data for deeper analysis in external tools.
+            </p>
           </div>
         </div>
       )}
     </div>
-  );
-}
-
-// =============================================================================
-// Icons
-// =============================================================================
-
-function InfoIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-      aria-hidden='true'
-    >
-      <circle cx='12' cy='12' r='10' />
-      <line x1='12' y1='16' x2='12' y2='12' />
-      <line x1='12' y1='8' x2='12.01' y2='8' />
-    </svg>
   );
 }

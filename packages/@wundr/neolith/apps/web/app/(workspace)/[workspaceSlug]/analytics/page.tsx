@@ -1,5 +1,6 @@
 'use client';
 
+import { BarChart3 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -17,8 +18,9 @@ export default function AnalyticsPage(): JSX.Element {
 
   if (!workspaceSlug) {
     return (
-      <div className='min-h-screen bg-background flex items-center justify-center'>
+      <div className='flex items-center justify-center py-16'>
         <div className='text-center'>
+          <BarChart3 className='h-12 w-12 mx-auto text-muted-foreground mb-4' />
           <p className='text-lg font-medium text-foreground'>
             Invalid workspace
           </p>
@@ -30,11 +32,5 @@ export default function AnalyticsPage(): JSX.Element {
     );
   }
 
-  return (
-    <div className='min-h-screen bg-background'>
-      <div className='max-w-7xl mx-auto px-4 py-8'>
-        <AnalyticsDashboard workspaceId={workspaceSlug} />
-      </div>
-    </div>
-  );
+  return <AnalyticsDashboard workspaceId={workspaceSlug} />;
 }

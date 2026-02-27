@@ -14,6 +14,15 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+  ResponsiveModalDescription,
+  ResponsiveModalFooter,
+} from '@/components/ui/responsive-modal';
 import { Switch } from '@/components/ui/switch';
 import {
   Table,
@@ -23,6 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { usePageHeader } from '@/contexts/page-header-context';
 import {
   useRoles,
@@ -389,44 +399,29 @@ export default function AdminRolesPage() {
       <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         {/* View Switcher */}
         <div className='flex gap-2'>
-          <button
+          <Button
             type='button'
+            variant={view === 'list' ? 'default' : 'outline'}
+            size='sm'
             onClick={() => setView('list')}
-            className={cn(
-              'rounded-md px-4 py-2 text-sm font-medium transition-colors',
-              view === 'list'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            )}
           >
             List View
-          </button>
-          <button
+          </Button>
+          <Button
             type='button'
+            variant={view === 'matrix' ? 'default' : 'outline'}
+            size='sm'
             onClick={() => setView('matrix')}
-            className={cn(
-              'rounded-md px-4 py-2 text-sm font-medium transition-colors',
-              view === 'matrix'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            )}
           >
             Permission Matrix
-          </button>
+          </Button>
         </div>
 
         {/* Create Role Button */}
-        <button
-          type='button'
-          onClick={() => setShowCreateModal(true)}
-          className={cn(
-            'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2',
-            'text-sm font-medium text-primary-foreground hover:bg-primary/90'
-          )}
-        >
-          <PlusIcon className='h-4 w-4' />
+        <Button type='button' onClick={() => setShowCreateModal(true)}>
+          <PlusIcon className='mr-2 h-4 w-4' />
           Create Role
-        </button>
+        </Button>
       </div>
 
       {/* List View */}
@@ -478,17 +473,26 @@ export default function AdminRolesPage() {
           {/* Empty State */}
           {rolesWithCounts.filter(r => !r.isSystem).length === 0 && (
             <div className='flex flex-col items-center justify-center rounded-lg border border-dashed py-12'>
-              <ShieldIcon className='h-12 w-12 text-muted-foreground/50' />
-              <p className='mt-2 text-sm text-muted-foreground'>
-                No custom roles defined yet
+              <div className='flex h-16 w-16 items-center justify-center rounded-full bg-muted'>
+                <ShieldIcon className='h-8 w-8 text-muted-foreground/50' />
+              </div>
+              <p className='mt-4 text-sm font-medium text-foreground'>
+                No custom roles yet
               </p>
-              <button
+              <p className='mt-1 text-sm text-muted-foreground'>
+                Create custom roles to give members precisely the right level of
+                access.
+              </p>
+              <Button
                 type='button'
+                variant='outline'
+                size='sm'
                 onClick={() => setShowCreateModal(true)}
-                className='mt-4 text-sm text-primary hover:underline'
+                className='mt-4'
               >
-                Create your first custom role
-              </button>
+                <PlusIcon className='mr-2 h-4 w-4' />
+                Create your first role
+              </Button>
             </div>
           )}
         </div>
@@ -881,283 +885,270 @@ function RoleEditorModal({
   ];
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4'>
-      <div className='max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-lg bg-card shadow-xl'>
-        <div className='flex items-center justify-between border-b px-6 py-4'>
-          <h2 className='text-lg font-semibold text-foreground'>
+    <ResponsiveModal open onOpenChange={open => !open && onClose()}>
+      <ResponsiveModalContent className='sm:max-w-3xl'>
+        <ResponsiveModalHeader>
+          <ResponsiveModalTitle>
             {role ? 'Edit Role' : 'Create Role'}
-          </h2>
-          <button
-            type='button'
-            onClick={onClose}
-            className='text-muted-foreground hover:text-foreground'
-          >
-            <XIcon className='h-5 w-5' />
-          </button>
-        </div>
+          </ResponsiveModalTitle>
+          <ResponsiveModalDescription>
+            {role
+              ? 'Update the role name, color, and permissions.'
+              : 'Define a new role with a custom set of permissions.'}
+          </ResponsiveModalDescription>
+        </ResponsiveModalHeader>
 
-        <form onSubmit={handleSubmit} className='p-6'>
-          <div className='space-y-6'>
-            {/* Basic Info */}
-            <div className='grid gap-4 sm:grid-cols-2'>
-              <div>
-                <label
-                  htmlFor='roleName'
-                  className='block text-sm font-medium text-foreground'
-                >
-                  Role Name *
-                </label>
-                <input
-                  type='text'
-                  id='roleName'
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  className={cn(
-                    'mt-1 block w-full rounded-md border border-input bg-background',
-                    'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-                  )}
-                  placeholder='e.g., Content Editor'
-                  required
-                />
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-foreground'>
-                  Color
-                </label>
-                <div className='mt-1 flex flex-wrap gap-2'>
-                  {colorOptions.map(c => (
-                    <button
-                      key={c}
-                      type='button'
-                      onClick={() => setColor(c)}
-                      className={cn(
-                        'h-8 w-8 rounded-full border-2',
-                        color === c
-                          ? 'border-foreground ring-2 ring-offset-2 ring-offset-background'
-                          : 'border-transparent'
-                      )}
-                      style={{ backgroundColor: c }}
-                      title={c}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
+        <form
+          onSubmit={handleSubmit}
+          className='space-y-6 overflow-y-auto max-h-[60vh] pr-1'
+        >
+          {/* Basic Info */}
+          <div className='grid gap-4 sm:grid-cols-2'>
             <div>
               <label
-                htmlFor='roleDescription'
+                htmlFor='roleName'
                 className='block text-sm font-medium text-foreground'
               >
-                Description
+                Role Name *
               </label>
-              <textarea
-                id='roleDescription'
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                rows={2}
+              <input
+                type='text'
+                id='roleName'
+                value={name}
+                onChange={e => setName(e.target.value)}
                 className={cn(
                   'mt-1 block w-full rounded-md border border-input bg-background',
                   'px-3 py-2 text-sm placeholder:text-muted-foreground',
                   'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
                 )}
-                placeholder='Describe what this role is for...'
+                placeholder='e.g., Content Editor'
+                required
               />
             </div>
 
-            {/* Inherit From — only shown when creating a new role */}
-            {!role && (
-              <div>
-                <label
-                  htmlFor='inheritFrom'
-                  className='block text-sm font-medium text-foreground'
-                >
-                  Start From Template
-                </label>
-                <select
-                  id='inheritFrom'
-                  value={inheritFrom}
-                  onChange={e => {
-                    const value = e.target.value;
-                    setInheritFrom(value);
-                    // Apply preset permissions based on template
-                    if (value === 'none') {
-                      setPermissions([]);
-                    } else if (value === 'member') {
-                      setPermissions([
-                        { resource: 'channels', actions: ['read'] },
-                        {
-                          resource: 'messages',
-                          actions: ['create', 'read', 'update'],
-                        },
-                        { resource: 'files', actions: ['create', 'read'] },
-                      ]);
-                    } else if (value === 'admin') {
-                      setPermissions([
-                        {
-                          resource: 'channels',
-                          actions: [
-                            'create',
-                            'read',
-                            'update',
-                            'delete',
-                            'manage',
-                          ],
-                        },
-                        {
-                          resource: 'messages',
-                          actions: [
-                            'create',
-                            'read',
-                            'update',
-                            'delete',
-                            'manage',
-                          ],
-                        },
-                        {
-                          resource: 'files',
-                          actions: ['create', 'read', 'manage', 'delete'],
-                        },
-                        {
-                          resource: 'members',
-                          actions: [
-                            'create',
-                            'read',
-                            'update',
-                            'delete',
-                            'manage',
-                          ],
-                        },
-                        {
-                          resource: 'workflows',
-                          actions: ['create', 'read', 'update', 'manage'],
-                        },
-                        { resource: 'settings', actions: ['read', 'update'] },
-                      ]);
-                    }
-                  }}
-                  className={cn(
-                    'mt-1 block w-full rounded-md border border-input bg-background',
-                    'px-3 py-2 text-sm',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-                  )}
-                >
-                  <option value='none'>None - Start from scratch</option>
-                  <option value='member'>
-                    Member - Standard read/write access
-                  </option>
-                  <option value='admin'>
-                    Admin - Full administrative access
-                  </option>
-                </select>
-                <p className='mt-1 text-xs text-muted-foreground'>
-                  Pre-populate permissions from a template, then customise below
-                </p>
-              </div>
-            )}
-
-            {/* Permissions by Category */}
             <div>
               <label className='block text-sm font-medium text-foreground'>
-                Permissions
+                Color
               </label>
-              <p className='mt-1 text-sm text-muted-foreground'>
-                Select the permissions for this role
-              </p>
-
-              <div className='mt-4 space-y-4'>
-                {categories.map(category => {
-                  const categoryPerms = category.permissions;
-                  const enabledCount = categoryPerms.filter(p =>
-                    hasPermission(p.id)
-                  ).length;
-                  const allEnabled = enabledCount === categoryPerms.length;
-
-                  return (
-                    <div
-                      key={category.id}
-                      className='rounded-lg border bg-muted/30 p-4'
-                    >
-                      <div className='flex items-center justify-between'>
-                        <div>
-                          <h4 className='font-medium text-foreground'>
-                            {category.name}
-                          </h4>
-                          <p className='text-sm text-muted-foreground'>
-                            {category.description}
-                          </p>
-                        </div>
-                        <div className='flex items-center gap-2'>
-                          <span className='text-sm text-muted-foreground'>
-                            {enabledCount}/{categoryPerms.length}
-                          </span>
-                          <Switch
-                            checked={allEnabled}
-                            onCheckedChange={checked =>
-                              selectAllInCategory(category, checked)
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      <div className='mt-4 space-y-2'>
-                        {category.permissions.map(permission => (
-                          <label
-                            key={permission.id}
-                            className='flex items-start gap-3 rounded-md p-2 hover:bg-muted/50'
-                          >
-                            <input
-                              type='checkbox'
-                              checked={hasPermission(permission.id)}
-                              onChange={() => togglePermission(permission)}
-                              className='mt-1 h-4 w-4 rounded border-input text-primary focus:ring-primary'
-                            />
-                            <div className='flex-1'>
-                              <div className='font-medium text-foreground'>
-                                {permission.name}
-                              </div>
-                              <div className='text-sm text-muted-foreground'>
-                                {permission.description}
-                              </div>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className='mt-1 flex flex-wrap gap-2'>
+                {colorOptions.map(c => (
+                  <button
+                    key={c}
+                    type='button'
+                    onClick={() => setColor(c)}
+                    className={cn(
+                      'h-8 w-8 rounded-full border-2',
+                      color === c
+                        ? 'border-foreground ring-2 ring-offset-2 ring-offset-background'
+                        : 'border-transparent'
+                    )}
+                    style={{ backgroundColor: c }}
+                    title={c}
+                  />
+                ))}
               </div>
             </div>
           </div>
 
-          <div className='mt-6 flex justify-end gap-3'>
-            <button
-              type='button'
-              onClick={onClose}
-              className='rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-muted'
+          <div>
+            <label
+              htmlFor='roleDescription'
+              className='block text-sm font-medium text-foreground'
             >
-              Cancel
-            </button>
-            <button
-              type='submit'
-              disabled={isSubmitting || !name.trim()}
+              Description
+            </label>
+            <textarea
+              id='roleDescription'
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              rows={2}
               className={cn(
-                'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-                'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+                'mt-1 block w-full rounded-md border border-input bg-background',
+                'px-3 py-2 text-sm placeholder:text-muted-foreground',
+                'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
               )}
-            >
-              {isSubmitting
-                ? 'Saving...'
-                : role
-                  ? 'Save Changes'
-                  : 'Create Role'}
-            </button>
+              placeholder='Describe what this role is for...'
+            />
+          </div>
+
+          {/* Start from template — only shown when creating a new role */}
+          {!role && (
+            <div>
+              <label
+                htmlFor='inheritFrom'
+                className='block text-sm font-medium text-foreground'
+              >
+                Start From Template
+              </label>
+              <select
+                id='inheritFrom'
+                value={inheritFrom}
+                onChange={e => {
+                  const value = e.target.value;
+                  setInheritFrom(value);
+                  if (value === 'none') {
+                    setPermissions([]);
+                  } else if (value === 'member') {
+                    setPermissions([
+                      { resource: 'channels', actions: ['read'] },
+                      {
+                        resource: 'messages',
+                        actions: ['create', 'read', 'update'],
+                      },
+                      { resource: 'files', actions: ['create', 'read'] },
+                    ]);
+                  } else if (value === 'admin') {
+                    setPermissions([
+                      {
+                        resource: 'channels',
+                        actions: [
+                          'create',
+                          'read',
+                          'update',
+                          'delete',
+                          'manage',
+                        ],
+                      },
+                      {
+                        resource: 'messages',
+                        actions: [
+                          'create',
+                          'read',
+                          'update',
+                          'delete',
+                          'manage',
+                        ],
+                      },
+                      {
+                        resource: 'files',
+                        actions: ['create', 'read', 'manage', 'delete'],
+                      },
+                      {
+                        resource: 'members',
+                        actions: [
+                          'create',
+                          'read',
+                          'update',
+                          'delete',
+                          'manage',
+                        ],
+                      },
+                      {
+                        resource: 'workflows',
+                        actions: ['create', 'read', 'update', 'manage'],
+                      },
+                      { resource: 'settings', actions: ['read', 'update'] },
+                    ]);
+                  }
+                }}
+                className={cn(
+                  'mt-1 block w-full rounded-md border border-input bg-background',
+                  'px-3 py-2 text-sm',
+                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                )}
+              >
+                <option value='none'>None - Start from scratch</option>
+                <option value='member'>
+                  Member - Standard read/write access
+                </option>
+                <option value='admin'>
+                  Admin - Full administrative access
+                </option>
+              </select>
+              <p className='mt-1 text-xs text-muted-foreground'>
+                Pre-populate permissions from a template, then customise below
+              </p>
+            </div>
+          )}
+
+          {/* Permissions by Category */}
+          <div>
+            <label className='block text-sm font-medium text-foreground'>
+              Permissions
+            </label>
+            <p className='mt-1 text-sm text-muted-foreground'>
+              Select the permissions for this role
+            </p>
+
+            <div className='mt-4 space-y-4'>
+              {categories.map(category => {
+                const categoryPerms = category.permissions;
+                const enabledCount = categoryPerms.filter(p =>
+                  hasPermission(p.id)
+                ).length;
+                const allEnabled = enabledCount === categoryPerms.length;
+
+                return (
+                  <div
+                    key={category.id}
+                    className='rounded-lg border bg-muted/30 p-4'
+                  >
+                    <div className='flex items-center justify-between'>
+                      <div>
+                        <h4 className='font-medium text-foreground'>
+                          {category.name}
+                        </h4>
+                        <p className='text-sm text-muted-foreground'>
+                          {category.description}
+                        </p>
+                      </div>
+                      <div className='flex items-center gap-2'>
+                        <span className='text-sm text-muted-foreground'>
+                          {enabledCount}/{categoryPerms.length}
+                        </span>
+                        <Switch
+                          checked={allEnabled}
+                          onCheckedChange={checked =>
+                            selectAllInCategory(category, checked)
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <div className='mt-4 space-y-2'>
+                      {category.permissions.map(permission => (
+                        <label
+                          key={permission.id}
+                          className='flex items-start gap-3 rounded-md p-2 hover:bg-muted/50 cursor-pointer'
+                        >
+                          <input
+                            type='checkbox'
+                            checked={hasPermission(permission.id)}
+                            onChange={() => togglePermission(permission)}
+                            className='mt-1 h-4 w-4 rounded border-input text-primary focus:ring-primary'
+                          />
+                          <div className='flex-1'>
+                            <div className='font-medium text-foreground'>
+                              {permission.name}
+                            </div>
+                            <div className='text-sm text-muted-foreground'>
+                              {permission.description}
+                            </div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </form>
-      </div>
-    </div>
+
+        <ResponsiveModalFooter>
+          <Button type='button' variant='outline' onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            type='button'
+            disabled={isSubmitting || !name.trim()}
+            onClick={handleSubmit}
+          >
+            {isSubmitting ? 'Saving...' : role ? 'Save Changes' : 'Create Role'}
+          </Button>
+        </ResponsiveModalFooter>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }
 
@@ -1178,9 +1169,9 @@ interface RoleMembersModalProps {
 
 function RoleMembersModal({ role, members, onClose }: RoleMembersModalProps) {
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4'>
-      <div className='w-full max-w-lg rounded-lg bg-card shadow-xl'>
-        <div className='flex items-center justify-between border-b px-6 py-4'>
+    <ResponsiveModal open onOpenChange={open => !open && onClose()}>
+      <ResponsiveModalContent className='sm:max-w-lg'>
+        <ResponsiveModalHeader>
           <div className='flex items-center gap-3'>
             <div
               className='flex h-8 w-8 items-center justify-center rounded-lg'
@@ -1189,38 +1180,36 @@ function RoleMembersModal({ role, members, onClose }: RoleMembersModalProps) {
               <ShieldIcon className='h-4 w-4 text-white' />
             </div>
             <div>
-              <h2 className='text-lg font-semibold text-foreground'>
-                {role.name}
-              </h2>
-              <p className='text-sm text-muted-foreground'>
-                {members.length} member{members.length !== 1 ? 's' : ''}
-              </p>
+              <ResponsiveModalTitle>{role.name}</ResponsiveModalTitle>
+              <ResponsiveModalDescription>
+                {members.length} member{members.length !== 1 ? 's' : ''}{' '}
+                assigned to this role
+              </ResponsiveModalDescription>
             </div>
           </div>
-          <button
-            type='button'
-            onClick={onClose}
-            className='text-muted-foreground hover:text-foreground'
-          >
-            <XIcon className='h-5 w-5' />
-          </button>
-        </div>
+        </ResponsiveModalHeader>
 
-        <div className='max-h-96 overflow-y-auto p-6'>
+        <div className='max-h-96 overflow-y-auto'>
           {members.length === 0 ? (
-            <div className='py-8 text-center text-sm text-muted-foreground'>
-              No members assigned to this role
+            <div className='flex flex-col items-center gap-2 py-10 text-center'>
+              <div className='flex h-12 w-12 items-center justify-center rounded-full bg-muted'>
+                <UsersIcon className='h-6 w-6 text-muted-foreground' />
+              </div>
+              <p className='text-sm text-muted-foreground'>
+                No members assigned to this role
+              </p>
             </div>
           ) : (
-            <div className='space-y-3'>
+            <div className='space-y-2'>
               {members.map(member => (
                 <div
                   key={member.id}
                   className='flex items-center gap-3 rounded-lg border p-3'
                 >
-                  <div className='flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary'>
-                    {member.name?.[0] || member.email?.[0] || '?'}
-                  </div>
+                  <UserAvatar
+                    user={{ name: member.name, image: member.image }}
+                    size='lg'
+                  />
                   <div>
                     <div className='font-medium text-foreground'>
                       {member.name || 'Unknown'}
@@ -1235,17 +1224,13 @@ function RoleMembersModal({ role, members, onClose }: RoleMembersModalProps) {
           )}
         </div>
 
-        <div className='flex justify-end border-t px-6 py-4'>
-          <button
-            type='button'
-            onClick={onClose}
-            className='rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-muted'
-          >
+        <ResponsiveModalFooter>
+          <Button type='button' variant='outline' onClick={onClose}>
             Close
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </ResponsiveModalFooter>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }
 

@@ -26,6 +26,7 @@ import { WorkspaceSwitcherWidget } from './components/workspace-switcher-widget'
 
 interface DashboardContentProps {
   workspaceId: string;
+  workspaceSlug: string;
 }
 
 interface ActivityEntry {
@@ -66,7 +67,10 @@ interface WorkspaceStats {
   };
 }
 
-export function DashboardContent({ workspaceId }: DashboardContentProps) {
+export function DashboardContent({
+  workspaceId,
+  workspaceSlug,
+}: DashboardContentProps) {
   const { setPageHeader } = usePageHeader();
   const { user, role } = useAuth();
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
@@ -208,13 +212,19 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
           {/* Left Column - Main Content (2 columns wide on large screens) */}
           <div className='lg:col-span-2 space-y-6'>
             {/* Quick Actions Widget - Top of dashboard */}
-            <QuickActionsWidget workspaceSlug={workspaceId} />
+            <QuickActionsWidget workspaceSlug={workspaceSlug} />
 
             {/* Role-based sections */}
             {isAdmin ? (
-              <AdminDashboardSection workspaceId={workspaceId} />
+              <AdminDashboardSection
+                workspaceId={workspaceId}
+                workspaceSlug={workspaceSlug}
+              />
             ) : (
-              <MemberDashboardSection workspaceId={workspaceId} />
+              <MemberDashboardSection
+                workspaceId={workspaceId}
+                workspaceSlug={workspaceSlug}
+              />
             )}
             {/* Recent Activity Feed */}
             <Card>
@@ -225,9 +235,9 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
                     Latest updates from your workspace
                   </CardDescription>
                 </div>
-                <div className='flex gap-2'>
+                <div className='flex gap-1'>
                   <Button
-                    variant={activityFilter === 'all' ? 'outline' : 'ghost'}
+                    variant={activityFilter === 'all' ? 'secondary' : 'ghost'}
                     size='sm'
                     onClick={() => setActivityFilter('all')}
                   >
@@ -235,7 +245,7 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
                   </Button>
                   <Button
                     variant={
-                      activityFilter === 'channels' ? 'outline' : 'ghost'
+                      activityFilter === 'channels' ? 'secondary' : 'ghost'
                     }
                     size='sm'
                     onClick={() => setActivityFilter('channels')}
@@ -243,7 +253,7 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
                     Channels
                   </Button>
                   <Button
-                    variant={activityFilter === 'dms' ? 'outline' : 'ghost'}
+                    variant={activityFilter === 'dms' ? 'secondary' : 'ghost'}
                     size='sm'
                     onClick={() => setActivityFilter('dms')}
                   >
@@ -319,19 +329,19 @@ export function DashboardContent({ workspaceId }: DashboardContentProps) {
             </Card>
 
             {/* Channels Widget - Integrated starred/frequent channels */}
-            <ChannelsWidget workspaceSlug={workspaceId} limit={6} />
+            <ChannelsWidget workspaceSlug={workspaceSlug} limit={6} />
           </div>
 
           {/* Right Sidebar */}
           <div className='space-y-6'>
             {/* Workspace Switcher Widget - Show if user has multiple workspaces */}
-            <WorkspaceSwitcherWidget currentWorkspaceSlug={workspaceId} />
+            <WorkspaceSwitcherWidget currentWorkspaceSlug={workspaceSlug} />
 
             {/* Status Widget */}
-            <StatusWidget workspaceSlug={workspaceId} />
+            <StatusWidget workspaceSlug={workspaceSlug} />
 
             {/* Threads & Mentions Widget */}
-            <ThreadsWidget workspaceSlug={workspaceId} limit={5} />
+            <ThreadsWidget workspaceSlug={workspaceSlug} limit={5} />
 
             {/* Workspace Stats */}
             {stats && (
@@ -398,8 +408,7 @@ function ActivityIcon({ className }: { className?: string }) {
       strokeLinejoin='round'
       className={className}
     >
-      <path d='M12 20h9' />
-      <path d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z' />
+      <polyline points='22 12 18 12 15 21 9 3 6 12 2 12' />
     </svg>
   );
 }

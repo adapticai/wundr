@@ -15,8 +15,10 @@ import { Separator } from '@/components/ui/separator';
 import {
   useIntegrations,
   useIntegrationMutations,
+  useWebhook,
   useWebhooks,
 } from '@/hooks/use-integrations';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
   INTEGRATION_PROVIDERS,
@@ -57,6 +59,7 @@ export default function IntegrationsPage() {
   const params = useParams();
   const router = useRouter();
   const workspaceId = params?.workspaceSlug as string;
+  const { toast } = useToast();
 
   const [showConnectAccountModal, setShowConnectAccountModal] = useState(false);
   const [showInstallAppModal, setShowInstallAppModal] = useState(false);
@@ -66,7 +69,7 @@ export default function IntegrationsPage() {
   const [selectedWebhook, setSelectedWebhook] = useState<WebhookConfig | null>(
     null
   );
-  const [apiTokens] = useState<string[]>([]);
+  const [showAllWebhooks, setShowAllWebhooks] = useState(false);
 
   const {
     integrations,
@@ -280,25 +283,31 @@ export default function IntegrationsPage() {
                         No webhooks configured
                       </h3>
                       <p className='mt-1 text-sm text-muted-foreground'>
-                        Create webhooks to receive events from your workspace
+                        Create a webhook to receive real-time event
+                        notifications in your external services
                       </p>
                     </CardContent>
                   </Card>
                 ) : (
                   <div className='space-y-2'>
-                    {webhooks.slice(0, 5).map(webhook => (
-                      <WebhookListItem
-                        key={webhook.id}
-                        webhook={webhook}
-                        onClick={() => setSelectedWebhook(webhook)}
-                      />
-                    ))}
+                    {(showAllWebhooks ? webhooks : webhooks.slice(0, 5)).map(
+                      webhook => (
+                        <WebhookListItem
+                          key={webhook.id}
+                          webhook={webhook}
+                          onClick={() => setSelectedWebhook(webhook)}
+                        />
+                      )
+                    )}
                     {webhooks.length > 5 && (
                       <button
                         type='button'
+                        onClick={() => setShowAllWebhooks(prev => !prev)}
                         className='w-full rounded-md border border-dashed py-2 text-sm text-muted-foreground hover:bg-accent'
                       >
-                        View all {webhooks.length} webhooks
+                        {showAllWebhooks
+                          ? 'Show fewer webhooks'
+                          : `View all ${webhooks.length} webhooks`}
                       </button>
                     )}
                   </div>
@@ -324,47 +333,33 @@ export default function IntegrationsPage() {
                             Personal Access Tokens
                           </h3>
                           <p className='mb-4 text-sm text-muted-foreground'>
-                            Generate tokens to access the API programmatically
+                            Use personal access tokens to authenticate API
+                            requests from scripts, CI pipelines, or external
+                            tools. Tokens have the same permissions as your
+                            account.
                           </p>
-                          {apiTokens.length === 0 ? (
-                            <Card>
-                              <CardContent className='py-8 text-center'>
-                                <p className='text-sm text-muted-foreground'>
-                                  No tokens created yet
-                                </p>
-                              </CardContent>
-                            </Card>
-                          ) : (
-                            <div className='space-y-2'>
-                              {apiTokens.map((_, i) => (
-                                <div
-                                  key={i}
-                                  className='flex items-center justify-between rounded-md border p-3'
-                                >
-                                  <div>
-                                    <p className='text-sm font-medium'>
-                                      Token {i + 1}
-                                    </p>
-                                    <p className='text-xs text-muted-foreground'>
-                                      Created recently
-                                    </p>
-                                  </div>
-                                  <button
-                                    type='button'
-                                    className='text-sm text-destructive hover:underline'
-                                  >
-                                    Revoke
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          <button
-                            type='button'
-                            className='mt-3 rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent'
-                          >
-                            Generate New Token
-                          </button>
+                          <Card>
+                            <CardContent className='flex flex-col items-center justify-center py-8 text-center'>
+                              <KeyIcon className='h-10 w-10 text-muted-foreground/50' />
+                              <h4 className='mt-3 font-medium text-foreground'>
+                                No tokens created yet
+                              </h4>
+                              <p className='mt-1 text-sm text-muted-foreground'>
+                                Generate a token to start using the API
+                              </p>
+                              <button
+                                type='button'
+                                onClick={() =>
+                                  router.push(
+                                    `/${workspaceId}/settings/advanced`
+                                  )
+                                }
+                                className='mt-4 rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent'
+                              >
+                                Manage API Tokens
+                              </button>
+                            </CardContent>
+                          </Card>
                         </div>
 
                         <Separator />
@@ -374,10 +369,11 @@ export default function IntegrationsPage() {
                             API Documentation
                           </h3>
                           <p className='mb-3 text-sm text-muted-foreground'>
-                            Learn how to integrate with our API
+                            Explore the REST API reference, authentication
+                            guides, and integration examples.
                           </p>
                           <a
-                            href='/docs/api'
+                            href='https://docs.adaptic.ai/api'
                             target='_blank'
                             rel='noopener noreferrer'
                             className='inline-flex items-center gap-2 text-sm text-primary hover:underline'
@@ -445,6 +441,7 @@ export default function IntegrationsPage() {
       {selectedWebhook && (
         <WebhookDetailModal
           webhook={selectedWebhook}
+          workspaceId={workspaceId}
           onClose={() => setSelectedWebhook(null)}
           onUpdate={() => {
             setSelectedWebhook(null);
@@ -877,6 +874,35 @@ function IntegrationDetailModal({
 }: IntegrationDetailModalProps) {
   const providerInfo = INTEGRATION_PROVIDERS[integration.provider];
   const statusConfig = INTEGRATION_STATUS_CONFIG[integration.status];
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+  const { toast } = useToast();
+
+  const handleDisconnect = async () => {
+    setIsDisconnecting(true);
+    try {
+      const response = await fetch(
+        `/api/workspaces/${integration.id}/integrations/${integration.id}`,
+        { method: 'DELETE' }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to disconnect integration');
+      }
+      toast({
+        title: 'Integration disconnected',
+        description: `${providerInfo?.name ?? integration.name} has been disconnected.`,
+      });
+      onUpdate();
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to disconnect integration. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDisconnecting(false);
+    }
+  };
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center'>
@@ -931,7 +957,7 @@ function IntegrationDetailModal({
 
           <div>
             <h3 className='text-sm font-medium text-muted-foreground'>
-              Created
+              Connected
             </h3>
             <p className='text-foreground'>
               {new Date(integration.createdAt).toLocaleString()}
@@ -951,9 +977,23 @@ function IntegrationDetailModal({
 
           {integration.errorMessage && (
             <div className='rounded-md border border-destructive/50 bg-destructive/10 p-3'>
-              <h3 className='text-sm font-medium text-destructive'>Error</h3>
-              <p className='text-sm text-destructive'>
+              <h3 className='text-sm font-medium text-destructive'>
+                Connection Error
+              </h3>
+              <p className='mt-1 text-sm text-destructive'>
                 {integration.errorMessage}
+              </p>
+            </div>
+          )}
+
+          {confirmDisconnect && (
+            <div className='rounded-md border border-destructive/50 bg-destructive/10 p-3'>
+              <p className='text-sm font-medium text-destructive'>
+                Disconnect {providerInfo?.name ?? integration.name}?
+              </p>
+              <p className='mt-1 text-sm text-destructive/80'>
+                This will remove the integration and revoke all associated
+                permissions. This action cannot be undone.
               </p>
             </div>
           )}
@@ -965,15 +1005,26 @@ function IntegrationDetailModal({
             onClick={onClose}
             className='rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground'
           >
-            Close
+            Cancel
           </button>
-          <button
-            type='button'
-            onClick={onUpdate}
-            className='rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90'
-          >
-            Disconnect
-          </button>
+          {confirmDisconnect ? (
+            <button
+              type='button'
+              onClick={handleDisconnect}
+              disabled={isDisconnecting}
+              className='rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50'
+            >
+              {isDisconnecting ? 'Disconnecting...' : 'Confirm Disconnect'}
+            </button>
+          ) : (
+            <button
+              type='button'
+              onClick={() => setConfirmDisconnect(true)}
+              className='rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90'
+            >
+              Disconnect
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -982,23 +1033,61 @@ function IntegrationDetailModal({
 
 interface WebhookDetailModalProps {
   webhook: WebhookConfig;
+  workspaceId: string;
   onClose: () => void;
   onUpdate: () => void;
 }
 
 function WebhookDetailModal({
   webhook,
+  workspaceId,
   onClose,
   onUpdate,
 }: WebhookDetailModalProps) {
   const [showSecret, setShowSecret] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { toast } = useToast();
 
+  const statusStyles: Record<string, string> = {
+    active: 'text-green-600 bg-green-500/10',
+    inactive: 'text-gray-600 bg-gray-500/10',
+    disabled: 'text-red-600 bg-red-500/10',
+  };
+  const statusLabels: Record<string, string> = {
+    active: 'Active',
+    inactive: 'Inactive',
+    disabled: 'Disabled',
+  };
   const statusColor =
-    webhook.status === 'active'
-      ? 'text-green-600 bg-green-500/10'
-      : webhook.status === 'disabled'
-        ? 'text-red-600 bg-red-500/10'
-        : 'text-gray-600 bg-gray-500/10';
+    statusStyles[webhook.status] ?? 'text-gray-600 bg-gray-500/10';
+  const statusLabel = statusLabels[webhook.status] ?? webhook.status;
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/webhooks/${webhook.id}`,
+        { method: 'DELETE' }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to delete webhook');
+      }
+      toast({
+        title: 'Webhook deleted',
+        description: `"${webhook.name}" has been removed.`,
+      });
+      onUpdate();
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete webhook. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center'>
@@ -1013,7 +1102,7 @@ function WebhookDetailModal({
                 statusColor
               )}
             >
-              {webhook.status}
+              {statusLabel}
             </span>
           </div>
           <button
@@ -1037,13 +1126,18 @@ function WebhookDetailModal({
             <h3 className='text-sm font-medium text-muted-foreground mb-1'>
               Signing Secret
             </h3>
+            <p className='mb-1 text-xs text-muted-foreground'>
+              Use this secret to verify that incoming requests originate from
+              this webhook.
+            </p>
             <div className='flex items-center gap-2'>
               <code className='flex-1 rounded bg-muted px-2 py-1 text-sm font-mono'>
-                {showSecret ? webhook.secret : '*'.repeat(32)}
+                {showSecret ? webhook.secret : '•'.repeat(32)}
               </code>
               <button
                 type='button'
                 onClick={() => setShowSecret(!showSecret)}
+                aria-label={showSecret ? 'Hide secret' : 'Reveal secret'}
                 className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
               >
                 {showSecret ? (
@@ -1074,13 +1168,13 @@ function WebhookDetailModal({
           <div className='grid grid-cols-2 gap-4'>
             <div>
               <h3 className='text-sm font-medium text-muted-foreground'>
-                Success Count
+                Successful Deliveries
               </h3>
               <p className='text-foreground'>{webhook.successCount || 0}</p>
             </div>
             <div>
               <h3 className='text-sm font-medium text-muted-foreground'>
-                Failure Count
+                Failed Deliveries
               </h3>
               <p
                 className={
@@ -1094,6 +1188,17 @@ function WebhookDetailModal({
             </div>
           </div>
 
+          {webhook.lastDeliveryAt && (
+            <div>
+              <h3 className='text-sm font-medium text-muted-foreground'>
+                Last Delivery
+              </h3>
+              <p className='text-foreground'>
+                {new Date(webhook.lastDeliveryAt).toLocaleString()}
+              </p>
+            </div>
+          )}
+
           <div>
             <h3 className='text-sm font-medium text-muted-foreground'>
               Created
@@ -1102,6 +1207,18 @@ function WebhookDetailModal({
               {new Date(webhook.createdAt).toLocaleString()}
             </p>
           </div>
+
+          {confirmDelete && (
+            <div className='rounded-md border border-destructive/50 bg-destructive/10 p-3'>
+              <p className='text-sm font-medium text-destructive'>
+                Delete this webhook?
+              </p>
+              <p className='mt-1 text-sm text-destructive/80'>
+                All delivery history will be permanently removed. This cannot be
+                undone.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className='flex justify-end gap-2 mt-6'>
@@ -1110,15 +1227,26 @@ function WebhookDetailModal({
             onClick={onClose}
             className='rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground'
           >
-            Close
+            Cancel
           </button>
-          <button
-            type='button'
-            onClick={onUpdate}
-            className='rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90'
-          >
-            Delete Webhook
-          </button>
+          {confirmDelete ? (
+            <button
+              type='button'
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className='rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50'
+            >
+              {isDeleting ? 'Deleting...' : 'Confirm Delete'}
+            </button>
+          ) : (
+            <button
+              type='button'
+              onClick={() => setConfirmDelete(true)}
+              className='rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90'
+            >
+              Delete Webhook
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -1333,6 +1461,24 @@ function ExternalLinkIcon({ className }: { className?: string }) {
       <path d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6' />
       <polyline points='15 3 21 3 21 9' />
       <line x1='10' y1='14' x2='21' y2='3' />
+    </svg>
+  );
+}
+
+function KeyIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    >
+      <circle cx='7.5' cy='15.5' r='5.5' />
+      <path d='m21 2-9.6 9.6' />
+      <path d='m15.5 7.5 3 3L22 7l-3-3' />
     </svg>
   );
 }

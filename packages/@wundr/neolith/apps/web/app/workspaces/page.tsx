@@ -1,10 +1,18 @@
 'use client';
 
+import {
+  Inbox,
+  LayoutGrid,
+  Plus,
+  Link as LinkIcon,
+  AlertCircle,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
 import { GitHubIcon, GoogleIcon } from '@/components/icons';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -13,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Workspace {
@@ -30,6 +39,13 @@ interface WorkspaceInvite {
   invitedBy: string;
   createdAt: string;
 }
+
+const ROLE_LABELS: Record<Workspace['role'], string> = {
+  OWNER: 'Owner',
+  ADMIN: 'Admin',
+  MEMBER: 'Member',
+  GUEST: 'Guest',
+};
 
 export default function WorkspacesPage() {
   const router = useRouter();
@@ -71,7 +87,6 @@ export default function WorkspacesPage() {
       const response = await fetch('/api/workspaces/invites');
       if (!response.ok) {
         if (response.status === 404) {
-          // No invites endpoint yet - set empty array
           setInvites([]);
           return;
         }
@@ -81,7 +96,6 @@ export default function WorkspacesPage() {
       setInvites(data.invites || []);
     } catch (err) {
       console.error('Error fetching invites:', err);
-      // Don't set error for invites - it's optional
       setInvites([]);
     } finally {
       setIsLoadingInvites(false);
@@ -93,16 +107,13 @@ export default function WorkspacesPage() {
       setProcessingInvite(inviteId);
       const response = await fetch(
         `/api/workspaces/invites/${inviteId}/accept`,
-        {
-          method: 'POST',
-        }
+        { method: 'POST' }
       );
 
       if (!response.ok) {
         throw new Error('Failed to accept invite');
       }
 
-      // Refresh both lists
       await Promise.all([fetchWorkspaces(), fetchInvites()]);
     } catch (err) {
       console.error('Error accepting invite:', err);
@@ -117,16 +128,13 @@ export default function WorkspacesPage() {
       setProcessingInvite(inviteId);
       const response = await fetch(
         `/api/workspaces/invites/${inviteId}/decline`,
-        {
-          method: 'POST',
-        }
+        { method: 'POST' }
       );
 
       if (!response.ok) {
         throw new Error('Failed to decline invite');
       }
 
-      // Refresh invites list
       await fetchInvites();
     } catch (err) {
       console.error('Error declining invite:', err);
@@ -139,12 +147,10 @@ export default function WorkspacesPage() {
   const handleLinkAccount = async (provider: 'google' | 'github') => {
     try {
       setLinkingAccount(true);
-      await signIn(provider, {
-        callbackUrl: '/workspaces',
-      });
+      await signIn(provider, { callbackUrl: '/workspaces' });
     } catch (err) {
       console.error('Error linking account:', err);
-      setError('Failed to link account');
+      setError('Failed to link account. Please try again.');
       setLinkingAccount(false);
     }
   };
@@ -163,53 +169,71 @@ export default function WorkspacesPage() {
       <div className='mb-8'>
         <h1 className='text-3xl font-bold'>Workspaces</h1>
         <p className='text-muted-foreground mt-2'>
-          Access and manage your workspaces or link another account
+          Select a workspace to open, accept pending invitations, or link
+          another account to consolidate access.
         </p>
       </div>
 
       {/* Error Alert */}
       {error && (
-        <div className='mb-6 rounded-md bg-destructive/10 p-4 text-sm text-destructive'>
-          <p className='font-medium'>Error</p>
-          <p className='mt-1'>{error}</p>
-          <Button
-            variant='outline'
-            size='sm'
-            className='mt-2'
-            onClick={() => setError(null)}
-          >
-            Dismiss
-          </Button>
-        </div>
+        <Alert variant='destructive' className='mb-6'>
+          <AlertCircle className='h-4 w-4' />
+          <AlertTitle>Something went wrong</AlertTitle>
+          <AlertDescription className='flex items-center justify-between gap-4'>
+            <span>{error}</span>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setError(null)}
+              className='shrink-0'
+            >
+              Dismiss
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Tabs */}
       <Tabs defaultValue='workspaces' className='w-full'>
         <TabsList className='grid w-full grid-cols-3'>
-          <TabsTrigger value='workspaces'>Your Workspaces</TabsTrigger>
+          <TabsTrigger value='workspaces'>
+            <LayoutGrid className='mr-2 h-4 w-4' />
+            Your Workspaces
+          </TabsTrigger>
           <TabsTrigger value='invites'>
-            Pending Invites
+            <Inbox className='mr-2 h-4 w-4' />
+            Invitations
             {invites.length > 0 && (
-              <span className='ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground'>
+              <span
+                className='ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground'
+                aria-label={`${invites.length} pending invitation${invites.length === 1 ? '' : 's'}`}
+              >
                 {invites.length}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value='link'>Link Account</TabsTrigger>
+          <TabsTrigger value='link'>
+            <LinkIcon className='mr-2 h-4 w-4' />
+            Link Account
+          </TabsTrigger>
         </TabsList>
 
         {/* Your Workspaces Tab */}
         <TabsContent value='workspaces' className='mt-6'>
           {isLoadingWorkspaces ? (
-            <div className='grid gap-4 md:grid-cols-2'>
+            <div
+              className='grid gap-4 md:grid-cols-2'
+              aria-label='Loading workspaces'
+              aria-busy='true'
+            >
               {[...Array(4)].map((_, i) => (
-                <Card key={i} className='animate-pulse'>
+                <Card key={i}>
                   <CardHeader>
-                    <div className='h-6 bg-muted rounded w-3/4' />
-                    <div className='h-4 bg-muted rounded w-1/2 mt-2' />
+                    <Skeleton className='h-6 w-3/4' />
+                    <Skeleton className='h-4 w-1/2 mt-2' />
                   </CardHeader>
                   <CardContent>
-                    <div className='h-10 bg-muted rounded' />
+                    <Skeleton className='h-10 w-full' />
                   </CardContent>
                 </Card>
               ))}
@@ -221,20 +245,36 @@ export default function WorkspacesPage() {
                   key={workspace.id}
                   className='hover:border-primary transition-colors cursor-pointer'
                   onClick={() => handleWorkspaceClick(workspace.slug)}
+                  role='button'
+                  tabIndex={0}
+                  aria-label={`Open workspace: ${workspace.name}`}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleWorkspaceClick(workspace.slug);
+                    }
+                  }}
                 >
                   <CardHeader>
                     <CardTitle>{workspace.name}</CardTitle>
                     <CardDescription>
-                      {workspace.description || 'No description'}
+                      {workspace.description ?? 'No description provided.'}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className='flex items-center justify-between'>
                       <span className='text-sm text-muted-foreground'>
                         Role:{' '}
-                        <span className='font-medium'>{workspace.role}</span>
+                        <span className='font-medium text-foreground'>
+                          {ROLE_LABELS[workspace.role]}
+                        </span>
                       </span>
-                      <Button size='sm' variant='outline'>
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        tabIndex={-1}
+                        aria-hidden='true'
+                      >
                         Open
                       </Button>
                     </div>
@@ -246,32 +286,41 @@ export default function WorkspacesPage() {
               <Card
                 className='hover:border-primary transition-colors cursor-pointer border-dashed'
                 onClick={handleCreateWorkspace}
+                role='button'
+                tabIndex={0}
+                aria-label='Create a new workspace'
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleCreateWorkspace();
+                  }
+                }}
               >
                 <CardContent className='flex flex-col items-center justify-center py-12'>
                   <div className='rounded-full bg-primary/10 p-4 mb-4'>
-                    <PlusIcon className='h-8 w-8 text-primary' />
+                    <Plus className='h-8 w-8 text-primary' />
                   </div>
                   <p className='text-lg font-medium'>Create New Workspace</p>
                   <p className='text-sm text-muted-foreground text-center mt-1'>
-                    Set up a new workspace
+                    Set up a dedicated space for a new team or project
                   </p>
                 </CardContent>
               </Card>
             </div>
           ) : (
             <Card>
-              <CardContent className='flex flex-col items-center justify-center py-12'>
+              <CardContent className='flex flex-col items-center justify-center py-16'>
                 <div className='rounded-full bg-muted p-4 mb-4'>
-                  <WorkspaceIcon />
+                  <LayoutGrid className='h-6 w-6 text-muted-foreground' />
                 </div>
-                <p className='text-lg font-medium mb-2'>No workspaces found</p>
+                <p className='text-lg font-medium mb-2'>No workspaces yet</p>
                 <p className='text-sm text-muted-foreground text-center max-w-md mb-6'>
-                  You don&apos;t have access to any workspaces with this
-                  account. Create a new workspace to get started.
+                  You don&apos;t belong to any workspaces with this account.
+                  Create your first workspace to get started.
                 </p>
                 <Button onClick={handleCreateWorkspace} size='lg'>
-                  <PlusIcon className='mr-2 h-5 w-5' />
-                  Create New Workspace
+                  <Plus className='mr-2 h-5 w-5' />
+                  Create Your First Workspace
                 </Button>
               </CardContent>
             </Card>
@@ -281,31 +330,50 @@ export default function WorkspacesPage() {
         {/* Pending Invites Tab */}
         <TabsContent value='invites' className='mt-6'>
           {isLoadingInvites ? (
-            <div className='space-y-4'>
+            <div
+              className='space-y-4'
+              aria-label='Loading invitations'
+              aria-busy='true'
+            >
               {[...Array(3)].map((_, i) => (
-                <Card key={i} className='animate-pulse'>
+                <Card key={i}>
                   <CardHeader>
-                    <div className='h-6 bg-muted rounded w-3/4' />
-                    <div className='h-4 bg-muted rounded w-1/2 mt-2' />
+                    <Skeleton className='h-6 w-3/4' />
+                    <Skeleton className='h-4 w-1/2 mt-2' />
                   </CardHeader>
                   <CardContent>
                     <div className='flex gap-2'>
-                      <div className='h-10 bg-muted rounded flex-1' />
-                      <div className='h-10 bg-muted rounded flex-1' />
+                      <Skeleton className='h-10 flex-1' />
+                      <Skeleton className='h-10 flex-1' />
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : invites.length > 0 ? (
-            <div className='space-y-4'>
+            <div
+              className='space-y-4'
+              role='list'
+              aria-label='Pending invitations'
+            >
               {invites.map(invite => (
-                <Card key={invite.id}>
+                <Card key={invite.id} role='listitem'>
                   <CardHeader>
                     <CardTitle>{invite.workspaceName}</CardTitle>
                     <CardDescription>
-                      Invited by {invite.invitedBy} on{' '}
-                      {new Date(invite.createdAt).toLocaleDateString()}
+                      Invited by{' '}
+                      <span className='font-medium text-foreground'>
+                        {invite.invitedBy}
+                      </span>{' '}
+                      on{' '}
+                      {new Date(invite.createdAt).toLocaleDateString(
+                        undefined,
+                        {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        }
+                      )}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -314,6 +382,7 @@ export default function WorkspacesPage() {
                         className='flex-1'
                         onClick={() => handleAcceptInvite(invite.id)}
                         disabled={processingInvite === invite.id}
+                        aria-label={`Accept invitation to ${invite.workspaceName}`}
                       >
                         {processingInvite === invite.id
                           ? 'Accepting...'
@@ -324,6 +393,7 @@ export default function WorkspacesPage() {
                         className='flex-1'
                         onClick={() => handleDeclineInvite(invite.id)}
                         disabled={processingInvite === invite.id}
+                        aria-label={`Decline invitation to ${invite.workspaceName}`}
                       >
                         {processingInvite === invite.id
                           ? 'Declining...'
@@ -336,14 +406,16 @@ export default function WorkspacesPage() {
             </div>
           ) : (
             <Card>
-              <CardContent className='flex flex-col items-center justify-center py-12'>
+              <CardContent className='flex flex-col items-center justify-center py-16'>
                 <div className='rounded-full bg-muted p-4 mb-4'>
-                  <InboxIcon />
+                  <Inbox className='h-6 w-6 text-muted-foreground' />
                 </div>
-                <p className='text-lg font-medium mb-2'>No pending invites</p>
+                <p className='text-lg font-medium mb-2'>
+                  No pending invitations
+                </p>
                 <p className='text-sm text-muted-foreground text-center max-w-md'>
-                  You don&apos;t have any pending workspace invitations at the
-                  moment.
+                  You&apos;re all caught up. Workspace invitations sent to your
+                  email address will appear here.
                 </p>
               </CardContent>
             </Card>
@@ -356,8 +428,8 @@ export default function WorkspacesPage() {
             <CardHeader>
               <CardTitle>Link Another Account</CardTitle>
               <CardDescription>
-                Sign in with another email account to access workspaces
-                associated with that account
+                Connect an additional sign-in method to access workspaces
+                associated with other email addresses, all from one place.
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
@@ -368,6 +440,7 @@ export default function WorkspacesPage() {
                   className='w-full'
                   onClick={() => handleLinkAccount('google')}
                   disabled={linkingAccount}
+                  aria-label='Link a Google account'
                 >
                   <GoogleIcon className='mr-2 h-5 w-5' />
                   {linkingAccount ? 'Connecting...' : 'Link Google Account'}
@@ -379,6 +452,7 @@ export default function WorkspacesPage() {
                   className='w-full'
                   onClick={() => handleLinkAccount('github')}
                   disabled={linkingAccount}
+                  aria-label='Link a GitHub account'
                 >
                   <GitHubIcon className='mr-2 h-5 w-5' />
                   {linkingAccount ? 'Connecting...' : 'Link GitHub Account'}
@@ -388,12 +462,10 @@ export default function WorkspacesPage() {
               <div className='rounded-md bg-muted p-4 text-sm'>
                 <p className='font-medium mb-2'>How it works</p>
                 <ul className='list-disc list-inside space-y-1 text-muted-foreground'>
-                  <li>Sign in with another email account</li>
-                  <li>Your accounts will be linked automatically</li>
-                  <li>
-                    Access workspaces from all linked accounts in one place
-                  </li>
-                  <li>Switch between accounts seamlessly</li>
+                  <li>Sign in with another account to link it</li>
+                  <li>Both accounts are associated automatically</li>
+                  <li>All your workspaces appear together in one view</li>
+                  <li>Switch between linked accounts at any time</li>
                 </ul>
               </div>
             </CardContent>
@@ -401,67 +473,5 @@ export default function WorkspacesPage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
-}
-
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      width='24'
-      height='24'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M5 12h14' />
-      <path d='M12 5v14' />
-    </svg>
-  );
-}
-
-function WorkspaceIcon() {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      width='24'
-      height='24'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className='text-muted-foreground'
-    >
-      <rect width='7' height='9' x='3' y='3' rx='1' />
-      <rect width='7' height='5' x='14' y='3' rx='1' />
-      <rect width='7' height='9' x='14' y='12' rx='1' />
-      <rect width='7' height='5' x='3' y='16' rx='1' />
-    </svg>
-  );
-}
-
-function InboxIcon() {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      width='24'
-      height='24'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className='text-muted-foreground'
-    >
-      <polyline points='22 12 16 12 14 15 10 15 8 12 2 12' />
-      <path d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z' />
-    </svg>
   );
 }

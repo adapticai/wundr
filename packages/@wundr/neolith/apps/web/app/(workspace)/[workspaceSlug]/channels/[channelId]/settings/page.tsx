@@ -3,10 +3,27 @@
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
+import {
+  ChevronLeft,
+  Hash,
+  Lock,
+  UserPlus,
+  MoreHorizontal,
+  ShieldCheck,
+  MessageSquare,
+  Pin,
+  UserCog,
+  Users,
+  Pencil,
+} from 'lucide-react';
 
 import { InviteDialog } from '@/components/channel/invite-dialog';
 import { ChannelWorkflowsPanel } from '@/components/channels/channel-workflows-panel';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/use-auth';
 import {
   useChannel,
@@ -155,7 +172,7 @@ export default function ChannelSettingsPage() {
   if (!channel) {
     return (
       <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
-        <p className='text-muted-foreground'>Channel not found</p>
+        <p className='text-muted-foreground'>Channel not found.</p>
       </div>
     );
   }
@@ -164,14 +181,16 @@ export default function ChannelSettingsPage() {
     <div className='flex h-[calc(100vh-4rem)] flex-col'>
       {/* Header */}
       <div className='flex h-14 items-center gap-4 border-b px-6'>
-        <button
+        <Button
           type='button'
+          variant='ghost'
+          size='icon'
           onClick={handleBack}
-          className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground'
-          aria-label='Go back'
+          aria-label='Go back to channel'
+          className='shrink-0'
         >
-          <BackIcon className='h-5 w-5' />
-        </button>
+          <ChevronLeft className='h-5 w-5' />
+        </Button>
         <div>
           <h1 className='font-semibold text-foreground'>Channel Settings</h1>
           <p className='text-xs text-muted-foreground'>#{channel.name}</p>
@@ -232,7 +251,6 @@ export default function ChannelSettingsPage() {
 
           {activeTab === 'permissions' && (
             <PermissionsTab
-              channelId={channelId}
               channelType={channel.type}
               permissions={permissions}
             />
@@ -330,21 +348,17 @@ function OverviewTab({
   const validateForm = (): boolean => {
     const newErrors: { name?: string; description?: string } = {};
 
-    // Validate name
     if (!name.trim()) {
       newErrors.name = 'Channel name is required';
-    } else if (name.length < 1) {
-      newErrors.name = 'Channel name must be at least 1 character';
     } else if (name.length > 80) {
-      newErrors.name = 'Channel name must be less than 80 characters';
+      newErrors.name = 'Channel name must be 80 characters or less';
     } else if (!/^[a-z0-9-_]+$/.test(name)) {
       newErrors.name =
         'Channel name can only contain lowercase letters, numbers, hyphens, and underscores';
     }
 
-    // Validate description
     if (description.length > 250) {
-      newErrors.description = 'Description must be less than 250 characters';
+      newErrors.description = 'Description must be 250 characters or less';
     }
 
     setErrors(newErrors);
@@ -368,7 +382,6 @@ function OverviewTab({
       setHasChanges(false);
       setSaveSuccess(true);
 
-      // Clear success message after 3 seconds
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
       setSaveError(
@@ -384,23 +397,18 @@ function OverviewTab({
           Channel Overview
         </h2>
         <p className='text-sm text-muted-foreground'>
-          Basic information about this channel
+          Update the name and description for this channel.
         </p>
       </div>
 
       <div className='space-y-4'>
-        <div>
-          <label
-            htmlFor='channel-name'
-            className='mb-1 block text-sm font-medium text-foreground'
-          >
-            Channel name
-          </label>
+        <div className='space-y-2'>
+          <Label htmlFor='channel-name'>Channel name</Label>
           <div className='relative'>
-            <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground'>
+            <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground select-none'>
               #
             </span>
-            <input
+            <Input
               id='channel-name'
               type='text'
               value={name}
@@ -408,14 +416,13 @@ function OverviewTab({
                 setName(
                   e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '')
                 );
-                setErrors({ ...errors, name: undefined });
+                setErrors(prev => ({ ...prev, name: undefined }));
               }}
               disabled={!canEdit || isLoading}
               className={cn(
-                'w-full rounded-md border bg-background py-2 pl-7 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50',
-                errors.name
-                  ? 'border-destructive focus:border-destructive focus:ring-destructive'
-                  : 'border-input focus:border-primary focus:ring-primary'
+                'pl-7',
+                errors.name &&
+                  'border-destructive focus-visible:ring-destructive'
               )}
               maxLength={80}
               aria-invalid={!!errors.name}
@@ -423,37 +430,35 @@ function OverviewTab({
             />
           </div>
           {errors.name && (
-            <p id='name-error' className='mt-1 text-xs text-destructive'>
+            <p id='name-error' className='text-xs text-destructive'>
               {errors.name}
             </p>
           )}
-          <p className='mt-1 text-xs text-muted-foreground'>
+          <p className='text-xs text-muted-foreground'>
             {name.length}/80 characters
           </p>
         </div>
 
-        <div>
-          <label
-            htmlFor='channel-description'
-            className='mb-1 block text-sm font-medium text-foreground'
-          >
-            Description
-          </label>
-          <textarea
+        <div className='space-y-2'>
+          <Label htmlFor='channel-description'>
+            Description{' '}
+            <span className='font-normal text-muted-foreground'>
+              (optional)
+            </span>
+          </Label>
+          <Textarea
             id='channel-description'
             value={description}
             onChange={e => {
               setDescription(e.target.value);
-              setErrors({ ...errors, description: undefined });
+              setErrors(prev => ({ ...prev, description: undefined }));
             }}
             disabled={!canEdit || isLoading}
             placeholder='What is this channel about?'
             rows={3}
             className={cn(
-              'w-full rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50',
-              errors.description
-                ? 'border-destructive focus:border-destructive focus:ring-destructive'
-                : 'border-input focus:border-primary focus:ring-primary'
+              errors.description &&
+                'border-destructive focus-visible:ring-destructive'
             )}
             maxLength={250}
             aria-invalid={!!errors.description}
@@ -462,34 +467,32 @@ function OverviewTab({
             }
           />
           {errors.description && (
-            <p id='description-error' className='mt-1 text-xs text-destructive'>
+            <p id='description-error' className='text-xs text-destructive'>
               {errors.description}
             </p>
           )}
-          <p className='mt-1 text-xs text-muted-foreground'>
+          <p className='text-xs text-muted-foreground'>
             {description.length}/250 characters
           </p>
         </div>
 
-        <div>
-          <label className='mb-1 block text-sm font-medium text-foreground'>
-            Visibility
-          </label>
+        <div className='space-y-2'>
+          <Label>Visibility</Label>
           <div className='flex items-center gap-2 rounded-md border border-input bg-muted/30 px-3 py-2'>
             {channel.type === 'private' ? (
               <>
-                <LockIcon className='h-4 w-4 text-muted-foreground' />
+                <Lock className='h-4 w-4 text-muted-foreground' />
                 <span className='text-sm'>Private channel</span>
               </>
             ) : (
               <>
-                <HashIcon className='h-4 w-4 text-muted-foreground' />
+                <Hash className='h-4 w-4 text-muted-foreground' />
                 <span className='text-sm'>Public channel</span>
               </>
             )}
           </div>
-          <p className='mt-1 text-xs text-muted-foreground'>
-            Channel visibility cannot be changed after creation
+          <p className='text-xs text-muted-foreground'>
+            Channel visibility cannot be changed after creation.
           </p>
         </div>
       </div>
@@ -503,15 +506,16 @@ function OverviewTab({
       {saveSuccess && (
         <div className='rounded-md border border-green-500/50 bg-green-500/10 px-4 py-3'>
           <p className='text-sm text-green-700 dark:text-green-400'>
-            Channel updated successfully!
+            Channel updated successfully.
           </p>
         </div>
       )}
 
       {canEdit && hasChanges && (
         <div className='flex gap-2'>
-          <button
+          <Button
             type='button'
+            variant='outline'
             onClick={() => {
               setName(channel.name);
               setDescription(channel.description || '');
@@ -519,18 +523,16 @@ function OverviewTab({
               setSaveError(null);
             }}
             disabled={isLoading}
-            className='rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50'
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type='button'
             onClick={handleSave}
             disabled={isLoading || Object.keys(errors).length > 0}
-            className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50'
           >
             {isLoading ? 'Saving...' : 'Save Changes'}
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -576,7 +578,7 @@ function MembersTab({
 
     try {
       await onRemove(userId);
-      setSuccess('Member removed successfully');
+      setSuccess('Member removed successfully.');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to remove member');
@@ -592,7 +594,9 @@ function MembersTab({
 
     try {
       await onChangeRole(userId, role);
-      setSuccess(`Member role updated to ${role}`);
+      setSuccess(
+        `Member role updated to ${role === 'admin' ? 'Admin' : 'Member'}.`
+      );
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(
@@ -619,18 +623,14 @@ function MembersTab({
             Members ({members.length})
           </h2>
           <p className='text-sm text-muted-foreground'>
-            Manage who has access to this channel
+            Manage who has access to this channel.
           </p>
         </div>
         {permissions.canInvite && (
-          <button
-            type='button'
-            onClick={onInvite}
-            className='flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90'
-          >
-            <InviteIcon className='h-4 w-4' />
+          <Button type='button' onClick={onInvite} className='gap-2'>
+            <UserPlus className='h-4 w-4' />
             Add People
-          </button>
+          </Button>
         )}
       </div>
 
@@ -652,7 +652,7 @@ function MembersTab({
       {onlineMembers.length > 0 && (
         <div>
           <h3 className='mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
-            Online - {onlineMembers.length}
+            Online &mdash; {onlineMembers.length}
           </h3>
           <div className='space-y-1'>
             {onlineMembers.map(member => (
@@ -674,7 +674,7 @@ function MembersTab({
       {offlineMembers.length > 0 && (
         <div>
           <h3 className='mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
-            Offline - {offlineMembers.length}
+            Offline &mdash; {offlineMembers.length}
           </h3>
           <div className='space-y-1'>
             {offlineMembers.map(member => (
@@ -689,6 +689,16 @@ function MembersTab({
               />
             ))}
           </div>
+        </div>
+      )}
+
+      {members.length === 0 && (
+        <div className='flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center'>
+          <Users className='mb-3 h-8 w-8 text-muted-foreground' />
+          <p className='text-sm font-medium text-foreground'>No members yet</p>
+          <p className='mt-1 text-xs text-muted-foreground'>
+            Invite people to start collaborating in this channel.
+          </p>
         </div>
       )}
     </div>
@@ -723,7 +733,7 @@ function MemberRow({
 
   return (
     <div className='relative flex items-center gap-3 rounded-md px-3 py-2 hover:bg-accent/50'>
-      <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium overflow-hidden'>
+      <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium overflow-hidden shrink-0'>
         {member.user.image ? (
           <Image
             src={member.user.image}
@@ -757,14 +767,17 @@ function MemberRow({
 
       {canManage && (
         <div className='relative'>
-          <button
+          <Button
             type='button'
+            variant='ghost'
+            size='icon'
             onClick={() => setShowMenu(!showMenu)}
             disabled={isProcessing}
-            className='rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-50'
+            className='h-8 w-8 text-muted-foreground'
+            aria-label='Member options'
           >
-            <MoreIcon className='h-4 w-4' />
-          </button>
+            <MoreHorizontal className='h-4 w-4' />
+          </Button>
 
           {showMenu && (
             <>
@@ -786,6 +799,7 @@ function MemberRow({
                     disabled={isProcessing}
                     className='flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent disabled:opacity-50'
                   >
+                    <Pencil className='h-3.5 w-3.5' />
                     {member.role === 'admin' ? 'Remove admin' : 'Make admin'}
                   </button>
                 )}
@@ -813,11 +827,54 @@ function MemberRow({
 
 // Permissions Tab
 interface PermissionsTabProps {
-  channelId: string;
   channelType: string;
   permissions: {
+    canPost: boolean;
+    canInvite: boolean;
     canEdit: boolean;
+    canPin: boolean;
+    canDeleteMessages: boolean;
+    canChangeRoles: boolean;
+    canRemoveMembers: boolean;
+    isAdmin: boolean;
+    isOwner: boolean;
+    role: string | null;
   };
+}
+
+interface PermissionRowProps {
+  icon: React.ReactNode;
+  label: string;
+  allowed: boolean;
+  allowedLabel?: string;
+  deniedLabel?: string;
+}
+
+function PermissionRow({
+  icon,
+  label,
+  allowed,
+  allowedLabel = 'Allowed',
+  deniedLabel = 'Not allowed',
+}: PermissionRowProps) {
+  return (
+    <div className='flex items-center justify-between py-2'>
+      <div className='flex items-center gap-2'>
+        <span className='text-muted-foreground'>{icon}</span>
+        <span className='text-sm font-medium text-foreground'>{label}</span>
+      </div>
+      <span
+        className={cn(
+          'text-xs font-medium px-2 py-0.5 rounded-full',
+          allowed
+            ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+            : 'bg-muted text-muted-foreground'
+        )}
+      >
+        {allowed ? allowedLabel : deniedLabel}
+      </span>
+    </div>
+  );
 }
 
 function PermissionsTab({ channelType, permissions }: PermissionsTabProps) {
@@ -830,72 +887,68 @@ function PermissionsTab({ channelType, permissions }: PermissionsTabProps) {
         </p>
       </div>
 
-      <div className='space-y-4'>
-        <div className='rounded-lg border border-border bg-muted/30 p-4 space-y-3'>
-          <div className='flex items-center justify-between'>
-            <span className='text-sm font-medium text-foreground'>
-              Post messages
-            </span>
-            <span
-              className={cn(
-                'text-xs font-medium px-2 py-0.5 rounded-full',
-                permissions.canEdit
-                  ? 'bg-green-500/10 text-green-700 dark:text-green-400'
-                  : 'bg-muted text-muted-foreground'
-              )}
-            >
-              {permissions.canEdit ? 'Allowed' : 'View only'}
-            </span>
-          </div>
-          <div className='flex items-center justify-between'>
-            <span className='text-sm font-medium text-foreground'>
-              Invite members
-            </span>
-            <span
-              className={cn(
-                'text-xs font-medium px-2 py-0.5 rounded-full',
-                permissions.canEdit
-                  ? 'bg-green-500/10 text-green-700 dark:text-green-400'
-                  : 'bg-muted text-muted-foreground'
-              )}
-            >
-              {permissions.canEdit ? 'Allowed' : 'Not allowed'}
-            </span>
-          </div>
-          <div className='flex items-center justify-between'>
-            <span className='text-sm font-medium text-foreground'>
-              Edit channel settings
-            </span>
-            <span
-              className={cn(
-                'text-xs font-medium px-2 py-0.5 rounded-full',
-                permissions.canEdit
-                  ? 'bg-green-500/10 text-green-700 dark:text-green-400'
-                  : 'bg-muted text-muted-foreground'
-              )}
-            >
-              {permissions.canEdit ? 'Allowed' : 'Not allowed'}
-            </span>
-          </div>
+      {/* Role badge */}
+      <div className='flex items-center gap-2'>
+        <ShieldCheck className='h-4 w-4 text-muted-foreground' />
+        <span className='text-sm text-muted-foreground'>Your role:</span>
+        <span className='rounded bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary capitalize'>
+          {permissions.isOwner
+            ? 'Owner'
+            : permissions.isAdmin
+              ? 'Admin'
+              : permissions.role || 'Member'}
+        </span>
+      </div>
+
+      {/* Permission rows */}
+      <div className='rounded-lg border border-border bg-muted/30 px-4 divide-y divide-border'>
+        <PermissionRow
+          icon={<MessageSquare className='h-4 w-4' />}
+          label='Post messages'
+          allowed={permissions.canPost}
+          deniedLabel='View only'
+        />
+        <PermissionRow
+          icon={<UserPlus className='h-4 w-4' />}
+          label='Invite members'
+          allowed={permissions.canInvite}
+        />
+        <PermissionRow
+          icon={<UserCog className='h-4 w-4' />}
+          label='Manage member roles'
+          allowed={permissions.canChangeRoles}
+        />
+        <PermissionRow
+          icon={<Users className='h-4 w-4' />}
+          label='Remove members'
+          allowed={permissions.canRemoveMembers}
+        />
+        <PermissionRow
+          icon={<Pin className='h-4 w-4' />}
+          label='Pin messages'
+          allowed={permissions.canPin}
+        />
+        <PermissionRow
+          icon={<Pencil className='h-4 w-4' />}
+          label='Edit channel settings'
+          allowed={permissions.canEdit}
+        />
+      </div>
+
+      {/* Channel type note */}
+      <div className='rounded-md border border-border bg-muted/30 p-4'>
+        <div className='flex items-start gap-2'>
+          {channelType === 'private' ? (
+            <Lock className='mt-0.5 h-4 w-4 shrink-0 text-muted-foreground' />
+          ) : (
+            <Hash className='mt-0.5 h-4 w-4 shrink-0 text-muted-foreground' />
+          )}
+          <p className='text-sm text-muted-foreground'>
+            {channelType === 'private'
+              ? 'This is a private channel. Only invited members can see and access conversations.'
+              : 'This is a public channel. Anyone in the workspace can join and view messages.'}
+          </p>
         </div>
-
-        {channelType === 'public' && (
-          <div className='rounded-md border border-border bg-muted/30 p-4'>
-            <p className='text-sm text-muted-foreground'>
-              This is a public channel. Anyone in the workspace can join and
-              view messages.
-            </p>
-          </div>
-        )}
-
-        {channelType === 'private' && (
-          <div className='rounded-md border border-border bg-muted/30 p-4'>
-            <p className='text-sm text-muted-foreground'>
-              This is a private channel. Only invited members can see and access
-              conversations.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -929,7 +982,7 @@ function AdvancedTab({
   const [archiving, setArchiving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const canDelete = deleteConfirmText === channel.name;
+  const canConfirmDelete = deleteConfirmText === channel.name;
 
   const handleArchive = async () => {
     setArchiving(true);
@@ -964,7 +1017,7 @@ function AdvancedTab({
           Advanced Settings
         </h2>
         <p className='text-sm text-muted-foreground'>
-          Danger zone - these actions cannot be easily undone
+          These actions are irreversible. Proceed with caution.
         </p>
       </div>
 
@@ -976,169 +1029,96 @@ function AdvancedTab({
 
       {/* Archive section */}
       {permissions.canArchive && !channel.isArchived && (
-        <div className='rounded-lg border border-border p-4'>
-          <h3 className='font-medium text-foreground'>Archive this channel</h3>
-          <p className='mt-1 text-sm text-muted-foreground'>
-            Archiving will hide the channel from the channel list. Members can
-            still access the message history.
-          </p>
-          <button
+        <div className='rounded-lg border border-border p-4 space-y-3'>
+          <div>
+            <h3 className='font-medium text-foreground'>
+              Archive this channel
+            </h3>
+            <p className='mt-1 text-sm text-muted-foreground'>
+              Archiving hides the channel from the sidebar and prevents new
+              messages. Members can still browse the message history.
+            </p>
+          </div>
+          <Button
             type='button'
+            variant='outline'
             onClick={handleArchive}
             disabled={isLoading || archiving}
-            className='mt-4 rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-50'
           >
             {archiving ? 'Archiving...' : 'Archive Channel'}
-          </button>
+          </Button>
         </div>
       )}
 
       {/* Delete section */}
       {permissions.canDelete && (
-        <div className='rounded-lg border border-destructive/50 p-4'>
-          <h3 className='font-medium text-destructive'>Delete this channel</h3>
-          <p className='mt-1 text-sm text-muted-foreground'>
-            This action is irreversible. All messages and files will be
-            permanently deleted.
-          </p>
+        <div className='rounded-lg border border-destructive/50 p-4 space-y-3'>
+          <div>
+            <h3 className='font-medium text-destructive'>
+              Delete this channel
+            </h3>
+            <p className='mt-1 text-sm text-muted-foreground'>
+              Permanently deletes the channel and all of its messages, files,
+              and history. This cannot be undone.
+            </p>
+          </div>
 
           {!showDeleteConfirm ? (
-            <button
+            <Button
               type='button'
+              variant='destructive'
               onClick={() => setShowDeleteConfirm(true)}
               disabled={isLoading}
-              className='mt-4 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50'
             >
               Delete Channel
-            </button>
+            </Button>
           ) : (
-            <div className='mt-4 space-y-3'>
+            <div className='space-y-3'>
               <p className='text-sm text-foreground'>
-                Type <span className='font-medium'>#{channel.name}</span> to
-                confirm deletion:
+                To confirm, type{' '}
+                <span className='font-semibold'>#{channel.name}</span> below:
               </p>
-              <input
+              <Input
                 type='text'
                 value={deleteConfirmText}
                 onChange={e => setDeleteConfirmText(e.target.value)}
                 placeholder={channel.name}
-                className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-destructive focus:outline-none focus:ring-1 focus:ring-destructive'
+                className='border-destructive focus-visible:ring-destructive'
               />
               <div className='flex gap-2'>
-                <button
+                <Button
                   type='button'
+                  variant='outline'
                   onClick={() => {
                     setShowDeleteConfirm(false);
                     setDeleteConfirmText('');
                   }}
                   disabled={isLoading}
-                  className='rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50'
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type='button'
+                  variant='destructive'
                   onClick={handleDelete}
-                  disabled={!canDelete || isLoading || deleting}
-                  className='rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50'
+                  disabled={!canConfirmDelete || isLoading || deleting}
                 >
                   {deleting ? 'Deleting...' : 'Permanently Delete'}
-                </button>
+                </Button>
               </div>
             </div>
           )}
         </div>
       )}
+
+      {!permissions.canArchive && !permissions.canDelete && (
+        <div className='rounded-md border border-border bg-muted/30 p-4'>
+          <p className='text-sm text-muted-foreground'>
+            You do not have permission to perform advanced actions on this
+            channel. Contact a channel admin if you need assistance.
+          </p>
+        </div>
+      )}
     </div>
-  );
-}
-
-// Icons
-function BackIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <path d='m15 18-6-6 6-6' />
-    </svg>
-  );
-}
-
-function HashIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <path d='M4 9h16' />
-      <path d='M4 15h16' />
-      <path d='M10 3 8 21' />
-      <path d='M16 3 14 21' />
-    </svg>
-  );
-}
-
-function LockIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <rect x='3' y='11' width='18' height='11' rx='2' ry='2' />
-      <path d='M7 11V7a5 5 0 0 1 10 0v4' />
-    </svg>
-  );
-}
-
-function InviteIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
-      <circle cx='9' cy='7' r='4' />
-      <line x1='19' x2='19' y1='8' y2='14' />
-      <line x1='22' x2='16' y1='11' y2='11' />
-    </svg>
-  );
-}
-
-function MoreIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <circle cx='12' cy='12' r='1' />
-      <circle cx='19' cy='12' r='1' />
-      <circle cx='5' cy='12' r='1' />
-    </svg>
   );
 }

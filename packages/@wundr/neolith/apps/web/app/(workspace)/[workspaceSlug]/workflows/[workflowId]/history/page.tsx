@@ -2,13 +2,14 @@
 
 import { ArrowLeft, Download } from 'lucide-react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useCallback, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useEffect, useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { ExecutionHistory } from '@/components/workflow/execution-history';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useWorkflow, useWorkflowExecutions } from '@/hooks/use-workflows';
+import { cn } from '@/lib/utils';
 
 import type { WorkflowExecution } from '@/types/workflow';
 
@@ -18,7 +19,6 @@ import type { WorkflowExecution } from '@/types/workflow';
 
 export default function WorkflowHistoryPage() {
   const params = useParams();
-  const router = useRouter();
   const workspaceId = (params?.workspaceSlug ?? '') as string;
   const workflowId = (params?.workflowId ?? '') as string;
   const { setPageHeader } = usePageHeader();
@@ -40,10 +40,7 @@ export default function WorkflowHistoryPage() {
   // Set page header
   useEffect(() => {
     if (workflow) {
-      setPageHeader(
-        `${workflow.name} - Execution History`,
-        'View detailed logs and execution history for this workflow'
-      );
+      setPageHeader(workflow.name, 'Execution history and run logs');
     }
   }, [workflow, setPageHeader]);
 
@@ -230,17 +227,16 @@ function StatsCard({ label, value, trend, isTime = false }: StatsCardProps) {
     <div className='rounded-lg border bg-card p-6'>
       <p className='text-sm text-muted-foreground'>{label}</p>
       <div className='mt-2 flex items-baseline gap-2'>
-        <p className='text-3xl font-bold'>{displayValue}</p>
-        {trend === 'positive' && (
-          <span className='text-sm font-medium text-green-600 dark:text-green-400'>
-            Good
-          </span>
-        )}
-        {trend === 'negative' && value !== 0 && (
-          <span className='text-sm font-medium text-red-600 dark:text-red-400'>
-            Attention
-          </span>
-        )}
+        <p
+          className={cn(
+            'text-3xl font-bold',
+            trend === 'negative' && value !== 0
+              ? 'text-red-600 dark:text-red-400'
+              : ''
+          )}
+        >
+          {displayValue}
+        </p>
       </div>
     </div>
   );

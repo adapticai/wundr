@@ -3,6 +3,8 @@
 import { clsx } from 'clsx';
 import { useCallback, useEffect, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
+
 import { BarChart } from './bar-chart';
 import { DateRangePicker } from './date-range-picker';
 import { Leaderboard } from './leaderboard';
@@ -267,12 +269,9 @@ export function AnalyticsDashboard({
             Failed to load analytics
           </p>
           <p className='text-muted-foreground mb-4'>{error}</p>
-          <button
-            onClick={fetchData}
-            className='px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors'
-          >
+          <Button onClick={fetchData} size='sm'>
             Retry
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -304,23 +303,18 @@ export function AnalyticsDashboard({
           {/* Granularity selector */}
           <div className='flex gap-2'>
             {(['daily', 'weekly', 'monthly'] as Granularity[]).map(g => (
-              <button
+              <Button
                 key={g}
+                variant={granularity === g ? 'default' : 'outline'}
+                size='sm'
                 onClick={() => {
                   setGranularity(g);
                   setDateRange({});
                 }}
                 disabled={isLoading}
-                className={clsx(
-                  'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                  granularity === g
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80',
-                  'disabled:opacity-50 disabled:cursor-not-allowed'
-                )}
               >
                 {g.charAt(0).toUpperCase() + g.slice(1)}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -335,19 +329,17 @@ export function AnalyticsDashboard({
 
           {/* Export dropdown */}
           <div className='relative export-menu-container'>
-            <button
+            <Button
+              variant='default'
+              size='sm'
               onClick={() => setShowExportMenu(!showExportMenu)}
               disabled={!hasData || isLoading}
-              className={clsx(
-                'px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
-                'bg-primary text-primary-foreground hover:bg-primary/90',
-                'disabled:opacity-50 disabled:cursor-not-allowed'
-              )}
+              className='gap-2'
             >
               <DownloadIcon />
               Export
               <ChevronDownIcon />
-            </button>
+            </Button>
             {showExportMenu && hasData && !isLoading && (
               <div className='absolute right-0 top-full mt-2 w-40 bg-card border border-border rounded-lg shadow-lg z-50'>
                 <button
@@ -375,20 +367,17 @@ export function AnalyticsDashboard({
           </div>
 
           {/* Refresh button */}
-          <button
+          <Button
+            variant='outline'
+            size='sm'
             onClick={fetchData}
             disabled={isLoading}
-            className={clsx(
-              'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
-              'bg-muted text-muted-foreground hover:bg-muted/80',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
-            )}
             title='Refresh data'
           >
             <RefreshIcon
               className={clsx('w-4 h-4', isLoading && 'animate-spin')}
             />
-          </button>
+          </Button>
         </div>
       </div>
 

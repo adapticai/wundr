@@ -145,19 +145,18 @@ export default function AdminMembersPage() {
       {/* Header with member count and action */}
       <div className='flex items-center justify-between'>
         <p className='text-sm text-muted-foreground'>
-          {total} member{total !== 1 ? 's' : ''} in this workspace
-        </p>
-        <button
-          type='button'
-          onClick={() => setShowInviteModal(true)}
-          className={cn(
-            'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2',
-            'text-sm font-medium text-primary-foreground hover:bg-primary/90'
+          {isLoading ? (
+            <span className='inline-block h-4 w-32 animate-pulse rounded bg-muted' />
+          ) : (
+            <>
+              {total} member{total !== 1 ? 's' : ''} in this workspace
+            </>
           )}
-        >
-          <UserPlusIcon className='h-4 w-4' />
+        </p>
+        <Button onClick={() => setShowInviteModal(true)}>
+          <UserPlusIcon className='mr-2 h-4 w-4' />
           Invite Members
-        </button>
+        </Button>
       </div>
 
       {/* Filters */}
@@ -248,11 +247,30 @@ export default function AdminMembersPage() {
                 <MemberRowSkeleton count={5} />
               ) : filteredMembers.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className='px-4 py-8 text-center text-muted-foreground'
-                  >
-                    No members found
+                  <td colSpan={5} className='px-4 py-12 text-center'>
+                    <div className='flex flex-col items-center gap-2'>
+                      <div className='flex h-12 w-12 items-center justify-center rounded-full bg-muted'>
+                        <SearchIcon className='h-6 w-6 text-muted-foreground' />
+                      </div>
+                      <p className='text-sm font-medium text-foreground'>
+                        {searchQuery
+                          ? 'No members match your search'
+                          : 'No members yet'}
+                      </p>
+                      {searchQuery ? (
+                        <p className='text-xs text-muted-foreground'>
+                          Try adjusting your search or filter
+                        </p>
+                      ) : (
+                        <button
+                          type='button'
+                          onClick={() => setShowInviteModal(true)}
+                          className='mt-1 text-sm text-primary hover:underline'
+                        >
+                          Invite your first member
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -273,14 +291,15 @@ export default function AdminMembersPage() {
         {/* Load More */}
         {hasMore && (
           <div className='border-t px-4 py-3 text-center'>
-            <button
+            <Button
               type='button'
+              variant='ghost'
+              size='sm'
               onClick={loadMore}
               disabled={isLoading}
-              className='text-sm text-primary hover:underline disabled:opacity-50'
             >
               {isLoading ? 'Loading...' : 'Load more members'}
-            </button>
+            </Button>
           </div>
         )}
       </div>

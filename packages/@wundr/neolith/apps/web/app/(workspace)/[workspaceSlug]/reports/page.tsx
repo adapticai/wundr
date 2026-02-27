@@ -11,7 +11,6 @@ import {
   Download,
   Plus,
   Search,
-  Filter,
   FileText,
   BarChart3,
   TrendingUp,
@@ -58,6 +57,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 // Types
 interface Report {
@@ -138,6 +138,8 @@ export default function ReportsPage() {
   const router = useRouter();
   const workspaceSlug = params.workspaceSlug as string;
 
+  const { toast } = useToast();
+
   // State
   const [reports, setReports] = useState<Report[]>(mockReports);
   const [searchQuery, setSearchQuery] = useState('');
@@ -197,11 +199,33 @@ export default function ReportsPage() {
   };
 
   const handleScheduleReport = (reportId: string) => {
-    router.push(`/${workspaceSlug}/reports/${reportId}/schedule`);
+    router.push(`/${workspaceSlug}/reports/builder?reportId=${reportId}`);
   };
 
-  const handleExportReport = (reportId: string) => {
-    router.push(`/${workspaceSlug}/reports/${reportId}/export`);
+  const handleExportReport = async (reportId: string) => {
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/reports/${reportId}/export`
+      );
+      if (!response.ok) throw new Error('Export failed');
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `report-${reportId}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      toast({
+        title: 'Export started',
+        description: 'Your report is downloading.',
+      });
+    } catch {
+      toast({
+        title: 'Export failed',
+        description: 'Unable to export this report. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleCreateFromTemplate = (templateId: string) => {

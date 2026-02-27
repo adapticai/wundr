@@ -198,28 +198,18 @@ export default function AdminChannelsPage() {
           {total} channel{total !== 1 ? 's' : ''} in this workspace
         </p>
         <div className='flex gap-2'>
-          <button
+          <Button
             type='button'
+            variant='outline'
             onClick={() => setShowDefaultsModal(true)}
-            className={cn(
-              'inline-flex items-center gap-2 rounded-md border border-input px-4 py-2',
-              'text-sm font-medium hover:bg-accent hover:text-accent-foreground'
-            )}
           >
             <SettingsIcon className='h-4 w-4' />
             Default Settings
-          </button>
-          <button
-            type='button'
-            onClick={() => setShowCreateModal(true)}
-            className={cn(
-              'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2',
-              'text-sm font-medium text-primary-foreground hover:bg-primary/90'
-            )}
-          >
+          </Button>
+          <Button type='button' onClick={() => setShowCreateModal(true)}>
             <PlusIcon className='h-4 w-4' />
             Create Channel
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -268,16 +258,12 @@ export default function AdminChannelsPage() {
         {/* Search */}
         <div className='relative'>
           <SearchIcon className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
-          <input
+          <Input
             type='text'
-            placeholder='Search channels...'
+            placeholder='Search channels by name or description...'
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className={cn(
-              'w-full rounded-md border border-input bg-background py-2 pl-9 pr-4',
-              'text-sm placeholder:text-muted-foreground',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
+            className='pl-9'
           />
         </div>
 
@@ -285,39 +271,44 @@ export default function AdminChannelsPage() {
         {selectedChannels.size > 0 && (
           <div className='flex items-center gap-2 rounded-lg border bg-muted/50 px-4 py-3'>
             <span className='text-sm font-medium'>
-              {selectedChannels.size} selected
+              {selectedChannels.size} channel
+              {selectedChannels.size !== 1 ? 's' : ''} selected
             </span>
             <div className='ml-auto flex gap-2'>
-              <button
+              <Button
                 type='button'
+                variant='ghost'
+                size='sm'
                 onClick={() => {
                   setBulkOperation('archive');
                   setShowBulkDialog(true);
                 }}
-                className='rounded-md px-3 py-1.5 text-sm hover:bg-accent'
               >
                 Archive
-              </button>
-              <button
+              </Button>
+              <Button
                 type='button'
+                variant='ghost'
+                size='sm'
                 onClick={() => {
                   setBulkOperation('change_visibility');
                   setShowBulkDialog(true);
                 }}
-                className='rounded-md px-3 py-1.5 text-sm hover:bg-accent'
               >
                 Change Visibility
-              </button>
-              <button
+              </Button>
+              <Button
                 type='button'
+                variant='ghost'
+                size='sm'
+                className='text-destructive hover:bg-destructive/10 hover:text-destructive'
                 onClick={() => {
                   setBulkOperation('delete');
                   setShowBulkDialog(true);
                 }}
-                className='rounded-md px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20'
               >
                 Delete
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -331,8 +322,12 @@ export default function AdminChannelsPage() {
               <tr className='border-b bg-muted/50'>
                 <th className='px-4 py-3 text-left'>
                   <Checkbox
-                    checked={selectedChannels.size === filteredChannels.length}
+                    checked={
+                      filteredChannels.length > 0 &&
+                      selectedChannels.size === filteredChannels.length
+                    }
                     onCheckedChange={toggleSelectAll}
+                    aria-label='Select all channels'
                   />
                 </th>
                 <th className='px-4 py-3 text-left text-sm font-medium text-muted-foreground'>
@@ -360,11 +355,19 @@ export default function AdminChannelsPage() {
                 <ChannelRowSkeleton count={5} />
               ) : filteredChannels.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={7}
-                    className='px-4 py-8 text-center text-muted-foreground'
-                  >
-                    No channels found
+                  <td colSpan={7} className='px-4 py-12 text-center'>
+                    <div className='flex flex-col items-center gap-2'>
+                      <p className='text-sm font-medium text-foreground'>
+                        {searchQuery
+                          ? 'No channels match your search'
+                          : 'No channels found'}
+                      </p>
+                      <p className='text-xs text-muted-foreground'>
+                        {searchQuery
+                          ? 'Try adjusting your search or filters'
+                          : 'Create a channel to get started'}
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -475,8 +478,6 @@ function ChannelRow({
   onEdit,
   onDelete,
 }: ChannelRowProps) {
-  const [showMenu, setShowMenu] = useState(false);
-
   return (
     <tr
       className={cn(
@@ -528,47 +529,26 @@ function ChannelRow({
         {new Date(channel.createdAt).toLocaleDateString()}
       </td>
       <td className='px-4 py-3'>
-        <div className='relative flex justify-end'>
-          <button
+        <div className='flex items-center justify-end gap-1'>
+          <Button
             type='button'
-            onClick={() => setShowMenu(!showMenu)}
-            className='rounded-md p-1 hover:bg-muted'
+            variant='ghost'
+            size='sm'
+            onClick={onEdit}
+            title='Edit channel'
           >
-            <MoreIcon className='h-5 w-5 text-muted-foreground' />
-          </button>
-
-          {showMenu && (
-            <>
-              <div
-                className='fixed inset-0 z-10'
-                onClick={() => setShowMenu(false)}
-              />
-              <div className='absolute right-0 top-8 z-20 w-40 rounded-md border bg-card py-1 shadow-lg'>
-                <button
-                  type='button'
-                  onClick={() => {
-                    setShowMenu(false);
-                    onEdit();
-                  }}
-                  className='flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted'
-                >
-                  <EditIcon className='h-4 w-4' />
-                  Edit
-                </button>
-                <button
-                  type='button'
-                  onClick={() => {
-                    setShowMenu(false);
-                    onDelete();
-                  }}
-                  className='flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-muted'
-                >
-                  <TrashIcon className='h-4 w-4' />
-                  Delete
-                </button>
-              </div>
-            </>
-          )}
+            <EditIcon className='h-4 w-4' />
+          </Button>
+          <Button
+            type='button'
+            variant='ghost'
+            size='sm'
+            className='text-destructive hover:bg-destructive/10 hover:text-destructive'
+            onClick={onDelete}
+            title='Delete channel'
+          >
+            <TrashIcon className='h-4 w-4' />
+          </Button>
         </div>
       </td>
     </tr>
@@ -1153,25 +1133,6 @@ function SearchIcon({ className }: { className?: string }) {
     >
       <circle cx='11' cy='11' r='8' />
       <path d='m21 21-4.3-4.3' />
-    </svg>
-  );
-}
-
-function MoreIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='12' cy='12' r='1' />
-      <circle cx='12' cy='5' r='1' />
-      <circle cx='12' cy='19' r='1' />
     </svg>
   );
 }

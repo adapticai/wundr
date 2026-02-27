@@ -118,7 +118,7 @@ export default function HealthDashboardPage() {
     })),
     tokens: chartData.map(d => ({
       timestamp: d.time,
-      value: d.requests * 100,
+      value: d.requests,
     })),
     latency: {
       p50: chartData.map(d => ({

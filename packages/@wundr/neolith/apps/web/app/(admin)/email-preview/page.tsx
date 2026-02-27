@@ -15,10 +15,27 @@
  * @module app/(admin)/email-preview/page
  */
 
+import { CheckCircle, RefreshCw, Send, XCircle } from 'lucide-react';
 import { useState } from 'react';
 
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type EmailTemplate =
   | 'welcome'
@@ -31,6 +48,15 @@ type EmailTemplate =
 interface TemplateProps {
   [key: string]: string;
 }
+
+const TEMPLATE_LABELS: Record<EmailTemplate, string> = {
+  welcome: 'Welcome Email',
+  'password-reset': 'Password Reset',
+  verification: 'Email Verification',
+  invitation: 'Workspace Invitation',
+  notification: 'Notification',
+  'password-changed': 'Password Changed',
+};
 
 export default function EmailPreviewPage() {
   const [selectedTemplate, setSelectedTemplate] =
@@ -77,13 +103,13 @@ export default function EmailPreviewPage() {
       { name: 'email', label: 'Email' },
       {
         name: 'type',
-        label: 'Type',
+        label: 'Notification Type',
         type: 'select',
         options: ['mention', 'message', 'channel', 'task', 'system'],
       },
       { name: 'title', label: 'Title' },
       { name: 'message', label: 'Message' },
-      { name: 'actionText', label: 'Action Text (optional)' },
+      { name: 'actionText', label: 'Action Button Text (optional)' },
       { name: 'actionUrl', label: 'Action URL (optional)' },
     ],
     'password-changed': [
@@ -165,18 +191,21 @@ export default function EmailPreviewPage() {
       if (response.ok && data.success) {
         setSendResult({
           success: true,
-          message: `Email sent successfully to ${previewProps.email}`,
+          message: `Test email sent to ${previewProps.email}.`,
         });
       } else {
         setSendResult({
           success: false,
-          message: data.error || 'Failed to send email',
+          message: data.error || 'Failed to send email. Please try again.',
         });
       }
     } catch (error) {
       setSendResult({
         success: false,
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred.',
       });
     } finally {
       setSendingEmail(false);
@@ -197,7 +226,8 @@ export default function EmailPreviewPage() {
       <div className='mb-8'>
         <h1 className='text-3xl font-bold mb-2'>Email Template Preview</h1>
         <p className='text-muted-foreground'>
-          Preview and test email templates. Only available in development mode.
+          Preview and test email templates. This tool is only available in
+          development mode.
         </p>
       </div>
 
@@ -205,113 +235,158 @@ export default function EmailPreviewPage() {
         {/* Left Panel: Controls */}
         <div className='lg:col-span-1 space-y-6'>
           {/* Template Selection */}
-          <Card className='p-4'>
-            <h2 className='text-lg font-semibold mb-4'>Select Template</h2>
-            <select
-              value={selectedTemplate}
-              onChange={e =>
-                handleTemplateChange(e.target.value as EmailTemplate)
-              }
-              className='w-full p-2 border rounded-md bg-background'
-            >
-              <option value='welcome'>Welcome Email</option>
-              <option value='password-reset'>Password Reset</option>
-              <option value='verification'>Email Verification</option>
-              <option value='invitation'>Workspace Invitation</option>
-              <option value='notification'>Notification</option>
-              <option value='password-changed'>Password Changed</option>
-            </select>
+          <Card>
+            <CardHeader>
+              <CardTitle className='text-base'>Template</CardTitle>
+              <CardDescription>
+                Select an email template to preview
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='space-y-2'>
+                <Label htmlFor='template-select'>Email template</Label>
+                <Select
+                  value={selectedTemplate}
+                  onValueChange={value =>
+                    handleTemplateChange(value as EmailTemplate)
+                  }
+                >
+                  <SelectTrigger id='template-select'>
+                    <SelectValue placeholder='Select a template' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(TEMPLATE_LABELS) as EmailTemplate[]).map(
+                      key => (
+                        <SelectItem key={key} value={key}>
+                          {TEMPLATE_LABELS[key]}
+                        </SelectItem>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
           </Card>
 
           {/* Template Properties */}
-          <Card className='p-4'>
-            <h2 className='text-lg font-semibold mb-4'>Template Properties</h2>
-            <div className='space-y-4'>
-              {templateFields[selectedTemplate].map(field => (
-                <div key={field.name}>
-                  <label className='block text-sm font-medium mb-1'>
-                    {field.label}
-                  </label>
-                  {field.type === 'select' ? (
-                    <select
-                      value={previewProps[field.name] || ''}
-                      onChange={e =>
-                        handlePropChange(field.name, e.target.value)
-                      }
-                      className='w-full p-2 border rounded-md bg-background text-sm'
-                    >
-                      {field.options?.map(option => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type='text'
-                      value={previewProps[field.name] || ''}
-                      onChange={e =>
-                        handlePropChange(field.name, e.target.value)
-                      }
-                      placeholder={field.label}
-                      className='w-full p-2 border rounded-md bg-background text-sm'
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className='text-base'>Template Properties</CardTitle>
+              <CardDescription>
+                Fill in the values used to render this template
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='space-y-4'>
+                {templateFields[selectedTemplate].map(field => {
+                  const fieldId = `field-${field.name}`;
+                  return (
+                    <div key={field.name} className='space-y-1.5'>
+                      <Label htmlFor={fieldId}>{field.label}</Label>
+                      {field.type === 'select' ? (
+                        <Select
+                          value={previewProps[field.name] || ''}
+                          onValueChange={value =>
+                            handlePropChange(field.name, value)
+                          }
+                        >
+                          <SelectTrigger id={fieldId}>
+                            <SelectValue
+                              placeholder={`Select ${field.label.toLowerCase()}`}
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options?.map(option => (
+                              <SelectItem key={option} value={option}>
+                                {option.charAt(0).toUpperCase() +
+                                  option.slice(1)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          id={fieldId}
+                          type='text'
+                          value={previewProps[field.name] || ''}
+                          onChange={e =>
+                            handlePropChange(field.name, e.target.value)
+                          }
+                          placeholder={field.label}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
           </Card>
 
           {/* Actions */}
-          <Card className='p-4'>
-            <h2 className='text-lg font-semibold mb-4'>Actions</h2>
-            <div className='space-y-3'>
+          <Card>
+            <CardHeader>
+              <CardTitle className='text-base'>Actions</CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-3'>
               <Button
                 onClick={handleRefreshPreview}
                 className='w-full'
                 variant='outline'
               >
+                <RefreshCw className='mr-2 h-4 w-4' />
                 Refresh Preview
               </Button>
               <Button
                 onClick={handleSendTestEmail}
-                disabled={sendingEmail}
+                disabled={sendingEmail || !previewProps.email}
                 className='w-full'
               >
+                <Send className='mr-2 h-4 w-4' />
                 {sendingEmail ? 'Sending...' : 'Send Test Email'}
               </Button>
-            </div>
 
-            {sendResult && (
-              <div
-                className={`mt-4 p-3 rounded-md text-sm ${
-                  sendResult.success
-                    ? 'bg-green-50 text-green-800 border border-green-200'
-                    : 'bg-red-50 text-red-800 border border-red-200'
-                }`}
-              >
-                {sendResult.message}
-              </div>
-            )}
+              {sendResult && (
+                <Alert variant={sendResult.success ? 'default' : 'destructive'}>
+                  {sendResult.success ? (
+                    <CheckCircle className='h-4 w-4' />
+                  ) : (
+                    <XCircle className='h-4 w-4' />
+                  )}
+                  <AlertTitle>
+                    {sendResult.success ? 'Email sent' : 'Send failed'}
+                  </AlertTitle>
+                  <AlertDescription>{sendResult.message}</AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
           </Card>
         </div>
 
         {/* Right Panel: Preview */}
         <div className='lg:col-span-2'>
-          <Card className='p-4 h-full'>
-            <h2 className='text-lg font-semibold mb-4'>Email Preview</h2>
-            <div
-              className='border rounded-lg overflow-hidden bg-gray-50'
-              style={{ height: 'calc(100vh - 250px)' }}
-            >
-              <iframe
-                key={previewKey}
-                src={buildPreviewUrl()}
-                className='w-full h-full'
-                title='Email Preview'
-                sandbox='allow-same-origin'
-              />
-            </div>
+          <Card className='h-full'>
+            <CardHeader>
+              <CardTitle className='text-base'>
+                Preview — {TEMPLATE_LABELS[selectedTemplate]}
+              </CardTitle>
+              <CardDescription>
+                Rendered output of the selected template
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div
+                className='border rounded-lg overflow-hidden bg-muted/30'
+                style={{ height: 'calc(100vh - 280px)' }}
+              >
+                <iframe
+                  key={previewKey}
+                  src={buildPreviewUrl()}
+                  className='w-full h-full'
+                  title={`Email preview: ${TEMPLATE_LABELS[selectedTemplate]}`}
+                  sandbox='allow-same-origin'
+                />
+              </div>
+            </CardContent>
           </Card>
         </div>
       </div>

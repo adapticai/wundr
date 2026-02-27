@@ -48,6 +48,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -104,6 +105,14 @@ export default function ExportImportPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const { toast } = useToast();
+  const { setPageHeader } = usePageHeader();
+
+  useEffect(() => {
+    setPageHeader(
+      'Export & Import',
+      'Export workspace data, import from other platforms, and manage automated backups'
+    );
+  }, [setPageHeader]);
 
   // Export state
   const [exportType, setExportType] = useState('all');
@@ -453,13 +462,6 @@ export default function ExportImportPage() {
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-bold'>Export & Import</h1>
-        <p className='mt-1 text-muted-foreground'>
-          Export workspace data, import from other platforms, and manage backups
-        </p>
-      </div>
-
       <Tabs defaultValue='export' className='space-y-6'>
         <TabsList>
           <TabsTrigger value='export'>

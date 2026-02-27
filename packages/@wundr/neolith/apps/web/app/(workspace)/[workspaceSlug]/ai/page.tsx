@@ -11,7 +11,10 @@ export default function AIPage() {
   const { setPageHeader } = usePageHeader();
 
   useEffect(() => {
-    setPageHeader('AI Assistant', 'Chat with your workspace AI');
+    setPageHeader(
+      'AI Assistant',
+      'Ask about your portfolio, funds, or workflows'
+    );
   }, [setPageHeader]);
 
   return (

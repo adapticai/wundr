@@ -31,10 +31,9 @@ import {
   RotateCcw,
   ChevronRight,
   Sidebar,
-  Users,
-  Search,
   Zap,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -153,29 +152,11 @@ const DEFAULT_SECTIONS: SidebarSection[] = [
   },
 ];
 
-const SAMPLE_FAVORITES: FavoriteItem[] = [
-  {
-    id: '1',
-    name: 'general',
-    type: 'channel',
-    icon: <Hash className='h-3 w-3' />,
-  },
-  {
-    id: '2',
-    name: 'random',
-    type: 'channel',
-    icon: <Hash className='h-3 w-3' />,
-  },
-  {
-    id: '3',
-    name: 'Alice Johnson',
-    type: 'dm',
-    icon: <MessageSquare className='h-3 w-3' />,
-  },
-];
+const DEFAULT_FAVORITES: FavoriteItem[] = [];
 
 export function SidebarSettings() {
   const { toast } = useToast();
+  const router = useRouter();
   const [mounted, setMounted] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
 
@@ -188,7 +169,7 @@ export function SidebarSettings() {
     showOfflineUsers: true,
     showStarredSection: true,
     starredPosition: 'top',
-    favoriteItems: SAMPLE_FAVORITES,
+    favoriteItems: DEFAULT_FAVORITES,
     showFavoritesSection: false,
     sidebarWidth: 256,
     showUnreadBadges: true,
@@ -292,7 +273,7 @@ export function SidebarSettings() {
       showOfflineUsers: true,
       showStarredSection: true,
       starredPosition: 'top',
-      favoriteItems: SAMPLE_FAVORITES,
+      favoriteItems: DEFAULT_FAVORITES,
       showFavoritesSection: false,
       sidebarWidth: 256,
       showUnreadBadges: true,
@@ -410,27 +391,36 @@ export function SidebarSettings() {
                     <Separator />
                     <div className='space-y-2'>
                       <Label>Current Favorites</Label>
-                      <div className='rounded-lg border divide-y'>
-                        {preferences.favoriteItems.map(item => (
-                          <div
-                            key={item.id}
-                            className='flex items-center gap-3 p-3 hover:bg-accent/50'
-                          >
-                            <div className='flex items-center justify-center h-8 w-8 rounded bg-muted'>
-                              {item.icon}
+                      {preferences.favoriteItems.length === 0 ? (
+                        <div className='rounded-lg border border-dashed px-4 py-6 text-center'>
+                          <p className='text-sm text-muted-foreground'>
+                            No favorites yet
+                          </p>
+                          <p className='mt-1 text-xs text-muted-foreground'>
+                            Star channels or conversations in the sidebar to pin
+                            them here
+                          </p>
+                        </div>
+                      ) : (
+                        <div className='rounded-lg border divide-y'>
+                          {preferences.favoriteItems.map(item => (
+                            <div
+                              key={item.id}
+                              className='flex items-center gap-3 p-3 hover:bg-accent/50'
+                            >
+                              <div className='flex items-center justify-center h-8 w-8 rounded bg-muted'>
+                                {item.icon}
+                              </div>
+                              <span className='flex-1 text-sm font-medium'>
+                                {item.name}
+                              </span>
+                              <span className='text-xs text-muted-foreground capitalize'>
+                                {item.type}
+                              </span>
                             </div>
-                            <span className='flex-1 text-sm font-medium'>
-                              {item.name}
-                            </span>
-                            <span className='text-xs text-muted-foreground capitalize'>
-                              {item.type}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                      <p className='text-xs text-muted-foreground'>
-                        Star items in the sidebar to add them to favorites
-                      </p>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
@@ -882,7 +872,7 @@ export function SidebarSettings() {
 
         {/* Save Button */}
         <div className='flex justify-end gap-3'>
-          <Button variant='outline' onClick={() => window.location.reload()}>
+          <Button variant='outline' onClick={() => router.back()}>
             Cancel
           </Button>
           <Button onClick={handleSavePreferences} disabled={isSaving}>

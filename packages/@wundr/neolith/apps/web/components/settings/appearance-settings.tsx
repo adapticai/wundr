@@ -46,7 +46,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
@@ -288,7 +287,8 @@ export function AppearanceSettings() {
         <div>
           <h2 className='text-2xl font-bold'>Appearance</h2>
           <p className='text-muted-foreground'>
-            Customize how the application looks and feels on your device.
+            Personalize the look and feel of the interface to suit your
+            preferences.
           </p>
         </div>
 
@@ -814,8 +814,8 @@ export function AppearanceSettings() {
                 <div className='space-y-2'>
                   <Label htmlFor='custom-css'>Custom Styles</Label>
                   <p className='text-sm text-muted-foreground mb-2'>
-                    Add custom CSS to personalize your experience (use with
-                    caution)
+                    Inject custom CSS for advanced styling. Changes apply
+                    immediately — use with care.
                   </p>
                   <Textarea
                     id='custom-css'
@@ -859,14 +859,25 @@ export function AppearanceSettings() {
             onClick={() => {
               if (savedPreferences) {
                 setPreferences(savedPreferences);
+                localStorage.setItem(
+                  'appearance-preferences',
+                  JSON.stringify(savedPreferences)
+                );
               }
             }}
-            disabled={isSaving}
+            disabled={isSaving || !savedPreferences}
           >
-            Cancel
+            Discard Changes
           </Button>
           <Button onClick={handleSavePreferences} disabled={isSaving}>
-            {isSaving ? 'Saving...' : 'Save All Changes'}
+            {isSaving ? (
+              <>
+                <RotateCcw className='mr-2 h-4 w-4 animate-spin' />
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
+            )}
           </Button>
         </div>
       </div>

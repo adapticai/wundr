@@ -27,7 +27,7 @@ import {
   Search,
   X,
 } from 'lucide-react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -110,6 +110,7 @@ interface UserActivity {
 
 export default function AdminUsersPage() {
   const params = useParams();
+  const router = useRouter();
   const workspaceSlug = params.workspaceSlug as string;
   const { setPageHeader } = usePageHeader();
 
@@ -144,6 +145,11 @@ export default function AdminUsersPage() {
 
   // Invite modal
   const [showInviteModal, setShowInviteModal] = useState(false);
+
+  // Remove user confirmation
+  const [removeConfirmUserId, setRemoveConfirmUserId] = useState<string | null>(
+    null
+  );
 
   // Change role dialog
   const [changeRoleDialog, setChangeRoleDialog] = useState<{
@@ -570,7 +576,7 @@ export default function AdminUsersPage() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className='text-red-600'
-                onClick={() => handleRemoveUser(user.userId)}
+                onClick={() => setRemoveConfirmUserId(user.userId)}
               >
                 <Trash2 className='mr-2 h-4 w-4' />
                 Remove User
@@ -1066,10 +1072,10 @@ export default function AdminUsersPage() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Invite Users</AlertDialogTitle>
+            <AlertDialogTitle>Invite New Members</AlertDialogTitle>
             <AlertDialogDescription>
-              To invite new members to this workspace, go to the Members page
-              where you can send email invitations and assign roles.
+              Send email invitations and assign roles from the Members page,
+              which gives you full control over the invite flow.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1077,10 +1083,42 @@ export default function AdminUsersPage() {
             <AlertDialogAction
               onClick={() => {
                 setShowInviteModal(false);
-                window.location.href = `/${workspaceSlug}/admin/members?invite=true`;
+                router.push(`/${workspaceSlug}/admin/members?invite=true`);
               }}
             >
               Go to Members
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Remove User Confirmation Dialog */}
+      <AlertDialog
+        open={removeConfirmUserId !== null}
+        onOpenChange={open => !open && setRemoveConfirmUserId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this user from the workspace? They
+              will lose access immediately. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setRemoveConfirmUserId(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className='bg-red-600 hover:bg-red-700'
+              onClick={async () => {
+                if (removeConfirmUserId) {
+                  await handleRemoveUser(removeConfirmUserId);
+                  setRemoveConfirmUserId(null);
+                }
+              }}
+            >
+              Remove
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

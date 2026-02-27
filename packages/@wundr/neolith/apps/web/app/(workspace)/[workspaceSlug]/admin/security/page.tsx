@@ -921,10 +921,7 @@ export default function AdminSecurityPage() {
               )}
 
               <div className='flex justify-end'>
-                <Button
-                  onClick={saveSSOSettings}
-                  disabled={isSaving || !ssoEnabled}
-                >
+                <Button onClick={saveSSOSettings} disabled={isSaving}>
                   {isSaving ? 'Saving...' : 'Save SSO Settings'}
                 </Button>
               </div>
@@ -1173,10 +1170,17 @@ export default function AdminSecurityPage() {
 
               {/* Existing API Keys */}
               <div className='space-y-3'>
-                <h3 className='font-medium'>Active API Keys</h3>
+                <h3 className='font-medium'>
+                  Workspace API Keys{' '}
+                  {apiKeys.length > 0 && (
+                    <span className='ml-1 text-sm font-normal text-muted-foreground'>
+                      ({apiKeys.filter(k => k.isActive).length} active)
+                    </span>
+                  )}
+                </h3>
                 {apiKeys.length === 0 ? (
-                  <p className='text-sm text-muted-foreground py-4 text-center'>
-                    No API keys created yet
+                  <p className='py-4 text-center text-sm text-muted-foreground'>
+                    No API keys created yet. Create one above to get started.
                   </p>
                 ) : (
                   <div className='space-y-2'>

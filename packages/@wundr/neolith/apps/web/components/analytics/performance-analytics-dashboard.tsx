@@ -9,23 +9,21 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Area,
   AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
-  ResponsiveContainer,
-  Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartContainer,
@@ -145,124 +143,22 @@ const throughputChartConfig = {
   },
 } satisfies ChartConfig;
 
-// Generate realistic performance data
-function generatePageLoadData(): PageLoadMetric[] {
-  const data: PageLoadMetric[] = [];
-  const now = new Date();
-
-  for (let i = 23; i >= 0; i--) {
-    const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000);
-    const hour = timestamp.getHours();
-    const isPeakHour = hour >= 9 && hour <= 17;
-
-    data.push({
-      timestamp: timestamp.toISOString(),
-      hour: `${hour.toString().padStart(2, '0')}:00`,
-      fcp: isPeakHour ? 800 + Math.random() * 400 : 600 + Math.random() * 300,
-      lcp: isPeakHour ? 1800 + Math.random() * 700 : 1400 + Math.random() * 500,
-      fid: isPeakHour ? 50 + Math.random() * 100 : 30 + Math.random() * 70,
-      cls: 0.05 + Math.random() * 0.15,
-      ttfb: isPeakHour ? 200 + Math.random() * 150 : 150 + Math.random() * 100,
-    });
-  }
-
-  return data;
-}
-
-function generateApiResponseData(): ApiResponseMetric[] {
-  const data: ApiResponseMetric[] = [];
-  const now = new Date();
-  const endpoints = [
-    '/api/workflows',
-    '/api/agents',
-    '/api/tasks',
-    '/api/data',
-  ];
-
-  for (let i = 23; i >= 0; i--) {
-    const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000);
-    const hour = timestamp.getHours();
-    const isPeakHour = hour >= 9 && hour <= 17;
-
-    const baseTime = isPeakHour ? 150 : 100;
-    const p50 = baseTime + Math.random() * 50;
-    const p95 = p50 * 2 + Math.random() * 100;
-    const p99 = p95 * 1.5 + Math.random() * 150;
-
-    data.push({
-      timestamp: timestamp.toISOString(),
-      hour: `${hour.toString().padStart(2, '0')}:00`,
-      endpoint: endpoints[i % endpoints.length],
-      avgResponseTime: (p50 + p95 + p99) / 3,
-      p50: Math.round(p50),
-      p95: Math.round(p95),
-      p99: Math.round(p99),
-      requests: Math.round(
-        isPeakHour ? 1000 + Math.random() * 500 : 500 + Math.random() * 300
-      ),
-    });
-  }
-
-  return data;
-}
-
-function generateErrorData(): ErrorMetric[] {
-  const data: ErrorMetric[] = [];
-  const now = new Date();
-
-  for (let i = 23; i >= 0; i--) {
-    const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000);
-    const hour = timestamp.getHours();
-    const isPeakHour = hour >= 9 && hour <= 17;
-
-    const totalRequests = isPeakHour ? 1200 : 700;
-    const client = Math.round(Math.random() * 15);
-    const server = Math.round(Math.random() * 8);
-    const network = Math.round(Math.random() * 5);
-    const total = client + server + network;
-
-    data.push({
-      timestamp: timestamp.toISOString(),
-      hour: `${hour.toString().padStart(2, '0')}:00`,
-      total,
-      client,
-      server,
-      network,
-      errorRate: (total / totalRequests) * 100,
-    });
-  }
-
-  return data;
-}
-
-function generateThroughputData(): ThroughputMetric[] {
-  const data: ThroughputMetric[] = [];
-  const now = new Date();
-
-  for (let i = 23; i >= 0; i--) {
-    const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000);
-    const hour = timestamp.getHours();
-    const isPeakHour = hour >= 9 && hour <= 17;
-
-    const totalRequests = Math.round(
-      isPeakHour ? 1200 + Math.random() * 500 : 700 + Math.random() * 300
-    );
-    const failedRequests = Math.round(
-      totalRequests * (0.01 + Math.random() * 0.02)
-    );
-    const successfulRequests = totalRequests - failedRequests;
-
-    data.push({
-      timestamp: timestamp.toISOString(),
-      hour: `${hour.toString().padStart(2, '0')}:00`,
-      requests: totalRequests,
-      successfulRequests,
-      failedRequests,
-      avgThroughput: Math.round(totalRequests / 60), // per minute
-    });
-  }
-
-  return data;
+/**
+ * API response structure for performance metrics
+ */
+interface PerformanceMetricsResponse {
+  pageLoad?: {
+    metrics: PageLoadMetric[];
+  };
+  apiResponse?: {
+    metrics: ApiResponseMetric[];
+  };
+  errors?: {
+    metrics: ErrorMetric[];
+  };
+  throughput?: {
+    metrics: ThroughputMetric[];
+  };
 }
 
 export function PerformanceAnalyticsDashboard({
@@ -275,30 +171,59 @@ export function PerformanceAnalyticsDashboard({
   const [errorData, setErrorData] = useState<ErrorMetric[]>([]);
   const [throughputData, setThroughputData] = useState<ThroughputMetric[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hasData, setHasData] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/analytics/metrics?type=performance`
+      );
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Failed to fetch performance metrics' }));
+        throw new Error(
+          errorData.error || 'Failed to fetch performance metrics'
+        );
+      }
+
+      const data: PerformanceMetricsResponse = await response.json();
+
+      const pageLoad = data.pageLoad?.metrics ?? [];
+      const apiResponse = data.apiResponse?.metrics ?? [];
+      const errors = data.errors?.metrics ?? [];
+      const throughput = data.throughput?.metrics ?? [];
+
+      setPageLoadData(pageLoad);
+      setApiResponseData(apiResponse);
+      setErrorData(errors);
+      setThroughputData(throughput);
+      setHasData(
+        pageLoad.length > 0 ||
+          apiResponse.length > 0 ||
+          errors.length > 0 ||
+          throughput.length > 0
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to load performance data'
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [workspaceId]);
 
   useEffect(() => {
-    // Simulate API call
-    const loadData = async () => {
-      setIsLoading(true);
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+    fetchData();
 
-      setPageLoadData(generatePageLoadData());
-      setApiResponseData(generateApiResponseData());
-      setErrorData(generateErrorData());
-      setThroughputData(generateThroughputData());
-      setIsLoading(false);
-    };
-
-    loadData();
-
-    // Set up real-time updates every 30 seconds
-    const interval = setInterval(() => {
-      loadData();
-    }, 30000);
-
+    // Refresh every 30 seconds while mounted
+    const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
-  }, [workspaceId]);
+  }, [fetchData]);
 
   // Calculate summary metrics
   const avgLCP = pageLoadData.length
@@ -413,21 +338,48 @@ export function PerformanceAnalyticsDashboard({
     };
   };
 
+  if (error && !hasData) {
+    return (
+      <div className='flex items-center justify-center py-16'>
+        <div className='text-center max-w-sm'>
+          <BarChart3 className='h-12 w-12 mx-auto text-muted-foreground mb-4' />
+          <p className='text-base font-medium text-foreground mb-2'>
+            Failed to load performance data
+          </p>
+          <p className='text-sm text-muted-foreground mb-4'>{error}</p>
+          <Button onClick={fetchData} size='sm'>
+            <Activity className='h-4 w-4 mr-2' />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isLoading && !hasData) {
+    return (
+      <div className='flex items-center justify-center py-16'>
+        <div className='text-center max-w-sm'>
+          <BarChart3 className='h-12 w-12 mx-auto text-muted-foreground mb-4' />
+          <p className='text-base font-medium text-foreground mb-2'>
+            No performance data available
+          </p>
+          <p className='text-sm text-muted-foreground'>
+            Performance metrics will appear here once your workspace has
+            sufficient activity. Check back after enabling monitoring
+            integrations.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='space-y-6'>
-      {/* Data notice */}
-      <div className='rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400'>
-        Performance monitoring integration is coming soon. The metrics shown
-        below are illustrative and do not reflect actual system performance.
-      </div>
-
       {/* Header with Status Badge */}
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-3xl font-bold tracking-tight'>
-            Performance Analytics
-          </h1>
-          <p className='text-muted-foreground mt-2'>
+          <p className='text-muted-foreground mt-1 text-sm'>
             Real-time performance metrics and system health monitoring
           </p>
         </div>

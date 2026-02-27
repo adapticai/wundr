@@ -1,16 +1,7 @@
 'use client';
 
-import {
-  Shield,
-  Eye,
-  Bell,
-  Chrome,
-  Github,
-  Loader2,
-  History,
-} from 'lucide-react';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { Shield, Bell, Chrome, Github, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { DangerZone } from '@/components/settings/security/DangerZone';
 import { EmailChangeSection } from '@/components/settings/security/EmailChangeSection';
@@ -53,9 +44,6 @@ export default function SecuritySettingsPage() {
   const [settings, setSettings] = useState({
     twoFactorEnabled: false,
     sessionTimeout: '30',
-    showOnlineStatus: true,
-    showTypingIndicators: true,
-    showReadReceipts: true,
     loginAlerts: true,
   });
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
@@ -438,68 +426,6 @@ export default function SecuritySettingsPage() {
                   onRevokeAllSessions={handleRevokeAllSessions}
                 />
               )}
-            </CardContent>
-          </Card>
-
-          {/* Privacy Section */}
-          <Card>
-            <CardHeader>
-              <div className='flex items-center gap-2'>
-                <Eye className='h-5 w-5' />
-                <CardTitle>Privacy</CardTitle>
-              </div>
-              <CardDescription>
-                Control what others can see about your activity
-              </CardDescription>
-            </CardHeader>
-            <CardContent className='space-y-6'>
-              <div className='flex items-center justify-between'>
-                <div className='space-y-0.5'>
-                  <Label htmlFor='online-status'>Show online status</Label>
-                  <p className='text-sm text-muted-foreground'>
-                    Let others see when you're online
-                  </p>
-                </div>
-                <Switch
-                  id='online-status'
-                  checked={settings.showOnlineStatus}
-                  onCheckedChange={() => handleToggle('showOnlineStatus')}
-                />
-              </div>
-
-              <Separator />
-
-              <div className='flex items-center justify-between'>
-                <div className='space-y-0.5'>
-                  <Label htmlFor='typing-indicators'>
-                    Show typing indicators
-                  </Label>
-                  <p className='text-sm text-muted-foreground'>
-                    Let others see when you're typing a message
-                  </p>
-                </div>
-                <Switch
-                  id='typing-indicators'
-                  checked={settings.showTypingIndicators}
-                  onCheckedChange={() => handleToggle('showTypingIndicators')}
-                />
-              </div>
-
-              <Separator />
-
-              <div className='flex items-center justify-between'>
-                <div className='space-y-0.5'>
-                  <Label htmlFor='read-receipts'>Show read receipts</Label>
-                  <p className='text-sm text-muted-foreground'>
-                    Let others see when you've read their messages
-                  </p>
-                </div>
-                <Switch
-                  id='read-receipts'
-                  checked={settings.showReadReceipts}
-                  onCheckedChange={() => handleToggle('showReadReceipts')}
-                />
-              </div>
             </CardContent>
           </Card>
 

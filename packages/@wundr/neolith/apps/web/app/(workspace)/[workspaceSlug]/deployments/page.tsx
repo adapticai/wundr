@@ -1,5 +1,6 @@
 'use client';
 
+import { Plus, Search, Sparkles, AlertCircle, X } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -19,6 +20,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Input } from '@/components/ui/input';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useDeployments, useDeploymentLogs } from '@/hooks/use-deployments';
 
@@ -164,14 +169,10 @@ export default function DeploymentsPage() {
             Monitor and manage your deployed services and agents
           </p>
         </div>
-        <button
-          type='button'
-          onClick={() => setIsCreateModalOpen(true)}
-          className='flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90'
-        >
-          <PlusIcon className='h-4 w-4' />
+        <Button onClick={() => setIsCreateModalOpen(true)}>
+          <Plus className='h-4 w-4 mr-2' />
           New Deployment
-        </button>
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -203,94 +204,49 @@ export default function DeploymentsPage() {
       {/* Filters */}
       <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         <div className='flex gap-2'>
-          <button
-            type='button'
-            onClick={() => setEnvironment('all')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              environment === 'all'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            }`}
-          >
-            All
-          </button>
-          <button
-            type='button'
-            onClick={() => setEnvironment('production')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              environment === 'production'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            }`}
-          >
-            Production
-          </button>
-          <button
-            type='button'
-            onClick={() => setEnvironment('staging')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              environment === 'staging'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            }`}
-          >
-            Staging
-          </button>
-          <button
-            type='button'
-            onClick={() => setEnvironment('development')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              environment === 'development'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            }`}
-          >
-            Development
-          </button>
+          {(['all', 'production', 'staging', 'development'] as const).map(
+            env => (
+              <Button
+                key={env}
+                type='button'
+                variant={environment === env ? 'default' : 'outline'}
+                size='sm'
+                onClick={() => setEnvironment(env)}
+              >
+                {env.charAt(0).toUpperCase() + env.slice(1)}
+              </Button>
+            )
+          )}
         </div>
 
         <div className='relative'>
-          <SearchIcon className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
-          <input
-            type='text'
+          <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+          <Input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder='Search deployments...'
-            className='w-full rounded-lg border border-input bg-background pl-9 pr-4 py-2 text-sm sm:w-64'
+            className='pl-9 w-full sm:w-64'
           />
         </div>
       </div>
 
       {/* Error State */}
       {error && (
-        <div className='rounded-lg border border-red-200 bg-red-50 p-4'>
-          <div className='flex items-start gap-3'>
-            <svg
-              className='h-5 w-5 flex-shrink-0 text-red-600'
-              viewBox='0 0 20 20'
-              fill='currentColor'
-            >
-              <path
-                fillRule='evenodd'
-                d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z'
-                clipRule='evenodd'
-              />
-            </svg>
-            <div className='flex-1'>
-              <h3 className='text-sm font-semibold text-red-800'>
-                Failed to load deployments
-              </h3>
-              <p className='mt-1 text-sm text-red-700'>{error.message}</p>
-            </div>
-            <button
-              type='button'
+        <Alert variant='destructive'>
+          <AlertCircle className='h-4 w-4' />
+          <AlertTitle>Failed to load deployments</AlertTitle>
+          <AlertDescription className='flex items-center justify-between'>
+            <span>{error.message}</span>
+            <Button
+              variant='ghost'
+              size='sm'
               onClick={() => mutate()}
-              className='text-sm font-medium text-red-600 hover:text-red-500'
+              className='ml-4 shrink-0'
             >
               Retry
-            </button>
-          </div>
-        </div>
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Deployments Grid */}
@@ -301,25 +257,24 @@ export default function DeploymentsPage() {
           ))}
         </div>
       ) : !error && filteredDeployments.length === 0 ? (
-        <div className='rounded-lg border bg-card p-8 text-center'>
-          <div className='mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted'>
-            <DeployIcon className='h-6 w-6 text-muted-foreground' />
-          </div>
-          <h3 className='mt-4 text-lg font-medium'>No deployments found</h3>
-          <p className='mt-2 text-sm text-muted-foreground'>
-            {environment !== 'all'
-              ? `No deployments in ${environment} environment.`
-              : 'Get started by creating your first deployment.'}
-          </p>
-          {environment === 'all' && (
-            <button
-              type='button'
-              onClick={() => setIsCreateModalOpen(true)}
-              className='mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90'
-            >
-              Create Deployment
-            </button>
-          )}
+        <div className='rounded-lg border bg-card'>
+          <EmptyState
+            icon={Sparkles}
+            title='No deployments found'
+            description={
+              environment !== 'all'
+                ? `No deployments exist in the ${environment} environment.`
+                : 'Deploy your first service or agent to get started.'
+            }
+            action={
+              environment === 'all'
+                ? {
+                    label: 'Create Deployment',
+                    onClick: () => setIsCreateModalOpen(true),
+                  }
+                : undefined
+            }
+          />
         </div>
       ) : (
         <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
@@ -345,16 +300,21 @@ export default function DeploymentsPage() {
 
       {/* Action Error */}
       {actionError && (
-        <div className='rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300'>
-          {actionError}
-          <button
-            type='button'
-            onClick={() => setActionError(null)}
-            className='ml-2 font-medium underline hover:no-underline'
-          >
-            Dismiss
-          </button>
-        </div>
+        <Alert variant='destructive'>
+          <AlertCircle className='h-4 w-4' />
+          <AlertDescription className='flex items-center justify-between'>
+            <span>{actionError}</span>
+            <Button
+              variant='ghost'
+              size='icon'
+              className='ml-2 h-5 w-5 shrink-0'
+              onClick={() => setActionError(null)}
+            >
+              <X className='h-3 w-3' />
+              <span className='sr-only'>Dismiss</span>
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Delete Confirmation Dialog */}
@@ -400,59 +360,5 @@ export default function DeploymentsPage() {
         </div>
       )}
     </div>
-  );
-}
-
-// Icons
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <line x1='12' y1='5' x2='12' y2='19' />
-      <line x1='5' y1='12' x2='19' y2='12' />
-    </svg>
-  );
-}
-
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='11' cy='11' r='8' />
-      <path d='m21 21-4.35-4.35' />
-    </svg>
-  );
-}
-
-function DeployIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z' />
-    </svg>
   );
 }

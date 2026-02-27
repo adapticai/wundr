@@ -8,7 +8,7 @@
  */
 'use client';
 
-import { Users, Plus, X, Search, AlertCircle, Bot } from 'lucide-react';
+import { Bot, Plus, X, Search, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
@@ -153,13 +153,6 @@ export default function OrchestratorOverviewPage() {
       refetch();
     },
     [toggleOrchestratorStatus, refetch]
-  );
-
-  const handleEditWithAI = useCallback(
-    (orchestrator: Orchestrator) => {
-      router.push(`/${workspaceSlug}/orchestrators/${orchestrator.id}/edit`);
-    },
-    [router, workspaceSlug]
   );
 
   const handleNewOrchestrator = useCallback(() => {
@@ -393,7 +386,7 @@ export default function OrchestratorOverviewPage() {
       {/* Empty State */}
       {!isLoading && !error && orchestrators.length === 0 && (
         <EmptyState
-          icon={Users}
+          icon={Bot}
           title={
             activeFiltersCount > 0
               ? filters.search
@@ -432,7 +425,6 @@ export default function OrchestratorOverviewPage() {
               orchestrator={orchestrator}
               workspaceSlug={workspaceSlug}
               onToggleStatus={handleToggleStatus}
-              onEditWithAI={handleEditWithAI}
               highlightText={highlightText}
             />
           ))}
@@ -493,13 +485,11 @@ function OrchestratorOverviewCard({
   orchestrator,
   workspaceSlug,
   onToggleStatus,
-  onEditWithAI,
   highlightText,
 }: {
   orchestrator: Orchestrator;
   workspaceSlug: string;
   onToggleStatus?: (orchestrator: Orchestrator) => void;
-  onEditWithAI?: (orchestrator: Orchestrator) => void;
   highlightText?: (text: string | null | undefined) => React.ReactNode;
 }) {
   return (
@@ -534,14 +524,17 @@ function OrchestratorOverviewCard({
           <span className='font-medium text-foreground'>
             {orchestrator.agentCount}
           </span>
-          <span>session managers</span>
+          <span>
+            {orchestrator.agentCount === 1
+              ? 'session manager'
+              : 'session managers'}
+          </span>
         </div>
         <div className='flex items-center gap-1'>
-          <span className='text-xs'>Tasks:</span>
+          <span className='text-xs'>Messages:</span>
           <span className='font-medium text-foreground'>
-            {orchestrator.messageCount}
+            {orchestrator.messageCount.toLocaleString()}
           </span>
-          <span className='text-xs'>messages</span>
         </div>
       </CardContent>
       <CardFooter className='pt-3 border-t gap-2'>

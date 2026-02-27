@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 
 import { AddPeopleDialog } from '@/components/channel/add-people-dialog';
 import { ConversationDetailsDialog } from '@/components/channel/conversation-details-dialog';
-import { DMDetailsPanel } from '@/components/channel/dm-details-panel';
 import { DMHeader } from '@/components/channel/dm-header';
 import { DMSummaryPanel } from '@/components/channel/dm-summary-panel';
 import { FilesTab } from '@/components/channel/files-tab';
@@ -29,6 +28,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/use-auth';
 import { useHuddle } from '@/hooks/use-call';
@@ -117,7 +117,6 @@ export default function DMPage() {
 
   // UI state
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
-  const [isDetailsPanelOpen, setIsDetailsPanelOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isAddPeopleOpen, setIsAddPeopleOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
@@ -940,13 +939,13 @@ export default function DMPage() {
           This conversation may have been deleted or you may not have access to
           it.
         </p>
-        <button
-          type='button'
+        <Button
+          variant='ghost'
+          size='sm'
           onClick={() => router.push(`/${workspaceSlug}/messages`)}
-          className='text-sm text-primary hover:underline'
         >
           Back to messages
-        </button>
+        </Button>
       </div>
     );
   }
@@ -1090,19 +1089,6 @@ export default function DMPage() {
             onReaction={handleReaction}
           />
         )}
-
-        {/* Details panel */}
-        <DMDetailsPanel
-          isOpen={isDetailsPanelOpen}
-          members={allMembers}
-          currentUserId={currentUser.id}
-          workspaceId={channel?.workspaceId || workspaceSlug}
-          channelId={dmId}
-          conversationName={channel?.name}
-          onClose={() => setIsDetailsPanelOpen(false)}
-          onAddPeople={() => setIsAddPeopleOpen(true)}
-          onStartDM={handleStartDMWithMember}
-        />
       </div>
 
       {/* Add people dialog */}

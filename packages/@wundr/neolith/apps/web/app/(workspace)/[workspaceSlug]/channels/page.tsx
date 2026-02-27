@@ -78,7 +78,6 @@ export default function ChannelsPage() {
   const {
     channels,
     isLoading,
-    isRefreshing,
     error,
     newChannelCount,
     refresh,

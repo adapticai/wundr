@@ -166,8 +166,8 @@ export default function AccountOverviewPage() {
                   Complete Your Profile
                 </CardTitle>
                 <CardDescription>
-                  {completionPercentage}% complete - finish setting up your
-                  account
+                  {completionPercentage}% complete — a few more steps to finish
+                  setting up your account
                 </CardDescription>
               </div>
             </div>
@@ -247,7 +247,9 @@ export default function AccountOverviewPage() {
       <Card>
         <CardHeader>
           <CardTitle>Security Status</CardTitle>
-          <CardDescription>Keep your account safe and secure</CardDescription>
+          <CardDescription>
+            An overview of your account security posture
+          </CardDescription>
         </CardHeader>
         <CardContent className='space-y-4'>
           <div className='space-y-3'>
@@ -258,29 +260,43 @@ export default function AccountOverviewPage() {
                 ) : (
                   <AlertCircle className='h-5 w-5 text-amber-600 dark:text-amber-500' />
                 )}
-                <span className='text-sm font-medium'>Email verified</span>
+                <div>
+                  <span className='text-sm font-medium'>
+                    Email verification
+                  </span>
+                  <p className='text-xs text-muted-foreground'>
+                    {isEmailVerified
+                      ? 'Your email address is verified'
+                      : 'Verify your email to secure your account'}
+                  </p>
+                </div>
               </div>
               {!isEmailVerified && (
                 <Link
                   href={`/${workspaceSlug}/settings/security`}
                   className='text-sm text-primary hover:underline'
                 >
-                  Verify
+                  Verify now
                 </Link>
               )}
             </div>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
                 <AlertCircle className='h-5 w-5 text-amber-600 dark:text-amber-500' />
-                <span className='text-sm font-medium'>
-                  Two-factor authentication
-                </span>
+                <div>
+                  <span className='text-sm font-medium'>
+                    Two-factor authentication
+                  </span>
+                  <p className='text-xs text-muted-foreground'>
+                    Add a second layer of protection to your account
+                  </p>
+                </div>
               </div>
               <Link
                 href={`/${workspaceSlug}/settings/security`}
                 className='text-sm text-primary hover:underline'
               >
-                Enable
+                Set up
               </Link>
             </div>
           </div>

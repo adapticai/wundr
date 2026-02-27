@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { VideoRoom, PreJoin, CallInviteDialog } from '@/components/call';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 
 interface CallDetails {
   id: string;
@@ -112,6 +113,7 @@ export default function CallPage() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
 
+  const { toast } = useToast();
   const [callState, setCallState] = useState<CallState>('loading');
   const [callDetails, setCallDetails] = useState<CallDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -218,16 +220,28 @@ export default function CallPage() {
   const handleInvite = useCallback(
     async (userIds: string[], sendNotification: boolean) => {
       try {
-        await fetch(`/api/workspaces/${workspaceId}/calls/${callId}/invite`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userIds, sendNotification }),
+        const response = await fetch(
+          `/api/workspaces/${workspaceId}/calls/${callId}/invite`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userIds, sendNotification }),
+          }
+        );
+        if (!response.ok) throw new Error('Invite request failed');
+        toast({
+          title: 'Invitations sent',
+          description: `${userIds.length} participant${userIds.length !== 1 ? 's' : ''} invited to the call.`,
         });
       } catch {
-        // Handle silently or show toast
+        toast({
+          title: 'Failed to send invitations',
+          description: 'Unable to invite participants. Please try again.',
+          variant: 'destructive',
+        });
       }
     },
-    [workspaceId, callId]
+    [workspaceId, callId, toast]
   );
 
   // Generate invite link

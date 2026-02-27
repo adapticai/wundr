@@ -3,6 +3,15 @@
 import { useParams } from 'next/navigation';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useAdminActivity, type AdminAction } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
@@ -142,71 +151,66 @@ export default function AdminActivityPage() {
     <div className='space-y-6'>
       {/* Action Button */}
       <div className='flex justify-end'>
-        <button
+        <Button
           type='button'
+          variant='outline'
           onClick={handleExport}
-          className={cn(
-            'inline-flex items-center gap-2 rounded-md border border-input',
-            'bg-background px-4 py-2 text-sm font-medium hover:bg-muted'
-          )}
+          className='gap-2'
         >
           <DownloadIcon className='h-4 w-4' />
           Export CSV
-        </button>
+        </Button>
       </div>
 
       {/* Filters */}
       <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
         <div className='flex flex-wrap gap-3'>
           {/* Action Filter */}
-          <select
+          <Select
             value={filterAction}
-            onChange={e =>
-              setFilterAction(e.target.value as ActivityFilterType)
+            onValueChange={value =>
+              setFilterAction(value as ActivityFilterType)
             }
-            className={cn(
-              'rounded-md border border-input bg-background px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
           >
-            {actionFilterOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className='w-[180px]'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {actionFilterOptions.map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* Date Range Filter */}
-          <select
+          <Select
             value={dateRange}
-            onChange={e => setDateRange(e.target.value as typeof dateRange)}
-            className={cn(
-              'rounded-md border border-input bg-background px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
+            onValueChange={value => setDateRange(value as typeof dateRange)}
           >
-            {dateRangeOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className='w-[160px]'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {dateRangeOptions.map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Search */}
         <div className='relative'>
           <SearchIcon className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
-          <input
+          <Input
             type='text'
-            placeholder='Search activity...'
+            placeholder='Search by actor, action, or resource...'
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className={cn(
-              'w-full rounded-md border border-input bg-background py-2 pl-9 pr-4',
-              'text-sm placeholder:text-muted-foreground',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'lg:w-64'
-            )}
+            className='pl-9 lg:w-72'
           />
         </div>
       </div>
@@ -250,11 +254,15 @@ export default function AdminActivityPage() {
         {isLoading ? (
           <ActivitySkeleton count={10} />
         ) : filteredActivities.length === 0 ? (
-          <div className='flex flex-col items-center justify-center py-12'>
-            <ActivityIcon className='h-12 w-12 text-muted-foreground/50' />
-            <p className='mt-2 text-muted-foreground'>No activity found</p>
-            <p className='text-sm text-muted-foreground'>
-              Try adjusting your filters
+          <div className='flex flex-col items-center justify-center py-16'>
+            <ActivityIcon className='h-12 w-12 text-muted-foreground/40' />
+            <p className='mt-4 text-sm font-medium text-foreground'>
+              No activity found
+            </p>
+            <p className='mt-1 text-sm text-muted-foreground'>
+              {searchQuery
+                ? 'No results match your search. Try a different term.'
+                : 'No admin actions have been recorded for the selected filters.'}
             </p>
           </div>
         ) : (

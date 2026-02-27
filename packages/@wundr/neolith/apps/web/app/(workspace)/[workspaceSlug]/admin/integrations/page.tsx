@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -84,56 +85,56 @@ const INTEGRATION_PROVIDERS = [
     id: 'SLACK' as const,
     name: 'Slack',
     description: 'Connect your Slack workspace for notifications and commands',
-    icon: '💬',
-    color: 'bg-purple-500',
+    initials: 'SL',
+    color: 'bg-purple-500 text-white',
     oauthEnabled: true,
   },
   {
     id: 'GITHUB' as const,
     name: 'GitHub',
     description: 'Integrate with GitHub repositories for issue tracking',
-    icon: '🐙',
-    color: 'bg-foreground',
+    initials: 'GH',
+    color: 'bg-gray-900 text-white',
     oauthEnabled: true,
   },
   {
     id: 'GITLAB' as const,
     name: 'GitLab',
     description: 'Connect GitLab for CI/CD and repository management',
-    icon: '🦊',
-    color: 'bg-orange-600',
+    initials: 'GL',
+    color: 'bg-orange-600 text-white',
     oauthEnabled: true,
   },
   {
     id: 'JIRA' as const,
     name: 'Jira',
     description: 'Sync tasks and issues with Atlassian Jira',
-    icon: '📋',
-    color: 'bg-blue-600',
+    initials: 'JR',
+    color: 'bg-blue-600 text-white',
     oauthEnabled: false,
   },
   {
     id: 'LINEAR' as const,
     name: 'Linear',
     description: 'Streamline issue tracking with Linear',
-    icon: '⚡',
-    color: 'bg-indigo-600',
+    initials: 'LN',
+    color: 'bg-indigo-600 text-white',
     oauthEnabled: true,
   },
   {
     id: 'NOTION' as const,
     name: 'Notion',
     description: 'Connect Notion workspaces for documentation sync',
-    icon: '📝',
-    color: 'bg-black',
+    initials: 'NT',
+    color: 'bg-neutral-900 text-white',
     oauthEnabled: true,
   },
   {
     id: 'DISCORD' as const,
     name: 'Discord',
     description: 'Send notifications to Discord channels',
-    icon: '🎮',
-    color: 'bg-indigo-500',
+    initials: 'DC',
+    color: 'bg-indigo-500 text-white',
     oauthEnabled: true,
   },
 ];
@@ -212,8 +213,7 @@ export default function AdminIntegrationsPage() {
       }
       const data = await response.json();
       setIntegrations(data.integrations || []);
-    } catch (error) {
-      console.error('Error fetching integrations:', error);
+    } catch {
       toast.error('Failed to load integrations');
     } finally {
       setIsLoading(false);
@@ -230,8 +230,8 @@ export default function AdminIntegrationsPage() {
       }
       const data = await response.json();
       setWebhooks(data.webhooks || []);
-    } catch (error) {
-      console.error('Error fetching webhooks:', error);
+    } catch {
+      // Silently fail — webhooks load independently from integrations
     }
   };
 
@@ -245,8 +245,8 @@ export default function AdminIntegrationsPage() {
       }
       const data = await response.json();
       setApiKeys(data.apiKeys || []);
-    } catch (error) {
-      console.error('Error fetching API keys:', error);
+    } catch {
+      // Silently fail — API keys load independently from integrations
     }
   };
 
@@ -262,8 +262,7 @@ export default function AdminIntegrationsPage() {
       }
       const data = await response.json();
       window.location.href = data.authUrl;
-    } catch (error) {
-      console.error('Error connecting integration:', error);
+    } catch {
       toast.error('Failed to connect integration');
     }
   };
@@ -296,8 +295,7 @@ export default function AdminIntegrationsPage() {
       setShowConfigModal(false);
       setConfigForm({ apiKey: '', apiSecret: '', webhookUrl: '' });
       fetchIntegrations();
-    } catch (error) {
-      console.error('Error connecting integration:', error);
+    } catch {
       toast.error('Failed to connect integration');
     }
   };
@@ -313,8 +311,7 @@ export default function AdminIntegrationsPage() {
       }
       toast.success('Integration disconnected');
       fetchIntegrations();
-    } catch (error) {
-      console.error('Error disconnecting:', error);
+    } catch {
       toast.error('Failed to disconnect integration');
     }
   };
@@ -330,8 +327,7 @@ export default function AdminIntegrationsPage() {
       }
       const data = await response.json();
       toast.success(data.message || 'Integration test successful');
-    } catch (error) {
-      console.error('Error testing integration:', error);
+    } catch {
       toast.error('Integration test failed');
     }
   };
@@ -347,8 +343,7 @@ export default function AdminIntegrationsPage() {
       }
       toast.success('Sync started successfully');
       fetchIntegrations();
-    } catch (error) {
-      console.error('Error syncing:', error);
+    } catch {
       toast.error('Sync failed');
     }
   };
@@ -368,8 +363,7 @@ export default function AdminIntegrationsPage() {
       }
       toast.success(`Auto-sync ${enabled ? 'enabled' : 'disabled'}`);
       fetchIntegrations();
-    } catch (error) {
-      console.error('Error toggling sync:', error);
+    } catch {
       toast.error('Failed to update sync setting');
     }
   };
@@ -388,15 +382,14 @@ export default function AdminIntegrationsPage() {
       if (!response.ok) {
         throw new Error('Failed to create webhook');
       }
-      const data = await response.json();
+      await response.json();
       toast.success(
         'Webhook created. Copy the signing secret from the webhook details.'
       );
       setShowWebhookModal(false);
       setWebhookForm({ name: '', url: '', events: [] });
       fetchWebhooks();
-    } catch (error) {
-      console.error('Error creating webhook:', error);
+    } catch {
       toast.error('Failed to create webhook');
     }
   };
@@ -412,8 +405,7 @@ export default function AdminIntegrationsPage() {
       }
       toast.success('Webhook deleted');
       fetchWebhooks();
-    } catch (error) {
-      console.error('Error deleting webhook:', error);
+    } catch {
       toast.error('Failed to delete webhook');
     }
   };
@@ -428,8 +420,7 @@ export default function AdminIntegrationsPage() {
         throw new Error('Test failed');
       }
       toast.success('Test webhook sent successfully');
-    } catch (error) {
-      console.error('Error testing webhook:', error);
+    } catch {
       toast.error('Webhook test failed');
     }
   };
@@ -448,15 +439,14 @@ export default function AdminIntegrationsPage() {
       if (!response.ok) {
         throw new Error('Failed to create API key');
       }
-      const data = await response.json();
+      await response.json();
       toast.success(
         'API key generated. Copy it now — it will not be shown again.'
       );
       setShowApiKeyModal(false);
       setApiKeyForm({ name: '', expiresInDays: 90 });
       fetchApiKeys();
-    } catch (error) {
-      console.error('Error creating API key:', error);
+    } catch {
       toast.error('Failed to create API key');
     }
   };
@@ -472,8 +462,7 @@ export default function AdminIntegrationsPage() {
       }
       toast.success('API key revoked');
       fetchApiKeys();
-    } catch (error) {
-      console.error('Error revoking API key:', error);
+    } catch {
       toast.error('Failed to revoke API key');
     }
   };
@@ -562,11 +551,11 @@ export default function AdminIntegrationsPage() {
                           <div className='flex items-center gap-3'>
                             <div
                               className={cn(
-                                'flex h-10 w-10 items-center justify-center rounded-lg text-xl',
+                                'flex h-10 w-10 items-center justify-center rounded-lg text-xs font-bold',
                                 provider?.color
                               )}
                             >
-                              {provider?.icon}
+                              {provider?.initials}
                             </div>
                             <div>
                               <CardTitle className='text-base'>
@@ -674,11 +663,11 @@ export default function AdminIntegrationsPage() {
                       <div className='flex items-center gap-3'>
                         <div
                           className={cn(
-                            'flex h-10 w-10 items-center justify-center rounded-lg text-xl',
+                            'flex h-10 w-10 items-center justify-center rounded-lg text-xs font-bold',
                             provider.color
                           )}
                         >
-                          {provider.icon}
+                          {provider.initials}
                         </div>
                         <div>
                           <CardTitle className='text-base'>
@@ -862,50 +851,57 @@ export default function AdminIntegrationsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className='space-y-4'>
-                {connectedIntegrations.map(integration => {
-                  const provider = INTEGRATION_PROVIDERS.find(
-                    p => p.id === integration.provider
-                  );
-                  const isHealthy =
-                    integration.status === 'ACTIVE' && !integration.syncError;
+              {connectedIntegrations.length === 0 ? (
+                <p className='py-6 text-center text-sm text-muted-foreground'>
+                  No integrations connected. Connect an integration to monitor
+                  its health here.
+                </p>
+              ) : (
+                <div className='space-y-4'>
+                  {connectedIntegrations.map(integration => {
+                    const provider = INTEGRATION_PROVIDERS.find(
+                      p => p.id === integration.provider
+                    );
+                    const isHealthy =
+                      integration.status === 'ACTIVE' && !integration.syncError;
 
-                  return (
-                    <div
-                      key={integration.id}
-                      className='flex items-center justify-between rounded-lg border p-4'
-                    >
-                      <div className='flex items-center gap-3'>
-                        <div
-                          className={cn(
-                            'h-2 w-2 rounded-full',
-                            isHealthy ? 'bg-green-500' : 'bg-red-500'
-                          )}
-                        />
-                        <div>
-                          <p className='font-medium'>{integration.name}</p>
-                          <p className='text-sm text-muted-foreground'>
-                            {provider?.name}
+                    return (
+                      <div
+                        key={integration.id}
+                        className='flex items-center justify-between rounded-lg border p-4'
+                      >
+                        <div className='flex items-center gap-3'>
+                          <div
+                            className={cn(
+                              'h-2 w-2 rounded-full',
+                              isHealthy ? 'bg-green-500' : 'bg-red-500'
+                            )}
+                          />
+                          <div>
+                            <p className='font-medium'>{integration.name}</p>
+                            <p className='text-sm text-muted-foreground'>
+                              {provider?.name}
+                            </p>
+                          </div>
+                        </div>
+                        <div className='text-right text-sm'>
+                          <p className='font-medium'>
+                            {isHealthy ? 'Healthy' : 'Unhealthy'}
                           </p>
+                          {integration.lastSyncAt && (
+                            <p className='text-muted-foreground'>
+                              Last sync:{' '}
+                              {new Date(
+                                integration.lastSyncAt
+                              ).toLocaleTimeString()}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      <div className='text-right text-sm'>
-                        <p className='font-medium'>
-                          {isHealthy ? 'Healthy' : 'Unhealthy'}
-                        </p>
-                        {integration.lastSyncAt && (
-                          <p className='text-muted-foreground'>
-                            Last sync:{' '}
-                            {new Date(
-                              integration.lastSyncAt
-                            ).toLocaleTimeString()}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -947,22 +943,24 @@ export default function AdminIntegrationsPage() {
               <Label>Events</Label>
               <div className='mt-2 space-y-2'>
                 {WEBHOOK_EVENTS.map(event => (
-                  <label
-                    key={event}
-                    className='flex items-center gap-2 text-sm'
-                  >
-                    <input
-                      type='checkbox'
+                  <div key={event} className='flex items-center gap-2'>
+                    <Checkbox
+                      id={`event-${event}`}
                       checked={webhookForm.events.includes(event)}
-                      onChange={e => {
-                        const events = e.target.checked
+                      onCheckedChange={checked => {
+                        const events = checked
                           ? [...webhookForm.events, event]
                           : webhookForm.events.filter(ev => ev !== event);
                         setWebhookForm({ ...webhookForm, events });
                       }}
                     />
-                    {event}
-                  </label>
+                    <label
+                      htmlFor={`event-${event}`}
+                      className='text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                    >
+                      {event}
+                    </label>
+                  </div>
                 ))}
               </div>
             </div>

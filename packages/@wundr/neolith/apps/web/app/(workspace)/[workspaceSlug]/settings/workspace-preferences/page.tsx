@@ -18,6 +18,7 @@ import {
 import { useParams } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -271,7 +272,7 @@ export default function WorkspacePreferencesPage() {
             <Input
               id='display-name-override'
               type='text'
-              placeholder='Leave empty to use your global display name'
+              placeholder='e.g., Alex (Design)'
               value={settings.displayNameOverride || ''}
               onChange={e => {
                 const value = e.target.value.slice(0, DISPLAY_NAME_LIMIT);
@@ -280,8 +281,8 @@ export default function WorkspacePreferencesPage() {
               maxLength={DISPLAY_NAME_LIMIT}
             />
             <p className='text-xs text-muted-foreground'>
-              Use a different name in this workspace (e.g., "Johnny
-              [Engineering]")
+              Use a different display name in this workspace only. Leave blank
+              to use your global display name.
             </p>
           </div>
 
@@ -359,30 +360,34 @@ export default function WorkspacePreferencesPage() {
           <div className='space-y-3'>
             <Label>Auto-join Channels</Label>
             <p className='text-xs text-muted-foreground'>
-              Automatically join these channels when they're created
+              Automatically join these channels when you first sign in to this
+              workspace on a new device
             </p>
             <div className='space-y-2'>
-              {channels.slice(0, 10).map(channel => (
-                <div
-                  key={channel.id}
-                  className='flex items-center justify-between rounded-lg border p-3'
-                >
-                  <div className='flex items-center gap-3'>
-                    <span className='font-medium'>#{channel.name}</span>
-                    <span className='text-xs text-muted-foreground'>
-                      {channel.type}
-                    </span>
-                  </div>
-                  <Switch
-                    checked={settings.autoJoinChannels?.includes(channel.id)}
-                    onCheckedChange={() => toggleAutoJoinChannel(channel.id)}
-                  />
-                </div>
-              ))}
-              {channels.length === 0 && (
+              {channels.length === 0 ? (
                 <p className='text-sm text-muted-foreground'>
                   No channels available
                 </p>
+              ) : (
+                channels.map(channel => (
+                  <div
+                    key={channel.id}
+                    className='flex items-center justify-between rounded-lg border p-3'
+                  >
+                    <div className='flex items-center gap-3'>
+                      <span className='font-medium'>#{channel.name}</span>
+                      {channel.type && channel.type !== 'public' && (
+                        <span className='text-xs text-muted-foreground capitalize'>
+                          {channel.type}
+                        </span>
+                      )}
+                    </div>
+                    <Switch
+                      checked={settings.autoJoinChannels?.includes(channel.id)}
+                      onCheckedChange={() => toggleAutoJoinChannel(channel.id)}
+                    />
+                  </div>
+                ))
               )}
             </div>
           </div>
@@ -408,41 +413,44 @@ export default function WorkspacePreferencesPage() {
                   <Bell className='h-5 w-5 text-muted-foreground' />
                 )}
                 <div>
-                  <p className='font-medium'>Mute Workspace</p>
+                  <div className='flex items-center gap-2'>
+                    <p className='font-medium'>Mute Workspace</p>
+                    {settings.mutedUntil && (
+                      <Badge variant='secondary' className='text-xs'>
+                        Muted
+                      </Badge>
+                    )}
+                  </div>
                   <p className='text-xs text-muted-foreground'>
                     {settings.mutedUntil
-                      ? `Muted until ${new Date(settings.mutedUntil).toLocaleString()}`
-                      : 'Temporarily disable all notifications from this workspace'}
+                      ? `Notifications paused until ${new Date(settings.mutedUntil).toLocaleString()}`
+                      : 'Pause all notifications from this workspace temporarily'}
                   </p>
                 </div>
               </div>
               {settings.mutedUntil && (
-                <button
-                  type='button'
-                  onClick={unmuteWorkspace}
-                  className='text-sm text-primary hover:underline'
-                >
+                <Button variant='ghost' size='sm' onClick={unmuteWorkspace}>
                   Unmute
-                </button>
+                </Button>
               )}
             </div>
             {!settings.mutedUntil && (
               <div className='flex flex-wrap gap-2 pt-1'>
                 {[
-                  { label: '30 minutes', hours: 0.5 },
+                  { label: '30 min', hours: 0.5 },
                   { label: '1 hour', hours: 1 },
                   { label: '4 hours', hours: 4 },
                   { label: '24 hours', hours: 24 },
-                  { label: 'Until I turn it on', hours: 24 * 365 },
+                  { label: 'Indefinitely', hours: 24 * 365 },
                 ].map(option => (
-                  <button
+                  <Button
                     key={option.label}
-                    type='button'
+                    variant='outline'
+                    size='sm'
                     onClick={() => muteWorkspace(option.hours)}
-                    className='rounded-md border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent'
                   >
                     {option.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
@@ -496,6 +504,11 @@ export default function WorkspacePreferencesPage() {
                   <Button
                     variant='ghost'
                     size='sm'
+                    aria-label={
+                      settings.sidebarCollapsed?.[section.key]
+                        ? `Expand ${section.label}`
+                        : `Collapse ${section.label}`
+                    }
                     onClick={() => toggleSidebarSection(section.key)}
                   >
                     {settings.sidebarCollapsed?.[section.key] ? (

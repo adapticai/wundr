@@ -46,13 +46,9 @@ interface InvitePageProps {
 /**
  * Invitation acceptance page component.
  *
- * Validates invitation token and allows users to accept invitations.
- * - Shows invitation details (who invited, workspace name)
- * - "Accept" button for logged-in users
- * - "Create Account" / "Login" buttons for non-authenticated users
- * - Handles expired/invalid/revoked invitations gracefully
- *
- * @param props - Component props with token parameter
+ * Validates invitation token and allows users to accept workspace invitations.
+ * Shows invitation details and presents the correct action based on auth state.
+ * Handles expired, revoked, and already-accepted invitations gracefully.
  */
 export default function InvitePage({ params }: InvitePageProps) {
   const router = useRouter();
@@ -83,14 +79,18 @@ export default function InvitePage({ params }: InvitePageProps) {
         const data = await response.json();
 
         if (!response.ok) {
-          setError(data.error || 'Failed to load invitation');
+          setError(
+            data.error ||
+              'This invitation could not be found or has already been used.'
+          );
           return;
         }
 
         setInvitation(data.invitation);
-      } catch (err) {
-        setError('An error occurred while loading the invitation');
-        console.error('Error fetching invitation:', err);
+      } catch {
+        setError(
+          'Unable to load the invitation. Please check your connection and try again.'
+        );
       } finally {
         setIsLoading(false);
       }
@@ -118,259 +118,335 @@ export default function InvitePage({ params }: InvitePageProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'Failed to accept invitation');
+        setError(
+          data.error || 'Unable to accept the invitation. Please try again.'
+        );
         return;
       }
 
       // Redirect to workspace after successful acceptance
       router.push(`/${data.membership.workspace.slug}/dashboard`);
-    } catch (err) {
-      setError('An error occurred while accepting the invitation');
-      console.error('Error accepting invitation:', err);
+    } catch {
+      setError(
+        'Unable to accept the invitation. Please check your connection and try again.'
+      );
     } finally {
       setIsAccepting(false);
     }
   };
 
   /**
-   * Render loading state
+   * Loading state
    */
   if (isLoading || sessionStatus === 'loading') {
     return (
       <div className='space-y-6'>
         <div className='space-y-2 text-center'>
           <h2 className='text-2xl font-semibold tracking-tight'>
-            Loading invitation...
+            Loading invitation
           </h2>
+          <p className='text-sm text-muted-foreground'>
+            Please wait a moment...
+          </p>
         </div>
-        <div className='flex justify-center'>
-          <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent' />
+        <div className='flex justify-center py-4'>
+          <div
+            className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent'
+            role='status'
+            aria-label='Loading'
+          />
         </div>
       </div>
     );
   }
 
   /**
-   * Render error state
+   * Error state — invitation not found or failed to load
    */
   if (error && !invitation) {
     return (
       <div className='space-y-6'>
-        <div className='space-y-2 text-center'>
+        <div className='space-y-4 text-center'>
           <div className='flex justify-center'>
-            <XCircle className='h-16 w-16 text-destructive' />
+            <div className='rounded-full bg-destructive/10 p-4'>
+              <XCircle
+                className='h-12 w-12 text-destructive'
+                aria-hidden='true'
+              />
+            </div>
           </div>
-          <h2 className='text-2xl font-semibold tracking-tight'>
-            Invalid Invitation
-          </h2>
-          <p className='text-sm text-muted-foreground'>{error}</p>
+          <div className='space-y-1'>
+            <h2 className='text-2xl font-semibold tracking-tight'>
+              Invitation not found
+            </h2>
+            <p className='text-sm text-muted-foreground'>{error}</p>
+          </div>
         </div>
-        <div className='flex justify-center'>
-          <Button asChild>
-            <Link href='/login'>Go to Login</Link>
-          </Button>
-        </div>
+        <Button asChild className='w-full'>
+          <Link href='/login'>Go to login</Link>
+        </Button>
       </div>
     );
   }
 
   /**
-   * Render expired invitation
+   * Expired invitation
    */
   if (invitation?.status === 'EXPIRED') {
     return (
       <div className='space-y-6'>
-        <div className='space-y-2 text-center'>
+        <div className='space-y-4 text-center'>
           <div className='flex justify-center'>
-            <Clock className='h-16 w-16 text-muted-foreground' />
+            <div className='rounded-full bg-muted p-4'>
+              <Clock
+                className='h-12 w-12 text-muted-foreground'
+                aria-hidden='true'
+              />
+            </div>
           </div>
-          <h2 className='text-2xl font-semibold tracking-tight'>
-            Invitation Expired
-          </h2>
-          <p className='text-sm text-muted-foreground'>
-            This invitation to{' '}
-            <span className='font-medium'>{invitation.workspaceName}</span> has
-            expired.
-          </p>
-          <p className='text-xs text-muted-foreground'>
-            Please contact the workspace admin for a new invitation.
-          </p>
+          <div className='space-y-1'>
+            <h2 className='text-2xl font-semibold tracking-tight'>
+              Invitation expired
+            </h2>
+            <p className='text-sm text-muted-foreground'>
+              This invitation to{' '}
+              <span className='font-medium text-foreground'>
+                {invitation.workspaceName}
+              </span>{' '}
+              has expired.
+            </p>
+            <p className='text-sm text-muted-foreground'>
+              Please ask a workspace admin to send you a new invitation.
+            </p>
+          </div>
         </div>
-        <div className='flex justify-center'>
-          <Button asChild>
-            <Link href='/login'>Go to Login</Link>
-          </Button>
-        </div>
+        <Button asChild className='w-full'>
+          <Link href='/login'>Go to login</Link>
+        </Button>
       </div>
     );
   }
 
   /**
-   * Render revoked invitation
+   * Revoked invitation
    */
   if (invitation?.status === 'REVOKED') {
     return (
       <div className='space-y-6'>
-        <div className='space-y-2 text-center'>
+        <div className='space-y-4 text-center'>
           <div className='flex justify-center'>
-            <XCircle className='h-16 w-16 text-destructive' />
+            <div className='rounded-full bg-destructive/10 p-4'>
+              <XCircle
+                className='h-12 w-12 text-destructive'
+                aria-hidden='true'
+              />
+            </div>
           </div>
-          <h2 className='text-2xl font-semibold tracking-tight'>
-            Invitation Revoked
-          </h2>
-          <p className='text-sm text-muted-foreground'>
-            This invitation to{' '}
-            <span className='font-medium'>{invitation.workspaceName}</span> has
-            been revoked.
-          </p>
-          <p className='text-xs text-muted-foreground'>
-            Please contact the workspace admin if you believe this is an error.
-          </p>
+          <div className='space-y-1'>
+            <h2 className='text-2xl font-semibold tracking-tight'>
+              Invitation revoked
+            </h2>
+            <p className='text-sm text-muted-foreground'>
+              This invitation to{' '}
+              <span className='font-medium text-foreground'>
+                {invitation.workspaceName}
+              </span>{' '}
+              has been revoked.
+            </p>
+            <p className='text-sm text-muted-foreground'>
+              Please contact the workspace admin if you believe this is an
+              error.
+            </p>
+          </div>
         </div>
-        <div className='flex justify-center'>
-          <Button asChild>
-            <Link href='/login'>Go to Login</Link>
-          </Button>
-        </div>
+        <Button asChild className='w-full'>
+          <Link href='/login'>Go to login</Link>
+        </Button>
       </div>
     );
   }
 
   /**
-   * Render already accepted invitation
+   * Already accepted invitation
    */
   if (invitation?.status === 'ACCEPTED') {
     return (
       <div className='space-y-6'>
-        <div className='space-y-2 text-center'>
+        <div className='space-y-4 text-center'>
           <div className='flex justify-center'>
-            <CheckCircle className='h-16 w-16 text-green-500' />
+            <div className='rounded-full bg-green-500/10 p-4'>
+              <CheckCircle
+                className='h-12 w-12 text-green-600 dark:text-green-400'
+                aria-hidden='true'
+              />
+            </div>
           </div>
-          <h2 className='text-2xl font-semibold tracking-tight'>
-            Invitation Already Accepted
-          </h2>
-          <p className='text-sm text-muted-foreground'>
-            This invitation has already been accepted.
-          </p>
+          <div className='space-y-1'>
+            <h2 className='text-2xl font-semibold tracking-tight'>
+              Already a member
+            </h2>
+            <p className='text-sm text-muted-foreground'>
+              This invitation has already been accepted. You&apos;re already a
+              member of{' '}
+              <span className='font-medium text-foreground'>
+                {invitation.workspaceName}
+              </span>
+              .
+            </p>
+          </div>
         </div>
-        <div className='flex justify-center'>
-          <Button asChild>
-            <Link href={`/${invitation.workspaceSlug}/dashboard`}>
-              Go to Workspace
-            </Link>
-          </Button>
-        </div>
+        <Button asChild className='w-full'>
+          <Link href={`/${invitation.workspaceSlug}/dashboard`}>
+            Go to workspace
+          </Link>
+        </Button>
       </div>
     );
   }
 
   /**
-   * Check if user's email matches invitation email
+   * Check if the signed-in user's email matches the invited email
    */
   const emailMatches =
     session?.user?.email?.toLowerCase() === invitation?.email.toLowerCase();
 
   /**
-   * Render valid invitation
+   * Valid pending invitation
    */
   return (
     <div className='space-y-6'>
       {/* Header */}
       <div className='space-y-2 text-center'>
         <div className='flex justify-center'>
-          <Mail className='h-16 w-16 text-primary' />
+          <div className='rounded-full bg-primary/10 p-4'>
+            <Mail className='h-12 w-12 text-primary' aria-hidden='true' />
+          </div>
         </div>
         <h2 className='text-2xl font-semibold tracking-tight'>
-          Workspace Invitation
+          You&apos;ve been invited
         </h2>
         <p className='text-sm text-muted-foreground'>
-          You&apos;ve been invited to join a workspace
+          You&apos;ve been invited to join a workspace on Neolith
         </p>
       </div>
 
-      {/* Invitation Details Card */}
-      <div className='rounded-lg border border-border bg-card p-6 space-y-4'>
-        <div className='space-y-3'>
+      {/* Invitation Details */}
+      <div className='rounded-lg border border-border bg-muted/30 p-4 space-y-3'>
+        <div className='flex items-start gap-3'>
+          <Users
+            className='h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0'
+            aria-hidden='true'
+          />
+          <div className='min-w-0'>
+            <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+              Workspace
+            </p>
+            <p className='text-sm font-medium truncate'>
+              {invitation?.workspaceName}
+            </p>
+          </div>
+        </div>
+
+        <div className='flex items-start gap-3'>
+          <Mail
+            className='h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0'
+            aria-hidden='true'
+          />
+          <div className='min-w-0'>
+            <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+              Invited email
+            </p>
+            <p className='text-sm truncate'>{invitation?.email}</p>
+          </div>
+        </div>
+
+        {invitation?.inviterName && (
           <div className='flex items-start gap-3'>
-            <Users className='h-5 w-5 text-muted-foreground mt-0.5' />
-            <div>
-              <p className='text-sm font-medium'>Workspace</p>
-              <p className='text-sm text-muted-foreground'>
-                {invitation?.workspaceName}
+            <UserCircle
+              className='h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0'
+              aria-hidden='true'
+            />
+            <div className='min-w-0'>
+              <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                Invited by
+              </p>
+              <p className='text-sm truncate'>
+                {invitation.inviterName}
+                {invitation.inviterEmail && (
+                  <span className='text-muted-foreground'>
+                    {' '}
+                    ({invitation.inviterEmail})
+                  </span>
+                )}
               </p>
             </div>
           </div>
+        )}
 
-          <div className='flex items-start gap-3'>
-            <Mail className='h-5 w-5 text-muted-foreground mt-0.5' />
-            <div>
-              <p className='text-sm font-medium'>Invited Email</p>
-              <p className='text-sm text-muted-foreground'>
-                {invitation?.email}
-              </p>
-            </div>
+        <div className='flex items-start gap-3'>
+          <ShieldCheck
+            className='h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0'
+            aria-hidden='true'
+          />
+          <div className='min-w-0'>
+            <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+              Role
+            </p>
+            <p className='text-sm capitalize'>
+              {invitation?.role.toLowerCase()}
+            </p>
           </div>
+        </div>
 
-          {invitation?.inviterName && (
-            <div className='flex items-start gap-3'>
-              <UserCircle className='h-5 w-5 text-muted-foreground mt-0.5' />
-              <div>
-                <p className='text-sm font-medium'>Invited by</p>
-                <p className='text-sm text-muted-foreground'>
-                  {invitation.inviterName}
-                  {invitation.inviterEmail && ` (${invitation.inviterEmail})`}
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div className='flex items-start gap-3'>
-            <ShieldCheck className='h-5 w-5 text-muted-foreground mt-0.5' />
-            <div>
-              <p className='text-sm font-medium'>Role</p>
-              <p className='text-sm text-muted-foreground capitalize'>
-                {invitation?.role.toLowerCase()}
-              </p>
-            </div>
-          </div>
-
-          <div className='flex items-start gap-3'>
-            <Clock className='h-5 w-5 text-muted-foreground mt-0.5' />
-            <div>
-              <p className='text-sm font-medium'>Expires</p>
-              <p className='text-sm text-muted-foreground'>
-                {invitation?.expiresAt &&
-                  new Date(invitation.expiresAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-              </p>
-            </div>
+        <div className='flex items-start gap-3'>
+          <Clock
+            className='h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0'
+            aria-hidden='true'
+          />
+          <div className='min-w-0'>
+            <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+              Expires
+            </p>
+            <p className='text-sm'>
+              {invitation?.expiresAt &&
+                new Date(invitation.expiresAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
+        <div
+          role='alert'
+          aria-live='polite'
+          className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'
+        >
           {error}
         </div>
       )}
 
       {/* Email Mismatch Warning */}
       {session && !emailMatches && (
-        <div className='rounded-md bg-yellow-500/10 p-3 text-sm text-yellow-600 dark:text-yellow-500'>
+        <div
+          role='alert'
+          className='rounded-md bg-yellow-500/10 p-3 text-sm text-yellow-700 dark:text-yellow-400'
+        >
           <div className='flex items-start gap-2'>
-            <AlertCircle className='h-4 w-4 mt-0.5 flex-shrink-0' />
+            <AlertCircle
+              className='h-4 w-4 mt-0.5 flex-shrink-0'
+              aria-hidden='true'
+            />
             <p>
               This invitation was sent to{' '}
               <span className='font-medium'>{invitation?.email}</span>, but
-              you&apos;re logged in as{' '}
-              <span className='font-medium'>{session.user.email}</span>. You may
-              need to log in with the invited email address.
+              you&apos;re signed in as{' '}
+              <span className='font-medium'>{session.user.email}</span>. You
+              must sign in with the invited email address to accept.
             </p>
           </div>
         </div>
@@ -384,11 +460,13 @@ export default function InvitePage({ params }: InvitePageProps) {
             onClick={handleAccept}
             disabled={isAccepting || !emailMatches}
           >
-            {isAccepting ? 'Accepting...' : 'Accept Invitation'}
+            {isAccepting ? 'Accepting invitation...' : 'Accept invitation'}
           </Button>
           {!emailMatches && (
             <Button variant='outline' className='w-full' asChild>
-              <Link href='/login'>Log in with {invitation?.email}</Link>
+              <Link href={`/login?invite=${token}`}>
+                Sign in as {invitation?.email}
+              </Link>
             </Button>
           )}
         </div>
@@ -399,7 +477,7 @@ export default function InvitePage({ params }: InvitePageProps) {
           </Button>
           <Button variant='outline' className='w-full' asChild>
             <Link href={`/login?invite=${token}`}>
-              Sign in to existing account
+              Sign in to an existing account
             </Link>
           </Button>
         </div>
@@ -407,8 +485,8 @@ export default function InvitePage({ params }: InvitePageProps) {
 
       {/* Footer */}
       <p className='text-center text-xs text-muted-foreground'>
-        By accepting this invitation, you will gain access to the workspace and
-        its resources.
+        By accepting, you will join the workspace and gain access to its
+        resources based on your assigned role.
       </p>
     </div>
   );

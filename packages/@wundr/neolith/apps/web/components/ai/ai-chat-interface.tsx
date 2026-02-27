@@ -7,6 +7,7 @@ import {
   Loader2,
   AlertCircle,
   ChevronUp,
+  MessageSquarePlus,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
@@ -165,7 +166,7 @@ export function AIChatInterface({
           {visibleMessages.length === 0 && !isLoading && (
             <div className='flex flex-col items-center justify-center py-12 text-center'>
               <div className='rounded-full bg-primary/10 p-6 mb-4'>
-                <MessageSquarePlusIcon className='h-12 w-12 text-primary' />
+                <MessageSquarePlus className='h-12 w-12 text-primary' />
               </div>
               <h3 className='text-xl font-semibold mb-2'>
                 How can I help you today?
@@ -208,7 +209,6 @@ export function AIChatInterface({
                 createdAt: message.createdAt ?? new Date(),
                 status: message.status,
               }}
-              isLatest={index === visibleMessages.length - 1}
             />
           ))}
 
@@ -305,7 +305,6 @@ interface MessageBubbleProps {
     createdAt: Date;
     status?: 'sending' | 'sent' | 'error' | 'streaming';
   };
-  isLatest: boolean;
 }
 
 function MessageBubble({ message }: MessageBubbleProps) {
@@ -374,26 +373,5 @@ function MessageBubble({ message }: MessageBubbleProps) {
         </Avatar>
       )}
     </div>
-  );
-}
-
-function MessageSquarePlusIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns='http://www.w3.org/2000/svg'
-      width='24'
-      height='24'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' />
-      <line x1='12' y1='9' x2='12' y2='13' />
-      <line x1='10' y1='11' x2='14' y2='11' />
-    </svg>
   );
 }

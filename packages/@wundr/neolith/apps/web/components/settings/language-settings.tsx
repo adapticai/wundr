@@ -209,6 +209,32 @@ export function LanguageSettings() {
     });
   };
 
+  const handleCancelChanges = () => {
+    const saved = localStorage.getItem('language-preferences');
+    if (saved) {
+      try {
+        setPreferences(JSON.parse(saved));
+      } catch {
+        // fallback to auto-detected values
+        setPreferences(prev => ({
+          ...prev,
+          locale: detectLocale(),
+          timezone: detectTimezone(),
+        }));
+      }
+    } else {
+      setPreferences(prev => ({
+        ...prev,
+        locale: detectLocale(),
+        timezone: detectTimezone(),
+      }));
+    }
+    toast({
+      title: 'Changes Discarded',
+      description: 'Your unsaved changes have been reverted',
+    });
+  };
+
   // Group locales by region - must be before early return to keep hooks consistent
   const localesByRegion = React.useMemo(() => {
     const regions = getLocaleRegions();
@@ -759,8 +785,8 @@ export function LanguageSettings() {
 
       {/* Save Button */}
       <div className='flex justify-end gap-3'>
-        <Button variant='outline' onClick={() => window.location.reload()}>
-          Cancel
+        <Button variant='outline' onClick={handleCancelChanges}>
+          Discard Changes
         </Button>
         <Button onClick={handleSavePreferences} disabled={isSaving}>
           {isSaving ? 'Saving...' : 'Save All Changes'}

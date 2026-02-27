@@ -2,12 +2,14 @@
 
 import {
   Activity,
+  AlertCircle,
   ArrowUp,
   Calendar,
   CheckCircle,
   FileText,
   Hash,
   MessageSquare,
+  RefreshCw,
   UserPlus,
   Workflow as WorkflowIcon,
 } from 'lucide-react';
@@ -185,7 +187,7 @@ export default function ActivityPage() {
           className='inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50'
           title='Refresh activity feed'
         >
-          <RefreshIcon className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+          <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
           Refresh
         </button>
       </div>
@@ -268,18 +270,16 @@ export default function ActivityPage() {
 
       {/* Error State */}
       {error && (
-        <div className='rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20'>
-          <div className='flex items-center gap-2 text-red-800 dark:text-red-200'>
-            <AlertIcon className='h-5 w-5' />
+        <div className='rounded-lg border border-destructive/50 bg-destructive/10 p-4'>
+          <div className='flex items-center gap-2 text-destructive'>
+            <AlertCircle className='h-5 w-5' />
             <p className='text-sm font-medium'>Failed to load activities</p>
           </div>
-          <p className='mt-1 text-sm text-red-600 dark:text-red-300'>
-            {error.message}
-          </p>
+          <p className='mt-1 text-sm text-destructive/80'>{error.message}</p>
           <button
             type='button'
             onClick={refresh}
-            className='mt-2 text-sm font-medium text-red-800 hover:text-red-900 dark:text-red-200'
+            className='mt-2 text-sm font-medium text-destructive hover:text-destructive/80'
           >
             Try again
           </button>
@@ -607,37 +607,4 @@ function renderMetadataTags(activity: ActivityEntry): React.ReactNode {
   }
 
   return tags;
-}
-
-/**
- * Icons
- */
-function RefreshIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <path d='M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2' />
-    </svg>
-  );
-}
-
-function AlertIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-    >
-      <circle cx='12' cy='12' r='10' />
-      <line x1='12' x2='12' y1='8' y2='12' />
-      <line x1='12' x2='12.01' y1='16' y2='16' />
-    </svg>
-  );
 }

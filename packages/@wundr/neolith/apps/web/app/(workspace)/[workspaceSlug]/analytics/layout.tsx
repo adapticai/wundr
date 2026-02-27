@@ -1,15 +1,13 @@
 'use client';
 
 import {
+  Activity,
   BarChart3,
   Calendar as CalendarIcon,
   Download,
   Filter,
-  LineChart,
-  PieChart,
   TrendingUp,
   Users,
-  Activity,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -71,28 +69,16 @@ const analyticsViews = [
     href: 'performance',
   },
   {
-    value: 'users',
-    label: 'Users',
+    value: 'team',
+    label: 'Team',
     icon: Users,
-    href: 'users',
+    href: 'team',
   },
   {
-    value: 'engagement',
-    label: 'Engagement',
+    value: 'usage',
+    label: 'Usage',
     icon: Activity,
-    href: 'engagement',
-  },
-  {
-    value: 'trends',
-    label: 'Trends',
-    icon: LineChart,
-    href: 'trends',
-  },
-  {
-    value: 'distribution',
-    label: 'Distribution',
-    icon: PieChart,
-    href: 'distribution',
+    href: 'usage',
   },
 ];
 
@@ -174,22 +160,45 @@ export default function AnalyticsLayout({
 
   // Determine active tab from pathname
   const activeView = React.useMemo(() => {
-    const pathSegments = pathname.split('/');
+    const pathSegments = pathname.split('/').filter(Boolean);
     const lastSegment = pathSegments[pathSegments.length - 1];
+    // Exact match first, then prefix match
     return (
-      analyticsViews.find(view => lastSegment.includes(view.href))?.value ||
+      analyticsViews.find(view => lastSegment === view.href)?.value ||
       'overview'
     );
   }, [pathname]);
 
-  const handleExport = React.useCallback(() => {
-    // Implementation would export data in selected format
-    console.log('Exporting as:', exportFormat);
-    // In a real implementation, this would:
-    // 1. Gather current view data
-    // 2. Format according to selected export type
-    // 3. Trigger download
-  }, [exportFormat]);
+  const handleExport = React.useCallback(async () => {
+    if (!workspaceSlug) return;
+    const format = exportFormat === 'xlsx' ? 'csv' : exportFormat;
+    if (format !== 'csv' && format !== 'json') {
+      // PDF not yet supported server-side; fall through gracefully
+      return;
+    }
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/analytics/export`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ format }),
+        }
+      );
+      if (!response.ok) return;
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `analytics-${workspaceSlug}-${Date.now()}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch {
+      // Silently fail — export errors are non-critical
+    }
+  }, [exportFormat, workspaceSlug]);
 
   const handleTimeRangeChange = React.useCallback((value: string) => {
     setTimeRange(value);

@@ -36,12 +36,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -467,20 +461,20 @@ export default function SessionManagerDetailPage() {
               <div>
                 <h4 className='text-sm font-semibold mb-2 flex items-center gap-2'>
                   <FileText className='h-4 w-4' />
-                  Charter Configuration
+                  Charter
                 </h4>
                 {sessionManager.charterId ? (
-                  <div className='text-sm text-muted-foreground'>
-                    <p>Charter ID: {sessionManager.charterId}</p>
-                    {sessionManager.charterData && (
-                      <pre className='mt-2 text-xs bg-muted p-3 rounded-md overflow-auto max-h-32'>
-                        {JSON.stringify(sessionManager.charterData, null, 2)}
-                      </pre>
-                    )}
+                  <div className='flex items-center gap-2 text-sm'>
+                    <span className='inline-block h-2 w-2 rounded-full bg-green-500' />
+                    <span className='text-muted-foreground'>
+                      Charter assigned
+                    </span>
                   </div>
                 ) : (
                   <p className='text-sm text-muted-foreground'>
-                    No charter configured
+                    No charter configured. Assign a charter in the Configuration
+                    tab to define operational parameters for this session
+                    manager.
                   </p>
                 )}
               </div>
@@ -577,61 +571,316 @@ export default function SessionManagerDetailPage() {
         <TabsContent value='configuration' className='space-y-4 mt-6'>
           <Card>
             <CardHeader>
-              <CardTitle>Configuration</CardTitle>
+              <CardTitle>General Configuration</CardTitle>
               <CardDescription>
-                Session manager settings and parameters
+                Core settings for this session manager
               </CardDescription>
             </CardHeader>
-            <CardContent className='space-y-4'>
-              <div>
-                <h4 className='text-sm font-semibold mb-2'>Global Settings</h4>
-                {sessionManager.isGlobal && sessionManager.globalConfig ? (
-                  <pre className='text-xs bg-muted p-3 rounded-md overflow-auto max-h-48'>
-                    {JSON.stringify(sessionManager.globalConfig, null, 2)}
-                  </pre>
-                ) : (
-                  <p className='text-sm text-muted-foreground'>
-                    Not configured as global session manager
+            <CardContent>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                <div className='space-y-1'>
+                  <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                    Name
                   </p>
-                )}
-              </div>
-
-              <Separator />
-
-              <div>
-                <h4 className='text-sm font-semibold mb-2'>
-                  Worktree Configuration
-                </h4>
-                {sessionManager.worktreeConfig ? (
-                  <pre className='text-xs bg-muted p-3 rounded-md overflow-auto max-h-48'>
-                    {JSON.stringify(sessionManager.worktreeConfig, null, 2)}
-                  </pre>
-                ) : (
-                  <p className='text-sm text-muted-foreground'>
-                    No worktree configuration
+                  <p className='text-sm font-semibold'>{sessionManager.name}</p>
+                </div>
+                <div className='space-y-1'>
+                  <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                    Status
                   </p>
+                  <Badge
+                    className={cn(statusTextColors[sessionManager.status])}
+                  >
+                    {sessionManager.status}
+                  </Badge>
+                </div>
+                <div className='space-y-1'>
+                  <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                    Scope
+                  </p>
+                  <p className='text-sm'>
+                    {sessionManager.isGlobal
+                      ? 'Global — available to all orchestrators'
+                      : 'Local — scoped to this orchestrator'}
+                  </p>
+                </div>
+                <div className='space-y-1'>
+                  <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                    Max Concurrent Subagents
+                  </p>
+                  <p className='text-sm font-semibold'>
+                    {sessionManager.maxConcurrentSubagents}
+                  </p>
+                </div>
+                <div className='space-y-1'>
+                  <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                    Token Budget
+                  </p>
+                  <p className='text-sm font-semibold'>
+                    {sessionManager.tokenBudgetPerHour.toLocaleString()} tokens
+                    / hour
+                  </p>
+                </div>
+                <div className='space-y-1'>
+                  <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                    Charter
+                  </p>
+                  <p className='text-sm'>
+                    {sessionManager.charterId
+                      ? 'Charter assigned'
+                      : 'No charter configured'}
+                  </p>
+                </div>
+                {sessionManager.description && (
+                  <div className='sm:col-span-2 space-y-1'>
+                    <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                      Description
+                    </p>
+                    <p className='text-sm'>{sessionManager.description}</p>
+                  </div>
                 )}
               </div>
             </CardContent>
           </Card>
+
+          {sessionManager.worktreeConfig &&
+            Object.keys(sessionManager.worktreeConfig).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Worktree Configuration</CardTitle>
+                  <CardDescription>
+                    Git worktree and file system settings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                    {Object.entries(sessionManager.worktreeConfig).map(
+                      ([key, value]) => (
+                        <div key={key} className='space-y-1'>
+                          <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                            {key
+                              .replace(/([A-Z])/g, ' $1')
+                              .replace(/^./, s => s.toUpperCase())}
+                          </p>
+                          <p className='text-sm font-mono break-all'>
+                            {typeof value === 'object'
+                              ? JSON.stringify(value)
+                              : String(value)}
+                          </p>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+          {sessionManager.isGlobal &&
+            sessionManager.globalConfig &&
+            Object.keys(sessionManager.globalConfig).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Global Settings</CardTitle>
+                  <CardDescription>
+                    Settings applied when this session manager is used globally
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                    {Object.entries(sessionManager.globalConfig).map(
+                      ([key, value]) => (
+                        <div key={key} className='space-y-1'>
+                          <p className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                            {key
+                              .replace(/([A-Z])/g, ' $1')
+                              .replace(/^./, s => s.toUpperCase())}
+                          </p>
+                          <p className='text-sm font-mono break-all'>
+                            {typeof value === 'object'
+                              ? JSON.stringify(value)
+                              : String(value)}
+                          </p>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
         </TabsContent>
 
         <TabsContent value='stats' className='space-y-4 mt-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <Card>
+              <CardHeader>
+                <CardTitle>Subagent Utilization</CardTitle>
+                <CardDescription>
+                  Active vs total subagent capacity
+                </CardDescription>
+              </CardHeader>
+              <CardContent className='space-y-4'>
+                <div>
+                  <div className='flex justify-between items-center mb-2 text-sm'>
+                    <span className='font-medium'>Active Subagents</span>
+                    <span className='text-muted-foreground'>
+                      {activeSubagents} /{' '}
+                      {sessionManager.maxConcurrentSubagents}
+                    </span>
+                  </div>
+                  <div className='w-full bg-muted rounded-full h-2.5'>
+                    <div
+                      className='bg-primary rounded-full h-2.5 transition-all'
+                      style={{
+                        width: `${Math.min(
+                          (activeSubagents /
+                            sessionManager.maxConcurrentSubagents) *
+                            100,
+                          100
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                  <p className='text-xs text-muted-foreground mt-1'>
+                    {Math.round(
+                      (activeSubagents /
+                        sessionManager.maxConcurrentSubagents) *
+                        100
+                    )}
+                    % capacity in use
+                  </p>
+                </div>
+
+                <div className='grid grid-cols-2 gap-3 pt-2'>
+                  <div className='p-3 border rounded-lg'>
+                    <p className='text-xs text-muted-foreground'>
+                      Total Subagents
+                    </p>
+                    <p className='text-xl font-bold mt-0.5'>
+                      {sessionManager.subagents.length}
+                    </p>
+                  </div>
+                  <div className='p-3 border rounded-lg'>
+                    <p className='text-xs text-muted-foreground'>Active Now</p>
+                    <p className='text-xl font-bold mt-0.5 text-green-600'>
+                      {activeSubagents}
+                    </p>
+                  </div>
+                  <div className='p-3 border rounded-lg'>
+                    <p className='text-xs text-muted-foreground'>Inactive</p>
+                    <p className='text-xl font-bold mt-0.5 text-muted-foreground'>
+                      {
+                        sessionManager.subagents.filter(
+                          sa => sa.status !== 'ACTIVE'
+                        ).length
+                      }
+                    </p>
+                  </div>
+                  <div className='p-3 border rounded-lg'>
+                    <p className='text-xs text-muted-foreground'>
+                      Capacity Left
+                    </p>
+                    <p className='text-xl font-bold mt-0.5'>
+                      {sessionManager.maxConcurrentSubagents - activeSubagents}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Token Budget</CardTitle>
+                <CardDescription>
+                  Hourly token allocation for this session manager
+                </CardDescription>
+              </CardHeader>
+              <CardContent className='space-y-4'>
+                <div className='flex items-end gap-2'>
+                  <p className='text-3xl font-bold'>
+                    {sessionManager.tokenBudgetPerHour >= 1_000_000
+                      ? `${(sessionManager.tokenBudgetPerHour / 1_000_000).toFixed(1)}M`
+                      : sessionManager.tokenBudgetPerHour >= 1_000
+                        ? `${(sessionManager.tokenBudgetPerHour / 1_000).toFixed(0)}K`
+                        : sessionManager.tokenBudgetPerHour.toLocaleString()}
+                  </p>
+                  <p className='text-sm text-muted-foreground pb-1'>
+                    tokens / hour
+                  </p>
+                </div>
+                <p className='text-sm text-muted-foreground'>
+                  This budget is shared across all subagents managed by this
+                  session manager. Individual subagents may have additional
+                  per-subagent limits configured.
+                </p>
+                <div className='pt-2 border-t'>
+                  <p className='text-xs text-muted-foreground'>
+                    Per-subagent average (if evenly distributed)
+                  </p>
+                  <p className='text-lg font-semibold mt-0.5'>
+                    {sessionManager.subagents.length > 0
+                      ? Math.floor(
+                          sessionManager.tokenBudgetPerHour /
+                            sessionManager.subagents.length
+                        ).toLocaleString()
+                      : sessionManager.tokenBudgetPerHour.toLocaleString()}{' '}
+                    <span className='text-sm font-normal text-muted-foreground'>
+                      tokens / hr
+                    </span>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <Card>
             <CardHeader>
-              <CardTitle>Performance Statistics</CardTitle>
+              <CardTitle>Subagent Breakdown</CardTitle>
               <CardDescription>
-                Usage metrics and performance data (Coming soon)
+                Status distribution across all subagents
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className='text-center py-12 text-muted-foreground'>
-                <TrendingUp className='h-12 w-12 mx-auto mb-4 opacity-50' />
-                <p className='text-sm'>Performance statistics coming soon</p>
-                <p className='text-xs mt-1'>
-                  Track token usage, task completion rates, and more
+              {sessionManager.subagents.length === 0 ? (
+                <p className='text-sm text-muted-foreground py-4 text-center'>
+                  No subagents configured yet.
                 </p>
-              </div>
+              ) : (
+                <div className='space-y-3'>
+                  {Object.entries(
+                    sessionManager.subagents.reduce<Record<string, number>>(
+                      (acc, sa) => {
+                        acc[sa.status] = (acc[sa.status] || 0) + 1;
+                        return acc;
+                      },
+                      {}
+                    )
+                  ).map(([status, count]) => (
+                    <div
+                      key={status}
+                      className='flex items-center justify-between text-sm'
+                    >
+                      <div className='flex items-center gap-2'>
+                        <span
+                          className={cn(
+                            'inline-block h-2 w-2 rounded-full',
+                            status === 'ACTIVE'
+                              ? 'bg-green-500'
+                              : status === 'ERROR'
+                                ? 'bg-red-500'
+                                : 'bg-gray-400'
+                          )}
+                        />
+                        <span className='font-medium capitalize'>
+                          {status.toLowerCase()}
+                        </span>
+                      </div>
+                      <span className='text-muted-foreground'>
+                        {count} subagent{count !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

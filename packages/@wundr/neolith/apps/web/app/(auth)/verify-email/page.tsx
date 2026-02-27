@@ -37,7 +37,10 @@ function VerifyEmailLoading() {
         </p>
       </div>
       <div className='flex justify-center py-8'>
-        <Loader2 className='h-12 w-12 animate-spin text-primary' />
+        <Loader2
+          className='h-16 w-16 animate-spin text-primary'
+          aria-hidden='true'
+        />
       </div>
     </div>
   );
@@ -65,7 +68,7 @@ function VerifyEmailContent() {
     if (!tokenParam) {
       setStatus('invalid');
       setError(
-        'No verification token provided. Please use the link from your email.'
+        'No verification token found. Please use the link from your email or request a new one.'
       );
       return;
     }
@@ -94,21 +97,28 @@ function VerifyEmailContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle specific error cases
         if (response.status === 400) {
           setStatus('invalid');
-          setError(data.error || 'Invalid verification token');
+          setError(
+            data.error ||
+              'This verification link is invalid. Please request a new one.'
+          );
         } else if (response.status === 410) {
           setStatus('expired');
-          setError(data.error || 'Verification token has expired');
+          setError(
+            data.error ||
+              'This verification link has expired. Please request a new one.'
+          );
         } else {
           setStatus('error');
-          setError(data.error || 'Failed to verify email');
+          setError(
+            data.error ||
+              'Verification failed. Please try again or request a new link.'
+          );
         }
         return;
       }
 
-      // Success
       setStatus('success');
 
       // Redirect to login after 3 seconds
@@ -148,7 +158,9 @@ function VerifyEmailContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to resend verification email');
+        throw new Error(
+          data.error || 'Failed to resend verification email. Please try again.'
+        );
       }
 
       setResendSuccess(true);
@@ -156,7 +168,7 @@ function VerifyEmailContent() {
       setResendError(
         err instanceof Error
           ? err.message
-          : 'Failed to resend verification email'
+          : 'Failed to resend verification email. Please try again.'
       );
     } finally {
       setIsResending(false);
@@ -170,14 +182,15 @@ function VerifyEmailContent() {
     switch (status) {
       case 'verifying':
         return (
-          <>
-            <div className='flex justify-center py-8'>
-              <Loader2 className='h-16 w-16 animate-spin text-primary' />
-            </div>
-            <p className='text-center text-sm text-muted-foreground'>
+          <div className='flex flex-col items-center gap-4 py-8'>
+            <Loader2
+              className='h-16 w-16 animate-spin text-primary'
+              aria-hidden='true'
+            />
+            <p className='text-sm text-muted-foreground'>
               Verifying your email address...
             </p>
-          </>
+          </div>
         );
 
       case 'success':
@@ -185,19 +198,21 @@ function VerifyEmailContent() {
           <>
             <div className='flex justify-center py-6'>
               <div className='rounded-full bg-green-500/10 p-4'>
-                <CheckCircle2 className='h-16 w-16 text-green-600 dark:text-green-400' />
+                <CheckCircle2
+                  className='h-16 w-16 text-green-600 dark:text-green-400'
+                  aria-hidden='true'
+                />
               </div>
             </div>
             <div className='rounded-md bg-green-500/10 p-4 text-center'>
               <p className='font-medium text-green-600 dark:text-green-400'>
-                Email verified successfully!
+                Email verified successfully
               </p>
               <p className='mt-2 text-sm text-green-600/80 dark:text-green-400/80'>
-                Your email has been verified. You can now sign in to your
-                account.
+                Your email address has been confirmed. You can now sign in.
               </p>
               <p className='mt-2 text-xs text-muted-foreground'>
-                Redirecting to login page...
+                Redirecting to the login page...
               </p>
             </div>
             <Button onClick={() => router.push('/login')} className='w-full'>
@@ -211,7 +226,10 @@ function VerifyEmailContent() {
           <>
             <div className='flex justify-center py-6'>
               <div className='rounded-full bg-yellow-500/10 p-4'>
-                <AlertCircle className='h-16 w-16 text-yellow-600 dark:text-yellow-400' />
+                <AlertCircle
+                  className='h-16 w-16 text-yellow-600 dark:text-yellow-400'
+                  aria-hidden='true'
+                />
               </div>
             </div>
             <div className='rounded-md bg-yellow-500/10 p-4 text-center'>
@@ -224,13 +242,20 @@ function VerifyEmailContent() {
             </div>
 
             {resendSuccess && (
-              <div className='rounded-md bg-green-500/10 p-3 text-center text-sm text-green-600 dark:text-green-400'>
-                Verification email sent! Please check your inbox.
+              <div
+                role='status'
+                aria-live='polite'
+                className='rounded-md bg-green-500/10 p-3 text-center text-sm text-green-600 dark:text-green-400'
+              >
+                New verification email sent. Please check your inbox.
               </div>
             )}
 
             {resendError && (
-              <div className='rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive'>
+              <div
+                role='alert'
+                className='rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive'
+              >
                 {resendError}
               </div>
             )}
@@ -242,17 +267,20 @@ function VerifyEmailContent() {
             >
               {isResending ? (
                 <>
-                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  Resending...
+                  <Loader2
+                    className='mr-2 h-4 w-4 animate-spin'
+                    aria-hidden='true'
+                  />
+                  Sending...
                 </>
               ) : resendSuccess ? (
                 <>
-                  <CheckCircle2 className='mr-2 h-4 w-4' />
+                  <CheckCircle2 className='mr-2 h-4 w-4' aria-hidden='true' />
                   Email sent
                 </>
               ) : (
                 <>
-                  <Mail className='mr-2 h-4 w-4' />
+                  <Mail className='mr-2 h-4 w-4' aria-hidden='true' />
                   Resend verification email
                 </>
               )}
@@ -266,7 +294,10 @@ function VerifyEmailContent() {
           <>
             <div className='flex justify-center py-6'>
               <div className='rounded-full bg-destructive/10 p-4'>
-                <XCircle className='h-16 w-16 text-destructive' />
+                <XCircle
+                  className='h-16 w-16 text-destructive'
+                  aria-hidden='true'
+                />
               </div>
             </div>
             <div className='rounded-md bg-destructive/10 p-4 text-center'>
@@ -281,13 +312,20 @@ function VerifyEmailContent() {
             {token && (
               <>
                 {resendSuccess && (
-                  <div className='rounded-md bg-green-500/10 p-3 text-center text-sm text-green-600 dark:text-green-400'>
-                    Verification email sent! Please check your inbox.
+                  <div
+                    role='status'
+                    aria-live='polite'
+                    className='rounded-md bg-green-500/10 p-3 text-center text-sm text-green-600 dark:text-green-400'
+                  >
+                    New verification email sent. Please check your inbox.
                   </div>
                 )}
 
                 {resendError && (
-                  <div className='rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive'>
+                  <div
+                    role='alert'
+                    className='rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive'
+                  >
                     {resendError}
                   </div>
                 )}
@@ -300,17 +338,23 @@ function VerifyEmailContent() {
                 >
                   {isResending ? (
                     <>
-                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                      Resending...
+                      <Loader2
+                        className='mr-2 h-4 w-4 animate-spin'
+                        aria-hidden='true'
+                      />
+                      Sending...
                     </>
                   ) : resendSuccess ? (
                     <>
-                      <CheckCircle2 className='mr-2 h-4 w-4' />
+                      <CheckCircle2
+                        className='mr-2 h-4 w-4'
+                        aria-hidden='true'
+                      />
                       Email sent
                     </>
                   ) : (
                     <>
-                      <Mail className='mr-2 h-4 w-4' />
+                      <Mail className='mr-2 h-4 w-4' aria-hidden='true' />
                       Resend verification email
                     </>
                   )}
@@ -323,19 +367,21 @@ function VerifyEmailContent() {
   };
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-6' aria-live='polite'>
       {/* Page Header */}
       <div className='space-y-2 text-center'>
         <h2 className='text-2xl font-semibold tracking-tight'>
-          {status === 'success' ? 'Email verified!' : 'Verify your email'}
+          {status === 'success' ? 'Email verified' : 'Verify your email'}
         </h2>
         <p className='text-sm text-muted-foreground'>
           {status === 'verifying' &&
-            'Please wait while we verify your email address'}
-          {status === 'success' && 'Your email has been successfully verified'}
-          {status === 'expired' && 'Your verification link has expired'}
-          {status === 'invalid' && 'The verification link is invalid'}
-          {status === 'error' && 'We encountered an error verifying your email'}
+            'Please wait while we verify your email address.'}
+          {status === 'success' &&
+            'Your email has been successfully confirmed.'}
+          {status === 'expired' && 'Your verification link has expired.'}
+          {status === 'invalid' && 'The verification link is not valid.'}
+          {status === 'error' &&
+            'We encountered a problem verifying your email.'}
         </p>
       </div>
 
@@ -362,7 +408,7 @@ function VerifyEmailContent() {
             href='/register'
             className='font-medium text-primary hover:underline'
           >
-            Sign up
+            Create an account
           </Link>
         </p>
       )}
@@ -373,12 +419,9 @@ function VerifyEmailContent() {
 /**
  * Verify Email page component for email verification.
  *
- * Handles email verification using tokens sent via email during registration.
- * Provides feedback for various verification states and allows users to resend
- * verification emails if the token has expired.
- *
- * Features a modern, responsive design with dark mode support matching
- * the existing authentication pages.
+ * Handles email verification using tokens sent during registration.
+ * Provides feedback for all verification states and allows users to
+ * resend verification emails when the token has expired.
  *
  * @example
  * URL: /verify-email?token=abc123xyz

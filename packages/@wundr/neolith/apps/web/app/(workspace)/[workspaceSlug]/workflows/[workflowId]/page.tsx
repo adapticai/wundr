@@ -111,7 +111,6 @@ export default function WorkflowDetailPage() {
   }, [deleteWorkflow, router, workspaceId]);
 
   const handleEdit = useCallback(() => {
-    // Navigate to edit page or open modal
     router.push(`/${workspaceId}/workflows/${workflowId}/edit`);
   }, [router, workspaceId, workflowId]);
 

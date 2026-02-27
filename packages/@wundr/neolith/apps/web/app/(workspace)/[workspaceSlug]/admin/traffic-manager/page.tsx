@@ -23,9 +23,10 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
 import { TrafficDashboard } from '@/components/traffic-manager/traffic-dashboard';
 import { RoutingPanel } from '@/components/traffic-manager/routing-panel';
+import { usePageHeader } from '@/contexts/page-header-context';
+import { useToast } from '@/hooks/use-toast';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -285,8 +286,16 @@ function SettingsTab({
 
 export default function TrafficManagerPage() {
   const { workspaceSlug } = useParams<{ workspaceSlug: string }>();
+  const { setPageHeader } = usePageHeader();
   const [workspaceId, setWorkspaceId] = useState('');
   const [orchestrators, setOrchestrators] = useState<Orchestrator[]>([]);
+
+  useEffect(() => {
+    setPageHeader(
+      'Traffic Manager',
+      'Monitor routing activity, manage rules, and configure how messages are dispatched to agents'
+    );
+  }, [setPageHeader]);
 
   useEffect(() => {
     if (!workspaceSlug) return;
@@ -307,18 +316,6 @@ export default function TrafficManagerPage() {
 
   return (
     <div className='flex flex-col gap-6'>
-      {/* Page Header */}
-      <div>
-        <h1 className='text-2xl font-semibold tracking-tight'>
-          Traffic Manager
-        </h1>
-        <p className='mt-1 text-sm text-muted-foreground'>
-          Monitor routing activity, manage rules, and configure how messages are
-          dispatched to agents across your workspace.
-        </p>
-      </div>
-
-      {/* Tabs */}
       <Tabs defaultValue='dashboard'>
         <TabsList>
           <TabsTrigger value='dashboard'>Dashboard</TabsTrigger>

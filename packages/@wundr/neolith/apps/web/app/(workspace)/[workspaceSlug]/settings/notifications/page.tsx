@@ -144,14 +144,13 @@ export default function NotificationsSettingsPage() {
   }, [settings, updateSettings]);
 
   const handleToggleDoNotDisturb = useCallback(() => {
-    setDoNotDisturb(!doNotDisturb);
+    const next = !doNotDisturb;
+    setDoNotDisturb(next);
     toast({
-      title: doNotDisturb
-        ? 'Do Not Disturb disabled'
-        : 'Do Not Disturb enabled',
-      description: doNotDisturb
-        ? 'You will now receive notifications'
-        : 'Notifications are paused',
+      title: next ? 'Do Not Disturb enabled' : 'Do Not Disturb disabled',
+      description: next
+        ? 'All notifications are paused until you turn this off.'
+        : 'You will receive notifications again.',
     });
   }, [doNotDisturb, toast]);
 
@@ -385,16 +384,16 @@ export default function NotificationsSettingsPage() {
   if (isLoading) {
     return (
       <div className='flex min-h-[400px] items-center justify-center'>
-        <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent' />
+        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
       </div>
     );
   }
 
   if (!settings) {
     return (
-      <div className='flex min-h-[400px] items-center justify-center'>
-        <p className='text-muted-foreground'>
-          Failed to load notification settings
+      <div className='flex min-h-[400px] flex-col items-center justify-center gap-3'>
+        <p className='text-sm text-muted-foreground'>
+          Unable to load notification settings. Please refresh and try again.
         </p>
       </div>
     );
@@ -405,7 +404,7 @@ export default function NotificationsSettingsPage() {
       <div>
         <h1 className='text-2xl font-bold'>Notification Settings</h1>
         <p className='mt-1 text-muted-foreground'>
-          Configure how and when you receive notifications from Neolith.
+          Control how and when Neolith notifies you across all channels.
         </p>
       </div>
 
@@ -420,9 +419,9 @@ export default function NotificationsSettingsPage() {
         <CardContent className='space-y-4'>
           <div className='flex items-center justify-between'>
             <div className='space-y-0.5'>
-              <Label htmlFor='master-toggle'>All notifications</Label>
+              <Label htmlFor='master-toggle'>Enable notifications</Label>
               <p className='text-sm text-muted-foreground'>
-                Turn all notifications on or off
+                Receive notifications across all channels and devices
               </p>
             </div>
             <Switch
@@ -436,7 +435,8 @@ export default function NotificationsSettingsPage() {
             <div className='space-y-0.5'>
               <Label htmlFor='dnd-toggle'>Do Not Disturb</Label>
               <p className='text-sm text-muted-foreground'>
-                Temporarily pause all notifications
+                Pause all notifications immediately. Urgent alerts still come
+                through.
               </p>
             </div>
             <Switch
@@ -779,9 +779,9 @@ export default function NotificationsSettingsPage() {
                   <TableCell className='text-center'>
                     <Switch
                       checked={
-                        settings.preferences[type].sound && settings.email
+                        settings.preferences[type].enabled && settings.email
                       }
-                      onCheckedChange={() => handleTypeToggle(type, 'sound')}
+                      onCheckedChange={() => handleTypeToggle(type, 'enabled')}
                       disabled={!settings.enabled || !settings.email}
                       aria-label={`Email notifications for ${config.label}`}
                     />
@@ -881,12 +881,19 @@ export default function NotificationsSettingsPage() {
 
               <div className='flex items-center justify-between rounded-md border p-3'>
                 <div className='space-y-0.5'>
-                  <Label>Override for urgent notifications</Label>
+                  <Label htmlFor='urgent-override'>
+                    Allow urgent notifications
+                  </Label>
                   <p className='text-sm text-muted-foreground'>
-                    Allow critical notifications during quiet hours
+                    Critical alerts (incoming calls, security notices) still
+                    come through during quiet hours
                   </p>
                 </div>
-                <Switch defaultChecked disabled={!settings.enabled} />
+                <Switch
+                  id='urgent-override'
+                  defaultChecked
+                  disabled={!settings.enabled}
+                />
               </div>
             </>
           )}
@@ -909,12 +916,12 @@ export default function NotificationsSettingsPage() {
                   key={channelId}
                   className='flex items-center justify-between rounded-md border p-3'
                 >
-                  <span className='text-sm font-medium'>
-                    Channel: {channelId}
+                  <span className='text-sm font-medium font-mono text-muted-foreground'>
+                    #{channelId}
                   </span>
                   <Button
                     type='button'
-                    variant='ghost'
+                    variant='outline'
                     size='sm'
                     onClick={() => unmuteChannel(channelId)}
                   >
@@ -941,7 +948,14 @@ export default function NotificationsSettingsPage() {
             onClick={handleTestNotification}
             disabled={!settings.enabled || isSendingTest}
           >
-            {isSendingTest ? 'Sending...' : 'Send Test Notification'}
+            {isSendingTest ? (
+              <>
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                Sending...
+              </>
+            ) : (
+              'Send Test Notification'
+            )}
           </Button>
         </CardContent>
       </Card>

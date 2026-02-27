@@ -29,5 +29,10 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     notFound();
   }
 
-  return <DashboardContent workspaceId={workspaceAccess.id} />;
+  return (
+    <DashboardContent
+      workspaceId={workspaceAccess.id}
+      workspaceSlug={workspaceAccess.slug}
+    />
+  );
 }

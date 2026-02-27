@@ -99,6 +99,11 @@ export default function AdvancedSettingsPage() {
   const { setPageHeader } = usePageHeader();
   const { toast } = useToast();
 
+  // Local draft for the API endpoint input to avoid toasts on every keystroke
+  const [apiEndpointDraft, setApiEndpointDraft] = useState(
+    process.env.NEXT_PUBLIC_API_URL || 'https://api.neolith.app'
+  );
+
   // State management
   const [settings, setSettings] = useState<AdvancedSettings>({
     developerMode: false,
@@ -132,7 +137,7 @@ export default function AdvancedSettingsPage() {
     connected: false,
     url: '',
     reconnectAttempts: 0,
-    lastPing: 0,
+    lastPing: Date.now(),
   });
 
   const [clearCacheDialog, setClearCacheDialog] = useState(false);
@@ -151,6 +156,7 @@ export default function AdvancedSettingsPage() {
       try {
         const parsed = JSON.parse(savedSettings) as AdvancedSettings;
         setSettings(parsed);
+        setApiEndpointDraft(parsed.apiEndpoint);
 
         if (parsed.performanceMetrics) {
           startMetricsTracking();
@@ -187,14 +193,31 @@ export default function AdvancedSettingsPage() {
     if (metricsIntervalRef.current) {
       clearInterval(metricsIntervalRef.current);
     }
+    let lastFrameTime = performance.now();
+    let frameCount = 0;
+
+    const countFrame = () => {
+      frameCount++;
+      requestAnimationFrame(countFrame);
+    };
+    requestAnimationFrame(countFrame);
+
     metricsIntervalRef.current = setInterval(() => {
-      const perf = window.performance;
-      const memory = (perf as any).memory;
+      const now = performance.now();
+      const elapsed = now - lastFrameTime;
+      const fps =
+        elapsed > 0
+          ? Math.min(Math.round((frameCount / elapsed) * 1000), 120)
+          : 60;
+      frameCount = 0;
+      lastFrameTime = now;
+
+      const memory = (performance as any).memory;
 
       setMetrics({
-        fps: Math.round(1000 / (perf.now() % 1000)),
+        fps,
         memory: memory ? Math.round(memory.usedJSHeapSize / 1048576) : 0,
-        renderTime: Math.round(perf.now() % 100),
+        renderTime: Math.round(elapsed / 1000),
         apiCalls: parseInt(localStorage.getItem('api-call-count') || '0'),
         cacheSize: calculateCacheSize(),
       });
@@ -498,6 +521,9 @@ export default function AdvancedSettingsPage() {
               )}
               WebSocket Connection
             </CardTitle>
+            <CardDescription className='text-xs'>
+              Real-time connection used for live updates
+            </CardDescription>
           </CardHeader>
           <CardContent className='space-y-3'>
             <div className='flex items-center justify-between'>
@@ -506,10 +532,14 @@ export default function AdvancedSettingsPage() {
                 {wsStatus.connected ? 'Connected' : 'Disconnected'}
               </Badge>
             </div>
-            <div className='flex items-center justify-between'>
-              <span className='text-sm text-muted-foreground'>URL</span>
-              <span className='text-sm font-mono'>{wsStatus.url}</span>
-            </div>
+            {wsStatus.url && (
+              <div className='flex items-center justify-between'>
+                <span className='text-sm text-muted-foreground'>URL</span>
+                <span className='text-sm font-mono truncate max-w-48'>
+                  {wsStatus.url}
+                </span>
+              </div>
+            )}
             <div className='flex items-center justify-between'>
               <span className='text-sm text-muted-foreground'>
                 Reconnect Attempts
@@ -517,7 +547,9 @@ export default function AdvancedSettingsPage() {
               <span className='text-sm'>{wsStatus.reconnectAttempts}</span>
             </div>
             <div className='flex items-center justify-between'>
-              <span className='text-sm text-muted-foreground'>Last Ping</span>
+              <span className='text-sm text-muted-foreground'>
+                Last Checked
+              </span>
               <span className='text-sm'>
                 {Math.round((Date.now() - wsStatus.lastPing) / 1000)}s ago
               </span>
@@ -529,7 +561,7 @@ export default function AdvancedSettingsPage() {
               onClick={checkWebSocketStatus}
             >
               <Network className='h-4 w-4 mr-2' />
-              Reconnect
+              Check Connection
             </Button>
           </CardContent>
         </Card>
@@ -538,33 +570,38 @@ export default function AdvancedSettingsPage() {
       {/* API Configuration Section */}
       <SettingsSection
         title='API Configuration'
-        description='Configure API endpoint for self-hosted instances'
+        description='Configure the API endpoint for self-hosted or custom deployments'
       >
         <SettingsGroup>
           <SettingsRow
             label='API Endpoint'
-            description='Base URL for API requests (requires app restart)'
+            description='Base URL for API requests. Changes take effect after reloading the app.'
             htmlFor='api-endpoint'
           >
             <div className='flex gap-2 w-full max-w-md'>
               <Input
                 id='api-endpoint'
                 type='url'
-                value={settings.apiEndpoint}
-                onChange={e => updateSettings({ apiEndpoint: e.target.value })}
+                value={apiEndpointDraft}
+                onChange={e => setApiEndpointDraft(e.target.value)}
+                onBlur={() => {
+                  if (apiEndpointDraft !== settings.apiEndpoint) {
+                    updateSettings({ apiEndpoint: apiEndpointDraft });
+                  }
+                }}
                 placeholder='https://api.neolith.app'
                 className='flex-1'
               />
               <Button
                 variant='outline'
                 size='sm'
-                onClick={() =>
-                  updateSettings({
-                    apiEndpoint:
-                      process.env.NEXT_PUBLIC_API_URL ||
-                      'https://api.neolith.app',
-                  })
-                }
+                onClick={() => {
+                  const defaultEndpoint =
+                    process.env.NEXT_PUBLIC_API_URL ||
+                    'https://api.neolith.app';
+                  setApiEndpointDraft(defaultEndpoint);
+                  updateSettings({ apiEndpoint: defaultEndpoint });
+                }}
               >
                 Reset
               </Button>

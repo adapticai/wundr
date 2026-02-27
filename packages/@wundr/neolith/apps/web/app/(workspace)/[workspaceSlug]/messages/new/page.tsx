@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Users, Bot, Mail, Check, Hash, BellOff } from 'lucide-react';
+import { X, Users, Bot, Mail, Hash, BellOff } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 
@@ -65,7 +65,6 @@ export default function NewMessagePage() {
   const [isSearching, setIsSearching] = useState(false);
   const [isFocused, setIsFocused] = useState(true);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [showInitialSuggestions, setShowInitialSuggestions] = useState(true);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -480,13 +479,6 @@ export default function NewMessagePage() {
     [recipients, currentUser, workspaceSlug, router]
   );
 
-  // Auto-save indicator - only triggers when recipients are added
-  useEffect(() => {
-    if (recipients.length > 0) {
-      setLastSaved(new Date());
-    }
-  }, [recipients]);
-
   if (isAuthLoading) {
     return (
       <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
@@ -508,16 +500,8 @@ export default function NewMessagePage() {
   return (
     <div className='flex h-[calc(100vh-4rem)] flex-col'>
       {/* Header */}
-      <div className='flex h-12 items-center justify-between border-b px-4'>
+      <div className='flex h-12 items-center border-b px-4'>
         <h1 className='font-semibold'>New message</h1>
-        <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-          {lastSaved && (
-            <>
-              <Check className='h-3.5 w-3.5' />
-              <span>Saved a moment ago</span>
-            </>
-          )}
-        </div>
       </div>
 
       {/* To: Field */}
@@ -608,29 +592,19 @@ export default function NewMessagePage() {
       )}
 
       {/* Message input */}
-      {recipients.length > 0 && (
-        <div className='mt-auto'>
-          <MessageInput
-            channelId='new'
-            currentUser={currentUser}
-            placeholder={`Message ${recipients.map(r => r.name.split(' ')[0]).join(', ')}`}
-            onSend={handleSendMessage}
-          />
-        </div>
-      )}
-
-      {/* Message input (disabled) when no recipients */}
-      {recipients.length === 0 && (
-        <div className='mt-auto'>
-          <MessageInput
-            channelId='new'
-            currentUser={currentUser}
-            placeholder='Start a new message'
-            onSend={handleSendMessage}
-            disabled
-          />
-        </div>
-      )}
+      <div className='mt-auto'>
+        <MessageInput
+          channelId='new'
+          currentUser={currentUser}
+          placeholder={
+            recipients.length > 0
+              ? `Message ${recipients.map(r => r.name.split(' ')[0]).join(', ')}`
+              : 'Add recipients above to start a message'
+          }
+          onSend={handleSendMessage}
+          disabled={recipients.length === 0}
+        />
+      </div>
     </div>
   );
 }

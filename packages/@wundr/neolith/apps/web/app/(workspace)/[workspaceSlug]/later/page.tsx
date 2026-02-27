@@ -20,7 +20,6 @@ import {
   Music,
   Trash2,
   Video,
-  Archive as ArchiveIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -401,9 +400,7 @@ export default function LaterPage() {
         onOpenChange={setShareDialogOpen}
         file={fileToShare}
         workspaceSlug={workspaceSlug}
-        onShareSuccess={destinations => {
-          console.log('File shared to:', destinations);
-          // Refresh the items after sharing
+        onShareSuccess={() => {
           fetchItems(tabToStatus(activeTab));
         }}
       />
@@ -787,7 +784,6 @@ function SavedMessageCard({
  */
 function SavedFileCard({
   item,
-  workspaceSlug,
   onMarkComplete,
   onArchive,
   onRestore,
@@ -865,7 +861,7 @@ function SavedFileCard({
       mimeType.includes('tar') ||
       mimeType.includes('rar')
     ) {
-      return ArchiveIcon;
+      return Archive;
     }
     return FileIcon;
   };
@@ -939,9 +935,6 @@ function SavedFileCard({
   const handleRemoveFromLater = () => {
     onDelete(item.id);
   };
-
-  // Suppress unused variable warning - workspaceSlug is available for future use
-  void workspaceSlug;
 
   return (
     <div

@@ -1,8 +1,29 @@
 'use client';
 
+import {
+  ShieldCheck,
+  Clock,
+  Mail,
+  Database,
+  FileText,
+  Code,
+  AlertCircle,
+} from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -21,6 +42,14 @@ export default function SecurityCompliancePage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const { toast } = useToast();
+  const { setPageHeader } = usePageHeader();
+
+  useEffect(() => {
+    setPageHeader(
+      'Security & Compliance',
+      'Configure workspace security policies and compliance settings'
+    );
+  }, [setPageHeader]);
 
   const [settings, setSettings] = useState<Partial<SecuritySettings> | null>(
     null
@@ -96,17 +125,10 @@ export default function SecurityCompliancePage() {
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-bold'>Security & Compliance</h1>
-        <p className='mt-1 text-muted-foreground'>
-          Configure workspace security policies and compliance settings
-        </p>
-      </div>
-
       {loadError && (
-        <div className='flex items-center gap-2 rounded-lg border border-red-500/50 bg-red-50 px-4 py-3 text-red-800 dark:bg-red-900/10 dark:text-red-200'>
-          <AlertIcon className='h-4 w-4' />
-          {loadError}
+        <div className='flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-destructive'>
+          <AlertCircle className='h-4 w-4 flex-shrink-0' />
+          <p className='text-sm'>{loadError}</p>
         </div>
       )}
 

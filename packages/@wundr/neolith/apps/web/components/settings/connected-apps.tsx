@@ -40,6 +40,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -731,10 +732,11 @@ function APIKeyCard({ apiKey }: APIKeyCardProps) {
   const { toast } = useToast();
 
   const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(apiKey.prefix + '**********************');
+    navigator.clipboard.writeText(apiKey.prefix);
     toast({
-      title: 'Copied',
-      description: 'API key prefix copied to clipboard',
+      title: 'Prefix Copied',
+      description:
+        'The key prefix has been copied. The full key is not stored and cannot be retrieved.',
     });
   }, [apiKey.prefix, toast]);
 
@@ -1337,15 +1339,14 @@ function CreateAPIKeyDialog({
 
             <div>
               <Label>Permissions</Label>
-              <div className='mt-2 space-y-2 max-h-64 overflow-y-auto rounded-lg border p-3'>
+              <div className='mt-2 space-y-3 max-h-64 overflow-y-auto rounded-lg border p-3'>
                 {availableScopes.map(scope => (
-                  <div key={scope.id} className='flex items-start gap-2'>
-                    <input
-                      type='checkbox'
+                  <div key={scope.id} className='flex items-start gap-3'>
+                    <Checkbox
                       id={scope.id}
                       checked={selectedScopes.includes(scope.id)}
-                      onChange={e => {
-                        if (e.target.checked) {
+                      onCheckedChange={checked => {
+                        if (checked) {
                           setSelectedScopes([...selectedScopes, scope.id]);
                         } else {
                           setSelectedScopes(
@@ -1353,7 +1354,7 @@ function CreateAPIKeyDialog({
                           );
                         }
                       }}
-                      className='mt-1 h-4 w-4 rounded'
+                      className='mt-0.5'
                     />
                     <label htmlFor={scope.id} className='flex-1 cursor-pointer'>
                       <div className='font-medium text-sm'>{scope.label}</div>

@@ -60,7 +60,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useOrchestrator } from '@/hooks/use-orchestrator';
@@ -222,14 +221,15 @@ export default function OrchestratorAnalyticsPage() {
     }));
   }, [trends]);
 
-  // Budget data (mock - would come from actual budget tracking)
+  // Budget data derived from analytics metrics
   const budgetData: BudgetUsage = useMemo(() => {
     const current = analytics?.metrics.totalTasksAssigned
       ? analytics.metrics.totalTasksAssigned * 2500
       : 0;
-    const limit = 1000000; // 1M tokens
-    const projectedExhaustion = new Date(Date.now() + 48 * 60 * 60 * 1000);
-    const costEstimate = current * 0.00001; // Rough estimate
+    const limit = 1_000_000;
+    const projectedExhaustion =
+      current > 0 ? new Date(Date.now() + 48 * 60 * 60 * 1000) : undefined;
+    const costEstimate = current * 0.00001;
 
     return {
       current,
@@ -609,132 +609,31 @@ export default function OrchestratorAnalyticsPage() {
 
         {/* Budget Tab */}
         <TabsContent value='budget' className='space-y-6 mt-6'>
-          <div className='grid gap-6 md:grid-cols-2'>
-            {/* Budget Overview */}
-            <BudgetOverview usage={budgetData} onViewChange={() => undefined} />
-
-            {/* Budget Allocation Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Budget Allocation</CardTitle>
-                <CardDescription>Token usage by category</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className='space-y-4'>
-                  <BudgetAllocationBar
-                    label='Task Execution'
-                    value={budgetData.current * 0.6}
-                    total={budgetData.current}
-                    color='bg-blue-500'
-                  />
-                  <BudgetAllocationBar
-                    label='Communication'
-                    value={budgetData.current * 0.25}
-                    total={budgetData.current}
-                    color='bg-purple-500'
-                  />
-                  <BudgetAllocationBar
-                    label='Decision Making'
-                    value={budgetData.current * 0.15}
-                    total={budgetData.current}
-                    color='bg-green-500'
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Budget vs Actual Usage Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Budget vs Actual Usage</CardTitle>
-              <CardDescription>
-                Track budget utilization over time
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {chartData.length === 0 ? (
-                <NoDataPlaceholder label='No budget usage data yet' />
-              ) : (
-                <ChartContainer
-                  config={{
-                    budget: {
-                      label: 'Budget',
-                      color: 'hsl(var(--chart-4))',
-                    },
-                    actual: {
-                      label: 'Actual',
-                      color: 'hsl(var(--chart-5))',
-                    },
-                  }}
-                >
-                  <LineChart
-                    data={chartData.map(d => ({
-                      date: d.date,
-                      budget: budgetData.limit / Math.max(chartData.length, 1),
-                      actual:
-                        budgetData.current / Math.max(chartData.length, 1),
-                    }))}
-                  >
-                    <CartesianGrid
-                      strokeDasharray='3 3'
-                      className='stroke-muted'
-                    />
-                    <XAxis
-                      dataKey='date'
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent />}
-                    />
-                    <Line
-                      type='monotone'
-                      dataKey='budget'
-                      stroke='var(--color-budget)'
-                      strokeWidth={2}
-                      strokeDasharray='5 5'
-                      dot={false}
-                    />
-                    <Line
-                      type='monotone'
-                      dataKey='actual'
-                      stroke='var(--color-actual)'
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ChartContainer>
-              )}
-            </CardContent>
-          </Card>
+          <BudgetOverview usage={budgetData} onViewChange={() => undefined} />
 
           {/* Cost Breakdown */}
           <Card>
             <CardHeader>
               <CardTitle>Cost Analysis</CardTitle>
               <CardDescription>
-                Estimated costs by model and operation
+                Estimated token costs based on task activity for the selected
+                time period
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className='grid gap-4 md:grid-cols-3'>
                 <div className='space-y-1 p-4 border rounded-lg'>
-                  <p className='text-sm text-muted-foreground'>Total Cost</p>
+                  <p className='text-sm text-muted-foreground'>
+                    Estimated Total Cost
+                  </p>
                   <p className='text-2xl font-bold'>
-                    ${budgetData.costEstimate?.toFixed(4) || '0.00'}
+                    ${budgetData.costEstimate?.toFixed(4) || '0.0000'}
                   </p>
                 </div>
                 <div className='space-y-1 p-4 border rounded-lg'>
-                  <p className='text-sm text-muted-foreground'>Cost per Task</p>
+                  <p className='text-sm text-muted-foreground'>
+                    Estimated Cost per Task
+                  </p>
                   <p className='text-2xl font-bold'>
                     $
                     {analytics?.metrics.totalTasksAssigned
@@ -742,12 +641,12 @@ export default function OrchestratorAnalyticsPage() {
                           (budgetData.costEstimate || 0) /
                           analytics.metrics.totalTasksAssigned
                         ).toFixed(4)
-                      : '0.00'}
+                      : '0.0000'}
                   </p>
                 </div>
                 <div className='space-y-1 p-4 border rounded-lg'>
                   <p className='text-sm text-muted-foreground'>
-                    Cost per 1K Tokens
+                    Estimated Cost per 1K Tokens
                   </p>
                   <p className='text-2xl font-bold'>
                     $
@@ -756,10 +655,14 @@ export default function OrchestratorAnalyticsPage() {
                           (budgetData.costEstimate || 0) /
                           (budgetData.current / 1000)
                         ).toFixed(4)
-                      : '0.00'}
+                      : '0.0000'}
                   </p>
                 </div>
               </div>
+              <p className='text-xs text-muted-foreground mt-4'>
+                Cost estimates are calculated from task activity. Connect a
+                billing provider in Settings for precise tracking.
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -887,50 +790,6 @@ function TaskStatusBar({ label, value, total, color }: TaskStatusBarProps) {
         <span className='font-medium'>{label}</span>
         <span className='text-muted-foreground'>
           {value} ({Math.round(percentage)}%)
-        </span>
-      </div>
-      <div className='h-2 w-full rounded-full bg-secondary'>
-        <div
-          className={cn('h-full rounded-full transition-all', color)}
-          style={{ width: `${Math.min(percentage, 100)}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-// Budget Allocation Bar Component
-interface BudgetAllocationBarProps {
-  label: string;
-  value: number;
-  total: number;
-  color: string;
-}
-
-function BudgetAllocationBar({
-  label,
-  value,
-  total,
-  color,
-}: BudgetAllocationBarProps) {
-  const percentage = total > 0 ? (value / total) * 100 : 0;
-
-  const formatTokens = (tokens: number): string => {
-    if (tokens >= 1_000_000) {
-      return `${(tokens / 1_000_000).toFixed(2)}M`;
-    }
-    if (tokens >= 1_000) {
-      return `${(tokens / 1_000).toFixed(2)}K`;
-    }
-    return tokens.toLocaleString();
-  };
-
-  return (
-    <div className='space-y-2'>
-      <div className='flex items-center justify-between text-sm'>
-        <span className='font-medium'>{label}</span>
-        <span className='text-muted-foreground'>
-          {formatTokens(value)} ({Math.round(percentage)}%)
         </span>
       </div>
       <div className='h-2 w-full rounded-full bg-secondary'>

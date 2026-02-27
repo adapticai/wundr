@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -79,6 +80,7 @@ export default function AdminInvitationsPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const { toast } = useToast();
+  const { setPageHeader } = usePageHeader();
 
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -116,12 +118,6 @@ export default function AdminInvitationsPage() {
   });
   const [newDomain, setNewDomain] = useState('');
   const [isSavingDomainSettings, setIsSavingDomainSettings] = useState(false);
-
-  // Load invitations
-  useEffect(() => {
-    loadInvitations();
-    loadDomainSettings();
-  }, [workspaceSlug]);
 
   const loadInvitations = useCallback(async () => {
     try {
@@ -161,6 +157,13 @@ export default function AdminInvitationsPage() {
       console.error('Failed to load domain settings:', error);
     }
   }, [workspaceSlug]);
+
+  // Load data on mount and set the page header
+  useEffect(() => {
+    setPageHeader('Invitations', 'Manage workspace invitations and access');
+    loadInvitations();
+    loadDomainSettings();
+  }, [setPageHeader, loadInvitations, loadDomainSettings]);
 
   const handleSingleInvite = useCallback(async () => {
     if (!singleEmail.trim()) {
@@ -630,16 +633,8 @@ export default function AdminInvitationsPage() {
 
   return (
     <div className='space-y-6'>
-      {/* Header */}
-      <div className='flex items-center justify-between'>
-        <div>
-          <h1 className='text-2xl font-bold text-foreground'>
-            Invitation Management
-          </h1>
-          <p className='text-sm text-muted-foreground'>
-            Manage workspace invitations and access
-          </p>
-        </div>
+      {/* Export action */}
+      <div className='flex items-center justify-end'>
         <Button
           onClick={handleExportInvitations}
           variant='outline'

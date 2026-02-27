@@ -12,7 +12,7 @@ export default function ConversationPage() {
   const { setPageHeader } = usePageHeader();
 
   useEffect(() => {
-    setPageHeader('AI Assistant', 'Conversation history');
+    setPageHeader('AI Assistant', 'Resuming conversation');
   }, [setPageHeader]);
 
   return (

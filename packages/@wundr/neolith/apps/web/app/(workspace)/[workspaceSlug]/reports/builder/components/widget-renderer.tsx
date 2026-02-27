@@ -6,8 +6,8 @@
  */
 
 import { useDraggable } from '@dnd-kit/core';
-import { GripVertical, Trash2, Copy, Settings2 } from 'lucide-react';
-import { useState, useCallback } from 'react';
+import { GripVertical, Trash2, Copy } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -46,8 +46,6 @@ export function WidgetRenderer({
   onResize,
   onDuplicate,
 }: WidgetRendererProps) {
-  const [isResizing, setIsResizing] = useState(false);
-
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: widget.id,
   });
@@ -301,7 +299,6 @@ export function WidgetRenderer({
           className='absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-primary rounded-tl'
           onMouseDown={e => {
             e.stopPropagation();
-            setIsResizing(true);
             const startX = e.clientX;
             const startY = e.clientY;
             const startWidth = widget.size.width;
@@ -317,7 +314,6 @@ export function WidgetRenderer({
             };
 
             const handleMouseUp = () => {
-              setIsResizing(false);
               document.removeEventListener('mousemove', handleMouseMove);
               document.removeEventListener('mouseup', handleMouseUp);
             };

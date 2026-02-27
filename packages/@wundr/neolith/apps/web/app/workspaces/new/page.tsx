@@ -40,9 +40,9 @@ import type { WorkspaceReviewData } from '@/components/wizard/workspace-review-f
 
 type WizardPhase = 'conversation' | 'review' | 'creating';
 
-const INITIAL_GREETING = `Hi! I'm here to help you create a new workspace. Let's start with the basics.
+const INITIAL_GREETING = `Hi! I'm here to help you set up a new workspace. Let's start with the basics.
 
-What would you like to name your workspace? And can you tell me a bit about what it's for?`;
+What would you like to name your workspace, and what is it for?`;
 
 export default function NewWorkspacePage() {
   const router = useRouter();
@@ -169,8 +169,7 @@ export default function NewWorkspacePage() {
       <div className='space-y-2'>
         <h1 className='text-3xl font-bold'>Create New Workspace</h1>
         <p className='text-muted-foreground'>
-          Let's have a conversation about your workspace and I'll help you set
-          it up
+          Tell me about your workspace and I&apos;ll help configure it for you.
         </p>
       </div>
 
@@ -178,22 +177,28 @@ export default function NewWorkspacePage() {
       <div className='space-y-2'>
         <div className='flex items-center justify-between text-sm'>
           <span className='font-medium'>
-            {phase === 'conversation' && 'Gathering Information'}
-            {phase === 'review' && 'Review Details'}
-            {phase === 'creating' && 'Creating Workspace'}
+            {phase === 'conversation' && 'Step 1 of 3 — Gathering Information'}
+            {phase === 'review' && 'Step 2 of 3 — Review Details'}
+            {phase === 'creating' && 'Step 3 of 3 — Creating Workspace'}
           </span>
-          <Badge variant='outline'>{completionPercentage}% Complete</Badge>
+          <Badge variant='outline'>
+            {completionPercentage}% details collected
+          </Badge>
         </div>
-        <Progress value={completionPercentage} className='h-2' />
+        <Progress
+          value={completionPercentage}
+          className='h-2'
+          aria-label={`${completionPercentage}% of workspace details collected`}
+        />
       </div>
 
       {/* Main Content */}
       {phase === 'conversation' && (
         <Card className='h-[600px] flex flex-col'>
           <CardHeader className='pb-3'>
-            <CardTitle className='text-lg'>Conversation</CardTitle>
+            <CardTitle className='text-lg'>Workspace Setup Assistant</CardTitle>
             <CardDescription>
-              Tell me about your workspace in natural language
+              Describe your workspace and I&apos;ll gather all the details
             </CardDescription>
           </CardHeader>
 
@@ -309,58 +314,6 @@ export default function NewWorkspacePage() {
         </Card>
       )}
 
-      {/* Extracted Data Preview */}
-      {phase === 'conversation' && Object.keys(extractedData).length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-lg'>Information Gathered</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='grid grid-cols-2 gap-4 text-sm'>
-              {(() => {
-                const data = extractedData as Partial<WorkspaceReviewData>;
-                return (
-                  <>
-                    {data.name && (
-                      <div>
-                        <span className='font-medium'>Name:</span>{' '}
-                        <span className='text-muted-foreground'>
-                          {String(data.name)}
-                        </span>
-                      </div>
-                    )}
-                    {data.description && (
-                      <div className='col-span-2'>
-                        <span className='font-medium'>Description:</span>{' '}
-                        <span className='text-muted-foreground'>
-                          {String(data.description)}
-                        </span>
-                      </div>
-                    )}
-                    {data.organizationType && (
-                      <div>
-                        <span className='font-medium'>Type:</span>{' '}
-                        <span className='text-muted-foreground'>
-                          {String(data.organizationType)}
-                        </span>
-                      </div>
-                    )}
-                    {data.teamSize && (
-                      <div>
-                        <span className='font-medium'>Team Size:</span>{' '}
-                        <span className='text-muted-foreground capitalize'>
-                          {String(data.teamSize)}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Review Phase */}
       {phase === 'review' && (
         <WorkspaceReviewForm
@@ -378,11 +331,9 @@ export default function NewWorkspacePage() {
             <div className='flex flex-col items-center justify-center gap-4'>
               <Loader size={48} />
               <div className='text-center'>
-                <p className='text-lg font-medium'>
-                  Creating your workspace...
-                </p>
+                <p className='text-lg font-medium'>Setting up your workspace</p>
                 <p className='text-sm text-muted-foreground mt-1'>
-                  This will only take a moment
+                  Hang tight, this only takes a moment.
                 </p>
               </div>
             </div>
