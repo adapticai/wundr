@@ -4,23 +4,21 @@
  * @module lib/services/webhook-service
  */
 
+import { prisma } from '@neolith/database';
+import crypto from 'crypto';
+
 /**
  * Register a new webhook
  */
 export async function registerWebhook(webhookConfig: any): Promise<any> {
-  console.log('[WebhookService] registerWebhook called with:', webhookConfig);
-  // TODO: Implement webhook registration
-  return null;
+  return (prisma as any).webhook.create({ data: webhookConfig });
 }
 
 /**
  * Unregister webhook
  */
 export async function unregisterWebhook(webhookId: string): Promise<void> {
-  console.log('[WebhookService] unregisterWebhook called with:', {
-    webhookId,
-  });
-  // TODO: Implement webhook unregistration
+  await (prisma as any).webhook.delete({ where: { id: webhookId } });
 }
 
 /**
@@ -30,23 +28,67 @@ export async function triggerWebhook(
   webhookId: string,
   payload: any
 ): Promise<any> {
-  console.log('[WebhookService] triggerWebhook called with:', {
-    webhookId,
-    payload,
+  const webhook = await (prisma as any).webhook.findUnique({
+    where: { id: webhookId },
   });
-  // TODO: Implement webhook trigger
-  return null;
+
+  if (!webhook) {
+    throw new Error(`Webhook not found: ${webhookId}`);
+  }
+
+  const signature = crypto
+    .createHmac('sha256', webhook.secret)
+    .update(JSON.stringify(payload))
+    .digest('hex');
+
+  const delivery = await (prisma as any).webhookDelivery.create({
+    data: {
+      webhookId,
+      payload,
+      status: 'pending',
+    },
+  });
+
+  let responseStatus: number | null = null;
+  let responseBody: string | null = null;
+  let deliveryStatus = 'failed';
+
+  try {
+    const response = await fetch(webhook.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Webhook-Signature': `sha256=${signature}`,
+        'X-Webhook-ID': webhookId,
+        'X-Delivery-ID': delivery.id,
+        ...(webhook.headers ?? {}),
+      },
+      body: JSON.stringify(payload),
+    });
+
+    responseStatus = response.status;
+    responseBody = await response.text();
+    deliveryStatus = response.ok ? 'success' : 'failed';
+  } catch (err: any) {
+    responseBody = err?.message ?? 'Unknown error';
+  }
+
+  return (prisma as any).webhookDelivery.update({
+    where: { id: delivery.id },
+    data: {
+      status: deliveryStatus,
+      responseStatus,
+      responseBody,
+      deliveredAt: new Date(),
+    },
+  });
 }
 
 /**
  * Get webhook details
  */
 export async function getWebhook(webhookId: string): Promise<any> {
-  console.log('[WebhookService] getWebhook called with:', {
-    webhookId,
-  });
-  // TODO: Implement webhook retrieval
-  return null;
+  return (prisma as any).webhook.findUnique({ where: { id: webhookId } });
 }
 
 /**
@@ -56,12 +98,14 @@ export async function listWebhooks(
   workspaceId: string,
   filters?: any
 ): Promise<{ webhooks: any[]; total: number }> {
-  console.log('[WebhookService] listWebhooks called with:', {
-    workspaceId,
-    filters,
-  });
-  // TODO: Implement webhook listing
-  return { webhooks: [], total: 0 };
+  const where = { workspaceId, ...filters };
+
+  const [webhooks, total] = await Promise.all([
+    (prisma as any).webhook.findMany({ where }),
+    (prisma as any).webhook.count({ where }),
+  ]);
+
+  return { webhooks, total };
 }
 
 /**
@@ -71,12 +115,10 @@ export async function updateWebhook(
   webhookId: string,
   updates: any
 ): Promise<any> {
-  console.log('[WebhookService] updateWebhook called with:', {
-    webhookId,
-    updates,
+  return (prisma as any).webhook.update({
+    where: { id: webhookId },
+    data: updates,
   });
-  // TODO: Implement webhook update
-  return null;
 }
 
 /**
@@ -86,12 +128,11 @@ export async function getWebhookHistory(
   webhookId: string,
   limit?: number
 ): Promise<any[]> {
-  console.log('[WebhookService] getWebhookHistory called with:', {
-    webhookId,
-    limit,
+  return (prisma as any).webhookDelivery.findMany({
+    where: { webhookId },
+    take: limit,
+    orderBy: { createdAt: 'desc' },
   });
-  // TODO: Implement history retrieval
-  return [];
 }
 
 /**
@@ -101,12 +142,62 @@ export async function retryWebhookDelivery(
   webhookId: string,
   deliveryId: string
 ): Promise<any> {
-  console.log('[WebhookService] retryWebhookDelivery called with:', {
-    webhookId,
-    deliveryId,
+  const delivery = await (prisma as any).webhookDelivery.findUnique({
+    where: { id: deliveryId },
   });
-  // TODO: Implement delivery retry
-  return null;
+
+  if (!delivery) {
+    throw new Error(`Delivery not found: ${deliveryId}`);
+  }
+
+  const webhook = await (prisma as any).webhook.findUnique({
+    where: { id: webhookId },
+  });
+
+  if (!webhook) {
+    throw new Error(`Webhook not found: ${webhookId}`);
+  }
+
+  const payload = delivery.payload;
+
+  const signature = crypto
+    .createHmac('sha256', webhook.secret)
+    .update(JSON.stringify(payload))
+    .digest('hex');
+
+  let responseStatus: number | null = null;
+  let responseBody: string | null = null;
+  let deliveryStatus = 'failed';
+
+  try {
+    const response = await fetch(webhook.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Webhook-Signature': `sha256=${signature}`,
+        'X-Webhook-ID': webhookId,
+        'X-Delivery-ID': deliveryId,
+        ...(webhook.headers ?? {}),
+      },
+      body: JSON.stringify(payload),
+    });
+
+    responseStatus = response.status;
+    responseBody = await response.text();
+    deliveryStatus = response.ok ? 'success' : 'failed';
+  } catch (err: any) {
+    responseBody = err?.message ?? 'Unknown error';
+  }
+
+  return (prisma as any).webhookDelivery.update({
+    where: { id: deliveryId },
+    data: {
+      status: deliveryStatus,
+      responseStatus,
+      responseBody,
+      deliveredAt: new Date(),
+    },
+  });
 }
 
 /**
@@ -117,13 +208,19 @@ export async function validateWebhookSignature(
   signature: string,
   secret: string
 ): Promise<boolean> {
-  console.log('[WebhookService] validateWebhookSignature called with:', {
-    payload,
-    signature,
-    secret,
-  });
-  // TODO: Implement signature validation
-  return false;
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(JSON.stringify(payload))
+    .digest('hex');
+
+  const expectedBuffer = Buffer.from(expected, 'hex');
+  const signatureBuffer = Buffer.from(signature, 'hex');
+
+  if (expectedBuffer.length !== signatureBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(expectedBuffer, signatureBuffer);
 }
 
 /**
@@ -141,21 +238,20 @@ export async function createWebhook(
   },
   userId: string
 ): Promise<{ webhook: any; secret: string }> {
-  console.log('[WebhookService] createWebhook called with:', {
-    workspaceId,
-    webhookData,
-    userId,
+  const secret = `whsec_${crypto.randomBytes(32).toString('hex')}`;
+
+  const webhook = await (prisma as any).webhook.create({
+    data: {
+      workspaceId,
+      createdById: userId,
+      name: webhookData.name,
+      url: webhookData.url,
+      events: webhookData.events,
+      secret,
+      active: webhookData.active ?? true,
+      headers: webhookData.headers ?? {},
+    },
   });
-  // TODO: Implement webhook creation
-  const secret = `whsec_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-  const webhook = {
-    id: `webhook_${Date.now()}`,
-    workspaceId,
-    createdById: userId,
-    ...webhookData,
-    active: webhookData.active ?? true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+
   return { webhook, secret };
 }

@@ -4,6 +4,8 @@
  * @module lib/services/notification-service
  */
 
+import { prisma } from '@neolith/database';
+
 export interface NotificationPayload {
   userId: string;
   type: string;
@@ -15,15 +17,72 @@ export interface NotificationPayload {
 export async function sendNotification(
   payload: NotificationPayload
 ): Promise<void> {
-  console.log('[Notification] Would send notification:', payload);
-  // TODO: Implement actual notification delivery (WebSocket, push, etc.)
+  try {
+    await (prisma as any).notification.create({
+      data: {
+        userId: payload.userId,
+        type: payload.type,
+        title: payload.title,
+        body: payload.body,
+        data: payload.data ?? {},
+        read: false,
+      },
+    });
+  } catch {
+    // DB write failed; continue to pub/sub attempt
+  }
+
+  try {
+    const Redis = await import('ioredis').catch(() => null);
+    if (Redis) {
+      const publisher = new Redis.default();
+      await publisher.publish(
+        `user:${payload.userId}:notifications`,
+        JSON.stringify(payload)
+      );
+      publisher.disconnect();
+    }
+  } catch {
+    // Redis unavailable; notification already persisted in DB
+  }
 }
 
 export async function sendBulkNotifications(
   payloads: NotificationPayload[]
 ): Promise<void> {
-  for (const payload of payloads) {
-    await sendNotification(payload);
+  try {
+    await (prisma as any).notification.createMany({
+      data: payloads.map(p => ({
+        userId: p.userId,
+        type: p.type,
+        title: p.title,
+        body: p.body,
+        data: p.data ?? {},
+        read: false,
+      })),
+      skipDuplicates: true,
+    });
+  } catch {
+    // Fall back to individual inserts if createMany is unavailable
+    for (const payload of payloads) {
+      await sendNotification(payload);
+    }
+    return;
+  }
+
+  try {
+    const Redis = await import('ioredis').catch(() => null);
+    if (Redis) {
+      const publisher = new Redis.default();
+      await Promise.all(
+        payloads.map(p =>
+          publisher.publish(`user:${p.userId}:notifications`, JSON.stringify(p))
+        )
+      );
+      publisher.disconnect();
+    }
+  } catch {
+    // Redis unavailable; notifications already persisted in DB
   }
 }
 
@@ -31,32 +90,53 @@ export async function markNotificationRead(
   notificationId: string,
   userId: string
 ): Promise<void> {
-  console.log(`[Notification] Marking ${notificationId} as read for ${userId}`);
-  // TODO: Implement database update
+  try {
+    await (prisma as any).notification.update({
+      where: { id: notificationId, userId },
+      data: { read: true, readAt: new Date() },
+    });
+  } catch {
+    // Notification not found or update failed
+  }
 }
 
 export async function getUnreadCount(userId: string): Promise<number> {
-  console.log(`[Notification] Getting unread count for ${userId}`);
-  // TODO: Implement database query
-  return 0;
+  try {
+    return await (prisma as any).notification.count({
+      where: { userId, read: false },
+    });
+  } catch {
+    return 0;
+  }
 }
 
 export async function subscribeToChannel(
   userId: string,
   channelId: string
 ): Promise<void> {
-  console.log(`[Notification] Subscribing ${userId} to channel ${channelId}`);
-  // TODO: Implement subscription
+  try {
+    await (prisma as any).notificationPreference.upsert({
+      where: { userId_channelId: { userId, channelId } },
+      update: { subscribed: true },
+      create: { userId, channelId, subscribed: true },
+    });
+  } catch {
+    // Preference record unavailable or upsert failed
+  }
 }
 
 export async function unsubscribeFromChannel(
   userId: string,
   channelId: string
 ): Promise<void> {
-  console.log(
-    `[Notification] Unsubscribing ${userId} from channel ${channelId}`
-  );
-  // TODO: Implement unsubscription
+  try {
+    await (prisma as any).notificationPreference.update({
+      where: { userId_channelId: { userId, channelId } },
+      data: { subscribed: false },
+    });
+  } catch {
+    // Record may not exist; nothing to unsubscribe
+  }
 }
 
 /**
@@ -92,8 +172,16 @@ export class NotificationService {
     channelId: string;
     inviterId: string;
   }): Promise<void> {
-    console.log('[Notification] Channel invite notification:', params);
-    // TODO: Implement channel invite notification
+    await sendNotification({
+      userId: params.userId,
+      type: 'CHANNEL_INVITE',
+      title: 'Channel Invitation',
+      body: `You have been invited to a channel`,
+      data: {
+        channelId: params.channelId,
+        inviterId: params.inviterId,
+      },
+    });
   }
 
   static async notifyMention(params: {
@@ -102,8 +190,17 @@ export class NotificationService {
     channelId: string;
     mentionedBy: string;
   }): Promise<void> {
-    console.log('[Notification] Mention notification:', params);
-    // TODO: Implement mention notification
+    await sendNotification({
+      userId: params.userId,
+      type: 'MENTION',
+      title: 'You were mentioned',
+      body: `${params.mentionedBy} mentioned you in a message`,
+      data: {
+        messageId: params.messageId,
+        channelId: params.channelId,
+        mentionedBy: params.mentionedBy,
+      },
+    });
   }
 
   static async notifyThreadReply(params: {
@@ -112,8 +209,17 @@ export class NotificationService {
     channelId: string;
     repliedBy: string;
   }): Promise<void> {
-    console.log('[Notification] Thread reply notification:', params);
-    // TODO: Implement thread reply notification
+    await sendNotification({
+      userId: params.userId,
+      type: 'THREAD_REPLY',
+      title: 'New reply in thread',
+      body: `${params.repliedBy} replied to a thread you follow`,
+      data: {
+        messageId: params.messageId,
+        channelId: params.channelId,
+        repliedBy: params.repliedBy,
+      },
+    });
   }
 
   static async notifyTaskAssigned(
@@ -122,13 +228,6 @@ export class NotificationService {
     taskTitle: string,
     assignedBy: string
   ): Promise<void> {
-    console.log('[Notification] Task assignment notification:', {
-      assigneeId,
-      taskId,
-      taskTitle,
-      assignedBy,
-    });
-    // TODO: Implement task assignment notification
     await sendNotification({
       userId: assigneeId,
       type: 'task_assigned',
