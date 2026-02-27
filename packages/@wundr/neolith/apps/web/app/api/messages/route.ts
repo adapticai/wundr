@@ -412,8 +412,39 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // TODO: Broadcast message via WebSocket to channel members
-    // This would be implemented with a real-time service like Pusher, Socket.io, etc.
+    // Broadcast message via Redis pub/sub to WebSocket server
+    try {
+      const ioredisModule = await import('ioredis').catch(() => null);
+      if (ioredisModule && process.env.REDIS_URL) {
+        const Redis = ioredisModule.default;
+        const publisher = new Redis(process.env.REDIS_URL, {
+          maxRetriesPerRequest: 1,
+          lazyConnect: true,
+        });
+        await publisher.connect().catch(() => null);
+        await publisher.publish(
+          `channel:${channelId}:messages`,
+          JSON.stringify({
+            type: 'new_message',
+            channelId,
+            messageId: message.id,
+            authorId: session.user.id,
+            authorName: session.user.name ?? 'Unknown',
+            preview:
+              typeof formData.get('content') === 'string'
+                ? (formData.get('content') as string).slice(0, 100)
+                : '',
+            timestamp: message.createdAt,
+          })
+        );
+        await publisher.quit().catch(() => null);
+      }
+    } catch (broadcastErr) {
+      console.warn(
+        '[POST /api/messages] Redis broadcast failed (non-blocking):',
+        broadcastErr
+      );
+    }
 
     // Transform message to convert BigInt file sizes to numbers for JSON serialization
     const transformedMessage = {

@@ -148,9 +148,6 @@ export async function GET(
       );
     }
 
-    // Note: verifyOAuthState currently returns boolean, not object with properties
-    // TODO: Update verifyOAuthState to return state data or enhance validation
-
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {

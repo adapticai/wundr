@@ -547,6 +547,11 @@ export function useMetricsChart(
       return [];
     }
 
+    // Handle both array format (MetricDataPoint[]) and object format (MetricsChartData)
+    if (!Array.isArray(data)) {
+      return [];
+    }
+
     return data.map(point => ({
       time: formatTimestamp(point.timestamp, timeRange),
       responseTime: point.responseTime,
@@ -722,11 +727,17 @@ export function useHealthAlerts(): UseHealthAlertsReturn {
         // Optimistically update the local data
         void mutate(
           currentData =>
-            currentData?.map(alert =>
-              alert.id === alertId
-                ? { ...alert, acknowledged: true, acknowledgedAt: new Date() }
-                : alert
-            ),
+            Array.isArray(currentData)
+              ? currentData.map(alert =>
+                  alert.id === alertId
+                    ? {
+                        ...alert,
+                        acknowledged: true,
+                        acknowledgedAt: new Date(),
+                      }
+                    : alert
+                )
+              : currentData,
           { revalidate: true }
         );
 

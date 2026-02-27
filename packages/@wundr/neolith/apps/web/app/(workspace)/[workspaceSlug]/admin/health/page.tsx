@@ -103,7 +103,9 @@ export default function HealthDashboardPage() {
       limit: 10000,
       percent: orch.cpuUsage,
     },
-    lastActivity: orch.lastHeartbeat.toISOString(),
+    lastActivity: orch.lastHeartbeat
+      ? new Date(orch.lastHeartbeat).toISOString()
+      : new Date().toISOString(),
     responseTime: orch.responseTime,
     errorCount: orch.errorCount,
   }));
@@ -146,7 +148,9 @@ export default function HealthDashboardPage() {
       | 'latency_spike'
       | 'node_unhealthy',
     message: alert.message,
-    timestamp: alert.createdAt.toISOString(),
+    timestamp: alert.createdAt
+      ? new Date(alert.createdAt).toISOString()
+      : new Date().toISOString(),
     acknowledged: alert.acknowledged,
     orchestratorId: alert.orchestratorId,
   }));
@@ -172,7 +176,10 @@ export default function HealthDashboardPage() {
       {/* Refresh control */}
       <div className='flex items-center justify-end space-x-2'>
         <span className='text-sm text-muted-foreground'>
-          Last updated: {overview.lastUpdated.toLocaleTimeString()}
+          Last updated:{' '}
+          {overview.lastUpdated
+            ? new Date(overview.lastUpdated).toLocaleTimeString()
+            : new Date().toLocaleTimeString()}
         </span>
         <Button
           variant='outline'

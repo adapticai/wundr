@@ -3,9 +3,12 @@
  *
  * Handles typing indicator signals for channels.
  * Uses a short TTL approach - typing status expires after a few seconds.
+ * Typing state is stored in Redis when available, with an in-memory Map as
+ * a fallback for environments where Redis is not configured.
  *
  * Routes:
  * - POST /api/channels/:channelId/typing - Signal typing status
+ * - GET  /api/channels/:channelId/typing - Retrieve current typing users
  *
  * @module app/api/channels/[channelId]/typing/route
  */
@@ -32,27 +35,55 @@ interface RouteContext {
 }
 
 /**
- * In-memory store for typing indicators with TTL
- * In production, this should be replaced with Redis or similar
+ * In-memory fallback store for typing indicators
  */
-const typingStore = new Map<
+const memoryTypingStore = new Map<
   string,
   Map<string, { userId: string; userName: string; expiresAt: number }>
 >();
 
 /**
- * TTL for typing indicators in milliseconds (5 seconds)
+ * TTL for typing indicators in seconds (5 seconds)
  */
-const TYPING_TTL_MS = 5000;
+const TYPING_TTL_S = 5;
+const TYPING_TTL_MS = TYPING_TTL_S * 1000;
 
 /**
- * Cleanup expired typing indicators
+ * Lazy Redis client initialization
+ */
+let redisClient: any = null;
+let redisAvailable: boolean | null = null;
+
+async function getRedisClient(): Promise<any> {
+  if (redisAvailable === false) return null;
+  if (redisClient) return redisClient;
+
+  try {
+    const ioredisModule = await import('ioredis').catch(() => null);
+    if (!ioredisModule || !process.env.REDIS_URL) {
+      redisAvailable = false;
+      return null;
+    }
+    const Redis = ioredisModule.default;
+    redisClient = new Redis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: 1,
+      lazyConnect: true,
+    });
+    await redisClient.connect();
+    redisAvailable = true;
+    return redisClient;
+  } catch {
+    redisAvailable = false;
+    return null;
+  }
+}
+
+/**
+ * Cleanup expired typing indicators (in-memory fallback)
  */
 function cleanupExpiredTyping(channelId: string) {
-  const channelTyping = typingStore.get(channelId);
-  if (!channelTyping) {
-    return;
-  }
+  const channelTyping = memoryTypingStore.get(channelId);
+  if (!channelTyping) return;
 
   const now = Date.now();
   for (const [userId, data] of channelTyping.entries()) {
@@ -62,19 +93,44 @@ function cleanupExpiredTyping(channelId: string) {
   }
 
   if (channelTyping.size === 0) {
-    typingStore.delete(channelId);
+    memoryTypingStore.delete(channelId);
   }
 }
 
 /**
  * Get current typing users for a channel
  */
-function getTypingUsers(channelId: string, excludeUserId?: string) {
-  cleanupExpiredTyping(channelId);
-  const channelTyping = typingStore.get(channelId);
-  if (!channelTyping) {
-    return [];
+async function getTypingUsersAsync(
+  channelId: string,
+  excludeUserId?: string
+): Promise<Array<{ userId: string; userName: string }>> {
+  const redis = await getRedisClient();
+
+  if (redis) {
+    try {
+      const key = `typing:${channelId}`;
+      const entries = await redis.hgetall(key);
+      const users: Array<{ userId: string; userName: string }> = [];
+      for (const [userId, value] of Object.entries(entries)) {
+        if (userId !== excludeUserId) {
+          try {
+            const parsed = JSON.parse(value as string);
+            users.push({ userId, userName: parsed.userName });
+          } catch {
+            /* skip malformed entries */
+          }
+        }
+      }
+      return users;
+    } catch {
+      // Fall through to in-memory
+    }
   }
+
+  // In-memory fallback
+  cleanupExpiredTyping(channelId);
+  const channelTyping = memoryTypingStore.get(channelId);
+  if (!channelTyping) return [];
 
   const users: Array<{ userId: string; userName: string }> = [];
   for (const [userId, data] of channelTyping.entries()) {
@@ -83,6 +139,71 @@ function getTypingUsers(channelId: string, excludeUserId?: string) {
     }
   }
   return users;
+}
+
+/**
+ * Set typing status for a user in a channel
+ */
+async function setTypingStatus(
+  channelId: string,
+  userId: string,
+  userName: string
+): Promise<void> {
+  const redis = await getRedisClient();
+
+  if (redis) {
+    try {
+      const key = `typing:${channelId}`;
+      await redis.hset(
+        key,
+        userId,
+        JSON.stringify({ userName, timestamp: Date.now() })
+      );
+      await redis.expire(key, TYPING_TTL_S + 1); // Slightly longer TTL for the hash itself
+      return;
+    } catch {
+      // Fall through to in-memory
+    }
+  }
+
+  // In-memory fallback
+  if (!memoryTypingStore.has(channelId)) {
+    memoryTypingStore.set(channelId, new Map());
+  }
+  memoryTypingStore.get(channelId)!.set(userId, {
+    userId,
+    userName,
+    expiresAt: Date.now() + TYPING_TTL_MS,
+  });
+}
+
+/**
+ * Remove typing status for a user in a channel
+ */
+async function removeTypingStatus(
+  channelId: string,
+  userId: string
+): Promise<void> {
+  const redis = await getRedisClient();
+
+  if (redis) {
+    try {
+      const key = `typing:${channelId}`;
+      await redis.hdel(key, userId);
+      return;
+    } catch {
+      // Fall through to in-memory
+    }
+  }
+
+  // In-memory fallback
+  const channelTyping = memoryTypingStore.get(channelId);
+  if (channelTyping) {
+    channelTyping.delete(userId);
+    if (channelTyping.size === 0) {
+      memoryTypingStore.delete(channelId);
+    }
+  }
 }
 
 /**
@@ -202,28 +323,23 @@ export async function POST(
       );
     }
 
-    // Initialize channel typing store if needed
-    if (!typingStore.has(params.channelId)) {
-      typingStore.set(params.channelId, new Map());
-    }
-
-    const channelTyping = typingStore.get(params.channelId)!;
-
     if (input.isTyping) {
       // Add or update typing status
-      channelTyping.set(session.user.id, {
-        userId: session.user.id,
-        userName:
-          membership.user.displayName ?? membership.user.name ?? 'Unknown',
-        expiresAt: Date.now() + TYPING_TTL_MS,
-      });
+      await setTypingStatus(
+        params.channelId,
+        session.user.id,
+        membership.user.displayName ?? membership.user.name ?? 'Unknown'
+      );
     } else {
       // Remove typing status
-      channelTyping.delete(session.user.id);
+      await removeTypingStatus(params.channelId, session.user.id);
     }
 
     // Get current typing users (excluding current user)
-    const typingUsers = getTypingUsers(params.channelId, session.user.id);
+    const typingUsers = await getTypingUsersAsync(
+      params.channelId,
+      session.user.id
+    );
 
     return NextResponse.json({
       data: {
@@ -300,7 +416,10 @@ export async function GET(
     }
 
     // Get current typing users (excluding current user)
-    const typingUsers = getTypingUsers(params.channelId, session.user.id);
+    const typingUsers = await getTypingUsersAsync(
+      params.channelId,
+      session.user.id
+    );
 
     return NextResponse.json({
       data: {

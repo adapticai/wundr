@@ -118,9 +118,7 @@ export function MetricCard({
       <CardContent className='p-4 sm:p-6'>
         <div className='flex items-start justify-between gap-4'>
           <div className='flex-1 min-w-0'>
-            <p className='text-sm font-sans text-muted-foreground truncate'>
-              {title}
-            </p>
+            <p className='text-sm font-sans text-muted-foreground'>{title}</p>
             <p className='text-2xl sm:text-3xl font-heading font-semibold text-foreground mt-1 break-words'>
               {formatValue(value, format)}
             </p>

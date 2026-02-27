@@ -222,7 +222,21 @@ export async function POST(
       data: { capabilities: updatedCapabilities },
     });
 
-    // TODO: Log the action to audit log service in production
+    // Log API key generation to audit log
+    await (prisma as any).auditLog.create({
+      data: {
+        actorType: 'user',
+        actorId: session.user.id,
+        action: 'orchestrator.api_key.generate',
+        resourceType: 'orchestrator',
+        resourceId: params.orchestratorId,
+        metadata: {
+          keyName: input.name,
+          scopes: input.scopes,
+          ...(expiresAt && { expiresAt: expiresAt.toISOString() }),
+        },
+      },
+    });
 
     return NextResponse.json(
       {
@@ -369,7 +383,19 @@ export async function DELETE(
       data: { capabilities: updatedCapabilities as Prisma.InputJsonValue },
     });
 
-    // TODO: Log the action to audit log service in production
+    // Log API key revocation to audit log
+    await (prisma as any).auditLog.create({
+      data: {
+        actorType: 'user',
+        actorId: session.user.id,
+        action: 'orchestrator.api_key.revoke',
+        resourceType: 'orchestrator',
+        resourceId: params.orchestratorId,
+        metadata: {
+          orchestratorName: orchestrator.user.name,
+        },
+      },
+    });
 
     return NextResponse.json({
       message: 'API key revoked successfully',

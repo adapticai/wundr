@@ -79,6 +79,12 @@ export async function GET(
       '[GET /api/workspaces/:workspaceId/search/suggestions] Error:',
       error
     );
-    return NextResponse.json({ suggestions: [] });
+    return NextResponse.json(
+      {
+        suggestions: [],
+        error: 'Failed to fetch suggestions',
+      },
+      { status: 500 }
+    );
   }
 }

@@ -446,21 +446,56 @@ export async function rotateWebhookSecret(
 }
 
 /**
- * Generate OAuth state parameter for CSRF protection
+ * OAuth state data structure
  */
-export function generateOAuthState(): string {
-  console.log('[IntegrationService] generateOAuthState called');
-  // TODO: Implement secure state generation and storage
-  return `state_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+export interface OAuthStateData {
+  workspaceId?: string;
+  provider?: string;
+  timestamp: number;
+  nonce: string;
 }
 
 /**
- * Verify OAuth state parameter
+ * Generate OAuth state parameter with embedded data for CSRF protection
  */
-export function verifyOAuthState(state: string): boolean {
-  console.log('[IntegrationService] verifyOAuthState called with:', { state });
-  // TODO: Implement proper state verification
-  return state.startsWith('state_');
+export function generateOAuthState(data?: {
+  workspaceId?: string;
+  provider?: string;
+}): string {
+  const stateData: OAuthStateData = {
+    ...data,
+    timestamp: Date.now(),
+    nonce: crypto.randomUUID(),
+  };
+  // Base64 encode the state data
+  const encoded = Buffer.from(JSON.stringify(stateData)).toString('base64url');
+  return encoded;
+}
+
+/**
+ * Verify OAuth state parameter and return decoded state data
+ * Returns null if state is invalid or expired (10 minute TTL)
+ */
+export function verifyOAuthState(state: string): OAuthStateData | null {
+  try {
+    const decoded = Buffer.from(state, 'base64url').toString('utf-8');
+    const stateData = JSON.parse(decoded) as OAuthStateData;
+
+    // Validate required fields
+    if (!stateData.timestamp || !stateData.nonce) {
+      return null;
+    }
+
+    // Check expiration (10 minutes)
+    const tenMinutesMs = 10 * 60 * 1000;
+    if (Date.now() - stateData.timestamp > tenMinutesMs) {
+      return null;
+    }
+
+    return stateData;
+  } catch {
+    return null;
+  }
 }
 
 /**

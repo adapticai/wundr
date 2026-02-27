@@ -242,7 +242,21 @@ export async function POST(
       });
     });
 
-    // TODO: Log the action to audit log service in production
+    // Log orchestrator action to audit log
+    await (prisma as any).auditLog.create({
+      data: {
+        actorType: 'user',
+        actorId: session.user.id,
+        action: `orchestrator.${input.action}`,
+        resourceType: 'orchestrator',
+        resourceId: params.orchestratorId,
+        metadata: {
+          previousStatus,
+          newStatus,
+          ...(input.reason && { reason: input.reason }),
+        },
+      },
+    });
 
     return NextResponse.json({
       data: updatedOrchestrator,

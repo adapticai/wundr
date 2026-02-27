@@ -203,7 +203,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // TODO: Log successful validation to audit log service in production
+    // Log successful validation to audit log
+    await (prisma as any).auditLog.create({
+      data: {
+        actorType: 'integration',
+        action: 'orchestrator.validate',
+        resourceType: 'orchestrator',
+        resourceId: matchedVP.id,
+        metadata: {
+          discipline: matchedVP.discipline,
+          role: matchedVP.role,
+          status: matchedVP.status,
+        },
+      },
+    });
 
     // Return Orchestrator info without sensitive data
     return NextResponse.json({

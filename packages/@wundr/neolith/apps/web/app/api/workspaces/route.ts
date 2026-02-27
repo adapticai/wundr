@@ -79,6 +79,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const accessibleOrgIds = userOrganizations.map(m => m.organizationId);
 
+    // Also get workspaces the user is a direct member of
+    const directMemberships = await prisma.workspaceMember.findMany({
+      where: { userId: session.user.id },
+      select: { workspaceId: true, role: true },
+    });
+
+    const directWorkspaceIds = directMemberships.map(m => m.workspaceId);
+
     // Check authorization for specific organization filter
     if (
       filters.organizationId &&
@@ -93,17 +101,56 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Build where clause
+    // Build search filter
+    const searchFilter = filters.search
+      ? {
+          OR: [
+            {
+              name: {
+                contains: filters.search,
+                mode: 'insensitive' as const,
+              },
+            },
+            {
+              slug: {
+                contains: filters.search,
+                mode: 'insensitive' as const,
+              },
+            },
+          ],
+        }
+      : {};
+
+    // Build where clause - include both org-based and direct membership access
+    const orgFilter = filters.organizationId
+      ? { organizationId: filters.organizationId }
+      : accessibleOrgIds.length > 0
+        ? { organizationId: { in: accessibleOrgIds } }
+        : null;
+
+    const accessFilters: Prisma.workspaceWhereInput[] = [];
+    if (orgFilter) accessFilters.push(orgFilter);
+    if (directWorkspaceIds.length > 0)
+      accessFilters.push({ id: { in: directWorkspaceIds } });
+
+    // If user has no org memberships and no direct workspace memberships, return empty
+    if (accessFilters.length === 0) {
+      return NextResponse.json({
+        data: [],
+        workspaces: [],
+        pagination: {
+          page: filters.page,
+          limit: filters.limit,
+          totalCount: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      });
+    }
+
     const where: Prisma.workspaceWhereInput = {
-      organizationId: filters.organizationId
-        ? filters.organizationId
-        : { in: accessibleOrgIds },
-      ...(filters.search && {
-        OR: [
-          { name: { contains: filters.search, mode: 'insensitive' } },
-          { slug: { contains: filters.search, mode: 'insensitive' } },
-        ],
-      }),
+      AND: [{ OR: accessFilters }, searchFilter],
     };
 
     // Calculate pagination
@@ -146,8 +193,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const hasNextPage = filters.page < totalPages;
     const hasPreviousPage = filters.page > 1;
 
+    // Build role map from direct memberships
+    const roleMap = new Map(
+      directMemberships.map(m => [m.workspaceId, m.role])
+    );
+
+    // Enrich workspaces with user's role
+    const enrichedWorkspaces = workspaces.map(ws => ({
+      ...ws,
+      role: roleMap.get(ws.id) || 'MEMBER',
+    }));
+
     return NextResponse.json({
-      data: workspaces,
+      data: enrichedWorkspaces,
+      workspaces: enrichedWorkspaces,
       pagination: {
         page: filters.page,
         limit: filters.limit,

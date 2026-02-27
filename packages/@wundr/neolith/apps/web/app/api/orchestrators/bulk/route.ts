@@ -263,7 +263,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const hasFailures = failureCount > 0;
     const allFailed = successCount === 0;
 
-    // TODO: Log the bulk action to audit log service in production
+    // Log bulk action to audit log
+    await (prisma as any).auditLog.create({
+      data: {
+        actorType: 'user',
+        actorId: session.user.id,
+        action: `orchestrator.bulk.${input.action}`,
+        resourceType: 'orchestrator',
+        resourceId: 'bulk',
+        metadata: {
+          orchestratorIds,
+          total: orchestratorIds.length,
+          success: successCount,
+          failed: failureCount,
+          ...(input.reason && { reason: input.reason }),
+        },
+      },
+    });
 
     // Build response
     const response = {
