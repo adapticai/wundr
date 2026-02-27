@@ -157,6 +157,13 @@ export default function HealthDashboardPage() {
 
   // Transform overview data
   const overviewExt = overview as unknown as Record<string, number>;
+  // Clamp uptime to [0, 100] to derive a valid error rate
+  const uptimePercent =
+    typeof overview.uptime === 'number' &&
+    overview.uptime >= 0 &&
+    overview.uptime <= 100
+      ? overview.uptime
+      : 100;
   const overviewData = {
     activeOrchestrators: overview.healthyOrchestrators,
     totalSessions: overview.totalOrchestrators,
@@ -167,7 +174,7 @@ export default function HealthDashboardPage() {
       limit: overviewExt['tokenUsageLimit'] ?? 0,
       percentUsed: overviewExt['tokenUsagePercent'] ?? 0,
     },
-    errorRate: 100 - overview.uptime,
+    errorRate: Math.max(0, Math.min(100, 100 - uptimePercent)),
     uptime: overviewExt['uptimeMs'] ?? 0,
   };
 

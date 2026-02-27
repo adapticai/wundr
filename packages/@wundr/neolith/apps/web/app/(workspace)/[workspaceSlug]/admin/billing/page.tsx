@@ -929,7 +929,7 @@ function UsageMetric({
   limit: number;
   unit: string;
 }) {
-  const percentage = limit === -1 ? 0 : Math.min((current / limit) * 100, 100);
+  const percentage = limit <= 0 ? 0 : Math.min((current / limit) * 100, 100);
   const isUnlimited = limit === -1;
 
   return (
