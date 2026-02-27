@@ -9,9 +9,6 @@ import {
   ExternalLink,
   AlertCircle,
   Type,
-  Palette,
-  Focus,
-  Link as LinkIcon,
   Settings,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';

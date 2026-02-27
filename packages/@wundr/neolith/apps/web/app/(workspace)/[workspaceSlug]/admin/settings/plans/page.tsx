@@ -10,6 +10,7 @@ import {
   Calendar,
   TrendingUp,
   Clock,
+  AlertCircle,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -54,51 +55,6 @@ interface CurrentPlan {
   };
 }
 
-const AVAILABLE_PLANS: Plan[] = [
-  {
-    id: 'free',
-    name: 'Free',
-    price: 0,
-    interval: 'month',
-    features: [
-      'Up to 5 members',
-      '5GB storage',
-      '1,000 API calls/month',
-      'Basic support',
-    ],
-    limits: { members: 5, storage: 5, apiCalls: 1000 },
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: 29,
-    interval: 'month',
-    features: [
-      'Up to 50 members',
-      '100GB storage',
-      '50,000 API calls/month',
-      'Priority support',
-      'Advanced analytics',
-    ],
-    limits: { members: 50, storage: 100, apiCalls: 50000 },
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 99,
-    interval: 'month',
-    features: [
-      'Unlimited members',
-      '1TB storage',
-      'Unlimited API calls',
-      '24/7 support',
-      'Custom integrations',
-      'SLA guarantee',
-    ],
-    limits: { members: -1, storage: 1000, apiCalls: -1 },
-  },
-];
-
 /**
  * Plans & Usage Admin Settings Page
  *
@@ -122,26 +78,38 @@ export default function PlansUsagePage() {
   }, [setPageHeader]);
 
   const [currentPlan, setCurrentPlan] = useState<CurrentPlan | null>(null);
+  const [availablePlans, setAvailablePlans] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [upgradingPlanId, setUpgradingPlanId] = useState<string | null>(null);
 
   // Load current plan and usage
   useEffect(() => {
     const loadPlanData = async () => {
       try {
-        const response = await fetch(
-          `/api/workspaces/${workspaceSlug}/billing/plan`
-        );
-        if (!response.ok) {
+        const [planRes, plansRes] = await Promise.all([
+          fetch(`/api/workspaces/${workspaceSlug}/billing/plan`),
+          fetch(`/api/workspaces/${workspaceSlug}/billing/plans`),
+        ]);
+
+        if (!planRes.ok) {
           throw new Error('Failed to load plan data');
         }
-        const data = await response.json();
+
+        const data = await planRes.json();
         setCurrentPlan(data);
+
+        if (plansRes.ok) {
+          const plansData = await plansRes.json();
+          setAvailablePlans(plansData.plans || []);
+        }
       } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Failed to load plan data';
+        setLoadError(message);
         toast({
           title: 'Error',
-          description:
-            error instanceof Error ? error.message : 'Failed to load plan data',
+          description: message,
           variant: 'destructive',
         });
       } finally {
@@ -191,9 +159,28 @@ export default function PlansUsagePage() {
     return <LoadingSkeleton />;
   }
 
-  const plan = currentPlan?.plan || AVAILABLE_PLANS[0];
-  const usage = currentPlan?.usage || { members: 0, storage: 0, apiCalls: 0 };
-  const billingCycle = currentPlan?.billingCycle;
+  if (loadError || !currentPlan) {
+    return (
+      <div className='flex flex-col items-center justify-center py-16 text-center gap-4'>
+        <AlertCircle className='h-12 w-12 text-muted-foreground' />
+        <div className='space-y-1'>
+          <p className='font-medium text-foreground'>
+            Unable to load plan information
+          </p>
+          <p className='text-sm text-muted-foreground'>
+            {loadError ?? 'No billing data available for this workspace.'}
+          </p>
+        </div>
+        <Button variant='outline' onClick={() => window.location.reload()}>
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  const plan = currentPlan.plan;
+  const usage = currentPlan.usage;
+  const billingCycle = currentPlan.billingCycle;
 
   const memberUsagePercent =
     plan.limits.members > 0 ? (usage.members / plan.limits.members) * 100 : 0;
@@ -337,27 +324,29 @@ export default function PlansUsagePage() {
       </Card>
 
       {/* Available Plans */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Available Plans</CardTitle>
-          <CardDescription>
-            Compare plans and find the right fit for your workspace
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className='grid gap-4 sm:grid-cols-3'>
-            {AVAILABLE_PLANS.map(availablePlan => (
-              <PlanCard
-                key={availablePlan.id}
-                plan={availablePlan}
-                isCurrentPlan={plan.id === availablePlan.id}
-                onUpgrade={handleUpgrade}
-                isUpgrading={upgradingPlanId === availablePlan.id}
-              />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {availablePlans.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Available Plans</CardTitle>
+            <CardDescription>
+              Compare plans and find the right fit for your workspace
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='grid gap-4 sm:grid-cols-3'>
+              {availablePlans.map(availablePlan => (
+                <PlanCard
+                  key={availablePlan.id}
+                  plan={availablePlan}
+                  isCurrentPlan={plan.id === availablePlan.id}
+                  onUpgrade={handleUpgrade}
+                  isUpgrading={upgradingPlanId === availablePlan.id}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

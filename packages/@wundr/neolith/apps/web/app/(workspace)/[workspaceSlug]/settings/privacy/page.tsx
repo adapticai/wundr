@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Shield,
   Download,
   Trash2,
   Eye,
@@ -272,8 +271,6 @@ export default function PrivacySettingsPage() {
       if (!response.ok) {
         throw new Error('Failed to request data export');
       }
-
-      const data = await response.json();
 
       // Poll for export status
       const checkInterval = setInterval(async () => {

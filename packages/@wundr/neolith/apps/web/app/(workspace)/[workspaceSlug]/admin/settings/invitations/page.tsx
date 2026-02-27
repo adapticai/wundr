@@ -15,6 +15,19 @@ import {
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -41,6 +54,14 @@ export default function InvitationsSettingsPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const { toast } = useToast();
+  const { setPageHeader } = usePageHeader();
+
+  useEffect(() => {
+    setPageHeader(
+      'Invitations',
+      'Send invitations and manage pending requests to join this workspace'
+    );
+  }, [setPageHeader]);
 
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -270,13 +291,6 @@ export default function InvitationsSettingsPage() {
 
   return (
     <div className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-bold'>Invitations</h1>
-        <p className='mt-1 text-muted-foreground'>
-          Send invitations and manage pending requests to join this workspace
-        </p>
-      </div>
-
       {/* Bulk Invite Section */}
       <div className='rounded-lg border bg-card'>
         <div className='border-b px-6 py-4'>
@@ -290,48 +304,38 @@ export default function InvitationsSettingsPage() {
         </div>
 
         <div className='p-6 space-y-4'>
-          <div>
-            <label className='block text-sm font-medium text-foreground mb-2'>
-              Email addresses
-            </label>
-            <textarea
+          <div className='space-y-2'>
+            <Label htmlFor='bulk-emails'>Email addresses</Label>
+            <Textarea
+              id='bulk-emails'
               value={bulkEmails}
               onChange={e => setBulkEmails(e.target.value)}
-              placeholder='Enter email addresses (one per line or comma-separated)&#10;example1@company.com&#10;example2@company.com, example3@company.com'
+              placeholder={
+                'Enter email addresses (one per line or comma-separated)\nexample1@company.com\nexample2@company.com, example3@company.com'
+              }
               rows={6}
-              className={cn(
-                'block w-full rounded-md border border-input bg-background',
-                'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-              )}
             />
-            <p className='mt-2 text-xs text-muted-foreground'>
+            <p className='text-xs text-muted-foreground'>
               Separate multiple emails with commas, semicolons, or new lines
             </p>
           </div>
 
-          <button
+          <Button
             onClick={handleBulkInvite}
             disabled={isSendingBulk || !bulkEmails.trim()}
-            className={cn(
-              'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2',
-              'text-sm font-medium text-primary-foreground',
-              'hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-              'disabled:cursor-not-allowed disabled:opacity-50'
-            )}
           >
             {isSendingBulk ? (
               <>
-                <Loader2 className='h-4 w-4 animate-spin' />
+                <Loader2 className='h-4 w-4 mr-2 animate-spin' />
                 Sending...
               </>
             ) : (
               <>
-                <Send className='h-4 w-4' />
+                <Send className='h-4 w-4 mr-2' />
                 Send Invitations
               </>
             )}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -351,47 +355,37 @@ export default function InvitationsSettingsPage() {
           {inviteLink ? (
             <>
               <div className='flex items-center gap-2'>
-                <input
+                <Input
                   type='text'
                   value={inviteLink}
                   readOnly
-                  className={cn(
-                    'flex-1 rounded-md border border-input bg-muted px-3 py-2 text-sm',
-                    'focus:outline-none'
-                  )}
+                  className='flex-1 bg-muted'
                 />
-                <button
-                  onClick={handleCopyLink}
-                  className={cn(
-                    'inline-flex items-center gap-2 rounded-md border border-input bg-background',
-                    'px-3 py-2 text-sm font-medium hover:bg-accent'
-                  )}
-                >
-                  <Copy className='h-4 w-4' />
+                <Button variant='outline' onClick={handleCopyLink}>
+                  <Copy className='h-4 w-4 mr-2' />
                   Copy
-                </button>
+                </Button>
               </div>
 
-              <button
+              <Button
+                variant='ghost'
+                size='sm'
                 onClick={handleRegenerateLink}
                 disabled={isRegeneratingLink}
-                className={cn(
-                  'inline-flex items-center gap-2 text-sm text-primary hover:underline',
-                  'disabled:opacity-50 disabled:cursor-not-allowed'
-                )}
+                className='text-primary'
               >
                 {isRegeneratingLink ? (
                   <>
-                    <Loader2 className='h-4 w-4 animate-spin' />
+                    <Loader2 className='h-4 w-4 mr-2 animate-spin' />
                     Regenerating...
                   </>
                 ) : (
                   <>
-                    <RefreshCw className='h-4 w-4' />
+                    <RefreshCw className='h-4 w-4 mr-2' />
                     Regenerate link
                   </>
                 )}
-              </button>
+              </Button>
               <p className='text-xs text-muted-foreground'>
                 Regenerating will immediately invalidate the current link
               </p>
@@ -432,82 +426,65 @@ export default function InvitationsSettingsPage() {
               </p>
             </div>
           ) : (
-            <table className='w-full'>
-              <thead className='bg-muted/50'>
-                <tr>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-                    Email
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-                    Status
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-                    Sent By
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-                    Sent Date
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-                    Expires
-                  </th>
-                  <th className='px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='divide-y divide-border bg-card'>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Sent By</TableHead>
+                  <TableHead>Sent Date</TableHead>
+                  <TableHead>Expires</TableHead>
+                  <TableHead className='text-right'>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {pendingInvitations.map(invitation => (
-                  <tr key={invitation.id} className='hover:bg-muted/30'>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='flex items-center'>
-                        <Mail className='h-4 w-4 text-muted-foreground mr-2' />
-                        <span className='text-sm font-medium text-foreground'>
-                          {invitation.email}
-                        </span>
+                  <TableRow key={invitation.id}>
+                    <TableCell>
+                      <div className='flex items-center gap-2'>
+                        <Mail className='h-4 w-4 text-muted-foreground' />
+                        <span className='font-medium'>{invitation.email}</span>
                       </div>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
+                    </TableCell>
+                    <TableCell>
                       <StatusBadge status={invitation.status} />
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-muted-foreground'>
+                    </TableCell>
+                    <TableCell className='text-muted-foreground'>
                       {invitation.sentBy}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-muted-foreground'>
+                    </TableCell>
+                    <TableCell className='text-muted-foreground'>
                       {new Date(invitation.sentAt).toLocaleDateString()}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-muted-foreground'>
+                    </TableCell>
+                    <TableCell className='text-muted-foreground'>
                       {new Date(invitation.expiresAt).toLocaleDateString()}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-right text-sm'>
+                    </TableCell>
+                    <TableCell>
                       <div className='flex items-center justify-end gap-2'>
-                        <button
+                        <Button
+                          variant='ghost'
+                          size='sm'
                           onClick={() => handleResendInvite(invitation.id)}
                           disabled={isProcessing}
-                          className={cn(
-                            'inline-flex items-center gap-1 text-primary hover:underline',
-                            'disabled:opacity-50 disabled:cursor-not-allowed'
-                          )}
                         >
-                          <Send className='h-3 w-3' />
+                          <Send className='h-3 w-3 mr-1' />
                           Resend
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant='ghost'
+                          size='sm'
                           onClick={() => handleRevokeInvite(invitation.id)}
                           disabled={isProcessing}
-                          className={cn(
-                            'inline-flex items-center gap-1 text-destructive hover:underline',
-                            'disabled:opacity-50 disabled:cursor-not-allowed'
-                          )}
+                          className='text-destructive hover:text-destructive'
                         >
-                          <X className='h-3 w-3' />
+                          <X className='h-3 w-3 mr-1' />
                           Revoke
-                        </button>
+                        </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           )}
         </div>
       </div>
@@ -526,47 +503,37 @@ export default function InvitationsSettingsPage() {
           </div>
 
           <div className='overflow-x-auto'>
-            <table className='w-full'>
-              <thead className='bg-muted/50'>
-                <tr>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-                    Email
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-                    Status
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-                    Sent By
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-                    Sent Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='divide-y divide-border bg-card'>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Sent By</TableHead>
+                  <TableHead>Sent Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {acceptedInvitations.map(invitation => (
-                  <tr key={invitation.id} className='hover:bg-muted/30'>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='flex items-center'>
-                        <Mail className='h-4 w-4 text-muted-foreground mr-2' />
-                        <span className='text-sm font-medium text-foreground'>
-                          {invitation.email}
-                        </span>
+                  <TableRow key={invitation.id}>
+                    <TableCell>
+                      <div className='flex items-center gap-2'>
+                        <Mail className='h-4 w-4 text-muted-foreground' />
+                        <span className='font-medium'>{invitation.email}</span>
                       </div>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
+                    </TableCell>
+                    <TableCell>
                       <StatusBadge status={invitation.status} />
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-muted-foreground'>
+                    </TableCell>
+                    <TableCell className='text-muted-foreground'>
                       {invitation.sentBy}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-muted-foreground'>
+                    </TableCell>
+                    <TableCell className='text-muted-foreground'>
                       {new Date(invitation.sentAt).toLocaleDateString()}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </div>
       )}

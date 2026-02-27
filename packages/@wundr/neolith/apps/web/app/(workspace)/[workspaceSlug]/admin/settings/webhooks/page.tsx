@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -43,7 +44,6 @@ import {
 } from '@/components/ui/table';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
 interface Webhook {
   id: string;
@@ -476,18 +476,22 @@ export default function WebhooksSettingsPage() {
               <Label>Events</Label>
               <div className='grid grid-cols-2 gap-2 p-4 border rounded-lg max-h-64 overflow-y-auto'>
                 {AVAILABLE_EVENTS.map(event => (
-                  <label
+                  <div
                     key={event}
-                    className='flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-muted'
+                    className='flex items-center justify-between gap-2 p-2 rounded hover:bg-muted'
                   >
-                    <input
-                      type='checkbox'
+                    <Label
+                      htmlFor={`event-${event}`}
+                      className='text-sm font-normal cursor-pointer'
+                    >
+                      {event}
+                    </Label>
+                    <Switch
+                      id={`event-${event}`}
                       checked={formEvents.includes(event)}
-                      onChange={() => toggleEvent(event)}
-                      className='h-4 w-4'
+                      onCheckedChange={() => toggleEvent(event)}
                     />
-                    <span className='text-sm'>{event}</span>
-                  </label>
+                  </div>
                 ))}
               </div>
               <p className='text-xs text-muted-foreground'>
@@ -528,25 +532,11 @@ export default function WebhooksSettingsPage() {
                   Enable or disable this webhook
                 </p>
               </div>
-              <Button
-                type='button'
-                role='switch'
-                aria-checked={formActive}
-                variant='ghost'
-                size='sm'
-                onClick={() => setFormActive(!formActive)}
-                className={cn(
-                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-                  formActive ? 'bg-primary' : 'bg-muted'
-                )}
-              >
-                <span
-                  className={cn(
-                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-                    formActive ? 'translate-x-6' : 'translate-x-1'
-                  )}
-                />
-              </Button>
+              <Switch
+                id='webhook-active'
+                checked={formActive}
+                onCheckedChange={setFormActive}
+              />
             </div>
           </div>
 

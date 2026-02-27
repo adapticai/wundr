@@ -25,7 +25,6 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
 /**
  * Security & Compliance Admin Settings Page
@@ -282,7 +281,7 @@ function AuthenticationSection({
   return (
     <form onSubmit={handleSubmit} className='rounded-lg border bg-card p-6'>
       <div className='mb-6 flex items-center gap-2'>
-        <ShieldCheckIcon className='h-5 w-5 text-primary' />
+        <ShieldCheck className='h-5 w-5 text-primary' />
         <h2 className='text-lg font-semibold text-foreground'>
           Authentication Requirements
         </h2>
@@ -299,9 +298,9 @@ function AuthenticationSection({
               All workspace members must enable 2FA to access resources
             </p>
           </div>
-          <ToggleSwitch
+          <Switch
             checked={twoFactorRequired}
-            onChange={setTwoFactorRequired}
+            onCheckedChange={setTwoFactorRequired}
           />
         </div>
 
@@ -316,39 +315,31 @@ function AuthenticationSection({
                 Require enterprise SSO for authentication
               </p>
             </div>
-            <ToggleSwitch checked={ssoEnabled} onChange={setSsoEnabled} />
+            <Switch checked={ssoEnabled} onCheckedChange={setSsoEnabled} />
           </div>
 
           {ssoEnabled && (
-            <div className='ml-6 mt-4'>
-              <label
-                htmlFor='ssoProvider'
-                className='block text-sm font-medium text-foreground mb-2'
-              >
-                SSO Provider
-              </label>
-              <select
-                id='ssoProvider'
+            <div className='ml-6 mt-4 space-y-2'>
+              <Label htmlFor='ssoProvider'>SSO Provider</Label>
+              <Select
                 value={ssoProvider ?? ''}
-                onChange={e => {
-                  const value = e.target.value;
+                onValueChange={value => {
                   if (value === '') {
                     setSsoProvider(null);
                   } else if (isSsoProvider(value)) {
                     setSsoProvider(value);
                   }
                 }}
-                className={cn(
-                  'block w-full rounded-md border border-input bg-background',
-                  'px-3 py-2 text-sm',
-                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-                )}
               >
-                <option value=''>Select Provider</option>
-                <option value='okta'>Okta</option>
-                <option value='azure'>Azure AD</option>
-                <option value='google'>Google Workspace</option>
-              </select>
+                <SelectTrigger id='ssoProvider'>
+                  <SelectValue placeholder='Select provider' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='okta'>Okta</SelectItem>
+                  <SelectItem value='azure'>Azure AD</SelectItem>
+                  <SelectItem value='google'>Google Workspace</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
         </div>
@@ -361,38 +352,34 @@ function AuthenticationSection({
           <p className='text-sm text-muted-foreground mb-4'>
             Select which authentication methods members can use
           </p>
-          <div className='space-y-2'>
+          <div className='space-y-3'>
             {['email', 'google', 'github', 'microsoft'].map(method => (
-              <label
-                key={method}
-                className='flex items-center gap-3 cursor-pointer'
-              >
-                <input
-                  type='checkbox'
+              <div key={method} className='flex items-center justify-between'>
+                <Label
+                  htmlFor={`auth-method-${method}`}
+                  className='capitalize font-normal cursor-pointer'
+                >
+                  {method === 'email'
+                    ? 'Email & Password'
+                    : method === 'microsoft'
+                      ? 'Microsoft'
+                      : method.charAt(0).toUpperCase() + method.slice(1)}
+                </Label>
+                <Switch
+                  id={`auth-method-${method}`}
                   checked={allowedAuthMethods.includes(method)}
-                  onChange={() => toggleAuthMethod(method)}
-                  className='h-4 w-4 rounded border-input text-primary focus:ring-primary'
+                  onCheckedChange={() => toggleAuthMethod(method)}
                 />
-                <span className='text-sm text-foreground capitalize'>
-                  {method}
-                </span>
-              </label>
+              </div>
             ))}
           </div>
         </div>
       </div>
 
       <div className='mt-6 flex justify-end'>
-        <button
-          type='submit'
-          disabled={isSaving}
-          className={cn(
-            'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
-          )}
-        >
+        <Button type='submit' disabled={isSaving}>
           {isSaving ? 'Saving...' : 'Save Authentication Settings'}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -441,7 +428,7 @@ function SessionPoliciesSection({
   return (
     <form onSubmit={handleSubmit} className='rounded-lg border bg-card p-6'>
       <div className='mb-6 flex items-center gap-2'>
-        <ClockIcon className='h-5 w-5 text-primary' />
+        <Clock className='h-5 w-5 text-primary' />
         <h2 className='text-lg font-semibold text-foreground'>
           Session Policies
         </h2>
@@ -449,32 +436,26 @@ function SessionPoliciesSection({
 
       <div className='space-y-6'>
         {/* Session Timeout */}
-        <div>
-          <label
-            htmlFor='sessionTimeout'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Session Timeout Duration
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
+        <div className='space-y-2'>
+          <Label htmlFor='sessionTimeout'>Session Timeout Duration</Label>
+          <p className='text-sm text-muted-foreground'>
             Automatically log out inactive users after this period
           </p>
-          <select
-            id='sessionTimeout'
-            value={sessionTimeout}
-            onChange={e => setSessionTimeout(Number(e.target.value))}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
+          <Select
+            value={sessionTimeout.toString()}
+            onValueChange={value => setSessionTimeout(Number(value))}
           >
-            <option value={7}>7 days</option>
-            <option value={14}>14 days</option>
-            <option value={30}>30 days</option>
-            <option value={60}>60 days</option>
-            <option value={90}>90 days</option>
-          </select>
+            <SelectTrigger id='sessionTimeout'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='7'>7 days</SelectItem>
+              <SelectItem value='14'>14 days</SelectItem>
+              <SelectItem value='30'>30 days</SelectItem>
+              <SelectItem value='60'>60 days</SelectItem>
+              <SelectItem value='90'>90 days</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Re-authentication */}
@@ -487,53 +468,40 @@ function SessionPoliciesSection({
               Require password confirmation for security-critical operations
             </p>
           </div>
-          <ToggleSwitch
+          <Switch
             checked={requireReauthForSensitive}
-            onChange={setRequireReauthForSensitive}
+            onCheckedChange={setRequireReauthForSensitive}
           />
         </div>
 
         {/* Max Concurrent Sessions */}
-        <div className='border-t pt-6'>
-          <label
-            htmlFor='maxSessions'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Maximum Concurrent Sessions
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
+        <div className='space-y-2 border-t pt-6'>
+          <Label htmlFor='maxSessions'>Maximum Concurrent Sessions</Label>
+          <p className='text-sm text-muted-foreground'>
             Limit the number of active sessions per user
           </p>
-          <select
-            id='maxSessions'
-            value={maxConcurrentSessions}
-            onChange={e => setMaxConcurrentSessions(Number(e.target.value))}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
+          <Select
+            value={maxConcurrentSessions.toString()}
+            onValueChange={value => setMaxConcurrentSessions(Number(value))}
           >
-            <option value={1}>1 session (most secure)</option>
-            <option value={3}>3 sessions</option>
-            <option value={5}>5 sessions</option>
-            <option value={10}>10 sessions</option>
-            <option value={-1}>Unlimited</option>
-          </select>
+            <SelectTrigger id='maxSessions'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='1'>1 session (most secure)</SelectItem>
+              <SelectItem value='3'>3 sessions</SelectItem>
+              <SelectItem value='5'>5 sessions</SelectItem>
+              <SelectItem value='10'>10 sessions</SelectItem>
+              <SelectItem value='-1'>Unlimited</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       <div className='mt-6 flex justify-end'>
-        <button
-          type='submit'
-          disabled={isSaving}
-          className={cn(
-            'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
-          )}
-        >
+        <Button type='submit' disabled={isSaving}>
           {isSaving ? 'Saving...' : 'Save Session Settings'}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -593,7 +561,7 @@ function DomainEmailSection({
   return (
     <form onSubmit={handleSubmit} className='rounded-lg border bg-card p-6'>
       <div className='mb-6 flex items-center gap-2'>
-        <MailIcon className='h-5 w-5 text-primary' />
+        <Mail className='h-5 w-5 text-primary' />
         <h2 className='text-lg font-semibold text-foreground'>
           Domain & Email Restrictions
         </h2>
@@ -601,52 +569,30 @@ function DomainEmailSection({
 
       <div className='space-y-6'>
         {/* Allowed Domains */}
-        <div>
-          <label
-            htmlFor='allowedDomains'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Allowed Email Domains
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
+        <div className='space-y-2'>
+          <Label htmlFor='allowedDomains'>Allowed Email Domains</Label>
+          <p className='text-sm text-muted-foreground'>
             Only allow sign-ups from these domains (comma-separated). Leave
             empty to allow all.
           </p>
-          <input
-            type='text'
+          <Input
             id='allowedDomains'
             value={allowedEmailDomains}
             onChange={e => setAllowedEmailDomains(e.target.value)}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm placeholder:text-muted-foreground',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
             placeholder='example.com, company.org'
           />
         </div>
 
         {/* Blocked Domains */}
-        <div className='border-t pt-6'>
-          <label
-            htmlFor='blockedDomains'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Blocked Email Domains
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
+        <div className='space-y-2 border-t pt-6'>
+          <Label htmlFor='blockedDomains'>Blocked Email Domains</Label>
+          <p className='text-sm text-muted-foreground'>
             Block sign-ups from these domains (comma-separated)
           </p>
-          <input
-            type='text'
+          <Input
             id='blockedDomains'
             value={blockedEmailDomains}
             onChange={e => setBlockedEmailDomains(e.target.value)}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm placeholder:text-muted-foreground',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
             placeholder='competitor.com, spam-domain.net'
           />
         </div>
@@ -662,24 +608,17 @@ function DomainEmailSection({
               workspace
             </p>
           </div>
-          <ToggleSwitch
+          <Switch
             checked={emailVerificationRequired}
-            onChange={setEmailVerificationRequired}
+            onCheckedChange={setEmailVerificationRequired}
           />
         </div>
       </div>
 
       <div className='mt-6 flex justify-end'>
-        <button
-          type='submit'
-          disabled={isSaving}
-          className={cn(
-            'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
-          )}
-        >
+        <Button type='submit' disabled={isSaving}>
           {isSaving ? 'Saving...' : 'Save Domain Settings'}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -749,7 +688,7 @@ function DataPrivacySection({
   return (
     <form onSubmit={handleSubmit} className='rounded-lg border bg-card p-6'>
       <div className='mb-6 flex items-center gap-2'>
-        <DatabaseIcon className='h-5 w-5 text-primary' />
+        <Database className='h-5 w-5 text-primary' />
         <h2 className='text-lg font-semibold text-foreground'>
           Data & Privacy
         </h2>
@@ -757,125 +696,101 @@ function DataPrivacySection({
 
       <div className='space-y-6'>
         {/* Data Retention */}
-        <div>
-          <label
-            htmlFor='dataRetention'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Data Retention Period
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
+        <div className='space-y-2'>
+          <Label htmlFor='dataRetention'>Data Retention Period</Label>
+          <p className='text-sm text-muted-foreground'>
             How long to retain message history and metadata
           </p>
-          <select
-            id='dataRetention'
-            value={dataRetentionDays}
-            onChange={e => setDataRetentionDays(Number(e.target.value))}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
+          <Select
+            value={dataRetentionDays.toString()}
+            onValueChange={value => setDataRetentionDays(Number(value))}
           >
-            <option value={30}>30 days</option>
-            <option value={90}>90 days</option>
-            <option value={180}>180 days</option>
-            <option value={365}>1 year</option>
-            <option value={730}>2 years</option>
-            <option value={1825}>5 years</option>
-            <option value={3650}>10 years</option>
-            <option value={-1}>Forever</option>
-          </select>
+            <SelectTrigger id='dataRetention'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='30'>30 days</SelectItem>
+              <SelectItem value='90'>90 days</SelectItem>
+              <SelectItem value='180'>180 days</SelectItem>
+              <SelectItem value='365'>1 year</SelectItem>
+              <SelectItem value='730'>2 years</SelectItem>
+              <SelectItem value='1825'>5 years</SelectItem>
+              <SelectItem value='3650'>10 years</SelectItem>
+              <SelectItem value='-1'>Forever</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Message Edit Window */}
-        <div className='border-t pt-6'>
-          <label
-            htmlFor='editWindow'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Message Edit Time Window (minutes)
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
-            How long after posting can users edit their messages
+        <div className='space-y-2 border-t pt-6'>
+          <Label htmlFor='editWindow'>Message Edit Time Window</Label>
+          <p className='text-sm text-muted-foreground'>
+            How long after posting members can edit their messages
           </p>
-          <select
-            id='editWindow'
-            value={messageEditWindow}
-            onChange={e => setMessageEditWindow(Number(e.target.value))}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
+          <Select
+            value={messageEditWindow.toString()}
+            onValueChange={value => setMessageEditWindow(Number(value))}
           >
-            <option value={0}>Disabled</option>
-            <option value={5}>5 minutes</option>
-            <option value={15}>15 minutes</option>
-            <option value={30}>30 minutes</option>
-            <option value={60}>1 hour</option>
-            <option value={-1}>Unlimited</option>
-          </select>
+            <SelectTrigger id='editWindow'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='0'>Disabled</SelectItem>
+              <SelectItem value='5'>5 minutes</SelectItem>
+              <SelectItem value='15'>15 minutes</SelectItem>
+              <SelectItem value='30'>30 minutes</SelectItem>
+              <SelectItem value='60'>1 hour</SelectItem>
+              <SelectItem value='-1'>Unlimited</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Message Delete Window */}
-        <div className='border-t pt-6'>
-          <label
-            htmlFor='deleteWindow'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Message Delete Time Window (minutes)
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
-            How long after posting can users delete their messages
+        <div className='space-y-2 border-t pt-6'>
+          <Label htmlFor='deleteWindow'>Message Delete Time Window</Label>
+          <p className='text-sm text-muted-foreground'>
+            How long after posting members can delete their own messages
           </p>
-          <select
-            id='deleteWindow'
-            value={messageDeleteWindow}
-            onChange={e => setMessageDeleteWindow(Number(e.target.value))}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
+          <Select
+            value={messageDeleteWindow.toString()}
+            onValueChange={value => setMessageDeleteWindow(Number(value))}
           >
-            <option value={0}>Disabled</option>
-            <option value={15}>15 minutes</option>
-            <option value={30}>30 minutes</option>
-            <option value={60}>1 hour</option>
-            <option value={1440}>24 hours</option>
-            <option value={-1}>Unlimited</option>
-          </select>
+            <SelectTrigger id='deleteWindow'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='0'>Disabled</SelectItem>
+              <SelectItem value='15'>15 minutes</SelectItem>
+              <SelectItem value='30'>30 minutes</SelectItem>
+              <SelectItem value='60'>1 hour</SelectItem>
+              <SelectItem value='1440'>24 hours</SelectItem>
+              <SelectItem value='-1'>Unlimited</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* File Retention */}
-        <div className='border-t pt-6'>
-          <label
-            htmlFor='fileRetention'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            File Retention Period
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
-            How long to store uploaded files
+        <div className='space-y-2 border-t pt-6'>
+          <Label htmlFor='fileRetention'>File Retention Period</Label>
+          <p className='text-sm text-muted-foreground'>
+            How long to store uploaded files before automatic deletion
           </p>
-          <select
-            id='fileRetention'
-            value={fileRetentionDays}
-            onChange={e => setFileRetentionDays(Number(e.target.value))}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
+          <Select
+            value={fileRetentionDays.toString()}
+            onValueChange={value => setFileRetentionDays(Number(value))}
           >
-            <option value={30}>30 days</option>
-            <option value={90}>90 days</option>
-            <option value={180}>180 days</option>
-            <option value={365}>1 year</option>
-            <option value={730}>2 years</option>
-            <option value={-1}>Forever</option>
-          </select>
+            <SelectTrigger id='fileRetention'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='30'>30 days</SelectItem>
+              <SelectItem value='90'>90 days</SelectItem>
+              <SelectItem value='180'>180 days</SelectItem>
+              <SelectItem value='365'>1 year</SelectItem>
+              <SelectItem value='730'>2 years</SelectItem>
+              <SelectItem value='-1'>Forever</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Data Export */}
@@ -886,24 +801,17 @@ function DataPrivacySection({
               Allow administrators to export workspace data for compliance
             </p>
           </div>
-          <ToggleSwitch
+          <Switch
             checked={dataExportEnabled}
-            onChange={setDataExportEnabled}
+            onCheckedChange={setDataExportEnabled}
           />
         </div>
       </div>
 
       <div className='mt-6 flex justify-end'>
-        <button
-          type='submit'
-          disabled={isSaving}
-          className={cn(
-            'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
-          )}
-        >
+        <Button type='submit' disabled={isSaving}>
           {isSaving ? 'Saving...' : 'Save Privacy Settings'}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -952,7 +860,7 @@ function AuditComplianceSection({
   return (
     <form onSubmit={handleSubmit} className='rounded-lg border bg-card p-6'>
       <div className='mb-6 flex items-center gap-2'>
-        <FileTextIcon className='h-5 w-5 text-primary' />
+        <FileText className='h-5 w-5 text-primary' />
         <h2 className='text-lg font-semibold text-foreground'>
           Audit & Compliance
         </h2>
@@ -967,76 +875,65 @@ function AuditComplianceSection({
               Track security-relevant actions and administrative changes
             </p>
           </div>
-          <ToggleSwitch
+          <Switch
             checked={auditLogsEnabled}
-            onChange={setAuditLogsEnabled}
+            onCheckedChange={setAuditLogsEnabled}
           />
         </div>
 
         {/* Activity Log Retention */}
-        <div className='border-t pt-6'>
-          <label
-            htmlFor='logRetention'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Activity Log Retention Period
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
+        <div className='space-y-2 border-t pt-6'>
+          <Label htmlFor='logRetention'>Activity Log Retention Period</Label>
+          <p className='text-sm text-muted-foreground'>
             How long to retain audit and activity logs
           </p>
-          <select
-            id='logRetention'
-            value={activityLogRetentionDays}
-            onChange={e => setActivityLogRetentionDays(Number(e.target.value))}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
+          <Select
+            value={activityLogRetentionDays.toString()}
+            onValueChange={value => setActivityLogRetentionDays(Number(value))}
           >
-            <option value={30}>30 days</option>
-            <option value={90}>90 days</option>
-            <option value={180}>180 days (recommended)</option>
-            <option value={365}>1 year</option>
-            <option value={730}>2 years</option>
-            <option value={1825}>5 years</option>
-            <option value={2555}>7 years (compliance standard)</option>
-          </select>
+            <SelectTrigger id='logRetention'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='30'>30 days</SelectItem>
+              <SelectItem value='90'>90 days</SelectItem>
+              <SelectItem value='180'>180 days (recommended)</SelectItem>
+              <SelectItem value='365'>1 year</SelectItem>
+              <SelectItem value='730'>2 years</SelectItem>
+              <SelectItem value='1825'>5 years</SelectItem>
+              <SelectItem value='2555'>
+                7 years (compliance standard)
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Compliance Mode */}
-        <div className='border-t pt-6'>
-          <label
-            htmlFor='complianceMode'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
-            Compliance Mode
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
+        <div className='space-y-2 border-t pt-6'>
+          <Label htmlFor='complianceMode'>Compliance Mode</Label>
+          <p className='text-sm text-muted-foreground'>
             Enable specific compliance standards and controls
           </p>
-          <select
-            id='complianceMode'
+          <Select
             value={complianceMode ?? 'none'}
-            onChange={e => {
-              const value = e.target.value;
+            onValueChange={value => {
               if (isComplianceMode(value)) {
                 setComplianceMode(value);
               }
             }}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
           >
-            <option value='none'>None</option>
-            <option value='gdpr'>
-              GDPR (General Data Protection Regulation)
-            </option>
-            <option value='hipaa'>HIPAA (Healthcare)</option>
-            <option value='sox'>SOX (Sarbanes-Oxley)</option>
-          </select>
+            <SelectTrigger id='complianceMode'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='none'>None</SelectItem>
+              <SelectItem value='gdpr'>
+                GDPR (General Data Protection Regulation)
+              </SelectItem>
+              <SelectItem value='hipaa'>HIPAA (Healthcare)</SelectItem>
+              <SelectItem value='sox'>SOX (Sarbanes-Oxley)</SelectItem>
+            </SelectContent>
+          </Select>
           {complianceMode !== 'none' && (
             <div className='mt-3 rounded-md bg-blue-50 p-3 dark:bg-blue-900/10'>
               <p className='text-sm text-blue-800 dark:text-blue-200'>
@@ -1053,16 +950,9 @@ function AuditComplianceSection({
       </div>
 
       <div className='mt-6 flex justify-end'>
-        <button
-          type='submit'
-          disabled={isSaving}
-          className={cn(
-            'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
-          )}
-        >
+        <Button type='submit' disabled={isSaving}>
           {isSaving ? 'Saving...' : 'Save Compliance Settings'}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -1117,7 +1007,7 @@ function ApiIntegrationsSection({
   return (
     <form onSubmit={handleSubmit} className='rounded-lg border bg-card p-6'>
       <div className='mb-6 flex items-center gap-2'>
-        <CodeIcon className='h-5 w-5 text-primary' />
+        <Code className='h-5 w-5 text-primary' />
         <h2 className='text-lg font-semibold text-foreground'>
           API & Integrations Security
         </h2>
@@ -1125,17 +1015,14 @@ function ApiIntegrationsSection({
 
       <div className='space-y-6'>
         {/* API Rate Limiting */}
-        <div>
-          <label
-            htmlFor='apiRateLimit'
-            className='block text-sm font-medium text-foreground mb-2'
-          >
+        <div className='space-y-2'>
+          <Label htmlFor='apiRateLimit'>
             API Rate Limit (requests per minute)
-          </label>
-          <p className='text-sm text-muted-foreground mb-3'>
+          </Label>
+          <p className='text-sm text-muted-foreground'>
             Maximum number of API requests allowed per minute per user
           </p>
-          <input
+          <Input
             type='number'
             id='apiRateLimit'
             value={apiRateLimit}
@@ -1143,11 +1030,6 @@ function ApiIntegrationsSection({
             min={100}
             max={10000}
             step={100}
-            className={cn(
-              'block w-full rounded-md border border-input bg-background',
-              'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-            )}
           />
         </div>
 
@@ -1159,22 +1041,21 @@ function ApiIntegrationsSection({
           <p className='text-sm text-muted-foreground mb-4'>
             Control what permissions third-party applications can request
           </p>
-          <div className='space-y-2'>
+          <div className='space-y-3'>
             {['read', 'write', 'admin', 'delete'].map(scope => (
-              <label
-                key={scope}
-                className='flex items-center gap-3 cursor-pointer'
-              >
-                <input
-                  type='checkbox'
-                  checked={allowedOAuthScopes.includes(scope)}
-                  onChange={() => toggleOAuthScope(scope)}
-                  className='h-4 w-4 rounded border-input text-primary focus:ring-primary'
-                />
-                <span className='text-sm text-foreground capitalize'>
+              <div key={scope} className='flex items-center justify-between'>
+                <Label
+                  htmlFor={`oauth-scope-${scope}`}
+                  className='capitalize font-normal cursor-pointer'
+                >
                   {scope}
-                </span>
-              </label>
+                </Label>
+                <Switch
+                  id={`oauth-scope-${scope}`}
+                  checked={allowedOAuthScopes.includes(scope)}
+                  onCheckedChange={() => toggleOAuthScope(scope)}
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -1189,55 +1070,19 @@ function ApiIntegrationsSection({
               Validate webhook payloads using HMAC signatures
             </p>
           </div>
-          <ToggleSwitch
+          <Switch
             checked={webhookSignatureRequired}
-            onChange={setWebhookSignatureRequired}
+            onCheckedChange={setWebhookSignatureRequired}
           />
         </div>
       </div>
 
       <div className='mt-6 flex justify-end'>
-        <button
-          type='submit'
-          disabled={isSaving}
-          className={cn(
-            'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
-          )}
-        >
+        <Button type='submit' disabled={isSaving}>
           {isSaving ? 'Saving...' : 'Save API Settings'}
-        </button>
+        </Button>
       </div>
     </form>
-  );
-}
-
-// Toggle Switch Component
-function ToggleSwitch({
-  checked,
-  onChange,
-}: {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}) {
-  return (
-    <button
-      type='button'
-      role='switch'
-      aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      className={cn(
-        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-        checked ? 'bg-primary' : 'bg-muted'
-      )}
-    >
-      <span
-        className={cn(
-          'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-          checked ? 'translate-x-6' : 'translate-x-1'
-        )}
-      />
-    </button>
   );
 }
 
@@ -1257,137 +1102,5 @@ function SettingsSkeleton() {
         </div>
       ))}
     </div>
-  );
-}
-
-// Icons
-function ShieldCheckIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z' />
-      <path d='m9 12 2 2 4-4' />
-    </svg>
-  );
-}
-
-function ClockIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='12' cy='12' r='10' />
-      <polyline points='12 6 12 12 16 14' />
-    </svg>
-  );
-}
-
-function MailIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <rect width='20' height='16' x='2' y='4' rx='2' />
-      <path d='m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7' />
-    </svg>
-  );
-}
-
-function DatabaseIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <ellipse cx='12' cy='5' rx='9' ry='3' />
-      <path d='M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5' />
-      <path d='M3 12c0 1.66 4 3 9 3s9-1.34 9-3' />
-    </svg>
-  );
-}
-
-function FileTextIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <path d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z' />
-      <path d='M14 2v4a2 2 0 0 0 2 2h4' />
-      <path d='M10 9H8' />
-      <path d='M16 13H8' />
-      <path d='M16 17H8' />
-    </svg>
-  );
-}
-
-function CodeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <polyline points='16 18 22 12 16 6' />
-      <polyline points='8 6 2 12 8 18' />
-    </svg>
-  );
-}
-
-function AlertIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns='http://www.w3.org/2000/svg'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-    >
-      <circle cx='12' cy='12' r='10' />
-      <line x1='12' x2='12' y1='8' y2='12' />
-      <line x1='12' x2='12.01' y1='16' y2='16' />
-    </svg>
   );
 }

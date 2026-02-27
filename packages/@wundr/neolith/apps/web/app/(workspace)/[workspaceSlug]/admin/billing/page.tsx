@@ -527,9 +527,17 @@ export default function AdminBillingPage() {
           {/* Quick Stats Grid */}
           <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
             <StatsCard
-              title='Current Spend'
-              value={`$${currentPlan.priceMonthly * (billing?.usage.members || 1)}`}
-              description='This billing period'
+              title='Subscription Cost'
+              value={
+                currentPlan.priceMonthly === 0
+                  ? 'Free'
+                  : `$${billingInterval === 'monthly' ? currentPlan.priceMonthly : Math.round(currentPlan.priceYearly / 12)}/mo`
+              }
+              description={
+                billingInterval === 'yearly'
+                  ? `$${currentPlan.priceYearly}/year billed annually`
+                  : 'Billed monthly'
+              }
             />
             <StatsCard
               title='Total Invoices'
@@ -606,8 +614,19 @@ export default function AdminBillingPage() {
                   ))}
                 </div>
               ) : (
-                <div className='py-12 text-center text-muted-foreground'>
-                  No payment methods on file. Add one to upgrade your plan.
+                <div className='flex flex-col items-center justify-center py-16 text-center'>
+                  <CreditCard className='mb-4 h-12 w-12 text-muted-foreground' />
+                  <h3 className='mb-1 text-lg font-semibold'>
+                    No payment methods on file
+                  </h3>
+                  <p className='mb-6 max-w-sm text-sm text-muted-foreground'>
+                    Add a payment method to manage your subscription and enable
+                    plan upgrades.
+                  </p>
+                  <Button onClick={() => setShowPaymentDialog(true)}>
+                    <CreditCard className='mr-2 h-4 w-4' />
+                    Add Payment Method
+                  </Button>
                 </div>
               )}
             </CardContent>
@@ -674,8 +693,14 @@ export default function AdminBillingPage() {
                   </TableBody>
                 </Table>
               ) : (
-                <div className='py-12 text-center text-muted-foreground'>
-                  No invoices available
+                <div className='flex flex-col items-center justify-center py-16 text-center'>
+                  <Download className='mb-4 h-12 w-12 text-muted-foreground' />
+                  <h3 className='mb-1 text-lg font-semibold'>
+                    No invoices yet
+                  </h3>
+                  <p className='max-w-sm text-sm text-muted-foreground'>
+                    Invoices will appear here after your first billing cycle.
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -869,9 +894,18 @@ export default function AdminBillingPage() {
                   ))}
                 </div>
               ) : (
-                <div className='py-12 text-center text-muted-foreground'>
-                  No budget alerts configured. Create one to monitor your
-                  spending.
+                <div className='flex flex-col items-center justify-center py-16 text-center'>
+                  <AlertCircle className='mb-4 h-12 w-12 text-muted-foreground' />
+                  <h3 className='mb-1 text-lg font-semibold'>
+                    No budget alerts configured
+                  </h3>
+                  <p className='mb-6 max-w-sm text-sm text-muted-foreground'>
+                    Set up alerts to be notified when your spending reaches a
+                    threshold, so you can avoid unexpected charges.
+                  </p>
+                  <Button onClick={() => setShowBudgetDialog(true)}>
+                    Create Alert
+                  </Button>
                 </div>
               )}
             </CardContent>
@@ -1170,35 +1204,36 @@ function PaymentMethodDialog({
   onSuccess: () => void;
   workspaceSlug: string;
 }) {
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiry, setExpiry] = useState('');
-  const [cvc, setCvc] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const handleSubmit = async () => {
-    setIsSaving(true);
+  const handleAddPaymentMethod = async () => {
+    setIsRedirecting(true);
     try {
       const res = await fetch(
-        `/api/workspaces/${workspaceSlug}/admin/billing/payment-methods`,
+        `/api/workspaces/${workspaceSlug}/admin/billing/payment-methods/setup-session`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cardNumber, expiry, cvc }),
         }
       );
 
       if (!res.ok) {
-        throw new Error('Failed to add payment method');
+        throw new Error('Failed to initiate payment setup');
       }
 
-      toast.success('Payment method added successfully');
-      onClose();
-      void onSuccess();
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        // Fallback: reload billing data in case the method was already added
+        void onSuccess();
+        onClose();
+      }
     } catch (error) {
       console.error('Failed to add payment method:', error);
-      toast.error('Failed to add payment method. Please try again.');
+      toast.error('Failed to initiate payment setup. Please try again.');
     } finally {
-      setIsSaving(false);
+      setIsRedirecting(false);
     }
   };
 
@@ -1208,46 +1243,30 @@ function PaymentMethodDialog({
         <DialogHeader>
           <DialogTitle>Add Payment Method</DialogTitle>
           <DialogDescription>
-            Add a credit or debit card to your account
+            You will be redirected to our secure payment provider to add a
+            credit or debit card.
           </DialogDescription>
         </DialogHeader>
         <div className='space-y-4 py-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='cardNumber'>Card Number</Label>
-            <Input
-              id='cardNumber'
-              placeholder='1234 5678 9012 3456'
-              value={cardNumber}
-              onChange={e => setCardNumber(e.target.value)}
-            />
-          </div>
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='expiry'>Expiry Date</Label>
-              <Input
-                id='expiry'
-                placeholder='MM/YY'
-                value={expiry}
-                onChange={e => setExpiry(e.target.value)}
-              />
-            </div>
-            <div className='space-y-2'>
-              <Label htmlFor='cvc'>CVC</Label>
-              <Input
-                id='cvc'
-                placeholder='123'
-                value={cvc}
-                onChange={e => setCvc(e.target.value)}
-              />
+          <div className='flex items-start gap-3 rounded-lg border bg-muted/50 p-4'>
+            <CreditCard className='mt-0.5 h-5 w-5 shrink-0 text-muted-foreground' />
+            <div className='space-y-1'>
+              <p className='text-sm font-medium'>Secure Payment Processing</p>
+              <p className='text-xs text-muted-foreground'>
+                Your card details are handled securely by Stripe and are never
+                stored on our servers. You will be redirected to a secure
+                checkout page to complete the setup.
+              </p>
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant='outline' onClick={onClose}>
+          <Button variant='outline' onClick={onClose} disabled={isRedirecting}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isSaving}>
-            {isSaving ? 'Adding...' : 'Add Payment Method'}
+          <Button onClick={handleAddPaymentMethod} disabled={isRedirecting}>
+            <CreditCard className='mr-2 h-4 w-4' />
+            {isRedirecting ? 'Redirecting...' : 'Continue to Secure Checkout'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -8,6 +8,7 @@ import {
   Star,
   Download,
   Receipt,
+  ShieldCheck,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
@@ -391,6 +392,14 @@ export default function PaymentMethodsPage() {
                 >
                   Cancel
                 </Button>
+              </div>
+
+              <div className='flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground'>
+                <ShieldCheck className='h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400' />
+                <p>
+                  Your card details are encrypted and handled securely. We do
+                  not store raw card numbers on our servers.
+                </p>
               </div>
 
               <div className='grid gap-4'>

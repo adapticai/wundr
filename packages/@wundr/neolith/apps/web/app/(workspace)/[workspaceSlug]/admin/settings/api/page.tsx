@@ -11,6 +11,10 @@ import {
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { usePageHeader } from '@/contexts/page-header-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -337,13 +341,12 @@ export default function ApiSettingsPage() {
                 Create and manage API keys for workspace access
               </p>
             </div>
-            <button
+            <Button
               type='button'
               onClick={() => setShowCreateForm(!showCreateForm)}
-              className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90'
             >
               Create API Key
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -351,39 +354,25 @@ export default function ApiSettingsPage() {
         {showCreateForm && (
           <div className='border-b bg-muted/30 p-6'>
             <div className='space-y-4'>
-              <div>
-                <label className='block text-sm font-medium text-foreground mb-2'>
-                  Key Name
-                </label>
-                <input
+              <div className='space-y-2'>
+                <Label htmlFor='new-key-name'>Key Name</Label>
+                <Input
+                  id='new-key-name'
                   type='text'
                   value={newKeyName}
                   onChange={e => setNewKeyName(e.target.value)}
                   placeholder='e.g., Production API Key'
-                  className={cn(
-                    'block w-full rounded-md border border-input bg-background',
-                    'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                    'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-                  )}
                 />
               </div>
 
-              <div>
-                <label className='block text-sm font-medium text-foreground mb-3'>
-                  Scopes
-                </label>
+              <div className='space-y-2'>
+                <Label>Scopes</Label>
                 <div className='space-y-2'>
                   {AVAILABLE_SCOPES.map(scope => (
-                    <label
+                    <div
                       key={scope.value}
-                      className='flex items-start gap-3 rounded-md border bg-card p-3 cursor-pointer hover:bg-accent'
+                      className='flex items-start justify-between rounded-md border bg-card p-3'
                     >
-                      <input
-                        type='checkbox'
-                        checked={selectedScopes.includes(scope.value)}
-                        onChange={() => toggleScope(scope.value)}
-                        className='mt-1 h-4 w-4 rounded border-input text-primary focus:ring-primary'
-                      />
                       <div className='flex-1'>
                         <p className='text-sm font-medium text-foreground'>
                           {scope.label}
@@ -392,13 +381,18 @@ export default function ApiSettingsPage() {
                           {scope.description}
                         </p>
                       </div>
-                    </label>
+                      <Switch
+                        id={`scope-${scope.value}`}
+                        checked={selectedScopes.includes(scope.value)}
+                        onCheckedChange={() => toggleScope(scope.value)}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>
 
               <div className='flex items-center gap-3 pt-2'>
-                <button
+                <Button
                   type='button'
                   onClick={handleCreateKey}
                   disabled={
@@ -406,25 +400,21 @@ export default function ApiSettingsPage() {
                     !newKeyName.trim() ||
                     selectedScopes.length === 0
                   }
-                  className={cn(
-                    'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-                    'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
-                  )}
                 >
                   {isCreating ? 'Creating...' : 'Create Key'}
-                </button>
-                <button
+                </Button>
+                <Button
                   type='button'
+                  variant='outline'
                   onClick={() => {
                     setShowCreateForm(false);
                     setNewKeyName('');
                     setSelectedScopes([]);
                     setCreatedKey(null);
                   }}
-                  className='rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent'
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -445,13 +435,15 @@ export default function ApiSettingsPage() {
                       <code className='flex-1 rounded bg-yellow-100 px-3 py-2 text-sm font-mono dark:bg-yellow-900/30'>
                         {createdKey}
                       </code>
-                      <button
+                      <Button
                         type='button'
+                        variant='outline'
+                        size='sm'
                         onClick={() => copyToClipboard(createdKey, 'API key')}
-                        className='rounded-md border border-yellow-600 bg-yellow-50 px-3 py-2 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50'
+                        className='border-yellow-600 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50'
                       >
                         <Copy className='h-4 w-4 text-yellow-700 dark:text-yellow-300' />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -510,13 +502,15 @@ export default function ApiSettingsPage() {
                           <code className='rounded bg-muted px-2 py-1 text-xs font-mono'>
                             {key.key.slice(0, 8)}...{key.key.slice(-4)}
                           </code>
-                          <button
+                          <Button
                             type='button'
+                            variant='ghost'
+                            size='sm'
                             onClick={() => copyToClipboard(key.key, 'API key')}
-                            className='text-muted-foreground hover:text-foreground'
+                            className='h-7 w-7 p-0'
                           >
-                            <Copy className='h-4 w-4' />
-                          </button>
+                            <Copy className='h-3.5 w-3.5' />
+                          </Button>
                         </div>
                       </td>
                       <td className='py-4 text-muted-foreground'>
@@ -548,14 +542,16 @@ export default function ApiSettingsPage() {
                         </div>
                       </td>
                       <td className='py-4 text-right'>
-                        <button
+                        <Button
                           type='button'
+                          variant='ghost'
+                          size='sm'
                           onClick={() => handleRevokeKey(key.id)}
-                          className='inline-flex items-center gap-1 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300'
+                          className='text-destructive hover:text-destructive'
                         >
-                          <Trash2 className='h-4 w-4' />
-                          <span className='text-sm'>Revoke</span>
-                        </button>
+                          <Trash2 className='h-4 w-4 mr-1' />
+                          Revoke
+                        </Button>
                       </td>
                     </tr>
                   ))}

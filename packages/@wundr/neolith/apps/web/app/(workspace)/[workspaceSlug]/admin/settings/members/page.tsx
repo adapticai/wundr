@@ -528,9 +528,12 @@ export default function MembersSettingsPage() {
               Automatically assign this role when a new member joins
             </p>
             <Select
-              value={settings.autoAssignRoleId || ''}
+              value={settings.autoAssignRoleId || '_default'}
               onValueChange={value =>
-                handleSelectChange('autoAssignRoleId', value)
+                handleSelectChange(
+                  'autoAssignRoleId',
+                  value === '_default' ? '' : value
+                )
               }
               disabled={isSaving}
             >
@@ -538,7 +541,7 @@ export default function MembersSettingsPage() {
                 <SelectValue placeholder='Select a default role' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value=''>Member (default)</SelectItem>
+                <SelectItem value='_default'>Member (default)</SelectItem>
                 {roles
                   .filter(r => !r.isSystem)
                   .map(role => (

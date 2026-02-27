@@ -72,8 +72,8 @@ export function ThreadsWidget({
   return (
     <Card>
       <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-3'>
-        <CardTitle className='text-lg flex items-center gap-2'>
-          Threads & Mentions
+        <CardTitle className='text-base flex items-center gap-2'>
+          Recent Messages
           {unreadCount > 0 && (
             <Badge variant='default' className='ml-2'>
               {unreadCount}
@@ -99,10 +99,10 @@ export function ThreadsWidget({
       {threads.length > 0 && (
         <CardFooter>
           <Link
-            href={`/${workspaceSlug}/later`}
+            href={`/${workspaceSlug}/messages`}
             className='text-sm text-muted-foreground hover:text-foreground transition-colors'
           >
-            View all threads →
+            View all messages →
           </Link>
         </CardFooter>
       )}
@@ -178,10 +178,10 @@ function EmptyThreadsState() {
         <MessageSquare className='h-6 w-6 text-muted-foreground' />
       </div>
       <p className='text-sm font-medium text-muted-foreground'>
-        No threads yet
+        No recent messages
       </p>
       <p className='text-xs text-muted-foreground mt-1'>
-        Threads and mentions will appear here
+        Your recent conversations will appear here
       </p>
     </div>
   );

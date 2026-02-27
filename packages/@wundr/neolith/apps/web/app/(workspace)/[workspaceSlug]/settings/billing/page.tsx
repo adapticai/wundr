@@ -164,8 +164,6 @@ export default function BillingSettingsPage() {
   const [showTaxDialog, setShowTaxDialog] = useState(false);
 
   const [processingAction, setProcessingAction] = useState<string | null>(null);
-  const [showAddCardDialog, setShowAddCardDialog] = useState(false);
-  const [showRetentionOffer, setShowRetentionOffer] = useState(false);
 
   useEffect(() => {
     loadBillingData();
@@ -384,10 +382,6 @@ export default function BillingSettingsPage() {
     } finally {
       setProcessingAction(null);
     }
-  };
-
-  const handleCancelSubscription = async () => {
-    setShowCancelDialog(true);
   };
 
   const handleConfirmCancellation = async () => {
@@ -681,9 +675,11 @@ export default function BillingSettingsPage() {
                 <span className='text-3xl font-bold'>
                   {formatCurrency(currentPlan?.price || 0)}
                 </span>
-                <span className='text-muted-foreground'>
-                  /{currentPlan?.interval}
-                </span>
+                {currentPlan?.interval && (
+                  <span className='text-muted-foreground'>
+                    /{currentPlan.interval}
+                  </span>
+                )}
               </div>
 
               {subscription && (

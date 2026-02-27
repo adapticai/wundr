@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
@@ -24,13 +24,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePageHeader } from '@/contexts/page-header-context';
@@ -571,10 +564,18 @@ export default function AdminIntegrationsPage() {
                             variant={
                               integration.status === 'ACTIVE'
                                 ? 'default'
-                                : 'destructive'
+                                : integration.status === 'PENDING'
+                                  ? 'secondary'
+                                  : 'destructive'
                             }
                           >
-                            {integration.status}
+                            {integration.status === 'ACTIVE'
+                              ? 'Active'
+                              : integration.status === 'PENDING'
+                                ? 'Pending'
+                                : integration.status === 'INACTIVE'
+                                  ? 'Inactive'
+                                  : 'Error'}
                           </Badge>
                         </div>
                       </CardHeader>
@@ -736,10 +737,16 @@ export default function AdminIntegrationsPage() {
                         variant={
                           webhook.status === 'ACTIVE'
                             ? 'default'
-                            : 'destructive'
+                            : webhook.status === 'INACTIVE'
+                              ? 'secondary'
+                              : 'destructive'
                         }
                       >
-                        {webhook.status}
+                        {webhook.status === 'ACTIVE'
+                          ? 'Active'
+                          : webhook.status === 'INACTIVE'
+                            ? 'Inactive'
+                            : 'Failed'}
                       </Badge>
                     </div>
                   </CardHeader>

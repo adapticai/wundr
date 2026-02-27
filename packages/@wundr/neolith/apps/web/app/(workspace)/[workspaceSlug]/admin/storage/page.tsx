@@ -58,6 +58,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import {
   Table,
@@ -322,17 +323,40 @@ export default function AdminStoragePage() {
 
   if (isLoading) {
     return (
-      <div className='flex items-center justify-center min-h-[400px]'>
-        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+      <div className='space-y-6'>
+        <div className='flex items-center justify-end'>
+          <Skeleton className='h-9 w-24' />
+        </div>
+        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                <Skeleton className='h-4 w-24' />
+                <Skeleton className='h-4 w-4' />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className='h-8 w-20 mb-1' />
+                <Skeleton className='h-3 w-32' />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Skeleton className='h-10 w-80' />
+        <Skeleton className='h-80 w-full' />
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className='flex items-center justify-center min-h-[400px]'>
-        <p className='text-muted-foreground'>Failed to load storage data</p>
-      </div>
+      <Alert variant='destructive'>
+        <AlertCircle className='h-4 w-4' />
+        <AlertTitle>Failed to load storage data</AlertTitle>
+        <AlertDescription>
+          Unable to retrieve storage information. Please try refreshing the
+          page.
+        </AlertDescription>
+      </Alert>
     );
   }
 

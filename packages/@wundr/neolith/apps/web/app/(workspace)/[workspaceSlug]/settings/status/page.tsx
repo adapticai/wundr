@@ -2,22 +2,15 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  AlertCircle,
-  Calendar,
   CheckCircle2,
   Circle,
   Clock,
-  Globe,
-  Info,
   Loader2,
   Moon,
-  Plus,
-  Settings,
-  Trash2,
   XCircle,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 

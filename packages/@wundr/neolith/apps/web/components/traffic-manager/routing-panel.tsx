@@ -326,8 +326,10 @@ function RoutingRuleForm({
                   <FormItem>
                     <FormLabel>Fallback Agent</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value ?? ''}
+                      onValueChange={v =>
+                        field.onChange(v === '_none' ? '' : v)
+                      }
+                      defaultValue={field.value || '_none'}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -335,7 +337,7 @@ function RoutingRuleForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value=''>None</SelectItem>
+                        <SelectItem value='_none'>None</SelectItem>
                         {agents.map(agent => (
                           <SelectItem key={agent.id} value={agent.id}>
                             {agent.name}

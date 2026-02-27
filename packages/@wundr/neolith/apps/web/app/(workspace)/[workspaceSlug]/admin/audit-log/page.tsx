@@ -9,7 +9,6 @@ import {
   Globe,
   Shield,
   Loader2,
-  ChevronDown,
   Info,
   AlertTriangle,
   AlertCircle,
@@ -225,16 +224,6 @@ export default function AuditLogPage() {
     searchQuery,
     toast,
   ]);
-
-  // Real-time updates (poll every 30 seconds when on first page)
-  useEffect(() => {
-    if (currentPage === 1) {
-      const interval = setInterval(() => {
-        setCurrentPage(prev => prev);
-      }, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [currentPage]);
 
   // Handle export
   const handleExport = useCallback(async () => {

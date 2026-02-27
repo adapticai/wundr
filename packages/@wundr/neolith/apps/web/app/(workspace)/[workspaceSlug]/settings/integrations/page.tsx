@@ -15,7 +15,6 @@ import { Separator } from '@/components/ui/separator';
 import {
   useIntegrations,
   useIntegrationMutations,
-  useWebhook,
   useWebhooks,
 } from '@/hooks/use-integrations';
 import { useToast } from '@/hooks/use-toast';

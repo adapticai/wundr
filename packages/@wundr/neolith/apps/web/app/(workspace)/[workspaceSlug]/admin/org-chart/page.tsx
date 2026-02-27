@@ -553,9 +553,8 @@ export default function OrgChartPage() {
           <div className='space-y-4 py-2'>
             <div className='space-y-1.5'>
               <Label htmlFor='add-title'>Name</Label>
-              <input
+              <Input
                 id='add-title'
-                className='flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
                 placeholder='e.g. VP Engineering'
                 value={addTitle}
                 onChange={e => setAddTitle(e.target.value)}
