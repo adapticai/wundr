@@ -108,9 +108,10 @@ export async function GET(
       );
     }
 
-    // Fetch webhooks
+    // Fetch webhooks using resolved workspace ID
+    const resolvedWorkspaceId = access.workspaceId;
     const { webhooks, total } = await listWebhooks(
-      workspaceId,
+      resolvedWorkspaceId,
       filterResult.data
     );
 
@@ -248,9 +249,10 @@ export async function POST(
       );
     }
 
-    // Create webhook
+    // Create webhook using resolved workspace ID
+    const resolvedWorkspaceId = access.workspaceId;
     const { webhook, secret } = await createWebhook(
-      workspaceId,
+      resolvedWorkspaceId,
       parseResult.data,
       session.user.id
     );

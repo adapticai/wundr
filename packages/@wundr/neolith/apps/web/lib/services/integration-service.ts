@@ -162,17 +162,24 @@ export async function updateIntegrationConfig(
  * Check workspace access for a user
  */
 export async function checkWorkspaceAccess(
-  workspaceId: string,
+  workspaceIdOrSlug: string,
   userId: string
-): Promise<{ hasAccess: boolean; role?: string; isAdmin?: boolean } | null> {
-  console.log('[IntegrationService] checkWorkspaceAccess called with:', {
-    workspaceId,
-    userId,
+): Promise<{ hasAccess: boolean; role?: string; isAdmin?: boolean; workspaceId: string } | null> {
+  // Support both workspace ID and slug for lookup
+  const workspace = await prisma.workspace.findFirst({
+    where: {
+      OR: [{ id: workspaceIdOrSlug }, { slug: workspaceIdOrSlug }],
+    },
+    select: { id: true },
   });
+
+  if (!workspace) {
+    return null;
+  }
 
   const member = await prisma.workspaceMember.findFirst({
     where: {
-      workspaceId,
+      workspaceId: workspace.id,
       userId,
     },
     select: {
@@ -188,6 +195,7 @@ export async function checkWorkspaceAccess(
     hasAccess: true,
     role: member.role,
     isAdmin: member.role === 'OWNER' || member.role === 'ADMIN',
+    workspaceId: workspace.id,
   };
 }
 

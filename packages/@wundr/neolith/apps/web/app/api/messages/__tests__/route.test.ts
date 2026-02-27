@@ -74,9 +74,7 @@ function createMockSession(overrides?: Record<string, unknown>) {
  * Vitest runs in Node so the global FormData / Blob are available via the
  * undici polyfill bundled with Next.js – or the native Node 18+ implementation.
  */
-function buildFormDataRequest(
-  data: Record<string, string>
-): NextRequest {
+function buildFormDataRequest(data: Record<string, string>): NextRequest {
   const formData = new FormData();
   for (const [key, value] of Object.entries(data)) {
     formData.append(key, value);

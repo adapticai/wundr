@@ -86,17 +86,18 @@ export async function GET(
       );
     }
 
-    // Parse and validate query parameters
+    // Use the resolved workspace ID (not slug) for downstream queries
+    const resolvedWorkspaceId = access.workspaceId;
+
+    // Parse and validate query parameters (filter out null values so Zod defaults work)
     const searchParams = request.nextUrl.searchParams;
-    const filterInput = {
-      provider: searchParams.get('provider'),
-      status: searchParams.get('status'),
-      search: searchParams.get('search'),
-      page: searchParams.get('page'),
-      limit: searchParams.get('limit'),
-      sortBy: searchParams.get('sortBy'),
-      sortOrder: searchParams.get('sortOrder'),
-    };
+    const filterInput: Record<string, string> = {};
+    for (const key of ['provider', 'status', 'search', 'page', 'limit', 'sortBy', 'sortOrder']) {
+      const value = searchParams.get(key);
+      if (value !== null) {
+        filterInput[key] = value;
+      }
+    }
 
     const parseResult = integrationFiltersSchema.safeParse(filterInput);
     if (!parseResult.success) {
@@ -112,7 +113,7 @@ export async function GET(
 
     // Fetch integrations
     const { integrations, total } = await listIntegrations(
-      workspaceId,
+      resolvedWorkspaceId,
       parseResult.data
     );
 
@@ -247,9 +248,10 @@ export async function POST(
       );
     }
 
-    // Create integration
+    // Create integration using resolved workspace ID
+    const resolvedWorkspaceId = access.workspaceId;
     const integration = await createIntegration(
-      workspaceId,
+      resolvedWorkspaceId,
       parseResult.data,
       session.user.id
     );
