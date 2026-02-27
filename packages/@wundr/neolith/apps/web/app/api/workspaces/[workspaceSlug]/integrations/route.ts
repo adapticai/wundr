@@ -92,7 +92,15 @@ export async function GET(
     // Parse and validate query parameters (filter out null values so Zod defaults work)
     const searchParams = request.nextUrl.searchParams;
     const filterInput: Record<string, string> = {};
-    for (const key of ['provider', 'status', 'search', 'page', 'limit', 'sortBy', 'sortOrder']) {
+    for (const key of [
+      'provider',
+      'status',
+      'search',
+      'page',
+      'limit',
+      'sortBy',
+      'sortOrder',
+    ]) {
       const value = searchParams.get(key);
       if (value !== null) {
         filterInput[key] = value;

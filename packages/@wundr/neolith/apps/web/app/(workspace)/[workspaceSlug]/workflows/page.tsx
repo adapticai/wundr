@@ -302,11 +302,18 @@ export default function WorkflowsPage() {
         }
       );
       if (!res.ok) throw new Error(await res.text());
-      toast({ title: 'Workflows deactivated', description: `${selectedWorkflows.size} workflow(s) deactivated successfully.` });
+      toast({
+        title: 'Workflows deactivated',
+        description: `${selectedWorkflows.size} workflow(s) deactivated successfully.`,
+      });
       setSelectedWorkflows(new Set());
       mutate();
     } catch (err) {
-      toast({ title: 'Failed to deactivate workflows', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+      toast({
+        title: 'Failed to deactivate workflows',
+        description: err instanceof Error ? err.message : 'An error occurred.',
+        variant: 'destructive',
+      });
     }
   }, [selectedWorkflows, mutate, workspaceSlug, toast]);
 
@@ -324,11 +331,18 @@ export default function WorkflowsPage() {
         }
       );
       if (!res.ok) throw new Error(await res.text());
-      toast({ title: 'Workflows archived', description: `${selectedWorkflows.size} workflow(s) archived successfully.` });
+      toast({
+        title: 'Workflows archived',
+        description: `${selectedWorkflows.size} workflow(s) archived successfully.`,
+      });
       setSelectedWorkflows(new Set());
       mutate();
     } catch (err) {
-      toast({ title: 'Failed to archive workflows', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+      toast({
+        title: 'Failed to archive workflows',
+        description: err instanceof Error ? err.message : 'An error occurred.',
+        variant: 'destructive',
+      });
     }
   }, [selectedWorkflows, mutate, workspaceSlug, toast]);
 
@@ -350,11 +364,18 @@ export default function WorkflowsPage() {
         }
       );
       if (!res.ok) throw new Error(await res.text());
-      toast({ title: 'Workflows deleted', description: `${selectedWorkflows.size} workflow(s) deleted successfully.` });
+      toast({
+        title: 'Workflows deleted',
+        description: `${selectedWorkflows.size} workflow(s) deleted successfully.`,
+      });
       setSelectedWorkflows(new Set());
       mutate();
     } catch (err) {
-      toast({ title: 'Failed to delete workflows', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+      toast({
+        title: 'Failed to delete workflows',
+        description: err instanceof Error ? err.message : 'An error occurred.',
+        variant: 'destructive',
+      });
     }
   }, [selectedWorkflows, mutate, workspaceSlug, toast]);
 
@@ -367,10 +388,18 @@ export default function WorkflowsPage() {
           { method: 'POST' }
         );
         if (!res.ok) throw new Error(await res.text());
-        toast({ title: 'Workflow duplicated', description: `"${workflow.name}" was duplicated successfully.` });
+        toast({
+          title: 'Workflow duplicated',
+          description: `"${workflow.name}" was duplicated successfully.`,
+        });
         mutate();
       } catch (err) {
-        toast({ title: 'Failed to duplicate workflow', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+        toast({
+          title: 'Failed to duplicate workflow',
+          description:
+            err instanceof Error ? err.message : 'An error occurred.',
+          variant: 'destructive',
+        });
       }
     },
     [mutate, workspaceSlug, toast]
@@ -389,10 +418,18 @@ export default function WorkflowsPage() {
           }
         );
         if (!res.ok) throw new Error(await res.text());
-        toast({ title: `Workflow ${newStatus}`, description: `"${workflow.name}" is now ${newStatus}.` });
+        toast({
+          title: `Workflow ${newStatus}`,
+          description: `"${workflow.name}" is now ${newStatus}.`,
+        });
         mutate();
       } catch (err) {
-        toast({ title: 'Failed to update workflow', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+        toast({
+          title: 'Failed to update workflow',
+          description:
+            err instanceof Error ? err.message : 'An error occurred.',
+          variant: 'destructive',
+        });
       }
     },
     [mutate, workspaceSlug, toast]
@@ -409,10 +446,18 @@ export default function WorkflowsPage() {
           { method: 'DELETE' }
         );
         if (!res.ok) throw new Error(await res.text());
-        toast({ title: 'Workflow deleted', description: `"${workflow.name}" was deleted successfully.` });
+        toast({
+          title: 'Workflow deleted',
+          description: `"${workflow.name}" was deleted successfully.`,
+        });
         mutate();
       } catch (err) {
-        toast({ title: 'Failed to delete workflow', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+        toast({
+          title: 'Failed to delete workflow',
+          description:
+            err instanceof Error ? err.message : 'An error occurred.',
+          variant: 'destructive',
+        });
       }
     },
     [mutate, workspaceSlug, toast]
@@ -430,10 +475,18 @@ export default function WorkflowsPage() {
           }
         );
         if (!res.ok) throw new Error(await res.text());
-        toast({ title: 'Workflow archived', description: `"${workflow.name}" was archived successfully.` });
+        toast({
+          title: 'Workflow archived',
+          description: `"${workflow.name}" was archived successfully.`,
+        });
         mutate();
       } catch (err) {
-        toast({ title: 'Failed to archive workflow', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+        toast({
+          title: 'Failed to archive workflow',
+          description:
+            err instanceof Error ? err.message : 'An error occurred.',
+          variant: 'destructive',
+        });
       }
     },
     [mutate, workspaceSlug, toast]

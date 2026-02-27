@@ -80,8 +80,7 @@ class PerformanceMonitor {
     const existing = this.metrics.get(name) || [];
     this.metrics.set(name, [...existing, metric]);
 
-    // TODO: Send to analytics service
-    // this.sendToAnalytics(metric);
+    void this.sendToAnalytics(metric);
   }
 
   /**
@@ -196,26 +195,33 @@ class PerformanceMonitor {
       return;
     }
 
-    // TODO: Implement Web Vitals monitoring using web-vitals library
-    // import { onCLS, onFID, onFCP, onLCP, onTTFB, onINP } from 'web-vitals';
-    // onCLS((metric) => this.recordVital(metric));
-    // onFID((metric) => this.recordVital(metric));
-    // onFCP((metric) => this.recordVital(metric));
-    // onLCP((metric) => this.recordVital(metric));
-    // onTTFB((metric) => this.recordVital(metric));
-    // onINP((metric) => this.recordVital(metric));
+    import('web-vitals')
+      .then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
+        onCLS((metric: unknown) => this.recordVital(metric));
+        onFCP((metric: unknown) => this.recordVital(metric));
+        onLCP((metric: unknown) => this.recordVital(metric));
+        onTTFB((metric: unknown) => this.recordVital(metric));
+        onINP((metric: unknown) => this.recordVital(metric));
+      })
+      .catch(() => {
+        // web-vitals library not available; fall back to PerformanceObserver only
+      });
   }
 
   /**
    * Record a Core Web Vital metric
    */
   private recordVital(metric: unknown): void {
-    console.log('[Performance] Recording Web Vital:', metric);
-    // TODO: Process and store vital metric
-    // this.recordMetric(metric.name, metric.value, {
-    //   rating: metric.rating,
-    //   id: metric.id,
-    // });
+    const m = metric as {
+      name: string;
+      value: number;
+      rating: string;
+      id: string;
+    };
+    this.recordMetric(m.name, m.value, {
+      rating: m.rating,
+      id: m.id,
+    });
   }
 
   /**
@@ -273,13 +279,20 @@ class PerformanceMonitor {
    * Send metrics to analytics service
    */
   private async sendToAnalytics(metric: PerformanceMetric): Promise<void> {
-    console.log('[Performance] Sending metric to analytics:', metric);
-    // TODO: Implement analytics integration
-    // await fetch('/api/analytics/performance', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(metric),
-    // });
+    const payload = JSON.stringify(metric);
+
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: 'application/json' });
+      navigator.sendBeacon('/api/analytics/performance', blob);
+      return;
+    }
+
+    await fetch('/api/analytics/performance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      keepalive: true,
+    });
   }
 }
 
@@ -382,31 +395,60 @@ export function getPageLoadMetrics(): Record<string, number> | null {
  * Returns a promise that resolves with the measured vitals
  */
 export async function measureWebVitals(): Promise<Partial<CoreWebVitals>> {
-  // TODO: Implement actual web vitals measurement using web-vitals library
-  // For now, return empty object
+  if (typeof window === 'undefined') {
+    return {};
+  }
+
   return new Promise(resolve => {
-    if (typeof window === 'undefined') {
-      resolve({});
-      return;
-    }
+    const vitals: Partial<CoreWebVitals> = {};
+    let pendingCount = 0;
+    let settled = false;
 
-    // Simulate async measurement
-    setTimeout(() => {
-      const vitals: Partial<CoreWebVitals> = {};
-
-      // Try to get some basic metrics if available
-      if (typeof performance !== 'undefined' && performance.getEntriesByType) {
-        const paintEntries = performance.getEntriesByType('paint');
-        const fcpEntry = paintEntries.find(
-          entry => entry.name === 'first-contentful-paint'
-        );
-        if (fcpEntry) {
-          vitals.FCP = fcpEntry.startTime;
-        }
-      }
-
+    const tryResolve = () => {
+      if (settled) return;
+      settled = true;
       resolve(vitals);
-    }, 0);
+    };
+
+    // Resolve with whatever we have after 10 s to avoid hanging forever.
+    const timeout = setTimeout(tryResolve, 10_000);
+
+    import('web-vitals')
+      .then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
+        const handlers: Array<
+          (cb: (m: { name: string; value: number }) => void) => void
+        > = [onCLS, onFCP, onLCP, onTTFB, onINP];
+
+        pendingCount = handlers.length;
+
+        const handle = (m: { name: string; value: number }) => {
+          vitals[m.name as keyof CoreWebVitals] = m.value;
+          pendingCount -= 1;
+          if (pendingCount <= 0) {
+            clearTimeout(timeout);
+            tryResolve();
+          }
+        };
+
+        handlers.forEach(fn => fn(handle));
+      })
+      .catch(() => {
+        // web-vitals not installed — fall back to paint timing entries.
+        if (
+          typeof performance !== 'undefined' &&
+          performance.getEntriesByType
+        ) {
+          const paintEntries = performance.getEntriesByType('paint');
+          const fcpEntry = paintEntries.find(
+            entry => entry.name === 'first-contentful-paint'
+          );
+          if (fcpEntry) {
+            vitals.FCP = fcpEntry.startTime;
+          }
+        }
+        clearTimeout(timeout);
+        tryResolve();
+      });
   });
 }
 

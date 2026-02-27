@@ -919,11 +919,14 @@ export async function isUnsubscribed(
   userId: string,
   emailType: EmailType
 ): Promise<boolean> {
-  // TODO: Implement database check for unsubscribe preferences
-  console.log(
-    `[Email] Checking unsubscribe status for ${userId}, type: ${emailType}`
-  );
-  return false;
+  const { prisma } = await import('@neolith/database');
+
+  const preference = await (prisma as any).emailPreference.findUnique({
+    where: { userId_category: { userId, category: emailType } },
+    select: { unsubscribed: true },
+  });
+
+  return preference?.unsubscribed === true;
 }
 
 /**
@@ -932,9 +935,14 @@ export async function isUnsubscribed(
 export async function getUnsubscribeStatus(
   userId: string
 ): Promise<Record<EmailType, boolean>> {
-  // TODO: Implement database lookup for unsubscribe preferences
-  console.log(`[Email] Getting unsubscribe status for ${userId}`);
-  return {
+  const { prisma } = await import('@neolith/database');
+
+  const rows = await (prisma as any).emailPreference.findMany({
+    where: { userId },
+    select: { category: true, unsubscribed: true },
+  });
+
+  const defaults: Record<EmailType, boolean> = {
     welcome: false,
     verification: false,
     password_reset: false,
@@ -944,4 +952,15 @@ export async function getUnsubscribeStatus(
     notification: false,
     all: false,
   };
+
+  for (const row of rows as Array<{
+    category: string;
+    unsubscribed: boolean;
+  }>) {
+    if (Object.prototype.hasOwnProperty.call(defaults, row.category)) {
+      defaults[row.category as EmailType] = row.unsubscribed;
+    }
+  }
+
+  return defaults;
 }

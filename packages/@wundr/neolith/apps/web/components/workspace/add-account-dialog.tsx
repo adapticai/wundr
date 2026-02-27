@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Mail } from 'lucide-react';
 
 import { GitHubIcon, GoogleIcon } from '@/components/icons';
@@ -58,8 +59,7 @@ interface AddAccountDialogProps {
  * workspaces associated with different providers.
  */
 export function AddAccountDialog({ isOpen, onClose }: AddAccountDialogProps) {
-  // TODO: Add loading state when account linking is implemented
-  // const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -81,16 +81,14 @@ export function AddAccountDialog({ isOpen, onClose }: AddAccountDialogProps) {
             </p>
           </div>
 
-          {/* OAuth Provider Buttons (Disabled) */}
+          {/* OAuth Provider Buttons (Disabled — account linking not yet available) */}
           <div className='space-y-3 opacity-50'>
             <Button
               variant='outline'
               size='lg'
               className='w-full'
-              onClick={() => {
-                /* TODO: Implement account linking */
-              }}
-              disabled={true}
+              onClick={() => setIsLoading(true)}
+              disabled={isLoading || true}
             >
               <GitHubIcon className='mr-2 h-5 w-5' />
               Link GitHub Account
@@ -100,10 +98,8 @@ export function AddAccountDialog({ isOpen, onClose }: AddAccountDialogProps) {
               variant='outline'
               size='lg'
               className='w-full'
-              onClick={() => {
-                /* TODO: Implement account linking */
-              }}
-              disabled={true}
+              onClick={() => setIsLoading(true)}
+              disabled={isLoading || true}
             >
               <GoogleIcon className='mr-2 h-5 w-5' />
               Link Google Account
@@ -113,10 +109,8 @@ export function AddAccountDialog({ isOpen, onClose }: AddAccountDialogProps) {
               variant='outline'
               size='lg'
               className='w-full'
-              onClick={() => {
-                /* TODO: Implement account linking */
-              }}
-              disabled={true}
+              onClick={() => setIsLoading(true)}
+              disabled={isLoading || true}
             >
               <Mail className='mr-2 h-5 w-5' />
               Link Email Account

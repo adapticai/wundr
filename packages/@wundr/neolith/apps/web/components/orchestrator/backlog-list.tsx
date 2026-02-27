@@ -18,6 +18,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  type DragEndEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -383,23 +384,36 @@ export function BacklogList({ orchestratorId }: BacklogListProps) {
   }, [orchestratorId, statusFilter, priorityFilter, includeCompleted]);
 
   /**
-   * Handle drag end
+   * Handle drag end — reorders items locally and persists the new order to the backend.
    */
-  const handleDragEnd = useCallback((event: any) => {
-    const { active, over } = event;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
 
-    if (active.id !== over.id) {
-      setItems(items => {
-        const oldIndex = items.findIndex(item => item.id === active.id);
-        const newIndex = items.findIndex(item => item.id === over.id);
+      if (!over || active.id === over.id) {
+        return;
+      }
 
-        return arrayMove(items, oldIndex, newIndex);
+      setItems(currentItems => {
+        const oldIndex = currentItems.findIndex(item => item.id === active.id);
+        const newIndex = currentItems.findIndex(item => item.id === over.id);
+        const reordered = arrayMove(currentItems, oldIndex, newIndex);
+
+        // Persist the new order to the backend
+        const orderedIds = reordered.map(item => item.id);
+        fetch(`/api/orchestrators/${orchestratorId}/backlog/reorder`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderedIds }),
+        }).catch(err => {
+          console.error('[BacklogList] Reorder error:', err);
+        });
+
+        return reordered;
       });
-
-      // TODO: Persist order to backend via API call
-      // PATCH /api/orchestrators/{id}/backlog/reorder
-    }
-  }, []);
+    },
+    [orchestratorId]
+  );
 
   /**
    * Handle status change

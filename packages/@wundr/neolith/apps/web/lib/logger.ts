@@ -99,13 +99,11 @@ class Logger {
 
   private async sendToRemote(entry: LogEntry): Promise<void> {
     try {
-      console.log('[Logger] Sending log to remote:', entry);
-      // TODO: Implement remote logging
-      // await fetch(this.config.remoteEndpoint!, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(entry),
-      // });
+      await fetch(this.config.remoteEndpoint!, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry),
+      });
     } catch (error) {
       console.error('[Logger] Failed to send log to remote:', error);
     }

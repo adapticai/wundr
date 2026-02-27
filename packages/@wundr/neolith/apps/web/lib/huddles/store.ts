@@ -81,12 +81,30 @@ class Store {
     startHuddle: (huddleId: string) => {
       console.log('[HuddleStore] Starting huddle:', huddleId);
       this.setState({ id: huddleId, isActive: true });
-      // TODO: Initialize media devices and connections
+      navigator.mediaDevices
+        .getUserMedia({ audio: true, video: true })
+        .then(stream => {
+          this.actions.setActiveStream(stream);
+        })
+        .catch(error => {
+          console.error('[HuddleStore] Failed to get media devices:', error);
+          // Fall back to audio-only if video is unavailable
+          navigator.mediaDevices
+            .getUserMedia({ audio: true, video: false })
+            .then(stream => this.actions.setActiveStream(stream))
+            .catch(audioError => {
+              console.error(
+                '[HuddleStore] Failed to get audio device:',
+                audioError
+              );
+            });
+        });
     },
 
     endHuddle: () => {
       console.log('[HuddleStore] Ending huddle');
-      // TODO: Clean up media streams and connections
+      this.state.activeStream?.getTracks().forEach(track => track.stop());
+      this.state.screenStream?.getTracks().forEach(track => track.stop());
       this.setState({
         id: null,
         isActive: false,
@@ -103,34 +121,43 @@ class Store {
       const newMutedState = !this.state.isMuted;
       console.log('[HuddleStore] Toggle mute:', newMutedState);
       this.setState({ isMuted: newMutedState });
-      // TODO: Update audio track enabled state
-      // this.state.activeStream?.getAudioTracks().forEach(track => {
-      //   track.enabled = !newMutedState;
-      // });
+      this.state.activeStream?.getAudioTracks().forEach(track => {
+        track.enabled = !newMutedState;
+      });
     },
 
     toggleVideo: () => {
       const newVideoState = !this.state.isVideoEnabled;
       console.log('[HuddleStore] Toggle video:', newVideoState);
       this.setState({ isVideoEnabled: newVideoState });
-      // TODO: Update video track enabled state
-      // this.state.activeStream?.getVideoTracks().forEach(track => {
-      //   track.enabled = newVideoState;
-      // });
+      this.state.activeStream?.getVideoTracks().forEach(track => {
+        track.enabled = newVideoState;
+      });
     },
 
     toggleScreenShare: () => {
       const newScreenShareState = !this.state.isScreenSharing;
       console.log('[HuddleStore] Toggle screen share:', newScreenShareState);
-      this.setState({ isScreenSharing: newScreenShareState });
-      // TODO: Start/stop screen sharing
-      // if (newScreenShareState) {
-      //   navigator.mediaDevices.getDisplayMedia()
-      //     .then(stream => this.actions.setScreenStream(stream));
-      // } else {
-      //   this.state.screenStream?.getTracks().forEach(track => track.stop());
-      //   this.actions.setScreenStream(null);
-      // }
+      if (newScreenShareState) {
+        navigator.mediaDevices
+          .getDisplayMedia({ video: true, audio: false })
+          .then(stream => {
+            this.setState({ isScreenSharing: true });
+            stream.getVideoTracks()[0].addEventListener('ended', () => {
+              this.actions.setScreenStream(null);
+              this.setState({ isScreenSharing: false });
+            });
+            this.actions.setScreenStream(stream);
+          })
+          .catch(error => {
+            console.error('[HuddleStore] Failed to start screen share:', error);
+            this.setState({ isScreenSharing: false });
+          });
+      } else {
+        this.state.screenStream?.getTracks().forEach(track => track.stop());
+        this.actions.setScreenStream(null);
+        this.setState({ isScreenSharing: false });
+      }
     },
 
     addParticipant: (participant: Participant) => {

@@ -330,16 +330,19 @@ export default function WorkspacePreferencesPage() {
           <div className='space-y-2'>
             <Label htmlFor='default-channel'>Default Channel</Label>
             <Select
-              value={settings.defaultChannelId || ''}
+              value={settings.defaultChannelId || 'none'}
               onValueChange={value =>
-                handleFieldChange('defaultChannelId', value || null)
+                handleFieldChange(
+                  'defaultChannelId',
+                  value === 'none' ? null : value
+                )
               }
             >
               <SelectTrigger id='default-channel'>
                 <SelectValue placeholder='Select a default channel' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value=''>None</SelectItem>
+                <SelectItem value='none'>None</SelectItem>
                 {channels.map(channel => (
                   <SelectItem key={channel.id} value={channel.id}>
                     #{channel.name}

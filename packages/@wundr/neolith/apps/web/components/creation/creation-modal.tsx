@@ -164,7 +164,6 @@ async function createEntity(
   spec: EntitySpec,
   workspaceId?: string
 ): Promise<unknown> {
-  // TODO: Replace with actual API calls to your backend
   const endpoint = getEntityEndpoint(entityType);
 
   const response = await fetch(endpoint, {

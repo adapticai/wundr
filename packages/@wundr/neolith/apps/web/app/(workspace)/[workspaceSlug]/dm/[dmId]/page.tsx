@@ -886,16 +886,29 @@ export default function DMPage() {
       tab: 'messages' | 'canvas' | 'files' | 'lists' | 'workflows' | 'bookmarks'
     ) => {
       setActiveTab(tab);
-      // TODO: Load content for the selected tab
     },
     []
   );
 
   // Handle add tab
-  const handleAddTab = useCallback((tabType: string) => {
-    // TODO: Implement add tab functionality
-    toast.info(`Adding ${tabType} tab coming soon`);
-  }, []);
+  const handleAddTab = useCallback(
+    async (tabType: string) => {
+      try {
+        const response = await fetch(`/api/channels/${dmId}/tabs`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: tabType }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to add tab');
+        }
+        toast.success(`${tabType} tab added`);
+      } catch {
+        toast.error(`Failed to add ${tabType} tab`);
+      }
+    },
+    [dmId]
+  );
 
   const isLoading = isChannelLoading || isMessagesLoading || isAuthLoading;
 

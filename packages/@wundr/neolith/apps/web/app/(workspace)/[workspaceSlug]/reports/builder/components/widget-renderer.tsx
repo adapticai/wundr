@@ -34,6 +34,7 @@ interface WidgetRendererProps {
   onUpdate: (widgetId: string, updates: Partial<ReportWidget>) => void;
   onDelete: (widgetId: string) => void;
   onResize: (widgetId: string, size: { width: number; height: number }) => void;
+  onDuplicate?: (widgetId: string) => void;
 }
 
 export function WidgetRenderer({
@@ -43,6 +44,7 @@ export function WidgetRenderer({
   onUpdate,
   onDelete,
   onResize,
+  onDuplicate,
 }: WidgetRendererProps) {
   const [isResizing, setIsResizing] = useState(false);
 
@@ -61,10 +63,9 @@ export function WidgetRenderer({
   const handleDuplicate = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      // TODO: Implement duplicate functionality
-      console.log('Duplicate widget:', widget.id);
+      onDuplicate?.(widget.id);
     },
-    [widget.id]
+    [widget.id, onDuplicate]
   );
 
   const renderWidgetContent = () => {

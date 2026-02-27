@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useParams } from 'next/navigation';
 
 import type {
   ReportWidget,
@@ -16,6 +17,8 @@ import type {
 } from '../types';
 
 export function useReportBuilder(initialTemplate?: Partial<ReportTemplate>) {
+  const params = useParams();
+  const workspaceSlug = params.workspaceSlug as string;
   const [widgets, setWidgets] = useState<ReportWidget[]>(
     initialTemplate?.widgets || []
   );
@@ -111,12 +114,18 @@ export function useReportBuilder(initialTemplate?: Partial<ReportTemplate>) {
       tags: initialTemplate?.tags || [],
     };
 
-    // TODO: Implement API call to save template
-    console.log('Saving template:', template);
+    const url = initialTemplate?.id
+      ? `/api/workspaces/${workspaceSlug}/reports/${initialTemplate.id}`
+      : `/api/workspaces/${workspaceSlug}/reports`;
+    await fetch(url, {
+      method: initialTemplate?.id ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(template),
+    });
 
     setIsDirty(false);
     return template;
-  }, [widgets, filters, schedule, reportName, initialTemplate]);
+  }, [widgets, filters, schedule, reportName, workspaceSlug, initialTemplate]);
 
   const loadTemplate = useCallback((template: Partial<ReportTemplate>) => {
     setReportName(template.name || 'Untitled Report');

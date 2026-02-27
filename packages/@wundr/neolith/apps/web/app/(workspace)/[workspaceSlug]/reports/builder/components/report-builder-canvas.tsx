@@ -19,6 +19,7 @@ import {
 import { restrictToWindowEdges } from '@dnd-kit/modifiers';
 import { Save, Download, Calendar, Settings } from 'lucide-react';
 import { useState, useCallback } from 'react';
+import { useParams } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -41,6 +42,8 @@ import type {
 } from '../types';
 
 export function ReportBuilderCanvas() {
+  const routeParams = useParams();
+  const workspaceSlug = routeParams.workspaceSlug as string;
   const [widgets, setWidgets] = useState<ReportWidget[]>([]);
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
   const [activeWidget, setActiveWidget] = useState<ReportWidget | null>(null);
@@ -183,6 +186,28 @@ export function ReportBuilderCanvas() {
     [handleWidgetUpdate]
   );
 
+  const handleWidgetDuplicate = useCallback(
+    (widgetId: string) => {
+      const source = widgets.find(w => w.id === widgetId);
+      if (!source) return;
+      const duplicate: ReportWidget = {
+        ...source,
+        id: generateWidgetId(),
+        position: {
+          x: source.position.x + 20,
+          y: source.position.y + 20,
+        },
+      };
+      setWidgets(prev => [...prev, duplicate]);
+      setSelectedWidgetId(duplicate.id);
+      toast({
+        title: 'Widget duplicated',
+        description: `${source.type} copied to canvas`,
+      });
+    },
+    [widgets, toast]
+  );
+
   const handleSave = useCallback(async () => {
     if (widgets.length === 0) {
       toast({
@@ -203,8 +228,15 @@ export function ReportBuilderCanvas() {
     };
 
     try {
-      // TODO: Implement API call to save template
-      console.log('Saving report template:', template);
+      const response = await fetch(`/api/workspaces/${workspaceSlug}/reports`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(template),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save report template');
+      }
 
       toast({
         title: 'Report saved',
@@ -217,7 +249,7 @@ export function ReportBuilderCanvas() {
         variant: 'destructive',
       });
     }
-  }, [widgets, filters, schedule, reportName, toast]);
+  }, [widgets, filters, schedule, reportName, workspaceSlug, toast]);
 
   const handleExport = useCallback(async () => {
     if (widgets.length === 0) {
@@ -230,12 +262,26 @@ export function ReportBuilderCanvas() {
     }
 
     try {
-      // TODO: Implement export functionality
-      console.log('Exporting report with', widgets.length, 'widgets');
+      const reportData = {
+        name: reportName,
+        widgets,
+        filters,
+        schedule,
+        exportedAt: new Date().toISOString(),
+      };
+
+      const json = JSON.stringify(reportData, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `${reportName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
 
       toast({
-        title: 'Export started',
-        description: 'Your report is being exported',
+        title: 'Export complete',
+        description: `${reportName} has been exported as JSON`,
       });
     } catch (error) {
       toast({
@@ -244,7 +290,7 @@ export function ReportBuilderCanvas() {
         variant: 'destructive',
       });
     }
-  }, [widgets, toast]);
+  }, [widgets, filters, schedule, reportName, toast]);
 
   return (
     <DndContext
@@ -329,6 +375,7 @@ export function ReportBuilderCanvas() {
                   onUpdate={handleWidgetUpdate}
                   onDelete={handleWidgetDelete}
                   onResize={handleWidgetResize}
+                  onDuplicate={handleWidgetDuplicate}
                 />
               ))}
             </div>

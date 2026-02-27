@@ -42,7 +42,6 @@ export function ThreadsWidget({
     const fetchThreads = async () => {
       try {
         setIsLoading(true);
-        // TODO: Replace with actual API endpoint
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/threads?limit=${limit}`
         );

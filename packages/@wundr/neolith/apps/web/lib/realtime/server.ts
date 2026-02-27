@@ -36,9 +36,43 @@ export function initWebSocketServer(port?: number): WebSocketServer {
         const message = JSON.parse(data.toString());
         console.log('[WebSocket] Received message:', message);
 
-        // TODO: Add message handling logic
-        // This should route messages to appropriate handlers
-        // based on message type (subscribe, unsubscribe, message, etc.)
+        switch (message.event) {
+          case 'subscribe':
+            if (message.channel) {
+              console.log(
+                '[WebSocket] Client subscribing to channel:',
+                message.channel
+              );
+              ws.send(
+                JSON.stringify({
+                  event: 'subscribed',
+                  channel: message.channel,
+                  timestamp: Date.now(),
+                })
+              );
+            }
+            break;
+          case 'unsubscribe':
+            if (message.channel) {
+              console.log(
+                '[WebSocket] Client unsubscribing from channel:',
+                message.channel
+              );
+              ws.send(
+                JSON.stringify({
+                  event: 'unsubscribed',
+                  channel: message.channel,
+                  timestamp: Date.now(),
+                })
+              );
+            }
+            break;
+          case 'ping':
+            ws.send(JSON.stringify({ event: 'pong', timestamp: Date.now() }));
+            break;
+          default:
+            console.log('[WebSocket] Unhandled message event:', message.event);
+        }
       } catch (error) {
         console.error('[WebSocket] Failed to parse message:', error);
       }
@@ -46,7 +80,7 @@ export function initWebSocketServer(port?: number): WebSocketServer {
 
     ws.on('close', () => {
       console.log('[WebSocket] Connection closed');
-      // TODO: Add cleanup logic (remove subscriptions, etc.)
+      wsServer?.clients.delete(ws);
     });
 
     ws.on('error', (error: Error) => {

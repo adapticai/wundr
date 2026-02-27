@@ -9,6 +9,7 @@
 import { Plus, Settings, Play, Pause, Users } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -98,7 +99,11 @@ export function SessionManagerList({
       await fetchSessionManagers();
     } catch (err) {
       console.error(`Failed to ${action} session manager:`, err);
-      // TODO: Add toast notification for error
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : `Failed to ${action} session manager`
+      );
     }
   }
 

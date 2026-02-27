@@ -38,7 +38,6 @@ export function ChannelsWidget({
     const fetchChannels = async () => {
       try {
         setIsLoading(true);
-        // TODO: Replace with actual API endpoint for starred/frequent channels
         const response = await fetch(
           `/api/workspaces/${workspaceSlug}/channels?starred=true&limit=${limit}`
         );

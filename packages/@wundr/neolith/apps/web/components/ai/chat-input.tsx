@@ -305,17 +305,51 @@ export function ChatInput({
             </>
           )}
 
-          {/* Voice Input Button (UI only) */}
+          {/* Voice Input Button */}
           <Button
             type='button'
             variant='ghost'
             size='icon'
             className='h-9 w-9'
             disabled={disabled || isLoading}
-            title='Voice input (coming soon)'
+            title='Voice input'
             onClick={() => {
-              // TODO: Implement voice input
-              console.log('Voice input not yet implemented');
+              const SpeechRecognition =
+                (
+                  window as typeof window & {
+                    SpeechRecognition?: typeof window.webkitSpeechRecognition;
+                  }
+                ).SpeechRecognition || window.webkitSpeechRecognition;
+
+              if (!SpeechRecognition) {
+                // Browser does not support the Web Speech API
+                const event = new CustomEvent('show-toast', {
+                  detail: {
+                    title: 'Voice input not supported',
+                    description:
+                      'Your browser does not support voice input. Try Chrome or Edge.',
+                    variant: 'destructive',
+                  },
+                });
+                window.dispatchEvent(event);
+                return;
+              }
+
+              const recognition = new SpeechRecognition();
+              recognition.lang = 'en-US';
+              recognition.interimResults = false;
+              recognition.maxAlternatives = 1;
+
+              recognition.onresult = (event: SpeechRecognitionEvent) => {
+                const transcript = event.results[0][0].transcript;
+                onChange(value ? `${value} ${transcript}` : transcript);
+              };
+
+              recognition.onerror = () => {
+                // Recognition error — silently ignore so the button can be retried
+              };
+
+              recognition.start();
             }}
           >
             <Mic className='h-4 w-4' />

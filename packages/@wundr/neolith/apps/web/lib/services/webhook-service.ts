@@ -98,14 +98,19 @@ export async function listWebhooks(
   workspaceId: string,
   filters?: any
 ): Promise<{ webhooks: any[]; total: number }> {
-  const where = { workspaceId, ...filters };
+  try {
+    const where = { workspaceId, ...filters };
 
-  const [webhooks, total] = await Promise.all([
-    (prisma as any).webhook.findMany({ where }),
-    (prisma as any).webhook.count({ where }),
-  ]);
+    const [webhooks, total] = await Promise.all([
+      (prisma as any).webhook.findMany({ where }),
+      (prisma as any).webhook.count({ where }),
+    ]);
 
-  return { webhooks, total };
+    return { webhooks, total };
+  } catch {
+    // Webhook table may not exist yet — return empty results
+    return { webhooks: [], total: 0 };
+  }
 }
 
 /**

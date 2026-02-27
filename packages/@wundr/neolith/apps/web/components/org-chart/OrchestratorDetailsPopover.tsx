@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter, useParams } from 'next/navigation';
+
 import { OrchestratorStatusBadge } from '@/components/orchestrator/orchestrator-status-badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +24,10 @@ export function OrchestratorDetailsPopover({
   orchestrator,
   children,
 }: OrchestratorDetailsPopoverProps) {
+  const router = useRouter();
+  const params = useParams();
+  const workspaceSlug = params.workspaceSlug as string;
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -106,8 +112,9 @@ export function OrchestratorDetailsPopover({
               className='flex-1 text-xs py-2 px-3 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors'
               onClick={e => {
                 e.stopPropagation();
-                // TODO: Implement chat navigation
-                console.log('Start chat with Orchestrator:', orchestrator.id);
+                router.push(
+                  `/${workspaceSlug}/orchestrators/${orchestrator.id}`
+                );
               }}
             >
               Start Chat

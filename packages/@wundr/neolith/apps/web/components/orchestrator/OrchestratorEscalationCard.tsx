@@ -8,6 +8,7 @@ import {
   User,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
@@ -122,6 +130,11 @@ export function OrchestratorEscalationCard({
   onRespond,
   className,
 }: OrchestratorEscalationCardProps) {
+  const [resolveDialogOpen, setResolveDialogOpen] = useState(false);
+  const [respondDialogOpen, setRespondDialogOpen] = useState(false);
+  const [resolutionText, setResolutionText] = useState('');
+  const [responseText, setResponseText] = useState('');
+
   const reasonCfg = reasonConfig[escalation.reason.type];
   const priorityCfg = priorityConfig[escalation.task.priority];
   const ReasonIcon = reasonCfg.icon;
@@ -290,13 +303,7 @@ export function OrchestratorEscalationCard({
             <Button
               variant='outline'
               size='sm'
-              onClick={() => {
-                // TODO: Replace with proper modal dialog for production
-                const resolution = window.prompt('Enter resolution details:');
-                if (resolution && resolution.trim()) {
-                  onResolve(escalation.id, resolution);
-                }
-              }}
+              onClick={() => setResolveDialogOpen(true)}
             >
               Mark as Resolved
             </Button>
@@ -306,13 +313,7 @@ export function OrchestratorEscalationCard({
             <Button
               variant='outline'
               size='sm'
-              onClick={() => {
-                // TODO: Replace with proper modal dialog for production
-                const response = window.prompt('Enter your response:');
-                if (response && response.trim()) {
-                  onRespond(escalation.id, response);
-                }
-              }}
+              onClick={() => setRespondDialogOpen(true)}
             >
               <MessageSquare className='mr-2 h-4 w-4' />
               Respond to Orchestrator
@@ -328,6 +329,82 @@ export function OrchestratorEscalationCard({
           )}
         </div>
       </CardContent>
+
+      <Dialog open={resolveDialogOpen} onOpenChange={setResolveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resolve Escalation</DialogTitle>
+          </DialogHeader>
+          <textarea
+            className='w-full rounded-md border bg-muted p-3 text-sm'
+            rows={4}
+            placeholder='Describe how this escalation was resolved...'
+            value={resolutionText}
+            onChange={e => setResolutionText(e.target.value)}
+          />
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => {
+                setResolveDialogOpen(false);
+                setResolutionText('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!resolutionText.trim()}
+              onClick={() => {
+                if (resolutionText.trim()) {
+                  onResolve?.(escalation.id, resolutionText.trim());
+                  setResolveDialogOpen(false);
+                  setResolutionText('');
+                }
+              }}
+            >
+              Confirm Resolution
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={respondDialogOpen} onOpenChange={setRespondDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Respond to Orchestrator</DialogTitle>
+          </DialogHeader>
+          <textarea
+            className='w-full rounded-md border bg-muted p-3 text-sm'
+            rows={4}
+            placeholder='Enter your response to the orchestrator...'
+            value={responseText}
+            onChange={e => setResponseText(e.target.value)}
+          />
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => {
+                setRespondDialogOpen(false);
+                setResponseText('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!responseText.trim()}
+              onClick={() => {
+                if (responseText.trim()) {
+                  onRespond?.(escalation.id, responseText.trim());
+                  setRespondDialogOpen(false);
+                  setResponseText('');
+                }
+              }}
+            >
+              Send Response
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

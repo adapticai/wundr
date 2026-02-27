@@ -13,13 +13,18 @@ export default function AnalyticsError({
 }: ErrorProps): JSX.Element {
   // Log error to error tracking service in production
   useEffect(() => {
-    // In production, this should send to error tracking service (e.g., Sentry)
     if (process.env.NODE_ENV === 'production') {
-      // TODO: Add error tracking service integration
-      console.error('[Analytics Error]', {
-        message: error.message,
-        digest: error.digest,
-        stack: error.stack,
+      fetch('/api/analytics/errors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: error.message,
+          digest: error.digest,
+          stack: error.stack,
+          source: 'analytics',
+        }),
+      }).catch(() => {
+        // Swallow reporting failures to avoid cascading errors
       });
     } else {
       console.error('Analytics error:', error);

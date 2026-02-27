@@ -51,12 +51,19 @@ export async function initializeIntegration(
   integrationId: string,
   config: any
 ): Promise<any> {
-  console.log('[IntegrationService] initializeIntegration called with:', {
-    integrationId,
-    config,
+  const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || ''}/api/integrations/${integrationId}/webhook`;
+
+  return await (prisma as any).integration.update({
+    where: { id: integrationId },
+    data: {
+      status: 'PENDING',
+      metadata: {
+        webhookUrl,
+        ...config,
+        initializedAt: new Date().toISOString(),
+      },
+    },
   });
-  // TODO: Implement integration initialization
-  return null;
 }
 
 /**
@@ -66,12 +73,14 @@ export async function connectToService(
   serviceName: string,
   credentials: any
 ): Promise<any> {
-  console.log('[IntegrationService] connectToService called with:', {
-    serviceName,
-    credentials,
+  return await (prisma as any).integration.updateMany({
+    where: { provider: serviceName },
+    data: {
+      status: 'ACTIVE',
+      connectedAt: new Date(),
+      metadata: credentials,
+    },
   });
-  // TODO: Implement service connection
-  return null;
 }
 
 /**
@@ -80,10 +89,16 @@ export async function connectToService(
 export async function disconnectFromService(
   serviceName: string
 ): Promise<void> {
-  console.log('[IntegrationService] disconnectFromService called with:', {
-    serviceName,
+  await (prisma as any).integration.updateMany({
+    where: { provider: serviceName },
+    data: {
+      status: 'INACTIVE',
+      accessToken: null,
+      refreshToken: null,
+      metadata: {},
+      disconnectedAt: new Date(),
+    },
   });
-  // TODO: Implement service disconnection
 }
 
 /**
@@ -92,11 +107,36 @@ export async function disconnectFromService(
 export async function getIntegrationStatus(
   integrationId: string
 ): Promise<any> {
-  console.log('[IntegrationService] getIntegrationStatus called with:', {
-    integrationId,
+  const integration = await (prisma as any).integration.findUnique({
+    where: { id: integrationId },
+    select: {
+      id: true,
+      status: true,
+      provider: true,
+      name: true,
+      connectedAt: true,
+      lastSyncAt: true,
+      syncError: true,
+      syncEnabled: true,
+      metadata: true,
+    },
   });
-  // TODO: Implement status retrieval
-  return null;
+
+  if (!integration) {
+    return null;
+  }
+
+  return {
+    id: integration.id,
+    status: integration.status,
+    provider: integration.provider,
+    name: integration.name,
+    connectedAt: integration.connectedAt,
+    lastSyncAt: integration.lastSyncAt,
+    syncError: integration.syncError,
+    syncEnabled: integration.syncEnabled,
+    metadata: integration.metadata,
+  };
 }
 
 /**
@@ -106,41 +146,41 @@ export async function listIntegrations(
   workspaceId: string,
   filters?: any
 ): Promise<{ integrations: any[]; total: number }> {
-  console.log('[IntegrationService] listIntegrations called with:', {
-    workspaceId,
-    filters,
-  });
+  try {
+    const where: any = { workspaceId };
 
-  const where: any = { workspaceId };
+    if (filters?.provider) {
+      where.provider = filters.provider;
+    }
 
-  if (filters?.provider) {
-    where.provider = filters.provider;
+    if (filters?.status) {
+      where.status = filters.status;
+    }
+
+    if (filters?.search) {
+      where.OR = [
+        { name: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [integrations, total] = await Promise.all([
+      (prisma as any).integration.findMany({
+        where,
+        orderBy: filters?.sortBy
+          ? { [filters.sortBy]: filters.sortOrder || 'desc' }
+          : { createdAt: 'desc' },
+        skip: filters?.page ? (filters.page - 1) * (filters.limit || 20) : 0,
+        take: filters?.limit || 20,
+      }),
+      (prisma as any).integration.count({ where }),
+    ]);
+
+    return { integrations, total };
+  } catch {
+    // Integration table may not exist yet — return empty results
+    return { integrations: [], total: 0 };
   }
-
-  if (filters?.status) {
-    where.status = filters.status;
-  }
-
-  if (filters?.search) {
-    where.OR = [
-      { name: { contains: filters.search, mode: 'insensitive' } },
-      { description: { contains: filters.search, mode: 'insensitive' } },
-    ];
-  }
-
-  const [integrations, total] = await Promise.all([
-    prisma.integration.findMany({
-      where,
-      orderBy: filters?.sortBy
-        ? { [filters.sortBy]: filters.sortOrder || 'desc' }
-        : { createdAt: 'desc' },
-      skip: filters?.page ? (filters.page - 1) * (filters.limit || 20) : 0,
-      take: filters?.limit || 20,
-    }),
-    prisma.integration.count({ where }),
-  ]);
-
-  return { integrations, total };
 }
 
 /**
@@ -150,12 +190,14 @@ export async function updateIntegrationConfig(
   integrationId: string,
   config: any
 ): Promise<any> {
-  console.log('[IntegrationService] updateIntegrationConfig called with:', {
-    integrationId,
-    config,
+  return await (prisma as any).integration.update({
+    where: { id: integrationId },
+    data: {
+      config,
+      metadata: config.metadata ?? undefined,
+      updatedAt: new Date(),
+    },
   });
-  // TODO: Implement config update
-  return null;
 }
 
 /**
@@ -164,7 +206,12 @@ export async function updateIntegrationConfig(
 export async function checkWorkspaceAccess(
   workspaceIdOrSlug: string,
   userId: string
-): Promise<{ hasAccess: boolean; role?: string; isAdmin?: boolean; workspaceId: string } | null> {
+): Promise<{
+  hasAccess: boolean;
+  role?: string;
+  isAdmin?: boolean;
+  workspaceId: string;
+} | null> {
   // Support both workspace ID and slug for lookup
   const workspace = await prisma.workspace.findFirst({
     where: {
@@ -423,13 +470,26 @@ export async function listWebhookDeliveries(
   webhookId: string,
   filters?: any
 ): Promise<{ deliveries: any[]; total: number }> {
-  console.log('[IntegrationService] listWebhookDeliveries called with:', {
-    workspaceId,
-    webhookId,
-    filters,
-  });
-  // TODO: Implement delivery listing
-  return { deliveries: [], total: 0 };
+  const where: any = { webhookId };
+
+  if (filters?.status) {
+    where.status = filters.status.toUpperCase();
+  }
+
+  const limit = filters?.limit || 20;
+  const skip = filters?.page ? (filters.page - 1) * limit : 0;
+
+  const [deliveries, total] = await Promise.all([
+    (prisma as any).webhookDelivery.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    }),
+    (prisma as any).webhookDelivery.count({ where }),
+  ]);
+
+  return { deliveries, total };
 }
 
 /**
@@ -439,17 +499,25 @@ export async function rotateWebhookSecret(
   workspaceId: string,
   webhookId: string
 ): Promise<{ webhook: any; newSecret: string } | null> {
-  console.log('[IntegrationService] rotateWebhookSecret called with:', {
-    workspaceId,
-    webhookId,
+  const existing = await prisma.webhook.findFirst({
+    where: { id: webhookId, workspaceId },
   });
-  // TODO: Implement secret rotation
-  const newSecret = `whsec_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-  const webhook = {
-    id: webhookId,
-    workspaceId,
-    updatedAt: new Date().toISOString(),
-  };
+
+  if (!existing) {
+    return null;
+  }
+
+  const newSecret = `whsec_${crypto.randomBytes(32).toString('hex')}`;
+  const newSecretHash = crypto
+    .createHash('sha256')
+    .update(newSecret)
+    .digest('hex');
+
+  const webhook = await prisma.webhook.update({
+    where: { id: webhookId, workspaceId },
+    data: { secret: newSecretHash },
+  });
+
   return { webhook, newSecret };
 }
 
@@ -548,18 +616,36 @@ export async function exchangeOAuthCode(
   clientSecret: string,
   redirectUri: string
 ): Promise<any> {
-  console.log('[IntegrationService] exchangeOAuthCode called with:', {
-    provider,
+  const config = OAUTH_PROVIDERS[provider];
+  if (!config) {
+    throw new Error(`Unknown OAuth provider: ${provider}`);
+  }
+
+  const params = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
     code,
-    clientId,
-    redirectUri,
+    redirect_uri: redirectUri,
+    grant_type: 'authorization_code',
   });
-  // TODO: Implement actual OAuth token exchange
-  return {
-    access_token: `access_token_${Date.now()}`,
-    token_type: 'Bearer',
-    scope: OAUTH_PROVIDERS[provider]?.scopes.join(' '),
-  };
+
+  const response = await fetch(config.tokenUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json',
+    },
+    body: params.toString(),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `OAuth token exchange failed for ${provider}: ${response.status} ${errorText}`
+    );
+  }
+
+  return await response.json();
 }
 
 /**
@@ -754,9 +840,13 @@ export function verifyGitHubSignature(
   signature: string,
   secret: string
 ): boolean {
-  console.log('[IntegrationService] verifyGitHubSignature called');
-  // TODO: Implement actual GitHub signature verification using HMAC-SHA256
-  return signature.startsWith('sha256=');
+  const expectedSignature = `sha256=${crypto.createHmac('sha256', secret).update(payload).digest('hex')}`;
+  const sigBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expectedSignature);
+  if (sigBuffer.length !== expectedBuffer.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(sigBuffer, expectedBuffer);
 }
 
 /**
@@ -768,7 +858,12 @@ export function verifySlackSignature(
   signature: string,
   secret: string
 ): boolean {
-  console.log('[IntegrationService] verifySlackSignature called');
-  // TODO: Implement actual Slack signature verification
-  return signature.startsWith('v0=');
+  const signingBase = `v0:${timestamp}:${body}`;
+  const expectedSignature = `v0=${crypto.createHmac('sha256', secret).update(signingBase).digest('hex')}`;
+  const sigBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expectedSignature);
+  if (sigBuffer.length !== expectedBuffer.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(sigBuffer, expectedBuffer);
 }

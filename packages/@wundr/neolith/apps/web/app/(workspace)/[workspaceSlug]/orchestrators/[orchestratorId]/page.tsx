@@ -1214,10 +1214,14 @@ function OrchestratorDetailSkeleton() {
  */
 function SessionManagersTab({ orchestratorId }: { orchestratorId: string }) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  // TODO: Use selectedSessionManager for detail view
-  const [_selectedSessionManager, _setSelectedSessionManager] = useState<
-    unknown | null
-  >(null);
+  const [selectedSessionManager, setSelectedSessionManager] = useState<{
+    id: string;
+    name: string;
+    description?: string;
+    status: string;
+    maxConcurrentSubagents: number;
+    tokenBudgetPerHour: number;
+  } | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleCreateNew = () => {
@@ -1228,8 +1232,15 @@ function SessionManagersTab({ orchestratorId }: { orchestratorId: string }) {
     setRefreshKey(prev => prev + 1);
   };
 
-  const handleSelect = (sessionManager: unknown) => {
-    _setSelectedSessionManager(sessionManager);
+  const handleSelect = (sessionManager: {
+    id: string;
+    name: string;
+    description?: string;
+    status: string;
+    maxConcurrentSubagents: number;
+    tokenBudgetPerHour: number;
+  }) => {
+    setSelectedSessionManager(sessionManager);
   };
 
   return (
@@ -1244,6 +1255,46 @@ function SessionManagersTab({ orchestratorId }: { orchestratorId: string }) {
           </CardDescription>
         </CardHeader>
       </Card>
+
+      {selectedSessionManager && (
+        <Card>
+          <CardHeader>
+            <div className='flex items-start justify-between'>
+              <div>
+                <CardTitle>{selectedSessionManager.name}</CardTitle>
+                {selectedSessionManager.description && (
+                  <CardDescription>
+                    {selectedSessionManager.description}
+                  </CardDescription>
+                )}
+              </div>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => setSelectedSessionManager(null)}
+              >
+                Close
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
+              <MetricCard
+                label='Status'
+                value={selectedSessionManager.status}
+              />
+              <MetricCard
+                label='Max Subagents'
+                value={selectedSessionManager.maxConcurrentSubagents.toString()}
+              />
+              <MetricCard
+                label='Token Budget/hr'
+                value={selectedSessionManager.tokenBudgetPerHour.toLocaleString()}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <SessionManagerList
         key={refreshKey}

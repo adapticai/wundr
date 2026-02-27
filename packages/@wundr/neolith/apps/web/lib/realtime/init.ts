@@ -76,12 +76,11 @@ class RealtimeConnection {
     this.isIntentionalDisconnect = false;
 
     try {
-      // TODO: Implement WebSocket connection
-      // this.ws = new WebSocket(this.config.url);
-      // this.ws.onopen = () => this.handleOpen();
-      // this.ws.onmessage = (event) => this.handleMessage(event);
-      // this.ws.onerror = (error) => this.handleError(error);
-      // this.ws.onclose = () => this.handleClose();
+      this.ws = new WebSocket(this.config.url);
+      this.ws.onopen = () => this.handleOpen();
+      this.ws.onmessage = event => this.handleMessage(event);
+      this.ws.onerror = error => this.handleError(error);
+      this.ws.onclose = () => this.handleClose();
     } catch (error) {
       console.error('[Realtime] Connection error:', error);
       this.emit('error', error);
@@ -158,8 +157,7 @@ class RealtimeConnection {
     };
 
     console.log('[Realtime] Sending message:', fullMessage);
-    // TODO: Send message
-    // this.ws.send(JSON.stringify(fullMessage));
+    this.ws.send(JSON.stringify(fullMessage));
   }
 
   /**
