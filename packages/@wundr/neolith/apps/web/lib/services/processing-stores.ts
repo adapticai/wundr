@@ -4,19 +4,70 @@
  * @module lib/services/processing-stores
  */
 
+// ---------------------------------------------------------------------------
+// Internal types
+// ---------------------------------------------------------------------------
+
+interface StoreEntry {
+  data: unknown;
+  metadata: Record<string, unknown>;
+  createdAt: Date;
+  expiresAt?: Date;
+}
+
+interface StoreConfig {
+  ttlMs?: number;
+}
+
+// Module-level registry: storeId -> (key -> entry)
+const registry = new Map<string, Map<string, StoreEntry>>();
+
+// TTL configuration per store
+const storeConfigs = new Map<string, StoreConfig>();
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function getStore(storeId: string): Map<string, StoreEntry> | undefined {
+  return registry.get(storeId);
+}
+
+function isExpired(entry: StoreEntry): boolean {
+  return entry.expiresAt !== undefined && entry.expiresAt < new Date();
+}
+
+// Rough memory estimate: serialize to JSON and measure byte length
+function estimateMemoryBytes(store: Map<string, StoreEntry>): number {
+  try {
+    const serialized = JSON.stringify(Array.from(store.entries()));
+    return Buffer.byteLength(serialized, 'utf8');
+  } catch {
+    return 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
 /**
  * Initialize processing store
  */
 export async function initializeStore(
   storeId: string,
-  config: any
-): Promise<any> {
+  config: StoreConfig = {}
+): Promise<{ storeId: string; config: StoreConfig }> {
   console.log('[ProcessingStores] initializeStore called with:', {
     storeId,
     config,
   });
-  // TODO: Implement store initialization
-  return null;
+
+  // Create or reset the store
+  registry.set(storeId, new Map<string, StoreEntry>());
+  storeConfigs.set(storeId, config);
+
+  return { storeId, config };
 }
 
 /**
@@ -25,26 +76,60 @@ export async function initializeStore(
 export async function storeData(
   storeId: string,
   key: string,
-  data: any
+  data: unknown,
+  metadata: Record<string, unknown> = {}
 ): Promise<void> {
   console.log('[ProcessingStores] storeData called with:', {
     storeId,
     key,
     data,
   });
-  // TODO: Implement data storage
+
+  let store = registry.get(storeId);
+  if (!store) {
+    // Auto-initialise the store if it does not exist yet
+    store = new Map<string, StoreEntry>();
+    registry.set(storeId, store);
+  }
+
+  const config = storeConfigs.get(storeId) ?? {};
+  const createdAt = new Date();
+  const expiresAt =
+    config.ttlMs !== undefined
+      ? new Date(createdAt.getTime() + config.ttlMs)
+      : undefined;
+
+  store.set(key, { data, metadata, createdAt, expiresAt });
 }
 
 /**
  * Retrieve processing data
  */
-export async function retrieveData(storeId: string, key: string): Promise<any> {
+export async function retrieveData(
+  storeId: string,
+  key: string
+): Promise<unknown> {
   console.log('[ProcessingStores] retrieveData called with:', {
     storeId,
     key,
   });
-  // TODO: Implement data retrieval
-  return null;
+
+  const store = getStore(storeId);
+  if (!store) {
+    return null;
+  }
+
+  const entry = store.get(key);
+  if (!entry) {
+    return null;
+  }
+
+  if (isExpired(entry)) {
+    store.delete(key);
+    return null;
+  }
+
+  return entry.data;
 }
 
 /**
@@ -55,7 +140,11 @@ export async function deleteData(storeId: string, key: string): Promise<void> {
     storeId,
     key,
   });
-  // TODO: Implement data deletion
+
+  const store = getStore(storeId);
+  if (store) {
+    store.delete(key);
+  }
 }
 
 /**
@@ -69,8 +158,27 @@ export async function listKeys(
     storeId,
     prefix,
   });
-  // TODO: Implement key listing
-  return [];
+
+  const store = getStore(storeId);
+  if (!store) {
+    return [];
+  }
+
+  const now = new Date();
+  const keys: string[] = [];
+
+  for (const [key, entry] of store.entries()) {
+    // Prune expired entries as we iterate
+    if (entry.expiresAt !== undefined && entry.expiresAt < now) {
+      store.delete(key);
+      continue;
+    }
+    if (prefix === undefined || key.startsWith(prefix)) {
+      keys.push(key);
+    }
+  }
+
+  return keys;
 }
 
 /**
@@ -80,18 +188,40 @@ export async function clearStore(storeId: string): Promise<void> {
   console.log('[ProcessingStores] clearStore called with:', {
     storeId,
   });
-  // TODO: Implement store clearing
+
+  const store = getStore(storeId);
+  if (store) {
+    store.clear();
+  }
 }
 
 /**
  * Get store statistics
  */
-export async function getStoreStats(storeId: string): Promise<any> {
+export async function getStoreStats(
+  storeId: string
+): Promise<{ totalKeys: number; memoryUsageEstimate: number } | null> {
   console.log('[ProcessingStores] getStoreStats called with:', {
     storeId,
   });
-  // TODO: Implement stats retrieval
-  return null;
+
+  const store = getStore(storeId);
+  if (!store) {
+    return null;
+  }
+
+  // Prune expired keys before counting
+  const now = new Date();
+  for (const [key, entry] of store.entries()) {
+    if (entry.expiresAt !== undefined && entry.expiresAt < now) {
+      store.delete(key);
+    }
+  }
+
+  return {
+    totalKeys: store.size,
+    memoryUsageEstimate: estimateMemoryBytes(store),
+  };
 }
 
 /**
@@ -100,13 +230,35 @@ export async function getStoreStats(storeId: string): Promise<any> {
 export async function backupStore(
   storeId: string,
   backupLocation: string
-): Promise<any> {
+): Promise<{
+  storeId: string;
+  backupLocation: string;
+  serialized: string;
+  backedUpAt: string;
+}> {
   console.log('[ProcessingStores] backupStore called with:', {
     storeId,
     backupLocation,
   });
-  // TODO: Implement store backup
-  return null;
+
+  const store = getStore(storeId);
+  const entries = store
+    ? Array.from(store.entries()).map(([key, entry]) => ({ key, ...entry }))
+    : [];
+
+  const serialized = JSON.stringify({
+    storeId,
+    backupLocation,
+    entries,
+    backedUpAt: new Date().toISOString(),
+  });
+
+  return {
+    storeId,
+    backupLocation,
+    serialized,
+    backedUpAt: new Date().toISOString(),
+  };
 }
 
 // ============================================================================

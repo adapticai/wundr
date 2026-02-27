@@ -51,6 +51,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { usePageHeader } from '@/contexts/page-header-context';
+import { useToast } from '@/hooks/use-toast';
 import { useWorkflows, useWorkflowTemplates } from '@/hooks/use-workflows';
 import { cn } from '@/lib/utils';
 import {
@@ -84,6 +85,7 @@ export default function WorkflowsPage() {
   const router = useRouter();
   const workspaceSlug = (params?.workspaceSlug ?? '') as string;
   const { setPageHeader } = usePageHeader();
+  const { toast } = useToast();
 
   // Set page header
   useEffect(() => {
@@ -258,25 +260,77 @@ export default function WorkflowsPage() {
   );
 
   const handleBulkActivate = useCallback(async () => {
-    // TODO: Implement bulk activate API call
-    console.log('Activating workflows:', Array.from(selectedWorkflows));
-    setSelectedWorkflows(new Set());
-    mutate();
-  }, [selectedWorkflows, mutate]);
+    try {
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/workflows/bulk`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ids: Array.from(selectedWorkflows),
+            action: 'activate',
+          }),
+        }
+      );
+      if (!res.ok) throw new Error(await res.text());
+      toast({
+        title: 'Workflows activated',
+        description: `${selectedWorkflows.size} workflow(s) activated successfully.`,
+      });
+      setSelectedWorkflows(new Set());
+      mutate();
+    } catch (err) {
+      toast({
+        title: 'Failed to activate workflows',
+        description: err instanceof Error ? err.message : 'An error occurred.',
+        variant: 'destructive',
+      });
+    }
+  }, [selectedWorkflows, mutate, workspaceSlug, toast]);
 
   const handleBulkDeactivate = useCallback(async () => {
-    // TODO: Implement bulk deactivate API call
-    console.log('Deactivating workflows:', Array.from(selectedWorkflows));
-    setSelectedWorkflows(new Set());
-    mutate();
-  }, [selectedWorkflows, mutate]);
+    try {
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/workflows/bulk`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ids: Array.from(selectedWorkflows),
+            action: 'deactivate',
+          }),
+        }
+      );
+      if (!res.ok) throw new Error(await res.text());
+      toast({ title: 'Workflows deactivated', description: `${selectedWorkflows.size} workflow(s) deactivated successfully.` });
+      setSelectedWorkflows(new Set());
+      mutate();
+    } catch (err) {
+      toast({ title: 'Failed to deactivate workflows', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+    }
+  }, [selectedWorkflows, mutate, workspaceSlug, toast]);
 
   const handleBulkArchive = useCallback(async () => {
-    // TODO: Implement bulk archive API call
-    console.log('Archiving workflows:', Array.from(selectedWorkflows));
-    setSelectedWorkflows(new Set());
-    mutate();
-  }, [selectedWorkflows, mutate]);
+    try {
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/workflows/bulk`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ids: Array.from(selectedWorkflows),
+            action: 'archive',
+          }),
+        }
+      );
+      if (!res.ok) throw new Error(await res.text());
+      toast({ title: 'Workflows archived', description: `${selectedWorkflows.size} workflow(s) archived successfully.` });
+      setSelectedWorkflows(new Set());
+      mutate();
+    } catch (err) {
+      toast({ title: 'Failed to archive workflows', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+    }
+  }, [selectedWorkflows, mutate, workspaceSlug, toast]);
 
   const handleBulkDelete = useCallback(async () => {
     if (
@@ -286,30 +340,62 @@ export default function WorkflowsPage() {
     ) {
       return;
     }
-    // TODO: Implement bulk delete API call
-    console.log('Deleting workflows:', Array.from(selectedWorkflows));
-    setSelectedWorkflows(new Set());
-    mutate();
-  }, [selectedWorkflows, mutate]);
+    try {
+      const res = await fetch(
+        `/api/workspaces/${workspaceSlug}/workflows/bulk`,
+        {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: Array.from(selectedWorkflows) }),
+        }
+      );
+      if (!res.ok) throw new Error(await res.text());
+      toast({ title: 'Workflows deleted', description: `${selectedWorkflows.size} workflow(s) deleted successfully.` });
+      setSelectedWorkflows(new Set());
+      mutate();
+    } catch (err) {
+      toast({ title: 'Failed to delete workflows', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+    }
+  }, [selectedWorkflows, mutate, workspaceSlug, toast]);
 
   // Quick action handlers
   const handleDuplicate = useCallback(
     async (workflow: Workflow) => {
-      // TODO: Implement duplicate API call
-      console.log('Duplicating workflow:', workflow.id);
-      mutate();
+      try {
+        const res = await fetch(
+          `/api/workspaces/${workspaceSlug}/workflows/${workflow.id}/duplicate`,
+          { method: 'POST' }
+        );
+        if (!res.ok) throw new Error(await res.text());
+        toast({ title: 'Workflow duplicated', description: `"${workflow.name}" was duplicated successfully.` });
+        mutate();
+      } catch (err) {
+        toast({ title: 'Failed to duplicate workflow', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+      }
     },
-    [mutate]
+    [mutate, workspaceSlug, toast]
   );
 
   const handleToggleActive = useCallback(
     async (workflow: Workflow) => {
       const newStatus = workflow.status === 'active' ? 'inactive' : 'active';
-      // TODO: Implement update status API call
-      console.log(`Setting workflow ${workflow.id} to ${newStatus}`);
-      mutate();
+      try {
+        const res = await fetch(
+          `/api/workspaces/${workspaceSlug}/workflows/${workflow.id}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus }),
+          }
+        );
+        if (!res.ok) throw new Error(await res.text());
+        toast({ title: `Workflow ${newStatus}`, description: `"${workflow.name}" is now ${newStatus}.` });
+        mutate();
+      } catch (err) {
+        toast({ title: 'Failed to update workflow', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+      }
     },
-    [mutate]
+    [mutate, workspaceSlug, toast]
   );
 
   const handleDelete = useCallback(
@@ -317,20 +403,40 @@ export default function WorkflowsPage() {
       if (!confirm(`Are you sure you want to delete "${workflow.name}"?`)) {
         return;
       }
-      // TODO: Implement delete API call
-      console.log('Deleting workflow:', workflow.id);
-      mutate();
+      try {
+        const res = await fetch(
+          `/api/workspaces/${workspaceSlug}/workflows/${workflow.id}`,
+          { method: 'DELETE' }
+        );
+        if (!res.ok) throw new Error(await res.text());
+        toast({ title: 'Workflow deleted', description: `"${workflow.name}" was deleted successfully.` });
+        mutate();
+      } catch (err) {
+        toast({ title: 'Failed to delete workflow', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+      }
     },
-    [mutate]
+    [mutate, workspaceSlug, toast]
   );
 
   const handleArchive = useCallback(
     async (workflow: Workflow) => {
-      // TODO: Implement archive API call
-      console.log('Archiving workflow:', workflow.id);
-      mutate();
+      try {
+        const res = await fetch(
+          `/api/workspaces/${workspaceSlug}/workflows/${workflow.id}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'archived' }),
+          }
+        );
+        if (!res.ok) throw new Error(await res.text());
+        toast({ title: 'Workflow archived', description: `"${workflow.name}" was archived successfully.` });
+        mutate();
+      } catch (err) {
+        toast({ title: 'Failed to archive workflow', description: err instanceof Error ? err.message : 'An error occurred.', variant: 'destructive' });
+      }
     },
-    [mutate]
+    [mutate, workspaceSlug, toast]
   );
 
   const handleExport = useCallback((workflow: Workflow) => {

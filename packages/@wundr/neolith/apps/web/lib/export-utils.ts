@@ -43,14 +43,9 @@ export async function exportToCSV<T extends Record<string, unknown>>(
     includeHeaders,
   });
 
-  // TODO: Implement CSV export
-  // const headers = columns || Object.keys(data[0] || {});
-  // const csvContent = includeHeaders ? headers.join(delimiter) + '\n' : '';
-  // const rows = data.map(row =>
-  //   headers.map(h => JSON.stringify(row[h] ?? '')).join(delimiter)
-  // ).join('\n');
-  // const blob = new Blob([csvContent + rows], { type: 'text/csv' });
-  // downloadBlob(blob, filename);
+  const csvContent = convertToCSV(data, { delimiter, includeHeaders, columns });
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  downloadBlob(blob, filename);
 }
 
 /**
@@ -65,6 +60,7 @@ export async function exportToPDF<T extends Record<string, unknown>>(
     orientation = 'portrait',
     pageSize = 'A4',
     title = 'Export',
+    columns,
   } = options;
 
   console.log('[ExportUtils] Exporting to PDF:', {
@@ -75,11 +71,67 @@ export async function exportToPDF<T extends Record<string, unknown>>(
     title,
   });
 
-  // TODO: Implement PDF export using jsPDF or similar
-  // const doc = new jsPDF({ orientation, format: pageSize });
-  // doc.text(title, 10, 10);
-  // doc.autoTable({ head: [headers], body: rows });
-  // doc.save(filename);
+  const headers = columns || Object.keys(data[0] || {});
+
+  const pageSizeStyle =
+    pageSize === 'A4'
+      ? '@page { size: A4 ' + orientation + '; }'
+      : '@page { size: letter ' + orientation + '; }';
+
+  const tableRows = data
+    .map(row => {
+      const cells = headers
+        .map(
+          h =>
+            `<td style="border:1px solid #ccc;padding:6px 10px;">${escapeHtml(String(row[h] ?? ''))}</td>`
+        )
+        .join('');
+      return `<tr>${cells}</tr>`;
+    })
+    .join('');
+
+  const headerRow = headers
+    .map(
+      h =>
+        `<th style="border:1px solid #ccc;padding:6px 10px;background:#f0f0f0;font-weight:bold;">${escapeHtml(h)}</th>`
+    )
+    .join('');
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${escapeHtml(title)}</title>
+  <style>
+    ${pageSizeStyle}
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { font-size: 18px; margin-bottom: 16px; }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    @media print { button { display: none; } }
+  </style>
+</head>
+<body>
+  <h1>${escapeHtml(title)}</h1>
+  <table>
+    <thead><tr>${headerRow}</tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+</body>
+</html>`;
+
+  const printWindow = window.open('', '_blank', 'width=900,height=700');
+  if (!printWindow) {
+    console.warn('[ExportUtils] Could not open print window (popup blocked?)');
+    return;
+  }
+  printWindow.document.write(html);
+  printWindow.document.close();
+  printWindow.focus();
+  // Allow layout to settle before triggering print dialog
+  printWindow.setTimeout(() => {
+    printWindow.print();
+    printWindow.close();
+  }, 250);
 }
 
 /**
@@ -95,10 +147,9 @@ export async function exportToJSON<T>(
     filename,
   });
 
-  // TODO: Implement JSON export
-  // const json = JSON.stringify(data, null, 2);
-  // const blob = new Blob([json], { type: 'application/json' });
-  // downloadBlob(blob, filename);
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  downloadBlob(blob, filename);
 }
 
 /**
@@ -116,11 +167,51 @@ export async function exportToXLSX<T extends Record<string, unknown>>(
     columns,
   });
 
-  // TODO: Implement XLSX export using xlsx library
-  // const ws = XLSX.utils.json_to_sheet(data);
-  // const wb = XLSX.utils.book_new();
-  // XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-  // XLSX.writeFile(wb, filename);
+  const headers = columns || Object.keys(data[0] || {});
+
+  // Build SpreadsheetML XML that Excel and compatible applications can open
+  const xmlRows = [
+    // Header row
+    '<Row>' +
+      headers
+        .map(h => `<Cell><Data ss:Type="String">${escapeXml(h)}</Data></Cell>`)
+        .join('') +
+      '</Row>',
+    // Data rows
+    ...data.map(row => {
+      const cells = headers
+        .map(h => {
+          const value = row[h];
+          const isNumber =
+            typeof value === 'number' && isFinite(value as number);
+          const type = isNumber ? 'Number' : 'String';
+          const content =
+            value !== null && value !== undefined ? String(value) : '';
+          return `<Cell><Data ss:Type="${type}">${escapeXml(content)}</Data></Cell>`;
+        })
+        .join('');
+      return `<Row>${cells}</Row>`;
+    }),
+  ].join('\n    ');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+          xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+          xmlns:x="urn:schemas-microsoft-com:office:excel">
+  <Worksheet ss:Name="Sheet1">
+    <Table>
+    ${xmlRows}
+    </Table>
+  </Worksheet>
+</Workbook>`;
+
+  // Use .xls extension with SpreadsheetML MIME so Excel opens it directly
+  const xlsFilename = filename.replace(/\.xlsx?$/i, '.xls');
+  const blob = new Blob([xml], {
+    type: 'application/vnd.ms-excel;charset=utf-8',
+  });
+  downloadBlob(blob, xlsFilename);
 }
 
 /**
@@ -152,15 +243,14 @@ export async function exportData<T extends Record<string, unknown>>(
  */
 function downloadBlob(blob: Blob, filename: string): void {
   console.log('[ExportUtils] Downloading blob:', filename);
-  // TODO: Implement blob download
-  // const url = URL.createObjectURL(blob);
-  // const link = document.createElement('a');
-  // link.href = url;
-  // link.download = filename;
-  // document.body.appendChild(link);
-  // link.click();
-  // document.body.removeChild(link);
-  // URL.revokeObjectURL(url);
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 /**
@@ -171,8 +261,43 @@ export function formatDateForExport(
   format = 'YYYY-MM-DD HH:mm:ss'
 ): string {
   console.log('[ExportUtils] Formatting date:', date, format);
-  // TODO: Implement date formatting
-  return new Date(date).toISOString();
+
+  const d = new Date(date);
+
+  // Use Intl.DateTimeFormat for consistent, locale-neutral output
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZone: 'UTC',
+  });
+
+  // en-CA produces YYYY-MM-DD; combine with time parts to get YYYY-MM-DD HH:mm:ss
+  const parts = formatter
+    .formatToParts(d)
+    .reduce<Record<string, string>>((acc, { type, value }) => {
+      acc[type] = value;
+      return acc;
+    }, {});
+
+  const formatted = `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+
+  // If the caller passed a custom format string, do a simple token substitution
+  if (format !== 'YYYY-MM-DD HH:mm:ss') {
+    return format
+      .replace('YYYY', parts.year ?? '')
+      .replace('MM', parts.month ?? '')
+      .replace('DD', parts.day ?? '')
+      .replace('HH', parts.hour ?? '')
+      .replace('mm', parts.minute ?? '')
+      .replace('ss', parts.second ?? '');
+  }
+
+  return formatted;
 }
 
 /**
@@ -330,4 +455,28 @@ export function shouldUseAsyncExport(
   });
 
   return shouldAsync;
+}
+
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
+/** Escape a string for safe embedding in HTML content */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/** Escape a string for safe embedding in XML content (SpreadsheetML) */
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }

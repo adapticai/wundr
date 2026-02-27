@@ -18,6 +18,12 @@ export type LocaleData = {
   translations: Translations;
 };
 
+// Built-in baseline translations (English) that are always available without a
+// dynamic import.  Other locales can be loaded at runtime via loadTranslations.
+const STATIC_TRANSLATIONS: Partial<Record<Locale, Translations>> = {
+  en: {},
+};
+
 // Simple translation store
 class I18nStore {
   private currentLocale: Locale = 'en';
@@ -27,8 +33,16 @@ class I18nStore {
   setLocale(locale: Locale): void {
     console.log('[i18n] Setting locale:', locale);
     this.currentLocale = locale;
-    // TODO: Load translations for the locale if not already loaded
-    // this.loadTranslations(locale);
+    // Load translations for the locale if not already loaded
+    if (!this.translations.has(locale)) {
+      this.loadTranslations(locale).catch(err => {
+        console.warn(
+          '[i18n] Failed to load translations for locale:',
+          locale,
+          err
+        );
+      });
+    }
   }
 
   getLocale(): Locale {
@@ -78,9 +92,32 @@ class I18nStore {
 
   async loadTranslations(locale: Locale): Promise<void> {
     console.log('[i18n] Loading translations for locale:', locale);
-    // TODO: Implement dynamic translation loading
-    // const translations = await import(`../locales/${locale}.json`);
-    // this.addTranslations(locale, translations.default);
+
+    // First check the static (bundled) translations map
+    const staticTranslations = STATIC_TRANSLATIONS[locale];
+    if (staticTranslations) {
+      this.addTranslations(locale, staticTranslations);
+      return;
+    }
+
+    // Fall back to an empty object so the store always has an entry for the
+    // locale (prevents repeated failed import attempts)
+    this.addTranslations(locale, {});
+
+    // Attempt a dynamic import for locale-specific JSON files.
+    // The import path follows the convention ../locales/<locale>.json relative
+    // to this file's location.  A try/catch prevents unhandled rejections when
+    // the file does not exist.
+    await loadDynamicTranslations(locale).then(translations => {
+      if (Object.keys(translations).length > 0) {
+        this.addTranslations(locale, translations);
+      }
+    });
+  }
+
+  hasTranslation(key: TranslationKey, locale: Locale): boolean {
+    const localeTranslations = this.translations.get(locale);
+    return localeTranslations !== undefined && key in localeTranslations;
   }
 }
 
@@ -133,13 +170,33 @@ export async function loadTranslations(locale: Locale): Promise<void> {
 }
 
 /**
+ * Attempt to load translations via a dynamic import.
+ * Returns an empty object when the locale file does not exist.
+ */
+async function loadDynamicTranslations(locale: Locale): Promise<Translations> {
+  try {
+    // Dynamic import resolves at runtime; the path is relative to this module.
+    // Bundlers (webpack/turbopack) will include any statically-analysable locale
+    // files found at build time.
+    const module = await import(`../locales/${locale}.json`);
+    const translations = module?.default ?? module ?? {};
+    console.log('[i18n] Dynamically loaded translations for locale:', locale);
+    return translations as Translations;
+  } catch {
+    // File does not exist or failed to parse – this is expected for locales
+    // that have not yet been created.
+    console.warn('[i18n] No translation file found for locale:', locale);
+    return {};
+  }
+}
+
+/**
  * Check if a translation exists for a key
  */
 export function hasTranslation(key: TranslationKey, locale?: Locale): boolean {
   const targetLocale = locale || getLocale();
   console.log('[i18n] Checking translation exists:', key, targetLocale);
-  // TODO: Implement translation existence check
-  return false;
+  return i18nStore.hasTranslation(key, targetLocale);
 }
 
 /**
@@ -151,9 +208,7 @@ export function formatNumber(
 ): string {
   const locale = getLocale();
   console.log('[i18n] Formatting number:', value, locale);
-  // TODO: Implement locale-aware number formatting
-  // return new Intl.NumberFormat(locale, options).format(value);
-  return value.toString();
+  return new Intl.NumberFormat(locale, options).format(value);
 }
 
 /**
@@ -165,9 +220,7 @@ export function formatDate(
 ): string {
   const locale = getLocale();
   console.log('[i18n] Formatting date:', date, locale);
-  // TODO: Implement locale-aware date formatting
-  // return new Intl.DateTimeFormat(locale, options).format(new Date(date));
-  return new Date(date).toISOString();
+  return new Intl.DateTimeFormat(locale, options).format(new Date(date));
 }
 
 /**
@@ -180,13 +233,11 @@ export function formatCurrency(
 ): string {
   const locale = getLocale();
   console.log('[i18n] Formatting currency:', value, currency, locale);
-  // TODO: Implement locale-aware currency formatting
-  // return new Intl.NumberFormat(locale, {
-  //   style: 'currency',
-  //   currency,
-  //   ...options,
-  // }).format(value);
-  return `${currency} ${value}`;
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    ...options,
+  }).format(value);
 }
 
 /**
@@ -213,9 +264,7 @@ export function formatTime(
     ...options,
   };
   console.log('[i18n] Formatting time:', date, locale);
-  // TODO: Implement locale-aware time formatting
-  // return new Intl.DateTimeFormat(locale, timeOptions).format(new Date(date));
-  return new Date(date).toLocaleTimeString(locale, timeOptions);
+  return new Intl.DateTimeFormat(locale, timeOptions).format(new Date(date));
 }
 
 /**

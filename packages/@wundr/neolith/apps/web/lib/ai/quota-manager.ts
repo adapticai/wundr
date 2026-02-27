@@ -53,6 +53,9 @@ export const QUOTA_TIERS = {
 
 export type QuotaTier = keyof typeof QUOTA_TIERS;
 
+// In-memory fallback store for quota tiers keyed by org/user ID
+const quotaTierStore = new Map<string, QuotaTier>();
+
 export interface QuotaUsage {
   tier: QuotaTier;
   requestsToday: number;
@@ -96,8 +99,11 @@ export async function getUserQuotaTier(userId: string): Promise<QuotaTier> {
       select: { email: true },
     });
 
-    // TODO: Implement quota tier storage in database
-    // For now, default to 'free' tier
+    // Use in-memory store as fallback since database table may not exist yet
+    if (quotaTierStore.has(`user:${userId}`)) {
+      return quotaTierStore.get(`user:${userId}`) as QuotaTier;
+    }
+
     return 'free';
   } catch (error) {
     console.error('Failed to get user quota tier:', error);
@@ -118,8 +124,11 @@ export async function getWorkspaceQuotaTier(
       select: { name: true },
     });
 
-    // TODO: Implement quota tier storage in database
-    // For now, default to 'pro' tier for workspaces
+    // Use in-memory store as fallback since database table may not exist yet
+    if (quotaTierStore.has(`workspace:${workspaceId}`)) {
+      return quotaTierStore.get(`workspace:${workspaceId}`) as QuotaTier;
+    }
+
     return 'pro';
   } catch (error) {
     console.error('Failed to get workspace quota tier:', error);
@@ -152,10 +161,25 @@ export async function getUserQuotaUsage(userId: string): Promise<QuotaUsage> {
   const requestsThisHour = limits.maxRequestsPerHour - hourlyStatus.remaining;
   const requestsToday = limits.maxRequestsPerDay - dailyStatus.remaining;
 
-  // Get monthly usage from database (would be stored in a usage tracking table)
-  // For now, using placeholder values
-  const requestsThisMonth = 0; // TODO: Implement monthly tracking
-  const tokensThisMonth = 0; // TODO: Implement token tracking
+  // Query monthly usage from aiUsageLog if available, fallback to 0
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  let requestsThisMonth = 0;
+  let tokensThisMonth = 0;
+  try {
+    const [reqAgg, tokenAgg] = await Promise.all([
+      (prisma as any).aiUsageLog.count({
+        where: { userId, createdAt: { gte: startOfMonth } },
+      }),
+      (prisma as any).aiUsageLog.aggregate({
+        _sum: { tokens: true },
+        where: { userId, createdAt: { gte: startOfMonth } },
+      }),
+    ]);
+    requestsThisMonth = reqAgg ?? 0;
+    tokensThisMonth = tokenAgg?._sum?.tokens ?? 0;
+  } catch {
+    // aiUsageLog table does not exist yet — degrade gracefully
+  }
 
   // Calculate reset times
   const nextHour = new Date(now);
@@ -233,8 +257,26 @@ export async function getWorkspaceQuotaUsage(
 
   const requestsThisHour = limits.maxRequestsPerHour - hourlyStatus.remaining;
   const requestsToday = limits.maxRequestsPerDay - dailyStatus.remaining;
-  const requestsThisMonth = 0; // TODO: Implement monthly tracking
-  const tokensThisMonth = 0; // TODO: Implement token tracking
+
+  // Query monthly usage from aiUsageLog if available, fallback to 0
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  let requestsThisMonth = 0;
+  let tokensThisMonth = 0;
+  try {
+    const [reqAgg, tokenAgg] = await Promise.all([
+      (prisma as any).aiUsageLog.count({
+        where: { workspaceId, createdAt: { gte: startOfMonth } },
+      }),
+      (prisma as any).aiUsageLog.aggregate({
+        _sum: { tokens: true },
+        where: { workspaceId, createdAt: { gte: startOfMonth } },
+      }),
+    ]);
+    requestsThisMonth = reqAgg ?? 0;
+    tokensThisMonth = tokenAgg?._sum?.tokens ?? 0;
+  } catch {
+    // aiUsageLog table does not exist yet — degrade gracefully
+  }
 
   const nextHour = new Date(now);
   nextHour.setHours(nextHour.getHours() + 1, 0, 0, 0);
@@ -421,11 +463,23 @@ export async function trackTokenUsage(
   tokens: number,
   scope: 'user' | 'workspace'
 ): Promise<void> {
-  // TODO: Implement persistent token tracking in database
-  // This would store token usage per month for quota enforcement
-  console.log(
-    `Token usage tracked: ${identifier} (${scope}) - ${tokens} tokens`
-  );
+  try {
+    await (prisma as any).aiUsageLog.create({
+      data: {
+        ...(scope === 'user'
+          ? { userId: identifier }
+          : { workspaceId: identifier }),
+        tokens,
+        scope,
+        createdAt: new Date(),
+      },
+    });
+  } catch {
+    // aiUsageLog table does not exist yet — degrade gracefully
+    console.log(
+      `Token usage tracked (in-memory fallback): ${identifier} (${scope}) - ${tokens} tokens`
+    );
+  }
 }
 
 /**

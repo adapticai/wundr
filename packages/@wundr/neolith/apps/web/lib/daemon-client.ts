@@ -157,46 +157,89 @@ export interface ToolCallInfo {
 export class DaemonClient {
   private ws: WebSocket | null = null;
   private url: string;
+  private apiUrl: string;
   private listeners: Map<DaemonEvent, Set<DaemonEventHandler<any>>> = new Map();
   private reconnectTimer: NodeJS.Timeout | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
+  private manualDisconnect = false;
 
-  constructor(url: string) {
+  constructor(url: string, apiUrl?: string) {
     this.url = url;
-    console.log('[DaemonClient] Initialized with URL:', url);
+    this.apiUrl =
+      apiUrl ??
+      (typeof process !== 'undefined'
+        ? (process.env.DAEMON_API_URL ?? 'http://localhost:8766')
+        : 'http://localhost:8766');
+    console.log(
+      '[DaemonClient] Initialized with URL:',
+      url,
+      'API URL:',
+      this.apiUrl
+    );
   }
 
   connect(): Promise<void> {
     console.log('[DaemonClient] Connecting to daemon...');
-    return Promise.resolve();
-    // TODO: Implement WebSocket connection
-    // this.ws = new WebSocket(this.url);
-    // this.ws.onopen = () => this.handleOpen();
-    // this.ws.onmessage = (event) => this.handleMessage(event);
-    // this.ws.onerror = (error) => this.handleError(error);
-    // this.ws.onclose = () => this.handleClose();
+    return new Promise((resolve, reject) => {
+      try {
+        this.manualDisconnect = false;
+        this.ws = new WebSocket(this.url);
+
+        const onOpen = () => {
+          cleanup();
+          this.handleOpen();
+          resolve();
+        };
+
+        const onError = (event: Event) => {
+          cleanup();
+          const err = new Error('WebSocket connection failed');
+          this.handleError(event);
+          reject(err);
+        };
+
+        // Attach one-time handlers for the initial connection attempt so we
+        // can resolve/reject the promise, then hand off to the persistent
+        // lifecycle handlers.
+        const cleanup = () => {
+          this.ws?.removeEventListener('open', onOpen);
+          this.ws?.removeEventListener('error', onError);
+        };
+
+        this.ws.addEventListener('open', onOpen);
+        this.ws.addEventListener('error', onError);
+
+        // Persistent lifecycle handlers (always active after attachment).
+        this.ws.onmessage = event => this.handleMessage(event);
+        this.ws.onerror = event => this.handleError(event);
+        this.ws.onclose = () => this.handleClose();
+      } catch (err) {
+        reject(err instanceof Error ? err : new Error(String(err)));
+      }
+    });
   }
 
   disconnect(): void {
     console.log('[DaemonClient] Disconnecting from daemon...');
-    // TODO: Implement WebSocket disconnection
-    // if (this.ws) {
-    //   this.ws.close();
-    //   this.ws = null;
-    // }
-    // if (this.reconnectTimer) {
-    //   clearTimeout(this.reconnectTimer);
-    //   this.reconnectTimer = null;
-    // }
+    this.manualDisconnect = true;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
   }
 
   send(message: DaemonMessage): void {
     console.log('[DaemonClient] Sending message:', message);
-    // TODO: Implement message sending
-    // if (this.ws?.readyState === WebSocket.OPEN) {
-    //   this.ws.send(JSON.stringify(message));
-    // }
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    } else {
+      console.warn('[DaemonClient] Cannot send message: WebSocket is not open');
+    }
   }
 
   on<E extends DaemonEvent>(event: E, handler: DaemonEventHandler<E>): void {
@@ -233,9 +276,23 @@ export class DaemonClient {
 
   private handleMessage(event: MessageEvent): void {
     console.log('[DaemonClient] Received message:', event.data);
-    // TODO: Parse and emit message
-    // const message = JSON.parse(event.data);
-    // this.emit('message', message);
+    try {
+      const message: DaemonMessage = JSON.parse(event.data as string);
+      // Always emit the raw message for generic subscribers.
+      this.emit('message', message);
+      // Route typed daemon events so consumers can subscribe by event name
+      // directly without inspecting the message envelope themselves.
+      const typedEvent = message.type as DaemonEvent;
+      if (typedEvent && this.listeners.has(typedEvent)) {
+        this.emit(typedEvent as any, message.payload as any);
+      }
+    } catch (err) {
+      console.error('[DaemonClient] Failed to parse incoming message:', err);
+      this.emit(
+        'error',
+        new Error(`Failed to parse WebSocket message: ${String(err)}`)
+      );
+    }
   }
 
   private handleError(error: Event): void {
@@ -249,7 +306,9 @@ export class DaemonClient {
   private handleClose(): void {
     console.log('[DaemonClient] Disconnected from daemon');
     this.emit('disconnected');
-    this.attemptReconnect();
+    if (!this.manualDisconnect) {
+      this.attemptReconnect();
+    }
   }
 
   private attemptReconnect(): void {
@@ -267,72 +326,86 @@ export class DaemonClient {
   }
 
   isConnected(): boolean {
-    // TODO: Implement connection status check
-    // return this.ws?.readyState === WebSocket.OPEN;
-    return false;
+    return this.ws?.readyState === WebSocket.OPEN;
   }
 
   // =============================================================================
   // Session Management Methods
   // =============================================================================
 
-  spawnSession(payload: SpawnSessionPayload): Promise<Session> {
+  async spawnSession(payload: SpawnSessionPayload): Promise<Session> {
     console.log('[DaemonClient] Spawning session:', payload);
-    // TODO: Implement session spawning
-    const now = new Date().toISOString();
-    return Promise.resolve({
-      id: `session_${Date.now()}`,
-      orchestratorId: payload.orchestratorId,
-      status: 'active',
-      sessionType: payload.sessionType || 'claude-code',
-      createdAt: now,
-      startedAt: now,
-      metadata: payload.metadata,
-      metrics: {
-        tokensUsed: 0,
-        duration: 0,
-        tasksCompleted: 0,
-        errorsEncountered: 0,
-      },
-      task: payload.task,
-      type: payload.sessionType || 'claude-code',
+    const response = await fetch(`${this.apiUrl}/sessions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
+    if (!response.ok) {
+      const text = await response.text().catch(() => response.statusText);
+      throw new Error(`Failed to spawn session (${response.status}): ${text}`);
+    }
+    const session: Session = await response.json();
+    this.emit('session_spawned', session);
+    return session;
   }
 
-  executeTask(payload: ExecuteTaskPayload): void {
+  async executeTask(payload: ExecuteTaskPayload): Promise<void> {
     console.log('[DaemonClient] Executing task:', payload);
-    // TODO: Implement task execution
-    this.send({
-      type: 'execute_task',
-      payload,
-    });
+    const response = await fetch(
+      `${this.apiUrl}/sessions/${encodeURIComponent(payload.sessionId)}/tasks`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!response.ok) {
+      const text = await response.text().catch(() => response.statusText);
+      throw new Error(`Failed to execute task (${response.status}): ${text}`);
+    }
   }
 
-  getSessionStatus(sessionId: string): void {
+  async getSessionStatus(sessionId: string): Promise<Session> {
     console.log('[DaemonClient] Getting session status:', sessionId);
-    // TODO: Implement session status retrieval
-    this.send({
-      type: 'get_session_status',
-      payload: { sessionId },
-    });
+    const response = await fetch(
+      `${this.apiUrl}/sessions/${encodeURIComponent(sessionId)}`,
+      { method: 'GET' }
+    );
+    if (!response.ok) {
+      const text = await response.text().catch(() => response.statusText);
+      throw new Error(
+        `Failed to get session status (${response.status}): ${text}`
+      );
+    }
+    const session: Session = await response.json();
+    this.emit('session_updated', session);
+    return session;
   }
 
-  getDaemonStatus(): void {
+  async getDaemonStatus(): Promise<DaemonStatus> {
     console.log('[DaemonClient] Getting daemon status');
-    // TODO: Implement daemon status retrieval
-    this.send({
-      type: 'get_daemon_status',
-      payload: {},
-    });
+    const response = await fetch(`${this.apiUrl}/status`, { method: 'GET' });
+    if (!response.ok) {
+      const text = await response.text().catch(() => response.statusText);
+      throw new Error(
+        `Failed to get daemon status (${response.status}): ${text}`
+      );
+    }
+    const status: DaemonStatus = await response.json();
+    this.emit('daemon_status', status);
+    return status;
   }
 
-  stopSession(sessionId: string): void {
+  async stopSession(sessionId: string): Promise<void> {
     console.log('[DaemonClient] Stopping session:', sessionId);
-    // TODO: Implement session stop
-    this.send({
-      type: 'stop_session',
-      payload: { sessionId },
-    });
+    const response = await fetch(
+      `${this.apiUrl}/sessions/${encodeURIComponent(sessionId)}`,
+      { method: 'DELETE' }
+    );
+    if (!response.ok) {
+      const text = await response.text().catch(() => response.statusText);
+      throw new Error(`Failed to stop session (${response.status}): ${text}`);
+    }
   }
 }
 
@@ -344,11 +417,15 @@ export function getDaemonClient(url?: string): DaemonClient {
     daemonClient = new DaemonClient(url);
   }
   if (!daemonClient) {
-    throw new Error('DaemonClient not initialized. Provide URL on first call.');
+    const wsUrl =
+      typeof process !== 'undefined'
+        ? (process.env.DAEMON_WS_URL ?? 'ws://localhost:8765')
+        : 'ws://localhost:8765';
+    daemonClient = new DaemonClient(wsUrl);
   }
   return daemonClient;
 }
 
-export function createDaemonClient(url: string): DaemonClient {
-  return new DaemonClient(url);
+export function createDaemonClient(url: string, apiUrl?: string): DaemonClient {
+  return new DaemonClient(url, apiUrl);
 }
