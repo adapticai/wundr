@@ -302,7 +302,7 @@ export default function TasksPage() {
   }, [statusFilter, priorityFilter, searchQuery]);
 
   return (
-    <div className='space-y-6'>
+    <div className='p-4 md:p-6 space-y-6'>
       {/* Page Header */}
       <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         <div>

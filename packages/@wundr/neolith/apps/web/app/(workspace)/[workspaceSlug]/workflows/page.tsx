@@ -517,35 +517,97 @@ export default function WorkflowsPage() {
   );
 
   return (
-    <div className='space-y-6'>
-      {/* Search and Toolbar */}
-      <div className='flex flex-col gap-4'>
-        <div className='flex items-center gap-3'>
-          <div className='relative flex-1'>
-            <Search
-              className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground'
-              aria-hidden='true'
-            />
-            <input
-              ref={searchInputRef}
-              type='text'
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder='Search workflows by name, description, or trigger type... (⌘K)'
-              className='w-full rounded-md border border-input bg-background py-2 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-              aria-label='Search workflows'
-            />
-            {searchQuery && (
-              <button
-                type='button'
-                onClick={() => setSearchQuery('')}
-                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
-                aria-label='Clear search'
-              >
-                <XIcon className='h-4 w-4' />
-              </button>
-            )}
-          </div>
+    <div className='p-4 md:p-6 space-y-6'>
+      {/* Header */}
+      <div className='flex items-center justify-between'>
+        <div>
+          <h1 className='text-2xl font-bold text-foreground'>Workflows</h1>
+          <p className='mt-1 text-sm text-muted-foreground'>
+            Automate tasks and processes
+          </p>
+        </div>
+        <Button
+          onClick={() => router.push(`/${workspaceSlug}/workflows/new`)}
+          aria-label='Create new workflow'
+        >
+          <PlusIcon className='h-4 w-4' aria-hidden='true' />
+          Create Workflow
+        </Button>
+      </div>
+
+      {/* Search and Filters */}
+      <div className='flex flex-col gap-4 sm:flex-row'>
+        <div className='relative flex-1'>
+          <Search
+            className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground'
+            aria-hidden='true'
+          />
+          <input
+            ref={searchInputRef}
+            type='text'
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder='Search workflows...'
+            className='w-full rounded-md border border-input bg-background py-2 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+            aria-label='Search workflows'
+          />
+          {searchQuery && (
+            <button
+              type='button'
+              onClick={() => setSearchQuery('')}
+              className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+              aria-label='Clear search'
+            >
+              <XIcon className='h-4 w-4' />
+            </button>
+          )}
+        </div>
+        <div className='flex gap-2'>
+          {/* Trigger Type Filter */}
+          <Select
+            value={triggerTypeFilter}
+            onValueChange={value =>
+              setTriggerTypeFilter(value as TriggerType | 'all')
+            }
+          >
+            <SelectTrigger className='w-[160px]'>
+              <SelectValue placeholder='All Triggers' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='all'>All Triggers</SelectItem>
+              {Object.entries(TRIGGER_TYPE_CONFIG).map(([key, config]) => (
+                <SelectItem key={key} value={key}>
+                  {config.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Sort */}
+          <Select
+            value={sortField}
+            onValueChange={value => setSortField(value as SortField)}
+          >
+            <SelectTrigger className='w-[160px]'>
+              <SelectValue placeholder='Sort by' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='name'>Name</SelectItem>
+              <SelectItem value='status'>Status</SelectItem>
+              <SelectItem value='lastRun'>Last Run</SelectItem>
+              <SelectItem value='runCount'>Run Count</SelectItem>
+              <SelectItem value='createdAt'>Created Date</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button
+            variant='ghost'
+            size='sm'
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className='h-9 px-3'
+          >
+            {sortOrder === 'asc' ? '↑' : '↓'}
+          </Button>
 
           {/* View Toggle */}
           <div className='flex items-center gap-1 rounded-md border border-border p-1'>
@@ -577,101 +639,33 @@ export default function WorkflowsPage() {
             <TemplateIcon className='h-4 w-4' aria-hidden='true' />
             Templates
           </Button>
-          <Button
-            onClick={() => router.push(`/${workspaceSlug}/workflows/new`)}
-            aria-label='Create new workflow'
-          >
-            <PlusIcon className='h-4 w-4' aria-hidden='true' />
-            Create Workflow
-          </Button>
-        </div>
-
-        {/* Filters and Sorting */}
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-3'>
-            {/* Trigger Type Filter */}
-            <Select
-              value={triggerTypeFilter}
-              onValueChange={value =>
-                setTriggerTypeFilter(value as TriggerType | 'all')
-              }
-            >
-              <SelectTrigger className='w-[180px]'>
-                <Filter className='mr-2 h-4 w-4' />
-                <SelectValue placeholder='Trigger Type' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='all'>All Triggers</SelectItem>
-                {Object.entries(TRIGGER_TYPE_CONFIG).map(([key, config]) => (
-                  <SelectItem key={key} value={key}>
-                    {config.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Sort */}
-            <Select
-              value={sortField}
-              onValueChange={value => setSortField(value as SortField)}
-            >
-              <SelectTrigger className='w-[160px]'>
-                <ArrowUpDown className='mr-2 h-4 w-4' />
-                <SelectValue placeholder='Sort by' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='name'>Name</SelectItem>
-                <SelectItem value='status'>Status</SelectItem>
-                <SelectItem value='lastRun'>Last Run</SelectItem>
-                <SelectItem value='runCount'>Run Count</SelectItem>
-                <SelectItem value='createdAt'>Created Date</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className='h-9 px-3'
-            >
-              {sortOrder === 'asc' ? '↑' : '↓'}
-            </Button>
-          </div>
-
-          {/* Bulk Actions */}
-          {selectedWorkflows.size > 0 && (
-            <div className='flex items-center gap-2'>
-              <span className='text-sm text-muted-foreground'>
-                {selectedWorkflows.size} selected
-              </span>
-              <Button variant='outline' size='sm' onClick={handleBulkActivate}>
-                <Power className='mr-2 h-4 w-4' />
-                Activate
-              </Button>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={handleBulkDeactivate}
-              >
-                <PowerOff className='mr-2 h-4 w-4' />
-                Deactivate
-              </Button>
-              <Button variant='outline' size='sm' onClick={handleBulkArchive}>
-                <Archive className='mr-2 h-4 w-4' />
-                Archive
-              </Button>
-              <Button
-                variant='destructive'
-                size='sm'
-                onClick={handleBulkDelete}
-              >
-                <Trash2 className='mr-2 h-4 w-4' />
-                Delete
-              </Button>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Bulk Actions */}
+      {selectedWorkflows.size > 0 && (
+        <div className='flex items-center gap-2'>
+          <span className='text-sm text-muted-foreground'>
+            {selectedWorkflows.size} selected
+          </span>
+          <Button variant='outline' size='sm' onClick={handleBulkActivate}>
+            <Power className='mr-2 h-4 w-4' />
+            Activate
+          </Button>
+          <Button variant='outline' size='sm' onClick={handleBulkDeactivate}>
+            <PowerOff className='mr-2 h-4 w-4' />
+            Deactivate
+          </Button>
+          <Button variant='outline' size='sm' onClick={handleBulkArchive}>
+            <Archive className='mr-2 h-4 w-4' />
+            Archive
+          </Button>
+          <Button variant='destructive' size='sm' onClick={handleBulkDelete}>
+            <Trash2 className='mr-2 h-4 w-4' />
+            Delete
+          </Button>
+        </div>
+      )}
 
       {/* Tab Navigation */}
       <div className='border-b border-border'>

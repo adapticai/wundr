@@ -299,7 +299,7 @@ export default function OrchestratorDetailPage() {
   const statusConfig = ORCHESTRATOR_STATUS_CONFIG[orchestrator.status];
 
   return (
-    <div className='flex gap-6'>
+    <div className='flex gap-6 p-4 md:p-6'>
       {/* Main Content */}
       <div className='flex-1 space-y-6'>
         {/* Breadcrumbs */}

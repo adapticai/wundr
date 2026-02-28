@@ -290,7 +290,7 @@ export default function OrchestratorAnalyticsPage() {
   }
 
   return (
-    <div className='space-y-6'>
+    <div className='p-4 md:p-6 space-y-6'>
       {/* Back Navigation */}
       <Button
         variant='ghost'

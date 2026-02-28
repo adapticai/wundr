@@ -264,7 +264,7 @@ export default function LaterPage() {
   };
 
   return (
-    <div className='flex h-full flex-col'>
+    <div className='flex h-full flex-col p-4 md:p-6'>
       {/* Header */}
       <div className='border-b px-6 py-4'>
         <div className='flex items-center gap-3'>

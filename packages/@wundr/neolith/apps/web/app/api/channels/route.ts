@@ -59,7 +59,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
-        workspaceId,
+        workspaceId: workspace.id,
         userId,
       },
     },

@@ -144,7 +144,7 @@ export default function IntegrationsPage() {
 
       {/* Content Area */}
       <div className='flex-1 overflow-y-auto'>
-        <div className='mx-auto max-w-5xl space-y-8 p-6'>
+        <div className='mx-auto max-w-5xl space-y-8'>
           {error && (
             <div className='rounded-md border border-destructive/50 bg-destructive/10 p-4'>
               <p className='text-sm text-destructive'>{error.message}</p>

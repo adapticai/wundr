@@ -94,7 +94,7 @@ export default function AccountOverviewPage() {
   }
 
   return (
-    <div className='space-y-8 max-w-6xl mx-auto p-6'>
+    <div className='space-y-8 max-w-6xl mx-auto'>
       {/* Account Summary Section */}
       <Card>
         <CardHeader>
@@ -309,7 +309,7 @@ export default function AccountOverviewPage() {
 // Loading skeleton component
 function AccountOverviewSkeleton() {
   return (
-    <div className='space-y-8 max-w-6xl mx-auto p-6'>
+    <div className='space-y-8 max-w-6xl mx-auto'>
       {/* Account Summary Skeleton */}
       <Card>
         <CardHeader>

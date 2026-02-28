@@ -7,7 +7,7 @@ interface DashboardSkeletonProps {
 
 export function DashboardSkeleton({ className }: DashboardSkeletonProps) {
   return (
-    <div className={cn('py-2', className)}>
+    <div className={cn('p-4 md:p-6', className)}>
       {/* Header */}
       <Skeleton className='h-10 w-64 mb-8' />
 

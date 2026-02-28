@@ -288,16 +288,16 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className='flex flex-col gap-6 p-6'>
+    <div className='flex flex-col gap-6 p-4 md:p-6'>
       {/* Header */}
-      <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
+      <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-3xl font-bold tracking-tight'>Reports</h1>
-          <p className='text-muted-foreground'>
+          <h1 className='text-2xl font-bold text-foreground'>Reports</h1>
+          <p className='mt-1 text-sm text-muted-foreground'>
             Manage and create custom reports for your workspace
           </p>
         </div>
-        <Button onClick={handleCreateNew} size='lg'>
+        <Button onClick={handleCreateNew}>
           <Plus className='mr-2 h-4 w-4' />
           Create Report
         </Button>

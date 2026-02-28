@@ -346,7 +346,7 @@ export default function ChannelsPage() {
   }, [channels, channelFilter, debouncedSearchQuery, sortOption]);
 
   return (
-    <div className='space-y-6'>
+    <div className='p-4 md:p-6 space-y-6'>
       {/* Search and Action Bar */}
       <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         {/* Search Input */}

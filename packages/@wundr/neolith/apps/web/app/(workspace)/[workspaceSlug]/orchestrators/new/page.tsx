@@ -133,7 +133,7 @@ export default function NewOrchestratorPage() {
   );
 
   return (
-    <div className='mx-auto h-full max-w-5xl'>
+    <div className='mx-auto h-full max-w-5xl p-4 md:p-6'>
       {/* Header with Back Button */}
       <div className='mb-6 flex items-center gap-4'>
         <Button

@@ -101,7 +101,7 @@ export default async function OrchestratorSettingsPage({ params }: PageProps) {
   }
 
   return (
-    <div className='container mx-auto max-w-6xl py-8 px-4'>
+    <div className='container mx-auto max-w-6xl p-4 md:p-6'>
       <div className='mb-8'>
         <h1 className='text-3xl font-bold tracking-tight'>
           Orchestrator Settings

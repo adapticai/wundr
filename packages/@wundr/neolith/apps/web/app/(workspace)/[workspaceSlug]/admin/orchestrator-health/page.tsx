@@ -153,7 +153,7 @@ export default function OrchestratorHealthDashboardPage() {
   );
 
   return (
-    <div className='container mx-auto px-4 py-8'>
+    <div className='space-y-6'>
       {/* Alert Banner for Unhealthy Orchestrators */}
       {unhealthyCount > 0 && (
         <div

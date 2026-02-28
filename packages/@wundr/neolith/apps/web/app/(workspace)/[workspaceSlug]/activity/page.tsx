@@ -147,7 +147,7 @@ export default function ActivityPage() {
   }, []);
 
   return (
-    <div className='space-y-6'>
+    <div className='p-4 md:p-6 space-y-6'>
       {/* New Activity Indicator */}
       {newActivityCount > 0 && isScrolledDown && (
         <div className='fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top'>
