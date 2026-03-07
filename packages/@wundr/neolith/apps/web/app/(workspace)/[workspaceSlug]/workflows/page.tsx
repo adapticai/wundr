@@ -5,7 +5,6 @@ import {
   Search,
   LayoutGrid,
   List,
-  Filter,
   MoreVertical,
   Copy,
   Trash2,

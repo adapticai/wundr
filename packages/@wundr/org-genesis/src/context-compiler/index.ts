@@ -28,3 +28,7 @@ export * from './discipline-loader.js';
 export * from './config-generator.js';
 export * from './worktree-writer.js';
 export * from './compiler.js';
+export * from './claude-md-generator.js';
+export * from './agent-md-generator.js';
+export * from './settings-json-generator.js';
+export * from './session-compiler.js';

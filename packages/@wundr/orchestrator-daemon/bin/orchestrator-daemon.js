@@ -3,32 +3,58 @@
 /**
  * Orchestrator Daemon CLI entry point
  *
- * This is a lightweight wrapper that loads the compiled TypeScript CLI.
+ * Resolution order:
+ *   1. dist/cli/daemon-cli.js  (compiled daemon management CLI)
+ *   2. dist/bin/cli.js         (legacy compiled CLI)
+ *   3. src/cli/daemon-cli.ts   (development mode via ts-node/tsx)
+ *   4. src/bin/cli.ts          (legacy development CLI)
  */
 
-// Check if running from development or production
 const path = require('path');
 const fs = require('fs');
 
-// Try to load from dist first (production)
-const distPath = path.join(__dirname, '../dist/bin/cli.js');
-const srcPath = path.join(__dirname, '../src/bin/cli.ts');
+// Candidate paths in priority order
+const candidates = [
+  {
+    js: path.join(__dirname, '../dist/cli/daemon-cli.js'),
+    ts: path.join(__dirname, '../src/cli/daemon-cli.ts'),
+  },
+  {
+    js: path.join(__dirname, '../dist/bin/cli.js'),
+    ts: path.join(__dirname, '../src/bin/cli.ts'),
+  },
+];
 
-if (fs.existsSync(distPath)) {
-  // Production mode - use compiled version
-  require(distPath);
-} else if (fs.existsSync(srcPath)) {
-  // Development mode - use ts-node if available
-  try {
-    require('ts-node/register');
-    require(srcPath);
-  } catch (error) {
-    console.error('Error: CLI not built. Run "npm run build" first.');
-    console.error('\nOr install ts-node for development mode:');
-    console.error('  npm install --save-dev ts-node\n');
-    process.exit(1);
+for (const { js, ts } of candidates) {
+  if (fs.existsSync(js)) {
+    require(js);
+    process.exit(0); // should not reach here (CLI handles its own exit)
   }
-} else {
-  console.error('Error: CLI files not found. Please reinstall the package.');
-  process.exit(1);
+
+  if (fs.existsSync(ts)) {
+    // Development mode: try tsx first, then ts-node
+    const tsRunners = ['tsx/cjs', 'ts-node/register'];
+    let loaded = false;
+    for (const runner of tsRunners) {
+      try {
+        require(runner);
+        require(ts);
+        loaded = true;
+        break;
+      } catch {
+        // try next runner
+      }
+    }
+
+    if (!loaded) {
+      console.error('Error: CLI not built. Run "npm run build" first.');
+      console.error('\nFor development, install tsx or ts-node:');
+      console.error('  npm install --save-dev tsx');
+      process.exit(1);
+    }
+    process.exit(0);
+  }
 }
+
+console.error('Error: No CLI entry point found. Run "npm run build" first.');
+process.exit(1);

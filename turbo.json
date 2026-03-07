@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalPassThroughEnv": ["NODE_ENV", "CI"],
-  "daemon": true,
+  "daemon": false,
   "globalDependencies": [
     "**/.env.*local",
     ".env",

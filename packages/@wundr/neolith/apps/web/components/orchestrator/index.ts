@@ -57,3 +57,10 @@ export {
 } from './performance-monitoring-dashboard';
 export { SessionManagerConfigPanel } from './session-manager-config-panel';
 export { SessionManagerCreate } from './session-manager-create';
+export { DaemonStatusBadge } from './daemon-status-badge';
+export {
+  OrchestratorMetricsPanel,
+  OrchestratorTokenUsageChart,
+  type OrchestratorLiveMetrics,
+  type OrchestratorMetricsPanelProps,
+} from './orchestrator-metrics-panel';

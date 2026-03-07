@@ -354,9 +354,11 @@ export default function AnalyticsLayout({
           </Sheet>
 
           {/* Title */}
-          <div className='flex flex-1 items-center gap-2'>
-            <BarChart3 className='h-5 w-5 text-primary' />
-            <h1 className='text-lg font-semibold md:text-xl'>Analytics</h1>
+          <div className='flex flex-1 flex-col justify-center'>
+            <h1 className='text-2xl font-bold text-foreground'>Analytics</h1>
+            <p className='mt-0.5 text-sm text-muted-foreground hidden sm:block'>
+              Monitor performance and usage metrics
+            </p>
           </div>
 
           {/* Date Range Selector */}

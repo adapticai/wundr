@@ -6,14 +6,14 @@ export {
   loadCharter,
   loadCharterFromFile,
   getDefaultCharter,
-  validateCharter,
+  validateCharter as validateCharterSchema,
   saveCharter,
   loadOrganizationCharter,
   cacheCharter,
   loadCachedCharter,
   getEffectiveCharter,
   type Charter,
-} from './loader.js';
+} from './loader';
 
 export type {
   CharterIdentity,
@@ -23,6 +23,40 @@ export type {
   CharterTier,
   CharterLoadOptions,
   OrganizationCharter,
-} from './types.js';
+} from './types';
 
-export { CharterSync } from './charter-sync.js';
+export { CharterSync } from './charter-sync';
+
+// ============================================================================
+// Runtime Constraint Enforcement
+// ============================================================================
+
+export {
+  ConstraintEnforcer,
+  ConstraintViolationError,
+  type ConstraintResult,
+} from './constraint-enforcer';
+
+export {
+  BudgetTracker,
+  type FlushHandler,
+  type WindowUsage,
+  type OrchestratorUsageRecord,
+  type UsageReport,
+} from './budget-tracker';
+
+export {
+  ApprovalManager,
+  type ApprovalRequest,
+  type ApprovalStatus,
+  type ApprovalEvent,
+} from './approval-manager';
+
+export {
+  validateCharter,
+  validateCharterUpdate,
+  mergeCharters,
+  type CharterValidationResult,
+  type CharterValidationError,
+  type CharterValidationWarning,
+} from './charter-validator';

@@ -19,6 +19,7 @@ import {
   Menu,
   MessageSquare,
   MoreVertical,
+  Network,
   Package,
   Route,
   ScrollText,
@@ -176,6 +177,13 @@ export function AdminLayoutClient({
       section: 'ai-organization',
     },
     {
+      title: 'Agents',
+      href: `/${workspaceSlug}/admin/agents`,
+      icon: <Sparkles className='h-4 w-4' />,
+      description: 'Configure AI agent definitions',
+      section: 'ai-organization',
+    },
+    {
       title: 'Org Chart',
       href: `/${workspaceSlug}/admin/org-chart`,
       icon: <GitBranch className='h-4 w-4' />,
@@ -215,6 +223,13 @@ export function AdminLayoutClient({
       href: `/${workspaceSlug}/admin/performance`,
       icon: <BarChart3 className='h-4 w-4' />,
       description: 'Monitor system performance metrics',
+      section: 'ai-organization',
+    },
+    {
+      title: 'Infrastructure',
+      href: `/${workspaceSlug}/admin/infrastructure`,
+      icon: <Network className='h-4 w-4' />,
+      description: 'Manage federated daemon nodes',
       section: 'ai-organization',
     },
     {

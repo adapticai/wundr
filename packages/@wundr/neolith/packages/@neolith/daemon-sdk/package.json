@@ -1,27 +1,52 @@
 {
   "name": "@neolith/daemon-sdk",
-  "version": "0.1.1",
-  "description": "SDK for communicating with the Genesis Daemon service",
+  "version": "0.2.0",
+  "description": "TypeScript SDK for connecting the Neolith web app to the orchestrator daemon's WebSocket server",
+  "license": "MIT",
+  "keywords": [
+    "neolith",
+    "genesis",
+    "daemon",
+    "sdk",
+    "websocket",
+    "ai-agents",
+    "orchestrator"
+  ],
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "files": ["dist"],
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
+    "build:types": "tsc --emitDeclarationOnly --declaration --declarationDir dist",
+    "dev": "tsup --watch",
     "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "ws": "^8.14.2",
-    "node-fetch": "^3.3.2"
+    "ws": "^8.14.2"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@types/ws": "^8.5.10",
+    "tsup": "^8.0.0",
     "typescript": "^5.3.2"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "files": ["dist"],
-  "keywords": ["genesis", "daemon", "sdk", "websocket", "ai-agents"],
-  "license": "MIT"
+  "sideEffects": false
 }

@@ -63,6 +63,7 @@ declare module 'next-auth' {
       isOrchestrator: boolean;
       role?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
       emailVerified?: Date | null;
+      hasDaemon?: boolean;
     } & DefaultSession['user'];
   }
 
@@ -76,6 +77,9 @@ declare module 'next-auth/jwt' {
   interface JWT {
     isOrchestrator?: boolean;
     role?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
+    hasDaemon?: boolean;
+    daemonUrl?: string;
+    daemonCredentialId?: string;
   }
 }
 
@@ -473,6 +477,70 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.isOrchestrator = user.isOrchestrator ?? false;
         token.role = user.role ?? 'MEMBER';
+
+        // Look up daemon connection info for the user's organization
+        if (user.id) {
+          try {
+            const orgMembership = await prisma.organizationMember.findFirst({
+              where: { userId: user.id },
+              select: { organizationId: true },
+            });
+
+            if (orgMembership) {
+              const activeDaemonCredential =
+                await prisma.daemonCredential.findFirst({
+                  where: {
+                    workspace: {
+                      organizationId: orgMembership.organizationId,
+                    },
+                    isActive: true,
+                    OR: [
+                      { expiresAt: null },
+                      { expiresAt: { gt: new Date() } },
+                    ],
+                    orchestrator: {
+                      organizationId: orgMembership.organizationId,
+                      status: { not: 'OFFLINE' },
+                    },
+                  },
+                  select: {
+                    id: true,
+                    hostname: true,
+                    orchestrator: {
+                      select: { daemonEndpoint: true },
+                    },
+                  },
+                  orderBy: { createdAt: 'desc' },
+                });
+
+              if (activeDaemonCredential) {
+                token.hasDaemon = true;
+                token.daemonCredentialId = activeDaemonCredential.id;
+                // Prefer the orchestrator's daemon endpoint; fall back to the credential hostname
+                token.daemonUrl =
+                  activeDaemonCredential.orchestrator.daemonEndpoint ??
+                  (activeDaemonCredential.hostname
+                    ? `http://${activeDaemonCredential.hostname}`
+                    : undefined);
+              } else {
+                token.hasDaemon = false;
+              }
+            }
+          } catch (error: unknown) {
+            // Don't block token creation on daemon lookup failure
+            if (process.env.NODE_ENV === 'development') {
+              const errorMessage =
+                error instanceof Error ? error.message : 'Unknown error';
+              console.error('Failed to look up daemon credential during JWT:', {
+                error: errorMessage,
+                userId: user.id,
+              });
+            } else {
+              console.error('Failed to look up daemon credential during JWT');
+            }
+            token.hasDaemon = false;
+          }
+        }
       }
 
       // For OAuth accounts, ensure isOrchestrator is false
@@ -493,6 +561,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.isOrchestrator = Boolean(token.isOrchestrator ?? false);
         session.user.role =
           (token.role as 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST') ?? 'MEMBER';
+        session.user.hasDaemon = Boolean(token.hasDaemon ?? false);
 
         // Fetch the user's avatar and email verification status from the database
         try {

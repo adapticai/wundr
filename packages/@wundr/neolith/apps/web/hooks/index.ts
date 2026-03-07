@@ -137,6 +137,43 @@ export type {
   UseDaemonReturn,
 } from './use-daemon';
 
+// Real-time daemon connection hooks (WebSocket-based)
+export { useDaemonConnection } from './use-daemon-connection';
+export type {
+  DaemonConnectionStatus,
+  DaemonRawMessage,
+  MessageSubscriber,
+  UseDaemonConnectionOptions,
+  UseDaemonConnectionReturn,
+} from './use-daemon-connection';
+
+export { useDaemonStatus } from './use-daemon-status';
+export type {
+  DaemonSubsystemHealth,
+  DaemonHealthMetrics,
+  DaemonHealth,
+  UseDaemonStatusOptions,
+  UseDaemonStatusReturn,
+} from './use-daemon-status';
+
+export { useSessionUpdates } from './use-session-updates';
+export type {
+  SessionStatus,
+  SessionInfo as DaemonSessionInfo,
+  SessionOutputChunk,
+  UseSessionUpdatesOptions,
+  UseSessionUpdatesReturn,
+} from './use-session-updates';
+
+export { useTaskProgress } from './use-task-progress';
+export type {
+  TaskStatus,
+  ToolCallRecord,
+  RoutingDecision,
+  TaskOutputChunk,
+  UseTaskProgressReturn,
+} from './use-task-progress';
+
 // =============================================================================
 // Budget Hooks
 // =============================================================================

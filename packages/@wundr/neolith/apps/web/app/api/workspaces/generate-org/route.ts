@@ -196,6 +196,302 @@ type MigrationResult = {
 };
 
 /**
+ * GET /api/workspaces/generate-org
+ *
+ * Returns the current org structure for a workspace that was previously generated,
+ * including orchestrators, disciplines, session managers, agents, and channels.
+ *
+ * @param request - Next.js request with workspaceId query parameter
+ * @returns Current org structure for the workspace
+ *
+ * @example
+ * ```
+ * GET /api/workspaces/generate-org?workspaceId=ws_123
+ * ```
+ */
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  try {
+    // =========================================================================
+    // 1. Authentication
+    // =========================================================================
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        createGenesisErrorResponse(
+          'Authentication required',
+          GENESIS_ERROR_CODES.UNAUTHORIZED
+        ),
+        { status: 401 }
+      );
+    }
+
+    // =========================================================================
+    // 2. Parse & Validate Query Parameters
+    // =========================================================================
+    const { searchParams } = request.nextUrl;
+    const workspaceId = searchParams.get('workspaceId');
+
+    if (!workspaceId) {
+      return NextResponse.json(
+        createGenesisErrorResponse(
+          'workspaceId query parameter is required',
+          GENESIS_ERROR_CODES.VALIDATION_ERROR
+        ),
+        { status: 400 }
+      );
+    }
+
+    // =========================================================================
+    // 3. Verify Workspace Membership
+    // =========================================================================
+    const membership = await prisma.workspaceMember.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId,
+          userId: session.user.id,
+        },
+      },
+    });
+
+    if (!membership) {
+      return NextResponse.json(
+        createGenesisErrorResponse(
+          'Workspace not found or access denied',
+          GENESIS_ERROR_CODES.FORBIDDEN
+        ),
+        { status: 403 }
+      );
+    }
+
+    // =========================================================================
+    // 4. Fetch Workspace with Org Structure
+    // =========================================================================
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        avatarUrl: true,
+        settings: true,
+        organizationId: true,
+        createdAt: true,
+        updatedAt: true,
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+          },
+        },
+        _count: {
+          select: {
+            workspaceMembers: true,
+            channels: true,
+          },
+        },
+      },
+    });
+
+    if (!workspace) {
+      return NextResponse.json(
+        createGenesisErrorResponse(
+          'Workspace not found',
+          GENESIS_ERROR_CODES.ORG_NOT_FOUND
+        ),
+        { status: 404 }
+      );
+    }
+
+    // =========================================================================
+    // 5. Fetch Orchestrators for the Workspace
+    // =========================================================================
+    const orchestrators = await prisma.orchestrator.findMany({
+      where: { workspaceId },
+      select: {
+        id: true,
+        discipline: true,
+        role: true,
+        capabilities: true,
+        status: true,
+        disciplineId: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            displayName: true,
+            isOrchestrator: true,
+            avatarUrl: true,
+            orchestratorConfig: true,
+          },
+        },
+        disciplineRef: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            color: true,
+            icon: true,
+          },
+        },
+        config: {
+          select: {
+            llmModel: true,
+            llmProvider: true,
+            temperature: true,
+            maxTokens: true,
+            enabledCapabilities: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    // =========================================================================
+    // 6. Fetch Disciplines for the Organization
+    // =========================================================================
+    const disciplines = await prisma.discipline.findMany({
+      where: { organizationId: workspace.organizationId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        color: true,
+        icon: true,
+        createdAt: true,
+        updatedAt: true,
+        orchestrators: {
+          where: { workspaceId },
+          select: {
+            id: true,
+            discipline: true,
+            role: true,
+            status: true,
+            userId: true,
+          },
+        },
+        _count: {
+          select: {
+            orchestrators: true,
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    // =========================================================================
+    // 7. Fetch Channels for the Workspace
+    // =========================================================================
+    const channels = await prisma.channel.findMany({
+      where: {
+        workspaceId,
+        type: { in: ['PUBLIC', 'PRIVATE'] },
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        topic: true,
+        type: true,
+        settings: true,
+        createdAt: true,
+        _count: {
+          select: {
+            channelMembers: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    // =========================================================================
+    // 8. Fetch Agents for the Workspace
+    // =========================================================================
+    const agents = await prisma.agent.findMany({
+      where: { workspaceId },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        description: true,
+        status: true,
+        model: true,
+        tools: true,
+        tasksCompleted: true,
+        successRate: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    // =========================================================================
+    // 9. Extract Genesis Metadata from Workspace Settings
+    // =========================================================================
+    const settings =
+      workspace.settings && typeof workspace.settings === 'object'
+        ? (workspace.settings as Record<string, unknown>)
+        : {};
+    const genesisMetadata =
+      settings.orgGenesis && typeof settings.orgGenesis === 'object'
+        ? (settings.orgGenesis as Record<string, unknown>)
+        : null;
+    const hasGeneratedOrg = genesisMetadata !== null;
+
+    // =========================================================================
+    // 10. Return Response
+    // =========================================================================
+    return NextResponse.json({
+      data: {
+        workspace: {
+          id: workspace.id,
+          name: workspace.name,
+          slug: workspace.slug,
+          description: workspace.description,
+          avatarUrl: workspace.avatarUrl,
+          organizationId: workspace.organizationId,
+          organization: workspace.organization,
+          memberCount: workspace._count.workspaceMembers,
+          channelCount: workspace._count.channels,
+          createdAt: workspace.createdAt,
+          updatedAt: workspace.updatedAt,
+        },
+        orchestrators,
+        disciplines,
+        channels,
+        agents,
+        hasGeneratedOrg,
+        genesis: genesisMetadata,
+        stats: {
+          orchestratorCount: orchestrators.length,
+          disciplineCount: disciplines.length,
+          channelCount: channels.filter(c => c.type !== 'DM').length,
+          agentCount: agents.length,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('[GET /api/workspaces/generate-org] Error:', error);
+    return NextResponse.json(
+      createGenesisErrorResponse(
+        'An internal error occurred while fetching org structure',
+        GENESIS_ERROR_CODES.INTERNAL_ERROR,
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }
+      ),
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * POST /api/workspaces/generate-org
  *
  * Generate a complete organizational structure with workspace, Orchestrators, disciplines,

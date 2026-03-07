@@ -98,9 +98,10 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "orchestrator-daemon": "./bin/orchestrator-daemon.js"
+    "orchestrator-daemon": "./bin/orchestrator-daemon.js",
+    "wundr-daemon": "./bin/orchestrator-daemon.js"
   },
-  "files": ["dist", "bin", "src", "README.md"],
+  "files": ["dist", "bin", "src", "scripts", "README.md"],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -126,7 +127,16 @@
     "health-check": "./scripts/health-check.sh",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f daemon"
+    "docker:logs": "docker-compose logs -f daemon",
+    "daemon:start": "node dist/cli/daemon-cli.js start --daemon",
+    "daemon:start:fg": "node dist/cli/daemon-cli.js start",
+    "daemon:stop": "node dist/cli/daemon-cli.js stop",
+    "daemon:restart": "node dist/cli/daemon-cli.js restart --daemon",
+    "daemon:status": "node dist/cli/daemon-cli.js status",
+    "daemon:health": "node dist/cli/daemon-cli.js health --verbose",
+    "daemon:install": "./scripts/install-service.sh",
+    "daemon:install:system": "./scripts/install-service.sh --system",
+    "daemon:uninstall": "./scripts/install-service.sh --uninstall"
   },
   "dependencies": {
     "@adaptic/lumic-utils": "^1.0.6",

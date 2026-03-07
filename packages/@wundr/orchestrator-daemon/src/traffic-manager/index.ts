@@ -39,6 +39,21 @@ export { AgentRegistry, createAgentRegistry } from './agent-registry.js';
 export { ContentAnalyzer, createContentAnalyzer } from './content-analyzer.js';
 export { RoutingEngine, createRoutingEngine } from './routing-engine.js';
 export { MetricsCollector, createMetricsCollector } from './metrics.js';
+export {
+  SessionPool,
+  createSessionPool,
+  SessionPoolCapacityError,
+  type PooledSession,
+  type PooledSessionStatus,
+  type SessionLoad,
+  type SessionPoolConfig,
+} from './session-pool.js';
+export {
+  TaskRouter,
+  createTaskRouter,
+  type TaskRoutingDecision,
+  type TaskRouterConfig,
+} from './task-router.js';
 
 // ---------------------------------------------------------------------------
 // TrafficManager

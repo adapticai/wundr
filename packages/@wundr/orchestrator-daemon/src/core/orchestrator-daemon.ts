@@ -32,6 +32,20 @@ import { SkillRegistry } from '../skills';
 import { StreamHandler } from '../streaming';
 import { TeamCoordinator } from '../teams';
 import { Logger, LogLevel } from '../utils/logger';
+import {
+  AgentRegistry as TrafficAgentRegistry,
+  ContentAnalyzer,
+  createAgentRegistry as createTrafficAgentRegistry,
+  createContentAnalyzer,
+} from '../traffic-manager/index.js';
+import {
+  SessionPool,
+  createSessionPool,
+} from '../traffic-manager/session-pool.js';
+import {
+  TaskRouter,
+  createTaskRouter,
+} from '../traffic-manager/task-router.js';
 
 import type { AuthConfig } from '../auth/types';
 import type { ConfigWatcher } from '../config';
@@ -49,6 +63,7 @@ import type {
   ExecuteTaskPayload,
 } from '../types';
 import type { LLMClient } from '../types/llm';
+import type { TaskRoutingDecision } from '../traffic-manager/task-router.js';
 import type { WebSocket } from 'ws';
 
 export class OrchestratorDaemon extends EventEmitter {
@@ -79,6 +94,12 @@ export class OrchestratorDaemon extends EventEmitter {
   private protocolRouter: MessageRouter;
   private pluginManager: PluginLifecycleManager;
   private configWatcher: ConfigWatcher | null = null;
+
+  // Task routing subsystems
+  private trafficAgentRegistry: TrafficAgentRegistry;
+  private contentAnalyzer: ContentAnalyzer;
+  private sessionPool: SessionPool;
+  private taskRouter: TaskRouter;
 
   constructor(config: DaemonConfig) {
     super();
@@ -283,6 +304,32 @@ export class OrchestratorDaemon extends EventEmitter {
       pluginsDir: path.join(process.cwd(), '.wundr', 'plugins'),
     });
 
+    // -----------------------------------------------------------------------
+    // Task routing subsystems
+    // -----------------------------------------------------------------------
+
+    // Traffic-manager's own agent registry (distinct from the session-level
+    // AgentRegistry – this one holds AgentCapabilityProfile entries describing
+    // which disciplines each orchestrator agent can handle).
+    this.trafficAgentRegistry = createTrafficAgentRegistry();
+
+    // Keyword-based content analyser used by the TaskRouter to identify the
+    // discipline(s) embedded in a task description.
+    this.contentAnalyzer = createContentAnalyzer();
+
+    // Session pool – enforces maxSessions from the charter's ResourceLimits.
+    // We default to the daemon's maxSessions until the charter is loaded.
+    this.sessionPool = createSessionPool({
+      maxSessionsPerManager: this.config.maxSessions,
+    });
+
+    // Task router – wires together the registry, analyser, and pool.
+    this.taskRouter = createTaskRouter(
+      this.trafficAgentRegistry,
+      this.contentAnalyzer,
+      this.sessionPool
+    );
+
     this.setupEventHandlers();
   }
 
@@ -374,6 +421,10 @@ export class OrchestratorDaemon extends EventEmitter {
         );
       }
 
+      // Start the session pool background eviction timer
+      this.sessionPool.start();
+      this.logger.info('Session pool started');
+
       this.status = 'running';
       this.startTime = Date.now();
 
@@ -445,6 +496,14 @@ export class OrchestratorDaemon extends EventEmitter {
 
     // Clean up team coordinator (no active teams to shut down if sessions already stopped)
     // TeamCoordinator cleanup is handled via session stop events
+
+    // Stop the session pool and eviction timer
+    try {
+      this.sessionPool.stop();
+      this.logger.info('Session pool stopped');
+    } catch (error) {
+      this.logger.warn('Error stopping session pool:', error);
+    }
 
     // Stop WebSocket server
     await this.wsServer.stop();
@@ -519,6 +578,51 @@ export class OrchestratorDaemon extends EventEmitter {
         `Failed to execute task on session ${sessionId}:`,
         error
       );
+      throw error;
+    }
+  }
+
+  /**
+   * Route a task using the TaskRouter.
+   *
+   * Determines which session manager and agent should handle the task,
+   * acquiring or creating a session from the pool as needed.
+   */
+  routeTask(task: Task): TaskRoutingDecision {
+    this.logger.info(`Routing task: ${task.id} (type=${task.type})`);
+    try {
+      const decision = this.taskRouter.routeTask(task);
+
+      // Acquire (or note) the session in the pool so load is tracked correctly
+      if (decision.sessionAction === 'create_new') {
+        try {
+          const pooledSession = this.sessionPool.getOrCreateSession(
+            decision.targetSessionManagerId
+          );
+          this.logger.debug(
+            `Session pool: new session ${pooledSession.sessionId} created for manager ${decision.targetSessionManagerId}`
+          );
+        } catch (poolError) {
+          // Pool at capacity – log but do not block routing; the daemon will
+          // handle the overflow gracefully via the session manager.
+          this.logger.warn(
+            `Session pool at capacity for manager ${decision.targetSessionManagerId}:`,
+            poolError
+          );
+        }
+      } else if (
+        decision.sessionAction === 'reuse_existing' &&
+        decision.existingSessionId
+      ) {
+        this.logger.debug(
+          `Session pool: reusing session ${decision.existingSessionId} for manager ${decision.targetSessionManagerId}`
+        );
+      }
+
+      this.emit('task:routed', decision);
+      return decision;
+    } catch (error) {
+      this.logger.error(`Failed to route task ${task.id}:`, error);
       throw error;
     }
   }
@@ -621,6 +725,25 @@ export class OrchestratorDaemon extends EventEmitter {
 
       this.charter = OrchestratorCharterSchema.parse(charterData);
       this.logger.info('Orchestrator charter loaded successfully');
+
+      // Apply charter resource limits to the task routing subsystems
+      if (this.charter.resourceLimits?.maxSessions) {
+        // Rebuild the session pool with the charter-defined limit so that the
+        // TaskRouter respects the same constraint.
+        this.sessionPool.stop();
+        this.sessionPool = createSessionPool({
+          maxSessionsPerManager: this.charter.resourceLimits.maxSessions,
+        });
+        this.taskRouter = createTaskRouter(
+          this.trafficAgentRegistry,
+          this.contentAnalyzer,
+          this.sessionPool,
+          { maxSessionsPerManager: this.charter.resourceLimits.maxSessions }
+        );
+        this.logger.info(
+          `Session pool reconfigured: maxSessionsPerManager=${this.charter.resourceLimits.maxSessions}`
+        );
+      }
     } catch (error) {
       this.logger.warn(
         'Failed to load orchestrator charter, using defaults:',
@@ -784,6 +907,93 @@ export class OrchestratorDaemon extends EventEmitter {
         sessions,
       });
     });
+
+    // route_task: incoming task from the web app that needs routing
+    this.wsServer.on(
+      'route_task',
+      ({
+        ws,
+        payload,
+      }: {
+        ws: unknown;
+        payload: { task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'> };
+      }) => {
+        try {
+          const task: Task = {
+            id: `task_${Date.now()}`,
+            ...payload.task,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+
+          const decision = this.routeTask(task);
+
+          this.wsServer.send(ws as WebSocket, {
+            type: 'task_routed',
+            taskId: task.id,
+            decision: decision as unknown as Record<string, unknown>,
+          });
+
+          // Auto-spawn and execute if the decision calls for a new session
+          if (decision.sessionAction === 'create_new') {
+            this.spawnSession(decision.targetAgentId, task)
+              .then(session => {
+                this.wsServer.send(ws as WebSocket, {
+                  type: 'session_spawned',
+                  session,
+                });
+                return this.executeTask(session.id, task.description);
+              })
+              .catch(error => {
+                this.logger.error(
+                  `Failed to execute routed task ${task.id}:`,
+                  error
+                );
+                this.wsServer.send(ws as WebSocket, {
+                  type: 'task_failed',
+                  sessionId: decision.existingSessionId ?? 'unknown',
+                  taskId: task.id,
+                  error:
+                    error instanceof Error ? error.message : 'Unknown error',
+                });
+              });
+          } else if (
+            decision.sessionAction === 'reuse_existing' &&
+            decision.existingSessionId
+          ) {
+            // Reuse the existing session
+            this.executeTask(decision.existingSessionId, task.description)
+              .then(() => {
+                this.wsServer.send(ws as WebSocket, {
+                  type: 'task_completed',
+                  sessionId: decision.existingSessionId!,
+                  taskId: task.id,
+                });
+                // Release back to pool when done
+                this.sessionPool.releaseSession(decision.existingSessionId!);
+              })
+              .catch(error => {
+                this.logger.error(
+                  `Failed to execute routed task ${task.id} on existing session:`,
+                  error
+                );
+                this.wsServer.send(ws as WebSocket, {
+                  type: 'task_failed',
+                  sessionId: decision.existingSessionId!,
+                  taskId: task.id,
+                  error:
+                    error instanceof Error ? error.message : 'Unknown error',
+                });
+              });
+          }
+        } catch (error) {
+          this.wsServer.sendError(
+            ws as WebSocket,
+            error instanceof Error ? error.message : 'Unknown error'
+          );
+        }
+      }
+    );
 
     // Session manager events
     this.sessionManager.on('session:spawned', (session: Session) => {

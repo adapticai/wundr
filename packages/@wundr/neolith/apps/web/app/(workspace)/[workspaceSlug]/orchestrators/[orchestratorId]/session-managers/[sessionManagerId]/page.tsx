@@ -25,8 +25,10 @@ import {
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useCallback, useEffect } from 'react';
 
+import { ActiveSessionsPanel } from '@/components/session-manager/active-sessions-panel';
+import { AgentRoster } from '@/components/session-manager/agent-roster';
+import { MemoryBankViewer } from '@/components/session-manager/memory-bank-viewer';
 import { SubagentCreate } from '@/components/orchestrator/subagent-create';
-import { SubagentList } from '@/components/orchestrator/subagent-list';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -394,22 +396,30 @@ export default function SessionManagerDetailPage() {
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className='grid w-full grid-cols-4'>
+        <TabsList className='grid w-full grid-cols-6'>
           <TabsTrigger value='overview'>
             <Activity className='h-4 w-4 mr-2' />
             Overview
           </TabsTrigger>
-          <TabsTrigger value='subagents'>
+          <TabsTrigger value='agents'>
             <Brain className='h-4 w-4 mr-2' />
-            Subagents ({sessionManager.subagents.length})
+            Agents
+          </TabsTrigger>
+          <TabsTrigger value='sessions'>
+            <Cpu className='h-4 w-4 mr-2' />
+            Sessions
+          </TabsTrigger>
+          <TabsTrigger value='memory'>
+            <FileText className='h-4 w-4 mr-2' />
+            Memory
           </TabsTrigger>
           <TabsTrigger value='configuration'>
             <Settings className='h-4 w-4 mr-2' />
-            Configuration
+            Config
           </TabsTrigger>
           <TabsTrigger value='stats'>
             <TrendingUp className='h-4 w-4 mr-2' />
-            Statistics
+            Stats
           </TabsTrigger>
         </TabsList>
 
@@ -530,14 +540,14 @@ export default function SessionManagerDetailPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value='subagents' className='space-y-4 mt-6'>
+        <TabsContent value='agents' className='space-y-4 mt-6'>
           <Card>
             <CardHeader>
               <div className='flex items-center justify-between'>
                 <div>
-                  <CardTitle>Subagents</CardTitle>
+                  <CardTitle>Agents</CardTitle>
                   <CardDescription>
-                    Specialized workers managed by this session manager
+                    Specialized sub-agents managed by this session manager
                   </CardDescription>
                 </div>
                 <Button
@@ -547,7 +557,7 @@ export default function SessionManagerDetailPage() {
                   }
                 >
                   <Users className='h-4 w-4 mr-2' />
-                  Add Subagent
+                  Add Agent
                 </Button>
               </div>
             </CardHeader>
@@ -560,10 +570,38 @@ export default function SessionManagerDetailPage() {
                   </p>
                 </div>
               )}
-              <SubagentList
+              <AgentRoster
                 key={refreshKey}
                 sessionManagerId={sessionManagerId}
               />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value='sessions' className='space-y-4 mt-6'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Sessions</CardTitle>
+              <CardDescription>
+                Running Claude Code sessions coordinated by this session manager
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ActiveSessionsPanel sessionManagerId={sessionManagerId} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value='memory' className='space-y-4 mt-6'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Memory Bank</CardTitle>
+              <CardDescription>
+                Persistent memory files shared across sessions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MemoryBankViewer sessionManagerId={sessionManagerId} />
             </CardContent>
           </Card>
         </TabsContent>

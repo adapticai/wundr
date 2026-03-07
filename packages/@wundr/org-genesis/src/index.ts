@@ -62,6 +62,29 @@ export {
   ContextCompiler,
   createContextCompiler,
 } from './context-compiler/compiler.js';
+export { generateClaudeMd } from './context-compiler/claude-md-generator.js';
+export type {
+  ClaudeMdGenerationConfig,
+  TaskContext,
+} from './context-compiler/claude-md-generator.js';
+export { generateAgentMd } from './context-compiler/agent-md-generator.js';
+export { generateSettingsJson } from './context-compiler/settings-json-generator.js';
+export type {
+  SettingsJsonGenerationConfig,
+  ClaudeSettingsJson,
+  SettingsHooks,
+  SettingsMcpServer,
+  SettingsHookDefinition,
+} from './context-compiler/settings-json-generator.js';
+export {
+  compileSession,
+  getCompilationMetadata,
+} from './context-compiler/session-compiler.js';
+export type {
+  SessionCompileRequest,
+  SessionCompiledConfig,
+  CompilationMetadata,
+} from './context-compiler/session-compiler.js';
 
 // Global Registry - use selective exports to avoid RegistryStats conflict
 export {

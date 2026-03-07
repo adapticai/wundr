@@ -959,3 +959,119 @@ export {
   AlertValidationError,
   OrchestratorNotFoundError as AlertOrchestratorNotFoundError,
 } from './alert-service';
+
+// =============================================================================
+// Charter Persistence Service
+// =============================================================================
+
+export {
+  // Service implementation
+  CharterPersistenceServiceImpl,
+  createCharterPersistenceService,
+  charterPersistenceService,
+
+  // Interfaces
+  type CharterPersistenceService,
+  type CharterPayload,
+  type CharterVersionRecord,
+  type SaveCharterOptions,
+
+  // Errors
+  CharterVersionNotFoundError,
+  CharterPersistenceValidationError,
+  CharterPersistenceError,
+} from './charter-persistence-service';
+
+// =============================================================================
+// Agent Persistence Service
+// =============================================================================
+
+export {
+  // Service implementation
+  AgentPersistenceServiceImpl,
+  createAgentPersistenceService,
+  agentPersistenceService,
+
+  // Interfaces
+  type AgentPersistenceService,
+  type PersistedAgent,
+  type SaveAgentDefinitionsInput,
+  type SaveAgentDefinitionsResult,
+
+  // Errors
+  AgentPersistenceNotFoundError,
+  AgentPersistenceValidationError,
+  AgentPersistenceError,
+} from './agent-persistence-service';
+
+// =============================================================================
+// Session Manager Persistence Service
+// =============================================================================
+
+export {
+  // Service implementation
+  SessionManagerPersistenceServiceImpl,
+  createSessionManagerPersistenceService,
+  sessionManagerPersistenceService,
+
+  // Interfaces
+  type SessionManagerPersistenceService,
+  type CreateSessionManagerConfig,
+  type UpdateSessionManagerConfig,
+  type PersistedSessionManager,
+  type AssignAgentsResult,
+
+  // Errors
+  SessionManagerPersistenceNotFoundError,
+  SessionManagerPersistenceValidationError,
+  SessionManagerPersistenceError,
+} from './session-manager-persistence-service';
+
+// =============================================================================
+// Discipline Persistence Service
+// =============================================================================
+
+export {
+  // Service implementation
+  DisciplinePersistenceServiceImpl,
+  createDisciplinePersistenceService,
+  disciplinePersistenceService,
+
+  // Interfaces
+  type DisciplinePersistenceService,
+  type CreateDisciplineInput as DisciplinePersistenceCreateInput,
+  type PersistedDiscipline,
+  type PersistedDisciplineWithAgents,
+  type DisciplineAgent,
+
+  // Errors
+  DisciplinePersistenceNotFoundError,
+  DisciplinePersistenceValidationError,
+  DisciplinePersistenceAlreadyExistsError,
+  DisciplinePersistenceError,
+} from './discipline-persistence-service';
+
+// =============================================================================
+// Task Routing Service
+// =============================================================================
+
+export {
+  // Service implementation
+  TaskRoutingService,
+  createTaskRoutingService,
+  initTaskRoutingService,
+  getTaskRoutingService,
+
+  // Types
+  type SubmitTaskInput,
+  type TaskRoutingRecord,
+  type TaskRoutingSummary,
+  type TaskDiscipline,
+  type TaskPriority,
+  type TaskRoutingServiceConfig,
+
+  // Errors
+  TaskRoutingError,
+  TaskRoutingNotFoundError,
+  DaemonUnavailableError,
+} from './task-routing-service';

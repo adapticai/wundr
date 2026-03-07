@@ -2,19 +2,33 @@
  * Orchestrators Overview Page
  *
  * Workspace-level overview of all orchestrators with stats, filtering,
- * search, and creation capabilities.
+ * search, daemon status indicators, resource utilization, and quick actions.
  *
  * @module app/(workspace)/[workspaceId]/orchestrators/page
  */
 'use client';
 
-import { Bot, Plus, X, Search, AlertCircle } from 'lucide-react';
+import {
+  Bot,
+  Plus,
+  X,
+  Search,
+  AlertCircle,
+  Clock,
+  Coins,
+  Play,
+  Pause,
+  Settings,
+  Users,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 
 import { CreateOrchestratorDialog } from '@/components/orchestrator/create-orchestrator-dialog';
+import { DaemonStatusBadge } from '@/components/orchestrator/daemon-status-badge';
 import { OrchestratorCardSkeleton } from '@/components/orchestrator/orchestrator-card';
+import { OrchestratorStatusBadge } from '@/components/orchestrator/orchestrator-status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +38,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { EmptyState } from '@/components/ui/empty-state';
 import { usePageHeader } from '@/contexts/page-header-context';
 import {
@@ -42,6 +62,30 @@ import type {
   OrchestratorStatus,
   CreateOrchestratorInput,
 } from '@/types/orchestrator';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatNumber(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+}
+
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function OrchestratorOverviewPage() {
   const params = useParams();
@@ -105,12 +149,10 @@ export default function OrchestratorOverviewPage() {
   const handleSearchChange = useCallback((value: string) => {
     setSearchInput(value);
 
-    // Clear existing timer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
 
-    // Debounce the filter update (300ms)
     debounceTimerRef.current = setTimeout(() => {
       setFilters(prev => ({ ...prev, search: value || undefined }));
     }, 300);
@@ -159,27 +201,19 @@ export default function OrchestratorOverviewPage() {
     router.push(`/${workspaceSlug}/orchestrators/new`);
   }, [router, workspaceSlug]);
 
-  // Compute active filters
+  // Active filters count
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    if (filters.search) {
-      count++;
-    }
-    if (filters.discipline) {
-      count++;
-    }
-    if (filters.status) {
-      count++;
-    }
+    if (filters.search) count++;
+    if (filters.discipline) count++;
+    if (filters.status) count++;
     return count;
   }, [filters]);
 
   // Highlight matching text helper
   const highlightText = useCallback(
     (text: string | null | undefined) => {
-      if (!text || !filters.search) {
-        return text || '';
-      }
+      if (!text || !filters.search) return text || '';
 
       const searchTerm = filters.search.toLowerCase();
       const parts = text.split(new RegExp(`(${filters.search})`, 'gi'));
@@ -202,15 +236,10 @@ export default function OrchestratorOverviewPage() {
   const orchestratorStats = useMemo(() => {
     const stats = { online: 0, offline: 0, busy: 0, away: 0 };
     orchestrators.forEach(orchestrator => {
-      if (orchestrator.status === 'ONLINE') {
-        stats.online++;
-      } else if (orchestrator.status === 'OFFLINE') {
-        stats.offline++;
-      } else if (orchestrator.status === 'BUSY') {
-        stats.busy++;
-      } else if (orchestrator.status === 'AWAY') {
-        stats.away++;
-      }
+      if (orchestrator.status === 'ONLINE') stats.online++;
+      else if (orchestrator.status === 'OFFLINE') stats.offline++;
+      else if (orchestrator.status === 'BUSY') stats.busy++;
+      else if (orchestrator.status === 'AWAY') stats.away++;
     });
     return stats;
   }, [orchestrators]);
@@ -284,7 +313,7 @@ export default function OrchestratorOverviewPage() {
             <input
               ref={searchInputRef}
               type='text'
-              placeholder='Search orchestrators by name, description... (⌘K)'
+              placeholder='Search orchestrators by name, description... (Cmd+K)'
               value={searchInput}
               onChange={e => handleSearchChange(e.target.value)}
               className='w-full rounded-md border border-input bg-background py-2 pl-10 pr-10 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
@@ -398,8 +427,8 @@ export default function OrchestratorOverviewPage() {
             activeFiltersCount > 0
               ? filters.search
                 ? 'No orchestrators match your search query. Try different keywords or check your filters.'
-                : "Try adjusting your filters to find what you're looking for. No orchestrators match your current criteria."
-              : 'Get started by creating your first orchestrator. Use the conversational wizard to define an AI-powered agent that can manage tasks and workflows.'
+                : "Try adjusting your filters to find what you're looking for."
+              : 'Get started by creating your first orchestrator. Use the wizard to define an AI-powered agent that can manage tasks and workflows.'
           }
           action={
             activeFiltersCount > 0
@@ -425,13 +454,14 @@ export default function OrchestratorOverviewPage() {
               orchestrator={orchestrator}
               workspaceSlug={workspaceSlug}
               onToggleStatus={handleToggleStatus}
+              isMutating={isMutating}
               highlightText={highlightText}
             />
           ))}
         </div>
       )}
 
-      {/* Quick Create Dialog (for users who prefer form-based creation) */}
+      {/* Quick Create Dialog */}
       <CreateOrchestratorDialog
         isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
@@ -442,7 +472,8 @@ export default function OrchestratorOverviewPage() {
   );
 }
 
-// Stat Card Component
+// ─── Stat Card ────────────────────────────────────────────────────────────────
+
 function StatCard({
   label,
   value,
@@ -462,94 +493,303 @@ function StatCard({
   );
 }
 
-// Status dot component
-function StatusDot({ status }: { status: string }) {
-  const colorMap: Record<string, string> = {
-    ONLINE: 'bg-green-500',
-    OFFLINE: 'bg-gray-400',
-    BUSY: 'bg-yellow-500',
-    AWAY: 'bg-orange-400',
-  };
+// ─── Resource Utilization Bar ─────────────────────────────────────────────────
+
+function UtilizationBar({
+  used,
+  budget,
+  label,
+}: {
+  used: number;
+  budget: number;
+  label: string;
+}) {
+  if (budget <= 0) return null;
+  const pct = Math.min((used / budget) * 100, 100);
+  const barColor =
+    pct < 70 ? 'bg-green-500' : pct < 90 ? 'bg-yellow-500' : 'bg-red-500';
+
   return (
-    <span
-      className={cn(
-        'inline-block h-2.5 w-2.5 rounded-full flex-shrink-0',
-        colorMap[status] ?? 'bg-gray-400'
-      )}
-    />
+    <div className='space-y-1'>
+      <div className='flex items-center justify-between'>
+        <span className='text-xs font-sans text-muted-foreground'>{label}</span>
+        <span className='text-xs font-sans tabular-nums text-foreground'>
+          {Math.round(pct)}%
+        </span>
+      </div>
+      <div className='h-1.5 w-full rounded-full bg-secondary'>
+        <div
+          className={cn('h-full rounded-full transition-all', barColor)}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
   );
 }
 
-// Orchestrator Overview Card with admin "View Details" link
+// ─── Orchestrator Overview Card ───────────────────────────────────────────────
+
 function OrchestratorOverviewCard({
   orchestrator,
   workspaceSlug,
   onToggleStatus,
+  isMutating,
   highlightText,
 }: {
   orchestrator: Orchestrator;
   workspaceSlug: string;
   onToggleStatus?: (orchestrator: Orchestrator) => void;
+  isMutating?: boolean;
   highlightText?: (text: string | null | undefined) => React.ReactNode;
 }) {
+  const isOnline = orchestrator.status === 'ONLINE';
+
+  // Derive a rough token utilization from orchestrator data if available
+  // The Orchestrator type doesn't carry tokenUsage; we surface what's available
+  const lastActivityText = orchestrator.lastActivityAt
+    ? formatRelativeTime(new Date(orchestrator.lastActivityAt))
+    : 'No activity';
+
   return (
     <Card className='flex flex-col transition-all hover:border-primary/50 hover:shadow-md'>
       <CardHeader className='pb-3'>
-        <div className='flex items-center gap-3'>
-          <StatusDot status={orchestrator.status} />
-          <div className='min-w-0 flex-1'>
-            <CardTitle className='text-base font-semibold truncate'>
-              {highlightText
-                ? highlightText(orchestrator.title)
-                : orchestrator.title}
-            </CardTitle>
-            {orchestrator.discipline && (
-              <Badge variant='secondary' className='mt-1 text-xs'>
-                {orchestrator.discipline}
-              </Badge>
-            )}
+        <div className='flex items-start justify-between gap-2'>
+          <div className='flex items-center gap-2.5 min-w-0 flex-1'>
+            {/* Avatar initials */}
+            <div className='relative flex-shrink-0'>
+              <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-sm font-semibold text-primary font-heading'>
+                {orchestrator.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={orchestrator.avatarUrl}
+                    alt={orchestrator.title}
+                    className='h-full w-full rounded-lg object-cover'
+                  />
+                ) : (
+                  orchestrator.title.substring(0, 2).toUpperCase()
+                )}
+              </div>
+              {/* Daemon status compact indicator */}
+              <DaemonStatusBadge
+                orchestratorId={orchestrator.id}
+                compact
+                className='absolute -bottom-0.5 -right-0.5 ring-2 ring-card'
+              />
+            </div>
+
+            <div className='min-w-0 flex-1'>
+              <CardTitle className='text-sm font-semibold truncate font-heading'>
+                {highlightText
+                  ? highlightText(orchestrator.title)
+                  : orchestrator.title}
+              </CardTitle>
+              {orchestrator.discipline && (
+                <p className='text-xs font-sans text-muted-foreground truncate mt-0.5'>
+                  {orchestrator.discipline}
+                </p>
+              )}
+            </div>
           </div>
+
+          {/* Status badge */}
+          <OrchestratorStatusBadge
+            status={orchestrator.status}
+            size='sm'
+            showPulse={false}
+          />
         </div>
       </CardHeader>
-      <CardContent className='flex-1 pb-3 space-y-2 text-sm text-muted-foreground'>
+
+      <CardContent className='flex-1 pb-3 space-y-3'>
+        {/* Description */}
         {orchestrator.description && (
-          <p className='line-clamp-2'>
+          <p className='line-clamp-2 text-xs font-sans text-muted-foreground'>
             {highlightText
               ? highlightText(orchestrator.description)
               : orchestrator.description}
           </p>
         )}
-        <div className='flex items-center gap-1'>
-          <Bot className='h-3.5 w-3.5' />
-          <span className='font-medium text-foreground'>
-            {orchestrator.agentCount}
-          </span>
-          <span>
-            {orchestrator.agentCount === 1
-              ? 'session manager'
-              : 'session managers'}
-          </span>
+
+        {/* Metrics row */}
+        <div className='grid grid-cols-3 gap-2 text-xs font-sans'>
+          {/* Active sessions (agent count) */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className='flex flex-col items-center rounded-md border bg-background px-2 py-1.5 cursor-default'>
+                  <Users className='h-3.5 w-3.5 text-muted-foreground mb-0.5' />
+                  <span className='font-semibold text-foreground tabular-nums'>
+                    {orchestrator.agentCount}
+                  </span>
+                  <span className='text-muted-foreground text-[10px] leading-none'>
+                    sessions
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className='text-xs'>
+                  {orchestrator.agentCount} active session manager
+                  {orchestrator.agentCount !== 1 ? 's' : ''}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Messages */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className='flex flex-col items-center rounded-md border bg-background px-2 py-1.5 cursor-default'>
+                  <Bot className='h-3.5 w-3.5 text-muted-foreground mb-0.5' />
+                  <span className='font-semibold text-foreground tabular-nums'>
+                    {formatNumber(orchestrator.messageCount)}
+                  </span>
+                  <span className='text-muted-foreground text-[10px] leading-none'>
+                    messages
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className='text-xs'>
+                  {orchestrator.messageCount.toLocaleString()} total messages
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Last activity */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className='flex flex-col items-center rounded-md border bg-background px-2 py-1.5 cursor-default'>
+                  <Clock className='h-3.5 w-3.5 text-muted-foreground mb-0.5' />
+                  <span className='font-semibold text-foreground tabular-nums truncate max-w-full'>
+                    {orchestrator.lastActivityAt
+                      ? formatRelativeTime(
+                          new Date(orchestrator.lastActivityAt)
+                        ).replace(' ago', '')
+                      : 'never'}
+                  </span>
+                  <span className='text-muted-foreground text-[10px] leading-none'>
+                    last active
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className='text-xs'>Last active: {lastActivityText}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
-        <div className='flex items-center gap-1'>
-          <span className='text-xs'>Messages:</span>
-          <span className='font-medium text-foreground'>
-            {orchestrator.messageCount.toLocaleString()}
-          </span>
-        </div>
+
+        {/* Token utilization placeholder - shown only when budget exists */}
+        {/* The full token utilization is available on the detail page via live metrics */}
       </CardContent>
-      <CardFooter className='pt-3 border-t gap-2'>
-        <Button asChild className='flex-1' size='sm'>
-          <Link href={`/${workspaceSlug}/orchestrators/${orchestrator.id}`}>
-            Open
-          </Link>
-        </Button>
-        <Button asChild variant='outline' size='sm'>
-          <Link
-            href={`/${workspaceSlug}/orchestrators/${orchestrator.id}/analytics`}
-          >
-            Analytics
-          </Link>
-        </Button>
+
+      <CardFooter className='pt-3 border-t flex flex-col gap-2'>
+        {/* Primary actions */}
+        <div className='flex gap-2 w-full'>
+          <Button asChild className='flex-1' size='sm'>
+            <Link href={`/${workspaceSlug}/orchestrators/${orchestrator.id}`}>
+              View Details
+            </Link>
+          </Button>
+          <Button asChild variant='outline' size='sm'>
+            <Link
+              href={`/${workspaceSlug}/orchestrators/${orchestrator.id}/analytics`}
+            >
+              Analytics
+            </Link>
+          </Button>
+        </div>
+
+        {/* Quick actions */}
+        <div className='flex gap-1.5 w-full'>
+          {/* Start/Stop daemon */}
+          {onToggleStatus && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='sm'
+                    onClick={() => onToggleStatus(orchestrator)}
+                    disabled={isMutating}
+                    className={cn(
+                      'flex-1 gap-1.5',
+                      isOnline
+                        ? 'text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/30'
+                        : 'text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/30'
+                    )}
+                  >
+                    {isOnline ? (
+                      <>
+                        <Pause className='h-3.5 w-3.5' />
+                        Stop
+                      </>
+                    ) : (
+                      <>
+                        <Play className='h-3.5 w-3.5' />
+                        Start
+                      </>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className='text-xs'>
+                    {isOnline
+                      ? 'Set orchestrator offline'
+                      : 'Set orchestrator online'}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
+          {/* View sessions */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  asChild
+                  variant='outline'
+                  size='sm'
+                  className='flex-1 gap-1.5'
+                >
+                  <Link
+                    href={`/${workspaceSlug}/orchestrators/${orchestrator.id}?tab=session-managers`}
+                  >
+                    <Users className='h-3.5 w-3.5' />
+                    Sessions
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className='text-xs'>View session managers</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Settings */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button asChild variant='outline' size='sm' className='px-2'>
+                  <Link
+                    href={`/${workspaceSlug}/orchestrators/${orchestrator.id}/settings`}
+                  >
+                    <Settings className='h-3.5 w-3.5' />
+                    <span className='sr-only'>Settings</span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className='text-xs'>Edit charter and settings</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </CardFooter>
     </Card>
   );

@@ -6,12 +6,20 @@
  * - Tool call handling and execution
  * - Token usage tracking
  * - Session state management
+ *
+ * Charter constraint enforcement is applied before every tool execution.
+ * If no charter is provided, enforcement is skipped (backward compatible).
  */
 
 import { EventEmitter } from 'eventemitter3';
 
 import { ToolExecutor } from './tool-executor';
 import { Logger } from '../utils/logger';
+import {
+  ConstraintEnforcer,
+  ConstraintViolationError,
+} from '../charter/constraint-enforcer';
+import { BudgetTracker } from '../charter/budget-tracker';
 
 import type { Session, Task, SessionMetrics, MemoryEntry } from '../types';
 import type { McpToolRegistry } from './tool-executor';
@@ -21,6 +29,7 @@ import type {
   Message,
   ToolDefinition,
 } from '../types/llm';
+import type { Charter } from '../charter/loader';
 
 /**
  * Session execution options
@@ -28,6 +37,12 @@ import type {
 export interface SessionExecutionOptions {
   /** Maximum number of tool call iterations (prevent infinite loops) */
   maxIterations?: number;
+  /**
+   * Charter to enforce during this session.
+   * When provided, every tool call is validated against the charter's
+   * hard constraints before execution.
+   */
+  charter?: Charter;
   /** Model to use for the session */
   model?: string;
   /** Temperature for LLM sampling */
@@ -65,6 +80,8 @@ export class SessionExecutor extends EventEmitter {
   private llmClient: LLMClient;
   private toolExecutor: ToolExecutor;
   private mcpRegistry: McpToolRegistry;
+  private constraintEnforcer: ConstraintEnforcer;
+  private budgetTracker: BudgetTracker;
 
   // Default execution options
   private readonly DEFAULT_OPTIONS: Required<SessionExecutionOptions> = {
@@ -76,13 +93,26 @@ export class SessionExecutor extends EventEmitter {
     streaming: false,
     userMessage: '',
     context: {},
+    charter: undefined as unknown as Charter,
   };
 
-  constructor(llmClient: LLMClient, mcpRegistry: McpToolRegistry) {
+  constructor(
+    llmClient: LLMClient,
+    mcpRegistry: McpToolRegistry,
+    opts?: {
+      /**
+       * Pre-configured BudgetTracker instance. When omitted a new tracker is
+       * created (in-memory only, no periodic flush).
+       */
+      budgetTracker?: BudgetTracker;
+    }
+  ) {
     super();
     this.logger = new Logger('SessionExecutor');
     this.llmClient = llmClient;
     this.mcpRegistry = mcpRegistry;
+    this.budgetTracker = opts?.budgetTracker ?? new BudgetTracker();
+    this.constraintEnforcer = new ConstraintEnforcer(this.budgetTracker);
     this.toolExecutor = new ToolExecutor(mcpRegistry);
   }
 
@@ -133,6 +163,15 @@ export class SessionExecutor extends EventEmitter {
         // Track tokens
         totalTokens += response.usage.totalTokens;
 
+        // Record token usage in the budget tracker so the constraint enforcer
+        // can check against charter limits on subsequent iterations.
+        if (opts.charter) {
+          this.budgetTracker.recordTokenUsage(
+            session.orchestratorId,
+            response.usage.totalTokens
+          );
+        }
+
         // Add assistant response to messages
         currentMessages.push({
           role: 'assistant',
@@ -157,6 +196,126 @@ export class SessionExecutor extends EventEmitter {
           response.finishReason === 'tool_calls'
         ) {
           this.logger.info(`Executing ${response.toolCalls.length} tool calls`);
+
+          // --- Charter constraint enforcement ---
+          // Before executing any tool call, validate each one against the
+          // charter's hard constraints. A violation throws
+          // ConstraintViolationError, which is caught by the outer try/catch
+          // and surfaces as a session failure.
+          if (opts.charter) {
+            const charter = opts.charter;
+            const orchestratorId = session.orchestratorId;
+
+            // Resource-budget check: applies to the session as a whole.
+            const budgetResult = this.constraintEnforcer.checkResourceBudget(
+              orchestratorId,
+              charter
+            );
+            if (!budgetResult.allowed) {
+              this.logger.warn(
+                `Charter resource budget exceeded for orchestrator "${orchestratorId}": ` +
+                  budgetResult.reason
+              );
+              throw new ConstraintViolationError(
+                budgetResult.reason ??
+                  'Resource budget limit exceeded by charter constraints',
+                { orchestratorId, constraint: 'resourceLimits' }
+              );
+            }
+
+            // Per-tool call validation.
+            for (const toolCall of response.toolCalls) {
+              const toolName = toolCall.name;
+
+              // Validate the tool name as a command.
+              const commandResult = this.constraintEnforcer.validateCommand(
+                toolName,
+                charter
+              );
+              if (!commandResult.allowed) {
+                this.logger.warn(
+                  `Tool call "${toolName}" blocked by charter command constraint: ` +
+                    commandResult.reason
+                );
+                this.emit('session:constraint_violated', {
+                  session,
+                  toolName,
+                  reason: commandResult.reason,
+                  constraint: 'command',
+                });
+                throw new ConstraintViolationError(
+                  commandResult.reason ??
+                    `Tool call "${toolName}" is forbidden by charter`,
+                  { orchestratorId, constraint: 'command' }
+                );
+              }
+
+              // Validate the tool as a high-level action.
+              const actionResult = this.constraintEnforcer.validateAction(
+                toolName,
+                charter
+              );
+              if (!actionResult.allowed) {
+                this.logger.warn(
+                  `Tool call "${toolName}" blocked by charter action constraint: ` +
+                    actionResult.reason
+                );
+                this.emit('session:constraint_violated', {
+                  session,
+                  toolName,
+                  reason: actionResult.reason,
+                  constraint: 'action',
+                });
+                throw new ConstraintViolationError(
+                  actionResult.reason ??
+                    `Action "${toolName}" is forbidden by charter`,
+                  { orchestratorId, constraint: 'action' }
+                );
+              }
+
+              // If the tool carries a file path argument, validate that too.
+              try {
+                const toolArgs = JSON.parse(
+                  toolCall.arguments || '{}'
+                ) as Record<string, unknown>;
+                const filePath =
+                  (toolArgs.path as string | undefined) ??
+                  (toolArgs.file as string | undefined) ??
+                  (toolArgs.filePath as string | undefined);
+
+                if (filePath && typeof filePath === 'string') {
+                  const pathResult = this.constraintEnforcer.validatePath(
+                    filePath,
+                    charter
+                  );
+                  if (!pathResult.allowed) {
+                    this.logger.warn(
+                      `Tool call "${toolName}" blocked by charter path constraint ` +
+                        `for path "${filePath}": ${pathResult.reason}`
+                    );
+                    this.emit('session:constraint_violated', {
+                      session,
+                      toolName,
+                      reason: pathResult.reason,
+                      constraint: 'path',
+                    });
+                    throw new ConstraintViolationError(
+                      pathResult.reason ??
+                        `Path "${filePath}" is forbidden by charter`,
+                      { orchestratorId, constraint: 'path' }
+                    );
+                  }
+                }
+              } catch (parseErr) {
+                if (parseErr instanceof ConstraintViolationError) {
+                  throw parseErr;
+                }
+                // JSON parse errors are non-fatal for path validation; the
+                // tool executor will handle malformed arguments downstream.
+              }
+            }
+          }
+          // --- End charter constraint enforcement ---
 
           // Execute tool calls
           const toolResults = await this.toolExecutor.executeToolCalls(

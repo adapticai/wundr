@@ -28,6 +28,7 @@ import {
   AlertCircle,
   ListTodo,
   GitBranch,
+  BarChart3,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useCallback, useEffect } from 'react';
@@ -35,9 +36,11 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { CharterEditor, CharterDiff } from '@/components/charter';
 import { OrchestratorActivityFeed } from '@/components/orchestrator/activity-feed';
 import { BacklogList } from '@/components/orchestrator/backlog-list';
+import { DaemonStatusBadge } from '@/components/orchestrator/daemon-status-badge';
 import { DelegationDialog } from '@/components/orchestrator/delegation-dialog';
 import { DelegationHistory } from '@/components/orchestrator/delegation-history';
 import { DelegationRules } from '@/components/orchestrator/delegation-rules';
+import { OrchestratorMetricsPanel } from '@/components/orchestrator/orchestrator-metrics-panel';
 import { SessionManagerCreate } from '@/components/orchestrator/session-manager-create';
 import { SessionManagerList } from '@/components/orchestrator/session-manager-list';
 import { SubagentCreate } from '@/components/orchestrator/subagent-create';
@@ -407,7 +410,10 @@ export default function OrchestratorDetailPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className='flex gap-2'>
+              <div className='flex items-center gap-2'>
+                {/* Daemon status badge */}
+                <DaemonStatusBadge orchestratorId={orchestrator.id} />
+
                 {isEditingMode ? (
                   <>
                     <Button
@@ -534,6 +540,10 @@ export default function OrchestratorDetailPage() {
               <Zap className='h-4 w-4' />
               Capabilities
             </TabsTrigger>
+            <TabsTrigger value='metrics' className='flex items-center gap-1.5'>
+              <BarChart3 className='h-4 w-4' />
+              Metrics
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value='backlog' className='space-y-4 mt-6'>
@@ -568,18 +578,22 @@ export default function OrchestratorDetailPage() {
           </TabsContent>
 
           <TabsContent value='overview' className='space-y-4 mt-6'>
+            {/* Key metrics summary */}
             <Card>
-              <CardHeader>
-                <CardTitle>Performance Metrics</CardTitle>
+              <CardHeader className='pb-3'>
+                <div className='flex items-center justify-between'>
+                  <CardTitle>At a Glance</CardTitle>
+                  <DaemonStatusBadge orchestratorId={orchestrator.id} />
+                </div>
               </CardHeader>
               <CardContent>
                 <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
                   <MetricCard
                     label='Total Messages'
-                    value={orchestrator.messageCount.toString()}
+                    value={orchestrator.messageCount.toLocaleString()}
                   />
                   <MetricCard
-                    label='Managed Agents'
+                    label='Session Managers'
                     value={orchestrator.agentCount.toString()}
                   />
                   <MetricCard
@@ -602,44 +616,19 @@ export default function OrchestratorDetailPage() {
               </CardContent>
             </Card>
 
+            {/* Charter summary (collapsible) */}
             {orchestrator.charter && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Charter</CardTitle>
-                </CardHeader>
-                <CardContent className='space-y-4'>
-                  <div>
-                    <h4 className='font-semibold text-sm mb-1'>Mission</h4>
-                    <p className='text-sm text-muted-foreground'>
-                      {orchestrator.charter.mission}
-                    </p>
-                  </div>
-                  <Separator />
-                  <div>
-                    <h4 className='font-semibold text-sm mb-1'>Vision</h4>
-                    <p className='text-sm text-muted-foreground'>
-                      {orchestrator.charter.vision}
-                    </p>
-                  </div>
-                  {orchestrator.charter.values &&
-                    orchestrator.charter.values.length > 0 && (
-                      <>
-                        <Separator />
-                        <div>
-                          <h4 className='font-semibold text-sm mb-2'>Values</h4>
-                          <div className='flex flex-wrap gap-2'>
-                            {orchestrator.charter.values.map((value, index) => (
-                              <Badge key={index} variant='secondary'>
-                                {value}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                </CardContent>
-              </Card>
+              <CharterSummaryCard charter={orchestrator.charter} />
             )}
+          </TabsContent>
+
+          {/* Dedicated Metrics Tab */}
+          <TabsContent value='metrics' className='space-y-4 mt-6'>
+            <OrchestratorMetricsPanel
+              orchestratorId={orchestrator.id}
+              workspaceSlug={workspaceSlug}
+              refreshInterval={60_000}
+            />
           </TabsContent>
 
           <TabsContent value='configuration' className='space-y-4 mt-6'>
@@ -821,6 +810,129 @@ function MetricCard({ label, value }: { label: string; value: string }) {
       <p className='text-xs text-muted-foreground mb-1'>{label}</p>
       <p className='text-2xl font-bold'>{value}</p>
     </div>
+  );
+}
+
+// Charter Summary Card (collapsible)
+function CharterSummaryCard({
+  charter,
+}: {
+  charter: import('@/types/orchestrator').OrchestratorCharter;
+}) {
+  const [expanded, setExpanded] = React.useState(false);
+
+  return (
+    <Card>
+      <CardHeader className='pb-3'>
+        <button
+          type='button'
+          className='flex items-center justify-between w-full text-left'
+          onClick={() => setExpanded(prev => !prev)}
+          aria-expanded={expanded}
+        >
+          <CardTitle className='flex items-center gap-2'>
+            <FileText className='h-4 w-4' />
+            Charter Summary
+          </CardTitle>
+          <ChevronRight
+            className={cn(
+              'h-4 w-4 text-muted-foreground transition-transform',
+              expanded && 'rotate-90'
+            )}
+          />
+        </button>
+      </CardHeader>
+
+      {/* Always show mission */}
+      <CardContent className='pt-0 space-y-3'>
+        {charter.mission && (
+          <div>
+            <p className='text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1'>
+              Mission
+            </p>
+            <p className='text-sm text-foreground'>{charter.mission}</p>
+          </div>
+        )}
+
+        {/* Expanded content */}
+        {expanded && (
+          <>
+            {charter.vision && (
+              <>
+                <Separator />
+                <div>
+                  <p className='text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1'>
+                    Vision
+                  </p>
+                  <p className='text-sm text-foreground'>{charter.vision}</p>
+                </div>
+              </>
+            )}
+
+            {charter.values && charter.values.length > 0 && (
+              <>
+                <Separator />
+                <div>
+                  <p className='text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2'>
+                    Core Values
+                  </p>
+                  <div className='flex flex-wrap gap-2'>
+                    {charter.values.map((value, index) => (
+                      <Badge key={index} variant='secondary'>
+                        {value}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {charter.expertise && charter.expertise.length > 0 && (
+              <>
+                <Separator />
+                <div>
+                  <p className='text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2'>
+                    Expertise
+                  </p>
+                  <div className='flex flex-wrap gap-2'>
+                    {charter.expertise.map((item, index) => (
+                      <Badge key={index} variant='outline'>
+                        {item}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {charter.communicationPreferences && (
+              <>
+                <Separator />
+                <div>
+                  <p className='text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2'>
+                    Communication Style
+                  </p>
+                  <div className='grid grid-cols-2 gap-2 text-sm'>
+                    <div>
+                      <span className='text-muted-foreground'>Tone: </span>
+                      <span className='font-medium capitalize'>
+                        {charter.communicationPreferences.tone}
+                      </span>
+                    </div>
+                    <div>
+                      <span className='text-muted-foreground'>Length: </span>
+                      <span className='font-medium capitalize'>
+                        {charter.communicationPreferences.responseLength}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

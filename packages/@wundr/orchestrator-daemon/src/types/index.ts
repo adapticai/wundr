@@ -235,7 +235,12 @@ export type WSResponse =
       result?: unknown;
     }
   | { type: 'task_failed'; sessionId: string; taskId: string; error: string }
-  | { type: 'sessions_list'; sessions: Session[] };
+  | { type: 'sessions_list'; sessions: Session[] }
+  | {
+      type: 'task_routed';
+      taskId: string;
+      decision: Record<string, unknown>;
+    };
 
 /**
  * Memory tier types
