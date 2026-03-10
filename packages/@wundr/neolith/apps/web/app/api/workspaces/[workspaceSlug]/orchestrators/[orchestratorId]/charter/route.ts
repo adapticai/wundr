@@ -5,12 +5,12 @@
  * identified by slug or ID within a workspace context.
  *
  * Routes:
- * - GET /api/workspaces/:workspaceSlug/orchestrators/:orchestratorSlug/charter
+ * - GET /api/workspaces/:workspaceSlug/orchestrators/:orchestratorId/charter
  *     Get the active charter for an orchestrator
- * - PUT /api/workspaces/:workspaceSlug/orchestrators/:orchestratorSlug/charter
+ * - PUT /api/workspaces/:workspaceSlug/orchestrators/:orchestratorId/charter
  *     Update the orchestrator's charter (creates new version)
  *
- * @module app/api/workspaces/[workspaceSlug]/orchestrators/[orchestratorSlug]/charter/route
+ * @module app/api/workspaces/[workspaceSlug]/orchestrators/[orchestratorId]/charter/route
  */
 
 import { prisma, Prisma } from '@neolith/database';
@@ -29,7 +29,7 @@ import type { NextRequest } from 'next/server';
  * Route context with workspace slug and orchestrator slug parameters
  */
 interface RouteContext {
-  params: Promise<{ workspaceSlug: string; orchestratorSlug: string }>;
+  params: Promise<{ workspaceSlug: string; orchestratorId: string }>;
 }
 
 /**
@@ -80,13 +80,13 @@ async function resolveWorkspaceAccess(workspaceSlug: string, userId: string) {
  * Orchestrators are resolved via their associated user's slug-like name or directly by ID.
  */
 async function resolveOrchestrator(
-  orchestratorSlug: string,
+  orchestratorId: string,
   organizationId: string
 ) {
   // First try by direct ID
   const byId = await prisma.orchestrator.findFirst({
     where: {
-      id: orchestratorSlug,
+      id: orchestratorId,
       organizationId,
     },
     select: {
@@ -119,14 +119,14 @@ async function resolveOrchestrator(
           // Match slug-style: name with hyphens replaced by spaces (case insensitive)
           {
             name: {
-              equals: orchestratorSlug.replace(/-/g, ' '),
+              equals: orchestratorId.replace(/-/g, ' '),
               mode: 'insensitive',
             },
           },
           // Match email prefix (before @)
           {
             email: {
-              startsWith: orchestratorSlug,
+              startsWith: orchestratorId,
               mode: 'insensitive',
             },
           },
@@ -153,12 +153,12 @@ async function resolveOrchestrator(
 }
 
 /**
- * GET /api/workspaces/:workspaceSlug/orchestrators/:orchestratorSlug/charter
+ * GET /api/workspaces/:workspaceSlug/orchestrators/:orchestratorId/charter
  *
  * Get the active charter for an orchestrator. Returns the latest active version
  * of the charter for this orchestrator, along with version history metadata.
  *
- * The orchestratorSlug can be either the orchestrator's database ID or a
+ * The orchestratorId can be either the orchestrator's database ID or a
  * slug-style reference derived from the orchestrator's name.
  */
 export async function GET(
@@ -177,7 +177,7 @@ export async function GET(
       );
     }
 
-    const { workspaceSlug, orchestratorSlug } = await context.params;
+    const { workspaceSlug, orchestratorId } = await context.params;
 
     const access = await resolveWorkspaceAccess(workspaceSlug, session.user.id);
     if (!access) {
@@ -191,7 +191,7 @@ export async function GET(
     }
 
     const orchestrator = await resolveOrchestrator(
-      orchestratorSlug,
+      orchestratorId,
       access.workspace.organizationId
     );
 
@@ -264,7 +264,7 @@ export async function GET(
     });
   } catch (error) {
     console.error(
-      '[GET /api/workspaces/:workspaceSlug/orchestrators/:orchestratorSlug/charter] Error:',
+      '[GET /api/workspaces/:workspaceSlug/orchestrators/:orchestratorId/charter] Error:',
       error
     );
     return NextResponse.json(
@@ -278,7 +278,7 @@ export async function GET(
 }
 
 /**
- * PUT /api/workspaces/:workspaceSlug/orchestrators/:orchestratorSlug/charter
+ * PUT /api/workspaces/:workspaceSlug/orchestrators/:orchestratorId/charter
  *
  * Update the active charter for an orchestrator by creating a new version.
  * Deactivates the current active version and creates a new one with an
@@ -306,7 +306,7 @@ export async function PUT(
       );
     }
 
-    const { workspaceSlug, orchestratorSlug } = await context.params;
+    const { workspaceSlug, orchestratorId } = await context.params;
 
     const access = await resolveWorkspaceAccess(workspaceSlug, session.user.id);
     if (!access) {
@@ -331,7 +331,7 @@ export async function PUT(
     }
 
     const orchestrator = await resolveOrchestrator(
-      orchestratorSlug,
+      orchestratorId,
       access.workspace.organizationId
     );
 
@@ -462,7 +462,7 @@ export async function PUT(
     });
   } catch (error) {
     console.error(
-      '[PUT /api/workspaces/:workspaceSlug/orchestrators/:orchestratorSlug/charter] Error:',
+      '[PUT /api/workspaces/:workspaceSlug/orchestrators/:orchestratorId/charter] Error:',
       error
     );
 
