@@ -14,14 +14,23 @@ execution by Claude Code agents.
                                │
               ┌────────────────┼────────────────┐
               ▼                ▼                ▼
-   ┌──────────────────┐ ┌───────────┐ ┌─────────────────┐
-   │  PostgreSQL (RW)  │ │  Redis    │ │ Orchestrator    │
-   │  Railway          │ │  Railway  │ │ Daemon (Railway) │
-   └──────────────────┘ └───────────┘ └─────────────────┘
+   ┌──────────────────┐ ┌───────────┐ ┌────────────────────────┐
+   │  PostgreSQL (RW)  │ │  Redis    │ │ Org-Level Orchestrator │
+   │  Railway          │ │  Railway  │ │ (Railway, optional)    │
+   └──────────────────┘ └───────────┘ └────────────────────────┘
 
    ┌──────────────────┐ ┌───────────┐ ┌─────────────────┐
    │  S3 / R2 Storage │ │  LiveKit  │ │  Resend Email   │
    └──────────────────┘ └───────────┘ └─────────────────┘
+
+   ┌──────────────────────────────────────────────────────┐
+   │          Dedicated Orchestrator Machines              │
+   │  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
+   │  │ Machine A │  │ Machine B │  │ Machine C│  ...     │
+   │  │ Daemon    │  │ Daemon    │  │ Daemon   │           │
+   │  │ :8787     │  │ :8787     │  │ :8787    │           │
+   │  └──────────┘  └──────────┘  └──────────┘           │
+   └──────────────────────────────────────────────────────┘
 
    ┌──────────────────────────────────────────────────────┐
    │  Desktop (Electron)  │  iOS (Capacitor)  │  Android  │
@@ -29,6 +38,10 @@ execution by Claude Code agents.
    │  Linux               │  Connect          │  Store    │
    └──────────────────────────────────────────────────────┘
 ```
+
+**Key architectural principle:** Individual orchestrators run on **dedicated local machines** (not
+in the cloud). The web app discovers and connects to them via `DaemonCredential` records stored in
+the database. An optional org-level orchestrator can run in Railway for top-level coordination.
 
 **Monorepo paths:**
 
@@ -46,9 +59,10 @@ execution by Claude Code agents.
 
 ---
 
-## 1. Railway: Infrastructure Services
+## 1. Railway: Infrastructure Services + Dedicated Machine Setup
 
-Railway hosts PostgreSQL, Redis, and the Orchestrator Daemon.
+Railway hosts PostgreSQL, Redis, and an optional org-level orchestrator. Individual orchestrator
+daemons run on dedicated local machines (Section 1.6).
 
 ### 1.1 Prerequisites
 
@@ -108,16 +122,18 @@ railway variables get REDIS_URL
 | Max memory  | 256 MB         |
 | Eviction    | allkeys-lru    |
 
-### 1.4 Orchestrator Daemon Service
+### 1.4 Org-Level Orchestrator (Railway, Optional)
 
-The daemon runs as a long-lived Railway service.
+A single top-level orchestrator can optionally run in Railway for org-wide coordination tasks. This
+is **not** where individual orchestrators run -- those run on dedicated local machines (see Section
+1.6 below).
 
 ```bash
-# Create a new service for the daemon
-railway service create orchestrator-daemon
+# Create a new service for the org-level orchestrator
+railway service create org-orchestrator
 
 # Link to the service
-railway service orchestrator-daemon
+railway service org-orchestrator
 
 # Set the root directory for Railway to detect
 railway variables set RAILWAY_SERVICE_ROOT=packages/@wundr/orchestrator-daemon
@@ -136,44 +152,19 @@ railway variables set \
   NEOLITH_API_URL=https://neolith.ai \
   METRICS_ENABLED=true
 
-# Set the build and start commands
-railway variables set \
-  RAILWAY_BUILD_COMMAND="cd packages/@wundr/orchestrator-daemon && npm run build" \
-  RAILWAY_START_COMMAND="cd packages/@wundr/orchestrator-daemon && node dist/cli/daemon-cli.js start --port 8787"
-
 # Deploy
 railway up
 ```
 
-**Custom `railway.json` for the daemon** (create at
-`packages/@wundr/orchestrator-daemon/railway.json`):
-
-```json
-{
-  "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "npm run build"
-  },
-  "deploy": {
-    "startCommand": "node dist/cli/daemon-cli.js start --port ${PORT:-8787}",
-    "healthcheckPath": "/health",
-    "healthcheckTimeout": 60,
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 5,
-    "numReplicas": 1
-  }
-}
-```
-
-**Generate a public domain for the daemon:**
+**Generate a public domain for the org orchestrator:**
 
 ```bash
-railway domain --service orchestrator-daemon
-# Example output: orchestrator-daemon-production.up.railway.app
+railway domain --service org-orchestrator
+# Example output: org-orchestrator-production.up.railway.app
 ```
 
-Record this URL; the web app needs it as `VP_DAEMON_API_URL` and `VP_DAEMON_WS_URL`.
+This URL is only used if you want a single cloud-based org-level coordinator. Individual
+orchestrators connect from their dedicated machines.
 
 ### 1.5 Verify Railway Services
 
@@ -191,8 +182,278 @@ railway run -- node -e "
   r.ping().then(p => { console.log('Redis:', p); r.quit(); });
 "
 
-# Test daemon health
-curl -s https://orchestrator-daemon-production.up.railway.app/health
+# Test org-level orchestrator health (if deployed)
+curl -s https://org-orchestrator-production.up.railway.app/health
+```
+
+### 1.6 Dedicated Orchestrator Machine Setup
+
+Individual orchestrators run on **dedicated local machines** (macOS or Linux). Each machine runs one
+daemon instance that connects back to the Neolith web app. The web app discovers daemons via
+`DaemonCredential` records in the database.
+
+#### Prerequisites
+
+- macOS (Intel or Apple Silicon) or Linux (Ubuntu/Debian/Fedora/RHEL)
+- Node.js 18+ (recommended: latest LTS)
+- Git access to the wundr monorepo
+- Network connectivity to the Neolith web app and PostgreSQL database
+
+#### Step 1: Environment Setup (First Time)
+
+Use the wundr environment scripts to bootstrap the machine:
+
+```bash
+# macOS
+git clone <wundr-repo-url> ~/wundr
+cd ~/wundr
+bash packages/@wundr/environment/scripts/install/macos.sh
+
+# Linux
+git clone <wundr-repo-url> ~/wundr
+cd ~/wundr
+bash packages/@wundr/environment/scripts/install/linux.sh
+```
+
+These scripts install Xcode CLI tools (macOS) or build-essential (Linux), Node.js, pnpm, and other
+system dependencies.
+
+#### Step 2: Build the Orchestrator Daemon
+
+```bash
+cd ~/wundr
+
+# Install monorepo dependencies
+pnpm install
+
+# Build the orchestrator daemon and its dependencies
+pnpm --filter @wundr/orchestrator-daemon build
+
+# Verify the CLI binary exists
+ls packages/@wundr/orchestrator-daemon/dist/cli/daemon-cli.js
+```
+
+#### Step 3: Configure the Daemon
+
+```bash
+cd ~/wundr/packages/@wundr/orchestrator-daemon
+
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env with production values
+# Required settings:
+#   OPENAI_API_KEY=sk-...          (or ANTHROPIC_API_KEY)
+#   DAEMON_PORT=8787
+#   DAEMON_HOST=0.0.0.0            (to accept remote connections)
+#   DAEMON_JWT_SECRET=<random>      (openssl rand -base64 32)
+#   DAEMON_CORS_ENABLED=true
+#   DAEMON_CORS_ORIGINS=https://neolith.ai
+#   NEOLITH_API_URL=https://neolith.ai
+#   NODE_ENV=production
+#   LOG_LEVEL=info
+```
+
+Create the orchestrator charter file:
+
+```bash
+mkdir -p ~/orchestrator-daemon
+# The charter YAML defines the orchestrator's discipline, role, and routing rules.
+# It is loaded automatically by the daemon on startup.
+# See the charter API docs for the full schema.
+cat > ~/orchestrator-daemon/orchestrator-charter.yaml << 'EOF'
+tier: 1
+discipline: engineering
+role: orchestrator
+# ... additional charter configuration
+EOF
+```
+
+#### Step 4: Test the Daemon Manually
+
+```bash
+cd ~/wundr/packages/@wundr/orchestrator-daemon
+
+# Start in foreground mode (for testing)
+node dist/cli/daemon-cli.js start --port 8787
+
+# In another terminal, verify health
+curl -s http://localhost:8787/health
+# Expected: {"status":"healthy","uptime":...}
+
+# Test WebSocket
+npx wscat -c ws://localhost:8787 -x '{"type":"ping"}'
+# Expected: {"type":"pong"}
+
+# Stop with Ctrl+C when satisfied
+```
+
+#### Step 5: Install as System Service
+
+The `install-service.sh` script configures the daemon as a persistent service that starts on boot
+and auto-restarts on crash.
+
+```bash
+cd ~/wundr/packages/@wundr/orchestrator-daemon
+
+# macOS (launchd) - user-scope (no sudo needed)
+bash scripts/install-service.sh --port 8787 --env-file .env
+
+# macOS (launchd) - system-scope (survives logout)
+sudo bash scripts/install-service.sh --system --port 8787 --env-file .env
+
+# Linux (systemd) - user-scope
+bash scripts/install-service.sh --port 8787 --env-file .env
+
+# Linux (systemd) - system-scope
+sudo bash scripts/install-service.sh --system --port 8787 --env-file .env
+```
+
+**Verify the service is running:**
+
+```bash
+# macOS
+launchctl list io.adaptic.wundr.orchestrator-daemon
+curl -s http://localhost:8787/health
+
+# Linux
+systemctl --user status wundr-orchestrator-daemon   # user-scope
+# or
+systemctl status wundr-orchestrator-daemon           # system-scope
+curl -s http://localhost:8787/health
+```
+
+**Service management:**
+
+```bash
+# macOS
+launchctl unload ~/Library/LaunchAgents/io.adaptic.wundr.orchestrator-daemon.plist  # stop
+launchctl load ~/Library/LaunchAgents/io.adaptic.wundr.orchestrator-daemon.plist    # start
+
+# Linux (user-scope)
+systemctl --user stop wundr-orchestrator-daemon
+systemctl --user start wundr-orchestrator-daemon
+systemctl --user restart wundr-orchestrator-daemon
+
+# Uninstall
+bash scripts/install-service.sh --uninstall
+```
+
+**Logs:**
+
+```bash
+# macOS (user-scope)
+tail -f ~/.local/share/wundr-orchestrator-daemon/logs/daemon.log
+
+# macOS (system-scope)
+tail -f /var/log/wundr-orchestrator-daemon/daemon.log
+
+# Linux
+journalctl -u wundr-orchestrator-daemon -f    # system-scope
+tail -f ~/.local/share/wundr-orchestrator-daemon/logs/daemon.log  # user-scope
+```
+
+#### Step 6: Register Daemon Credentials in Neolith
+
+The web app needs to know how to reach this machine's daemon. This is done by creating a
+`DaemonCredential` record in the database, which stores:
+
+- **`apiKey`**: Shared secret for authenticating requests from the web app
+- **`hostname`**: The machine's reachable IP or DNS name (e.g., `192.168.1.50:8787`)
+- **`orchestratorId`**: The orchestrator user this daemon belongs to
+- **`workspaceId`**: The workspace that can access this daemon
+- **`isActive`**: Whether this credential is currently active
+
+The web app resolves daemon connections using this priority:
+
+1. `orchestrator.daemonEndpoint` -- explicit endpoint on the Orchestrator record
+2. `DaemonCredential.hostname` -- hostname stored on the credential
+3. `DAEMON_API_URL` environment variable -- process-level fallback
+
+**Register via the Neolith Admin API or direct database insert:**
+
+```bash
+# Option A: Via Neolith API (as an admin user)
+curl -X POST https://neolith.ai/api/admin/daemon-credentials \
+  -H 'Content-Type: application/json' \
+  -H 'Cookie: <admin-session-cookie>' \
+  -d '{
+    "orchestratorId": "<orchestrator-cuid>",
+    "workspaceId": "<workspace-cuid>",
+    "apiKey": "<generated-api-key>",
+    "hostname": "192.168.1.50:8787",
+    "capabilities": ["session_management", "task_routing"],
+    "isActive": true
+  }'
+
+# Option B: Direct database insert (for initial bootstrap)
+DATABASE_URL="$PROD_DATABASE_URL" npx prisma db execute --stdin << 'SQL'
+INSERT INTO "DaemonCredential" (
+  id, api_key, api_secret_hash, hostname, is_active,
+  orchestrator_id, workspace_id, created_at, updated_at
+) VALUES (
+  'cred_' || gen_random_uuid(),
+  '<your-api-key>',
+  '<bcrypt-hash-of-secret>',
+  '192.168.1.50:8787',
+  true,
+  '<orchestrator-cuid>',
+  '<workspace-cuid>',
+  NOW(), NOW()
+);
+SQL
+```
+
+**Alternatively**, set the `daemonEndpoint` directly on the Orchestrator record:
+
+```bash
+DATABASE_URL="$PROD_DATABASE_URL" npx prisma db execute --stdin << 'SQL'
+UPDATE "Orchestrator"
+SET "daemonEndpoint" = 'http://192.168.1.50:8787'
+WHERE id = '<orchestrator-cuid>';
+SQL
+```
+
+#### Step 7: Verify End-to-End Connectivity
+
+```bash
+# From the dedicated machine, verify the daemon is reachable externally
+curl -s http://<machine-ip>:8787/health
+
+# From the web app server (or locally), verify the web app can discover the daemon
+curl -s https://neolith.ai/api/workspaces/<slug>/orchestrators/<id>/charter \
+  -H 'Cookie: <session-cookie>'
+```
+
+#### Network Considerations
+
+- **Firewall**: Port 8787 must be open for inbound TCP connections from the Netlify web app
+- **Static IP / DNS**: Use a static IP or dynamic DNS service so the web app can reliably reach the
+  machine
+- **TLS**: For production, place the daemon behind a reverse proxy (nginx, Caddy) with TLS, or use a
+  tunnel service (Cloudflare Tunnel, ngrok, Tailscale)
+- **VPN/Tailscale**: For private networks, Tailscale provides zero-config mesh networking that makes
+  local machines reachable without exposing public ports
+
+#### Updating the Daemon
+
+```bash
+cd ~/wundr
+
+# Pull latest code
+git pull origin master
+
+# Rebuild
+pnpm install
+pnpm --filter @wundr/orchestrator-daemon build
+
+# Restart the service
+# macOS
+launchctl unload ~/Library/LaunchAgents/io.adaptic.wundr.orchestrator-daemon.plist
+launchctl load ~/Library/LaunchAgents/io.adaptic.wundr.orchestrator-daemon.plist
+
+# Linux
+systemctl --user restart wundr-orchestrator-daemon
 ```
 
 ---
@@ -319,10 +580,12 @@ netlify env:set MY_AWS_ACCESS_KEY_ID "AKIA..."
 netlify env:set MY_AWS_SECRET_ACCESS_KEY "..."
 netlify env:set STORAGE_PUBLIC_URL https://cdn.neolith.ai
 
-# Orchestrator Daemon
-netlify env:set VP_DAEMON_API_URL "https://orchestrator-daemon-production.up.railway.app"
-netlify env:set VP_DAEMON_WS_URL "wss://orchestrator-daemon-production.up.railway.app/ws"
-netlify env:set VP_DAEMON_AUTH_KEY "$(openssl rand -base64 32)"
+# Orchestrator Daemon (fallback for when no DaemonCredential is found in DB)
+# Individual orchestrators are discovered via DaemonCredential records in the database.
+# These env vars are only used as a last-resort fallback.
+# If you have an org-level cloud orchestrator, set its URL here:
+netlify env:set DAEMON_API_URL "https://org-orchestrator-production.up.railway.app"
+# For most setups, leave these unset and rely on DB-based credential discovery.
 
 # Email
 netlify env:set RESEND_API_KEY "re_..."
@@ -1068,14 +1331,17 @@ DATABASE_URL="$PRODUCTION_DATABASE_URL" npx prisma migrate deploy
 
 ### Required DNS Records
 
-| Record Type | Host    | Value                                   | Purpose               |
-| ----------- | ------- | --------------------------------------- | --------------------- |
-| A           | @       | 75.2.60.5                               | Netlify load balancer |
-| CNAME       | www     | neolith.netlify.app                     | Netlify redirect      |
-| CNAME       | api     | orchestrator-daemon-prod.up.railway.app | Daemon API            |
-| MX          | @       | (Resend/email provider records)         | Email                 |
-| TXT         | @       | v=spf1 include:... ~all                 | Email auth            |
-| TXT         | \_dmarc | v=DMARC1; p=quarantine; ...             | Email auth            |
+| Record Type | Host    | Value                                | Purpose                      |
+| ----------- | ------- | ------------------------------------ | ---------------------------- |
+| A           | @       | 75.2.60.5                            | Netlify load balancer        |
+| CNAME       | www     | neolith.netlify.app                  | Netlify redirect             |
+| CNAME       | api     | org-orchestrator-prod.up.railway.app | Org-level orchestrator (opt) |
+| MX          | @       | (Resend/email provider records)      | Email                        |
+| TXT         | @       | v=spf1 include:... ~all              | Email auth                   |
+| TXT         | \_dmarc | v=DMARC1; p=quarantine; ...          | Email auth                   |
+
+**Note:** Individual orchestrator daemons on dedicated machines are not accessed via DNS records.
+They are reached directly via the IP/hostname stored in their `DaemonCredential` database record.
 
 ### OAuth Callback URLs
 
@@ -1092,12 +1358,13 @@ Register these with each provider:
 
 ### Endpoints
 
-| Service   | Health Check URL                                 |
-| --------- | ------------------------------------------------ |
-| Web app   | `https://neolith.ai/api/health`                  |
-| GraphQL   | `https://neolith.ai/api/graphql` (introspection) |
-| Daemon    | `https://api.neolith.ai/health`                  |
-| Daemon WS | `wss://api.neolith.ai` (WebSocket ping/pong)     |
+| Service             | Health Check URL                                  |
+| ------------------- | ------------------------------------------------- |
+| Web app             | `https://neolith.ai/api/health`                   |
+| GraphQL             | `https://neolith.ai/api/graphql` (introspection)  |
+| Org Orchestrator    | `https://api.neolith.ai/health` (if cloud-hosted) |
+| Dedicated Daemons   | `http://<machine-ip>:8787/health` (per machine)   |
+| Dedicated Daemon WS | `ws://<machine-ip>:8787` (WebSocket ping/pong)    |
 
 ### Recommended Monitoring
 
@@ -1105,14 +1372,20 @@ Register these with each provider:
 # Uptime monitoring (e.g., UptimeRobot, Checkly)
 # Monitor these endpoints every 60 seconds:
 # - https://neolith.ai/api/health         (expect 200)
-# - https://api.neolith.ai/health         (expect {"status":"healthy"})
+# - https://api.neolith.ai/health         (expect {"status":"healthy"}, if org orchestrator)
+
+# For dedicated machine daemons, monitor from within the local network:
+# - http://<machine-ip>:8787/health       (expect {"status":"healthy"})
 
 # Error tracking
 # Set SENTRY_DSN in environment variables
 
-# Log aggregation
-# Railway provides built-in log streaming
-railway logs --service orchestrator-daemon --follow
+# Dedicated machine logs
+# macOS: tail -f ~/.local/share/wundr-orchestrator-daemon/logs/daemon.log
+# Linux: journalctl -u wundr-orchestrator-daemon -f
+
+# Railway logs (for org-level orchestrator / database)
+railway logs --service org-orchestrator --follow
 ```
 
 ---
@@ -1137,8 +1410,9 @@ All secrets that must be configured before deployment:
 | `RESEND_API_KEY`              | Netlify        | Resend Dashboard                  |
 | `LIVEKIT_API_KEY`             | Netlify        | LiveKit Cloud                     |
 | `LIVEKIT_API_SECRET`          | Netlify        | LiveKit Cloud                     |
-| `VP_DAEMON_AUTH_KEY`          | Netlify + RW   | `openssl rand -base64 32`         |
-| `DAEMON_JWT_SECRET`           | Railway        | `openssl rand -base64 32`         |
+| `DAEMON_API_URL`              | Netlify (opt)  | Org orchestrator URL (fallback)   |
+| `DAEMON_JWT_SECRET`           | Each machine   | `openssl rand -base64 32`         |
+| Daemon `.env` (per machine)   | Each machine   | See Section 1.6 Step 3            |
 | `CSC_LINK` (macOS cert)       | GitHub Actions | Apple Developer Certificate       |
 | `WIN_CSC_LINK` (Windows cert) | GitHub Actions | Windows code signing certificate  |
 | `APPLE_ID`                    | GitHub Actions | Apple Developer account           |
@@ -1152,24 +1426,45 @@ All secrets that must be configured before deployment:
 
 ## 10. Quick Deploy Commands
 
-### Full Production Deploy (All Services)
+### Full Production Deploy (Cloud Services)
 
 ```bash
 # 1. Database migrations
 cd packages/@wundr/neolith/packages/@neolith/database
 DATABASE_URL="$PROD_DATABASE_URL" npx prisma migrate deploy
 
-# 2. Deploy daemon to Railway
+# 2. Deploy org-level orchestrator to Railway (optional)
 cd packages/@wundr/orchestrator-daemon
-railway up --service orchestrator-daemon
+railway up --service org-orchestrator
 
 # 3. Deploy web to Netlify
 cd /path/to/wundr
 netlify deploy --prod
 
-# 4. Verify
+# 4. Verify cloud services
 curl -s https://neolith.ai/api/health
-curl -s https://api.neolith.ai/health
+curl -s https://api.neolith.ai/health   # if org orchestrator deployed
+```
+
+### Update Dedicated Orchestrator Machine
+
+```bash
+# SSH into the dedicated machine (or run locally)
+cd ~/wundr
+git pull origin master
+pnpm install
+pnpm --filter @wundr/orchestrator-daemon build
+
+# Restart the daemon service
+# macOS:
+launchctl unload ~/Library/LaunchAgents/io.adaptic.wundr.orchestrator-daemon.plist
+launchctl load ~/Library/LaunchAgents/io.adaptic.wundr.orchestrator-daemon.plist
+
+# Linux:
+systemctl --user restart wundr-orchestrator-daemon
+
+# Verify
+curl -s http://localhost:8787/health
 ```
 
 ### Desktop Release
