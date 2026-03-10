@@ -809,29 +809,153 @@ export class AICommands {
   private async callAI(operation: string, params: any): Promise<any> {
     // Check if AI service is ready
     if (!this.aiService.isReady()) {
-      throw new Error('AI service not configured. Run `wundr ai setup` first.');
+      throw new Error(
+        'AI service not configured. Set ANTHROPIC_API_KEY or OPENAI_API_KEY, or run `wundr ai setup`.'
+      );
     }
 
     logger.debug(`Calling AI for operation: ${operation}`);
 
-    // For now, return mock responses - these would be replaced with actual AI calls
+    const sessionId = `ai-cmd-${operation}-${Date.now()}`;
+
     switch (operation) {
-      case 'generate':
-        return `// Generated ${params.type} code\nfunction ${params.type}() {\n  // Implementation here\n}`;
-      case 'review':
-        return { issues: [], suggestions: [], score: 95 };
-      case 'refactor':
-        return { description: 'Refactoring plan', changes: [] };
-      case 'docs':
-        return `# ${params.target} Documentation\n\nGenerated documentation...`;
-      case 'test':
-        return `// Generated tests\ndescribe('${params.target}', () => {\n  // Tests here\n});`;
-      case 'analyze':
-        return { complexity: 'low', maintainability: 'high', suggestions: [] };
-      case 'optimize':
-        return { description: 'Optimization plan', changes: [] };
+      case 'generate': {
+        const prompt = [
+          `Generate ${params.type} code.`,
+          params.prompt ? `Requirements: ${params.prompt}` : '',
+          params.template ? `Use template style: ${params.template}` : '',
+          params.context ? `Context:\n${params.context}` : '',
+          'Return only the code, no explanation.',
+        ]
+          .filter(Boolean)
+          .join('\n');
+        return this.aiService.sendMessage(sessionId, prompt);
+      }
+
+      case 'review': {
+        const prompt = [
+          `Review the following ${params.file} code for issues.`,
+          `Focus: ${params.focus || 'all'}. Minimum severity: ${params.severity || 'info'}.`,
+          'Return a JSON object with this exact shape: {"issues":[{"severity":"string","description":"string"}],"suggestions":["string"],"score":number}',
+          `Code:\n${params.code}`,
+        ].join('\n');
+        const raw = await this.aiService.sendMessage(sessionId, prompt);
+        try {
+          const jsonMatch = raw.match(/\{[\s\S]*\}/);
+          return jsonMatch
+            ? JSON.parse(jsonMatch[0])
+            : { issues: [], suggestions: [], score: 0 };
+        } catch {
+          return { issues: [], suggestions: [], score: 0 };
+        }
+      }
+
+      case 'refactor': {
+        const prompt = [
+          `Create a refactoring plan for the following code in ${params.target}.`,
+          `Refactoring type: ${params.type || 'optimize'}. Scope: ${params.scope || 'function'}.`,
+          'Return a JSON object with this exact shape: {"description":"string","changes":[{"description":"string","code":"string"}]}',
+          `Code:\n${params.code}`,
+        ].join('\n');
+        const raw = await this.aiService.sendMessage(sessionId, prompt);
+        try {
+          const jsonMatch = raw.match(/\{[\s\S]*\}/);
+          return jsonMatch
+            ? JSON.parse(jsonMatch[0])
+            : { description: '', changes: [] };
+        } catch {
+          return { description: '', changes: [] };
+        }
+      }
+
+      case 'docs': {
+        const prompt = [
+          `Generate ${params.type || 'api'} documentation in ${params.format || 'markdown'} format for ${params.target}.`,
+          params.includeExamples ? 'Include code examples.' : '',
+          `Code:\n${params.code}`,
+        ]
+          .filter(Boolean)
+          .join('\n');
+        return this.aiService.sendMessage(sessionId, prompt);
+      }
+
+      case 'test': {
+        const prompt = [
+          `Generate ${params.coverage || 'unit'} tests using ${params.framework || 'jest'} for ${params.target}.`,
+          params.mocks ? 'Include mock objects where appropriate.' : '',
+          'Return only the test code, no explanation.',
+          `Code:\n${params.code}`,
+        ]
+          .filter(Boolean)
+          .join('\n');
+        return this.aiService.sendMessage(sessionId, prompt);
+      }
+
+      case 'analyze': {
+        const prompt = [
+          `Analyze the following code from ${params.target}.`,
+          `Aspect: ${params.aspect || 'all'}.`,
+          params.suggestions ? 'Include improvement suggestions.' : '',
+          'Return a JSON object with this exact shape: {"complexity":"string","maintainability":"string","suggestions":["string"]}',
+          `Code:\n${params.code}`,
+        ]
+          .filter(Boolean)
+          .join('\n');
+        const raw = await this.aiService.sendMessage(sessionId, prompt);
+        try {
+          const jsonMatch = raw.match(/\{[\s\S]*\}/);
+          return jsonMatch
+            ? JSON.parse(jsonMatch[0])
+            : {
+                complexity: 'unknown',
+                maintainability: 'unknown',
+                suggestions: [],
+              };
+        } catch {
+          return {
+            complexity: 'unknown',
+            maintainability: 'unknown',
+            suggestions: [],
+          };
+        }
+      }
+
+      case 'optimize': {
+        const prompt = [
+          `Create a performance optimization plan for the following code in ${params.target}.`,
+          `Optimization focus: ${params.focus || 'speed'}.`,
+          'Return a JSON object with this exact shape: {"description":"string","changes":[{"description":"string"}],"optimizedCode":"string"}',
+          `Code:\n${params.code}`,
+        ].join('\n');
+        const raw = await this.aiService.sendMessage(sessionId, prompt);
+        try {
+          const jsonMatch = raw.match(/\{[\s\S]*\}/);
+          return jsonMatch
+            ? JSON.parse(jsonMatch[0])
+            : { description: '', changes: [], optimizedCode: params.code };
+        } catch {
+          return { description: '', changes: [], optimizedCode: params.code };
+        }
+      }
+
       case 'chat':
-        return 'This is a mock response. In a real implementation, this would use the AI service.';
+        return this.aiService.sendMessage(sessionId, params.message || '');
+
+      case 'suggest-fix': {
+        const prompt = [
+          `Suggest a fix for the following issue in ${params.file}:`,
+          `Issue (${params.severity}): ${params.issue}`,
+          'Return a JSON object with this shape: {"suggestion":"string"}',
+        ].join('\n');
+        const raw = await this.aiService.sendMessage(sessionId, prompt);
+        try {
+          const jsonMatch = raw.match(/\{[\s\S]*\}/);
+          return jsonMatch ? JSON.parse(jsonMatch[0]) : { suggestion: raw };
+        } catch {
+          return { suggestion: raw };
+        }
+      }
+
       default:
         throw new Error(`Unknown AI operation: ${operation}`);
     }
@@ -850,8 +974,23 @@ export class AICommands {
   }
 
   private async loadContext(contextPath: string): Promise<string> {
-    // Load project context from specified path
-    return `// Context from ${contextPath}`;
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const stat = await fs.stat(contextPath);
+    if (stat.isDirectory()) {
+      // Read all TypeScript/JavaScript files in the directory (non-recursive, shallow)
+      const entries = await fs.readdir(contextPath);
+      const parts: string[] = [];
+      for (const entry of entries) {
+        if (/\.(ts|tsx|js|jsx)$/.test(entry)) {
+          const filePath = path.join(contextPath, entry);
+          const content = await fs.readFile(filePath, 'utf-8');
+          parts.push(`// ${filePath}\n${content}`);
+        }
+      }
+      return parts.join('\n\n');
+    }
+    return fs.readFile(contextPath, 'utf-8');
   }
 
   private async saveGeneratedCode(
@@ -871,13 +1010,34 @@ export class AICommands {
   }
 
   private async readFile(filePath: string): Promise<string> {
-    // Read file content
-    return `// Content of ${filePath}`;
+    const fs = await import('fs/promises');
+    return fs.readFile(filePath, 'utf-8');
   }
 
   private async getChangedFiles(): Promise<string[]> {
-    // Get list of changed files from git
-    return ['src/example.ts'];
+    const { execSync } = await import('child_process');
+    try {
+      const output = execSync('git diff --name-only HEAD', {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      }).trim();
+      if (!output) {
+        return [];
+      }
+      return output.split('\n').filter(Boolean);
+    } catch {
+      // Fall back to staged changes if HEAD diff fails (e.g. no commits yet)
+      try {
+        const { execSync: exec } = await import('child_process');
+        const output = exec('git diff --name-only --cached', {
+          encoding: 'utf-8',
+          stdio: ['pipe', 'pipe', 'pipe'],
+        }).trim();
+        return output ? output.split('\n').filter(Boolean) : [];
+      } catch {
+        return [];
+      }
+    }
   }
 
   private displayReviewResults(results: FileReviewResult[]): void {

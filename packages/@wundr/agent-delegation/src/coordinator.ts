@@ -176,8 +176,12 @@ export class HubCoordinator {
       ...options.synthesizerOptions,
     });
 
-    this.taskExecutor =
-      options.taskExecutor ?? this.defaultTaskExecutor.bind(this);
+    if (!options.taskExecutor) {
+      throw new Error(
+        'TaskExecutor required. Provide a real task execution implementation.'
+      );
+    }
+    this.taskExecutor = options.taskExecutor;
 
     // Store event handlers
     this.onTaskStarted = options.onTaskStarted;
@@ -889,36 +893,6 @@ export class HubCoordinator {
   }
 
   /**
-   * Default task executor - placeholder for actual execution
-   */
-  private async defaultTaskExecutor(
-    task: DelegationTask,
-    agent: AgentDefinition,
-    _context: Record<string, unknown>
-  ): Promise<DelegationResult> {
-    // This is a placeholder - actual implementation would call the agent
-    const startTime = new Date();
-
-    // Simulate execution time
-    await this.sleep(100);
-
-    return {
-      taskId: task.id,
-      agentId: agent.id,
-      status: 'completed',
-      output: {
-        message: `Task "${task.description}" completed by ${agent.name}`,
-        agent: agent.name,
-        role: agent.role,
-      },
-      duration: Date.now() - startTime.getTime(),
-      startedAt: startTime,
-      completedAt: new Date(),
-      retryCount: 0,
-    };
-  }
-
-  /**
    * Sleep helper
    */
   private sleep(ms: number): Promise<void> {
@@ -934,11 +908,16 @@ export class HubCoordinator {
  * Creates a hub coordinator with default configuration
  *
  * @param hubAgentId - The hub agent ID
+ * @param executor - Task executor implementation
  * @returns Configured HubCoordinator instance
  */
-export function createHubCoordinator(hubAgentId: string): HubCoordinator {
+export function createHubCoordinator(
+  hubAgentId: string,
+  executor: TaskExecutor
+): HubCoordinator {
   return new HubCoordinator({
     config: { hubAgentId },
+    taskExecutor: executor,
   });
 }
 
@@ -963,11 +942,13 @@ export function createHubCoordinatorWithExecutor(
  * Creates a hub coordinator optimized for parallel execution
  *
  * @param hubAgentId - The hub agent ID
+ * @param executor - Task executor implementation
  * @param maxParallel - Maximum parallel delegations
  * @returns Configured HubCoordinator instance
  */
 export function createParallelCoordinator(
   hubAgentId: string,
+  executor: TaskExecutor,
   maxParallel: number = 10
 ): HubCoordinator {
   return new HubCoordinator({
@@ -976,5 +957,6 @@ export function createParallelCoordinator(
       maxParallelDelegations: maxParallel,
       synthesisStrategy: 'merge',
     },
+    taskExecutor: executor,
   });
 }

@@ -24,7 +24,11 @@ import type {
   StoreHealthStatus,
   IndexedFile,
 } from '../../tools/rag/types';
-import { FileProcessor, FileProcessorOptions, ProcessedChunk } from './file-processor';
+import {
+  FileProcessor,
+  FileProcessorOptions,
+  ProcessedChunk,
+} from './file-processor';
 import { TextChunker, ChunkOptions, ChunkResult } from './chunker';
 
 // Re-export types from sub-modules
@@ -270,7 +274,6 @@ export class GeminiRAGService implements IRAGService {
       this.client = new GoogleGenAI({ apiKey: this.config.apiKey });
     } else {
       this.client = null;
-      this.log('No API key provided - running in mock mode');
     }
 
     this.stores = new Map();
@@ -288,14 +291,20 @@ export class GeminiRAGService implements IRAGService {
    */
   private log(message: string, data?: unknown): void {
     if (this.config.debug) {
-      console.error(`[GeminiRAG] ${message}`, data ? JSON.stringify(data, null, 2) : '');
+      console.error(
+        `[GeminiRAG] ${message}`,
+        data ? JSON.stringify(data, null, 2) : ''
+      );
     }
   }
 
   /**
    * Execute with retry logic
    */
-  private async withRetry<T>(operation: () => Promise<T>, context: string): Promise<T> {
+  private async withRetry<T>(
+    operation: () => Promise<T>,
+    context: string
+  ): Promise<T> {
     let lastError: Error | undefined;
 
     for (let attempt = 0; attempt < this.config.maxRetries; attempt++) {
@@ -311,12 +320,16 @@ export class GeminiRAGService implements IRAGService {
         }
 
         const delay = this.config.retryBaseDelay * Math.pow(2, attempt);
-        this.log(`Retry ${attempt + 1}/${this.config.maxRetries} for ${context} after ${delay}ms`);
+        this.log(
+          `Retry ${attempt + 1}/${this.config.maxRetries} for ${context} after ${delay}ms`
+        );
         await this.sleep(delay);
       }
     }
 
-    throw lastError || new Error(`Failed after ${this.config.maxRetries} retries`);
+    throw (
+      lastError || new Error(`Failed after ${this.config.maxRetries} retries`)
+    );
   }
 
   /**
@@ -337,14 +350,14 @@ export class GeminiRAGService implements IRAGService {
     ];
 
     const message = error.message.toLowerCase();
-    return retryableMessages.some((msg) => message.includes(msg));
+    return retryableMessages.some(msg => message.includes(msg));
   }
 
   /**
    * Sleep helper
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**
@@ -379,7 +392,11 @@ export class GeminiRAGService implements IRAGService {
     let current: unknown = obj;
 
     for (const part of parts) {
-      if (current === null || current === undefined || typeof current !== 'object') {
+      if (
+        current === null ||
+        current === undefined ||
+        typeof current !== 'object'
+      ) {
         return undefined;
       }
       current = (current as Record<string, unknown>)[part];
@@ -391,9 +408,15 @@ export class GeminiRAGService implements IRAGService {
   /**
    * Check if metadata matches filters
    */
-  private matchesFilters(metadata: DocumentMetadata, filters: MetadataFilterItem[]): boolean {
+  private matchesFilters(
+    metadata: DocumentMetadata,
+    filters: MetadataFilterItem[]
+  ): boolean {
     for (const filter of filters) {
-      const value = this.getNestedValue(metadata as unknown as Record<string, unknown>, filter.field);
+      const value = this.getNestedValue(
+        metadata as unknown as Record<string, unknown>,
+        filter.field
+      );
 
       if (value === undefined) {
         return false;
@@ -402,43 +425,49 @@ export class GeminiRAGService implements IRAGService {
       switch (filter.operator) {
         case 'eq':
           if (value !== filter.value) {
-return false;
-}
+            return false;
+          }
           break;
         case 'ne':
           if (value === filter.value) {
-return false;
-}
+            return false;
+          }
           break;
         case 'gt':
           if (typeof value !== 'number' || value <= (filter.value as number)) {
-return false;
-}
+            return false;
+          }
           break;
         case 'lt':
           if (typeof value !== 'number' || value >= (filter.value as number)) {
-return false;
-}
+            return false;
+          }
           break;
         case 'gte':
           if (typeof value !== 'number' || value < (filter.value as number)) {
-return false;
-}
+            return false;
+          }
           break;
         case 'lte':
           if (typeof value !== 'number' || value > (filter.value as number)) {
-return false;
-}
+            return false;
+          }
           break;
         case 'in':
-          if (!Array.isArray(filter.value) || !filter.value.includes(value as string)) {
-return false;
-}
+          if (
+            !Array.isArray(filter.value) ||
+            !filter.value.includes(value as string)
+          ) {
+            return false;
+          }
           break;
         case 'contains':
-          if (typeof value !== 'string' || !value.includes(filter.value as string)) {
-return false;
-}
+          if (
+            typeof value !== 'string' ||
+            !value.includes(filter.value as string)
+          ) {
+            return false;
+          }
           break;
       }
     }
@@ -449,7 +478,11 @@ return false;
   /**
    * Build cache key for search results
    */
-  private buildCacheKey(query: string, targetPath: string, options?: RAGSearchOptions): string {
+  private buildCacheKey(
+    query: string,
+    targetPath: string,
+    options?: RAGSearchOptions
+  ): string {
     return JSON.stringify({ query, targetPath, options });
   }
 
@@ -458,13 +491,13 @@ return false;
    */
   private getCachedResult(key: string): CachedSearchResult | null {
     if (!this.config.cache.enabled) {
-return null;
-}
+      return null;
+    }
 
     const cached = this.searchCache.get(key);
     if (!cached) {
-return null;
-}
+      return null;
+    }
 
     if (Date.now() - cached.timestamp > this.config.cache.ttlMs) {
       this.searchCache.delete(key);
@@ -483,8 +516,9 @@ return null;
    */
   public async generateEmbedding(text: string): Promise<number[]> {
     if (!this.client) {
-      // Mock embedding for testing without API key
-      return this.generateMockEmbedding(text);
+      throw new Error(
+        'Gemini API key required for embedding generation. Set GEMINI_API_KEY environment variable.'
+      );
     }
 
     return this.withRetry(async () => {
@@ -507,37 +541,6 @@ return null;
   }
 
   /**
-   * Generate mock embedding for testing
-   */
-  private generateMockEmbedding(text: string): number[] {
-    // Simple hash-based mock embedding
-    const dimension = 768;
-    const embedding: number[] = new Array(dimension).fill(0);
-
-    for (let i = 0; i < text.length; i++) {
-      const charCode = text.charCodeAt(i);
-      const index = (charCode * (i + 1)) % dimension;
-      const currentValue = embedding[index];
-      if (currentValue !== undefined) {
-        embedding[index] = currentValue + 0.01;
-      }
-    }
-
-    // Normalize
-    const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-    if (norm > 0) {
-      for (let i = 0; i < embedding.length; i++) {
-        const val = embedding[i];
-        if (val !== undefined) {
-          embedding[i] = val / norm;
-        }
-      }
-    }
-
-    return embedding;
-  }
-
-  /**
    * Generate embeddings for multiple texts (batched)
    */
   public async generateEmbeddings(texts: string[]): Promise<number[][]> {
@@ -546,7 +549,9 @@ return null;
 
     for (let i = 0; i < texts.length; i += batchSize) {
       const batch = texts.slice(i, i + batchSize);
-      const batchResults = await Promise.all(batch.map((text) => this.generateEmbedding(text)));
+      const batchResults = await Promise.all(
+        batch.map(text => this.generateEmbedding(text))
+      );
       results.push(...batchResults);
 
       if (i + batchSize < texts.length) {
@@ -564,7 +569,11 @@ return null;
   /**
    * Search for relevant content based on a query
    */
-  async search(query: string, targetPath: string, options?: RAGSearchOptions): Promise<RAGSearchResult> {
+  async search(
+    query: string,
+    targetPath: string,
+    options?: RAGSearchOptions
+  ): Promise<RAGSearchResult> {
     const startTime = Date.now();
     const limit = options?.limit ?? this.config.maxChunksPerQuery;
     const minScore = options?.minScore ?? this.config.defaultMinScore;
@@ -581,7 +590,7 @@ return null;
       }
 
       // Ensure directory is indexed
-      if (!await this.isIndexed(targetPath)) {
+      if (!(await this.isIndexed(targetPath))) {
         await this.indexDirectory(targetPath);
       }
 
@@ -606,21 +615,27 @@ return null;
       for (const doc of store.documents.values()) {
         // Apply include/exclude patterns
         if (options?.includePatterns?.length) {
-          const matches = options.includePatterns.some((pattern) =>
-            this.matchPattern(doc.metadata.relativePath || doc.filePath, pattern),
+          const matches = options.includePatterns.some(pattern =>
+            this.matchPattern(
+              doc.metadata.relativePath || doc.filePath,
+              pattern
+            )
           );
           if (!matches) {
-continue;
-}
+            continue;
+          }
         }
 
         if (options?.excludePatterns?.length) {
-          const excluded = options.excludePatterns.some((pattern) =>
-            this.matchPattern(doc.metadata.relativePath || doc.filePath, pattern),
+          const excluded = options.excludePatterns.some(pattern =>
+            this.matchPattern(
+              doc.metadata.relativePath || doc.filePath,
+              pattern
+            )
           );
           if (excluded) {
-continue;
-}
+            continue;
+          }
         }
 
         const score = this.cosineSimilarity(queryEmbedding, doc.embedding);
@@ -630,7 +645,9 @@ continue;
           content: options?.includeContent !== false ? doc.content : '',
           source: doc.filePath,
           score,
-          timestamp: store.config.lastSyncAt ? new Date(store.config.lastSyncAt) : undefined,
+          timestamp: store.config.lastSyncAt
+            ? new Date(store.config.lastSyncAt)
+            : undefined,
           lineRange: doc.metadata.lineRange,
           metadata: doc.metadata as unknown as Record<string, unknown>,
         });
@@ -638,12 +655,14 @@ continue;
 
       // Sort by score and filter
       scoredChunks.sort((a, b) => b.score - a.score);
-      const filteredChunks = scoredChunks.filter((chunk) => chunk.score >= minScore).slice(0, limit);
+      const filteredChunks = scoredChunks
+        .filter(chunk => chunk.score >= minScore)
+        .slice(0, limit);
 
       const result: RAGSearchResult = {
         query,
         chunks: filteredChunks,
-        totalMatches: scoredChunks.filter((c) => c.score >= minScore).length,
+        totalMatches: scoredChunks.filter(c => c.score >= minScore).length,
         searchTimeMs: Date.now() - startTime,
       };
 
@@ -673,14 +692,16 @@ continue;
   async searchMultiple(
     queries: readonly string[],
     targetPath: string,
-    options?: RAGSearchOptions,
+    options?: RAGSearchOptions
   ): Promise<readonly RAGSearchResult[]> {
     // Ensure indexing happens once before parallel searches
-    if (!await this.isIndexed(targetPath)) {
+    if (!(await this.isIndexed(targetPath))) {
       await this.indexDirectory(targetPath);
     }
 
-    const results = await Promise.all(queries.map((query) => this.search(query, targetPath, options)));
+    const results = await Promise.all(
+      queries.map(query => this.search(query, targetPath, options))
+    );
     return results;
   }
 
@@ -710,7 +731,9 @@ continue;
     const processResult = await this.fileProcessor.processDirectory(path);
 
     // Generate embeddings and create documents
-    const embeddings = await this.generateEmbeddings(processResult.chunks.map((c) => c.content));
+    const embeddings = await this.generateEmbeddings(
+      processResult.chunks.map(c => c.content)
+    );
 
     for (let i = 0; i < processResult.chunks.length; i++) {
       const chunk = processResult.chunks[i];
@@ -735,8 +758,9 @@ continue;
           index: chunk.index,
           startLine: chunk.startLine,
           endLine: chunk.endLine,
-          totalChunks: processResult.chunks.filter((c) => c.fileMetadata.filePath === chunk.fileMetadata.filePath)
-            .length,
+          totalChunks: processResult.chunks.filter(
+            c => c.fileMetadata.filePath === chunk.fileMetadata.filePath
+          ).length,
         },
       };
 
@@ -744,7 +768,11 @@ continue;
     }
 
     // Update store metadata
-    this.updateStoreMetadata(storeId, processResult.filesProcessed.length, store.documents.size);
+    this.updateStoreMetadata(
+      storeId,
+      processResult.filesProcessed.length,
+      store.documents.size
+    );
     store.config.status = 'active';
     store.config.lastSyncAt = new Date().toISOString();
   }
@@ -811,13 +839,17 @@ continue;
    * List all vector stores
    */
   public async listStores(): Promise<RAGStore[]> {
-    return Array.from(this.stores.values()).map((s) => s.config);
+    return Array.from(this.stores.values()).map(s => s.config);
   }
 
   /**
    * Update store metadata
    */
-  private updateStoreMetadata(storeId: string, fileCount: number, chunkCount: number): void {
+  private updateStoreMetadata(
+    storeId: string,
+    fileCount: number,
+    chunkCount: number
+  ): void {
     const store = this.stores.get(storeId);
     if (store) {
       store.config.fileCount = fileCount;
@@ -847,7 +879,11 @@ continue;
   /**
    * Upload a single file to a store
    */
-  public async uploadFile(storeId: string, filePath: string, options: UploadOptions = {}): Promise<UploadResult> {
+  public async uploadFile(
+    storeId: string,
+    filePath: string,
+    options: UploadOptions = {}
+  ): Promise<UploadResult> {
     const startTime = Date.now();
     const store = this.stores.get(storeId);
 
@@ -859,15 +895,17 @@ continue;
 
     try {
       const chunks = await this.fileProcessor.processFile(filePath);
-      const embeddings = await this.generateEmbeddings(chunks.map((c) => c.content));
+      const embeddings = await this.generateEmbeddings(
+        chunks.map(c => c.content)
+      );
 
       const documents: VectorDocument[] = [];
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
         const embedding = embeddings[i];
         if (!chunk || !embedding) {
-continue;
-}
+          continue;
+        }
         documents.push({
           id: uuidv4(),
           filePath: chunk.fileMetadata.filePath,
@@ -897,8 +935,8 @@ continue;
 
       this.updateStoreMetadata(
         storeId,
-        new Set(Array.from(store.documents.values()).map((d) => d.filePath)).size,
-        store.documents.size,
+        new Set(Array.from(store.documents.values()).map(d => d.filePath)).size,
+        store.documents.size
       );
 
       store.config.status = 'active';
@@ -920,7 +958,11 @@ continue;
   /**
    * Upload multiple files to a store
    */
-  public async uploadFiles(storeId: string, filePaths: string[], options: UploadOptions = {}): Promise<UploadResult> {
+  public async uploadFiles(
+    storeId: string,
+    filePaths: string[],
+    options: UploadOptions = {}
+  ): Promise<UploadResult> {
     const startTime = Date.now();
     const store = this.stores.get(storeId);
 
@@ -936,15 +978,17 @@ continue;
 
     try {
       const processResult = await this.fileProcessor.processFiles(filePaths);
-      const embeddings = await this.generateEmbeddings(processResult.chunks.map((c) => c.content));
+      const embeddings = await this.generateEmbeddings(
+        processResult.chunks.map(c => c.content)
+      );
 
       const documents: VectorDocument[] = [];
       for (let i = 0; i < processResult.chunks.length; i++) {
         const chunk = processResult.chunks[i];
         const embedding = embeddings[i];
         if (!chunk || !embedding) {
-continue;
-}
+          continue;
+        }
         documents.push({
           id: uuidv4(),
           filePath: chunk.fileMetadata.filePath,
@@ -963,8 +1007,9 @@ continue;
             index: chunk.index,
             startLine: chunk.startLine,
             endLine: chunk.endLine,
-            totalChunks: processResult.chunks.filter((c) => c.fileMetadata.filePath === chunk.fileMetadata.filePath)
-              .length,
+            totalChunks: processResult.chunks.filter(
+              c => c.fileMetadata.filePath === chunk.fileMetadata.filePath
+            ).length,
           },
         });
       }
@@ -979,8 +1024,8 @@ continue;
 
       this.updateStoreMetadata(
         storeId,
-        new Set(Array.from(store.documents.values()).map((d) => d.filePath)).size,
-        store.documents.size,
+        new Set(Array.from(store.documents.values()).map(d => d.filePath)).size,
+        store.documents.size
       );
 
       store.config.status = 'active';
@@ -1002,7 +1047,11 @@ continue;
   /**
    * Upload all files in a directory to a store
    */
-  public async uploadDirectory(storeId: string, directory: string, options: UploadOptions = {}): Promise<UploadResult> {
+  public async uploadDirectory(
+    storeId: string,
+    directory: string,
+    options: UploadOptions = {}
+  ): Promise<UploadResult> {
     const files = await this.fileProcessor.discoverFiles(directory);
     return this.uploadFiles(storeId, files, options);
   }
@@ -1014,7 +1063,11 @@ continue;
   /**
    * Search a store with extended options (filtering, reranking)
    */
-  public async searchStore(storeId: string, query: string, options: SearchOptions = {}): Promise<ExtendedSearchResult[]> {
+  public async searchStore(
+    storeId: string,
+    query: string,
+    options: SearchOptions = {}
+  ): Promise<ExtendedSearchResult[]> {
     const store = this.stores.get(storeId);
 
     if (!store) {
@@ -1026,27 +1079,30 @@ continue;
 
     for (const doc of store.documents.values()) {
       // Apply metadata filters
-      if (options.filters && !this.matchesFilters(doc.metadata, options.filters)) {
+      if (
+        options.filters &&
+        !this.matchesFilters(doc.metadata, options.filters)
+      ) {
         continue;
       }
 
       // Apply include/exclude patterns
       if (options.includePatterns?.length) {
-        const matches = options.includePatterns.some((pattern) =>
-          this.matchPattern(doc.metadata.relativePath || doc.filePath, pattern),
+        const matches = options.includePatterns.some(pattern =>
+          this.matchPattern(doc.metadata.relativePath || doc.filePath, pattern)
         );
         if (!matches) {
-continue;
-}
+          continue;
+        }
       }
 
       if (options.excludePatterns?.length) {
-        const excluded = options.excludePatterns.some((pattern) =>
-          this.matchPattern(doc.metadata.relativePath || doc.filePath, pattern),
+        const excluded = options.excludePatterns.some(pattern =>
+          this.matchPattern(doc.metadata.relativePath || doc.filePath, pattern)
         );
         if (excluded) {
-continue;
-}
+          continue;
+        }
       }
 
       const score = this.cosineSimilarity(queryEmbedding, doc.embedding);
@@ -1058,20 +1114,24 @@ continue;
     const minScore = options.minScore || this.config.defaultMinScore;
     const limit = options.limit || this.config.maxChunksPerQuery;
 
-    const filteredResults = scores.filter((s) => s.score >= minScore).slice(0, limit);
+    const filteredResults = scores
+      .filter(s => s.score >= minScore)
+      .slice(0, limit);
 
-    let results: ExtendedSearchResult[] = filteredResults.map(({ doc, score }) => ({
-      documentId: doc.id,
-      score,
-      content: options.includeContent !== false ? doc.content : '',
-      metadata: doc.metadata,
-      chunk: {
-        index: doc.chunk.index,
-        startLine: doc.chunk.startLine,
-        endLine: doc.chunk.endLine,
-      },
-      embedding: options.includeEmbeddings ? doc.embedding : undefined,
-    }));
+    let results: ExtendedSearchResult[] = filteredResults.map(
+      ({ doc, score }) => ({
+        documentId: doc.id,
+        score,
+        content: options.includeContent !== false ? doc.content : '',
+        metadata: doc.metadata,
+        chunk: {
+          index: doc.chunk.index,
+          startLine: doc.chunk.startLine,
+          endLine: doc.chunk.endLine,
+        },
+        embedding: options.includeEmbeddings ? doc.embedding : undefined,
+      })
+    );
 
     // Optional reranking
     if (options.rerank && results.length > 0) {
@@ -1084,7 +1144,10 @@ continue;
   /**
    * Rerank results using LLM
    */
-  private async rerankResults(query: string, results: ExtendedSearchResult[]): Promise<ExtendedSearchResult[]> {
+  private async rerankResults(
+    query: string,
+    results: ExtendedSearchResult[]
+  ): Promise<ExtendedSearchResult[]> {
     if (!this.client || results.length === 0) {
       return results;
     }
@@ -1109,8 +1172,8 @@ Indices (e.g., "2,0,1,3"):`;
       const text = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
       const indices = text
         .split(',')
-        .map((s) => parseInt(s.trim(), 10))
-        .filter((n) => !isNaN(n) && n >= 0 && n < results.length);
+        .map(s => parseInt(s.trim(), 10))
+        .filter(n => !isNaN(n) && n >= 0 && n < results.length);
 
       if (indices.length > 0) {
         const reranked: ExtendedSearchResult[] = [];
@@ -1160,7 +1223,10 @@ Indices (e.g., "2,0,1,3"):`;
   /**
    * Get document by ID
    */
-  public async getDocument(storeId: string, documentId: string): Promise<VectorDocument | null> {
+  public async getDocument(
+    storeId: string,
+    documentId: string
+  ): Promise<VectorDocument | null> {
     const store = this.stores.get(storeId);
     if (!store) {
       return null;
@@ -1171,7 +1237,10 @@ Indices (e.g., "2,0,1,3"):`;
   /**
    * Delete document by ID
    */
-  public async deleteDocument(storeId: string, documentId: string): Promise<boolean> {
+  public async deleteDocument(
+    storeId: string,
+    documentId: string
+  ): Promise<boolean> {
     const store = this.stores.get(storeId);
     if (!store) {
       return false;
@@ -1182,8 +1251,8 @@ Indices (e.g., "2,0,1,3"):`;
     if (deleted) {
       this.updateStoreMetadata(
         storeId,
-        new Set(Array.from(store.documents.values()).map((d) => d.filePath)).size,
-        store.documents.size,
+        new Set(Array.from(store.documents.values()).map(d => d.filePath)).size,
+        store.documents.size
       );
     }
 
@@ -1193,7 +1262,10 @@ Indices (e.g., "2,0,1,3"):`;
   /**
    * Delete all documents from a file
    */
-  public async deleteFileDocuments(storeId: string, filePath: string): Promise<number> {
+  public async deleteFileDocuments(
+    storeId: string,
+    filePath: string
+  ): Promise<number> {
     const store = this.stores.get(storeId);
     if (!store) {
       return 0;
@@ -1210,8 +1282,8 @@ Indices (e.g., "2,0,1,3"):`;
     if (deleted > 0) {
       this.updateStoreMetadata(
         storeId,
-        new Set(Array.from(store.documents.values()).map((d) => d.filePath)).size,
-        store.documents.size,
+        new Set(Array.from(store.documents.values()).map(d => d.filePath)).size,
+        store.documents.size
       );
     }
 
@@ -1243,7 +1315,7 @@ Indices (e.g., "2,0,1,3"):`;
     }
 
     const documents = Array.from(store.documents.values());
-    const uniqueFiles = new Set(documents.map((d) => d.filePath));
+    const uniqueFiles = new Set(documents.map(d => d.filePath));
     const fileTypes: Record<string, number> = {};
 
     for (const doc of documents) {
@@ -1256,13 +1328,29 @@ Indices (e.g., "2,0,1,3"):`;
       totalFiles: uniqueFiles.size,
       totalChunks: documents.length,
       totalSizeBytes: documents.reduce((sum, d) => sum + d.content.length, 0),
-      avgChunkSize: documents.length > 0 ? documents.reduce((sum, d) => sum + d.content.length, 0) / documents.length : 0,
+      avgChunkSize:
+        documents.length > 0
+          ? documents.reduce((sum, d) => sum + d.content.length, 0) /
+            documents.length
+          : 0,
       fileTypes,
       health: {
-        status: store.config.status === 'active' ? 'healthy' : store.config.status === 'error' ? 'unhealthy' : 'degraded',
+        status:
+          store.config.status === 'active'
+            ? 'healthy'
+            : store.config.status === 'error'
+              ? 'unhealthy'
+              : 'degraded',
         checks: [
-          { name: 'store_status', status: store.config.status === 'active' ? 'pass' : 'fail' },
-          { name: 'document_count', status: documents.length > 0 ? 'pass' : 'warn', message: `${documents.length} documents` },
+          {
+            name: 'store_status',
+            status: store.config.status === 'active' ? 'pass' : 'fail',
+          },
+          {
+            name: 'document_count',
+            status: documents.length > 0 ? 'pass' : 'warn',
+            message: `${documents.length} documents`,
+          },
         ],
         lastCheckedAt: new Date().toISOString(),
       },
@@ -1332,7 +1420,9 @@ Indices (e.g., "2,0,1,3"):`;
 /**
  * Create a new GeminiRAGService instance
  */
-export function createGeminiRAGService(config?: GeminiRAGConfig): GeminiRAGService {
+export function createGeminiRAGService(
+  config?: GeminiRAGConfig
+): GeminiRAGService {
   return new GeminiRAGService(config);
 }
 

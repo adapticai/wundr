@@ -1,4 +1,10 @@
-import { randomBytes, createHash } from 'crypto';
+import {
+  randomBytes,
+  createHash,
+  createCipheriv,
+  createDecipheriv,
+  pbkdf2Sync,
+} from 'crypto';
 import { EventEmitter } from 'events';
 
 import * as keytar from 'keytar';
@@ -33,8 +39,10 @@ export interface EncryptedCredential {
 export class CredentialManager extends EventEmitter {
   private readonly serviceName: string = '@wundr/security';
   private readonly encryptionKey: string;
-  private readonly credentialStore: Map<string, EncryptedCredential> = new Map();
-  private rotationTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
+  private readonly credentialStore: Map<string, EncryptedCredential> =
+    new Map();
+  private rotationTimers: Map<string, ReturnType<typeof setTimeout>> =
+    new Map();
 
   constructor(masterKey?: string) {
     super();
@@ -47,19 +55,19 @@ export class CredentialManager extends EventEmitter {
   }
 
   private setupEventHandlers(): void {
-    this.on('credential:stored', (credentialId) => {
+    this.on('credential:stored', credentialId => {
       logger.info(`Credential stored: ${credentialId}`);
     });
 
-    this.on('credential:retrieved', (credentialId) => {
+    this.on('credential:retrieved', credentialId => {
       logger.info(`Credential retrieved: ${credentialId}`);
     });
 
-    this.on('credential:rotated', (credentialId) => {
+    this.on('credential:rotated', credentialId => {
       logger.info(`Credential rotated: ${credentialId}`);
     });
 
-    this.on('credential:expired', (credentialId) => {
+    this.on('credential:expired', credentialId => {
       logger.warn(`Credential expired: ${credentialId}`);
     });
   }
@@ -69,11 +77,16 @@ export class CredentialManager extends EventEmitter {
    */
   async storeCredential(options: CredentialOptions): Promise<string> {
     try {
-      const credentialId = this.generateCredentialId(options.service, options.account);
-      
+      const credentialId = this.generateCredentialId(
+        options.service,
+        options.account
+      );
+
       // Encrypt the password with modern AES-256-GCM
-      const { encryptedData, iv, authTag } = this.encryptPassword(options.password);
-      
+      const { encryptedData, iv, authTag } = this.encryptPassword(
+        options.password
+      );
+
       // Create credential object
       const credential: EncryptedCredential = {
         id: credentialId,
@@ -107,28 +120,34 @@ export class CredentialManager extends EventEmitter {
 
       this.emit('credential:stored', credentialId);
       return credentialId;
-
     } catch (error) {
       logger.error('Failed to store credential:', error);
-      throw new Error(`Failed to store credential: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to store credential: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
   /**
    * Retrieve and decrypt credential from OS keychain
    */
-  async retrieveCredential(credentialId: string): Promise<CredentialOptions | null> {
+  async retrieveCredential(
+    credentialId: string
+  ): Promise<CredentialOptions | null> {
     try {
       // Try memory cache first
       let credential = this.credentialStore.get(credentialId);
-      
+
       if (!credential) {
         // Retrieve from OS keychain
-        const storedCredential = await keytar.getPassword(this.serviceName, credentialId);
+        const storedCredential = await keytar.getPassword(
+          this.serviceName,
+          credentialId
+        );
         if (!storedCredential) {
           return null;
         }
-        
+
         credential = JSON.parse(storedCredential) as EncryptedCredential;
         this.credentialStore.set(credentialId, credential);
       }
@@ -149,7 +168,7 @@ export class CredentialManager extends EventEmitter {
       );
 
       this.emit('credential:retrieved', credentialId);
-      
+
       return {
         service: credential.service,
         account: credential.account,
@@ -158,7 +177,6 @@ export class CredentialManager extends EventEmitter {
         expiresAt: credential.expiresAt,
         rotationInterval: credential.rotationInterval,
       };
-
     } catch (error) {
       logger.error('Failed to retrieve credential:', error);
       return null;
@@ -168,7 +186,10 @@ export class CredentialManager extends EventEmitter {
   /**
    * Update existing credential
    */
-  async updateCredential(credentialId: string, updates: Partial<CredentialOptions>): Promise<void> {
+  async updateCredential(
+    credentialId: string,
+    updates: Partial<CredentialOptions>
+  ): Promise<void> {
     try {
       const existingCredential = this.credentialStore.get(credentialId);
       if (!existingCredential) {
@@ -178,18 +199,25 @@ export class CredentialManager extends EventEmitter {
       const updatedCredential: EncryptedCredential = {
         ...existingCredential,
         updatedAt: new Date(),
-        ...(updates.password && (() => {
-          const { encryptedData, iv, authTag } = this.encryptPassword(updates.password);
-          return {
-            encryptedPassword: encryptedData,
-            iv: iv,
-            authTag: authTag,
-            encryptionVersion: 2
-          };
-        })()),
-        ...(updates.metadata && { metadata: { ...existingCredential.metadata, ...updates.metadata } }),
+        ...(updates.password &&
+          (() => {
+            const { encryptedData, iv, authTag } = this.encryptPassword(
+              updates.password
+            );
+            return {
+              encryptedPassword: encryptedData,
+              iv: iv,
+              authTag: authTag,
+              encryptionVersion: 2,
+            };
+          })()),
+        ...(updates.metadata && {
+          metadata: { ...existingCredential.metadata, ...updates.metadata },
+        }),
         ...(updates.expiresAt && { expiresAt: updates.expiresAt }),
-        ...(updates.rotationInterval && { rotationInterval: updates.rotationInterval }),
+        ...(updates.rotationInterval && {
+          rotationInterval: updates.rotationInterval,
+        }),
       };
 
       // Update in keychain
@@ -207,10 +235,11 @@ export class CredentialManager extends EventEmitter {
         this.clearRotation(credentialId);
         this.setupRotation(credentialId, updates.rotationInterval);
       }
-
     } catch (error) {
       logger.error('Failed to update credential:', error);
-      throw new Error(`Failed to update credential: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to update credential: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -221,26 +250,29 @@ export class CredentialManager extends EventEmitter {
     try {
       // Remove from keychain
       await keytar.deletePassword(this.serviceName, credentialId);
-      
+
       // Remove from memory cache
       this.credentialStore.delete(credentialId);
-      
+
       // Clear rotation timer
       this.clearRotation(credentialId);
-
     } catch (error) {
       logger.error('Failed to delete credential:', error);
-      throw new Error(`Failed to delete credential: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to delete credential: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
   /**
    * List all stored credentials (metadata only)
    */
-  async listCredentials(): Promise<Array<{ id: string; service: string; account: string; createdAt: Date }>> {
+  async listCredentials(): Promise<
+    Array<{ id: string; service: string; account: string; createdAt: Date }>
+  > {
     try {
       const credentials = await keytar.findCredentials(this.serviceName);
-      
+
       return credentials.map((cred: any) => {
         const parsed: EncryptedCredential = JSON.parse(cred.password);
         return {
@@ -250,7 +282,6 @@ export class CredentialManager extends EventEmitter {
           createdAt: parsed.createdAt,
         };
       });
-
     } catch (error) {
       logger.error('Failed to list credentials:', error);
       return [];
@@ -260,15 +291,18 @@ export class CredentialManager extends EventEmitter {
   /**
    * Rotate credential password
    */
-  async rotateCredential(credentialId: string, newPassword: string): Promise<void> {
+  async rotateCredential(
+    credentialId: string,
+    newPassword: string
+  ): Promise<void> {
     try {
       await this.updateCredential(credentialId, { password: newPassword });
-      
+
       const credential = this.credentialStore.get(credentialId);
       if (credential) {
         credential.lastRotated = new Date();
         this.credentialStore.set(credentialId, credential);
-        
+
         // Update in keychain
         await keytar.setPassword(
           this.serviceName,
@@ -278,10 +312,11 @@ export class CredentialManager extends EventEmitter {
       }
 
       this.emit('credential:rotated', credentialId);
-
     } catch (error) {
       logger.error('Failed to rotate credential:', error);
-      throw new Error(`Failed to rotate credential: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to rotate credential: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -294,7 +329,10 @@ export class CredentialManager extends EventEmitter {
     );
 
     const successful = results
-      .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
+      .filter(
+        (result): result is PromiseFulfilledResult<string> =>
+          result.status === 'fulfilled'
+      )
       .map(result => result.value);
 
     const failed = results.filter(result => result.status === 'rejected');
@@ -305,12 +343,14 @@ export class CredentialManager extends EventEmitter {
     return successful;
   }
 
-  async bulkRetrieve(credentialIds: string[]): Promise<Array<CredentialOptions | null>> {
+  async bulkRetrieve(
+    credentialIds: string[]
+  ): Promise<Array<CredentialOptions | null>> {
     const results = await Promise.allSettled(
       credentialIds.map(id => this.retrieveCredential(id))
     );
 
-    return results.map(result => 
+    return results.map(result =>
       result.status === 'fulfilled' ? result.value : null
     );
   }
@@ -318,32 +358,33 @@ export class CredentialManager extends EventEmitter {
   /**
    * Security utilities
    */
-  private encryptPassword(password: string): { encryptedData: string; iv: string; authTag: string } {
+  private encryptPassword(password: string): {
+    encryptedData: string;
+    iv: string;
+    authTag: string;
+  } {
     try {
-      // Generate a secure random IV for each encryption
-      const iv = randomBytes(16); // 128-bit IV for CBC
-      
-      // Derive a consistent key from the master key using a simple hash for now
-      // In production, use proper key derivation like PBKDF2 or scrypt
-      const key = createHash('sha256').update(this.encryptionKey).digest();
-      
-      // Simple XOR encryption for demonstration (replace with proper encryption)
-      const encrypted = Buffer.from(password, 'utf8');
-      for (let i = 0; i < encrypted.length; i++) {
-        encrypted[i] ^= key[i % key.length] ^ iv[i % iv.length];
-      }
-      
-      // Create authentication tag
-      const authTag = createHash('sha256')
-        .update(encrypted)
-        .update(iv)
-        .update(key)
-        .digest();
-      
+      // Generate a random 12-byte IV and 16-byte salt for this encryption
+      const iv = randomBytes(12);
+      const salt = randomBytes(16);
+
+      // Derive a 256-bit key using PBKDF2 with the per-credential salt
+      const key = pbkdf2Sync(this.encryptionKey, salt, 100000, 32, 'sha512');
+
+      const cipher = createCipheriv('aes-256-gcm', key, iv);
+      const encryptedBuffer = Buffer.concat([
+        cipher.update(Buffer.from(password, 'utf8')),
+        cipher.final(),
+      ]);
+      const authTag = cipher.getAuthTag();
+
+      // Encode salt alongside ciphertext so it can be recovered on decryption
+      const encryptedData = `${salt.toString('hex')}$${encryptedBuffer.toString('hex')}`;
+
       return {
-        encryptedData: encrypted.toString('hex'),
+        encryptedData,
         iv: iv.toString('hex'),
-        authTag: authTag.toString('hex')
+        authTag: authTag.toString('hex'),
       };
     } catch (error) {
       logger.error('Encryption failed:', error);
@@ -352,9 +393,9 @@ export class CredentialManager extends EventEmitter {
   }
 
   private decryptPassword(
-    encryptedPassword: string, 
-    iv?: string, 
-    authTag?: string, 
+    encryptedPassword: string,
+    iv?: string,
+    authTag?: string,
     version: number = 1
   ): string {
     try {
@@ -362,65 +403,69 @@ export class CredentialManager extends EventEmitter {
       if (version === 1 || !iv || !authTag) {
         return this.legacyDecryptPassword(encryptedPassword);
       }
-      
-      // Modern decryption with auth verification
-      const key = createHash('sha256').update(this.encryptionKey).digest();
-      const ivBuffer = Buffer.from(iv, 'hex');
-      const encryptedBuffer = Buffer.from(encryptedPassword, 'hex');
-      
-      // Verify auth tag first
-      const expectedAuthTag = createHash('sha256')
-        .update(encryptedBuffer)
-        .update(ivBuffer)
-        .update(key)
-        .digest('hex');
-      
-      if (expectedAuthTag !== authTag) {
-        throw new Error('Authentication verification failed');
+
+      // Extract the per-credential salt prefixed to the ciphertext
+      const separatorIndex = encryptedPassword.indexOf('$');
+      if (separatorIndex === -1) {
+        throw new Error('Invalid encrypted data format');
       }
-      
-      // Simple XOR decryption (reverse of encryption)
-      const decrypted = Buffer.from(encryptedBuffer);
-      for (let i = 0; i < decrypted.length; i++) {
-        decrypted[i] ^= key[i % key.length] ^ ivBuffer[i % ivBuffer.length];
-      }
-      
+      const salt = Buffer.from(
+        encryptedPassword.substring(0, separatorIndex),
+        'hex'
+      );
+      const ciphertext = Buffer.from(
+        encryptedPassword.substring(separatorIndex + 1),
+        'hex'
+      );
+
+      // Re-derive the key using the stored salt
+      const key = pbkdf2Sync(this.encryptionKey, salt, 100000, 32, 'sha512');
+
+      const decipher = createDecipheriv(
+        'aes-256-gcm',
+        key,
+        Buffer.from(iv, 'hex')
+      );
+      decipher.setAuthTag(Buffer.from(authTag, 'hex'));
+
+      const decrypted = Buffer.concat([
+        decipher.update(ciphertext),
+        decipher.final(),
+      ]);
+
       return decrypted.toString('utf8');
     } catch (error) {
       logger.error('Decryption failed:', error);
       throw new Error('Failed to decrypt password - data may be corrupted');
     }
   }
-  
+
   /**
    * Legacy decryption for backward compatibility
    * @deprecated This method is deprecated and should only be used for existing data
    */
   private legacyDecryptPassword(encryptedPassword: string): string {
     try {
-      // Legacy simple decryption for backward compatibility
-      // This is a simplified version - in reality you'd need the exact legacy method
-      const key = createHash('md5').update(this.encryptionKey).digest();
+      const key = createHash('sha256').update(this.encryptionKey).digest();
       const encrypted = Buffer.from(encryptedPassword, 'hex');
-      
-      // Simple XOR with different key for legacy compatibility
+
       const decrypted = Buffer.from(encrypted);
       for (let i = 0; i < decrypted.length; i++) {
         decrypted[i] ^= key[i % key.length];
       }
-      
+
       return decrypted.toString('utf8');
     } catch (error) {
       logger.error('Legacy decryption failed:', error);
       throw new Error('Failed to decrypt legacy password');
     }
   }
-  
+
   /**
    * Derive a consistent 256-bit key from the master key
    */
-  private deriveKey(masterKey: string): Buffer {
-    return createHash('sha256').update(masterKey).digest();
+  private deriveKey(masterKey: string, salt: Buffer): Buffer {
+    return pbkdf2Sync(masterKey, salt, 100000, 32, 'sha512');
   }
 
   private generateCredentialId(service: string, account: string): string {
@@ -458,10 +503,10 @@ export class CredentialManager extends EventEmitter {
     for (const [credentialId] of this.rotationTimers) {
       this.clearRotation(credentialId);
     }
-    
+
     // Clear memory cache
     this.credentialStore.clear();
-    
+
     // Remove all event listeners
     this.removeAllListeners();
   }

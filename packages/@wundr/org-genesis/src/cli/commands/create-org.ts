@@ -17,8 +17,7 @@ import type {
   OrgSize,
 } from '../../types/index.js';
 
-// Note: GenesisEngine will be imported once fully implemented
-// import { GenesisEngine } from '../../generator/index.js';
+import { GenesisEngine } from '../../generator/index.js';
 
 // =============================================================================
 // TYPES & INTERFACES
@@ -465,36 +464,6 @@ export async function saveResult(
   return fullPath;
 }
 
-/**
- * Generates a URL-safe slug from a name.
- *
- * @param name - The name to convert to a slug
- * @returns URL-safe slug
- *
- * @example
- * ```typescript
- * generateSlug('ACME Corp'); // 'acme-corp'
- * ```
- */
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
-/**
- * Generates a unique identifier.
- *
- * @param prefix - Prefix for the ID
- * @returns Unique identifier string
- */
-function generateId(prefix: string): string {
-  const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 8);
-  return `${prefix}-${timestamp}-${random}`;
-}
-
 // =============================================================================
 // MAIN COMMAND HANDLER
 // =============================================================================
@@ -565,26 +534,46 @@ export async function createOrgCommand(
     // Initialize progress tracking
     displayProgress('initializing', 0);
 
-    // Generate organization manifest
-    // Note: In production, this would use the GenesisEngine
-    // const engine = new GenesisEngine();
-    // const result = await engine.generate(config);
-
-    // Placeholder: Generate mock organization structure
-    const manifest = await generateMockOrganization(
-      config,
-      (phase, progress) => {
+    // Generate organization using the real GenesisEngine
+    const engine = new GenesisEngine();
+    const engineResult = await engine.generateFromConfig(config, {
+      industry: config.industry,
+      size: config.size,
+      nodeCount: config.orchestratorCount,
+      dryRun: config.dryRun,
+      onProgress: (_phase, progress) => {
+        // Map engine progress percentage to typed generation phases for display
+        let phase: GenerationPhase;
+        if (progress <= 5) {
+          phase = 'initializing';
+        } else if (progress <= 35) {
+          phase = 'generating-vps';
+        } else if (progress <= 65) {
+          phase = 'generating-disciplines';
+        } else if (progress <= 85) {
+          phase = 'generating-agents';
+        } else if (progress <= 90) {
+          phase = 'configuring-tools';
+        } else if (progress <= 95) {
+          phase = 'configuring-hooks';
+        } else if (progress < 100) {
+          phase = 'validating';
+        } else {
+          phase = 'complete';
+        }
         displayProgress(phase, progress);
-      }
-    );
+      },
+    });
 
-    // Calculate statistics
+    const manifest = engineResult.manifest;
+
+    // Build statistics from the engine result
     const stats: GenesisStats = {
-      orchestratorCount: manifest.vpRegistry.length,
-      disciplineCount: manifest.disciplineIds.length,
-      agentCount: manifest.disciplineIds.length * 5, // Estimate: ~5 agents per discipline
-      toolCount: manifest.disciplineIds.length * 3, // Estimate: ~3 tools per discipline
-      hookCount: manifest.disciplineIds.length * 2, // Estimate: ~2 hooks per discipline
+      orchestratorCount: engineResult.stats.orchestratorCount,
+      disciplineCount: engineResult.stats.disciplineCount,
+      agentCount: engineResult.stats.agentCount,
+      toolCount: 0,
+      hookCount: 0,
     };
 
     // Determine output path
@@ -603,8 +592,7 @@ export async function createOrgCommand(
     // Save to registry if requested
     const savedToRegistry = (options.saveToRegistry ?? true) && !config.dryRun;
     if (savedToRegistry) {
-      // Placeholder: In production, this would save to the registry
-      // await registryManager.save(manifest);
+      await engine.saveToRegistry(engineResult);
     }
 
     displayProgress('complete', 100);
@@ -632,208 +620,6 @@ export async function createOrgCommand(
     }
     process.exitCode = 1;
   }
-}
-
-// =============================================================================
-// MOCK GENERATION (Placeholder for GenesisEngine)
-// =============================================================================
-
-/**
- * Generates a mock organization structure.
- *
- * This is a placeholder implementation that will be replaced
- * by the GenesisEngine in production.
- *
- * @param config - Organization configuration
- * @param onProgress - Progress callback
- * @returns Generated organization manifest
- */
-async function generateMockOrganization(
-  config: CreateOrgConfig,
-  onProgress: (phase: GenerationPhase, progress: number) => void
-): Promise<OrganizationManifest> {
-  const slug = config.slug ?? generateSlug(config.name);
-  const id = generateId('org');
-
-  // Simulate generation phases with delays
-  onProgress('initializing', 5);
-  await delay(200);
-
-  // Generate VPs
-  onProgress('generating-vps', 15);
-  const orchestratorCount = config.orchestratorCount ?? DEFAULT_VP_COUNTS[config.size];
-  const vpRegistry = generateMockVPs(orchestratorCount, id);
-  await delay(300);
-  onProgress('generating-vps', 30);
-
-  // Generate disciplines
-  onProgress('generating-disciplines', 40);
-  const disciplineIds = generateMockDisciplineIds(config.industry, config.size);
-  await delay(300);
-  onProgress('generating-disciplines', 55);
-
-  // Generate agents (simulated)
-  if (config.generateAgents) {
-    onProgress('generating-agents', 60);
-    await delay(200);
-    onProgress('generating-agents', 70);
-  }
-
-  // Configure tools
-  onProgress('configuring-tools', 75);
-  await delay(100);
-
-  // Configure hooks
-  onProgress('configuring-hooks', 80);
-  await delay(100);
-
-  // Validation
-  onProgress('validating', 85);
-  await delay(100);
-
-  const now = new Date();
-
-  return {
-    id,
-    name: config.name,
-    slug,
-    mission: config.mission,
-    description: config.description,
-    industry: config.industry,
-    size: config.size,
-    lifecycleState: 'draft',
-    vpRegistry,
-    disciplineIds,
-    governance: config.governance
-      ? {
-          requireHumanApproval: config.governance.requireHumanApproval ?? true,
-          approvalThresholdUsd: config.governance.approvalThresholdUsd ?? 10000,
-          escalationTimeoutMinutes:
-            config.governance.escalationTimeoutMinutes ?? 60,
-          executiveVpIds: config.governance.executiveVpIds ?? [],
-          auditLoggingEnabled: config.governance.auditLoggingEnabled ?? true,
-        }
-      : undefined,
-    security: config.security
-      ? {
-          encryptionAtRest: config.security.encryptionAtRest ?? 'AES-256',
-          encryptionInTransit: config.security.encryptionInTransit ?? 'TLS-1.3',
-          mfaRequired: config.security.mfaRequired ?? true,
-          sessionTimeoutMinutes: config.security.sessionTimeoutMinutes ?? 480,
-          complianceFrameworks: config.security.complianceFrameworks ?? [],
-          ipAllowlist: config.security.ipAllowlist ?? [],
-        }
-      : undefined,
-    communication: config.communication
-      ? {
-          protocol: config.communication.protocol ?? 'grpc',
-          messageQueue: config.communication.messageQueue ?? 'redis',
-          maxMessageSizeKb: config.communication.maxMessageSizeKb ?? 1024,
-          compressionEnabled: config.communication.compressionEnabled ?? true,
-          retryPolicy: config.communication.retryPolicy ?? {
-            maxRetries: 3,
-            initialDelayMs: 100,
-            maxDelayMs: 5000,
-            backoffMultiplier: 2,
-          },
-        }
-      : undefined,
-    createdAt: now,
-    updatedAt: now,
-    schemaVersion: '1.0.0',
-    metadata: config.metadata ?? {},
-  };
-}
-
-/**
- * Generates mock Orchestrator node mappings.
- *
- * @param count - Number of VPs to generate
- * @param orgId - Organization ID
- * @returns Array of Orchestrator node mappings
- */
-function generateMockVPs(
-  count: number,
-  orgId: string
-): OrganizationManifest['vpRegistry'] {
-  const vpRoles = [
-    'engineering',
-    'product',
-    'operations',
-    'finance',
-    'legal',
-    'hr',
-    'marketing',
-    'sales',
-    'security',
-    'data',
-  ];
-
-  return Array.from({ length: count }, (_, i) => {
-    const role = vpRoles[i % vpRoles.length];
-    return {
-      orchestratorId: `orchestrator-${role}-${String(i + 1).padStart(3, '0')}`,
-      nodeId: `node-${orgId}-${String(i + 1).padStart(3, '0')}`,
-      hostname: `orchestrator-${role}.cluster.internal`,
-      status: 'provisioning' as const,
-      assignedDisciplineId: `disc-${role}`,
-      port: 8080 + i,
-      tags: [role, 'tier-1'],
-      provisionedAt: new Date(),
-    };
-  });
-}
-
-/**
- * Generates mock discipline IDs based on industry and size.
- *
- * @param industry - Organization industry
- * @param size - Organization size
- * @returns Array of discipline IDs
- */
-function generateMockDisciplineIds(
-  industry: OrgIndustry,
-  size: OrgSize
-): string[] {
-  const baseDisciplines = ['engineering', 'product', 'operations'];
-
-  const industryDisciplines: Record<OrgIndustry, string[]> = {
-    technology: ['devops', 'security', 'data-engineering', 'ml-ai'],
-    finance: ['compliance', 'risk', 'trading', 'treasury'],
-    healthcare: ['clinical', 'compliance', 'research', 'patient-care'],
-    legal: ['contracts', 'litigation', 'compliance', 'ip'],
-    marketing: ['content', 'analytics', 'brand', 'growth'],
-    manufacturing: ['quality', 'supply-chain', 'logistics', 'maintenance'],
-    retail: ['inventory', 'customer-service', 'logistics', 'merchandising'],
-    gaming: ['game-design', 'qa', 'community', 'monetization'],
-    media: ['content', 'distribution', 'audience', 'production'],
-    custom: ['general', 'support', 'administration'],
-  };
-
-  const sizeMultiplier: Record<OrgSize, number> = {
-    small: 1,
-    medium: 1.5,
-    large: 2,
-    enterprise: 3,
-  };
-
-  const allDisciplines = [...baseDisciplines, ...industryDisciplines[industry]];
-  const count = Math.min(
-    allDisciplines.length,
-    Math.floor(baseDisciplines.length * sizeMultiplier[size])
-  );
-
-  return allDisciplines.slice(0, Math.max(count, 2)).map(d => `disc-${d}`);
-}
-
-/**
- * Utility function to create a delay.
- *
- * @param ms - Milliseconds to delay
- * @returns Promise that resolves after the delay
- */
-function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // =============================================================================

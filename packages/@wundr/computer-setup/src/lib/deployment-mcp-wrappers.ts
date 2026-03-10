@@ -12,6 +12,15 @@ import { Logger } from '../utils/logger';
 
 const logger = new Logger({ name: 'deployment-mcp-wrappers' });
 
+export class DeploymentMCPNotConfiguredError extends Error {
+  constructor(method: string) {
+    super(
+      `Deployment MCP not configured. ${method} requires Railway or Netlify MCP server. Run 'claude mcp add railway npx @railway/mcp-server' to configure.`
+    );
+    this.name = 'DeploymentMCPNotConfiguredError';
+  }
+}
+
 // Railway Types
 export interface RailwayDeploymentStatus {
   id: string;
@@ -73,7 +82,7 @@ export const railway = {
     // This is a wrapper that would call mcp__railway__deploy_status
     // In actual usage, Claude Code calls the MCP tool directly
     logger.debug(`mcp__railway__deploy_status { projectId: "${projectId}" }`);
-    return {} as RailwayDeploymentStatus;
+    throw new DeploymentMCPNotConfiguredError('railway.deployStatus');
   },
 
   /**
@@ -89,7 +98,7 @@ export const railway = {
     logger.debug(
       `mcp__railway__get_logs { serviceId: "${serviceId}", lines: ${lines}, since: "${since}"${filter ? `, filter: "${filter}"` : ''} }`
     );
-    return [];
+    throw new DeploymentMCPNotConfiguredError('railway.getLogs');
   },
 
   /**
@@ -102,7 +111,7 @@ export const railway = {
     logger.debug(
       `mcp__railway__get_deployments { projectId: "${projectId}", limit: ${limit} }`
     );
-    return [];
+    throw new DeploymentMCPNotConfiguredError('railway.getDeployments');
   },
 
   /**
@@ -126,7 +135,7 @@ export const railway = {
    */
   async getVariables(projectId: string): Promise<Record<string, string>> {
     logger.debug(`mcp__railway__get_variables { projectId: "${projectId}" }`);
-    return {};
+    throw new DeploymentMCPNotConfiguredError('railway.getVariables');
   },
 };
 
@@ -141,7 +150,7 @@ export const netlify = {
   ): Promise<NetlifyDeployStatus> {
     const params = siteId ? `siteId: "${siteId}"` : `deployId: "${deployId}"`;
     logger.debug(`mcp__netlify__deploy_status { ${params} }`);
-    return {} as NetlifyDeployStatus;
+    throw new DeploymentMCPNotConfiguredError('netlify.deployStatus');
   },
 
   /**
@@ -151,7 +160,7 @@ export const netlify = {
     logger.debug(
       `mcp__netlify__get_build_logs { deployId: "${deployId}", includeOutput: true }`
     );
-    return {} as NetlifyBuildLog;
+    throw new DeploymentMCPNotConfiguredError('netlify.getBuildLogs');
   },
 
   /**
@@ -231,5 +240,5 @@ export function getPlatformConfig(
       accessToken: process.env.NETLIFY_ACCESS_TOKEN || '',
     };
   }
-  return {};
+  throw new DeploymentMCPNotConfiguredError('getPlatformConfig');
 }

@@ -5,6 +5,8 @@
  * @packageDocumentation
  */
 
+import * as crypto from 'crypto';
+
 import {
   DAEMON_REDIS_KEYS,
   DAEMON_SCOPE_SETS,
@@ -664,10 +666,52 @@ export class DaemonAuthService {
     apiKey: string,
     storedHash: string
   ): Promise<boolean> {
-    // Simple comparison for mock implementation
-    // In production, use proper password hashing (argon2, bcrypt)
-    const keyHash = Buffer.from(apiKey).toString('base64');
-    return keyHash === storedHash || apiKey === storedHash;
+    // Stored format: "<hex-salt>:<hex-sha256-digest>"
+    const separatorIndex = storedHash.indexOf(':');
+    if (separatorIndex === -1) {
+      // Unrecognised format — reject
+      return false;
+    }
+
+    const saltHex = storedHash.slice(0, separatorIndex);
+    const hashHex = storedHash.slice(separatorIndex + 1);
+
+    const saltBuffer = Buffer.from(saltHex, 'hex');
+    const expectedHashBuffer = Buffer.from(hashHex, 'hex');
+
+    const actualHashBuffer = crypto
+      .createHash('sha256')
+      .update(saltBuffer)
+      .update(apiKey)
+      .digest();
+
+    if (actualHashBuffer.length !== expectedHashBuffer.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(actualHashBuffer, expectedHashBuffer);
+  }
+
+  /**
+   * Hash a plain-text API key for storage.
+   *
+   * Generates a cryptographically random 16-byte salt, derives a SHA-256
+   * digest of `salt || apiKey`, and returns the result as the string
+   * `"<hex-salt>:<hex-digest>"`.  Pass this value as `apiKeyHash` in the
+   * `orchestratorConfig` JSON when provisioning a new Orchestrator.
+   *
+   * @param apiKey - The plain-text API key to hash
+   * @returns A storable hash string in the format `<hex-salt>:<hex-sha256>`
+   */
+  static hashApiKey(apiKey: string): string {
+    const salt = crypto.randomBytes(16);
+    const hash = crypto
+      .createHash('sha256')
+      .update(salt)
+      .update(apiKey)
+      .digest();
+
+    return `${salt.toString('hex')}:${hash.toString('hex')}`;
   }
 
   /**

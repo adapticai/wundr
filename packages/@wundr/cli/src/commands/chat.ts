@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import inquirer from 'inquirer';
 
+import { AIService } from '../ai/ai-service';
 import { errorHandler } from '../utils/error-handler';
 import { logger } from '../utils/logger';
 
@@ -17,12 +18,14 @@ import type { Command } from 'commander';
  */
 export class ChatCommands {
   private activeSessions: Map<string, ChatSession> = new Map();
+  private aiService: AIService;
 
   constructor(
     private program: Command,
     private configManager: ConfigManager,
     private pluginManager: PluginManager
   ) {
+    this.aiService = new AIService(configManager);
     this.registerCommands();
   }
 
@@ -625,9 +628,13 @@ export class ChatCommands {
   }
 
   private async callAI(session: ChatSession, message: string): Promise<string> {
-    // Mock AI service call
-    // In a real implementation, this would call Claude, GPT, etc.
-    return `This is a mock response to: "${message}". The AI would provide a helpful response here based on the context and conversation history.`;
+    if (!this.aiService.isReady()) {
+      throw new Error(
+        'AI service not configured. Set ANTHROPIC_API_KEY environment variable to enable chat.'
+      );
+    }
+
+    return this.aiService.sendMessage(session.id, message);
   }
 
   private showChatHelp(): void {

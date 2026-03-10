@@ -431,11 +431,9 @@ export class AgentEvaluator {
         score = gradeResult.score;
         passed = gradeResult.passed;
       } else {
-        // Fallback to simple scoring based on expected output
-        score = 7; // Default passing score if no LLM grading
-        passed = true;
-        overallAssessment =
-          'Graded without LLM (no detailed assessment available)';
+        throw new Error(
+          'LLM configuration required for grading evaluation. Provide llmConfig or a custom gradingFunction.'
+        );
       }
     } catch (gradingError) {
       error =
@@ -542,13 +540,9 @@ export class AgentEvaluator {
       }
 
       case 'semantic': {
-        // Semantic similarity would require embeddings - simplified here
-        return {
-          passed: true,
-          score: 7,
-          explanation:
-            'Semantic similarity check not implemented - passing by default',
-        };
+        throw new Error(
+          'Semantic similarity evaluation requires an embedding service. Provide an embedding service configuration or use a different expected output type.'
+        );
       }
 
       case 'llm-judge': {
@@ -711,69 +705,17 @@ class LLMGrader {
 
   /**
    * Call the LLM with the grading prompt
-   * Note: This is a placeholder - in production, this would call the actual LLM API
    */
   private async callLLM(
     _systemPrompt: string,
     _userPrompt: string
   ): Promise<string> {
-    // In a real implementation, this would call the LLM API based on config.provider
-    // For now, we simulate a response structure
-
-    // Check if we have an API key (for real implementations)
-    if (
-      !this.config.apiKey &&
-      !process.env['OPENAI_API_KEY'] &&
-      !process.env['ANTHROPIC_API_KEY']
-    ) {
-      // Return a simulated response for testing
-      return this.simulateGradingResponse();
-    }
-
-    // TODO: Implement actual LLM API calls based on provider
+    // TODO: Implement actual LLM API calls based on config.provider
     // This would use fetch/axios to call OpenAI, Anthropic, or custom APIs
     throw new Error(
       `LLM provider '${this.config.provider}' integration not implemented. ` +
         'Configure with a custom grading function or implement the API call.'
     );
-  }
-
-  /**
-   * Simulate a grading response for testing purposes
-   */
-  private simulateGradingResponse(): string {
-    return JSON.stringify({
-      criteria: [
-        {
-          criterionId: 'accuracy',
-          score: 8,
-          explanation: 'Response is factually accurate with minor omissions.',
-        },
-        {
-          criterionId: 'relevance',
-          score: 9,
-          explanation: 'Response directly addresses the input question.',
-        },
-        {
-          criterionId: 'completeness',
-          score: 7,
-          explanation:
-            'Response covers main points but could include more detail.',
-        },
-        {
-          criterionId: 'clarity',
-          score: 8,
-          explanation: 'Response is well-structured and easy to understand.',
-        },
-        {
-          criterionId: 'helpfulness',
-          score: 8,
-          explanation: 'Response provides actionable information.',
-        },
-      ],
-      overallAssessment:
-        'The agent provided a solid response that accurately addresses the question with good clarity and relevance. Minor improvements could be made in completeness.',
-    });
   }
 
   /**

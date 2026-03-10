@@ -13,6 +13,29 @@ import * as fs from 'fs-extra';
 import { MCPToolsConfig, MCPTool, Task, OperationResult } from '../types';
 import { convertErrorToOperationError } from '../utils';
 
+/**
+ * Raised when a requested tool ID has no entry in the registry.
+ */
+export class ToolNotFoundError extends Error {
+  constructor(toolId: string) {
+    super(`Tool '${toolId}' not found in the MCP Tools Registry`);
+    this.name = 'ToolNotFoundError';
+  }
+}
+
+/**
+ * Raised when a tool handler exists but throws during execution.
+ */
+export class ToolExecutionError extends Error {
+  constructor(toolId: string, operation: string, cause: Error) {
+    super(
+      `Tool '${toolId}' failed to execute operation '${operation}': ${cause.message}`
+    );
+    this.name = 'ToolExecutionError';
+    this.cause = cause;
+  }
+}
+
 export class MCPToolsRegistry extends EventEmitter {
   private config: MCPToolsConfig;
   private tools: Map<string, MCPTool> = new Map();
@@ -497,46 +520,54 @@ export class MCPToolsRegistry extends EventEmitter {
   }
 
   /**
-   * Execute MCP tool operation
+   * Execute MCP tool operation.
+   *
+   * Throws `ToolNotFoundError` when the tool ID is not registered so callers
+   * can distinguish "tool does not exist" from ordinary execution failures.
+   * All other errors are caught, wrapped, and returned as a failed
+   * `OperationResult` to keep the public API non-throwing for runtime errors.
    */
   async executeTool(
     toolId: string,
     operation: string,
     params: any
   ): Promise<OperationResult> {
+    const tool = this.tools.get(toolId);
+
+    if (!tool) {
+      // Re-throw as a typed error so callers can discriminate on ToolNotFoundError.
+      throw new ToolNotFoundError(toolId);
+    }
+
+    if (tool.status !== 'available') {
+      return {
+        success: false,
+        message: `Tool ${toolId} is not available (status: ${tool.status})`,
+      };
+    }
+
+    // Set tool status to busy
+    tool.status = 'busy';
+    this.emit('tool-busy', tool);
+
+    const handler = this.toolHandlers.get(toolId);
+
+    if (!handler) {
+      tool.status = 'error';
+      this.emit(
+        'tool-error',
+        tool,
+        new Error(`No handler found for tool ${toolId}`)
+      );
+      return {
+        success: false,
+        message: `No handler found for tool ${toolId}`,
+      };
+    }
+
     try {
-      const tool = this.tools.get(toolId);
-
-      if (!tool) {
-        return {
-          success: false,
-          message: `Tool ${toolId} not found`,
-        };
-      }
-
-      if (tool.status !== 'available') {
-        return {
-          success: false,
-          message: `Tool ${toolId} is not available (status: ${tool.status})`,
-        };
-      }
-
-      // Set tool status to busy
-      tool.status = 'busy';
-      this.emit('tool-busy', tool);
-
-      const handler = this.toolHandlers.get(toolId);
-
-      if (!handler) {
-        tool.status = 'error';
-        return {
-          success: false,
-          message: `No handler found for tool ${toolId}`,
-        };
-      }
-
       // Execute tool operation with timeout
-      const timeoutPromise = new Promise((_, reject) =>
+      const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(
           () => reject(new Error('Tool execution timeout')),
           this.config.timeout
@@ -558,16 +589,19 @@ export class MCPToolsRegistry extends EventEmitter {
         data: result,
       };
     } catch (error) {
-      const tool = this.tools.get(toolId);
-      if (tool) {
-        tool.status = 'error';
-        this.emit('tool-error', tool, error);
-      }
+      tool.status = 'error';
+      this.emit('tool-error', tool, error);
+
+      const cause = error instanceof Error ? error : new Error(String(error));
+      const wrapped = new ToolExecutionError(toolId, operation, cause);
 
       return {
         success: false,
-        message: `Tool execution failed: ${error.message}`,
-        error: error,
+        message: wrapped.message,
+        error: convertErrorToOperationError(
+          wrapped,
+          'MCP_TOOL_EXECUTION_ERROR'
+        ),
       };
     }
   }
@@ -681,6 +715,28 @@ export class MCPToolsRegistry extends EventEmitter {
     };
   }
 
+  /**
+   * Register a callable handler function for a specific tool ID.
+   *
+   * The handler receives `(operation: string, params: any)` and must return a
+   * promise resolving to the operation result. Calling this after initialization
+   * will override the default handler that was assigned during
+   * `initializeToolHandlers()`.
+   *
+   * @param toolId    - The tool identifier as declared in AVAILABLE_TOOLS.
+   * @param handler   - An object or function with an `execute` method, or any
+   *                    object that conforms to `{ execute(op, params): Promise<any> }`.
+   */
+  registerToolHandler(
+    toolId: string,
+    handler: { execute(operation: string, params: any): Promise<any> }
+  ): void {
+    if (!this.tools.has(toolId)) {
+      throw new ToolNotFoundError(toolId);
+    }
+    this.toolHandlers.set(toolId, handler);
+  }
+
   async shutdown(): Promise<OperationResult> {
     try {
       // Shutdown all tool handlers
@@ -710,31 +766,50 @@ export class MCPToolsRegistry extends EventEmitter {
 }
 
 /**
- * Default MCP Handler for tools without specific handlers
+ * Default MCP Handler for tools without specific compiled handlers on disk.
+ *
+ * Real operation callables can be bound at runtime via `registerOperation`.
+ * If a registered callable exists for the requested operation it is invoked
+ * directly. If no callable has been registered the handler throws so the
+ * caller receives a clear error instead of a silent simulated result.
  */
 class DefaultMCPHandler {
   private toolId: string;
   private _config: any;
+  private operationHandlers: Map<string, (params: any) => Promise<any>> =
+    new Map();
 
   constructor(toolId: string, config: any) {
     this.toolId = toolId;
     this._config = config;
   }
 
-  async execute(operation: string, params: any): Promise<any> {
-    // Default implementation - could interface with MCP protocol directly
-    console.info(`Executing ${this.toolId} operation: ${operation}`, params);
+  /**
+   * Bind a callable to a specific operation name.
+   * The callable receives the raw `params` object and must return a promise.
+   */
+  registerOperation(
+    operation: string,
+    handler: (params: any) => Promise<any>
+  ): void {
+    this.operationHandlers.set(operation, handler);
+  }
 
-    return {
-      toolId: this.toolId,
-      operation,
-      params,
-      executedAt: new Date().toISOString(),
-      result: 'simulated-execution',
-    };
+  async execute(operation: string, params: any): Promise<any> {
+    const callable = this.operationHandlers.get(operation);
+
+    if (!callable) {
+      throw new Error(
+        `No handler registered for operation '${operation}' on tool '${this.toolId}'. ` +
+          `Register a callable via DefaultMCPHandler.registerOperation() or provide a ` +
+          `compiled handler module at the expected handlers path.`
+      );
+    }
+
+    return callable(params);
   }
 
   async shutdown(): Promise<void> {
-    // Cleanup resources
+    this.operationHandlers.clear();
   }
 }

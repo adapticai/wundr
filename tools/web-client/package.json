@@ -5,7 +5,7 @@
   "description": "Wundr - Intelligent Monorepo Analysis Dashboard by Wundr, by Adaptic.ai",
   "author": "Wundr, by Adaptic.ai",
   "scripts": {
-    "build": "echo \"⚠️  Skipping build for WIP package\" && mkdir -p .next && exit 0",
+    "build": "echo 'Skipping build - 100+ pre-existing type errors need resolution (see PRODUCTION_READINESS_BACKLOG.md)' && exit 0",
     "dev": "next dev -p 3003",
     "dev:full": "concurrently \"npm run dev\" \"npm run ws\"",
     "dev:ws": "npm run ws",
@@ -21,7 +21,7 @@
     "test:all": "npm run test && npm run test:e2e",
     "playwright:install": "playwright install",
     "playwright:report": "playwright show-report",
-    "typecheck": "echo \"⚠️  Skipping typecheck for WIP package\" && exit 0",
+    "typecheck": "echo 'Skipping typecheck - 100+ pre-existing type errors need resolution (see PRODUCTION_READINESS_BACKLOG.md)' && exit 0",
     "ws": "node scripts/websocket-server.js"
   },
   "dependencies": {

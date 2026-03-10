@@ -65,6 +65,17 @@ export interface SecurityAlert {
   metadata?: Record<string, unknown>;
 }
 
+/**
+ * Transport interface for delivering security alert notifications.
+ * Implement this interface to integrate with your preferred email provider
+ * (e.g. AWS SES, SendGrid, nodemailer) without adding a hard dependency.
+ */
+export interface AlertTransport {
+  sendEmail(to: string[], subject: string, body: string): Promise<void>;
+  sendWebhook(url: string, payload: object): Promise<void>;
+  sendSlack(webhookUrl: string, message: object): Promise<void>;
+}
+
 export interface MonitoringOptions {
   metricsCollectionIntervalMs?: number;
   alertEvaluationIntervalMs?: number;
@@ -72,7 +83,22 @@ export interface MonitoringOptions {
   enableSystemMetrics?: boolean;
   enableSecurityMetrics?: boolean;
   enablePerformanceMetrics?: boolean;
+  /**
+   * Optional transport used to deliver alert notifications.
+   * When omitted, webhook and Slack alerts use the built-in fetch() implementation
+   * and email alerts emit a warning instead of sending.
+   */
+  transport?: AlertTransport;
 }
+
+/** Default timeout (ms) applied to outbound fetch calls for webhook / Slack alerts. */
+const FETCH_TIMEOUT_MS = 10_000;
+
+/** Number of times a failing outbound HTTP request is retried before giving up. */
+const FETCH_MAX_RETRIES = 3;
+
+/** Base delay (ms) for exponential back-off between retries. */
+const FETCH_RETRY_BASE_DELAY_MS = 500;
 
 export class SecurityMonitor extends EventEmitter {
   private metrics: SecurityMetrics[] = [];
@@ -81,8 +107,9 @@ export class SecurityMonitor extends EventEmitter {
   private alertCooldowns: Map<string, number> = new Map();
   private metricsCollectionTimer?: ReturnType<typeof setInterval>;
   private alertEvaluationTimer?: ReturnType<typeof setInterval>;
-  private options: Required<MonitoringOptions>;
-  
+  private options: Required<Omit<MonitoringOptions, 'transport'>>;
+  private transport?: AlertTransport;
+
   // Counters for security metrics
   private securityCounters = {
     activeUsers: new Set<string>(),
@@ -92,7 +119,7 @@ export class SecurityMonitor extends EventEmitter {
     suspiciousActivities: 0,
     blockedRequests: 0,
     vulnerabilitiesDetected: 0,
-    secretsFound: 0
+    secretsFound: 0,
   };
 
   // Performance tracking
@@ -101,7 +128,7 @@ export class SecurityMonitor extends EventEmitter {
     requestCount: 0,
     errorCount: 0,
     cacheHits: 0,
-    cacheMisses: 0
+    cacheMisses: 0,
   };
 
   constructor(options: MonitoringOptions = {}) {
@@ -112,8 +139,9 @@ export class SecurityMonitor extends EventEmitter {
       metricsRetentionMs: options.metricsRetentionMs || 24 * 60 * 60 * 1000, // 24 hours
       enableSystemMetrics: options.enableSystemMetrics ?? true,
       enableSecurityMetrics: options.enableSecurityMetrics ?? true,
-      enablePerformanceMetrics: options.enablePerformanceMetrics ?? true
+      enablePerformanceMetrics: options.enablePerformanceMetrics ?? true,
     };
+    this.transport = options.transport;
 
     this.initializeDefaultAlertRules();
     this.startMonitoring();
@@ -197,13 +225,18 @@ export class SecurityMonitor extends EventEmitter {
   /**
    * Record performance data
    */
-  recordPerformanceData(type: string, value: number, metadata?: Record<string, unknown>): void {
+  recordPerformanceData(
+    type: string,
+    value: number,
+    metadata?: Record<string, unknown>
+  ): void {
     switch (type) {
       case 'response_time':
         this.performanceData.responseTimesMs.push(value);
         // Keep only last 1000 measurements
         if (this.performanceData.responseTimesMs.length > 1000) {
-          this.performanceData.responseTimesMs = this.performanceData.responseTimesMs.slice(-1000);
+          this.performanceData.responseTimesMs =
+            this.performanceData.responseTimesMs.slice(-1000);
         }
         break;
       case 'request':
@@ -220,7 +253,12 @@ export class SecurityMonitor extends EventEmitter {
         break;
     }
 
-    this.emit('performance:data', { type, value, metadata, timestamp: new Date() });
+    this.emit('performance:data', {
+      type,
+      value,
+      metadata,
+      timestamp: new Date(),
+    });
   }
 
   /**
@@ -234,8 +272,8 @@ export class SecurityMonitor extends EventEmitter {
    * Get metrics history
    */
   getMetricsHistory(startTime: Date, endTime: Date): SecurityMetrics[] {
-    return this.metrics.filter(metric => 
-      metric.timestamp >= startTime && metric.timestamp <= endTime
+    return this.metrics.filter(
+      metric => metric.timestamp >= startTime && metric.timestamp <= endTime
     );
   }
 
@@ -296,7 +334,7 @@ export class SecurityMonitor extends EventEmitter {
       alert.status = 'acknowledged';
       alert.acknowledgedBy = acknowledgedBy;
       alert.acknowledgedAt = new Date();
-      
+
       this.emit('alert:acknowledged', alert);
       logger.info(`Alert acknowledged: ${alert.title} by ${acknowledgedBy}`);
     }
@@ -311,7 +349,7 @@ export class SecurityMonitor extends EventEmitter {
       alert.status = 'resolved';
       alert.resolvedBy = resolvedBy;
       alert.resolvedAt = new Date();
-      
+
       this.activeAlerts.delete(alertId);
       this.emit('alert:resolved', alert);
       logger.info(`Alert resolved: ${alert.title} by ${resolvedBy}`);
@@ -321,7 +359,10 @@ export class SecurityMonitor extends EventEmitter {
   /**
    * Generate monitoring report
    */
-  generateMonitoringReport(startTime: Date, endTime: Date): {
+  generateMonitoringReport(
+    startTime: Date,
+    endTime: Date
+  ): {
     period: { start: Date; end: Date };
     metrics: {
       summary: SecurityMetrics;
@@ -338,15 +379,18 @@ export class SecurityMonitor extends EventEmitter {
     recommendations: string[];
   } {
     const history = this.getMetricsHistory(startTime, endTime);
-    const summary = history.length > 0 ? history[history.length - 1] : this.getCurrentMetrics();
-    
+    const summary =
+      history.length > 0
+        ? history[history.length - 1]
+        : this.getCurrentMetrics();
+
     // Calculate trends (simplified)
     const trends = this.calculateTrends(history);
-    
+
     // Alert statistics
     const allAlerts = this.getAllAlerts(startTime, endTime);
     const alertStats = this.calculateAlertStatistics(allAlerts);
-    
+
     // Generate recommendations
     const recommendations = this.generateRecommendations(summary, allAlerts);
 
@@ -355,19 +399,23 @@ export class SecurityMonitor extends EventEmitter {
       metrics: {
         summary,
         history,
-        trends
+        trends,
       },
       alerts: alertStats,
-      recommendations
+      recommendations,
     };
   }
 
   /**
    * Export monitoring data
    */
-  exportMonitoringData(format: 'json' | 'csv', startTime: Date, endTime: Date): string {
+  exportMonitoringData(
+    format: 'json' | 'csv',
+    startTime: Date,
+    endTime: Date
+  ): string {
     const data = this.generateMonitoringReport(startTime, endTime);
-    
+
     switch (format) {
       case 'json':
         return JSON.stringify(data, null, 2);
@@ -382,11 +430,11 @@ export class SecurityMonitor extends EventEmitter {
     try {
       const metrics = this.buildCurrentMetrics();
       this.metrics.push(metrics);
-      
+
       // Clean up old metrics
       const cutoff = new Date(Date.now() - this.options.metricsRetentionMs);
       this.metrics = this.metrics.filter(m => m.timestamp > cutoff);
-      
+
       this.emit('metrics:collected', metrics);
     } catch (error) {
       logger.error('Failed to collect metrics:', error);
@@ -395,29 +443,29 @@ export class SecurityMonitor extends EventEmitter {
 
   private buildCurrentMetrics(): SecurityMetrics {
     const now = new Date();
-    
+
     // System metrics
     let systemMetrics = {
       cpuUsage: 0,
       memoryUsage: 0,
       diskUsage: 0,
       networkConnections: 0,
-      uptime: 0
+      uptime: 0,
     };
-    
+
     if (this.options.enableSystemMetrics) {
       const totalMem = os.totalmem();
       const freeMem = os.freemem();
-      
+
       systemMetrics = {
         cpuUsage: os.loadavg()[0], // 1-minute load average as proxy
         memoryUsage: ((totalMem - freeMem) / totalMem) * 100,
         diskUsage: 0, // Would need additional disk space check
         networkConnections: 0, // Would need netstat or similar
-        uptime: os.uptime()
+        uptime: os.uptime(),
       };
     }
-    
+
     // Security metrics
     let securityMetrics = {
       activeUsers: 0,
@@ -427,9 +475,9 @@ export class SecurityMonitor extends EventEmitter {
       suspiciousActivities: 0,
       blockedRequests: 0,
       vulnerabilitiesDetected: 0,
-      secretsFound: 0
+      secretsFound: 0,
     };
-    
+
     if (this.options.enableSecurityMetrics) {
       securityMetrics = {
         activeUsers: this.securityCounters.activeUsers.size,
@@ -439,110 +487,125 @@ export class SecurityMonitor extends EventEmitter {
         suspiciousActivities: this.securityCounters.suspiciousActivities,
         blockedRequests: this.securityCounters.blockedRequests,
         vulnerabilitiesDetected: this.securityCounters.vulnerabilitiesDetected,
-        secretsFound: this.securityCounters.secretsFound
+        secretsFound: this.securityCounters.secretsFound,
       };
     }
-    
+
     // Performance metrics
     let performanceMetrics = {
       responseTime: 0,
       throughput: 0,
       errorRate: 0,
-      cacheHitRate: 0
+      cacheHitRate: 0,
     };
-    
+
     if (this.options.enablePerformanceMetrics) {
-      const avgResponseTime = this.performanceData.responseTimesMs.length > 0
-        ? this.performanceData.responseTimesMs.reduce((a, b) => a + b, 0) / this.performanceData.responseTimesMs.length
-        : 0;
-        
+      const avgResponseTime =
+        this.performanceData.responseTimesMs.length > 0
+          ? this.performanceData.responseTimesMs.reduce((a, b) => a + b, 0) /
+            this.performanceData.responseTimesMs.length
+          : 0;
+
       const totalRequests = this.performanceData.requestCount;
-      const totalCacheRequests = this.performanceData.cacheHits + this.performanceData.cacheMisses;
-      
+      const totalCacheRequests =
+        this.performanceData.cacheHits + this.performanceData.cacheMisses;
+
       performanceMetrics = {
         responseTime: avgResponseTime,
         throughput: totalRequests,
-        errorRate: totalRequests > 0 ? (this.performanceData.errorCount / totalRequests) * 100 : 0,
-        cacheHitRate: totalCacheRequests > 0 ? (this.performanceData.cacheHits / totalCacheRequests) * 100 : 0
+        errorRate:
+          totalRequests > 0
+            ? (this.performanceData.errorCount / totalRequests) * 100
+            : 0,
+        cacheHitRate:
+          totalCacheRequests > 0
+            ? (this.performanceData.cacheHits / totalCacheRequests) * 100
+            : 0,
       };
     }
-    
+
     return {
       timestamp: now,
       system: systemMetrics,
       security: securityMetrics,
-      performance: performanceMetrics
+      performance: performanceMetrics,
     };
   }
 
   private evaluateAlerts(): void {
     const currentMetrics = this.getCurrentMetrics();
-    
+
     for (const rule of this.alertRules.values()) {
       if (!rule.enabled) continue;
-      
+
       // Check cooldown
       const lastAlert = this.alertCooldowns.get(rule.id);
-      if (lastAlert && (Date.now() - lastAlert) < rule.cooldownMs) {
+      if (lastAlert && Date.now() - lastAlert < rule.cooldownMs) {
         continue;
       }
-      
+
       if (this.evaluateAlertCondition(rule, currentMetrics)) {
         this.triggerAlert(rule, currentMetrics);
       }
     }
   }
 
-  private evaluateAlertCondition(rule: AlertRule, metrics: SecurityMetrics): boolean {
+  private evaluateAlertCondition(
+    rule: AlertRule,
+    metrics: SecurityMetrics
+  ): boolean {
     try {
       // Simple condition evaluation (in production, use a proper expression parser)
       const condition = rule.condition.toLowerCase();
-      
+
       if (condition.includes('failed_logins >')) {
         const threshold = parseInt(condition.split('>')[1].trim());
         return metrics.security.failedLogins > threshold;
       }
-      
+
       if (condition.includes('privilege_escalation >')) {
         const threshold = parseInt(condition.split('>')[1].trim());
         return metrics.security.privilegeEscalations > threshold;
       }
-      
+
       if (condition.includes('suspicious_activities >')) {
         const threshold = parseInt(condition.split('>')[1].trim());
         return metrics.security.suspiciousActivities > threshold;
       }
-      
+
       if (condition.includes('response_time >')) {
         const threshold = parseInt(condition.split('>')[1].trim());
         return metrics.performance.responseTime > threshold;
       }
-      
+
       if (condition.includes('error_rate >')) {
         const threshold = parseInt(condition.split('>')[1].trim());
         return metrics.performance.errorRate > threshold;
       }
-      
+
       if (condition.includes('cpu_usage >')) {
         const threshold = parseInt(condition.split('>')[1].trim());
         return metrics.system.cpuUsage > threshold;
       }
-      
+
       if (condition.includes('memory_usage >')) {
         const threshold = parseInt(condition.split('>')[1].trim());
         return metrics.system.memoryUsage > threshold;
       }
-      
+
       return false;
     } catch (error) {
-      logger.warn(`Failed to evaluate alert condition for rule ${rule.id}:`, error);
+      logger.warn(
+        `Failed to evaluate alert condition for rule ${rule.id}:`,
+        error
+      );
       return false;
     }
   }
 
   private triggerAlert(rule: AlertRule, metrics: SecurityMetrics): void {
     const alertId = `${rule.id}_${Date.now()}`;
-    
+
     const alert: SecurityAlert = {
       id: alertId,
       ruleId: rule.id,
@@ -551,27 +614,30 @@ export class SecurityMonitor extends EventEmitter {
       title: rule.name,
       description: rule.description,
       metrics: metrics,
-      status: 'open'
+      status: 'open',
     };
-    
+
     this.activeAlerts.set(alertId, alert);
     this.alertCooldowns.set(rule.id, Date.now());
-    
+
     // Execute alert actions
     this.executeAlertActions(rule, alert);
-    
+
     this.emit('alert:triggered', alert);
-    logger.warn(`Security alert triggered: ${alert.title}`, { 
+    logger.warn(`Security alert triggered: ${alert.title}`, {
       alertId,
       severity: alert.severity,
-      ruleId: rule.id 
+      ruleId: rule.id,
     });
   }
 
-  private async executeAlertActions(rule: AlertRule, alert: SecurityAlert): Promise<void> {
+  private async executeAlertActions(
+    rule: AlertRule,
+    alert: SecurityAlert
+  ): Promise<void> {
     for (const action of rule.actions) {
       if (!action.enabled) continue;
-      
+
       try {
         switch (action.type) {
           case 'email':
@@ -593,27 +659,266 @@ export class SecurityMonitor extends EventEmitter {
     }
   }
 
-  private async sendEmailAlert(config: Record<string, unknown>, alert: SecurityAlert): Promise<void> {
-    // Mock email implementation
-    logger.info(`Would send email alert to ${config.recipients}:`, {
-      subject: `Security Alert: ${alert.title}`,
-      body: alert.description
+  /**
+   * Send an email alert via the configured AlertTransport.
+   *
+   * Expects config.recipients to be a string[] or comma-separated string.
+   * If no transport is configured a warning is logged and the call is a no-op
+   * so that the rest of the alert pipeline is not interrupted.
+   */
+  private async sendEmailAlert(
+    config: Record<string, unknown>,
+    alert: SecurityAlert
+  ): Promise<void> {
+    if (!this.transport) {
+      logger.warn(
+        'SecurityMonitor: no AlertTransport configured – email alert NOT sent.',
+        {
+          alertId: alert.id,
+          title: alert.title,
+          severity: alert.severity,
+          recipients: config.recipients,
+        }
+      );
+      return;
+    }
+
+    const rawRecipients = config.recipients;
+    let recipients: string[];
+
+    if (Array.isArray(rawRecipients)) {
+      recipients = rawRecipients as string[];
+    } else if (typeof rawRecipients === 'string') {
+      recipients = rawRecipients
+        .split(',')
+        .map(r => r.trim())
+        .filter(Boolean);
+    } else {
+      throw new Error(
+        'sendEmailAlert: config.recipients must be a string or string[]'
+      );
+    }
+
+    if (recipients.length === 0) {
+      throw new Error('sendEmailAlert: config.recipients is empty');
+    }
+
+    const subject = `[${alert.severity.toUpperCase()}] Security Alert: ${alert.title}`;
+    const body = this.buildEmailBody(alert);
+
+    await this.transport.sendEmail(recipients, subject, body);
+    logger.info(`Email alert sent to ${recipients.join(', ')}`, {
+      alertId: alert.id,
+      severity: alert.severity,
     });
   }
 
-  private async sendWebhookAlert(config: Record<string, unknown>, alert: SecurityAlert): Promise<void> {
-    // Mock webhook implementation
-    logger.info(`Would send webhook to ${config.url}:`, alert);
+  /**
+   * POST a JSON alert payload to a configured webhook URL.
+   *
+   * Uses the built-in fetch() available in Node 18+.
+   * Retries up to FETCH_MAX_RETRIES times with exponential back-off.
+   * Delegates to AlertTransport.sendWebhook when a custom transport is set.
+   */
+  private async sendWebhookAlert(
+    config: Record<string, unknown>,
+    alert: SecurityAlert
+  ): Promise<void> {
+    const url = config.url as string | undefined;
+    if (!url) {
+      throw new Error('sendWebhookAlert: config.url is required');
+    }
+
+    const payload: Record<string, unknown> = {
+      alertId: alert.id,
+      ruleId: alert.ruleId,
+      severity: alert.severity,
+      title: alert.title,
+      description: alert.description,
+      status: alert.status,
+      timestamp: alert.timestamp.toISOString(),
+      metrics: alert.metrics,
+      ...(alert.metadata ? { metadata: alert.metadata } : {}),
+    };
+
+    if (this.transport) {
+      await this.transport.sendWebhook(url, payload);
+    } else {
+      await this.fetchWithRetry(url, payload);
+    }
+
+    logger.info(`Webhook alert delivered to ${url}`, {
+      alertId: alert.id,
+      severity: alert.severity,
+    });
   }
 
-  private async sendSlackAlert(config: Record<string, unknown>, alert: SecurityAlert): Promise<void> {
-    // Mock Slack implementation
-    logger.info(`Would send Slack message to ${config.channel}:`, alert.title);
+  /**
+   * POST a Slack Block Kit message to a configured incoming-webhook URL.
+   *
+   * Uses the built-in fetch() available in Node 18+.
+   * Retries up to FETCH_MAX_RETRIES times with exponential back-off.
+   * Delegates to AlertTransport.sendSlack when a custom transport is set.
+   */
+  private async sendSlackAlert(
+    config: Record<string, unknown>,
+    alert: SecurityAlert
+  ): Promise<void> {
+    const webhookUrl = (config.webhookUrl ?? config.url) as string | undefined;
+    if (!webhookUrl) {
+      throw new Error(
+        'sendSlackAlert: config.webhookUrl (or config.url) is required'
+      );
+    }
+
+    const severityEmoji: Record<SecurityAlert['severity'], string> = {
+      low: ':white_circle:',
+      medium: ':large_yellow_circle:',
+      high: ':large_orange_circle:',
+      critical: ':red_circle:',
+    };
+
+    const message = {
+      text: `${severityEmoji[alert.severity]} *Security Alert: ${alert.title}*`,
+      blocks: [
+        {
+          type: 'header',
+          text: {
+            type: 'plain_text',
+            text: `Security Alert: ${alert.title}`,
+            emoji: true,
+          },
+        },
+        {
+          type: 'section',
+          fields: [
+            {
+              type: 'mrkdwn',
+              text: `*Severity:*\n${alert.severity.toUpperCase()}`,
+            },
+            { type: 'mrkdwn', text: `*Status:*\n${alert.status}` },
+            { type: 'mrkdwn', text: `*Alert ID:*\n${alert.id}` },
+            {
+              type: 'mrkdwn',
+              text: `*Time:*\n${alert.timestamp.toISOString()}`,
+            },
+          ],
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `*Description:*\n${alert.description}`,
+          },
+        },
+        {
+          type: 'divider',
+        },
+      ],
+    };
+
+    if (this.transport) {
+      await this.transport.sendSlack(webhookUrl, message);
+    } else {
+      await this.fetchWithRetry(webhookUrl, message);
+    }
+
+    logger.info(`Slack alert delivered`, {
+      alertId: alert.id,
+      severity: alert.severity,
+    });
   }
 
-  private async executeCustomAction(config: Record<string, unknown>, _alert: SecurityAlert): Promise<void> {
+  private async executeCustomAction(
+    config: Record<string, unknown>,
+    _alert: SecurityAlert
+  ): Promise<void> {
     // Execute custom action based on configuration
     logger.info('Executing custom alert action:', config);
+  }
+
+  /**
+   * POST JSON to a URL with timeout enforcement and exponential-back-off retries.
+   * Uses the global fetch() built into Node 18+.
+   */
+  private async fetchWithRetry(url: string, payload: object): Promise<void> {
+    let attempt = 0;
+
+    while (attempt <= FETCH_MAX_RETRIES) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+
+        if (response.ok) return;
+
+        const errorText = await response.text().catch(() => '');
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      } catch (error) {
+        if (attempt === FETCH_MAX_RETRIES) {
+          throw new Error(
+            `fetchWithRetry: all ${FETCH_MAX_RETRIES + 1} attempts to POST ${url} failed. Last error: ${(error as Error).message}`
+          );
+        }
+
+        const delay = FETCH_RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+        logger.warn(
+          `fetchWithRetry: attempt ${attempt + 1} failed for ${url}, retrying in ${delay}ms`,
+          { error: (error as Error).message }
+        );
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      attempt++;
+    }
+  }
+
+  /**
+   * Build a plain-text email body from a SecurityAlert.
+   */
+  private buildEmailBody(alert: SecurityAlert): string {
+    const lines: string[] = [
+      `Security Alert Notification`,
+      `===========================`,
+      ``,
+      `Alert ID  : ${alert.id}`,
+      `Rule ID   : ${alert.ruleId}`,
+      `Severity  : ${alert.severity.toUpperCase()}`,
+      `Status    : ${alert.status}`,
+      `Time      : ${alert.timestamp.toISOString()}`,
+      ``,
+      `Title     : ${alert.title}`,
+      ``,
+      `Description`,
+      `-----------`,
+      alert.description,
+      ``,
+    ];
+
+    if (alert.metrics) {
+      lines.push('Metrics Snapshot', '----------------');
+      lines.push(JSON.stringify(alert.metrics, null, 2));
+      lines.push('');
+    }
+
+    if (alert.metadata) {
+      lines.push('Metadata', '--------');
+      lines.push(JSON.stringify(alert.metadata, null, 2));
+      lines.push('');
+    }
+
+    lines.push('---');
+    lines.push('This is an automated alert from SecurityMonitor.');
+
+    return lines.join('\n');
   }
 
   private initializeDefaultAlertRules(): void {
@@ -631,9 +936,9 @@ export class SecurityMonitor extends EventEmitter {
           {
             type: 'webhook',
             configuration: { url: '/security/alerts/failed-logins' },
-            enabled: true
-          }
-        ]
+            enabled: true,
+          },
+        ],
       },
       {
         id: 'privilege-escalation',
@@ -648,14 +953,14 @@ export class SecurityMonitor extends EventEmitter {
           {
             type: 'email',
             configuration: { recipients: ['security@company.com'] },
-            enabled: true
+            enabled: true,
           },
           {
             type: 'webhook',
             configuration: { url: '/security/alerts/privilege-escalation' },
-            enabled: true
-          }
-        ]
+            enabled: true,
+          },
+        ],
       },
       {
         id: 'high-cpu-usage',
@@ -670,9 +975,9 @@ export class SecurityMonitor extends EventEmitter {
           {
             type: 'webhook',
             configuration: { url: '/system/alerts/high-cpu' },
-            enabled: true
-          }
-        ]
+            enabled: true,
+          },
+        ],
       },
       {
         id: 'high-response-time',
@@ -687,10 +992,10 @@ export class SecurityMonitor extends EventEmitter {
           {
             type: 'webhook',
             configuration: { url: '/performance/alerts/slow-response' },
-            enabled: true
-          }
-        ]
-      }
+            enabled: true,
+          },
+        ],
+      },
     ];
 
     for (const rule of defaultRules) {
@@ -700,15 +1005,18 @@ export class SecurityMonitor extends EventEmitter {
 
   private calculateTrends(history: SecurityMetrics[]): Record<string, number> {
     if (history.length < 2) return {};
-    
+
     const latest = history[history.length - 1];
     const previous = history[history.length - 2];
-    
+
     return {
-      failedLoginsChange: latest.security.failedLogins - previous.security.failedLogins,
-      responseTimeChange: latest.performance.responseTime - previous.performance.responseTime,
+      failedLoginsChange:
+        latest.security.failedLogins - previous.security.failedLogins,
+      responseTimeChange:
+        latest.performance.responseTime - previous.performance.responseTime,
       cpuUsageChange: latest.system.cpuUsage - previous.system.cpuUsage,
-      memoryUsageChange: latest.system.memoryUsage - previous.system.memoryUsage
+      memoryUsageChange:
+        latest.system.memoryUsage - previous.system.memoryUsage,
     };
   }
 
@@ -725,76 +1033,93 @@ export class SecurityMonitor extends EventEmitter {
     const bySeverity: Record<string, number> = {};
     let resolved = 0;
     let open = 0;
-    
+
     for (const alert of alerts) {
       // Group by rule name as category
       const category = alert.title.split(' ')[0].toLowerCase();
       byCategory[category] = (byCategory[category] || 0) + 1;
-      
+
       bySeverity[alert.severity] = (bySeverity[alert.severity] || 0) + 1;
-      
+
       if (alert.status === 'resolved') {
         resolved++;
       } else {
         open++;
       }
     }
-    
+
     return {
       total: alerts.length,
       byCategory,
       bySeverity,
       resolved,
-      open
+      open,
     };
   }
 
-  private generateRecommendations(metrics: SecurityMetrics, alerts: SecurityAlert[]): string[] {
+  private generateRecommendations(
+    metrics: SecurityMetrics,
+    alerts: SecurityAlert[]
+  ): string[] {
     const recommendations: string[] = [];
-    
+
     // Security recommendations
     if (metrics.security.failedLogins > 5) {
-      recommendations.push('Consider implementing account lockout policies to prevent brute force attacks');
+      recommendations.push(
+        'Consider implementing account lockout policies to prevent brute force attacks'
+      );
     }
-    
+
     if (metrics.security.privilegeEscalations > 0) {
-      recommendations.push('Review and audit privilege escalation events immediately');
+      recommendations.push(
+        'Review and audit privilege escalation events immediately'
+      );
     }
-    
+
     if (metrics.security.vulnerabilitiesDetected > 0) {
-      recommendations.push('Address detected vulnerabilities by updating dependencies');
+      recommendations.push(
+        'Address detected vulnerabilities by updating dependencies'
+      );
     }
-    
+
     // Performance recommendations
     if (metrics.performance.responseTime > 1000) {
-      recommendations.push('Investigate slow response times and optimize application performance');
+      recommendations.push(
+        'Investigate slow response times and optimize application performance'
+      );
     }
-    
+
     if (metrics.performance.errorRate > 5) {
-      recommendations.push('High error rate detected - review application logs and fix issues');
+      recommendations.push(
+        'High error rate detected - review application logs and fix issues'
+      );
     }
-    
+
     // System recommendations
     if (metrics.system.memoryUsage > 80) {
-      recommendations.push('High memory usage detected - consider scaling resources');
+      recommendations.push(
+        'High memory usage detected - consider scaling resources'
+      );
     }
-    
+
     if (metrics.system.cpuUsage > 80) {
-      recommendations.push('High CPU usage detected - optimize code or scale resources');
+      recommendations.push(
+        'High CPU usage detected - optimize code or scale resources'
+      );
     }
-    
+
     // Alert-based recommendations
     const criticalAlerts = alerts.filter(a => a.severity === 'critical');
     if (criticalAlerts.length > 0) {
       recommendations.push('Address critical security alerts immediately');
     }
-    
+
     return recommendations;
   }
 
   private convertToCSV(metrics: SecurityMetrics[]): string {
     if (metrics.length === 0) return '';
-    
+
     const headers = [
       'timestamp',
       'cpu_usage',
@@ -803,9 +1128,9 @@ export class SecurityMonitor extends EventEmitter {
       'failed_logins',
       'successful_logins',
       'response_time',
-      'error_rate'
+      'error_rate',
     ];
-    
+
     const rows = metrics.map(m => [
       m.timestamp.toISOString(),
       m.system.cpuUsage,
@@ -814,9 +1139,9 @@ export class SecurityMonitor extends EventEmitter {
       m.security.failedLogins,
       m.security.successfulLogins,
       m.performance.responseTime,
-      m.performance.errorRate
+      m.performance.errorRate,
     ]);
-    
+
     return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
   }
 
@@ -826,13 +1151,13 @@ export class SecurityMonitor extends EventEmitter {
   async cleanup(): Promise<void> {
     this.stopMonitoring();
     this.removeAllListeners();
-    
+
     // Clear data structures
     this.metrics = [];
     this.alertRules.clear();
     this.activeAlerts.clear();
     this.alertCooldowns.clear();
-    
+
     logger.info('Security monitor cleanup completed');
   }
 }

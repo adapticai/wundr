@@ -5,6 +5,8 @@
  * Uses BullMQ for reliable, distributed job processing.
  */
 
+import { Queue, Worker, Job, type ConnectionOptions } from 'bullmq';
+import IORedis from 'ioredis';
 import { JobStatus, FileType } from './types';
 
 import type { FileProcessorConfig } from './config';
@@ -71,8 +73,9 @@ export type QueueEventListener = (event: QueueEvent, data: unknown) => void;
  */
 export class FileProcessingQueue {
   private _config: FileProcessorConfig;
-  private queue: BullQueue | null = null;
-  private worker: BullWorker | null = null;
+  private queue: Queue | null = null;
+  private worker: Worker | null = null;
+  private connection: IORedis | null = null;
   private eventListeners: Map<QueueEvent, QueueEventListener[]> = new Map();
 
   constructor(config: FileProcessorConfig) {
@@ -83,31 +86,42 @@ export class FileProcessingQueue {
    * Initialize the queue and worker
    */
   async initialize(): Promise<void> {
-    // TODO: Implement with BullMQ
-    // const { Queue, Worker } = require('bullmq');
-    // const IORedis = require('ioredis');
-    //
-    // const connection = new IORedis({
-    //   host: this.config.redis.host,
-    //   port: this.config.redis.port,
-    //   password: this.config.redis.password,
-    //   db: this.config.redis.db,
-    //   tls: this.config.redis.tls ? {} : undefined,
-    //   maxRetriesPerRequest: null,
-    // });
-    //
-    // this.queue = new Queue(this.config.queue.name, { connection });
-    //
-    // this.worker = new Worker(
-    //   this.config.queue.name,
-    //   this.processJob.bind(this),
-    //   {
-    //     connection,
-    //     concurrency: this.config.queue.concurrency,
-    //   }
-    // );
-    //
-    // this.setupEventHandlers();
+    const redisConfig = this._config.redis;
+
+    try {
+      this.connection = new IORedis({
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
+        db: redisConfig.db,
+        tls: redisConfig.tls ? {} : undefined,
+        connectTimeout: redisConfig.connectTimeout ?? 10000,
+        maxRetriesPerRequest: null,
+      });
+
+      // Verify connection before proceeding
+      await this.connection.ping();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(`Failed to connect to Redis: ${message}`);
+    }
+
+    const connection: ConnectionOptions = this.connection;
+
+    this.queue = new Queue(this._config.queue.name, { connection });
+
+    this.worker = new Worker<FileProcessingJob, ProcessorResult>(
+      this._config.queue.name,
+      async (job: Job<FileProcessingJob, ProcessorResult>) => {
+        return this._processJob(job);
+      },
+      {
+        connection,
+        concurrency: this._config.queue.concurrency,
+      }
+    );
+
+    this._setupEventHandlers();
   }
 
   /**
@@ -115,13 +129,18 @@ export class FileProcessingQueue {
    */
   async close(): Promise<void> {
     if (this.worker) {
-      // await this.worker.close();
+      await this.worker.close();
       this.worker = null;
     }
 
     if (this.queue) {
-      // await this.queue.close();
+      await this.queue.close();
       this.queue = null;
+    }
+
+    if (this.connection) {
+      this.connection.disconnect();
+      this.connection = null;
     }
   }
 
@@ -133,27 +152,23 @@ export class FileProcessingQueue {
       throw new Error('Queue not initialized');
     }
 
-    // TODO: Implement with BullMQ
-    // const bullJob = await this.queue.add(job.jobId, job, {
-    //   priority: job.priority || 5,
-    //   attempts: this.config.queue.maxRetries,
-    //   backoff: {
-    //     type: 'exponential',
-    //     delay: this.config.queue.retryDelay,
-    //   },
-    //   removeOnComplete: {
-    //     age: this.config.queue.removeOnComplete / 1000,
-    //   },
-    //   removeOnFail: {
-    //     age: this.config.queue.removeOnFail / 1000,
-    //   },
-    // });
-    //
-    // this.emit(QueueEvent.JOB_ADDED, { jobId: job.jobId });
-    // return bullJob.id;
+    const bullJob = await this.queue.add(job.jobId, job, {
+      priority: job.priority ?? 5,
+      attempts: this._config.queue.maxRetries,
+      backoff: {
+        type: 'exponential',
+        delay: this._config.queue.retryDelay,
+      },
+      removeOnComplete: {
+        age: Math.floor(this._config.queue.removeOnComplete / 1000),
+      },
+      removeOnFail: {
+        age: Math.floor(this._config.queue.removeOnFail / 1000),
+      },
+    });
 
-    // Skeleton return
-    return job.jobId;
+    this.emit(QueueEvent.JOB_ADDED, { jobId: job.jobId });
+    return bullJob.id ?? job.jobId;
   }
 
   /**
@@ -164,47 +179,54 @@ export class FileProcessingQueue {
       throw new Error('Queue not initialized');
     }
 
-    // TODO: Implement bulk add with BullMQ
-    // const bullJobs = await this.queue.addBulk(
-    //   jobs.map((job) => ({
-    //     name: job.jobId,
-    //     data: job,
-    //     opts: { priority: job.priority || 5 },
-    //   }))
-    // );
-    //
-    // return bullJobs.map((j) => j.id);
+    const bullJobs = await this.queue.addBulk(
+      jobs.map(job => ({
+        name: job.jobId,
+        data: job,
+        opts: {
+          priority: job.priority ?? 5,
+          attempts: this._config.queue.maxRetries,
+          backoff: {
+            type: 'exponential' as const,
+            delay: this._config.queue.retryDelay,
+          },
+          removeOnComplete: {
+            age: Math.floor(this._config.queue.removeOnComplete / 1000),
+          },
+          removeOnFail: {
+            age: Math.floor(this._config.queue.removeOnFail / 1000),
+          },
+        },
+      }))
+    );
 
-    // Skeleton return
-    return jobs.map(j => j.jobId);
+    return bullJobs.map(j => j.id ?? j.name);
   }
 
   /**
    * Get job status
    */
-  async getJobStatus(_jobId: string): Promise<JobResult | null> {
+  async getJobStatus(jobId: string): Promise<JobResult | null> {
     if (!this.queue) {
       throw new Error('Queue not initialized');
     }
 
-    // TODO: Implement with BullMQ
-    // const job = await this.queue.getJob(jobId);
-    // if (!job) return null;
-    //
-    // const state = await job.getState();
-    // return {
-    //   jobId: job.id,
-    //   status: this.mapState(state),
-    //   result: job.returnvalue,
-    //   error: job.failedReason,
-    //   attempts: job.attemptsMade,
-    //   createdAt: new Date(job.timestamp),
-    //   processedAt: job.processedOn ? new Date(job.processedOn) : undefined,
-    //   finishedAt: job.finishedOn ? new Date(job.finishedOn) : undefined,
-    // };
+    const job = await this.queue.getJob(jobId);
+    if (!job) return null;
 
-    // Skeleton return
-    return null;
+    const state = await job.getState();
+
+    return {
+      jobId: job.id ?? jobId,
+      status: this._mapState(state),
+      result: job.returnvalue ?? undefined,
+      error: job.failedReason ?? undefined,
+      attempts: job.attemptsMade,
+      createdAt: new Date(job.timestamp),
+      processedAt:
+        job.processedOn != null ? new Date(job.processedOn) : undefined,
+      finishedAt: job.finishedOn != null ? new Date(job.finishedOn) : undefined,
+    };
   }
 
   /**
@@ -215,27 +237,18 @@ export class FileProcessingQueue {
       throw new Error('Queue not initialized');
     }
 
-    // TODO: Implement with BullMQ
-    // const [waiting, active, completed, failed, delayed, paused] = await Promise.all([
-    //   this.queue.getWaitingCount(),
-    //   this.queue.getActiveCount(),
-    //   this.queue.getCompletedCount(),
-    //   this.queue.getFailedCount(),
-    //   this.queue.getDelayedCount(),
-    //   this.queue.getPausedCount(),
-    // ]);
-    //
-    // return { waiting, active, completed, failed, delayed, paused };
+    const [waiting, active, completed, failed, delayed, pausedCounts] =
+      await Promise.all([
+        this.queue.getWaitingCount(),
+        this.queue.getActiveCount(),
+        this.queue.getCompletedCount(),
+        this.queue.getFailedCount(),
+        this.queue.getDelayedCount(),
+        this.queue.getJobCounts('paused'),
+      ]);
+    const paused = pausedCounts.paused ?? 0;
 
-    // Skeleton return
-    return {
-      waiting: 0,
-      active: 0,
-      completed: 0,
-      failed: 0,
-      delayed: 0,
-      paused: 0,
-    };
+    return { waiting, active, completed, failed, delayed, paused };
   }
 
   /**
@@ -246,7 +259,7 @@ export class FileProcessingQueue {
       throw new Error('Queue not initialized');
     }
 
-    // await this.queue.pause();
+    await this.queue.pause();
   }
 
   /**
@@ -257,56 +270,48 @@ export class FileProcessingQueue {
       throw new Error('Queue not initialized');
     }
 
-    // await this.queue.resume();
+    await this.queue.resume();
   }
 
   /**
    * Cancel a specific job
    */
-  async cancelJob(_jobId: string): Promise<boolean> {
+  async cancelJob(jobId: string): Promise<boolean> {
     if (!this.queue) {
       throw new Error('Queue not initialized');
     }
 
-    // TODO: Implement with BullMQ
-    // const job = await this.queue.getJob(jobId);
-    // if (!job) return false;
-    //
-    // const state = await job.getState();
-    // if (state === 'active') {
-    //   // Cannot cancel active jobs directly
-    //   return false;
-    // }
-    //
-    // await job.remove();
-    // return true;
+    const job = await this.queue.getJob(jobId);
+    if (!job) return false;
 
-    // Skeleton return
-    return false;
+    const state = await job.getState();
+    if (state === 'active') {
+      // Active jobs cannot be removed directly; caller must handle graceful shutdown
+      return false;
+    }
+
+    await job.remove();
+    return true;
   }
 
   /**
    * Retry a failed job
    */
-  async retryJob(_jobId: string): Promise<boolean> {
+  async retryJob(jobId: string): Promise<boolean> {
     if (!this.queue) {
       throw new Error('Queue not initialized');
     }
 
-    // TODO: Implement with BullMQ
-    // const job = await this.queue.getJob(jobId);
-    // if (!job) return false;
-    //
-    // const state = await job.getState();
-    // if (state !== 'failed') {
-    //   return false;
-    // }
-    //
-    // await job.retry();
-    // return true;
+    const job = await this.queue.getJob(jobId);
+    if (!job) return false;
 
-    // Skeleton return
-    return false;
+    const state = await job.getState();
+    if (state !== 'failed') {
+      return false;
+    }
+
+    await job.retry();
+    return true;
   }
 
   /**
@@ -317,13 +322,9 @@ export class FileProcessingQueue {
       throw new Error('Queue not initialized');
     }
 
-    // TODO: Implement with BullMQ
-    // const jobs = await this.queue.getCompleted();
-    // await Promise.all(jobs.map((job) => job.remove()));
-    // return jobs.length;
-
-    // Skeleton return
-    return 0;
+    const jobs = await this.queue.getCompleted();
+    await Promise.all(jobs.map(job => job.remove()));
+    return jobs.length;
   }
 
   /**
@@ -334,33 +335,33 @@ export class FileProcessingQueue {
       throw new Error('Queue not initialized');
     }
 
-    // TODO: Implement with BullMQ
-    // const jobs = await this.queue.getFailed();
-    // await Promise.all(jobs.map((job) => job.remove()));
-    // return jobs.length;
-
-    // Skeleton return
-    return 0;
+    const jobs = await this.queue.getFailed();
+    await Promise.all(jobs.map(job => job.remove()));
+    return jobs.length;
   }
 
   /**
    * Process a file processing job
    */
-  private async _processJob(job: BullJob): Promise<ProcessorResult> {
-    const data = job.data as FileProcessingJob;
+  private async _processJob(
+    job: Job<FileProcessingJob, ProcessorResult>
+  ): Promise<ProcessorResult> {
+    const data = job.data;
 
-    // Update progress
-    await this.updateProgress(job, {
+    await this._updateProgress(job, {
       stage: 'initializing',
       percentage: 0,
     });
 
-    // TODO: Implement actual file processing
-    // Import appropriate processor based on file type
+    // TODO: Import appropriate processor based on file type and run real processing.
     // const processor = this.getProcessor(data.fileType);
     // const result = await processor.process(data.filePath, data.options);
 
-    // Skeleton result
+    await this._updateProgress(job, {
+      stage: 'processing',
+      percentage: 50,
+    });
+
     const result: ProcessorResult = {
       success: true,
       content: '',
@@ -368,12 +369,16 @@ export class FileProcessingQueue {
         filename: data.filename,
         mimeType: 'application/octet-stream',
         size: 0,
-        fileType: data.fileType || FileType.UNKNOWN,
+        fileType: data.fileType ?? FileType.UNKNOWN,
       },
       processingTime: 0,
     };
 
-    // Send callback if configured
+    await this._updateProgress(job, {
+      stage: 'complete',
+      percentage: 100,
+    });
+
     if (data.callbackUrl) {
       await this._sendCallback(data.callbackUrl, result);
     }
@@ -384,11 +389,11 @@ export class FileProcessingQueue {
   /**
    * Update job progress
    */
-  private async updateProgress(
-    job: BullJob,
+  private async _updateProgress(
+    job: Job<FileProcessingJob, ProcessorResult>,
     progress: JobProgress
   ): Promise<void> {
-    // await job.updateProgress(progress);
+    await job.updateProgress(progress);
     this.emit(QueueEvent.JOB_PROGRESS, {
       jobId: job.id,
       progress,
@@ -399,18 +404,21 @@ export class FileProcessingQueue {
    * Send callback with result
    */
   private async _sendCallback(
-    _callbackUrl: string,
-    _result: ProcessorResult
+    callbackUrl: string,
+    result: ProcessorResult
   ): Promise<void> {
     try {
-      // TODO: Implement callback sending
-      // await fetch(callbackUrl, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(result),
-      // });
-    } catch {
-      // Log callback error but don't fail the job
+      await fetch(callbackUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(result),
+      });
+    } catch (err) {
+      // Log callback error but do not fail the job
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn(
+        `[FileProcessingQueue] Callback to ${callbackUrl} failed: ${message}`
+      );
     }
   }
 
@@ -418,22 +426,35 @@ export class FileProcessingQueue {
    * Setup event handlers for queue and worker
    */
   private _setupEventHandlers(): void {
-    // TODO: Implement event handlers with BullMQ
-    // this.worker.on('completed', (job, result) => {
-    //   this.emit(QueueEvent.JOB_COMPLETED, { jobId: job.id, result });
-    // });
-    //
-    // this.worker.on('failed', (job, error) => {
-    //   this.emit(QueueEvent.JOB_FAILED, { jobId: job?.id, error: error.message });
-    // });
-    //
-    // this.worker.on('active', (job) => {
-    //   this.emit(QueueEvent.JOB_STARTED, { jobId: job.id });
-    // });
-    //
-    // this.queue.on('drained', () => {
-    //   this.emit(QueueEvent.QUEUE_DRAINED, {});
-    // });
+    if (!this.worker || !this.queue) return;
+
+    this.worker.on('completed', (job, result) => {
+      this.emit(QueueEvent.JOB_COMPLETED, { jobId: job.id, result });
+    });
+
+    this.worker.on('failed', (job, error) => {
+      this.emit(QueueEvent.JOB_FAILED, {
+        jobId: job?.id,
+        error: error.message,
+      });
+    });
+
+    this.worker.on('active', job => {
+      this.emit(QueueEvent.JOB_STARTED, { jobId: job.id });
+    });
+
+    this.worker.on('error', error => {
+      this.emit(QueueEvent.QUEUE_ERROR, { error: error.message });
+    });
+
+    this.queue.on('error', error => {
+      this.emit(QueueEvent.QUEUE_ERROR, { error: error.message });
+    });
+
+    // BullMQ Queue does not expose a 'drained' event directly; use the Worker event instead
+    this.worker.on('drained', () => {
+      this.emit(QueueEvent.QUEUE_DRAINED, {});
+    });
   }
 
   /**
@@ -442,21 +463,24 @@ export class FileProcessingQueue {
   private _mapState(state: string): JobStatus {
     const stateMap: Record<string, JobStatus> = {
       waiting: JobStatus.PENDING,
+      'waiting-children': JobStatus.PENDING,
       active: JobStatus.PROCESSING,
       completed: JobStatus.COMPLETED,
       failed: JobStatus.FAILED,
       delayed: JobStatus.PENDING,
       paused: JobStatus.PENDING,
+      prioritized: JobStatus.PENDING,
+      unknown: JobStatus.PENDING,
     };
 
-    return stateMap[state] || JobStatus.PENDING;
+    return stateMap[state] ?? JobStatus.PENDING;
   }
 
   /**
    * Add event listener
    */
   on(event: QueueEvent, listener: QueueEventListener): void {
-    const listeners = this.eventListeners.get(event) || [];
+    const listeners = this.eventListeners.get(event) ?? [];
     listeners.push(listener);
     this.eventListeners.set(event, listeners);
   }
@@ -465,7 +489,7 @@ export class FileProcessingQueue {
    * Remove event listener
    */
   off(event: QueueEvent, listener: QueueEventListener): void {
-    const listeners = this.eventListeners.get(event) || [];
+    const listeners = this.eventListeners.get(event) ?? [];
     const index = listeners.indexOf(listener);
     if (index !== -1) {
       listeners.splice(index, 1);
@@ -477,27 +501,16 @@ export class FileProcessingQueue {
    * Emit event to listeners
    */
   private emit(event: QueueEvent, data: unknown): void {
-    const listeners = this.eventListeners.get(event) || [];
+    const listeners = this.eventListeners.get(event) ?? [];
     for (const listener of listeners) {
       try {
         listener(event, data);
       } catch {
-        // Ignore listener errors
+        // Ignore listener errors to avoid disrupting queue operation
       }
     }
   }
 }
-
-/**
- * Placeholder types for BullMQ
- */
-type BullQueue = unknown;
-type BullWorker = unknown;
-type BullJob = {
-  id: string;
-  data: unknown;
-  updateProgress: (progress: unknown) => Promise<void>;
-};
 
 /**
  * Create file processing queue instance

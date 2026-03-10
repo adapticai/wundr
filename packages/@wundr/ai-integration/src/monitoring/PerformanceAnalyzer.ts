@@ -5,6 +5,8 @@
  * intelligent recommendations for optimization across the AI integration ecosystem.
  */
 
+import * as os from 'os';
+
 import { EventEmitter } from 'eventemitter3';
 
 import {
@@ -652,33 +654,139 @@ interface PerformanceReport {
 }
 
 class MetricsCollector {
+  // Rolling window of latency samples (ms) for percentile calculations
+  private latencySamples: number[] = [];
+  private readonly maxSamples = 1000;
+
+  // Request/error counters and the timestamp of the last throughput window
+  private requestCount = 0;
+  private errorCount = 0;
+  private activeConnections = 0;
+  private queueLength = 0;
+  private lastThroughputWindowStart: bigint = process.hrtime.bigint();
+  private requestsInWindow = 0;
+
+  // CPU measurement state: snapshot of (idle, total) times per core
+  private prevCpuTimes: Array<{ idle: number; total: number }> = [];
+
   async initialize(): Promise<void> {
-    // Initialize metrics collection
+    this.prevCpuTimes = this.snapshotCpuTimes();
+  }
+
+  /**
+   * Record the completion of a single request so that throughput, latency,
+   * and error-rate counters stay accurate between collectMetrics() calls.
+   *
+   * @param latencyMs   Wall-clock duration of the request in milliseconds.
+   * @param isError     Whether the request ended with an error.
+   */
+  recordRequest(latencyMs: number, isError = false): void {
+    this.requestCount++;
+    this.requestsInWindow++;
+    if (isError) this.errorCount++;
+
+    this.latencySamples.push(latencyMs);
+    if (this.latencySamples.length > this.maxSamples) {
+      this.latencySamples.shift();
+    }
+  }
+
+  /** Adjust the active-connection gauge (positive to add, negative to remove). */
+  adjustConnections(delta: number): void {
+    this.activeConnections = Math.max(0, this.activeConnections + delta);
+  }
+
+  /** Set the current task-queue depth. */
+  setQueueLength(length: number): void {
+    this.queueLength = Math.max(0, length);
   }
 
   async collectMetrics(): Promise<PerformanceMetrics> {
-    // Collect real-time metrics
-    const memoryUsage = process.memoryUsage();
-    const cpuUsage = await this.getCPUUsage();
+    const memUsage = process.memoryUsage();
+    const cpuUsage = this.getCPUUsage();
+
+    // --- throughput (requests per second over the elapsed window) ---
+    const nowNs = process.hrtime.bigint();
+    const elapsedSec =
+      Number(nowNs - this.lastThroughputWindowStart) / 1_000_000_000;
+    const throughput = elapsedSec > 0 ? this.requestsInWindow / elapsedSec : 0;
+
+    // Reset the throughput window
+    this.requestsInWindow = 0;
+    this.lastThroughputWindowStart = nowNs;
+
+    // --- error rate ---
+    const errorRate =
+      this.requestCount > 0 ? this.errorCount / this.requestCount : 0;
+
+    // --- p50 response time (median) as the primary responseTime metric ---
+    const responseTime = this.percentile(this.latencySamples, 50);
 
     return {
-      responseTime: Math.floor(Math.random() * 3000) + 500, // 500-3500ms
-      throughput: Math.floor(Math.random() * 50) + 10, // 10-60 requests/sec
-      errorRate: Math.random() * 0.05, // 0-5% error rate
-      memoryUsage: (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100,
-      cpuUsage: cpuUsage,
-      activeConnections: Math.floor(Math.random() * 100) + 20, // 20-120 connections
-      queueLength: Math.floor(Math.random() * 50), // 0-50 queued items
+      responseTime,
+      throughput,
+      errorRate,
+      memoryUsage: (memUsage.heapUsed / memUsage.heapTotal) * 100,
+      cpuUsage,
+      activeConnections: this.activeConnections,
+      queueLength: this.queueLength,
     };
   }
 
-  private async getCPUUsage(): Promise<number> {
-    // Simulate CPU usage calculation
-    return Math.random() * 80 + 10; // 10-90% CPU usage
+  // -----------------------------------------------------------------------
+  // Private helpers
+  // -----------------------------------------------------------------------
+
+  private snapshotCpuTimes(): Array<{ idle: number; total: number }> {
+    return os.cpus().map(cpu => {
+      const times = cpu.times;
+      const total =
+        times.user + times.nice + times.sys + times.idle + times.irq;
+      return { idle: times.idle, total };
+    });
+  }
+
+  private getCPUUsage(): number {
+    const current = this.snapshotCpuTimes();
+
+    if (this.prevCpuTimes.length !== current.length) {
+      // First call or CPU count changed – baseline only, return 0.
+      this.prevCpuTimes = current;
+      return 0;
+    }
+
+    let idleDelta = 0;
+    let totalDelta = 0;
+    for (let i = 0; i < current.length; i++) {
+      idleDelta += current[i].idle - this.prevCpuTimes[i].idle;
+      totalDelta += current[i].total - this.prevCpuTimes[i].total;
+    }
+
+    this.prevCpuTimes = current;
+
+    if (totalDelta === 0) return 0;
+    return ((totalDelta - idleDelta) / totalDelta) * 100;
+  }
+
+  /**
+   * Compute the p-th percentile of an array of numbers.
+   * Returns 0 when the array is empty.
+   */
+  private percentile(samples: number[], p: number): number {
+    if (samples.length === 0) return 0;
+    const sorted = [...samples].sort((a, b) => a - b);
+    const index = Math.ceil((p / 100) * sorted.length) - 1;
+    return sorted[Math.max(0, index)];
   }
 
   async shutdown(): Promise<void> {
-    // Cleanup metrics collection
+    this.latencySamples = [];
+    this.requestCount = 0;
+    this.errorCount = 0;
+    this.activeConnections = 0;
+    this.queueLength = 0;
+    this.requestsInWindow = 0;
+    this.prevCpuTimes = [];
   }
 }
 
